@@ -1,36 +1,26 @@
-"use client";
-
 import Image from "next/image";
-import Link from "next/link";
 import WhiteLogo from "../_images/white_logo.png";
-import { usePathname } from "next/navigation";
-import { cn } from "~/lib/utils";
+import NavbarMenu, { NavbarMenuProps } from "./NavbarMenu";
+import { auth } from "~/server/auth";
+import Link from "next/link";
 
-interface Props {
-  tabs: {
-    name: string;
-    link: string;
-  }[];
-}
-
-export default function Navbar({ tabs }: Props) {
-  const pathname = usePathname();
+export default async function Navbar({ tabs }: NavbarMenuProps) {
+  const session = await auth();
 
   return (
-    <nav className="bg-app-primary flex h-16 items-center px-2">
-      <Image src={WhiteLogo} alt="Tenor Logo" className="h-7 w-auto" />
-      <div className="ml-2 flex items-center gap-2">
-        {tabs.map((tab, i) => (
-          <Link
-            key={i}
-            href={tab.link}
-            className={cn("flex items-center p-2 text-white", {
-              "text-app-primary rounded-md bg-white": pathname == tab.link,
-            })}
-          >
-            {tab.name}
-          </Link>
-        ))}
+    <nav className="bg-app-primary flex h-16 items-center justify-between px-4">
+      <div className="flex items-center">
+        <Image src={WhiteLogo} alt="Tenor Logo" className="h-7 w-auto" />
+        <NavbarMenu tabs={tabs} />
+      </div>
+      <div className="flex items-center gap-4">
+        <p className="text-white">{session?.user.name ?? "Signed out"}</p>
+        <Link
+          href={session ? "/api/auth/signout" : "/api/auth/signin"}
+          className="text-app-primary rounded-md bg-white p-2"
+        >
+          {session ? "Sign out" : "Log in"}
+        </Link>
       </div>
     </nav>
   );
