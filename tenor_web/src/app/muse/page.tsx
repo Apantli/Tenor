@@ -59,7 +59,7 @@ export default function MuseBluetooth() {
         };
         setData((prevData) => {
           const newData = [...prevData, newDataPoint];
-          return newData.slice(-500);
+          return newData.slice(-100);
         });
       });
   };
