@@ -25,7 +25,7 @@ export default async function RootLayout({
       <body>
         <TRPCReactProvider>
           <Navbar tabs={tabs} />
-          {children}
+          <main className="p-4">{children}</main>
         </TRPCReactProvider>
       </body>
     </html>
