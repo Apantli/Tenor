@@ -80,7 +80,7 @@ export default function MuseBluetooth() {
         xAxisLabel="Time"
         yAxisLabel="dB"
         onValueChange={() => {}}
-        colors={["amber", "emerald", "violet", "pink"]}
+        colors={["red", "violet", "blue", "emerald", "amber"]}
       />
       {connectionStatus != "connected" && (
         <button
