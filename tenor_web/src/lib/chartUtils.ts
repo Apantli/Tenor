@@ -83,7 +83,6 @@ export const constructCategoryColors = (
   categories.forEach((category, index) => {
     categoryColors.set(category, colors[index % colors.length]!)
   })
-  console.log(categoryColors);
   return categoryColors
 }
 
