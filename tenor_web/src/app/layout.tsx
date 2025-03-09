@@ -18,7 +18,6 @@ export default async function RootLayout({
   const tabs = [
     { name: "Main", link: "/" },
     { name: "Muse", link: "/muse" },
-    { name: "Bluetooth", link: "/muse/bluetooth" },
   ];
 
   return (

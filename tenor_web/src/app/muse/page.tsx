@@ -1,48 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { MuseClient, zipSamples } from "muse-js";
+import { useMemo, useState } from "react";
 import { LineChart } from "~/lib/components/LineChart";
+const { epoch, fft, powerByBand } = require("@neurosity/pipes");
 
 type BrainwaveDataPoint = {
-  date: string;
   Delta: number;
   Theta: number;
   Alpha: number;
   Beta: number;
   Gamma: number;
+  date: string;
 };
 
-export default function Muse() {
+export default function MuseBluetooth() {
+  const [connectionStatus, setConnectionStatus] = useState<
+    "connected" | "connecting" | "disconnected"
+  >("disconnected");
   const [data, setData] = useState<BrainwaveDataPoint[]>([]);
   const brainwaves = ["Delta", "Theta", "Alpha", "Beta", "Gamma"];
 
-  useEffect(() => {
-    const eventSource = new EventSource("/api/muse_data");
+  const client = useMemo(() => new MuseClient(), []);
 
-    eventSource.onmessage = (event) => {
-      const serverData = JSON.parse(event.data);
-      const date = new Date(serverData.timestamp).toLocaleTimeString();
-      const newDataPoint = {
-        date,
-        Delta: serverData.signals.delta,
-        Theta: serverData.signals.theta,
-        Alpha: serverData.signals.alpha,
-        Beta: serverData.signals.beta,
-        Gamma: serverData.signals.gamma,
-      };
+  const setupMuseConnection = async () => {
+    try {
+      setConnectionStatus("connecting");
+      await client.connect();
+      await client.start();
+    } catch {
+      setConnectionStatus("disconnected");
+    }
 
-      setData((prevData) => {
-        const newData = [...prevData, newDataPoint];
-        return newData.slice(-100);
+    client.enableAux = true;
+
+    client.connectionStatus.subscribe((status) => {
+      setConnectionStatus(status ? "connected" : "disconnected");
+    });
+
+    zipSamples(client.eegReadings)
+      .pipe(
+        epoch({ duration: 1024, interval: 100, samplingRate: 256 }),
+        fft({ bins: 256 }),
+        powerByBand(),
+      )
+      .subscribe((data: any) => {
+        const newDataPoint = {
+          date: new Date().toLocaleTimeString(),
+          Delta:
+            (data.delta[0] + data.delta[1] + data.delta[2] + data.delta[3]) / 4,
+          Theta:
+            (data.theta[0] + data.theta[1] + data.theta[2] + data.theta[3]) / 4,
+          Alpha:
+            (data.alpha[0] + data.alpha[1] + data.alpha[2] + data.alpha[3]) / 4,
+          Beta: (data.beta[0] + data.beta[1] + data.beta[2] + data.beta[3]) / 4,
+          Gamma:
+            (data.gamma[0] + data.gamma[1] + data.gamma[2] + data.gamma[3]) / 4,
+        };
+        setData((prevData) => {
+          const newData = [...prevData, newDataPoint];
+          return newData.slice(-500);
+        });
       });
-    };
+  };
 
-    return () => eventSource.close();
-  }, []);
+  const disconnect = () => {
+    client.disconnect();
+  };
 
   return (
     <div>
-      <h1>Muse Biometric Data</h1>
+      <h1>Muse brainwave information</h1>
       <LineChart
         className="h-80"
         data={data}
@@ -52,8 +80,26 @@ export default function Muse() {
         xAxisLabel="Time"
         yAxisLabel="dB"
         onValueChange={() => {}}
-        colors={["red", "violet", "cyan", "emerald", "amber"]}
+        colors={["amber", "emerald", "violet", "pink"]}
       />
+      {connectionStatus != "connected" && (
+        <button
+          className="rounded-md bg-app-primary p-2 text-white transition"
+          onClick={setupMuseConnection}
+        >
+          {connectionStatus == "connecting"
+            ? "Connecting..."
+            : "Connect Muse Headset"}
+        </button>
+      )}
+      {connectionStatus == "connected" && (
+        <button
+          className="rounded-md bg-app-fail p-2 text-white transition"
+          onClick={disconnect}
+        >
+          Disconnect
+        </button>
+      )}
     </div>
   );
 }
