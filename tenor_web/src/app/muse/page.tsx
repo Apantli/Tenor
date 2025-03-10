@@ -5,6 +5,8 @@ import { useMemo, useState } from "react";
 import { LineChart } from "~/lib/components/LineChart";
 const { epoch, fft, powerByBand } = require("@neurosity/pipes");
 
+import { listLogs } from "@firebasegen/tenor-muse";
+
 type BrainwaveDataPoint = {
   Delta: number;
   Theta: number;
@@ -22,6 +24,9 @@ export default function MuseBluetooth() {
   const brainwaves = ["Delta", "Theta", "Alpha", "Beta", "Gamma"];
 
   const client = useMemo(() => new MuseClient(), []);
+
+  // FIXME
+  // listLogs();
 
   const setupMuseConnection = async () => {
     try {
