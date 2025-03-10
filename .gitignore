@@ -14,5 +14,5 @@ database-debug.log
 firestore-debug.log
 ui-debug.log
 
-dataconnect/.dataconnect.DS_Store
+dataconnect/.dataconnect
 .DS_Store
