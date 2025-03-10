@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { SessionProvider } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import fetchUserProjects from "../_components/ProjectInfo";
 
 interface Project {
@@ -24,6 +24,9 @@ function ProjectInfoContent() {
   const { data: session } = useSession();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  //Variable para almacenar la busqueda
+  const [filterProjects, setFilterProjects] = useState<Project[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   useEffect(() => {
     if (!session?.user?.email) return;
@@ -32,11 +35,29 @@ function ProjectInfoContent() {
       setLoading(true);
       const fetchedProjects = await fetchUserProjects(session.user.email as string);
       setProjects(fetchedProjects);
+      setFilterProjects(fetchedProjects);
       setLoading(false);
     };
 
     loadProjects();
   }, [session]);
+
+  //Funcion para filtrar los proyectos por medio del nombre del proyecto
+  const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+
+    //Filtrar los proyectos por el nombre del proyecto
+    if (query === "") {
+      setFilterProjects([]);
+    } else {
+      const lowercasedQuery = query.toLowerCase();
+      const filtered = projects.filter(
+        (projects) => projects.project_name.toLowerCase().includes(lowercasedQuery)
+      );
+      setFilterProjects(filtered);
+    }
+  };
 
   return (
     <div>
@@ -45,10 +66,21 @@ function ProjectInfoContent() {
         <div className="header">
           <h1>Projects</h1>
         </div>
+        <div className="projects-list__search-bar">
+          <input
+            type="text"
+            placeholder="Find a project..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="search-bar"
+          />
+        </div>
         <div className="projects-list__content">
-          {projects.length > 0 ? (
+          { loading ? (
+            <p>Seaching projects... </p>
+          ):  filterProjects.length > 0 ? (
             <ul>
-              {projects.map((project) => (
+              {filterProjects.map((project) => (
                 <li className="project-card" key={project.id}>
                   <div className="project-logo">
                     <img src={project.link} alt={project.project_name} />

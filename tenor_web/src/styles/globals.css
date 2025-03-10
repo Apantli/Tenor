@@ -36,7 +36,7 @@
   height: 66px;
   border-radius: 50%;
   margin-right: 10px;
-  object-fit: cover;
+  object-fit: scale-down;
 }
 
 .project-logo img {
@@ -62,4 +62,16 @@
   color: #1f2329;
   height: 100%;
   align-content: center;
+}
+
+.search-bar {
+  width: 100%;
+  border: 1px solid #BECAD4;
+  border-radius: 5px;
+  background: #FFFFFF;
+}
+
+.search-bar input::placeholder {
+  color: #59636E;
+  margin-left: 3px;
 }
