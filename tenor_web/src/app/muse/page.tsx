@@ -3,9 +3,8 @@
 import { MuseClient, zipSamples } from "muse-js";
 import { useMemo, useState } from "react";
 import { LineChart } from "~/lib/components/LineChart";
+import { api } from "~/trpc/react";
 const { epoch, fft, powerByBand } = require("@neurosity/pipes");
-
-import { listLogs } from "@firebasegen/tenor-muse";
 
 type BrainwaveDataPoint = {
   Delta: number;
@@ -25,8 +24,7 @@ export default function MuseBluetooth() {
 
   const client = useMemo(() => new MuseClient(), []);
 
-  // FIXME
-  // listLogs();
+  const { data: logData, isLoading } = api.logs.listLogs.useQuery();
 
   const setupMuseConnection = async () => {
     try {
