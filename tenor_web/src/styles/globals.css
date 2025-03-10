@@ -1,3 +1,77 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.projects-list__container {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  margin: 28px 33px;
+}
+
+.header {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2329;
+}
+
+.project-list__content {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+
+.project-card {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  max-height: 100px;
+  padding: 10px;
+  border-bottom: 1px solid #BECAD4;
+}
+
+.project-logo {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  margin-right: 10px;
+  object-fit: scale-down;
+}
+
+.project-logo img {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+
+.project-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.subheader  {
+  font-size: medium;
+  font-weight: bold;
+  color: #1f2329;
+}
+
+.project-info p {
+  font-size: small;
+  color: #1f2329;
+  height: 100%;
+  align-content: center;
+}
+
+.search-bar {
+  width: 100%;
+  border: 1px solid #BECAD4;
+  border-radius: 5px;
+  background: #FFFFFF;
+}
+
+.search-bar input::placeholder {
+  color: #59636E;
+  margin-left: 3px;
+}
