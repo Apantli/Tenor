@@ -4,7 +4,7 @@ import axios from "axios";
 
 const app = express();
 const apiKey = process.env.GEMINI_API_KEY;
-const PORT = 4000;
+const PORT = 6453;
 
 app.use(express.json());
 
