@@ -20,6 +20,7 @@ export default async function RootLayout({
     { name: "Main", link: "/" },
     { name: "Muse", link: "/muse" },
     { name: "Project", link: "/project-info" },
+    { name: "Frida", link: "/frida" },
   ];
 
   return (
