@@ -30,6 +30,16 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
-  providers: [GitHub],
+  providers: [
+    GitHub({
+      authorization: {
+        url: "https://github.com/login/oauth/authorize",
+        params: {
+          // TODO: add more scopes if needed
+          scope: "read:user user:email",
+        },
+      },
+    }),
+  ],
   adapter: FirestoreAdapter(firestore),
 } satisfies NextAuthConfig;
