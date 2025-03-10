@@ -1,0 +1,7 @@
+connectorId: default
+generate:
+  javascriptSdk:
+    outputDir: ../../tenor_web/dataconnect-generated/js/default-connector
+    package: "@firebasegen/tenor-muse"
+    packageJsonDir: ../../tenor_web
+    react: true

@@ -11,6 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
+import { dataConnect } from '~/utils/dataconnect';
 
 /**
  * 1. CONTEXT
@@ -26,9 +27,11 @@ import { auth } from "~/server/auth";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await auth();
+  const dataconnect = dataConnect;
 
   return {
     session,
+    dataconnect,
     ...opts,
   };
 };

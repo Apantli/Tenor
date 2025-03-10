@@ -1,1 +1,18 @@
 tenor-1272a-firebase-adminsdk-fbsvc-1762c0c13c.json
+
+# Firebase-related files
+.firebase
+firebase-debug.log
+firebase.json
+.firebaserc
+
+# Emulator data
+firebase-emulator*
+dataconnect-debug.log
+firebase-export*
+database-debug.log
+firestore-debug.log
+ui-debug.log
+
+dataconnect/.dataconnect
+.DS_Store
