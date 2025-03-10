@@ -1,7 +1,6 @@
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
 import { firestore } from "~/utils/firestore";
-import { dataConnect } from "~/utils/dataconnect";
 import GitHub from "next-auth/providers/github";
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`

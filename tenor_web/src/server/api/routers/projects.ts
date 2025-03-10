@@ -1,7 +1,20 @@
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  DocumentReference,
+  getDoc,
+  doc,
+  Firestore,
+} from "firebase/firestore";
+import { z } from "zod";
 
-import { db, app } from "../../utils/firebase";
-import { collection, getDocs, query, where, DocumentReference, getDoc, doc } from "firebase/firestore";
-
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 interface User {
   email: string;
@@ -15,7 +28,10 @@ interface Project {
   description: string;
 }
 
-const fetchProjectData = async (projectRef: DocumentReference) : Promise<Project | null> => {
+
+const fetchProjectData = async (
+  projectRef: DocumentReference,
+): Promise<Project | null> => {
   try {
     console.log("Fetching project data for", projectRef.path);
     const projectSnapshot = await getDoc(projectRef);
@@ -29,7 +45,7 @@ const fetchProjectData = async (projectRef: DocumentReference) : Promise<Project
   return null;
 };
 
-const fetchUserProjects = async (email: string) : Promise<Project[]> => {
+const fetchUserProjects = async (email: string, db: Firestore) : Promise<Project[]> => {
   try {
     //Buscar usuario en Firestore por su email
     const usersRef = collection(db, "users");
@@ -78,4 +94,12 @@ const fetchUserProjects = async (email: string) : Promise<Project[]> => {
   }
 };
 
-export default fetchUserProjects;
+export const projectsRouter = createTRPCRouter({
+  listProjects: protectedProcedure.query(async ({ctx}) => {
+    const userEmail = ctx.session.user.email ?? "";
+
+    console.log(userEmail);
+
+    return await fetchUserProjects(userEmail, ctx.db);
+  })
+});
