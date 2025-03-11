@@ -25,6 +25,7 @@
     "@trpc/client": "^11.0.0-rc.446",
     "@trpc/react-query": "^11.0.0-rc.446",
     "@trpc/server": "^11.0.0-rc.446",
+    "@types/dom-speech-recognition": "^0.0.4",
     "clsx": "^2.1.1",
     "firebase": "^11.4.0",
     "firebase-admin": "^12.7.0",
