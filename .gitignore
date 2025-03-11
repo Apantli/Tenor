@@ -18,7 +18,4 @@ database-debug.log
 firestore-debug.log
 ui-debug.log
 
-# dataDir
-dataconnect/.dataconnect/pgliteData
-
 .DS_Store
