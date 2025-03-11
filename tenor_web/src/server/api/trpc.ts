@@ -11,7 +11,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
-import { db, app, dataConnect } from "~/utils/firebase";
+import { db } from "~/utils/firebase";
 
 /**
  * 1. CONTEXT
@@ -27,13 +27,10 @@ import { db, app, dataConnect } from "~/utils/firebase";
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
   const session = await auth();
-  const dataconnect = dataConnect;
 
   return {
     session,
-    dataconnect,
-    db,
-    app,
+    firestore: db,
     ...opts,
   };
 };

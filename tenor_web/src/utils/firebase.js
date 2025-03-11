@@ -1,19 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import {
-  connectDataConnectEmulator,
-  getDataConnect,
-} from "firebase/data-connect";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  DocumentReference,
-  query,
-  where,
-} from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
+import { env } from "~/env";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -28,14 +16,9 @@ const firebaseConfig = {
   appId: env.FIREBASE_APP_ID,
   measurementId: env.FIREBASE_MEASUREMENT_ID,
 };
-import { connectorConfig } from "@firebasegen/tenor-muse";
-import { env } from "~/env";
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const dataConnect = getDataConnect(app, connectorConfig);
-connectDataConnectEmulator(dataConnect, "localhost", 9399);
-
-export { db, app, dataConnect };
+export { db, app };
