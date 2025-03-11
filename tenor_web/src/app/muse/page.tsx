@@ -80,7 +80,9 @@ export default function MuseBluetooth() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold">Muse brainwave information</h1>
+      <h1 className="text-2xl font-bold text-app-text">
+        Muse brainwave information
+      </h1>
       <LineChart
         className="h-80"
         data={data}

@@ -3,6 +3,7 @@ import { logsRouter } from "~/server/api/routers/logs";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { projectsRouter } from './routers/projects';
 import { fridaRouter } from "./routers/frida";
+import { filesRouter } from "./routers/files";
 
 /**
  * This is the primary router for your server.
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   logs: logsRouter,
   projects: projectsRouter,
   frida: fridaRouter,
+  files: filesRouter,
 });
 
 // export type definition of API
