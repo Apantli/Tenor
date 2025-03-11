@@ -7,6 +7,11 @@
         <mxCell id="o_S3ILkpT6AB_PazXlzC-3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;" vertex="1" parent="1">
           <mxGeometry x="150" y="300" width="480" height="210" as="geometry" />
         </mxCell>
+        <mxCell id="o_S3ILkpT6AB_PazXlzC-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="o_S3ILkpT6AB_PazXlzC-1" target="o_S3ILkpT6AB_PazXlzC-16">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
         <mxCell id="o_S3ILkpT6AB_PazXlzC-1" value="Frontend&lt;div&gt;(React)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="170" y="375" width="120" height="60" as="geometry" />
         </mxCell>
@@ -43,6 +48,18 @@
         </mxCell>
         <mxCell id="o_S3ILkpT6AB_PazXlzC-15" value="&lt;div&gt;AI Generations&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
           <mxGeometry x="390" y="436.25" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="o_S3ILkpT6AB_PazXlzC-16" value="Browser Client&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="580" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="o_S3ILkpT6AB_PazXlzC-19" value="WebBluetoothAPI" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="175" y="610" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="o_S3ILkpT6AB_PazXlzC-23" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="o_S3ILkpT6AB_PazXlzC-22" target="o_S3ILkpT6AB_PazXlzC-19">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="o_S3ILkpT6AB_PazXlzC-22" value="Muse" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="170" y="680" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
