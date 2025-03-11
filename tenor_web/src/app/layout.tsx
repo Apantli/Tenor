@@ -19,6 +19,7 @@ export default async function RootLayout({
     { name: "Muse", link: "/muse" },
     { name: "Frida", link: "/frida" },
     { name: "Speech", link: "/speech" },
+    { name: "Files", link: "/files" },
   ];
 
   return (
@@ -26,7 +27,7 @@ export default async function RootLayout({
       <body>
         <TRPCReactProvider>
           <Navbar tabs={tabs} />
-          <main className="p-4">{children}</main>
+          <main className="m-6 p-4">{children}</main>
         </TRPCReactProvider>
       </body>
     </html>
