@@ -1,11 +1,11 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" version="26.1.0">
   <diagram name="Page-1" id="2u5XQ1TVpz-50JPjkIr8">
-    <mxGraphModel dx="1643" dy="976" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="906" dy="539" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="o_S3ILkpT6AB_PazXlzC-28" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
-          <mxGeometry x="750" y="300" width="240" height="220" as="geometry" />
+          <mxGeometry x="750" y="300" width="240" height="180" as="geometry" />
         </mxCell>
         <mxCell id="o_S3ILkpT6AB_PazXlzC-3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
           <mxGeometry x="80" y="300" width="550" height="210" as="geometry" />
@@ -107,9 +107,6 @@
         </mxCell>
         <mxCell id="o_S3ILkpT6AB_PazXlzC-31" value="Firestore database&lt;div&gt;(NoSQL)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="790" y="320" width="170" height="36.25" as="geometry" />
-        </mxCell>
-        <mxCell id="o_S3ILkpT6AB_PazXlzC-32" value="Firebase Python Function&lt;div&gt;(Sentiment Analysis)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="790" y="470" width="170" height="36.25" as="geometry" />
         </mxCell>
         <mxCell id="o_S3ILkpT6AB_PazXlzC-34" value="Firebase storage" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="790" y="375" width="170" height="36.25" as="geometry" />
