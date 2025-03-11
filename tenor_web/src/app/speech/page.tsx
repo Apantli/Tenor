@@ -76,9 +76,7 @@ export default function SpeechApp() {
 
   return (
     <div className="m-6">
-      <h1 className="text-2xl font-bold text-app-text">
-        Multilingual Speech Recognition
-      </h1>
+      <h1 className="text-2xl font-bold text-app-text">Speech Recognition</h1>
 
       {error && <p className="text-red-500">{error}</p>}
 
