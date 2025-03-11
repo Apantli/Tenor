@@ -1,6 +1,8 @@
 "use client";
 
 import { api } from "~/trpc/react";
+import { useState, useEffect } from "react";
+import { FilterSearch } from "../_components/FilterSearch";
 
 export default function ProjectPage() {
   return (
@@ -19,33 +21,52 @@ export default function ProjectPage() {
 }
 
 function ProjectList() {
-  const projects = api.projects.listProjects.useQuery();
+  const {data: projects, isLoading, error} = api.projects.listProjects.useQuery();
+  const [filteredProjects, setFilteredProjects] = useState<typeof projects>([]);
 
-  if (projects.isLoading) {
+
+  useEffect(() => {
+    if (projects) {
+      setFilteredProjects(projects);
+    }
+  }, [projects]);
+
+  if (isLoading) {
     return <p>Loading...</p>;
   }
 
-  if (projects.error?.data?.code == "UNAUTHORIZED") {
+  if (error?.data?.code == "UNAUTHORIZED") {
     return <p>Log in to view this information</p>;
   }
 
-  if (projects.data?.length == 0) {
+  if (!projects?.length) {
     return <p>There are no assigned projects</p>;
   }
 
+  const handleFilter = (filterList: string[]) => {
+    if (filterList.length === 0) {
+      setFilteredProjects(projects || []);
+    } else {
+      setFilteredProjects(projects?.filter((p) => filterList.includes(p.project_name)) || []);
+    }
+  }
+
   return (
-    <ul>
-      {projects.data?.map((project) => (
-        <li className="project-card" key={project.id}>
-          <div className="project-logo">
-            <img src={project.link} alt={project.project_name} />
-          </div>
-          <div className="project-info">
-            <h3 className="subheader">{project.project_name}</h3>
-            <p>{project.description}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
+    <div>
+      <FilterSearch list={projects.map((p) => p.project_name)} onSearch={handleFilter} />
+      <ul>
+        {filteredProjects?.map((project) => (
+          <li className="project-card" key={project.id}>
+            <div className="project-logo">
+              <img src={project.link} alt={project.project_name} />
+            </div>
+            <div className="project-info">
+              <h3 className="subheader">{project.project_name}</h3>
+              <p>{project.description}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
