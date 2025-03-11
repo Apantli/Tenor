@@ -1,6 +1,5 @@
 import "~/styles/globals.css";
 
-
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
@@ -21,6 +20,7 @@ export default async function RootLayout({
     { name: "Muse", link: "/muse" },
     { name: "Project", link: "/project-info" },
     { name: "Frida", link: "/frida" },
+    { name: "Speech", link: "/speech" },
   ];
 
   return (
