@@ -1,4 +1,3 @@
-import { listLogs } from '@firebasegen/tenor-muse';
 import { METHODS, request } from 'http';
 import { z } from "zod";
 
@@ -10,7 +9,7 @@ import {
 
 export const fridaRouter = createTRPCRouter({
   generateREQ: publicProcedure.input(z.string()).query(async ({input}) => {
-    const result = await fetch('http://localhost:4000/generateREQ', 
+    const result = await fetch('http://localhost:6453/generateREQ', 
     {
       method: 'POST',
       headers: {
