@@ -17,9 +17,6 @@
   },
   "dependencies": {
     "@auth/firebase-adapter": "^2.8.0",
-    "@firebasegen/default-connector": "file:dataconnect-generated/js/default-connector",
-    "@firebasegen/my-connector": "file:dataconnect",
-    "@firebasegen/tenor-muse": "file:dataconnect-generated/js/default-connector",
     "@neurosity/pipes": "^3.0.0",
     "@remixicon/react": "^4.6.0",
     "@t3-oss/env-nextjs": "^0.10.1",
