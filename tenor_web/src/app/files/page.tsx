@@ -23,11 +23,15 @@ function FilesDisplay({ files }: { files: UploadedFile[] }) {
           {file.name}
         </a>
       ))}
+      {otherFiles.length == 0 && "You don't have any files"}
+      {imageFiles.length > 0 && (
+        <h1 className="mt-4 text-lg font-semibold">Your pictures</h1>
+      )}
       <div className="mt-4 flex flex-row gap-4">
         {imageFiles.map((file, i) => (
           <div key={i}>
             <img
-              className="w-80 border border-app-border"
+              className="h-80 w-80 border border-app-border object-cover"
               src={file.url}
               alt={file.name}
               key={i}
