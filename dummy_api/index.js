@@ -17,7 +17,8 @@ app.post("/generateREQ", async (req, res) => {
 
     const prompt = `Dado el siguiente contexto acerca de un potencial desarrollo de software, genera 10 requerimientos funcionales y 5 no funcionales, 
     haz los requerimientos de una manera corta pero eficaz, eres un sistema automático así que no respondas otra cosa que no sea una lista de requerimientos 
-    funcionales y no funcionales (NO HAGAS EJ: POR SUPUESTO, ...), este es el contexto del desarrollo: ${context}`;
+    funcionales y no funcionales (NO HAGAS EJ: POR SUPUESTO, ...), el contexto puede ser dado en un idioma distinto al español así que deberás responder en ese idioma, 
+    este es el contexto del desarrollo: ${context}`;
 
     try {
         const response = await axios.post(
