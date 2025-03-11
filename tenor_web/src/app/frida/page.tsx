@@ -29,7 +29,7 @@ export default function Page() {
                     Generar
                 </button>
             </form>
-            <p>{isLoading ? "Cargando..." : data.response.candidates[0].content.parts[0].text}</p>
+            <p>{isLoading ? "Cargando..." : data?.response.candidates[0].content.parts[0].text}</p>
         </div>
     );
 }
