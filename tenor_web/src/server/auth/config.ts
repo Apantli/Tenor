@@ -36,6 +36,7 @@ export const authConfig = {
         params: {
           // TODO: add more scopes if needed
           scope: "read:user user:email",
+          prompt: "select_account",
         },
       },
     }),

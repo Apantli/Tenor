@@ -4,6 +4,7 @@ import { MuseClient, zipSamples } from "muse-js";
 import { useMemo, useState } from "react";
 import { LineChart } from "~/lib/components/LineChart";
 import { api } from "~/trpc/react";
+import Logs from "./logs";
 const { epoch, fft, powerByBand } = require("@neurosity/pipes");
 
 type BrainwaveDataPoint = {
@@ -24,7 +25,8 @@ export default function MuseBluetooth() {
 
   const client = useMemo(() => new MuseClient(), []);
 
-  const { data: logData, isLoading } = api.logs.listLogs.useQuery();
+  const { mutate: generateLog } = api.logs.analyzeAndCreateLog.useMutation();
+  const logsUtil = api.useUtils().logs;
 
   const setupMuseConnection = async () => {
     try {
@@ -71,9 +73,14 @@ export default function MuseBluetooth() {
     client.disconnect();
   };
 
+  const createLog = () => {
+    generateLog();
+    logsUtil.invalidate();
+  };
+
   return (
     <div>
-      <h1>Muse brainwave information</h1>
+      <h1 className="text-xl font-bold">Muse brainwave information</h1>
       <LineChart
         className="h-80"
         data={data}
@@ -85,24 +92,33 @@ export default function MuseBluetooth() {
         onValueChange={() => {}}
         colors={["red", "violet", "blue", "emerald", "amber"]}
       />
-      {connectionStatus != "connected" && (
+      <div className="flex flex-row items-center gap-4">
+        {connectionStatus != "connected" && (
+          <button
+            className="rounded-md bg-app-primary p-2 text-white transition"
+            onClick={setupMuseConnection}
+          >
+            {connectionStatus == "connecting"
+              ? "Connecting..."
+              : "Connect Muse Headset"}
+          </button>
+        )}
+        {connectionStatus == "connected" && (
+          <button
+            className="rounded-md bg-app-fail p-2 text-white transition"
+            onClick={disconnect}
+          >
+            Disconnect
+          </button>
+        )}
         <button
-          className="rounded-md bg-app-primary p-2 text-white transition"
-          onClick={setupMuseConnection}
+          className="rounded-md border border-app-border p-2 text-black transition"
+          onClick={createLog}
         >
-          {connectionStatus == "connecting"
-            ? "Connecting..."
-            : "Connect Muse Headset"}
+          Analyze my emotion
         </button>
-      )}
-      {connectionStatus == "connected" && (
-        <button
-          className="rounded-md bg-app-fail p-2 text-white transition"
-          onClick={disconnect}
-        >
-          Disconnect
-        </button>
-      )}
+      </div>
+      <Logs />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import { ZodError } from "zod";
 
 import { auth } from "~/server/auth";
 import { db } from "~/utils/firebase";
+import { supabase } from '~/utils/supabase';
 
 /**
  * 1. CONTEXT
@@ -31,6 +32,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   return {
     session,
     firestore: db,
+    supabase,
     ...opts,
   };
 };
