@@ -15,9 +15,8 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   const tabs = [
-    { name: "Main", link: "/" },
+    { name: "Projects", link: "/" },
     { name: "Muse", link: "/muse" },
-    { name: "Project", link: "/project-info" },
     { name: "Frida", link: "/frida" },
     { name: "Speech", link: "/speech" },
   ];
