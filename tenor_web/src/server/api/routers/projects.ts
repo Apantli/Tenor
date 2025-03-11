@@ -100,6 +100,6 @@ export const projectsRouter = createTRPCRouter({
 
     console.log(userEmail);
 
-    return await fetchUserProjects(userEmail, ctx.db);
+    return await fetchUserProjects(userEmail, ctx.firestore);
   })
 });
