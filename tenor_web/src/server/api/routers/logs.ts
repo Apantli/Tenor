@@ -1,4 +1,3 @@
-import { listLogs } from '@firebasegen/tenor-muse';
 import { z } from "zod";
 
 import {
@@ -9,7 +8,7 @@ import {
 
 export const logsRouter = createTRPCRouter({
   listLogs: publicProcedure.query(async () => {
-    const result = await listLogs();
+    const result = {data: []};
     return result.data;
   })
 });
