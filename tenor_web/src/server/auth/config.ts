@@ -2,6 +2,8 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
 import { firestore } from "~/utils/auth-adapter";
 import GitHub from "next-auth/providers/github";
+
+import { getEmails } from "~/lib/github";
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -29,6 +31,30 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
+  callbacks: {
+    async signIn({ profile, account, user }) {
+      const allowedDomain = "tec.mx";
+
+      // Check if primary email has the allowed domain
+      if (profile?.email?.endsWith(`@${allowedDomain}`)) {
+        return true;
+      }
+
+      // Check if any verified email has the allowed domain
+      if (account?.access_token?.toString()) {
+        const associatedEmails = await getEmails(account?.access_token);
+
+        for (const email of associatedEmails) {
+          if (email.verified && email.email.endsWith(`@${allowedDomain}`)) {
+            user.email = email.email; // Save tec email
+            return true;
+          }
+        }
+      }
+
+      return false;
+    },
+  },
   providers: [
     GitHub({
       authorization: {
