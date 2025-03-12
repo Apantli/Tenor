@@ -21,6 +21,7 @@ export default function Page() {
       <h1 className="text-2xl font-bold text-app-text">
         FRIDA - Requirement Generator
       </h1>
+      <br />
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -36,10 +37,11 @@ export default function Page() {
           Generate
         </button>
       </form>
+      <br></br>
       <p>
         {isLoading
           ? "Loading..."
-          : data?.response.candidates[0].content.parts[0].text}
+          : data?.data}
       </p>
     </div>
   );
