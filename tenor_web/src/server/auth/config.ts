@@ -65,6 +65,8 @@ export const authConfig = {
           prompt: "select_account",
         },
       },
+      // Handle email override in callback. Safe to add as github verifies emails.
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   adapter: FirestoreAdapter(firestore),
