@@ -27,6 +27,7 @@ jobs:
           AUTH_FIREBASE_PRIVATE_KEY: ${{ secrets.AUTH_FIREBASE_PRIVATE_KEY }}
           # VARS_CONTEXT: ${{ toJson(vars) }}
         run: |
+          echo $AUTH_FIREBASE_PRIVATE_KEY
           # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#setting-an-environment-variable
           # https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
           EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
