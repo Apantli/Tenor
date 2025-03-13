@@ -3,10 +3,10 @@ import {
   getDocs,
   query,
   where,
-  DocumentReference,
+  type DocumentReference,
   getDoc,
   doc,
-  Firestore,
+  type Firestore,
 } from "firebase/firestore";
 import { z } from "zod";
 

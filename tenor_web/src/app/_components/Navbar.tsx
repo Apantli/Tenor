@@ -1,6 +1,6 @@
 import Image from "next/image";
 import WhiteLogo from "../_images/white_logo.png";
-import NavbarMenu, { NavbarMenuProps } from "./NavbarMenu";
+import NavbarMenu, { type NavbarMenuProps } from "./NavbarMenu";
 import { auth } from "~/server/auth";
 import Link from "next/link";
 

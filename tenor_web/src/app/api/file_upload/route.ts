@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
 import { storage, db } from '../../../utils/firebase';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth } from '~/server/auth';

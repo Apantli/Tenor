@@ -17,11 +17,11 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { AxisDomain } from "recharts/types/util/types";
+import { type AxisDomain } from "recharts/types/util/types";
 
 import {
   AvailableChartColors,
-  AvailableChartColorsKeys,
+  type AvailableChartColorsKeys,
   constructCategoryColors,
   getColorClassName,
   getYAxisDomain,
@@ -102,14 +102,14 @@ const ScrollButton = ({ icon, onClick, disabled }: ScrollButtonProps) => {
         onClick?.();
       }, 300);
     } else {
-      clearInterval(intervalRef.current as NodeJS.Timeout);
+      clearInterval(intervalRef.current!);
     }
-    return () => clearInterval(intervalRef.current as NodeJS.Timeout);
+    return () => clearInterval(intervalRef.current!);
   }, [isPressed, onClick]);
 
   React.useEffect(() => {
     if (disabled) {
-      clearInterval(intervalRef.current as NodeJS.Timeout);
+      clearInterval(intervalRef.current!);
       setIsPressed(false);
     }
   }, [disabled]);
@@ -220,9 +220,9 @@ const Legend = React.forwardRef<HTMLOListElement, LegendProps>((props, ref) => {
         keyDownHandler(isKeyDowned);
       }, 300);
     } else {
-      clearInterval(intervalRef.current as NodeJS.Timeout);
+      clearInterval(intervalRef.current!);
     }
-    return () => clearInterval(intervalRef.current as NodeJS.Timeout);
+    return () => clearInterval(intervalRef.current!);
   }, [isKeyDowned, scrollToTest]);
 
   const keyDown = (e: KeyboardEvent) => {
@@ -273,7 +273,7 @@ const Legend = React.forwardRef<HTMLOListElement, LegendProps>((props, ref) => {
           <LegendItem
             key={`item-${index}`}
             name={category}
-            color={colors[index] as AvailableChartColorsKeys}
+            color={colors[index]!}
             onClick={onClickLegendItem}
             activeLegend={activeLegend}
           />
@@ -709,7 +709,7 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
                       index: item.payload[index],
                       color: categoryColors.get(
                         item.dataKey,
-                      ) as AvailableChartColorsKeys,
+                      )!,
                       type: item.type,
                       payload: item.payload,
                     }))
@@ -769,7 +769,7 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
               <Line
                 className={cx(
                   getColorClassName(
-                    categoryColors.get(category) as AvailableChartColorsKeys,
+                    categoryColors.get(category)!,
                     "stroke",
                   ),
                 )}
@@ -796,7 +796,7 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
                         getColorClassName(
                           categoryColors.get(
                             dataKey,
-                          ) as AvailableChartColorsKeys,
+                          )!,
                           "fill",
                         ),
                       )}
@@ -850,7 +850,7 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
                           getColorClassName(
                             categoryColors.get(
                               dataKey,
-                            ) as AvailableChartColorsKeys,
+                            )!,
                             "fill",
                           ),
                         )}
