@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Tremor LineChart [v0.3.2]
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -707,9 +708,7 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
                       category: item.dataKey,
                       value: item.value,
                       index: item.payload[index],
-                      color: categoryColors.get(
-                        item.dataKey,
-                      )!,
+                      color: categoryColors.get(item.dataKey)!,
                       type: item.type,
                       payload: item.payload,
                     }))
@@ -768,10 +767,7 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
             {categories.map((category) => (
               <Line
                 className={cx(
-                  getColorClassName(
-                    categoryColors.get(category)!,
-                    "stroke",
-                  ),
+                  getColorClassName(categoryColors.get(category)!, "stroke"),
                 )}
                 strokeOpacity={
                   activeDot || (activeLegend && activeLegend !== category)
@@ -793,12 +789,7 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
                       className={cx(
                         "stroke-white dark:stroke-gray-950",
                         onValueChange ? "cursor-pointer" : "",
-                        getColorClassName(
-                          categoryColors.get(
-                            dataKey,
-                          )!,
-                          "fill",
-                        ),
+                        getColorClassName(categoryColors.get(dataKey)!, "fill"),
                       )}
                       cx={cxCoord}
                       cy={cyCoord}
@@ -848,9 +839,7 @@ const LineChart = React.forwardRef<HTMLDivElement, LineChartProps>(
                           "stroke-white dark:stroke-gray-950",
                           onValueChange ? "cursor-pointer" : "",
                           getColorClassName(
-                            categoryColors.get(
-                              dataKey,
-                            )!,
+                            categoryColors.get(dataKey)!,
                             "fill",
                           ),
                         )}

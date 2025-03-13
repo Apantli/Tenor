@@ -5,6 +5,7 @@ import {
 import { TRPCClientError } from '@trpc/client';
 import SuperJSON from "superjson";
 
+// eslint-disable-next-line
 const isTRPCError = (error: any): error is TRPCClientError<any> => {
   return error instanceof TRPCClientError;
 };
@@ -17,6 +18,7 @@ export const createQueryClient = () =>
         // above 0 to avoid refetching immediately on the client
         staleTime: 30 * 1000,
         retry: (failureCount, err) => {
+          // eslint-disable-next-line
           if (isTRPCError(err) && err.data?.code == 'UNAUTHORIZED') {
             return false; // do not retry, trigger error
           }

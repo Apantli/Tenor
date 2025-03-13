@@ -2,9 +2,15 @@ import { z } from "zod";
 
 import {
   createTRPCRouter,
-  protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
+
+interface APIResponse {
+  success: boolean,
+  data: string,
+  message: string,
+  error: unknown,
+}
 
 export const fridaRouter = createTRPCRouter({
   generateREQ: publicProcedure.input(z.string()).query(async ({input}) => {
@@ -21,6 +27,6 @@ export const fridaRouter = createTRPCRouter({
         }
       }),
     });
-    return await result.json();
+    return await result.json() as APIResponse;
   })
 });

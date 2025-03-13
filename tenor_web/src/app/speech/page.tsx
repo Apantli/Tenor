@@ -23,8 +23,7 @@ export default function SpeechApp() {
   // Initialize SpeechRecognition
   if (typeof window !== "undefined") {
     const SpeechRecognitionAPI =
-      (window as any).SpeechRecognition ||
-      (window as any).webkitSpeechRecognition;
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (SpeechRecognitionAPI && !recognition.current) {
       recognition.current = new SpeechRecognitionAPI();

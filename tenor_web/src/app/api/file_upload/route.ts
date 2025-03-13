@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { storage, db } from '../../../utils/firebase';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { auth } from '~/server/auth';
-import { arrayUnion, collection, doc, getDoc, updateDoc } from 'firebase/firestore';
+import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
 
 export async function POST(req: NextRequest) {
 

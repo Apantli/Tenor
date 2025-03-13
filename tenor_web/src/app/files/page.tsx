@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { FormEventHandler, useState } from "react";
+import { useState } from "react";
 import { api } from "~/trpc/react";
 
 interface UploadedFile {
@@ -67,15 +66,13 @@ export default function FilePage() {
     formData.append("file", file);
 
     try {
-      const res = await fetch("/api/file_upload", {
+      await fetch("/api/file_upload", {
         method: "POST",
         body: formData,
       });
 
-      const data = await res.json();
-      refetch();
-      console.log(data);
       setFile(null);
+      await refetch();
     } catch (error) {
       console.error(error);
     } finally {

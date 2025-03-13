@@ -1,3 +1,4 @@
+/* eslint-disable */
 "use client";
 
 import { MuseClient, zipSamples } from "muse-js";

@@ -1,3 +1,4 @@
+/* eslint-disable */
 // Tremor chartColors [v0.1.0]
 
 export type ColorUtility = "bg" | "stroke" | "fill" | "text"

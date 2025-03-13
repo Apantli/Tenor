@@ -38,11 +38,7 @@ export default function Page() {
         </button>
       </form>
       <br></br>
-      <p>
-        {isLoading
-          ? "Loading..."
-          : data?.data}
-      </p>
+      <p>{isLoading ? "Loading..." : data?.data}</p>
     </div>
   );
 }
