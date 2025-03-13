@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { env } from "~/env";
 
 import {
   createTRPCRouter,
@@ -25,7 +26,7 @@ export const logsRouter = createTRPCRouter({
   }),
 
   analyzeAndCreateLog: protectedProcedure.mutation(async ({ctx}) => {
-    const analysisResult = await fetch("http://127.0.0.1:5001/tenor-1272a/us-central1/analyze_emotion").then(r => r.json()) as AnalysisResult;
+    const analysisResult = await fetch(`http://${env.FIREBASE_EMULATOR_IP}:5001/tenor-1272a/us-central1/analyze_emotion`).then(r => r.json()) as AnalysisResult;
 
     const insertResult = await ctx.supabase.rpc("create_user_log", {userid: ctx.session?.user.id, emotion: analysisResult.emotion, created_at: new Date(analysisResult.timestamp).toISOString()})
 

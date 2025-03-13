@@ -24,7 +24,7 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 
 if (env.FIREBASE_STORAGE_EMULATOR === "true") {
-  connectStorageEmulator(storage, "127.0.0.1", 9199);
+  connectStorageEmulator(storage, env.FIREBASE_EMULATOR_IP, 9199);
 }
 
 export { db, app, storage };
