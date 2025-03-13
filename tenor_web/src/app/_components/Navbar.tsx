@@ -1,5 +1,3 @@
-import Image from "next/image";
-import WhiteLogo from "../_images/white_logo.png";
 import NavbarMenu, { type NavbarMenuProps } from "./NavbarMenu";
 import { auth } from "~/server/auth";
 import Link from "next/link";
@@ -10,7 +8,7 @@ export default async function Navbar({ tabs }: NavbarMenuProps) {
   return (
     <nav className="flex h-16 items-center justify-between bg-app-primary px-4">
       <div className="flex items-center">
-        <Image src={WhiteLogo} alt="Tenor Logo" className="h-7 w-auto" />
+        <img src={"/white_logo.png"} alt="Tenor Logo" className="h-7 w-auto" />
         <NavbarMenu tabs={tabs} />
       </div>
       <div className="flex items-center gap-4">
