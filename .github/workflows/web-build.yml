@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: "npm"
+          cache-dependency-path: ./tenor_web/package-lock.json
       - name: Expose github environment as shell variables
         env:
           SECRETS_CONTEXT: ${{ toJson(secrets) }}
@@ -31,6 +32,11 @@ jobs:
           to_envs() { jq -r "to_entries[] | \"\(.key)<<$EOF\n\(.value)\n$EOF\n\""; }
           # echo "$VARS_CONTEXT" | to_envs >> $GITHUB_ENV
           echo "$SECRETS_CONTEXT" | to_envs >> $GITHUB_ENV
-      - run: ls
-      - run: npm -install --prefix ./tenor_web
-      - run: npm run build --prefix ./tenor_web
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./tenor_web
+
+      - name: Build project
+        run: npm run build
+        working-directory: ./tenor_web
