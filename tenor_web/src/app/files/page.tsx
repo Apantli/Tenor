@@ -11,8 +11,10 @@ interface UploadedFile {
 // FIXME: first image sent will not work due to ngrok. You can change it by using ngrok-skip-browser-warning as a header
 function FilesDisplay({ files }: { files: UploadedFile[] }) {
   const imagePredicate = (file: UploadedFile) =>
-    file.name.endsWith(".png") || file.name.endsWith(".jpg") || file.name.endsWith(".jpeg");
-  
+    file.name.endsWith(".png") ||
+    file.name.endsWith(".jpg") ||
+    file.name.endsWith(".jpeg");
+
   const safePrefix: string = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_HTTPS!;
 
   const replaceUrl = (url: string) => {
@@ -43,7 +45,7 @@ function FilesDisplay({ files }: { files: UploadedFile[] }) {
           <div key={i}>
             <img
               className="h-80 w-80 border border-app-border object-cover"
-              src={file.url}
+              src={`/api/image_proxy?url=${encodeURIComponent(file.url)}`}
               alt={file.name}
               key={i}
             />
