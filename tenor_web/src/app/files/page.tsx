@@ -8,12 +8,24 @@ interface UploadedFile {
   name: string;
 }
 
+// FIXME: first image sent will not work due to ngrok. You can change it by using ngrok-skip-browser-warning as a header
 function FilesDisplay({ files }: { files: UploadedFile[] }) {
   const imagePredicate = (file: UploadedFile) =>
-    file.name.endsWith(".png") || file.name.endsWith(".jpg");
+    file.name.endsWith(".png") || file.name.endsWith(".jpg") || file.name.endsWith(".jpeg");
+  
+  const safePrefix: string = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_HTTPS!;
 
-  const imageFiles = files.filter(imagePredicate);
-  const otherFiles = files.filter((file) => !imagePredicate(file));
+  const replaceUrl = (url: string) => {
+    return url.replace(/^(?:https?:\/\/)?[\d.]+:\d+/, safePrefix);
+  };
+
+  const processedFiles = files.map((file) => ({
+    ...file,
+    url: replaceUrl(file.url),
+  }));
+
+  const imageFiles = processedFiles.filter(imagePredicate);
+  const otherFiles = processedFiles.filter((file) => !imagePredicate(file));
 
   return (
     <div>
@@ -22,7 +34,7 @@ function FilesDisplay({ files }: { files: UploadedFile[] }) {
           {file.name}
         </a>
       ))}
-      {otherFiles.length == 0 && "You don't have any files"}
+      {otherFiles.length === 0 && "You don't have any files"}
       {imageFiles.length > 0 && (
         <h1 className="mt-4 text-lg font-semibold">Your pictures</h1>
       )}
