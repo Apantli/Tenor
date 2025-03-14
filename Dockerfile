@@ -34,7 +34,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
 RUN npm i -g firebase-tools@$FIREBASE_VERSION
 
 # Definir directorio de trabajo
-# WORKDIR /srv/firebase
+WORKDIR /srv/firebase
 
 # Copiar archivos de configuración de Firebase
 COPY firebase.json .
@@ -44,8 +44,10 @@ COPY firestore.indexes.json .
 
 # Copiar código de funciones y script de inicio
 COPY ./functions ./functions
-COPY serve.sh /usr/bin/
+COPY firebase_docker/serve.sh /usr/bin/
 COPY functions/requirements.txt .
+
+RUN mkdir -p /srv/firebase/functions
 
 WORKDIR /functions
 RUN python3.12 -m venv venv
