@@ -5,20 +5,6 @@
 import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
-const config = {
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value: "upgrade-insecure-requests",
-          },
-        ],
-      },
-    ];
-  },
-};
+const config = {};
 
 export default config;
