@@ -8,7 +8,6 @@ interface UploadedFile {
   name: string;
 }
 
-// FIXME: first image sent will not work due to ngrok. You can change it by using ngrok-skip-browser-warning as a header
 function FilesDisplay({ files }: { files: UploadedFile[] }) {
   const imagePredicate = (file: UploadedFile) =>
     file.name.endsWith(".png") ||
