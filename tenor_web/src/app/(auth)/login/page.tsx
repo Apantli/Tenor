@@ -1,8 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import SignIn from "~/app/_components/auth/SignIn";
 import SignInGithub from "~/app/_components/auth/SignInGithub";
 
 export default function LoginPage() {
+  const [mainError, setMainError] = useState("");
+
   return (
     <div className="mx-auto flex h-screen max-w-[300px] flex-col items-center justify-center gap-4">
       <img
@@ -12,13 +17,14 @@ export default function LoginPage() {
       />
       <h1 className="text-xl font-semibold text-app-text">Sign in to Tenor</h1>
       <div className="flex w-full flex-col gap-4">
-        <SignInGithub />
+        <SignInGithub setMainError={setMainError} />
         <div className="flex items-center gap-5">
           <div className="h-[1px] w-full border-t border-app-border"></div>
           <span className="text-app-border">or</span>
           <div className="h-[1px] w-full border-t border-app-border"></div>
         </div>
-        <SignIn />
+        <SignIn setMainError={setMainError} />
+        {mainError && <p className="text-app-fail">{mainError}</p>}
       </div>
       <div className="flex w-full flex-col">
         <Link href="/register" className="w-full text-right text-app-primary">

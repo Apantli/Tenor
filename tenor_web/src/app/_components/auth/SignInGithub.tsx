@@ -1,7 +1,11 @@
 "use client";
 
 import { auth } from "~/utils/firebaseClient";
-import { signInWithPopup, GithubAuthProvider } from "firebase/auth";
+import {
+  signInWithPopup,
+  GithubAuthProvider,
+  OAuthCredential,
+} from "firebase/auth";
 import SecondaryButton from "../SecondaryButton";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
@@ -15,6 +19,7 @@ export default function SignInGithub() {
 
   const handleSignIn = async () => {
     const provider = new GithubAuthProvider();
+    provider.addScope("user:email");
     provider.setCustomParameters({
       prompt: "select_account",
     });
