@@ -68,7 +68,7 @@ export default function SignUp() {
       await updateProfile(user, { displayName: form.name });
       const token = await user.getIdToken();
       login({ token });
-    } catch (err: any) {
+    } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
         console.log(err.code);
         switch (err.code) {
