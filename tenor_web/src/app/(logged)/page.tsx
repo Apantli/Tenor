@@ -2,7 +2,7 @@
 
 import { api } from "~/trpc/react";
 import { useState, useEffect } from "react";
-import { FilterSearch } from "./_components/FilterSearch";
+import { FilterSearch } from "../_components/FilterSearch";
 
 export default function ProjectPage() {
   return (

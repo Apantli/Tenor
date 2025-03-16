@@ -1,11 +1,6 @@
-import { TRPCError } from '@trpc/server';
-import { doc, getDoc } from 'firebase/firestore';
-import { z } from "zod";
-
 import {
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
 } from "~/server/api/trpc";
 
 interface UserWithFiles {
@@ -17,8 +12,8 @@ interface UserWithFiles {
 
 export const filesRouter = createTRPCRouter({
   getUserFiles: protectedProcedure.query(async ({ctx}) => {
-    const docRef = doc(ctx.firestore, "users", ctx.session.user.id);
-    const userDoc = await getDoc(docRef);
+    const docRef = ctx.firestore.collection("users").doc(ctx.session.user.uid);
+    const userDoc = await docRef.get();
 
     const user = userDoc.data() as UserWithFiles;
     return user.files ?? [];

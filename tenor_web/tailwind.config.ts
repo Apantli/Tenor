@@ -18,6 +18,9 @@ export default {
         "app-fail": "#EA2B4E",
         "app-text": "#1F2329",
         "app-border": "#BECAD4",
+
+        "app-hover-border": "#e8e8e8",
+        "app-hover-primary": "#07585e"
       }
     },
   },

@@ -26,8 +26,12 @@ export default function MuseBluetooth() {
 
   const client = useMemo(() => new MuseClient(), []);
 
-  const { mutate: generateLog } = api.logs.analyzeAndCreateLog.useMutation();
   const logsUtil = api.useUtils().logs;
+  const { mutate: generateLog } = api.logs.analyzeAndCreateLog.useMutation({
+    onSuccess() {
+      logsUtil.invalidate();
+    },
+  });
 
   const setupMuseConnection = async () => {
     try {
@@ -76,7 +80,6 @@ export default function MuseBluetooth() {
 
   const createLog = () => {
     generateLog();
-    logsUtil.invalidate();
   };
 
   return (
