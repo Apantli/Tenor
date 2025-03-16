@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import PrimaryButton from "../PrimaryButton";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -8,7 +8,11 @@ import { auth } from "~/utils/firebaseClient";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 
-export default function SignIn() {
+interface Props {
+  setMainError: Dispatch<SetStateAction<string>>;
+}
+
+export default function SignIn({ setMainError }: Props) {
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -16,25 +20,28 @@ export default function SignIn() {
     password: "",
   });
   const [error, setError] = useState({
-    main: "",
     email: "",
     password: "",
   });
   const [loading, setLoading] = useState(false);
   const { mutate: login } = api.auth.login.useMutation({
-    onSuccess() {
-      router.push("/");
+    onSuccess(res) {
+      if (res.success) {
+        router.push("/");
+      } else if (res.error === "UNAUTHORIZED_DOMAIN") {
+        setError({ ...error, email: "Email domain must be @tec.mx" });
+      }
     },
   });
 
   const handleInput: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError({ ...error, main: "", [e.target.name]: "" });
+    setError({ ...error, [e.target.name]: "" });
+    setMainError("");
   };
 
   const handleSignIn = async () => {
     const newError = {
-      main: "",
       email: "",
       password: "",
     };
@@ -69,17 +76,14 @@ export default function SignIn() {
             setError({ ...newError, email: "Enter a valid email" });
             break;
           case "auth/invalid-credential":
-            setError({ ...newError, main: "Incorrect email or password" });
+            setMainError("Incorrect email or password");
             break;
           default:
-            setError({
-              ...newError,
-              main: "Unexpected error. Please try again.",
-            });
+            setMainError("Unexpected error. Please try again.");
             break;
         }
       } else {
-        setError({ ...newError, main: "Unexpected error. Please try again." });
+        setMainError("Unexpected error. Please try again.");
       }
     }
     setLoading(false);
@@ -108,7 +112,6 @@ export default function SignIn() {
       <PrimaryButton loading={loading} onClick={handleSignIn}>
         Sign in
       </PrimaryButton>
-      {error.main && <p className="text-app-fail">{error.main}</p>}
     </div>
   );
 }

@@ -1,28 +1,49 @@
 "use client";
 
 import { auth } from "~/utils/firebaseClient";
-import { signInWithPopup, GithubAuthProvider } from "firebase/auth";
+import {
+  signInWithPopup,
+  GithubAuthProvider,
+  OAuthCredential,
+} from "firebase/auth";
 import SecondaryButton from "../SecondaryButton";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import { Dispatch, SetStateAction } from "react";
 
-export default function SignInGithub() {
+interface Props {
+  setMainError: Dispatch<SetStateAction<string>>;
+}
+
+export default function SignInGithub({ setMainError }: Props) {
   const router = useRouter();
   const { mutate: login } = api.auth.login.useMutation({
-    onSuccess() {
-      router.push("/");
+    onSuccess(res) {
+      if (res.success) {
+        router.push("/");
+      } else if (res.error === "UNAUTHORIZED_DOMAIN") {
+        setMainError("Email domain must be @tec.mx");
+      }
     },
   });
 
   const handleSignIn = async () => {
     const provider = new GithubAuthProvider();
+    provider.addScope("user:email");
     provider.setCustomParameters({
       prompt: "select_account",
     });
     try {
       const credential = await signInWithPopup(auth, provider);
       const token = await credential.user.getIdToken();
-      login({ token });
+      const githubCredential =
+        GithubAuthProvider.credentialFromResult(credential);
+      const githubAccessToken = githubCredential?.accessToken;
+
+      login({
+        token,
+        githubAccessToken,
+      });
     } catch (error) {
       console.error("Sign-in error", error);
     }
