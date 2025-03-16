@@ -11,7 +11,7 @@ import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
 
-export default function SignInGithub() {
+export default function SignInGithub({ setMainError }: Props) {
   const router = useRouter();
   const { mutateAsync: login } = api.auth.login.useMutation();
 
