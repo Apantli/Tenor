@@ -1,9 +1,9 @@
-import { postRouter } from "~/server/api/routers/post";
 import { logsRouter } from "~/server/api/routers/logs";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { projectsRouter } from './routers/projects';
 import { fridaRouter } from "./routers/frida";
 import { filesRouter } from "./routers/files";
+import { authRouter } from './routers/auth';
 
 /**
  * This is the primary router for your server.
@@ -11,7 +11,7 @@ import { filesRouter } from "./routers/files";
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  post: postRouter,
+  auth: authRouter,
   logs: logsRouter,
   projects: projectsRouter,
   frida: fridaRouter,

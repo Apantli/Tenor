@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { storage, db } from '../../../utils/firebase';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { storageAdmin, dbAdmin } from "~/utils/firebaseAdmin";
 import { auth } from '~/server/auth';
-import { arrayUnion, doc, updateDoc } from 'firebase/firestore';
+import { FieldValue } from 'firebase-admin/firestore'; // Import FieldValue
+import { env } from '~/env';
 
 export async function POST(req: NextRequest) {
 
@@ -21,16 +21,22 @@ export async function POST(req: NextRequest) {
     }
 
     const bytes = await file.arrayBuffer();
-    const fileRef = ref(storage, `uploads/${file.name}`);
-    await uploadBytes(fileRef, new Uint8Array(bytes));
-    const downloadURL = await getDownloadURL(fileRef);
+    const bucket = storageAdmin.bucket(env.FIREBASE_STORAGE_BUCKET);
+    const fileRef = bucket.file(`uploads/${file.name}`);
 
-    const docRef = doc(db, "users", session.user.id);
-    await updateDoc(docRef, {
-      files: arrayUnion({url: downloadURL, name: file.name})
+    await fileRef.save(Buffer.from(bytes));
+
+    const [url] = await fileRef.getSignedUrl({
+      action: "read",
+      expires: "03-09-2491", // Set an extremely long expiration date
     });
 
-    return NextResponse.json({url: downloadURL}, {status: 200});
+    const docRef = dbAdmin.collection("users").doc(session.uid);
+    await docRef.update({
+      files: FieldValue.arrayUnion({url, name: file.name})
+    });
+
+    return NextResponse.json({url}, {status: 200});
   } catch (error) {
     console.error("Error uploading: ", error);
     return NextResponse.json({message: "Upload Failed", error}, {status: 500});

@@ -13,16 +13,14 @@ export const env = createEnv({
         : z.string().optional(),
     AUTH_GITHUB_ID: z.string(),
     AUTH_GITHUB_SECRET: z.string(),
-    AUTH_FIREBASE_PROJECT_ID: z.string(),
     AUTH_FIREBASE_CLIENT_EMAIL: z.string(),
     AUTH_FIREBASE_PRIVATE_KEY: z.string(),
-    FIREBASE_API_KEY: z.string(),
-    FIREBASE_AUTH_DOMAIN: z.string(),
+    FIREBASE_SERVICE_ACCOUNT_KEY: z.string(),
     FIREBASE_STORAGE_BUCKET: z.string(),
     FIREBASE_MESSAGING_SENDER_ID: z.string(),
-    FIREBASE_APP_ID: z.string(),
     FIREBASE_MEASUREMENT_ID: z.string(),
     FIREBASE_STORAGE_EMULATOR: z.string(),
+    FIREBASE_STORAGE_EMULATOR_HOST: z.string(),
     FIREBASE_EMULATOR_IP: z.string(),
     SUPABASE_URL: z.string(),
     SUPABASE_PROJECT_ID: z.string(),
@@ -38,7 +36,10 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_FIREBASE_API_KEY: z.string(),
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string(),
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string(),
+    NEXT_PUBLIC_FIREBASE_APP_ID: z.string(),
   },
 
   /**
@@ -51,14 +52,18 @@ export const env = createEnv({
     AUTH_GITHUB_SECRET: process.env.AUTH_GITHUB_SECRET,
     AUTH_FIREBASE_CLIENT_EMAIL: process.env.AUTH_FIREBASE_CLIENT_EMAIL,
     AUTH_FIREBASE_PRIVATE_KEY: process.env.AUTH_FIREBASE_PRIVATE_KEY,
-    AUTH_FIREBASE_PROJECT_ID: process.env.AUTH_FIREBASE_PROJECT_ID,
-    FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
-    FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
+    FIREBASE_SERVICE_ACCOUNT_KEY: process.env.FIREBASE_SERVICE_ACCOUNT_KEY,
     FIREBASE_STORAGE_BUCKET: process.env.FIREBASE_STORAGE_BUCKET,
     FIREBASE_MESSAGING_SENDER_ID: process.env.FIREBASE_MESSAGING_SENDER_ID,
-    FIREBASE_APP_ID: process.env.FIREBASE_APP_ID,
+    NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:
+      process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID:
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
     FIREBASE_STORAGE_EMULATOR: process.env.FIREBASE_STORAGE_EMULATOR,
+    FIREBASE_STORAGE_EMULATOR_HOST: process.env.FIREBASE_STORAGE_EMULATOR_HOST, // must be called exactly this because it is used internally by firebase to connect to the emulator
     FIREBASE_EMULATOR_IP: process.env.FIREBASE_EMULATOR_IP,
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_PROJECT_ID: process.env.SUPABASE_PROJECT_ID,

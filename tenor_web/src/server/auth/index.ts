@@ -1,10 +1,23 @@
-import NextAuth from "next-auth";
-import { cache } from "react";
+import { cookies } from 'next/headers';
+import { firebaseAdmin } from '~/utils/firebaseAdmin';
+import {cache} from "react";
 
-import { authConfig } from "./config";
+export async function uncachedAuth() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value; // Replace 'token' with your cookie name
 
-const { auth: uncachedAuth, handlers, signIn, signOut } = NextAuth(authConfig);
+  if (!token) {
+    return null;
+  }
 
-const auth = cache(uncachedAuth);
+  try {
+    const decodedToken = await firebaseAdmin.auth().verifyIdToken(token);
+    const user = await firebaseAdmin.auth().getUser(decodedToken.uid);
+    return user;
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    return null;
+  }
+}
 
-export { auth, handlers, signIn, signOut };
+export const auth = cache(uncachedAuth);
