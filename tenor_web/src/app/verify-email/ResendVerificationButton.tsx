@@ -11,13 +11,12 @@ export default function ResendVerificationButton() {
   const router = useRouter();
 
   const { user, loading } = useFirebaseAuth();
-  const { mutate: checkVerification } = api.auth.checkVerification.useMutation({
-    onSuccess(res) {
-      if (res.verified) {
-        router.push("/");
-      }
+  const { data: verificationResult } = api.auth.checkVerification.useQuery(
+    undefined,
+    {
+      refetchInterval: 10000,
     },
-  });
+  );
   const { mutate: logout } = api.auth.logout.useMutation({
     onSuccess(res) {
       if (res.success) {
@@ -26,19 +25,17 @@ export default function ResendVerificationButton() {
     },
   });
 
+  useEffect(() => {
+    if (verificationResult?.verified) {
+      router.push("/");
+    }
+  }, [verificationResult]);
+
   const sendEmail = async () => {
     if (!user) return;
 
     await sendEmailVerification(user);
   };
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkVerification();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     if (user) {

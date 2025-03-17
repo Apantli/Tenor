@@ -100,7 +100,7 @@ export const authRouter = createTRPCRouter({
     return { success: true };
   }),
 
-  checkVerification: publicProcedure.mutation(async ({ ctx }) => {
+  checkVerification: publicProcedure.query(async ({ ctx }) => {
     const session = await auth();
     if (!session) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
