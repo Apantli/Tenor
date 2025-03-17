@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import PrimaryButton from "../PrimaryButton";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
@@ -8,7 +8,11 @@ import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 
-export default function SignUp() {
+interface Props {
+  setMainError: Dispatch<SetStateAction<string>>;
+}
+
+export default function SignUp({ setMainError }: Props) {
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -17,7 +21,6 @@ export default function SignUp() {
     password: "",
   });
   const [error, setError] = useState({
-    main: "",
     name: "",
     email: "",
     password: "",
@@ -25,8 +28,12 @@ export default function SignUp() {
   const [loading, setLoading] = useState(false);
 
   const { mutate: login } = api.auth.login.useMutation({
-    onSuccess() {
-      router.push("/");
+    onSuccess(res) {
+      if (res.success) {
+        router.push("/");
+      } else if (res.error === "UNAUTHORIZED_DOMAIN") {
+        setError({ ...error, email: "Email domain must be @tec.mx" });
+      }
     },
   });
 
@@ -85,14 +92,11 @@ export default function SignUp() {
             setError({ ...newError, email: "This email is already in use" });
             break;
           default:
-            setError({
-              ...newError,
-              main: "Unexpected error. Please try again.",
-            });
+            setMainError("Unexpected error. Please try again.");
             break;
         }
       } else {
-        setError({ ...newError, main: "Unexpected error. Please try again." });
+        setMainError("Unexpected error. Please try again.");
       }
     }
     setLoading(false);
@@ -100,7 +104,8 @@ export default function SignUp() {
 
   const handleInput: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    setError({ ...error, main: "", [e.target.name]: "" });
+    setError({ ...error, [e.target.name]: "" });
+    setMainError("");
   };
 
   return (
@@ -135,7 +140,6 @@ export default function SignUp() {
       <PrimaryButton onClick={handleSignUp} loading={loading}>
         Create account
       </PrimaryButton>
-      {error.main && <p className="text-app-fail">{error.main}</p>}
     </div>
   );
 }

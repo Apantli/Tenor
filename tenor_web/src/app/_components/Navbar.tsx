@@ -12,7 +12,7 @@ export default async function Navbar({ tabs }: NavbarMenuProps) {
         <NavbarMenu tabs={tabs} />
       </div>
       <div className="flex items-center gap-4">
-        <p className="text-white">{session?.displayName ?? "Signed out"}</p>
+        <p className="text-white">{session?.displayName}</p>
         <LogoutButton />
       </div>
     </nav>
