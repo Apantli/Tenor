@@ -26,10 +26,10 @@ export default function ResendVerificationButton() {
     },
   });
 
-  const sendEmail = () => {
+  const sendEmail = async () => {
     if (!user) return;
 
-    sendEmailVerification(user);
+    await sendEmailVerification(user);
   };
 
   useEffect(() => {
@@ -49,7 +49,7 @@ export default function ResendVerificationButton() {
   return (
     <div className="flex flex-col gap-8">
       <span className="flex gap-2">
-        Didn't receive an email?
+        Didn&apos;t receive an email?
         <button
           className="text-app-primary"
           onClick={sendEmail}
