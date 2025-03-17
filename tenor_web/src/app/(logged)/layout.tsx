@@ -11,6 +11,8 @@ export default async function RootLayout({
 
   if (!session) {
     redirect("/login");
+  } else if (!session.emailVerified) {
+    redirect("/verify-email");
   }
 
   const tabs = [

@@ -1,6 +1,6 @@
-import { cookies } from 'next/headers';
-import { firebaseAdmin } from '~/utils/firebaseAdmin';
-import {cache} from "react";
+import { cookies } from "next/headers";
+import { firebaseAdmin } from "~/utils/firebaseAdmin";
+import { cache } from "react";
 
 export async function uncachedAuth() {
   const cookieStore = await cookies();

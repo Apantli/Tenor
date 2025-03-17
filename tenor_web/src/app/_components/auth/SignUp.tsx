@@ -3,7 +3,11 @@
 import React, { Dispatch, SetStateAction, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import PrimaryButton from "../PrimaryButton";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+} from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
@@ -74,6 +78,7 @@ export default function SignUp({ setMainError }: Props) {
       // Update user profile with name
       await updateProfile(user, { displayName: form.name });
       const token = await user.getIdToken();
+
       login({ token });
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
