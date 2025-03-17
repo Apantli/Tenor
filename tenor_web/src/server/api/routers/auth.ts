@@ -102,11 +102,10 @@ export const authRouter = createTRPCRouter({
   }),
 
   checkVerification: publicProcedure.query(async ({ ctx }) => {
-    const session = await auth();
-    if (!session) {
+    if (!ctx.session) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
 
-    return { verified: session.emailVerified };
+    return { verified: ctx.session.emailVerified };
   }),
 });
