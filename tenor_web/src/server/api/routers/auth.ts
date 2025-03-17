@@ -46,6 +46,7 @@ export const authRouter = createTRPCRouter({
           try {
             await ctx.firebaseAdmin.auth().updateUser(decodedToken.uid, {
               email: validEmail,
+              emailVerified: true,
             });
           } catch (err) {
             if (typeof err === "object" && err !== null && "code" in err) {
