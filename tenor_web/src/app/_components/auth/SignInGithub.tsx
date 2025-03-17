@@ -23,6 +23,11 @@ export default function SignInGithub({ setMainError }: Props) {
         router.push("/");
       } else if (res.error === "UNAUTHORIZED_DOMAIN") {
         setMainError("Email domain must be @tec.mx");
+      } else if (
+        res.error === "FIREBASE" &&
+        res.code === "auth/email-already-exists"
+      ) {
+        setMainError("This email is already in use");
       }
     },
   });
