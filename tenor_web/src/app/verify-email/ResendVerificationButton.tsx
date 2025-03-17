@@ -20,7 +20,6 @@ export default function ResendVerificationButton() {
       refetchInterval: 10000,
     },
   );
-
   const { mutate: logout } = api.auth.logout.useMutation({
     onSuccess(res) {
       if (res.success) {
