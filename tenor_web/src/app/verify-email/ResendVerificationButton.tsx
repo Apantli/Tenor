@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useFirebaseAuth } from "../_hooks/useAuth";
 import { sendEmailVerification } from "firebase/auth";
 import { api } from "~/trpc/react";
@@ -10,6 +10,8 @@ import SecondaryButton from "../_components/SecondaryButton";
 export default function ResendVerificationButton() {
   const router = useRouter();
 
+  const [message, setMessage] = useState<"none" | "sent" | "error">("none");
+
   const { user, loading } = useFirebaseAuth();
   const { data: verificationResult } = api.auth.checkVerification.useQuery(
     undefined,
@@ -17,6 +19,7 @@ export default function ResendVerificationButton() {
       refetchInterval: 10000,
     },
   );
+
   const { mutate: logout } = api.auth.logout.useMutation({
     onSuccess(res) {
       if (res.success) {
@@ -34,17 +37,20 @@ export default function ResendVerificationButton() {
   const sendEmail = async () => {
     if (!user) return;
 
-    await sendEmailVerification(user);
+    try {
+      setMessage("none");
+      await sendEmailVerification(user);
+      setMessage("sent");
+    } catch (err) {
+      if (typeof err === "object" && err !== null && "code" in err) {
+        console.log("FIREBASE ERROR:", err.code);
+      }
+      setMessage("error");
+    }
   };
 
-  useEffect(() => {
-    if (user) {
-      void sendEmailVerification(user);
-    }
-  }, [user]);
-
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col items-center justify-center gap-8">
       <span className="flex gap-2">
         Didn&apos;t receive an email?
         <button
@@ -55,7 +61,15 @@ export default function ResendVerificationButton() {
           Resend
         </button>
       </span>
-      <SecondaryButton onClick={() => logout()}>Go back</SecondaryButton>
+      {message === "sent" && <p className="text-app-primary">Email sent</p>}
+      {message === "error" && (
+        <p className="text-app-fail">
+          Unexpecter error, please try again later
+        </p>
+      )}
+      <SecondaryButton className="w-64" onClick={() => logout()}>
+        Go back
+      </SecondaryButton>
     </div>
   );
 }
