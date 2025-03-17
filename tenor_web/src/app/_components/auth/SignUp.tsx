@@ -3,7 +3,12 @@
 import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import PrimaryButton from "../PrimaryButton";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+  User,
+} from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
@@ -24,6 +29,8 @@ export default function SignUp() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+
+  const userRef = useRef<User | null>(null);
 
   const { mutateAsync: login } = api.auth.login.useMutation();
 
@@ -60,6 +67,7 @@ export default function SignUp() {
         form.password,
       );
       const user = userCredential.user;
+      userRef.current = user;
 
       // Update user profile with name
       await updateProfile(user, { displayName: form.name });
