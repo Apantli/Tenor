@@ -1,11 +1,11 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3 Safari/605.1.15" version="26.1.0">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Safari/605.1.15" version="26.1.0">
   <diagram name="Page-1" id="2u5XQ1TVpz-50JPjkIr8">
-    <mxGraphModel dx="2396" dy="927" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="1945" dy="657" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="brTsUfv8YviJoIx6LNV7-11" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="660" y="580" width="240" height="250" as="geometry" />
+          <mxGeometry x="660" y="580" width="240" height="280" as="geometry" />
         </mxCell>
         <mxCell id="o_S3ILkpT6AB_PazXlzC-3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;dashed=1;dashPattern=8 8;" parent="1" vertex="1">
           <mxGeometry x="60" y="299" width="920" height="240" as="geometry" />
@@ -84,22 +84,24 @@
         <mxCell id="o_S3ILkpT6AB_PazXlzC-34" value="Firebase storage" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="700" y="705" width="170" height="36.25" as="geometry" />
         </mxCell>
-        <mxCell id="o_S3ILkpT6AB_PazXlzC-37" value="Frida Planner API" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="375" y="600" width="120" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="o_S3ILkpT6AB_PazXlzC-39" value="&lt;div&gt;Auth&lt;/div&gt;&lt;div&gt;&lt;i&gt;(Auth.js)&lt;/i&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
-          <mxGeometry x="290" y="370.25" width="80" height="116" as="geometry" />
-        </mxCell>
-        <mxCell id="o_S3ILkpT6AB_PazXlzC-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="o_S3ILkpT6AB_PazXlzC-42" target="o_S3ILkpT6AB_PazXlzC-39" edge="1">
+        <mxCell id="xiCW2DMBRFnSdZSfyEem-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="o_S3ILkpT6AB_PazXlzC-37" target="o_S3ILkpT6AB_PazXlzC-14">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="330" y="290" />
-              <mxPoint x="330" y="290" />
+              <mxPoint x="410" y="340" />
+              <mxPoint x="410" y="340" />
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="o_S3ILkpT6AB_PazXlzC-42" value="Github OAuth" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
-          <mxGeometry x="270" y="160" width="120" height="60" as="geometry" />
+        <mxCell id="o_S3ILkpT6AB_PazXlzC-37" value="Frida Planner API" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="350" y="200" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xiCW2DMBRFnSdZSfyEem-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;startFill=1;startArrow=classic;" edge="1" parent="1" source="o_S3ILkpT6AB_PazXlzC-39">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="330" y="560" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="o_S3ILkpT6AB_PazXlzC-39" value="&lt;div&gt;&lt;b&gt;Auth&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;Management&lt;/b&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="290" y="370.25" width="80" height="116" as="geometry" />
         </mxCell>
         <mxCell id="o_S3ILkpT6AB_PazXlzC-44" value="SQL Database&lt;div&gt;&lt;i&gt;(Supabase)&lt;/i&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="1050" y="398.75" width="120" height="60" as="geometry" />
@@ -114,9 +116,6 @@
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="1020" y="390" as="sourcePoint" />
           </mxGeometry>
-        </mxCell>
-        <mxCell id="brTsUfv8YviJoIx6LNV7-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.446;entryY=1.016;entryDx=0;entryDy=0;entryPerimeter=0;startArrow=classic;startFill=1;" parent="1" source="o_S3ILkpT6AB_PazXlzC-37" target="o_S3ILkpT6AB_PazXlzC-14" edge="1">
-          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="brTsUfv8YviJoIx6LNV7-8" value="&lt;h2&gt;Browser Client&lt;/h2&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="60" y="620" width="200" height="30" as="geometry" />
@@ -146,6 +145,24 @@
         </mxCell>
         <mxCell id="brTsUfv8YviJoIx6LNV7-18" value="&lt;h2&gt;Frontend&lt;/h2&gt;&lt;p&gt;&lt;i&gt;(React)&lt;/i&gt;&lt;/p&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
           <mxGeometry x="105" y="381.88" width="110" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="xiCW2DMBRFnSdZSfyEem-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="xiCW2DMBRFnSdZSfyEem-1" target="o_S3ILkpT6AB_PazXlzC-1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="822" />
+              <mxPoint x="430" y="560" />
+              <mxPoint x="190" y="560" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="xiCW2DMBRFnSdZSfyEem-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="xiCW2DMBRFnSdZSfyEem-1" target="xiCW2DMBRFnSdZSfyEem-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xiCW2DMBRFnSdZSfyEem-1" value="Firebase Authentication" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="803.75" width="170" height="36.25" as="geometry" />
+        </mxCell>
+        <mxCell id="xiCW2DMBRFnSdZSfyEem-4" value="Github OAuth" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="725" y="900" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
