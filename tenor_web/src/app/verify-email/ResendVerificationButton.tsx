@@ -35,7 +35,7 @@ export default function ResendVerificationButton() {
   useEffect(() => {
     const interval = setInterval(() => {
       checkVerification();
-    }, 1000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);
