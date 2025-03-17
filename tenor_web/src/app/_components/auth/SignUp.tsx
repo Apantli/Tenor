@@ -3,11 +3,7 @@
 import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import PrimaryButton from "../PrimaryButton";
-import {
-  createUserWithEmailAndPassword,
-  sendEmailVerification,
-  updateProfile,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
