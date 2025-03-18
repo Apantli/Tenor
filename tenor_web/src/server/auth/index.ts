@@ -15,7 +15,9 @@ export async function uncachedAuth() {
     const user = await firebaseAdmin.auth().getUser(decodedToken.uid);
     return user;
   } catch (error) {
-    console.error("Token verification failed:", error);
+    if (typeof error === "object" && error != null && "code" in error) {
+      console.log("Token verification failed: ", error.code);
+    }
     return null;
   }
 }
