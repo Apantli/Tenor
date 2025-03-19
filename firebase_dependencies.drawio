@@ -148,9 +148,9 @@
         <mxCell id="syVXaHFY9ad1_4dyUhUQ-49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="syVXaHFY9ad1_4dyUhUQ-47" target="syVXaHFY9ad1_4dyUhUQ-43">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="syVXaHFY9ad1_4dyUhUQ-50" value="&lt;div&gt;When changed,&lt;/div&gt;&lt;div&gt;affects all&lt;/div&gt;&lt;div&gt;non-finished&lt;/div&gt;&lt;div&gt;sprints&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-49">
+        <mxCell id="syVXaHFY9ad1_4dyUhUQ-50" value="&lt;div&gt;When changing setting,&lt;/div&gt;&lt;div&gt;affects all&amp;nbsp;&lt;span style=&quot;background-color: light-dark(#ffffff, var(--ge-dark-color, #121212)); color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;non-finished&lt;/span&gt;&lt;/div&gt;&lt;div&gt;sprints&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-49">
           <mxGeometry x="0.3068" y="-1" relative="1" as="geometry">
-            <mxPoint x="50" y="-28" as="offset" />
+            <mxPoint x="71" y="-26" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="syVXaHFY9ad1_4dyUhUQ-47" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
