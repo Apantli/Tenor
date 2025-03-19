@@ -176,9 +176,9 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="syVXaHFY9ad1_4dyUhUQ-27" value="When modified end date" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-26">
+        <mxCell id="syVXaHFY9ad1_4dyUhUQ-27" value="When modified end date&lt;div&gt;and when completed&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-26">
           <mxGeometry x="-0.0464" y="2" relative="1" as="geometry">
-            <mxPoint x="2" y="-13" as="offset" />
+            <mxPoint x="2" y="-18" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="syVXaHFY9ad1_4dyUhUQ-52" value="&lt;h3&gt;Users&lt;/h3&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
