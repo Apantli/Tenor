@@ -39,9 +39,9 @@ export const createQueryClient = () => {
               return false; // prevent infinite loops.
             }
 
-            refreshToken().then((success) => {
+            void refreshToken().then(async (success) => {
               if (success) {
-                queryClient.invalidateQueries();
+                await queryClient.invalidateQueries();
               }
             });
           }
@@ -66,7 +66,7 @@ export const createQueryClient = () => {
       mutations: {
         retry: (failureCount, error) => {
           if (failureCount < 3) {
-            refreshToken();
+            void refreshToken();
             return true; // Retry up to 3 times
           }
           return false;
