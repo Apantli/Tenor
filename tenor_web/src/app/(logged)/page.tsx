@@ -5,15 +5,34 @@ import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
 
 export default function ProjectPage() {
+  const alert = useAlert();
+
   return (
-    <div>
-      <div className="projects-list__container">
-        <div className="header">
+    <div className="flex h-full w-full flex-row">
+      <div className="w-1/2 w-full">
+        <div className="">
           <h1>Projects</h1>
         </div>
         <div className="projects-list__content">
           <ProjectList />
         </div>
+        <br />
+        <PrimaryButton
+          onClick={() => alert("Wow", "This is cool", { type: "success" })}
+        >
+          Generate Success Alert
+        </PrimaryButton>
+        <br></br>
+        <PrimaryButton
+          onClick={() =>
+            alert("Oops...", "This is not cool", {
+              type: "error",
+              duration: 5000,
+            })
+          }
+        >
+          Generate Error Alert
+        </PrimaryButton>
       </div>
       <div className="projects-dashboard__container"></div>
     </div>
@@ -58,19 +77,35 @@ function ProjectList() {
 
   return (
     <div>
-      <FilterSearch
-        list={projects.map((p) => p.project_name)}
-        onSearch={handleFilter}
-      />
+      <div className="flex h-full max-h-[33px] w-full max-w-[490px] justify-between">
+        <FilterSearch
+          list={projects.map((p) => p.name)}
+          onSearch={handleFilter}
+        />
+        <PrimaryButton
+          className={"h-full w-full max-w-[103px] self-center text-xs"}
+          onClick={() => null}
+        >
+          {" "}
+          + New project{" "}
+        </PrimaryButton>
+      </div>
       <ul>
         {filteredProjects?.map((project) => (
-          <li className="project-card" key={project.id}>
-            <div className="project-logo">
-              <img src={project.link} alt={project.project_name} />
+          <li
+            className="flex h-full max-w-[490px] justify-start border-b-2 py-[8]"
+            key={project.id}
+          >
+            <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
+              <img
+                className="object-scale-down p-[4px]"
+                src={project.link}
+                alt={project.name}
+              />
             </div>
-            <div className="project-info">
-              <h3 className="subheader">{project.project_name}</h3>
-              <p>{project.description}</p>
+            <div className="ml-2 flex max-h-full w-full flex-col justify-start">
+              <h3 className="my-[7px] text-lg font-semibold">{project.name}</h3>
+              <p className="text-sm">{project.description}</p>
             </div>
           </li>
         ))}
