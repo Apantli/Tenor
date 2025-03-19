@@ -9,7 +9,7 @@ import { getEmails } from "~/lib/github";
 import { auth } from "~/server/auth";
 
 const isEmulatingAuth = () => {
-  return env.FIREBASE_AUTH_EMULATOR_HOST != "false";
+  return !!env.FIREBASE_AUTH_EMULATOR_HOST;
 };
 
 export const authRouter = createTRPCRouter({

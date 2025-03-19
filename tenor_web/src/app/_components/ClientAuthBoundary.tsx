@@ -4,6 +4,7 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import { auth } from "~/utils/firebaseClient";
 
 export default function ClientAuthBoundary({ children }: PropsWithChildren) {
   const { user, loading } = useFirebaseAuth();
@@ -33,7 +34,7 @@ export default function ClientAuthBoundary({ children }: PropsWithChildren) {
     } else {
       router.push("/login");
     }
-  }, [user, loading, router]);
+  }, [user, loading]);
 
   if (loading || !user || !refreshed || !user.emailVerified) {
     return <></>;

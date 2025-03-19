@@ -9,10 +9,18 @@ export const useFirebaseAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((authUser) => {
-      setUser(authUser);
-      setLoading(false);
-    });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (authUser) => {
+        if (authUser) await authUser?.reload();
+        setLoading(false);
+        setUser(authUser);
+      },
+      (error) => {
+        console.error("Firebase Auth error:", error);
+        setLoading(false); // Set loading to false even on error
+      },
+    );
 
     return () => unsubscribe();
   }, []);

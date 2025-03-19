@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { connectAuthEmulator, getAuth } from "firebase/auth";
+import { browserLocalPersistence, getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -10,7 +10,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
+auth.setPersistence(browserLocalPersistence);
+auth.settings.appVerificationDisabledForTesting = true;
 
-if (process.env.NODE_ENV === "test") {
-  connectAuthEmulator(auth, "http://localhost:9099");
-}
+// if (process.env.NODE_ENV === "test") {
+//   connectAuthEmulator(auth, "http://localhost:9099");
+// }
