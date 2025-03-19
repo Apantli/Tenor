@@ -50,7 +50,11 @@ export default function SignInGithub({ setMainError }: Props) {
         githubAccessToken,
       });
     } catch (error) {
-      console.error("Sign-in error", error);
+      if (typeof error === "object" && error !== null && "code" in error) {
+        if (error.code === "auth/account-exists-with-different-credential") {
+          setMainError("This email is already in use");
+        }
+      }
     }
   };
 

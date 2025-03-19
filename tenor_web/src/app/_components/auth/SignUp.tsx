@@ -1,9 +1,14 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { Dispatch, SetStateAction, useRef, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import PrimaryButton from "../PrimaryButton";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
+  updateProfile,
+  User,
+} from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
@@ -27,9 +32,14 @@ export default function SignUp({ setMainError }: Props) {
   });
   const [loading, setLoading] = useState(false);
 
+  const userRef = useRef<User | null>(null);
+
   const { mutate: login } = api.auth.login.useMutation({
-    onSuccess(res) {
+    async onSuccess(res) {
       if (res.success) {
+        if (userRef.current) {
+          await sendEmailVerification(userRef.current);
+        }
         router.push("/");
       } else if (res.error === "UNAUTHORIZED_DOMAIN") {
         setError({ ...error, email: "Email domain must be @tec.mx" });
@@ -70,10 +80,12 @@ export default function SignUp({ setMainError }: Props) {
         form.password,
       );
       const user = userCredential.user;
+      userRef.current = user;
 
       // Update user profile with name
       await updateProfile(user, { displayName: form.name });
       const token = await user.getIdToken();
+
       login({ token });
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {

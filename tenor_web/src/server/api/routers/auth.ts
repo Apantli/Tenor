@@ -6,6 +6,7 @@ import { env } from "~/env";
 import { TRPCError } from "@trpc/server";
 import admin from "firebase-admin";
 import { getEmails } from "~/lib/github";
+import { auth } from "~/server/auth";
 
 export const authRouter = createTRPCRouter({
   login: publicProcedure
@@ -45,6 +46,7 @@ export const authRouter = createTRPCRouter({
           try {
             await ctx.firebaseAdmin.auth().updateUser(decodedToken.uid, {
               email: validEmail,
+              emailVerified: true,
             });
           } catch (err) {
             if (typeof err === "object" && err !== null && "code" in err) {
@@ -87,7 +89,7 @@ export const authRouter = createTRPCRouter({
       }
     }),
 
-  logout: publicProcedure.mutation(async ({ input, ctx }) => {
+  logout: publicProcedure.mutation(async () => {
     const cookie = await cookies();
     cookie.set("token", "", {
       httpOnly: true,
@@ -97,5 +99,13 @@ export const authRouter = createTRPCRouter({
       maxAge: 0,
     });
     return { success: true };
+  }),
+
+  checkVerification: publicProcedure.query(async ({ ctx }) => {
+    if (!ctx.session) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+
+    return { verified: ctx.session.emailVerified };
   }),
 });
