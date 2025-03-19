@@ -30,6 +30,7 @@ export default function ResendVerificationButton() {
 
   useEffect(() => {
     if (verificationResult?.verified) {
+      user?.reload();
       router.push("/");
     }
   }, [verificationResult]);
