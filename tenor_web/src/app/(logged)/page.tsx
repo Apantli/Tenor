@@ -4,10 +4,13 @@ import { api } from "~/trpc/react";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
 import PrimaryButton from "../_components/PrimaryButton";
+import { useAlert } from "../_hooks/useAlert";
 
 export default function ProjectPage() {
+  const alert = useAlert();
+
   return (
-    <div className="flex flex-row w-full h-full">
+    <div className="flex h-full w-full flex-row">
       <div className="w-1/2 w-full">
         <div className="">
           <h1>Projects</h1>
@@ -15,6 +18,23 @@ export default function ProjectPage() {
         <div className="">
           <ProjectList />
         </div>
+        <br />
+        <PrimaryButton
+          onClick={() => alert("Wow", "This is cool", { type: "success" })}
+        >
+          Generate Success Alert
+        </PrimaryButton>
+        <br></br>
+        <PrimaryButton
+          onClick={() =>
+            alert("Oops...", "This is not cool", {
+              type: "error",
+              duration: 5000,
+            })
+          }
+        >
+          Generate Error Alert
+        </PrimaryButton>
       </div>
       <div className="w-1/2 w-full"></div>
     </div>
@@ -59,21 +79,34 @@ function ProjectList() {
 
   return (
     <div>
-      <div className="flex h-full max-h-[33px] justify-between w-full max-w-[490px]">
+      <div className="flex h-full max-h-[33px] w-full max-w-[490px] justify-between">
         <FilterSearch
           list={projects.map((p) => p.name)}
           onSearch={handleFilter}
         />
-        <PrimaryButton className={"max-w-[103px] w-full h-full text-xs self-center"} onClick={() => (null)}> + New project </PrimaryButton>
+        <PrimaryButton
+          className={"h-full w-full max-w-[103px] self-center text-xs"}
+          onClick={() => null}
+        >
+          {" "}
+          + New project{" "}
+        </PrimaryButton>
       </div>
       <ul>
         {filteredProjects?.map((project) => (
-          <li className="flex h-full max-w-[490px]  justify-start border-b-2 py-[8]" key={project.id}>
-            <div className="m-[10px] bg-blue-500 rounded-md h-24 max-w-[66px] max-h-[66px] w-24 flex justify-center items-center">
-              <img className="object-scale-down p-[4px]" src={project.link} alt={project.name} />
+          <li
+            className="flex h-full max-w-[490px] justify-start border-b-2 py-[8]"
+            key={project.id}
+          >
+            <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
+              <img
+                className="object-scale-down p-[4px]"
+                src={project.link}
+                alt={project.name}
+              />
             </div>
-            <div className="max-h-full w-full flex flex-col justify-start ml-2">
-              <h3 className="text-lg font-semibold my-[7px]">{project.name}</h3>
+            <div className="ml-2 flex max-h-full w-full flex-col justify-start">
+              <h3 className="my-[7px] text-lg font-semibold">{project.name}</h3>
               <p className="text-sm">{project.description}</p>
             </div>
           </li>
