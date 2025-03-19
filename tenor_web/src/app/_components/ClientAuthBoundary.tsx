@@ -35,7 +35,7 @@ export default function ClientAuthBoundary({ children }: PropsWithChildren) {
     }
   }, [user, loading, router]);
 
-  if (loading || !user || !refreshed) {
+  if (loading || !user || !refreshed || !user.emailVerified) {
     return <></>;
   }
 
