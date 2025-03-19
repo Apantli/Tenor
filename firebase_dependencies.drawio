@@ -31,7 +31,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="syVXaHFY9ad1_4dyUhUQ-3" value="When complete" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-2">
+        <mxCell id="syVXaHFY9ad1_4dyUhUQ-3" value="When finishing&lt;div&gt;all tasks within it&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-2">
           <mxGeometry x="0.115" y="-2" relative="1" as="geometry">
             <mxPoint x="44" y="13" as="offset" />
           </mxGeometry>
@@ -128,7 +128,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="syVXaHFY9ad1_4dyUhUQ-41" value="When added to / removed from sprint" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-40">
+        <mxCell id="syVXaHFY9ad1_4dyUhUQ-41" value="When adding to / removing from sprint" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-40">
           <mxGeometry x="-0.3478" y="3" relative="1" as="geometry">
             <mxPoint x="48" y="-7" as="offset" />
           </mxGeometry>
@@ -148,7 +148,7 @@
         <mxCell id="syVXaHFY9ad1_4dyUhUQ-49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="syVXaHFY9ad1_4dyUhUQ-47" target="syVXaHFY9ad1_4dyUhUQ-43">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="syVXaHFY9ad1_4dyUhUQ-50" value="Cuando cambia&lt;div&gt;y no es un&lt;/div&gt;&lt;div&gt;sprint pasado&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-49">
+        <mxCell id="syVXaHFY9ad1_4dyUhUQ-50" value="&lt;div&gt;When changed,&lt;/div&gt;&lt;div&gt;affects all&lt;/div&gt;&lt;div&gt;non-finished&lt;/div&gt;&lt;div&gt;sprints&lt;/div&gt;" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="syVXaHFY9ad1_4dyUhUQ-49">
           <mxGeometry x="0.3068" y="-1" relative="1" as="geometry">
             <mxPoint x="50" y="-28" as="offset" />
           </mxGeometry>
@@ -215,7 +215,7 @@
         <mxCell id="syVXaHFY9ad1_4dyUhUQ-58" value="projects" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="274" y="370" width="60" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="syVXaHFY9ad1_4dyUhUQ-69" value="When update&lt;div&gt;dependencies&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="syVXaHFY9ad1_4dyUhUQ-65" target="syVXaHFY9ad1_4dyUhUQ-67">
+        <mxCell id="syVXaHFY9ad1_4dyUhUQ-69" value="When updating&lt;div&gt;dependencies&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;startArrow=classic;startFill=1;" edge="1" parent="1" source="syVXaHFY9ad1_4dyUhUQ-65" target="syVXaHFY9ad1_4dyUhUQ-67">
           <mxGeometry y="-35" relative="1" as="geometry">
             <mxPoint as="offset" />
           </mxGeometry>
