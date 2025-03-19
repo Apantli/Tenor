@@ -29,10 +29,13 @@ export default function ResendVerificationButton() {
   });
 
   useEffect(() => {
-    if (verificationResult?.verified) {
-      user?.reload();
-      router.push("/");
-    }
+    const checkVerification = async () => {
+      if (verificationResult?.verified) {
+        await user?.reload();
+        router.push("/");
+      }
+    };
+    void checkVerification();
   }, [verificationResult]);
 
   const sendEmail = async () => {
