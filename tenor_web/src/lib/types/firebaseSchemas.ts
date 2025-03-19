@@ -1,7 +1,12 @@
 /*
 IMPORTANTE:
 - Checar duplicación de datos para actualizaciones (es decir, datos que cuando se actualiza uno, se tiene que actualizar el otro)
+  - Para esto está firebase_dependencies.drawio
+
+TODO: 
+- Agregar campo deleted a todos los correspondientes, si falta alguno
 */
+
 
 /// Big categories
 
@@ -46,11 +51,13 @@ export interface Project {
         taskId: string;
         finishedDate: Date;
       }[];
-      reviewedTasks: number;
+      // reviewedTasks: number; // Scope creep. Ignore for now
+      // contributed means finished a task within it
       contributedUserStories: number;
       contributedIssues: number;
     };
-  }[];
+    active: boolean;
+  }[]; 
 
   requirements: Requirement[];
   userStorys: UserStory[];
@@ -103,7 +110,7 @@ export interface Tag {
 export interface User {
   bio: string;
   jobTitle: string;
-  projects: string[];
+  projectIds: string[];
   isManager: boolean;
 }
 
@@ -136,7 +143,7 @@ export interface BasicInfo {
   deleted: boolean;
 }
 
-// Make function to transform into number size
+// TODO: Make function to transform into number size (fibonacci)
 export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'; 
 
 export interface BacklogItem extends BasicInfo {
@@ -153,14 +160,14 @@ export type Epic = BasicInfo
 export interface UserStory extends BacklogItem {
   epicId: string;
   acceptanceCriteria: string; // Markdown
-  dependencies: string[];
-  requiredBy: string[];
+  dependencies: string[]; // US ID
+  requiredBy: string[]; // US ID
 }
 
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
-  reviewerId: string; // TODO: do it in figma
+  // reviewerId: string; // Scope creep. Ignore for now
   dueDate: Date | null;
   finishedDate: Date | null;
   size: Size;
@@ -172,7 +179,7 @@ export interface Issue extends BacklogItem {
 }
 
 export interface Requirement extends BasicInfo {
-  size: Size; // Make function to transform into number size
+  size: Size;
   priorityId: string;
   reqTypeId: string;
   reqFocusId: string;
