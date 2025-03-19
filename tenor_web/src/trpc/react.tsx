@@ -22,6 +22,26 @@ const getQueryClient = () => {
 
 export const api = createTRPCReact<AppRouter>();
 
+// Only use this client if you need to perform a query/mutation outside of react (More likely than not, you don't need to)
+export const trpcClient = api.createClient({
+  links: [
+    loggerLink({
+      enabled: (op) =>
+        process.env.NODE_ENV === "development" ||
+        (op.direction === "down" && op.result instanceof Error),
+    }),
+    httpBatchLink({
+      transformer: SuperJSON,
+      url: getBaseUrl() + "/api/trpc",
+      headers: () => {
+        const headers = new Headers();
+        headers.set("x-trpc-source", "nextjs-react");
+        return headers;
+      },
+    }),
+  ],
+});
+
 /**
  * Inference helper for inputs.
  *

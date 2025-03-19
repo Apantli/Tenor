@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { auth } from "~/utils/firebaseClient";
-import { User } from "firebase/auth";
+import { onAuthStateChanged, User } from "firebase/auth";
+import { api } from "~/trpc/react";
 
 export const useFirebaseAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      setUser(authUser);
       setLoading(false);
     });
 

@@ -8,6 +8,10 @@ import admin from "firebase-admin";
 import { getEmails } from "~/lib/github";
 import { auth } from "~/server/auth";
 
+const isEmulatingAuth = () => {
+  return env.FIREBASE_AUTH_EMULATOR_HOST != "false";
+};
+
 export const authRouter = createTRPCRouter({
   login: publicProcedure
     .input(
@@ -25,7 +29,7 @@ export const authRouter = createTRPCRouter({
         const user = await ctx.firebaseAdmin.auth().getUser(decodedToken.uid);
 
         // VALIDATE USER EMAIL HAS CORRECT DOMAIN
-        if (githubAccessToken) {
+        if (githubAccessToken && !isEmulatingAuth()) {
           // Check all their verified emails to see if they have one valid email
           const emails = await getEmails(githubAccessToken);
 
@@ -85,11 +89,16 @@ export const authRouter = createTRPCRouter({
 
         return { success: true };
       } catch (err) {
+        console.log(err);
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
     }),
 
-  logout: publicProcedure.mutation(async () => {
+  logout: publicProcedure.mutation(async ({ ctx }) => {
+    if (!ctx.session) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+    await ctx.firebaseAdmin.auth().revokeRefreshTokens(ctx.session.uid);
+
     const cookie = await cookies();
     cookie.set("token", "", {
       httpOnly: true,
@@ -98,6 +107,7 @@ export const authRouter = createTRPCRouter({
       path: "/",
       maxAge: 0,
     });
+
     return { success: true };
   }),
 
@@ -108,4 +118,36 @@ export const authRouter = createTRPCRouter({
 
     return { verified: ctx.session.emailVerified };
   }),
+
+  refreshSession: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { token } = input;
+
+      const cookie = await cookies();
+      try {
+        if (!isEmulatingAuth()) {
+          await ctx.firebaseAdmin.auth().verifyIdToken(token);
+        }
+
+        cookie.set("token", token, {
+          httpOnly: true,
+          secure: env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.log("Token refresh error: ", error);
+        cookie.set("token", "", {
+          httpOnly: true,
+          secure: env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+          maxAge: 0,
+        });
+        return { success: false };
+      }
+    }),
 });

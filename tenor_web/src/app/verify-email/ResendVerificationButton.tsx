@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useFirebaseAuth } from "../_hooks/useAuth";
+import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { sendEmailVerification } from "firebase/auth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
