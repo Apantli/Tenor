@@ -4,6 +4,7 @@ import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { AlertProvider } from "./_hooks/useAlert";
 
 export const metadata: Metadata = {
   title: "Tenor",
@@ -16,7 +17,9 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <AlertProvider>{children}</AlertProvider>
+        </TRPCReactProvider>
       </body>
     </html>
   );
