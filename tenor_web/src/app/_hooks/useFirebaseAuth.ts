@@ -12,9 +12,9 @@ export const useFirebaseAuth = () => {
     const unsubscribe = onAuthStateChanged(
       auth,
       async (authUser) => {
-        if (authUser) await authUser?.reload();
-        setLoading(false);
+        if (authUser) await authUser.reload();
         setUser(authUser);
+        setLoading(false);
       },
       (error) => {
         console.error("Firebase Auth error:", error);

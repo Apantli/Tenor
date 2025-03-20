@@ -7,10 +7,6 @@ import { TRPCError } from "@trpc/server";
 import admin from "firebase-admin";
 import { getEmails } from "~/lib/github";
 
-const isEmulatingAuth = () => {
-  return !!env.FIREBASE_AUTH_EMULATOR_HOST;
-};
-
 export const authRouter = createTRPCRouter({
   login: publicProcedure
     .input(
@@ -30,7 +26,7 @@ export const authRouter = createTRPCRouter({
         let email = user.email;
 
         // VALIDATE USER EMAIL HAS CORRECT DOMAIN
-        if (githubAccessToken && !isEmulatingAuth()) {
+        if (githubAccessToken) {
           // Check all their verified emails to see if they have one valid email
           const emails = await getEmails(githubAccessToken);
 
@@ -128,9 +124,7 @@ export const authRouter = createTRPCRouter({
 
       const cookie = await cookies();
       try {
-        if (!isEmulatingAuth()) {
-          await ctx.firebaseAdmin.auth().verifyIdToken(token);
-        }
+        await ctx.firebaseAdmin.auth().verifyIdToken(token);
 
         cookie.set("token", token, {
           httpOnly: true,
