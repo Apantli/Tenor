@@ -8,14 +8,15 @@ import React, {
   useState,
   type PropsWithChildren,
 } from "react";
-import { cn } from "~/lib/utils";
+import Alert from "../_components/AlertComponent";
+import AlertComponent from "../_components/AlertComponent";
 
 interface AlertOptions {
   type: "success" | "error" | "warning" | "info";
   duration?: number;
 }
 
-interface Alert {
+export interface Alert {
   title: string;
   message: React.ReactNode;
   id: number;
@@ -24,9 +25,11 @@ interface Alert {
   enter: boolean;
 }
 
-interface AlertFunction {
-  (title: string, message: React.ReactNode, options?: AlertOptions): void;
-}
+type AlertFunction = (
+  title: string,
+  message: React.ReactNode,
+  options?: AlertOptions,
+) => void;
 
 interface AlertContextType {
   alert: AlertFunction;
@@ -64,60 +67,20 @@ export const AlertProvider = ({ children }: PropsWithChildren) => {
           ),
         );
       }, 10);
-
-      if (options.duration !== undefined) {
-        setTimeout(() => {
-          removeAlert(id);
-        }, options.duration);
-      }
     },
     [removeAlert],
   );
-
-  const textColors = {
-    success: "text-app-success",
-    error: "text-app-fail",
-    info: "text-app-secondary",
-    warning: "text-orange-500",
-  };
-
-  const lineColors = {
-    success: "bg-app-success",
-    error: "bg-app-fail",
-    info: "bg-app-secondary",
-    warning: "bg-orange-500",
-  };
 
   return (
     <AlertContext.Provider value={{ alert, alerts, removeAlert }}>
       {children}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-3">
-        {alerts.map((alertItem, index) => (
-          <div
+        {alerts.map((alertItem) => (
+          <AlertComponent
             key={alertItem.id}
-            className={cn("relative translate-x-0 transition ease-in", {
-              "translate-x-[450px] opacity-0": !alertItem.show,
-              "translate-y-[200px]": alertItem.enter,
-            })}
-          >
-            <div className="flex w-96 flex-col gap-1 rounded-lg border-2 border-app-border bg-white px-6 pb-5 pt-4 shadow-xl">
-              <h1
-                className={`text-lg font-semibold ${textColors[alertItem.options.type]}`}
-              >
-                {alertItem.title}
-              </h1>
-              {alertItem.message}
-            </div>
-            <div
-              className={`absolute bottom-0 left-0 h-2 w-full rounded-b-lg ${lineColors[alertItem.options.type]}`}
-            ></div>
-            <button
-              className="absolute right-5 top-2 text-3xl font-thin"
-              onClick={() => removeAlert(alertItem.id)}
-            >
-              &times;
-            </button>
-          </div>
+            alertItem={alertItem}
+            removeAlert={removeAlert}
+          />
         ))}
       </div>
     </AlertContext.Provider>
