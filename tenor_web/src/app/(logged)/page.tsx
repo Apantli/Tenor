@@ -20,14 +20,27 @@ export default function ProjectPage() {
         </div>
         <br />
         <PrimaryButton
-          onClick={() => alert("Wow", "This is cool", { type: "success" })}
+          onClick={() =>
+            alert("Wow", "This is a normal alert", { type: "success" })
+          }
+        >
+          Generate Success Alert Without Duration
+        </PrimaryButton>
+        <br />
+        <PrimaryButton
+          onClick={() =>
+            alert("Wow", "This is a timed alert", {
+              type: "success",
+              duration: 10000,
+            })
+          }
         >
           Generate Success Alert
         </PrimaryButton>
-        <br></br>
+        <br />
         <PrimaryButton
           onClick={() =>
-            alert("Oops...", "This is not cool", {
+            alert("Oops...", "You clicked on the error alert!", {
               type: "error",
               duration: 5000,
             })
