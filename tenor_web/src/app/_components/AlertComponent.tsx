@@ -70,13 +70,10 @@ export default function AlertComponent({ alertItem, removeAlert }: Props) {
 
   return (
     <div
-      className={cn(
-        "relative translate-x-0 transition ease-in has-[button:hover]:opacity-60",
-        {
-          "translate-x-[450px] opacity-0": !alertItem.show,
-          "translate-y-[calc(100%+20px)]": alertItem.enter,
-        },
-      )}
+      className={cn("relative translate-x-0 transition ease-in", {
+        "translate-x-[450px] opacity-0": !alertItem.show,
+        "translate-y-[calc(100%+20px)]": alertItem.enter,
+      })}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
