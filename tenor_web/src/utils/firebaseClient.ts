@@ -10,9 +10,3 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-auth.setPersistence(browserLocalPersistence);
-auth.settings.appVerificationDisabledForTesting = true;
-
-// if (process.env.NODE_ENV === "test") {
-//   connectAuthEmulator(auth, "http://localhost:9099");
-// }
