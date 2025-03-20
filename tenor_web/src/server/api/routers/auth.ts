@@ -6,7 +6,6 @@ import { env } from "~/env";
 import { TRPCError } from "@trpc/server";
 import admin from "firebase-admin";
 import { getEmails } from "~/lib/github";
-import { auth } from "~/server/auth";
 
 const isEmulatingAuth = () => {
   return !!env.FIREBASE_AUTH_EMULATOR_HOST;
@@ -27,6 +26,8 @@ export const authRouter = createTRPCRouter({
           .auth()
           .verifyIdToken(token);
         const user = await ctx.firebaseAdmin.auth().getUser(decodedToken.uid);
+
+        let email = user.email;
 
         // VALIDATE USER EMAIL HAS CORRECT DOMAIN
         if (githubAccessToken && !isEmulatingAuth()) {
@@ -49,9 +50,9 @@ export const authRouter = createTRPCRouter({
           // Update their profile to use the valid email
           try {
             await ctx.firebaseAdmin.auth().updateUser(decodedToken.uid, {
-              email: validEmail,
               emailVerified: true,
             });
+            email = validEmail;
           } catch (err) {
             if (typeof err === "object" && err !== null && "code" in err) {
               console.log(err.code);
@@ -84,6 +85,7 @@ export const authRouter = createTRPCRouter({
           await ctx.firestore.collection("users").doc(decodedToken.uid).set({
             uid: decodedToken.uid,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            email,
           });
         }
 
