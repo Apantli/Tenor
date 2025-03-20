@@ -1,13 +1,7 @@
 "use client";
 
 import { auth } from "~/utils/firebaseClient";
-import {
-  signInWithPopup,
-  GithubAuthProvider,
-  OAuthCredential,
-  setPersistence,
-  browserLocalPersistence,
-} from "firebase/auth";
+import { signInWithPopup, GithubAuthProvider } from "firebase/auth";
 import SecondaryButton from "../SecondaryButton";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
@@ -46,8 +40,6 @@ export default function SignInGithub({ setMainError }: Props) {
       const githubCredential =
         GithubAuthProvider.credentialFromResult(credential);
       const githubAccessToken = githubCredential?.accessToken;
-
-      console.log("SIGNED IN");
 
       login({
         token,
