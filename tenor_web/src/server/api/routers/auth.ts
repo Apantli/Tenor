@@ -14,7 +14,6 @@ export const authRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { token, githubAccessToken } = input;
-      const allowedDomain = "@tec.mx";
 
       try {
         // GET USER INFORMATION
@@ -23,44 +22,22 @@ export const authRouter = createTRPCRouter({
           .verifyIdToken(token);
         const user = await ctx.firebaseAdmin.auth().getUser(decodedToken.uid);
 
-        let email = user.email;
-
-        // VALIDATE USER EMAIL HAS CORRECT DOMAIN
-        if (githubAccessToken) {
-          // Check all their verified emails to see if they have one valid email
+        // CHECK THE GITHUB EMAIL IS VERIFIED
+        if (githubAccessToken && !user.emailVerified) {
           const emails = await getEmails(githubAccessToken);
-
-          let validEmail = "";
+          let emailVerified = false;
           for (const email of emails) {
-            if (email.email.endsWith(allowedDomain) && email.verified) {
-              validEmail = email.email;
+            if (email.primary && email.verified) {
+              emailVerified = true;
               break;
             }
           }
 
-          if (!validEmail) {
-            await ctx.firebaseAdmin.auth().deleteUser(decodedToken.uid);
-            return { success: false, error: "UNAUTHORIZED_DOMAIN" };
-          }
-
-          // Update their profile to use the valid email
-          try {
+          if (emailVerified) {
             await ctx.firebaseAdmin.auth().updateUser(decodedToken.uid, {
               emailVerified: true,
             });
-            email = validEmail;
-          } catch (err) {
-            if (typeof err === "object" && err !== null && "code" in err) {
-              console.log(err.code);
-              if (err.code === "auth/email-already-exists") {
-                await ctx.firebaseAdmin.auth().deleteUser(decodedToken.uid); // Delete the created user if the email is already used
-              }
-              return { success: false, error: "FIREBASE", code: err.code };
-            }
           }
-        } else if (!user.email?.endsWith(allowedDomain)) {
-          await ctx.firebaseAdmin.auth().deleteUser(decodedToken.uid);
-          return { success: false, error: "UNAUTHORIZED_DOMAIN" };
         }
 
         // Set the auth token cookie
@@ -72,7 +49,7 @@ export const authRouter = createTRPCRouter({
           path: "/",
         });
 
-        // Create the user document if it doesnt exist
+        // Create the user document if it doesn't exist
         const userDocRef = ctx.firestore
           .collection("users")
           .doc(decodedToken.uid);
@@ -81,7 +58,6 @@ export const authRouter = createTRPCRouter({
           await ctx.firestore.collection("users").doc(decodedToken.uid).set({
             uid: decodedToken.uid,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            email,
           });
         }
 

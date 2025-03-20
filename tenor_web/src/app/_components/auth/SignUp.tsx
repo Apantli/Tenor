@@ -32,20 +32,7 @@ export default function SignUp({ setMainError }: Props) {
   });
   const [loading, setLoading] = useState(false);
 
-  const userRef = useRef<User | null>(null);
-
-  const { mutate: login } = api.auth.login.useMutation({
-    async onSuccess(res) {
-      if (res.success) {
-        if (userRef.current) {
-          await sendEmailVerification(userRef.current);
-        }
-        router.push("/");
-      } else if (res.error === "UNAUTHORIZED_DOMAIN") {
-        setError({ ...error, email: "Email domain must be @tec.mx" });
-      }
-    },
-  });
+  const { mutateAsync: login } = api.auth.login.useMutation();
 
   const handleSignUp = async () => {
     const newError = {
@@ -80,13 +67,18 @@ export default function SignUp({ setMainError }: Props) {
         form.password,
       );
       const user = userCredential.user;
-      userRef.current = user;
 
       // Update user profile with name
       await updateProfile(user, { displayName: form.name });
       const token = await user.getIdToken();
 
-      login({ token });
+      const res = await login({ token });
+      if (res.success) {
+        await sendEmailVerification(user);
+        router.push("/");
+      } else {
+        setMainError("Unexpected error. Please try again.");
+      }
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
         console.log(err.code);

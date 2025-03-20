@@ -24,15 +24,7 @@ export default function SignIn({ setMainError }: Props) {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const { mutate: login } = api.auth.login.useMutation({
-    onSuccess(res) {
-      if (res.success) {
-        router.push("/");
-      } else if (res.error === "UNAUTHORIZED_DOMAIN") {
-        setError({ ...error, email: "Email domain must be @tec.mx" });
-      }
-    },
-  });
+  const { mutateAsync: login } = api.auth.login.useMutation();
 
   const handleInput: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -67,7 +59,12 @@ export default function SignIn({ setMainError }: Props) {
         form.password,
       );
       const token = await credential.user.getIdToken();
-      login({ token });
+      const res = await login({ token });
+      if (res.success) {
+        router.push("/");
+      } else {
+        setMainError("Unexpected error. Please try again.");
+      }
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
         console.log(err.code);

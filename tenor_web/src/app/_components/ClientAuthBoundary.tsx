@@ -4,7 +4,6 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
-import { auth } from "~/utils/firebaseClient";
 import { type User } from "firebase/auth";
 
 export default function ClientAuthBoundary({ children }: PropsWithChildren) {
