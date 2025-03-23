@@ -7,18 +7,15 @@ import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   updateProfile,
-  User,
 } from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import { useAlert } from "~/app/_hooks/useAlert";
 
-interface Props {
-  setMainError: Dispatch<SetStateAction<string>>;
-}
-
-export default function SignUp({ setMainError }: Props) {
+export default function SignUp() {
   const router = useRouter();
+  const { alert, predefinedAlerts } = useAlert();
 
   const [form, setForm] = useState({
     name: "",
@@ -77,7 +74,7 @@ export default function SignUp({ setMainError }: Props) {
         await sendEmailVerification(user);
         router.push("/");
       } else {
-        setMainError("Unexpected error. Please try again.");
+        predefinedAlerts.unexpectedError();
       }
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
@@ -96,11 +93,11 @@ export default function SignUp({ setMainError }: Props) {
             setError({ ...newError, email: "This email is already in use" });
             break;
           default:
-            setMainError("Unexpected error. Please try again.");
+            predefinedAlerts.unexpectedError();
             break;
         }
       } else {
-        setMainError("Unexpected error. Please try again.");
+        predefinedAlerts.unexpectedError();
       }
     }
     setLoading(false);
@@ -109,7 +106,6 @@ export default function SignUp({ setMainError }: Props) {
   const handleInput: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError({ ...error, [e.target.name]: "" });
-    setMainError("");
   };
 
   return (

@@ -5,19 +5,16 @@ import { signInWithPopup, GithubAuthProvider } from "firebase/auth";
 import SecondaryButton from "../SecondaryButton";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
-import { Dispatch, SetStateAction } from "react";
+import { useAlert } from "~/app/_hooks/useAlert";
 
-interface Props {
-  setMainError: Dispatch<SetStateAction<string>>;
-}
-
-export default function SignInGithub({ setMainError }: Props) {
+export default function SignInGithub() {
   const router = useRouter();
   const { mutateAsync: login } = api.auth.login.useMutation();
 
+  const { alert, predefinedAlerts } = useAlert();
+
   const handleSignIn = async () => {
     const provider = new GithubAuthProvider();
-    provider.addScope("user:email");
     provider.setCustomParameters({
       prompt: "select_account",
     });
@@ -35,12 +32,15 @@ export default function SignInGithub({ setMainError }: Props) {
       if (res.success) {
         router.push("/");
       } else {
-        setMainError("Unexpected error. Please try again.");
+        predefinedAlerts.unexpectedError();
       }
     } catch (error) {
       if (typeof error === "object" && error !== null && "code" in error) {
         if (error.code === "auth/account-exists-with-different-credential") {
-          setMainError("This email is already in use");
+          alert("Oops...", "This email is already in use", {
+            type: "error",
+            duration: 7000,
+          });
         }
       }
     }
