@@ -4,12 +4,8 @@ import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
-import PrimaryButton from "../_components/PrimaryButton";
-import { useAlert } from "../_hooks/useAlert";
 
 export default function ProjectPage() {
-  const alert = useAlert();
-
   return (
     <div className="flex h-full w-full flex-row">
       <div className="w-1/2 w-full">
