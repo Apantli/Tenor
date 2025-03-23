@@ -5,7 +5,7 @@
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
         <mxCell id="SFjrZeXgEoQyQQdu8_cw-2" value="" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
-          <mxGeometry x="-240" y="290" width="360" height="92.5" as="geometry" />
+          <mxGeometry x="-240" y="290" width="360" height="110" as="geometry" />
         </mxCell>
         <mxCell id="syVXaHFY9ad1_4dyUhUQ-1" value="" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="240" y="430" width="120" height="60" as="geometry" />
@@ -249,7 +249,7 @@
             <mxPoint x="18" y="-31" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="SFjrZeXgEoQyQQdu8_cw-1" value="&lt;b&gt;Additional considerations not in the diagram:&lt;/b&gt;&lt;div&gt;• When you delete ANY tag, update backlog items&lt;/div&gt;&lt;div&gt;• When you delete a role, update user relationships to a default role&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+        <mxCell id="SFjrZeXgEoQyQQdu8_cw-1" value="&lt;b&gt;Additional considerations not in the diagram:&lt;/b&gt;&lt;div&gt;• When you delete ANY tag, update backlog items&lt;/div&gt;&lt;div&gt;• When you delete a role, update user relationships to a default role&lt;/div&gt;&lt;div&gt;• Any other reference value that I may have missed&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=top;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
           <mxGeometry x="-230" y="303" width="340" height="137" as="geometry" />
         </mxCell>
       </root>
