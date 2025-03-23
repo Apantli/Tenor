@@ -15,7 +15,6 @@ export const env = createEnv({
     FIREBASE_STORAGE_BUCKET: z.string(),
     FIREBASE_MESSAGING_SENDER_ID: z.string(),
     FIREBASE_MEASUREMENT_ID: z.string(),
-    FIREBASE_STORAGE_EMULATOR: z.string(),
     FIREBASE_STORAGE_EMULATOR_HOST: z.string(),
     FIREBASE_EMULATOR_IP: z.string(),
     SUPABASE_URL: z.string(),
@@ -57,7 +56,6 @@ export const env = createEnv({
       process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
     NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     FIREBASE_MEASUREMENT_ID: process.env.FIREBASE_MEASUREMENT_ID,
-    FIREBASE_STORAGE_EMULATOR: process.env.FIREBASE_STORAGE_EMULATOR,
     FIREBASE_STORAGE_EMULATOR_HOST: process.env.FIREBASE_STORAGE_EMULATOR_HOST, // must be called exactly this because it is used internally by firebase to connect to the emulator
     FIREBASE_EMULATOR_IP: process.env.FIREBASE_EMULATOR_IP,
     SUPABASE_URL: process.env.SUPABASE_URL,

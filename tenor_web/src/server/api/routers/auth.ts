@@ -6,7 +6,6 @@ import { env } from "~/env";
 import { TRPCError } from "@trpc/server";
 import admin from "firebase-admin";
 import { getEmails } from "~/lib/github";
-import { auth } from "~/server/auth";
 
 export const authRouter = createTRPCRouter({
   login: publicProcedure
@@ -15,7 +14,6 @@ export const authRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       const { token, githubAccessToken } = input;
-      const allowedDomain = "@tec.mx";
 
       try {
         // GET USER INFORMATION
@@ -24,42 +22,22 @@ export const authRouter = createTRPCRouter({
           .verifyIdToken(token);
         const user = await ctx.firebaseAdmin.auth().getUser(decodedToken.uid);
 
-        // VALIDATE USER EMAIL HAS CORRECT DOMAIN
-        if (githubAccessToken) {
-          // Check all their verified emails to see if they have one valid email
+        // CHECK THE GITHUB EMAIL IS VERIFIED
+        if (githubAccessToken && !user.emailVerified) {
           const emails = await getEmails(githubAccessToken);
-
-          let validEmail = "";
+          let emailVerified = false;
           for (const email of emails) {
-            if (email.email.endsWith(allowedDomain) && email.verified) {
-              validEmail = email.email;
+            if (email.primary && email.verified) {
+              emailVerified = true;
               break;
             }
           }
 
-          if (!validEmail) {
-            await ctx.firebaseAdmin.auth().deleteUser(decodedToken.uid);
-            return { success: false, error: "UNAUTHORIZED_DOMAIN" };
-          }
-
-          // Update their profile to use the valid email
-          try {
+          if (emailVerified) {
             await ctx.firebaseAdmin.auth().updateUser(decodedToken.uid, {
-              email: validEmail,
               emailVerified: true,
             });
-          } catch (err) {
-            if (typeof err === "object" && err !== null && "code" in err) {
-              console.log(err.code);
-              if (err.code === "auth/email-already-exists") {
-                await ctx.firebaseAdmin.auth().deleteUser(decodedToken.uid); // Delete the created user if the email is already used
-              }
-              return { success: false, error: "FIREBASE", code: err.code };
-            }
           }
-        } else if (!user.email?.endsWith(allowedDomain)) {
-          await ctx.firebaseAdmin.auth().deleteUser(decodedToken.uid);
-          return { success: false, error: "UNAUTHORIZED_DOMAIN" };
         }
 
         // Set the auth token cookie
@@ -71,7 +49,7 @@ export const authRouter = createTRPCRouter({
           path: "/",
         });
 
-        // Create the user document if it doesnt exist
+        // Create the user document if it doesn't exist
         const userDocRef = ctx.firestore
           .collection("users")
           .doc(decodedToken.uid);
@@ -85,11 +63,16 @@ export const authRouter = createTRPCRouter({
 
         return { success: true };
       } catch (err) {
+        console.log(err);
         throw new TRPCError({ code: "UNAUTHORIZED" });
       }
     }),
 
-  logout: publicProcedure.mutation(async () => {
+  logout: publicProcedure.mutation(async ({ ctx }) => {
+    if (!ctx.session) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+    await ctx.firebaseAdmin.auth().revokeRefreshTokens(ctx.session.uid);
+
     const cookie = await cookies();
     cookie.set("token", "", {
       httpOnly: true,
@@ -98,6 +81,7 @@ export const authRouter = createTRPCRouter({
       path: "/",
       maxAge: 0,
     });
+
     return { success: true };
   }),
 
@@ -108,4 +92,34 @@ export const authRouter = createTRPCRouter({
 
     return { verified: ctx.session.emailVerified };
   }),
+
+  refreshSession: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { token } = input;
+
+      const cookie = await cookies();
+      try {
+        await ctx.firebaseAdmin.auth().verifyIdToken(token);
+
+        cookie.set("token", token, {
+          httpOnly: true,
+          secure: env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.log("Token refresh error: ", error);
+        cookie.set("token", "", {
+          httpOnly: true,
+          secure: env.NODE_ENV === "production",
+          sameSite: "strict",
+          path: "/",
+          maxAge: 0,
+        });
+        return { success: false };
+      }
+    }),
 });

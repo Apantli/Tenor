@@ -1,11 +1,7 @@
 "use client";
 
 import { auth } from "~/utils/firebaseClient";
-import {
-  signInWithPopup,
-  GithubAuthProvider,
-  OAuthCredential,
-} from "firebase/auth";
+import { signInWithPopup, GithubAuthProvider } from "firebase/auth";
 import SecondaryButton from "../SecondaryButton";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
@@ -17,20 +13,7 @@ interface Props {
 
 export default function SignInGithub({ setMainError }: Props) {
   const router = useRouter();
-  const { mutate: login } = api.auth.login.useMutation({
-    onSuccess(res) {
-      if (res.success) {
-        router.push("/");
-      } else if (res.error === "UNAUTHORIZED_DOMAIN") {
-        setMainError("Email domain must be @tec.mx");
-      } else if (
-        res.error === "FIREBASE" &&
-        res.code === "auth/email-already-exists"
-      ) {
-        setMainError("This email is already in use");
-      }
-    },
-  });
+  const { mutateAsync: login } = api.auth.login.useMutation();
 
   const handleSignIn = async () => {
     const provider = new GithubAuthProvider();
@@ -45,10 +28,15 @@ export default function SignInGithub({ setMainError }: Props) {
         GithubAuthProvider.credentialFromResult(credential);
       const githubAccessToken = githubCredential?.accessToken;
 
-      login({
+      const res = await login({
         token,
         githubAccessToken,
       });
+      if (res.success) {
+        router.push("/");
+      } else {
+        setMainError("Unexpected error. Please try again.");
+      }
     } catch (error) {
       if (typeof error === "object" && error !== null && "code" in error) {
         if (error.code === "auth/account-exists-with-different-credential") {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useFirebaseAuth } from "../_hooks/useAuth";
+import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { sendEmailVerification } from "firebase/auth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
@@ -29,9 +29,13 @@ export default function ResendVerificationButton() {
   });
 
   useEffect(() => {
-    if (verificationResult?.verified) {
-      router.push("/");
-    }
+    const checkVerification = async () => {
+      if (verificationResult?.verified) {
+        await user?.reload();
+        router.push("/");
+      }
+    };
+    void checkVerification();
   }, [verificationResult]);
 
   const sendEmail = async () => {
