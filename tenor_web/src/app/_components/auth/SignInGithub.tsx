@@ -6,7 +6,6 @@ import SecondaryButton from "../SecondaryButton";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { useState } from "react";
 
 export default function SignInGithub() {
   const router = useRouter();
