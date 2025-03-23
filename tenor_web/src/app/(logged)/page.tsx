@@ -3,12 +3,8 @@
 import { api } from "~/trpc/react";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
-import PrimaryButton from "../_components/PrimaryButton";
-import { useAlert } from "../_hooks/useAlert";
 
 export default function ProjectPage() {
-  const { alert } = useAlert();
-
   return (
     <div>
       <div className="projects-list__container">
@@ -18,36 +14,6 @@ export default function ProjectPage() {
         <div className="projects-list__content">
           <ProjectList />
         </div>
-        <br />
-        <PrimaryButton
-          onClick={() =>
-            alert("Wow", "This is a normal alert", { type: "success" })
-          }
-        >
-          Generate Success Alert Without Duration
-        </PrimaryButton>
-        <br />
-        <PrimaryButton
-          onClick={() =>
-            alert("Wow", "This is a timed alert", {
-              type: "success",
-              duration: 10000,
-            })
-          }
-        >
-          Generate Success Alert
-        </PrimaryButton>
-        <br />
-        <PrimaryButton
-          onClick={() =>
-            alert("Oops...", "You clicked on the error alert!", {
-              type: "error",
-              duration: 5000,
-            })
-          }
-        >
-          Generate Error Alert
-        </PrimaryButton>
       </div>
       <div className="projects-dashboard__container"></div>
     </div>
