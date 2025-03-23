@@ -5,8 +5,6 @@ import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
 
 export default function ProjectPage() {
-  const alert = useAlert();
-
   return (
     <div className="flex h-full w-full flex-row">
       <div className="w-1/2 w-full">
