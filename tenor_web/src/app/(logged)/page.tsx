@@ -7,7 +7,7 @@ import PrimaryButton from "../_components/PrimaryButton";
 import { useAlert } from "../_hooks/useAlert";
 
 export default function ProjectPage() {
-  const alert = useAlert();
+  const { alert } = useAlert();
 
   return (
     <div>
