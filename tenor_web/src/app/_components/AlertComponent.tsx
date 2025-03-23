@@ -1,16 +1,26 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Alert } from "../_hooks/useAlert";
+import { type Alert } from "../_hooks/useAlert";
 import { cn } from "~/lib/utils";
+import useShiftKey from "../_hooks/useShiftKey";
 
 interface Props {
   alertItem: Alert;
   removeAlert: (id: number) => void;
+  alertCount: number;
+  removeAll: () => void;
 }
 
-export default function AlertComponent({ alertItem, removeAlert }: Props) {
+export default function AlertComponent({
+  alertItem,
+  removeAlert,
+  alertCount,
+  removeAll,
+}: Props) {
   const [countdown, setCountdown] = useState(alertItem.options.duration);
   const animationFrameRef = useRef<number | null>(null);
-  const isHovered = useRef<boolean>(false);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const shiftPressed = useShiftKey();
 
   useEffect(() => {
     if (countdown === undefined) return;
@@ -19,7 +29,7 @@ export default function AlertComponent({ alertItem, removeAlert }: Props) {
     const tick = (timestamp: number) => {
       if (alertItem.options.duration === undefined) return;
 
-      if (!startTime || isHovered.current) {
+      if (!startTime || isHovered) {
         startTime = timestamp;
       }
 
@@ -44,7 +54,7 @@ export default function AlertComponent({ alertItem, removeAlert }: Props) {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [isHovered]);
 
   const textColors = {
     success: "text-app-success",
@@ -61,11 +71,11 @@ export default function AlertComponent({ alertItem, removeAlert }: Props) {
   };
 
   const handleMouseEnter = () => {
-    isHovered.current = true;
+    setIsHovered(true);
   };
 
   const handleMouseLeave = () => {
-    isHovered.current = false;
+    setIsHovered(false);
   };
 
   return (
@@ -96,7 +106,7 @@ export default function AlertComponent({ alertItem, removeAlert }: Props) {
       {alertItem.options.duration && countdown !== undefined && (
         <div
           className={cn("absolute bottom-0 left-0 overflow-hidden", {
-            "transition-all": isHovered.current,
+            "transition-all": isHovered,
           })}
           style={{
             width: `${(countdown * 100) / alertItem.options.duration}%`,
@@ -107,11 +117,26 @@ export default function AlertComponent({ alertItem, removeAlert }: Props) {
           ></div>
         </div>
       )}
+
       <button
-        className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-lg border border-transparent text-3xl font-thin hover:border-app-border"
-        onClick={() => removeAlert(alertItem.id)}
+        className="absolute right-3 top-3 flex h-8 w-auto items-center justify-center rounded-lg border border-transparent px-2 text-3xl font-thin transition-all hover:border-app-border"
+        onClick={(e) => {
+          if (e.shiftKey) {
+            removeAll();
+          } else {
+            removeAlert(alertItem.id);
+          }
+        }}
+        data-tooltip-id="tooltip"
+        data-tooltip-content="Shift+Click to dismiss all"
+        data-tooltip-place="top-start"
+        data-tooltip-hidden={alertCount == 1 || shiftPressed}
       >
-        &times;
+        {isHovered && shiftPressed && alertCount > 1 ? (
+          <span className="text-xs font-medium">Dismiss all</span>
+        ) : (
+          <span>&times;</span>
+        )}
       </button>
     </div>
   );
