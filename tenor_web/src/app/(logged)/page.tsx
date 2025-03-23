@@ -3,12 +3,8 @@
 import { api } from "~/trpc/react";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
-import PrimaryButton from "../_components/PrimaryButton";
-import { useAlert } from "../_hooks/useAlert";
 
 export default function ProjectPage() {
-  const { alert } = useAlert();
-
   return (
     <div className="flex h-full w-full flex-row">
       <div className="w-1/2 w-full">
@@ -18,23 +14,6 @@ export default function ProjectPage() {
         <div className="projects-list__content">
           <ProjectList />
         </div>
-        <br />
-        <PrimaryButton
-          onClick={() => alert("Wow", "This is cool", { type: "success" })}
-        >
-          Generate Success Alert
-        </PrimaryButton>
-        <br></br>
-        <PrimaryButton
-          onClick={() =>
-            alert("Oops...", "This is not cool", {
-              type: "error",
-              duration: 5000,
-            })
-          }
-        >
-          Generate Error Alert
-        </PrimaryButton>
       </div>
       <div className="projects-dashboard__container"></div>
     </div>
