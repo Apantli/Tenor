@@ -1,6 +1,6 @@
 /*
 IMPORTANTE:
-- Checar duplicación de datos para actualizaciones (es decir, datos que cuando se actualiza uno, se tiene que actualizar el otro)
+- Checar duplicación de datos para operaciones en DB (es decir, datos que cuando se actualiza uno, se tiene que actualizar el otro)
   - Para esto está firebase_dependencies.drawio
 
 TODO: 
@@ -19,9 +19,9 @@ export interface SprintInfo {
 
 // This sprint is modifiable 
 export interface Sprint extends SprintInfo {
-  userStorysId: string[];
-  issuesId: string[];
-  genericItemId: string[];
+  userStoryIds: string[];
+  issueIds: string[];
+  genericItemIds: string[];
 }
 
 export interface SprintSnapshot extends SprintInfo {
@@ -42,7 +42,10 @@ export interface Project {
   name: string;
   description: string;
   logoUrl: string;
+  deleted: boolean;
+  
   settings: Settings;
+
   users: {
     userId: string;
     roleId: string;
@@ -60,10 +63,10 @@ export interface Project {
   }[]; 
 
   requirements: Requirement[];
-  userStorys: UserStory[];
+  userStories: UserStory[];
   issues: Issue[];
   epics: Epic[];
-  genericItem: BacklogItem[];
+  genericItems: BacklogItem[];
 
   sprints: Sprint[];
   sprintSnapshots: SprintSnapshot[];
@@ -71,7 +74,7 @@ export interface Project {
 
   activities: { // TODO: Make configuration to delete these after X amount of time
     title: string;
-    ref: string;
+    actitivtyId: string;
     type: 'US' | 'TS' | 'IS' | 'ITEM';
     newStatusId: string;
     userId: string; // who changed it
@@ -103,6 +106,7 @@ export interface Settings {
 export interface Tag {
   name: string;
   color: string;
+  deleted: boolean;
 }
 
 /// User
@@ -150,7 +154,7 @@ export interface BacklogItem extends BasicInfo {
   sprintId: string;
   tasks: Task[];
   complete: boolean;
-  tagsId: string[];
+  tagIds: string[];
   size: Size;
   priorityId: string;
 }
@@ -160,8 +164,8 @@ export type Epic = BasicInfo
 export interface UserStory extends BacklogItem {
   epicId: string;
   acceptanceCriteria: string; // Markdown
-  dependencies: string[]; // US ID
-  requiredBy: string[]; // US ID
+  dependencyIds: string[]; // US ID
+  requiredByIds: string[]; // US ID
 }
 
 export interface Task extends BasicInfo {
@@ -174,13 +178,13 @@ export interface Task extends BasicInfo {
 }
 
 export interface Issue extends BacklogItem {
-  userStoryId: string;
+  relatedUserStoryId: string;
   stepsToRecreate: string; // Markdown
 }
 
 export interface Requirement extends BasicInfo {
   size: Size;
   priorityId: string;
-  reqTypeId: string;
-  reqFocusId: string;
+  requirementTypeId: string;
+  requirementFocusId: string;
 }
