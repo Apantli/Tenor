@@ -1,12 +1,12 @@
 "use client";
 
 import SettingsIcon from "@mui/icons-material/Settings";
+import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown from "./Dropdown";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
-import LogoutIcon from "@mui/icons-material/Logout";
 
 export default function Navbar() {
   const { user, loading } = useFirebaseAuth();
