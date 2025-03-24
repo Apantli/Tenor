@@ -1,7 +1,4 @@
 "use client";
-
-import { api } from "~/trpc/react";
-import { useState, useEffect } from "react";
 import PrimaryButton from "~/app/_components/PrimaryButton";
 import { FilterSearch } from "~/app/_components/FilterSearch";
 
