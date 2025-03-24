@@ -3,19 +3,20 @@
 import { api } from "~/trpc/react";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
+import PrimaryButton from "../_components/PrimaryButton";
 
 export default function ProjectPage() {
   return (
-    <div>
-      <div className="projects-list__container">
-        <div className="header">
+    <div className="flex flex-row w-full h-full">
+      <div className="w-1/2 w-full">
+        <div className="">
           <h1>Projects</h1>
         </div>
-        <div className="projects-list__content">
+        <div className="">
           <ProjectList />
         </div>
       </div>
-      <div className="projects-dashboard__container"></div>
+      <div className="w-1/2 w-full"></div>
     </div>
   );
 }
@@ -51,26 +52,29 @@ function ProjectList() {
       setFilteredProjects(projects || []);
     } else {
       setFilteredProjects(
-        projects?.filter((p) => filterList.includes(p.project_name)) || [],
+        projects?.filter((p) => filterList.includes(p.name)) || [],
       );
     }
   };
 
   return (
     <div>
-      <FilterSearch
-        list={projects.map((p) => p.project_name)}
-        onSearch={handleFilter}
-      />
+      <div className="flex h-full max-h-[33px] justify-between w-full max-w-[490px]">
+        <FilterSearch
+          list={projects.map((p) => p.name)}
+          onSearch={handleFilter}
+        />
+        <PrimaryButton className={"max-w-[103px] w-full h-full text-xs self-center"} onClick={() => (null)}> + New project </PrimaryButton>
+      </div>
       <ul>
         {filteredProjects?.map((project) => (
-          <li className="project-card" key={project.id}>
-            <div className="project-logo">
-              <img src={project.link} alt={project.project_name} />
+          <li className="flex h-full max-w-[490px]  justify-start border-b-2 py-[8]" key={project.id}>
+            <div className="m-[10px] bg-blue-500 rounded-md h-24 max-w-[66px] max-h-[66px] w-24 flex justify-center items-center">
+              <img className="object-scale-down p-[4px]" src={project.link} alt={project.name} />
             </div>
-            <div className="project-info">
-              <h3 className="subheader">{project.project_name}</h3>
-              <p>{project.description}</p>
+            <div className="max-h-full w-full flex flex-col justify-start ml-2">
+              <h3 className="text-lg font-semibold my-[7px]">{project.name}</h3>
+              <p className="text-sm">{project.description}</p>
             </div>
           </li>
         ))}
