@@ -4,15 +4,16 @@ import {
 } from "~/server/api/trpc";
 
 interface User {
-  email: string;
-  assign_projects: string[];
+  uid: string;
+  projectIds: string[];
 }
 
 interface Project {
   id: string;
-  project_name: string;
+  name: string;
   link: string;
   description: string;
+  delete: boolean;
 }
 
 
@@ -31,11 +32,11 @@ const fetchProjectData = async (projectRef: FirebaseFirestore.DocumentReference,
   return null;
 };
 
-const fetchUserProjects = async (email: string, dbAdmin: FirebaseFirestore.Firestore) => {
+const fetchUserProjects = async (uid: string, dbAdmin: FirebaseFirestore.Firestore) => {
   try {
-    // Buscar usuario en Firestore por su email
+    // Buscar usuario en Firestore por su uid
     const usersCollection = dbAdmin.collection('users'); // Use dbAdmin.collection
-    const querySnapshot = await usersCollection.where('email', '==', email).get(); // Use dbAdmin.collection.where
+    const querySnapshot = await usersCollection.where('uid', '==', uid).get(); // Use dbAdmin.collection.where
 
     if (querySnapshot.empty) {
       console.log('No matching documents.');
@@ -45,16 +46,16 @@ const fetchUserProjects = async (email: string, dbAdmin: FirebaseFirestore.Fires
     const userData = querySnapshot.docs[0]?.data() as User;
     console.log('User data from Firestore:', userData);
 
-    if (!userData.assign_projects || userData.assign_projects.length === 0) {
-      console.log('No projects assigned for user', email);
+    if (!userData.projectIds || userData.projectIds.length === 0) {
+      console.log('No projects assigned for user', uid);
       return [];
     }
 
-    console.log('Project references (string) for user:', userData.assign_projects);
+    console.log('Project references (string) for user:', userData.projectIds);
 
     // Transform the string to a DocumentReference
-    const assignProjectRefs = userData.assign_projects.map((projectPath) =>
-      dbAdmin.doc(projectPath) // Use dbAdmin.doc
+    const assignProjectRefs = userData.projectIds.map((projectPath) =>
+      dbAdmin.doc(`projects/${projectPath}`) // Use dbAdmin.doc
     );
 
     console.log('Converted project references:', assignProjectRefs);
@@ -68,9 +69,9 @@ const fetchUserProjects = async (email: string, dbAdmin: FirebaseFirestore.Fires
     );
 
     if (projects.length === 0) {
-      console.log('No projects found for user', email);
+      console.log('No projects found for user', uid);
     } else {
-      console.log('Projects found for user', email, projects);
+      console.log('Projects found for user', uid, projects);
     }
 
     return projects;
@@ -82,8 +83,8 @@ const fetchUserProjects = async (email: string, dbAdmin: FirebaseFirestore.Fires
 
 export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ctx}) => {
-    const userEmail = ctx.session.user.email ?? "";
+    const useruid = ctx.session.user.uid ?? "";
 
-    return await fetchUserProjects(userEmail, ctx.firestore);
+    return await fetchUserProjects(useruid, ctx.firestore);
   })
 });
