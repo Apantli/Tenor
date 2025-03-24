@@ -1,19 +1,52 @@
-import { auth } from "~/server/auth";
-import NavbarMenu, { type NavbarMenuProps } from "./NavbarMenu";
-import LogoutButton from "./LogoutButton";
+"use client";
 
-export default async function Navbar({ tabs }: NavbarMenuProps) {
-  const session = await auth();
+import SettingsIcon from "@mui/icons-material/Settings";
+import ProfilePicture from "./ProfilePicture";
+import Dropdown from "./Dropdown";
+import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
+import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
+import LogoutIcon from "@mui/icons-material/Logout";
+
+export default function Navbar() {
+  const { user, loading } = useFirebaseAuth();
+  const { mutateAsync: logout } = api.auth.logout.useMutation();
+  const router = useRouter();
+
+  if (loading) return <></>;
+
+  const options = {
+    profile: "My profile",
+    signout: (
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-app-fail">Sign out</span>
+        <LogoutIcon htmlColor="red" fontSize="small" />
+      </div>
+    ),
+  };
+  const dropdownCallback = async (option: keyof typeof options) => {
+    switch (option) {
+      case "profile":
+        break;
+      case "signout":
+        const res = await logout();
+        if (res.success) {
+          router.push("/login");
+        }
+        break;
+    }
+  };
 
   return (
     <nav className="flex h-16 items-center justify-between bg-app-primary px-4">
       <div className="flex items-center">
         <img src={"/white_logo.png"} alt="Tenor Logo" className="h-7 w-auto" />
-        <NavbarMenu tabs={tabs} />
       </div>
       <div className="flex items-center gap-4">
-        <p className="text-white">{session?.displayName}</p>
-        <LogoutButton />
+        <SettingsIcon htmlColor="white" fontSize={"large"} />
+        <Dropdown options={options} callback={dropdownCallback}>
+          <ProfilePicture user={user} hideTooltip />
+        </Dropdown>
       </div>
     </nav>
   );
