@@ -15,8 +15,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Clear ESLint Cache
-        run: rm -rf node_modules/.cache/eslint
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
