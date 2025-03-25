@@ -7,8 +7,9 @@ TODO:
 - Agregar campo deleted a todos los correspondientes, si falta alguno
 */
 
-
 /// Big categories
+
+export type WithId<T> = T & { id: string };
 
 export interface SprintInfo {
   number: number;
@@ -17,7 +18,7 @@ export interface SprintInfo {
   endDate: Date;
 }
 
-// This sprint is modifiable 
+// This sprint is modifiable
 export interface Sprint extends SprintInfo {
   userStoryIds: string[];
   issueIds: string[];
@@ -35,7 +36,7 @@ export interface SprintSnapshot extends SprintInfo {
       userId: string;
       taskPercentage: number;
     }[];
-  }
+  };
 }
 
 export interface Project {
@@ -43,7 +44,7 @@ export interface Project {
   description: string;
   logoUrl: string;
   deleted: boolean;
-  
+
   settings: Settings;
 
   users: {
@@ -60,7 +61,7 @@ export interface Project {
       contributedIssues: number;
     };
     active: boolean;
-  }[]; 
+  }[];
 
   requirements: Requirement[];
   userStories: UserStory[];
@@ -72,10 +73,11 @@ export interface Project {
   sprintSnapshots: SprintSnapshot[];
   currentSprintId: string;
 
-  activities: { // TODO: Make configuration to delete these after X amount of time
+  activities: {
+    // TODO: Make configuration to delete these after X amount of time
     title: string;
     activityId: string;
-    type: 'US' | 'TS' | 'IS' | 'ITEM';
+    type: "US" | "TS" | "IS" | "ITEM";
     newStatusId: string;
     userId: string; // who changed it
     date: Date;
@@ -85,11 +87,12 @@ export interface Project {
 export interface Settings {
   sprintDuration: number;
   maximumSprintStoryPoints: number;
-  aiContext: { // embeddings maybe
+  aiContext: {
+    // embeddings maybe
     text: string;
     files: {
       name: string;
-      type: 'pdf' | 'docx' | 'xslx'; // mp4 maybe
+      type: "pdf" | "docx" | "xslx"; // mp4 maybe
       content: string;
     }[];
     links: string[];
@@ -119,7 +122,7 @@ export interface User {
 }
 
 // Each number refers to 1 permission: "can't view" | "view" | "view-details" | "modify" | "create" | "delete"
-export type Permission = 0 | 1 | 2 | 3 | 4 | 5
+export type Permission = 0 | 1 | 2 | 3 | 4 | 5;
 
 export interface Role {
   name: string;
@@ -148,7 +151,7 @@ export interface BasicInfo {
 }
 
 // TODO: Make function to transform into number size (fibonacci)
-export type Size = 'XS' | 'S' | 'M' | 'L' | 'XL' | 'XXL'; 
+export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
 
 export interface BacklogItem extends BasicInfo {
   sprintId: string;
@@ -159,7 +162,7 @@ export interface BacklogItem extends BasicInfo {
   priorityId: string;
 }
 
-export type Epic = BasicInfo 
+export type Epic = BasicInfo;
 
 export interface UserStory extends BacklogItem {
   epicId: string;

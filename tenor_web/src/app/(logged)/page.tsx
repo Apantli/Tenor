@@ -97,7 +97,7 @@ function ProjectList() {
         {filteredProjects?.map((project) => (
           <li
             className="flex h-full max-w-[490px] justify-start border-b-2 py-[8]"
-            key={project.name} // FIXME: Use id
+            key={project.id}
           >
             <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
               <img
