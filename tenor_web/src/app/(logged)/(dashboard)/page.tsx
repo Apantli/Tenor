@@ -14,10 +14,10 @@ export default function ProjectPage() {
         <div className="">
           <h1>Projects</h1>
         </div>
-          <ProjectList />
-          <SecondaryButton className="mt-6" href="/project/1">
-            Open sample project
-          </SecondaryButton>
+        <ProjectList />
+        <SecondaryButton className="mt-6" href="/project/1">
+          Open sample project
+        </SecondaryButton>
       </div>
       <div className="w-1/2 w-full"></div>
     </div>
@@ -81,11 +81,7 @@ function ProjectList() {
       setFilteredProjects(projects || []);
     } else {
       setFilteredProjects(
-<<<<<<< HEAD
         projects?.filter((p) => filterList.includes(p.name)) || [],
-=======
-        projects?.filter((p) => filterList.includes(p.project_name)) || [],
->>>>>>> 029a6cd (Tab bar navigation)
       );
     }
   };
