@@ -1,22 +1,26 @@
+"use client";
+
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown from "./Dropdown";
 import Link from "next/link";
-import { auth } from "~/server/auth";
-import { api } from "~/trpc/server";
 import { redirect } from "next/navigation";
 import { type PropsWithChildren } from "react";
+import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
+import { api } from "~/trpc/react";
 
-export default async function Navbar({ children }: PropsWithChildren) {
-  const session = await auth();
+export default function Navbar({ children }: PropsWithChildren) {
+  const { user } = useFirebaseAuth();
+
+  const { mutateAsync: logout } = api.auth.logout.useMutation();
 
   const options = {
     profile: (
       <div className="flex items-center justify-between">
         <span>Profile</span>
         <span className="w-[120px] truncate text-right text-sm opacity-50">
-          {session?.displayName}
+          {user?.displayName ?? ""}
         </span>
       </div>
     ),
@@ -28,12 +32,11 @@ export default async function Navbar({ children }: PropsWithChildren) {
     ),
   };
   const dropdownCallback = async (option: keyof typeof options) => {
-    "use server"; // this enables passing function callbacks into client components
     switch (option) {
       case "profile":
         break;
       case "signout":
-        const res = await api.auth.logout();
+        const res = await logout();
         if (res.success) {
           redirect("/login");
         }
@@ -60,7 +63,7 @@ export default async function Navbar({ children }: PropsWithChildren) {
           callback={dropdownCallback}
           menuClassName="w-56"
         >
-          <ProfilePicture user={session} hideTooltip />
+          <ProfilePicture user={user} hideTooltip />
         </Dropdown>
       </div>
     </nav>
