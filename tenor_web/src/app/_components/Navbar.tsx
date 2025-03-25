@@ -1,25 +1,22 @@
-"use client";
-
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown from "./Dropdown";
-import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
-import { api } from "~/trpc/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { auth } from "~/server/auth";
+import { api } from "~/trpc/server";
+import { redirect } from "next/navigation";
+import { type PropsWithChildren } from "react";
 
-export default function Navbar() {
-  const { user, loading } = useFirebaseAuth();
-  const { mutateAsync: logout } = api.auth.logout.useMutation();
-  const router = useRouter();
+export default async function Navbar({ children }: PropsWithChildren) {
+  const session = await auth();
 
   const options = {
     profile: (
       <div className="flex items-center justify-between">
         <span>Profile</span>
         <span className="w-[120px] truncate text-right text-sm opacity-50">
-          {user?.displayName}
+          {session?.displayName}
         </span>
       </div>
     ),
@@ -31,13 +28,14 @@ export default function Navbar() {
     ),
   };
   const dropdownCallback = async (option: keyof typeof options) => {
+    "use server"; // this enables passing function callbacks into client components
     switch (option) {
       case "profile":
         break;
       case "signout":
-        const res = await logout();
+        const res = await api.auth.logout();
         if (res.success) {
-          router.push("/login");
+          redirect("/login");
         }
         break;
     }
@@ -45,9 +43,16 @@ export default function Navbar() {
 
   return (
     <nav className="flex h-16 items-center justify-between bg-app-primary px-8">
-      <Link className="flex items-center" href="/">
-        <img src={"/white_logo.png"} alt="Tenor Logo" className="h-7 w-auto" />
-      </Link>
+      <div className="flex items-center gap-8 text-white">
+        <Link className="flex items-center" href="/">
+          <img
+            src={"/white_logo.png"}
+            alt="Tenor Logo"
+            className="h-7 w-auto"
+          />
+        </Link>
+        {children}
+      </div>
       <div className="flex items-center gap-4">
         <SettingsIcon htmlColor="white" fontSize={"large"} />
         <Dropdown
@@ -55,7 +60,7 @@ export default function Navbar() {
           callback={dropdownCallback}
           menuClassName="w-56"
         >
-          <ProfilePicture user={user} hideTooltip />
+          <ProfilePicture user={session} hideTooltip />
         </Dropdown>
       </div>
     </nav>
