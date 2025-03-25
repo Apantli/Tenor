@@ -14,6 +14,7 @@ export default function Navbar({ children }: PropsWithChildren) {
   const { user } = useFirebaseAuth();
 
   const { mutateAsync: logout } = api.auth.logout.useMutation();
+  const router = useRouter();
 
   const options = {
     profile: (
@@ -38,7 +39,7 @@ export default function Navbar({ children }: PropsWithChildren) {
       case "signout":
         const res = await logout();
         if (res.success) {
-          redirect("/login");
+          router.push("/login");
         }
         break;
     }
