@@ -13,14 +13,44 @@ export default function ProjectPage() {
         <div className="">
           <h1>Projects</h1>
         </div>
+<<<<<<< HEAD
         <div>
+=======
+<<<<<<<< HEAD:tenor_web/src/app/(logged)/page.tsx
+        <div className="projects-list__content">
+========
+        <div>
+>>>>>>>> 029a6cd (Tab bar navigation):tenor_web/src/app/(logged)/(dashboard)/page.tsx
+>>>>>>> 029a6cd (Tab bar navigation)
           <ProjectList />
           <SecondaryButton className="mt-6" href="/project/1">
             Open sample project
           </SecondaryButton>
         </div>
+<<<<<<< HEAD
       </div>
       <div className="w-1/2 w-full"></div>
+=======
+        <br />
+        <PrimaryButton
+          onClick={() => alert("Wow", "This is cool", { type: "success" })}
+        >
+          Generate Success Alert
+        </PrimaryButton>
+        <br></br>
+        <PrimaryButton
+          onClick={() =>
+            alert("Oops...", "This is not cool", {
+              type: "error",
+              duration: 5000,
+            })
+          }
+        >
+          Generate Error Alert
+        </PrimaryButton>
+      </div>
+      <div className="projects-dashboard__container"></div>
+>>>>>>> 029a6cd (Tab bar navigation)
     </div>
   );
 }
@@ -56,7 +86,11 @@ function ProjectList() {
       setFilteredProjects(projects || []);
     } else {
       setFilteredProjects(
+<<<<<<< HEAD
         projects?.filter((p) => filterList.includes(p.name)) || [],
+=======
+        projects?.filter((p) => filterList.includes(p.project_name)) || [],
+>>>>>>> 029a6cd (Tab bar navigation)
       );
     }
   };

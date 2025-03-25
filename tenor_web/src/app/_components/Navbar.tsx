@@ -2,6 +2,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown from "./Dropdown";
+<<<<<<< HEAD
 import Link from "next/link";
 import { auth } from "~/server/auth";
 import { api } from "~/trpc/server";
@@ -10,6 +11,17 @@ import { type PropsWithChildren } from "react";
 
 export default async function Navbar({ children }: PropsWithChildren) {
   const session = await auth();
+=======
+import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
+import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+
+export default function Navbar() {
+  const { user, loading } = useFirebaseAuth();
+  const { mutateAsync: logout } = api.auth.logout.useMutation();
+  const router = useRouter();
+>>>>>>> 029a6cd (Tab bar navigation)
 
   const options = {
     profile: (
