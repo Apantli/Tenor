@@ -34,7 +34,7 @@ export const CreateNewProject = () => {
       router.push(`/project/${response.projectId}`);
     } else {
       console.error("Error creating project");
-    }
+    } 
   };
 
   return (
