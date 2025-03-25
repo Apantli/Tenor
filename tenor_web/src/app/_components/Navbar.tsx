@@ -16,7 +16,14 @@ export default function Navbar() {
   if (loading) return <></>;
 
   const options = {
-    profile: "My profile",
+    profile: (
+      <div className="flex items-center justify-between">
+        <span>Profile</span>
+        <span className="w-[120px] truncate text-right text-sm opacity-50">
+          {user?.displayName}
+        </span>
+      </div>
+    ),
     signout: (
       <div className="flex items-center justify-between gap-2">
         <span className="text-app-fail">Sign out</span>
@@ -44,7 +51,11 @@ export default function Navbar() {
       </div>
       <div className="flex items-center gap-4">
         <SettingsIcon htmlColor="white" fontSize={"large"} />
-        <Dropdown options={options} callback={dropdownCallback}>
+        <Dropdown
+          options={options}
+          callback={dropdownCallback}
+          menuClassName="w-56"
+        >
           <ProfilePicture user={user} hideTooltip />
         </Dropdown>
       </div>

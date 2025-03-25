@@ -1,9 +1,25 @@
 import React from "react";
+import { cn } from "~/lib/utils";
 
-export default function LoadingSpinner() {
+interface Props {
+  color?: "white" | "dark" | "primary";
+}
+
+export default function LoadingSpinner({ color }: Props) {
+  const col = color ?? "white";
+
   return (
     <div>
-      <div className="h-6 w-6 animate-spin rounded-full border-4 border-y-white border-l-white border-r-transparent opacity-90"></div>
+      <div
+        className={cn(
+          "h-6 w-6 animate-spin rounded-full border-4 border-r-transparent opacity-90",
+          {
+            "border-y-white border-l-white": color === "white",
+            "border-y-app-primary border-l-app-primary": color === "primary",
+            "border-y-app-text border-l-app-text": color === "dark",
+          },
+        )}
+      ></div>
     </div>
   );
 }
