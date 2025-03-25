@@ -7,7 +7,7 @@ import { cn } from "~/lib/utils";
 export default function Tabbar() {
   const pathname = usePathname();
   const params = useParams();
-  const projectPath = `/project/${params.projectId}`;
+  const projectPath = `/project/${params.projectId as string}`;
   const cutPathname = pathname.slice(projectPath.length) || "/";
 
   // TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
