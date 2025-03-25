@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
-import { Project, User } from "~/lib/types/firebaseSchemas";
+import type { Project, WithId, User } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 // interface User {
@@ -82,14 +82,15 @@ const fetchUserProjects = async (
 
     console.log("Converted project references:", assignProjectRefs);
 
-    const projectResults = await Promise.all(
-      assignProjectRefs.map((projectRef) =>
-        fetchProjectData(projectRef, dbAdmin),
-      ),
-    );
+    const projectResults = (await Promise.all(
+      assignProjectRefs.map((projectRef) => ({
+        id: projectRef.id,
+        ...fetchProjectData(projectRef, dbAdmin),
+      })),
+    )) as WithId<Project>[];
 
-    const projects: Project[] = projectResults.filter(
-      (project): project is Project => project !== null,
+    const projects: WithId<Project>[] = projectResults.filter(
+      (project): project is WithId<Project> => project !== null,
     );
 
     if (projects.length === 0) {
@@ -104,7 +105,6 @@ const fetchUserProjects = async (
     return [];
   }
 };
-
 
 export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ ctx }) => {
