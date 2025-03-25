@@ -1,9 +1,10 @@
 "use client";
 
 import { api } from "~/trpc/react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
+import PrimaryButton from "../_components/PrimaryButton";
 
 export default function ProjectPage() {
   return (
@@ -23,14 +24,14 @@ export default function ProjectPage() {
 
 export const CreateNewProject = () => {
   const router = useRouter();
+  const { mutateAsync: createProject } =
+    api.projects.createProject.useMutation();
 
   const handleCreateProject = async () => {
-    const newProject = createEmptyProject();
+    const response = await createProject();
 
-    const projectID = await createProject(newProject, dbAdmin);
-
-    if (projectID) {
-      router.push(`/projects/${projectID}`);
+    if (response.success) {
+      router.push(`/project/${response.projectId}`);
     } else {
       console.error("Error creating project");
     }
@@ -78,7 +79,7 @@ function ProjectList() {
       setFilteredProjects(projects || []);
     } else {
       setFilteredProjects(
-        projects?.filter((p) => filterList.includes(p.project_name)) || [],
+        projects?.filter((p) => filterList.includes(p.name)) || [],
       );
     }
   };
@@ -90,13 +91,7 @@ function ProjectList() {
           list={projects.map((p) => p.name)}
           onSearch={handleFilter}
         />
-        <PrimaryButton
-          className={"h-full w-full max-w-[103px] self-center text-xs"}
-          onClick={() => null}
-        >
-          {" "}
-          + New project{" "}
-        </PrimaryButton>
+        <CreateNewProject />
       </div>
       <ul>
         {filteredProjects?.map((project) => (
