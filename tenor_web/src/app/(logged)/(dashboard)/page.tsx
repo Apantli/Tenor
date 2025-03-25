@@ -14,32 +14,10 @@ export default function ProjectPage() {
         <div className="">
           <h1>Projects</h1>
         </div>
-        <div>
           <ProjectList />
           <SecondaryButton className="mt-6" href="/project/1">
             Open sample project
           </SecondaryButton>
-        </div>
-<<<<<<< HEAD
-        <br />
-        <PrimaryButton
-          onClick={() => alert("Wow", "This is cool", { type: "success" })}
-        >
-          Generate Success Alert
-        </PrimaryButton>
-        <br></br>
-        <PrimaryButton
-          onClick={() =>
-            alert("Oops...", "This is not cool", {
-              type: "error",
-              duration: 5000,
-            })
-          }
-        >
-          Generate Error Alert
-        </PrimaryButton>
-=======
->>>>>>> a9b26c3 (Remove test alert buttons)
       </div>
       <div className="w-1/2 w-full"></div>
     </div>
@@ -103,7 +81,11 @@ function ProjectList() {
       setFilteredProjects(projects || []);
     } else {
       setFilteredProjects(
+<<<<<<< HEAD
         projects?.filter((p) => filterList.includes(p.name)) || [],
+=======
+        projects?.filter((p) => filterList.includes(p.project_name)) || [],
+>>>>>>> 029a6cd (Tab bar navigation)
       );
     }
   };
