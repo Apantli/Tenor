@@ -39,9 +39,9 @@ export default function Dropdown<T extends string>({
       <button onClick={toggleOpen}>{children}</button>
       <div
         className={cn(
-          "absolute right-0 top-full mt-2 flex origin-top-right -translate-y-2 scale-x-50 scale-y-0 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
+          "absolute right-0 top-full z-50 mt-2 flex origin-top-right scale-x-50 scale-y-0 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
           {
-            "translate-y-0 scale-x-100 scale-y-100 opacity-100": isOpen,
+            "scale-x-100 scale-y-100 opacity-100": isOpen,
           },
           menuClassName,
         )}
