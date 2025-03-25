@@ -1,9 +1,12 @@
 import "~/styles/globals.css";
+import "react-tooltip/dist/react-tooltip.css";
 
 import { GeistSans } from "geist/font/sans";
 import { type Metadata } from "next";
 
 import { TRPCReactProvider } from "~/trpc/react";
+import { AlertProvider } from "./_hooks/useAlert";
+import TooltipClientWrapper from "./_components/TooltipClientWrapper";
 
 export const metadata: Metadata = {
   title: "Tenor",
@@ -16,7 +19,11 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
-        <TRPCReactProvider>{children}</TRPCReactProvider>
+        <TRPCReactProvider>
+          <TooltipClientWrapper>
+            <AlertProvider>{children}</AlertProvider>
+          </TooltipClientWrapper>
+        </TRPCReactProvider>
       </body>
     </html>
   );

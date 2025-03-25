@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { sendEmailVerification } from "firebase/auth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import SecondaryButton from "../_components/SecondaryButton";
+import { useAlert } from "../_hooks/useAlert";
 
 export default function ResendVerificationButton() {
   const router = useRouter();
 
-  const [message, setMessage] = useState<"none" | "sent" | "error">("none");
+  const { alert, predefinedAlerts } = useAlert();
 
   const { user, loading } = useFirebaseAuth();
   const { data: verificationResult } = api.auth.checkVerification.useQuery(
@@ -42,14 +43,16 @@ export default function ResendVerificationButton() {
     if (!user) return;
 
     try {
-      setMessage("none");
       await sendEmailVerification(user);
-      setMessage("sent");
+      alert("Email sent!", "Please wait for it to arrive to your inbox", {
+        type: "success",
+        duration: 7000,
+      });
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
         console.log("FIREBASE ERROR:", err.code);
       }
-      setMessage("error");
+      predefinedAlerts.unexpectedError();
     }
   };
 
@@ -65,12 +68,6 @@ export default function ResendVerificationButton() {
           Resend
         </button>
       </span>
-      {message === "sent" && <p className="text-app-primary">Email sent</p>}
-      {message === "error" && (
-        <p className="text-app-fail">
-          Unexpecter error, please try again later
-        </p>
-      )}
       <SecondaryButton className="w-64" onClick={() => logout()}>
         Go back
       </SecondaryButton>

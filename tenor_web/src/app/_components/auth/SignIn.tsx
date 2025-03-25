@@ -1,18 +1,15 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, { useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import PrimaryButton from "../PrimaryButton";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
+import { useAlert } from "~/app/_hooks/useAlert";
 
-interface Props {
-  setMainError: Dispatch<SetStateAction<string>>;
-}
-
-export default function SignIn({ setMainError }: Props) {
+export default function SignIn() {
   const router = useRouter();
 
   const [form, setForm] = useState({
@@ -25,11 +22,11 @@ export default function SignIn({ setMainError }: Props) {
   });
   const [loading, setLoading] = useState(false);
   const { mutateAsync: login } = api.auth.login.useMutation();
+  const { alert, predefinedAlerts } = useAlert();
 
   const handleInput: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError({ ...error, [e.target.name]: "" });
-    setMainError("");
   };
 
   const handleSignIn = async () => {
@@ -63,7 +60,7 @@ export default function SignIn({ setMainError }: Props) {
       if (res.success) {
         router.push("/");
       } else {
-        setMainError("Unexpected error. Please try again.");
+        predefinedAlerts.unexpectedError();
       }
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
@@ -73,14 +70,17 @@ export default function SignIn({ setMainError }: Props) {
             setError({ ...newError, email: "Enter a valid email" });
             break;
           case "auth/invalid-credential":
-            setMainError("Incorrect email or password");
+            alert("Oops...", "Incorrect email or password", {
+              type: "error",
+              duration: 7000,
+            });
             break;
           default:
-            setMainError("Unexpected error. Please try again.");
+            predefinedAlerts.unexpectedError();
             break;
         }
       } else {
-        setMainError("Unexpected error. Please try again.");
+        predefinedAlerts.unexpectedError();
       }
     }
     setLoading(false);
