@@ -7,13 +7,12 @@ import Dropdown from "./Dropdown";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function Navbar() {
   const { user, loading } = useFirebaseAuth();
   const { mutateAsync: logout } = api.auth.logout.useMutation();
   const router = useRouter();
-
-  if (loading) return <></>;
 
   const options = {
     profile: (
@@ -45,10 +44,10 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="flex h-16 items-center justify-between bg-app-primary px-4">
-      <div className="flex items-center">
+    <nav className="flex h-16 items-center justify-between bg-app-primary px-8">
+      <Link className="flex items-center" href="/">
         <img src={"/white_logo.png"} alt="Tenor Logo" className="h-7 w-auto" />
-      </div>
+      </Link>
       <div className="flex items-center gap-4">
         <SettingsIcon htmlColor="white" fontSize={"large"} />
         <Dropdown

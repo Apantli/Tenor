@@ -1,0 +1,58 @@
+"use client";
+import Link from "next/link";
+import { useParams, usePathname } from "next/navigation";
+import React, { type MouseEventHandler } from "react";
+import { cn } from "~/lib/utils";
+
+export default function Tabbar() {
+  const pathname = usePathname();
+  const params = useParams();
+  const projectPath = `/project/${params.projectId}`;
+  const cutPathname = pathname.slice(projectPath.length) || "/";
+
+  // TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
+  const tabs = [
+    { title: "Overview", link: "/" },
+    { title: "Requirements", link: "/requirements" },
+    { title: "User Stories", link: "/user-stories" },
+    { title: "Issues", link: "/issues" },
+    { title: "Sprints", link: "/sprints" },
+    { title: "Kanban", link: "/kanban" },
+    { title: "Calendar", link: "/calendar" },
+    { title: "Performance", link: "/performance" },
+    { title: "Project Settings", link: "/project-settings" },
+  ];
+
+  const handleClick: MouseEventHandler = (e) => {
+    const element = e.target as HTMLAnchorElement;
+    element.scrollIntoView({
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-scroll whitespace-nowrap bg-app-primary px-8">
+      {tabs.map(({ title, link }, i) => (
+        <Link
+          key={i}
+          className={cn(
+            "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
+            {
+              "bg-white text-app-primary": link === cutPathname,
+            },
+          )}
+          href={projectPath + link}
+          onClick={handleClick}
+        >
+          {title}
+          {link === cutPathname && (
+            <>
+              <div className="absolute -left-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[5px_5px_0_0_white]"></div>
+              <div className="absolute -right-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[-5px_5px_0_0_white]"></div>
+            </>
+          )}
+        </Link>
+      ))}
+    </div>
+  );
+}

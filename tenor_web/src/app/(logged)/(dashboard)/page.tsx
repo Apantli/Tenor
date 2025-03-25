@@ -3,7 +3,9 @@
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { FilterSearch } from "../_components/FilterSearch";
+import { FilterSearch } from "~/app/_components/FilterSearch";
+import PrimaryButton from "~/app/_components/PrimaryButton";
+import SecondaryButton from "~/app/_components/SecondaryButton";
 
 export default function ProjectPage() {
   return (
@@ -12,8 +14,11 @@ export default function ProjectPage() {
         <div className="">
           <h1>Projects</h1>
         </div>
-        <div className="">
+        <div>
           <ProjectList />
+          <SecondaryButton className="mt-6" href="/project/1">
+            Open sample project
+          </SecondaryButton>
         </div>
 <<<<<<< HEAD
         <br />
