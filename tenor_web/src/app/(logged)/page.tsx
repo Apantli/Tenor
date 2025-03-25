@@ -1,30 +1,22 @@
 "use client";
 
 import { api } from "~/trpc/react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
 import PrimaryButton from "../_components/PrimaryButton";
-import { createECDH } from "crypto";
-import createProject, { createEmptyProject } from "~/server/api/routers/createProject";
-import { dbAdmin } from "~/utils/firebaseAdmin";
 
 export default function ProjectPage() {
   return (
-    <div className="flex flex-row w-full h-full">
-      <div className="w-1/2 w-full">
-        <div className="">
-    <div className="flex flex-row w-full h-full">
+    <div className="flex h-full w-full flex-row">
       <div className="w-1/2 w-full">
         <div className="">
           <h1>Projects</h1>
         </div>
         <div className="">
-        <div className="">
           <ProjectList />
         </div>
       </div>
-      <div className="w-1/2 w-full"></div>
       <div className="w-1/2 w-full"></div>
     </div>
   );
@@ -32,20 +24,28 @@ export default function ProjectPage() {
 
 export const CreateNewProject = () => {
   const router = useRouter();
+  const { mutateAsync: createProject } =
+    api.projects.createProject.useMutation();
 
   const handleCreateProject = async () => {
-    const newProject = createEmptyProject();
+    const response = await createProject();
 
-    const projectID = await createProject(newProject, dbAdmin);
-
-    if (projectID) {
-      router.push(`/projects/${projectID}`);
+    if (response.success) {
+      router.push(`/project/${response.projectId}`);
     } else {
-      console.error("Error creating project");  
+      console.error("Error creating project");
     }
   };
 
-  return <PrimaryButton className={"max-w-[103px] w-full h-full text-xs self-center"} onClick={handleCreateProject}> + New project </PrimaryButton>
+  return (
+    <PrimaryButton
+      className={"h-full w-full max-w-[103px] self-center text-xs"}
+      onClick={handleCreateProject}
+    >
+      {" "}
+      + New project{" "}
+    </PrimaryButton>
+  );
 };
 
 function ProjectList() {
@@ -80,41 +80,34 @@ function ProjectList() {
     } else {
       setFilteredProjects(
         projects?.filter((p) => filterList.includes(p.name)) || [],
-        projects?.filter((p) => filterList.includes(p.name)) || [],
       );
     }
   };
 
   return (
     <div>
-      <div className="flex h-full max-h-[33px] justify-between w-full max-w-[490px]">
+      <div className="flex h-full max-h-[33px] w-full max-w-[490px] justify-between">
         <FilterSearch
           list={projects.map((p) => p.name)}
           onSearch={handleFilter}
         />
-        <PrimaryButton className={"max-w-[103px] w-full h-full text-xs self-center"} onClick={() => (null)}> + New project </PrimaryButton>
-      </div>
-      <div className="flex h-full max-h-[33px] justify-between w-full max-w-[490px]">
-        <FilterSearch
-          list={projects.map((p) => p.name)}
-          onSearch={handleFilter}
-        />
-        <PrimaryButton className={"max-w-[103px] w-full h-full text-xs self-center"} onClick={() => (null)}> + New project </PrimaryButton>
+        <CreateNewProject />
       </div>
       <ul>
         {filteredProjects?.map((project) => (
-          <li className="flex h-full max-w-[490px]  justify-start border-b-2 py-[8]" key={project.id}>
-            <div className="m-[10px] bg-blue-500 rounded-md h-24 max-w-[66px] max-h-[66px] w-24 flex justify-center items-center">
-              <img className="object-scale-down p-[4px]" src={project.link} alt={project.name} />
-          <li className="flex h-full max-w-[490px]  justify-start border-b-2 py-[8]" key={project.id}>
-            <div className="m-[10px] bg-blue-500 rounded-md h-24 max-w-[66px] max-h-[66px] w-24 flex justify-center items-center">
-              <img className="object-scale-down p-[4px]" src={project.link} alt={project.name} />
+          <li
+            className="flex h-full max-w-[490px] justify-start border-b-2 py-[8]"
+            key={project.name} // FIXME: Use id
+          >
+            <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
+              <img
+                className="object-scale-down p-[4px]"
+                src={project.logoUrl}
+                alt={project.name}
+              />
             </div>
-            <div className="max-h-full w-full flex flex-col justify-start ml-2">
-              <h3 className="text-lg font-semibold my-[7px]">{project.name}</h3>
-              <p className="text-sm">{project.description}</p>
-            <div className="max-h-full w-full flex flex-col justify-start ml-2">
-              <h3 className="text-lg font-semibold my-[7px]">{project.name}</h3>
+            <div className="ml-2 flex max-h-full w-full flex-col justify-start">
+              <h3 className="my-[7px] text-lg font-semibold">{project.name}</h3>
               <p className="text-sm">{project.description}</p>
             </div>
           </li>
