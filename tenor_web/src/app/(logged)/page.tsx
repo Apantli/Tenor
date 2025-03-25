@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "~/trpc/react";
+import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "../_components/FilterSearch";
 
@@ -11,14 +12,40 @@ export default function ProjectPage() {
         <div className="">
           <h1>Projects</h1>
         </div>
-        <div className="projects-list__content">
+        <div className="">
           <ProjectList />
         </div>
       </div>
-      <div className="projects-dashboard__container"></div>
+      <div className="w-1/2 w-full"></div>
     </div>
   );
 }
+
+export const CreateNewProject = () => {
+  const router = useRouter();
+
+  const handleCreateProject = async () => {
+    const newProject = createEmptyProject();
+
+    const projectID = await createProject(newProject, dbAdmin);
+
+    if (projectID) {
+      router.push(`/projects/${projectID}`);
+    } else {
+      console.error("Error creating project");
+    }
+  };
+
+  return (
+    <PrimaryButton
+      className={"h-full w-full max-w-[103px] self-center text-xs"}
+      onClick={handleCreateProject}
+    >
+      {" "}
+      + New project{" "}
+    </PrimaryButton>
+  );
+};
 
 function ProjectList() {
   const {
