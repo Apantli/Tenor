@@ -1,11 +1,12 @@
 import { TRPCError } from "@trpc/server";
-import { Project } from "~/lib/types/firebaseSchemas";
+import { FieldValue } from "firebase-admin/firestore";
+import { Project, User } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
-interface User {
-  uid: string;
-  projectIds: string[];
-}
+// interface User {
+//   uid: string;
+//   projectIds: string[];
+// }
 
 export const createEmptyProject = (): Project => {
   return {
@@ -104,6 +105,7 @@ const fetchUserProjects = async (
   }
 };
 
+
 export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid ?? "";
@@ -112,12 +114,17 @@ export const projectsRouter = createTRPCRouter({
   }),
 
   createProject: protectedProcedure.mutation(async ({ ctx }) => {
+    const useruid = ctx.session.uid;
+
     try {
       const project = createEmptyProject();
       const projectRef = await ctx.firestore
         .collection("projects")
         .add(project);
       console.log("Project added with ID: ", projectRef.id);
+
+      const userRef = ctx.firestore.collection("users").doc(useruid);
+      await userRef.update("projectIds", FieldValue.arrayUnion(projectRef.id));
 
       return { success: true, projectId: projectRef.id };
     } catch (error) {
