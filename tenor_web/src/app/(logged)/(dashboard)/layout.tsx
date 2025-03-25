@@ -9,7 +9,7 @@ export default async function RootLayout({
   return (
     <>
       <Navbar>
-        <Link href="/" className="font-medium">
+        <Link href="/" className="font-semibold">
           Dashboard
         </Link>
       </Navbar>

@@ -8,7 +8,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     <div>
       <Navbar>
         <div className="flex gap-3">
-          <Link href="/" className="font-bold">
+          <Link href="/" className="font-semibold">
             Projects
           </Link>
           <span>/ ProjectName</span>
