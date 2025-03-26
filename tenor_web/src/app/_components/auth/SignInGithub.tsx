@@ -1,17 +1,13 @@
 "use client";
 
 import { auth } from "~/utils/firebaseClient";
-import {
-  signInWithPopup,
-  GithubAuthProvider,
-  OAuthCredential,
-} from "firebase/auth";
+import { signInWithPopup, GithubAuthProvider } from "firebase/auth";
 import SecondaryButton from "../SecondaryButton";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
 
-export default function SignInGithub({ setMainError }: Props) {
+export default function SignInGithub() {
   const router = useRouter();
   const { mutateAsync: login } = api.auth.login.useMutation();
 

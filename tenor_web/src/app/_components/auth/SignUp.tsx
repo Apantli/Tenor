@@ -1,13 +1,13 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
 import PrimaryButton from "../PrimaryButton";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
   updateProfile,
-  User,
+  type User,
 } from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
@@ -16,7 +16,7 @@ import { useAlert } from "~/app/_hooks/useAlert";
 
 export default function SignUp() {
   const router = useRouter();
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const [form, setForm] = useState({
     name: "",
