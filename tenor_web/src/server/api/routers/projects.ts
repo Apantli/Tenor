@@ -1,90 +1,154 @@
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "~/server/api/trpc";
+import { TRPCError } from "@trpc/server";
+import { FieldValue } from "firebase-admin/firestore";
+import type { Project, WithId, User, Settings } from "~/lib/types/firebaseSchemas";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
-interface User {
-  uid: string;
-  projectIds: string[];
+// interface User {
+//   uid: string;
+//   projectIds: string[];
+// }
+
+const emptySettings: Settings = {
+  sprintDuration: 0,
+  maximumSprintStoryPoints: 0,
+  aiContext: {
+    text: "",
+    files: [],
+    links: [],
+  },
+  requirementFocusTags: [],
+  requirementTypeTags: [],
+  backlogTags: [],
+  priorityTypes: [],
+  statusTabs: [],
+  roles: [],
 }
 
-interface Project {
-  id: string;
-  name: string;
-  link: string;
-  description: string;
-  delete: boolean;
-}
+export const createEmptyProject = (): Project => {
+  return {
+    name: "",
+    description: "",
+    logoUrl: "",
+    deleted: false,
 
+    settings: emptySettings , // Deberías definir un `emptySettings` si `Settings` tiene valores requeridos
 
-const fetchProjectData = async (projectRef: FirebaseFirestore.DocumentReference, dbAdmin: FirebaseFirestore.Firestore): Promise<Project | null> => {
+    users: [],
+
+    requirements: [],
+    userStories: [],
+    issues: [],
+    epics: [],
+    genericItems: [],
+
+    sprints: [],
+    sprintSnapshots: [],
+    currentSprintId: "",
+
+    activities: [],
+  };
+};
+
+const fetchProjectData = async (
+  projectRef: FirebaseFirestore.DocumentReference,
+  dbAdmin: FirebaseFirestore.Firestore,
+): Promise<Project | null> => {
   try {
-    console.log('Fetching project data for', projectRef.path);
+    console.log("Fetching project data for", projectRef.path);
     const projectSnapshot = await dbAdmin.doc(projectRef.path).get(); // Use adminDb.doc
 
     if (projectSnapshot.exists) {
-      return { id: projectSnapshot.id, ...projectSnapshot.data() } as Project;
+      return projectSnapshot.data() as Project;
     }
   } catch (error) {
-    console.error('Error getting documents: ', error);
+    console.error("Error getting documents: ", error);
   }
 
   return null;
 };
 
-const fetchUserProjects = async (uid: string, dbAdmin: FirebaseFirestore.Firestore) => {
+const fetchUserProjects = async (
+  uid: string,
+  dbAdmin: FirebaseFirestore.Firestore,
+) => {
   try {
     // Buscar usuario en Firestore por su uid
-    const usersCollection = dbAdmin.collection('users'); // Use dbAdmin.collection
-    const querySnapshot = await usersCollection.where('uid', '==', uid).get(); // Use dbAdmin.collection.where
+    const usersCollection = dbAdmin.collection("users"); // Use dbAdmin.collection
+    const querySnapshot = await usersCollection.where("uid", "==", uid).get(); // Use dbAdmin.collection.where
 
     if (querySnapshot.empty) {
-      console.log('No matching documents.');
+      console.log("No matching documents.");
       return [];
     }
 
     const userData = querySnapshot.docs[0]?.data() as User;
-    console.log('User data from Firestore:', userData);
+    console.log("User data from Firestore:", userData);
 
     if (!userData.projectIds || userData.projectIds.length === 0) {
-      console.log('No projects assigned for user', uid);
+      console.log("No projects assigned for user", uid);
       return [];
     }
 
-    console.log('Project references (string) for user:', userData.projectIds);
+    console.log("Project references (string) for user:", userData.projectIds);
 
     // Transform the string to a DocumentReference
-    const assignProjectRefs = userData.projectIds.map((projectPath) =>
-      dbAdmin.doc(`projects/${projectPath}`) // Use dbAdmin.doc
+    const assignProjectRefs = userData.projectIds.map(
+      (projectPath) => dbAdmin.doc(`projects/${projectPath}`), // Use dbAdmin.doc
     );
 
-    console.log('Converted project references:', assignProjectRefs);
+    console.log("Converted project references:", assignProjectRefs);
 
     const projectResults = await Promise.all(
-      assignProjectRefs.map((projectRef) => fetchProjectData(projectRef, dbAdmin))
+      assignProjectRefs.map(async (projectRef) => {
+        const projectData = await fetchProjectData(projectRef, dbAdmin); // Await the fetch
+        return {
+          id: projectRef.id,
+          ...projectData, // Spread the resolved project data
+        };
+      }),
     );
 
-    const projects: Project[] = projectResults.filter(
-      (project): project is Project => project !== null
+    const projects: WithId<Project>[] = projectResults.filter(
+      (project): project is WithId<Project> => project !== null,
     );
 
     if (projects.length === 0) {
-      console.log('No projects found for user', uid);
+      console.log("No projects found for user", uid);
     } else {
-      console.log('Projects found for user', uid, projects);
+      console.log("Projects found for user", uid, projects);
     }
 
     return projects;
   } catch (error) {
-    console.error('Error getting documents: ', error);
+    console.error("Error getting documents: ", error);
     return [];
   }
 };
 
 export const projectsRouter = createTRPCRouter({
-  listProjects: protectedProcedure.query(async ({ctx}) => {
-    const useruid = ctx.session.user.uid ?? "";
+  listProjects: protectedProcedure.query(async ({ ctx }) => {
+    const useruid = ctx.session.user.uid;
 
     return await fetchUserProjects(useruid, ctx.firestore);
-  })
+  }),
+
+  createProject: protectedProcedure.mutation(async ({ ctx }) => {
+    const useruid = ctx.session.uid;
+
+    try {
+      const project = createEmptyProject();
+      const projectRef = await ctx.firestore
+        .collection("projects")
+        .add(project);
+      console.log("Project added with ID: ", projectRef.id);
+
+      const userRef = ctx.firestore.collection("users").doc(useruid);
+      await userRef.update("projectIds", FieldValue.arrayUnion(projectRef.id));
+
+      return { success: true, projectId: projectRef.id };
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  }),
 });
