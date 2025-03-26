@@ -5,16 +5,16 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown from "./Dropdown";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { type PropsWithChildren } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
-import { api } from "~/trpc/react";
+import useShiftKey from "../_hooks/useShiftKey";
+import useLogout from "../_hooks/useLogout";
 
 export default function Navbar({ children }: PropsWithChildren) {
   const { user } = useFirebaseAuth();
+  const logout = useLogout();
 
-  const { mutateAsync: logout } = api.auth.logout.useMutation();
-  const router = useRouter();
+  const shiftClicked = useShiftKey();
 
   const options = {
     profile: (
@@ -31,17 +31,23 @@ export default function Navbar({ children }: PropsWithChildren) {
         <LogoutIcon htmlColor="red" fontSize="small" />
       </div>
     ),
-  };
+  } as Record<string, React.ReactNode>;
+
+  if (shiftClicked) {
+    options.copyUID = (
+      <div className="text-sm text-gray-500">Copy your user id</div>
+    );
+  }
+
   const dropdownCallback = async (option: keyof typeof options) => {
     switch (option) {
       case "profile":
         break;
       case "signout":
-        const res = await logout();
-        if (res.success) {
-          router.push("/login");
-        }
+        await logout();
         break;
+      case "copyUID":
+        await navigator.clipboard.writeText(user?.uid ?? "");
     }
   };
 

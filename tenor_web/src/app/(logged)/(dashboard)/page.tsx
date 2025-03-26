@@ -1,10 +1,10 @@
 "use client";
 
 import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "~/app/_components/FilterSearch";
 import PrimaryButton from "~/app/_components/PrimaryButton";
-import SecondaryButton from "~/app/_components/SecondaryButton";
 
 export default function ProjectPage() {
   return (
@@ -13,11 +13,11 @@ export default function ProjectPage() {
         <div className="">
           <h1>Projects</h1>
         </div>
-        <ProjectList />
-        <SecondaryButton className="mt-6" href="/project/1">
-          Open sample project
-        </SecondaryButton>
+        <div className="">
+          <ProjectList />
+        </div>
       </div>
+      <div className="w-1/2 w-full"></div>
     </div>
   );
 }
@@ -91,13 +91,7 @@ function ProjectList() {
           list={projects.map((p) => p.name)}
           onSearch={handleFilter}
         />
-        <PrimaryButton
-          className={"h-full w-full max-w-[103px] self-center text-xs"}
-          onClick={() => null}
-        >
-          {" "}
-          + New project{" "}
-        </PrimaryButton>
+        <CreateNewProject />
       </div>
       <ul>
         {filteredProjects?.map((project) => (
@@ -108,7 +102,7 @@ function ProjectList() {
             <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
               <img
                 className="object-scale-down p-[4px]"
-                src={project.link}
+                src={project.logoUrl}
                 alt={project.name}
               />
             </div>
