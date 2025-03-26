@@ -1,12 +1,28 @@
 import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
-import type { Project, WithId, User } from "~/lib/types/firebaseSchemas";
+import type { Project, WithId, User, Settings } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 // interface User {
 //   uid: string;
 //   projectIds: string[];
 // }
+
+const emptySettings: Settings = {
+  sprintDuration: 0,
+  maximumSprintStoryPoints: 0,
+  aiContext: {
+    text: "",
+    files: [],
+    links: [],
+  },
+  requirementFocusTags: [],
+  requirementTypeTags: [],
+  backlogTags: [],
+  priorityTypes: [],
+  statusTabs: [],
+  roles: [],
+}
 
 export const createEmptyProject = (): Project => {
   return {
@@ -15,7 +31,7 @@ export const createEmptyProject = (): Project => {
     logoUrl: "",
     deleted: false,
 
-    settings: {} as any, // Deberías definir un `emptySettings` si `Settings` tiene valores requeridos
+    settings: emptySettings , // Deberías definir un `emptySettings` si `Settings` tiene valores requeridos
 
     users: [],
 
@@ -82,12 +98,15 @@ const fetchUserProjects = async (
 
     console.log("Converted project references:", assignProjectRefs);
 
-    const projectResults = (await Promise.all(
-      assignProjectRefs.map((projectRef) => ({
-        id: projectRef.id,
-        ...fetchProjectData(projectRef, dbAdmin),
-      })),
-    )) as WithId<Project>[];
+    const projectResults = await Promise.all(
+      assignProjectRefs.map(async (projectRef) => {
+        const projectData = await fetchProjectData(projectRef, dbAdmin); // Await the fetch
+        return {
+          id: projectRef.id,
+          ...projectData, // Spread the resolved project data
+        };
+      }),
+    );
 
     const projects: WithId<Project>[] = projectResults.filter(
       (project): project is WithId<Project> => project !== null,
@@ -108,7 +127,7 @@ const fetchUserProjects = async (
 
 export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ ctx }) => {
-    const useruid = ctx.session.user.uid ?? "";
+    const useruid = ctx.session.user.uid;
 
     return await fetchUserProjects(useruid, ctx.firestore);
   }),
