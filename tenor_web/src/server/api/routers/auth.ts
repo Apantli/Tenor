@@ -39,6 +39,7 @@ export const authRouter = createTRPCRouter({
               emailVerified: true,
             });
           }
+        }
 
         // Set the auth token cookie
         const cookie = await cookies();
