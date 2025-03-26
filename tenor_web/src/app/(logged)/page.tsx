@@ -22,7 +22,7 @@ export default function ProjectPage() {
   );
 }
 
-export const CreateNewProject = () => {
+const CreateNewProject = () => {
   const router = useRouter();
   const { mutateAsync: createProject } =
     api.projects.createProject.useMutation();
