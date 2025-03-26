@@ -133,8 +133,9 @@ const fetchUserProjects = async (
 export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
+    const projects = await fetchUserProjects(useruid, ctx.firestore);
 
-    return await fetchUserProjects(useruid, ctx.firestore);
+    return projects;
   }),
 
   createProject: protectedProcedure.mutation(async ({ ctx }) => {
