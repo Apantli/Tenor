@@ -1,5 +1,4 @@
 import Link from "next/link";
-import React from "react";
 import SignInGithub from "~/app/_components/auth/SignInGithub";
 import SignUp from "~/app/_components/auth/SignUp";
 

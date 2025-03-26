@@ -6,6 +6,7 @@ import { env } from "~/env";
 import { TRPCError } from "@trpc/server";
 import admin from "firebase-admin";
 import { getEmails } from "~/lib/github";
+import { auth } from "~/server/auth";
 
 export const authRouter = createTRPCRouter({
   login: publicProcedure

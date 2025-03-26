@@ -15,6 +15,7 @@ export default function SignInGithub() {
 
   const handleSignIn = async () => {
     const provider = new GithubAuthProvider();
+    provider.addScope("user:email");
     provider.setCustomParameters({
       prompt: "select_account",
     });

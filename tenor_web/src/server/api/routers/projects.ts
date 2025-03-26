@@ -1,6 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
-import type { Project, WithId, User, Settings } from "~/lib/types/firebaseSchemas";
+import type {
+  Project,
+  WithId,
+  User,
+  Settings,
+} from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 // interface User {
@@ -22,7 +27,7 @@ const emptySettings: Settings = {
   priorityTypes: [],
   statusTabs: [],
   roles: [],
-}
+};
 
 export const createEmptyProject = (): Project => {
   return {
@@ -31,7 +36,7 @@ export const createEmptyProject = (): Project => {
     logoUrl: "",
     deleted: false,
 
-    settings: emptySettings , // Deberías definir un `emptySettings` si `Settings` tiene valores requeridos
+    settings: emptySettings, // Deberías definir un `emptySettings` si `Settings` tiene valores requeridos
 
     users: [],
 
@@ -128,8 +133,9 @@ const fetchUserProjects = async (
 export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
+    const projects = await fetchUserProjects(useruid, ctx.firestore);
 
-    return await fetchUserProjects(useruid, ctx.firestore);
+    return projects;
   }),
 
   createProject: protectedProcedure.mutation(async ({ ctx }) => {

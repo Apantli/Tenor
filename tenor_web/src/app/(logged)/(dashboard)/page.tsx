@@ -3,8 +3,8 @@
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { FilterSearch } from "../_components/FilterSearch";
-import PrimaryButton from "../_components/PrimaryButton";
+import { FilterSearch } from "~/app/_components/FilterSearch";
+import PrimaryButton from "~/app/_components/PrimaryButton";
 
 export default function ProjectPage() {
   return (
@@ -34,7 +34,7 @@ const CreateNewProject = () => {
       router.push(`/project/${response.projectId}`);
     } else {
       console.error("Error creating project");
-    } 
+    }
   };
 
   return (
