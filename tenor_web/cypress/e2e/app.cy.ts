@@ -1,7 +1,6 @@
 describe("template spec", () => {
   it("passes", () => {
     cy.visit("http://localhost:3000/");
-    cy.screenshot("full-page", { capture: "fullPage" });
     cy.document().then((doc) => {
       cy.log(doc.documentElement.outerHTML);
     });
