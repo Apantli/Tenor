@@ -2,9 +2,9 @@ name: Node.js build
 
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
   pull_request:
-    branches: ['main']
+    branches: ["main"]
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: "npm"
           cache-dependency-path: ./tenor_web/package-lock.json
       - name: Expose github environment as shell variables
         env:
@@ -40,3 +40,11 @@ jobs:
       - name: Build project
         run: npm run build
         working-directory: ./tenor_web
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: tenor_web
+          start: npm run e2e:headless
+          wait-on: http://localhost:3000
+          browser: chrome
