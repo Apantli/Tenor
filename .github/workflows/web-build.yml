@@ -37,9 +37,9 @@ jobs:
         run: npm install
         working-directory: ./tenor_web
 
-      # - name: Build project
-      #   run: npm run build
-      #   working-directory: ./tenor_web
+      - name: Build project
+        run: npm run build
+        working-directory: ./tenor_web
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
