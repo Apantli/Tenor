@@ -43,8 +43,6 @@ jobs:
 
       - name: Run Cypress tests
         uses: cypress-io/github-action@v6
-        env:
-          DEBUG: 'cypress:*'
         with:
           working-directory: tenor_web
           start: npm run e2e:headless
