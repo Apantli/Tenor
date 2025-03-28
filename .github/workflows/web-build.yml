@@ -2,9 +2,9 @@ name: Node.js build
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
   pull_request:
-    branches: ["main"]
+    branches: ['main']
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
+          cache: 'npm'
           cache-dependency-path: ./tenor_web/package-lock.json
       - name: Expose github environment as shell variables
         env:
@@ -47,10 +47,3 @@ jobs:
           working-directory: tenor_web
           start: npm run e2e:headless
           browser: chrome
-
-      - name: Upload Cypress Screenshots
-        uses: actions/upload-artifact@v3
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: cypress/screenshots
