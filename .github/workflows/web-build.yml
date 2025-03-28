@@ -46,5 +46,4 @@ jobs:
         with:
           working-directory: tenor_web
           start: npm run e2e:headless
-          wait-on: http://localhost:3000
           browser: chrome
