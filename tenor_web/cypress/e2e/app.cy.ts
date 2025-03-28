@@ -1,5 +1,6 @@
 describe("template spec", () => {
   it("passes", () => {
+    cy.log("HOLA OSCAR");
     cy.visit("http://localhost:3000/");
     cy.document().then((doc) => {
       cy.log("EL DIABLO");
