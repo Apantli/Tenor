@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { type PropsWithChildren } from "react";
 import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "./LoadingSpinner";

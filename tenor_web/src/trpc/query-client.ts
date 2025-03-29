@@ -5,7 +5,7 @@ import {
 import { TRPCClientError } from "@trpc/client";
 import { getAuth } from "firebase/auth";
 import SuperJSON from "superjson";
-import { api, trpcClient } from "./react";
+import { trpcClient } from "./react";
 
 // eslint-disable-next-line
 const isTRPCError = (error: any): error is TRPCClientError<any> => {
@@ -64,7 +64,7 @@ export const createQueryClient = () => {
         },
       },
       mutations: {
-        retry: (failureCount, error) => {
+        retry: (failureCount, _error) => {
           if (failureCount < 3) {
             void refreshToken();
             return true; // Retry up to 3 times

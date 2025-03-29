@@ -6,8 +6,6 @@ interface Props {
 }
 
 export default function LoadingSpinner({ color }: Props) {
-  const col = color ?? "white";
-
   return (
     <div>
       <div

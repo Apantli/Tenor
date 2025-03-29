@@ -54,7 +54,13 @@ export default function AlertComponent({
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, [isHovered]);
+  }, [
+    isHovered,
+    alertItem.id,
+    alertItem.options.duration,
+    countdown,
+    removeAlert,
+  ]);
 
   const textColors = {
     success: "text-app-success",

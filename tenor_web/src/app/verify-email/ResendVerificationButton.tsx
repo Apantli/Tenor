@@ -37,7 +37,7 @@ export default function ResendVerificationButton() {
       }
     };
     void checkVerification();
-  }, [verificationResult]);
+  }, [verificationResult, router, user]);
 
   const sendEmail = async () => {
     if (!user) return;

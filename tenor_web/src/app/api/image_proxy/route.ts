@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server';
+import { type NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -29,9 +29,12 @@ export async function GET(req: NextRequest) {
       } as HeadersInit,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: "Error fetching image" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ message: "Error fetching image", error }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
 }

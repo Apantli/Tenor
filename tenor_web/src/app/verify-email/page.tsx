@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import React from "react";
 import { auth } from "~/server/auth";
 import ResendVerificationButton from "./ResendVerificationButton";
-import SecondaryButton from "../_components/SecondaryButton";
 
 export default async function VerifyEmailPage() {
   const session = await auth();
