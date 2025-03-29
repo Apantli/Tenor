@@ -40,3 +40,11 @@ jobs:
       - name: Build project
         run: npm run build
         working-directory: ./tenor_web
+
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: tenor_web
+          start: npm run e2e:headless
+          wait-on: http://localhost:3000
+          browser: chrome
