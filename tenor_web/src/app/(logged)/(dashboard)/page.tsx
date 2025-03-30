@@ -70,6 +70,11 @@ function ProjectList() {
     return <p>Log in to view this information</p>;
   }
 
+  // FIXME: When there are no projects, you cannot see the "create new project" button, so you are locked.
+  if (!projects?.length) {
+    return <p>There are no assigned projects</p>;
+  }
+
   const handleFilter = (filterList: string[]) => {
     if (filterList.length === 0) {
       setFilteredProjects(projects ?? []);
