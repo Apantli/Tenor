@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import Dropdown from "./Dropdown";
 import { cn } from "~/lib/utils";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 
 interface Props<T extends string> {
   currentTag: Tag;
@@ -17,7 +17,7 @@ export default function PillComponent<T extends string>({
   options,
   pillClassName,
 }: Props<T>) {
-  const drowpdownOptions = {} as Record<string, React.ReactNode>;
+  const dropdownOptions = {} as Record<string, React.ReactNode>;
 
   const createPill = (tag: Tag) => {
     return (
@@ -34,18 +34,18 @@ export default function PillComponent<T extends string>({
         }}
       >
         {tag.name}
-        <PlayArrowIcon fontSize="small" className="rotate-90" />
+        <ArrowDropDownIcon />
       </div>
     );
   };
 
   options.forEach((option) => {
-    drowpdownOptions[option.name] = createPill(option);
+    dropdownOptions[option.name] = createPill(option);
   });
 
   return (
     <div className="flex w-40 items-center gap-4">
-      <Dropdown options={drowpdownOptions} callback={callback} menuClassName="">
+      <Dropdown options={dropdownOptions} callback={callback} menuClassName="">
         {createPill(currentTag)}
       </Dropdown>
     </div>
