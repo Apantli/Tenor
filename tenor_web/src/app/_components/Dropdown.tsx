@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { cn } from "~/lib/utils";
 import useClickOutside from "../_hooks/useClickOutside";
-import { ClassNameValue } from "tailwind-merge";
+import { type ClassNameValue } from "tailwind-merge";
 
 interface Props<T extends string> {
   options: Record<T, React.ReactNode>;

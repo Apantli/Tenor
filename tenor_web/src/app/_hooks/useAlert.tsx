@@ -9,7 +9,7 @@ import React, {
   useState,
   type PropsWithChildren,
 } from "react";
-import Alert from "../_components/AlertComponent";
+import type Alert from "../_components/AlertComponent";
 import AlertComponent from "../_components/AlertComponent";
 
 interface AlertOptions {
@@ -79,7 +79,7 @@ export const AlertProvider = ({ children }: PropsWithChildren) => {
         );
       }, 10);
     },
-    [removeAlert],
+    [],
   );
 
   useEffect(() => {

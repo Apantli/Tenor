@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React, { PropsWithChildren } from "react";
+import React, { type PropsWithChildren } from "react";
 import Navbar from "~/app/_components/Navbar";
 import Tabbar from "~/app/_components/Tabbar";
 
