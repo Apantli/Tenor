@@ -62,7 +62,7 @@ export default function Dropdown({
     let horiAlignment = "right";
 
     // Check if dropdown goes off-screen vertically
-    if (top + dropdownRect.height > viewportHeight) {
+    if (top + dropdownHeight > viewportHeight) {
       top = triggerRect.top - dropdownHeight; // Position above trigger
       vertAlignment = "bottom";
     }
@@ -72,7 +72,7 @@ export default function Dropdown({
       // Check if left edge is off-screen
       left = 0; // Align to left edge of viewport
     } else if (left + dropdownWidth > viewportWidth) {
-      left = viewportWidth - dropdownRect.width; // align to right edge of viewport.
+      left = viewportWidth - dropdownWidth; // align to right edge of viewport.
       horiAlignment = "left";
     }
 
