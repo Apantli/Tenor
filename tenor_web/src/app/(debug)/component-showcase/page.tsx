@@ -99,8 +99,8 @@ function TableShowcase() {
 
   const data: ExampleUser[] = [
     { id: 1, name: "Luis", age: 21 },
-    { id: 2, name: "Sergio", age: 21 },
-    { id: 3, name: "Alonso", age: 21 },
+    { id: 2, name: "Sergio", age: 20 },
+    { id: 3, name: "Alonso", age: 19 },
     { id: 4, name: "Oscar", age: 21 },
     { id: 5, name: "Luis", age: 21 },
     { id: 6, name: "Nicolas", age: 21 },
@@ -129,8 +129,18 @@ function TableShowcase() {
 
   const columns: TableColumns<ExampleUser> = {
     id: { label: "Id", width: 100 },
-    name: { label: "Name", width: 400 },
-    age: { label: "Age", width: 200 },
+    name: {
+      label: "Name",
+      width: 400,
+      sortable: true,
+      filterable: "search-only",
+    },
+    age: {
+      label: "Age",
+      width: 200,
+      filterable: "list",
+      sortable: true,
+    },
   };
 
   const extraOptions = [
@@ -147,8 +157,8 @@ function TableShowcase() {
     <div className="h-[10px]">
       <hr />
       <h2 className="my-2 text-2xl font-medium">Tables</h2>
-      <h3 className="my-2 text-xl">Normal tables</h3>
       <Table
+        className="h-[600px]"
         data={data}
         columns={columns}
         extraOptions={extraOptions}
