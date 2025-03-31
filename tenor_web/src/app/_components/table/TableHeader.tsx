@@ -64,7 +64,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
 
   return (
     <div
-      className="sticky top-0 z-[100] grid w-fit min-w-full gap-2 border-b border-app-border bg-white p-2"
+      className="sticky top-0 z-[100] grid w-fit min-w-full gap-2 border-b border-app-border bg-white px-2"
       style={{ gridTemplateColumns }}
     >
       {multiselect && (
@@ -82,25 +82,30 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
           key={key}
           className="flex items-center justify-between pr-4 text-gray-500"
         >
-          <span>{column.label}</span>
+          <span className="text-sm">{column.label}</span>
           {(!!column.sortable || column.filterable) && (
             <div className="flex items-center justify-end gap-4">
               {sortColumnKey === key && sortDirection === "asc" && (
-                <button onClick={stopSorting}>
+                <button onClick={stopSorting} className="text-app-light">
                   <UpArrowIcon />
                 </button>
               )}
               {sortColumnKey === key && sortDirection === "desc" && (
-                <button onClick={stopSorting}>
+                <button onClick={stopSorting} className="text-app-light">
                   <DownArrowIcon />
                 </button>
               )}
               {filters[key] !== undefined && (
-                <button onClick={() => clearFilter(key)}>
+                <button
+                  onClick={() => clearFilter(key)}
+                  className="text-app-light"
+                >
                   <CrossFilterIcon />
                 </button>
               )}
-              <Dropdown label="• • •">
+              <Dropdown
+                label={<span className="font-bold text-app-light">• • •</span>}
+              >
                 {column.sortable && (
                   <DropdownButton
                     className="flex justify-between gap-8"

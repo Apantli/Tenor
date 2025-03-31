@@ -148,7 +148,7 @@ function TableShowcase() {
       // Optionally: You may provide a render function to present the information in any way you like
       // This is to be used when displaying a pill in the table, but can be used to add any component you like
       render(row) {
-        return <span className="text-red-500">{row.degree}</span>;
+        return <span className="font-bold">{row.degree}</span>;
       },
     },
     name: {

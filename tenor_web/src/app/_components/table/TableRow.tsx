@@ -69,7 +69,7 @@ function TableRow<
         <>
           <div></div>
           <Dropdown
-            label="• • •"
+            label={<span className="font-bold text-app-light">• • •</span>}
             className="flex h-full items-center justify-end text-sm font-semibold transition"
             menuClassName="font-normal whitespace-nowrap"
           >
