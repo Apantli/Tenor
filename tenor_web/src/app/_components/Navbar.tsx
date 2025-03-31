@@ -3,7 +3,7 @@
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
-import Dropdown from "./Dropdown";
+import Dropdown, { DropdownButton } from "./Dropdown";
 import Link from "next/link";
 import { type PropsWithChildren } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
@@ -16,39 +16,12 @@ export default function Navbar({ children }: PropsWithChildren) {
 
   const shiftClicked = useShiftKey();
 
-  const options = {
-    profile: (
-      <div className="flex items-center justify-between">
-        <span>Profile</span>
-        <span className="w-[120px] truncate text-right text-sm opacity-50">
-          {user?.displayName ?? ""}
-        </span>
-      </div>
-    ),
-    signout: (
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-app-fail">Sign out</span>
-        <LogoutIcon htmlColor="red" fontSize="small" />
-      </div>
-    ),
-  } as Record<string, React.ReactNode>;
+  const handleLogout = async () => {
+    await logout();
+  };
 
-  if (shiftClicked) {
-    options.copyUID = (
-      <div className="text-sm text-gray-500">Copy your user id</div>
-    );
-  }
-
-  const dropdownCallback = async (option: keyof typeof options) => {
-    switch (option) {
-      case "profile":
-        break;
-      case "signout":
-        await logout();
-        break;
-      case "copyUID":
-        await navigator.clipboard.writeText(user?.uid ?? "");
-    }
+  const handleCopyUID = async () => {
+    await navigator.clipboard.writeText(user?.uid ?? "");
   };
 
   return (
@@ -66,11 +39,30 @@ export default function Navbar({ children }: PropsWithChildren) {
       <div className="flex items-center gap-4">
         <SettingsIcon htmlColor="white" fontSize={"large"} />
         <Dropdown
-          options={options}
-          callback={dropdownCallback}
-          menuClassName="w-56"
+          label={<ProfilePicture user={user} hideTooltip />}
+          menuClassName="w-56 mt-2"
         >
-          <ProfilePicture user={user} hideTooltip />
+          <DropdownButton className="flex items-center justify-between">
+            <span>Profile</span>
+            <span className="w-[120px] truncate text-right text-sm opacity-50">
+              {user?.displayName ?? ""}
+            </span>
+          </DropdownButton>
+          <DropdownButton
+            className="flex items-center justify-between gap-2"
+            onClick={handleLogout}
+          >
+            <span className="text-app-fail">Sign out</span>
+            <LogoutIcon htmlColor="red" fontSize="small" />
+          </DropdownButton>
+          {shiftClicked && (
+            <DropdownButton
+              className="text-sm text-gray-500"
+              onClick={handleCopyUID}
+            >
+              Copy your user id
+            </DropdownButton>
+          )}
         </Dropdown>
       </div>
     </nav>
