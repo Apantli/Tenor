@@ -9,6 +9,7 @@ interface Props {
   show: boolean;
   size: "small" | "large";
   dismiss: () => void;
+  onEdit?: () => void;
   footer?: React.ReactNode;
   disablePassiveDismiss?: boolean;
   sidebar?: React.ReactNode;
@@ -21,6 +22,7 @@ export default function Popup({
   show,
   size,
   dismiss,
+  onEdit,
   children,
   footer,
   disablePassiveDismiss,
@@ -89,7 +91,10 @@ export default function Popup({
                   <div className="flex-1 overflow-y-scroll p-2">{children}</div>
                   {showEdit && (
                     <div className="flex shrink-0 flex-col gap-2">
-                      <button className="text-3xl text-gray-600">
+                      <button
+                        className="text-3xl text-gray-600"
+                        onClick={onEdit}
+                      >
                         <EditIcon fontSize="inherit" />
                       </button>
                     </div>
