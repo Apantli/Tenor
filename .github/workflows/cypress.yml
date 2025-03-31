@@ -33,10 +33,14 @@ jobs:
           # echo "$VARS_CONTEXT" | to_envs >> $GITHUB_ENV
           echo "$SECRETS_CONTEXT" | to_envs >> $GITHUB_ENV
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./tenor_web
+      # - name: Install dependencies
+      #   run: npm install
+      #   working-directory: ./tenor_web
 
-      - name: Build project
-        run: npm run build
-        working-directory: ./tenor_web
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: tenor_web
+          start: npm run e2e:headless
+          wait-on: http://localhost:3000
+          browser: chrome
