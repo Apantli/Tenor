@@ -2,7 +2,7 @@ import { type Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
 
 export default {
-  content: ["./src/**/*.tsx",  "./src/**/*.ts"],
+  content: ["./src/**/*.tsx", "./src/**/*.ts"],
   theme: {
     extend: {
       fontFamily: {
@@ -20,8 +20,9 @@ export default {
         "app-border": "#BECAD4",
 
         "app-hover-border": "#e8e8e8",
-        "app-hover-primary": "#07585e"
-      }
+        "app-hover-primary": "#07585e",
+        "app-hover-fail": "#ab1530",
+      },
     },
   },
   plugins: [],

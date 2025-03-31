@@ -7,6 +7,7 @@ import { type Metadata } from "next";
 import { TRPCReactProvider } from "~/trpc/react";
 import { AlertProvider } from "./_hooks/useAlert";
 import TooltipClientWrapper from "./_components/TooltipClientWrapper";
+import { ConfirmationProvider } from "./_hooks/useConfirmation";
 
 export const metadata: Metadata = {
   title: "Tenor",
@@ -21,7 +22,9 @@ export default async function RootLayout({
       <body>
         <TRPCReactProvider>
           <TooltipClientWrapper>
-            <AlertProvider>{children}</AlertProvider>
+            <AlertProvider>
+              <ConfirmationProvider>{children}</ConfirmationProvider>
+            </AlertProvider>
           </TooltipClientWrapper>
         </TRPCReactProvider>
       </body>

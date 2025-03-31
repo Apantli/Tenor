@@ -1,7 +1,7 @@
-import React from "react";
 import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "./LoadingSpinner";
+import DeleteIcon from "@mui/icons-material/DeleteOutline";
 
 interface Props {
   children: React.ReactNode;
@@ -9,7 +9,7 @@ interface Props {
   loading?: boolean;
 }
 
-export default function PrimaryButton({
+export default function DeleteButton({
   children,
   className,
   loading,
@@ -19,16 +19,17 @@ export default function PrimaryButton({
     <button
       {...buttonProps}
       className={cn(
-        "relative h-10 rounded-lg bg-app-primary p-2 px-4 text-white transition hover:bg-app-hover-primary disabled:opacity-80",
+        "hover:bg-app-hover-fail relative flex h-10 items-center gap-2 rounded-lg bg-app-fail p-2 px-4 text-white transition disabled:opacity-80",
         className,
       )}
       disabled={loading}
     >
+      <DeleteIcon />
       {children}
 
       {loading && (
         <span className="absolute right-3">
-          <LoadingSpinner />
+          <LoadingSpinner color="white" />
         </span>
       )}
     </button>
