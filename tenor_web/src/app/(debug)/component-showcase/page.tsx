@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import SecondaryButton from "~/app/_components/SecondaryButton";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
+import type { Tag } from "~/lib/types/firebaseSchemas";
+import PillComponent from "~/app/_components/PillComponent";
 
 // This file is to showcase how to use the components available in Tenor
 
@@ -18,6 +20,7 @@ export default function ComponentShowcasePage() {
       <h1 className="my-5 text-3xl font-semibold">Component Showcase</h1>
       <div className="flex flex-col gap-10">
         <AlertShowcase />
+        <PillShowcase />
         <TableShowcase />
       </div>
     </main>
@@ -197,6 +200,50 @@ function TableShowcase() {
         deletable
         onDelete={(ids) => console.log("Deleted", ids)}
       />
+    </div>
+  );
+}
+
+function PillShowcase() {
+  const tags = [
+    {
+      name: "Green",
+      color: "#009719",
+      deleted: false,
+    },
+    {
+      name: "Pink",
+      color: "#CD4EC0",
+      deleted: false,
+    },
+    {
+      name: "Blue",
+      color: "#0737E3",
+      deleted: false,
+    },
+  ];
+
+  const [tag, setTag] = useState(tags[0] as Tag);
+
+  const dropdownCallback = async (tag: Tag) => {
+    try {
+      setTag(tag);
+    } catch (error) {
+      console.error("Error in pill dropdown callback", error);
+    }
+  };
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Pills</h2>
+      <div className="flex justify-start">
+        <PillComponent
+          currentTag={tag}
+          allTags={tags}
+          callBack={dropdownCallback}
+        />
+      </div>
     </div>
   );
 }
