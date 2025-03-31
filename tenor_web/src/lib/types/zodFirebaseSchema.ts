@@ -113,66 +113,73 @@ export const RequirementSchema = BasicInfoSchema.extend({
 });
 
 export const SettingsSchema = z.object({
-  sprintDuration: z.number(),
-  maximumSprintStoryPoints: z.number(),
+  sprintDuration: z.number().default(7),
+  maximumSprintStoryPoints: z.number().default(10000),
   aiContext: z.object({
-    text: z.string(),
-    files: z.array(
-      z.object({
-        name: z.string(),
-        type: z.enum(["pdf", "docx", "xlsx", "mp4"]),
-        content: z.string(),
-      }),
-    ),
-    links: z.array(z.string()),
+    text: z.string().default(""),
+    files: z
+      .array(
+        z.object({
+          name: z.string(),
+          type: z.enum(["pdf", "docx", "xlsx", "mp4"]),
+          content: z.string(),
+        }),
+      )
+      .default([]),
+    links: z.array(z.string()).default([]),
   }),
-  requirementFocusTags: z.array(TagSchema),
-  requirementTypeTags: z.array(TagSchema),
-  backlogTags: z.array(TagSchema),
-  priorityTypes: z.array(TagSchema),
-  statusTabs: z.array(TagSchema),
-  roles: z.array(RoleSchema),
+  requirementFocusTags: z.array(TagSchema).default([]),
+  requirementTypeTags: z.array(TagSchema).default([]),
+  backlogTags: z.array(TagSchema).default([]),
+  priorityTypes: z.array(TagSchema).default([]),
+  statusTabs: z.array(TagSchema).default([]),
+  roles: z.array(RoleSchema).default([]),
 });
 
 export const ProjectSchema = z.object({
   name: z.string(),
   description: z.string(),
   logoUrl: z.string(),
-  deleted: z.boolean(),
+  deleted: z.boolean().default(false),
+
   settings: SettingsSchema,
   users: z.array(
     z.object({
       userId: z.string(),
       roleId: z.string(),
-      stats: z.object({
-        completedTasks: z.array(
-          z.object({
-            taskId: z.string(),
-            finishedDate: z.date(),
-          }),
-        ),
-        contributedUserStories: z.number(),
-        contributedIssues: z.number(),
+      stats: z
+        .object({
+          completedTasks: z.array(
+            z.object({
+              taskId: z.string(),
+              finishedDate: z.date(),
+            }),
+          ),
+          contributedUserStories: z.number(),
+          contributedIssues: z.number(),
+        })
+        .optional(),
+      active: z.boolean().default(true),
+    }),
+  ),
+  requirements: z.array(RequirementSchema).default([]),
+  userStories: z.array(UserStorySchema).default([]),
+  issues: z.array(IssueSchema).default([]),
+  epics: z.array(EpicSchema).default([]),
+  genericItems: z.array(BacklogItemSchema).default([]),
+  sprints: z.array(SprintSchema).default([]),
+  sprintSnapshots: z.array(SprintSnapshotSchema).default([]),
+  currentSprintId: z.string().default("1"),
+  activities: z
+    .array(
+      z.object({
+        title: z.string(),
+        activityId: z.string(),
+        type: z.enum(["US", "TS", "IS", "ITEM"]),
+        newStatusId: z.string(),
+        userId: z.string(),
+        date: z.date(),
       }),
-      active: z.boolean(),
-    }),
-  ),
-  requirements: z.array(RequirementSchema),
-  userStories: z.array(UserStorySchema),
-  issues: z.array(IssueSchema),
-  epics: z.array(EpicSchema),
-  genericItems: z.array(BacklogItemSchema),
-  sprints: z.array(SprintSchema),
-  sprintSnapshots: z.array(SprintSnapshotSchema),
-  currentSprintId: z.string(),
-  activities: z.array(
-    z.object({
-      title: z.string(),
-      activityId: z.string(),
-      type: z.enum(["US", "TS", "IS", "ITEM"]),
-      newStatusId: z.string(),
-      userId: z.string(),
-      date: z.date(),
-    }),
-  ),
+    )
+    .default([]),
 });
