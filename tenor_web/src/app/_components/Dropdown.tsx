@@ -1,15 +1,23 @@
 "use client";
 
-import React, { type ButtonHTMLAttributes, useRef, useState } from "react";
+import React, {
+  type ButtonHTMLAttributes,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { cn } from "~/lib/utils";
 import useClickOutside from "../_hooks/useClickOutside";
 import { type ClassNameValue } from "tailwind-merge";
+import useWindowResize from "../_hooks/useWindowResize";
+import useAfterScroll from "../_hooks/useAfterScroll";
 
 interface Props {
   label: React.ReactNode;
   children: React.ReactNode[] | React.ReactNode;
   className?: ClassNameValue;
   menuClassName?: ClassNameValue;
+  scrollContainer?: React.RefObject<HTMLDivElement>;
 }
 
 export default function Dropdown({
@@ -17,6 +25,7 @@ export default function Dropdown({
   children,
   className,
   menuClassName,
+  scrollContainer,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDirection, setOpenDirection] = useState<
@@ -36,24 +45,42 @@ export default function Dropdown({
     }
   });
 
+  useWindowResize(() => {
+    if (isOpen) {
+      setOpenDirection(positionDropdown(1));
+    }
+  });
+
+  useAfterScroll(() => {
+    if (isOpen) {
+      setOpenDirection(positionDropdown(1));
+    }
+  });
+
+  useAfterScroll(() => {
+    if (isOpen) {
+      setOpenDirection(positionDropdown(1));
+    }
+  }, scrollContainer);
+
   const toggleOpen = () => {
     if (!isOpen) {
-      setOpenDirection(positionDropdown());
+      setOpenDirection(positionDropdown(2));
     }
     setIsOpen(!isOpen);
   };
 
-  function positionDropdown() {
+  function positionDropdown(multiplier: number) {
     if (!ref.current || !dropdownRef.current) return "top-right";
 
     const triggerRect = ref.current.getBoundingClientRect();
     const dropdownRect = dropdownRef.current.getBoundingClientRect();
-    console.log(dropdownRect);
+
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    const dropdownWidth = dropdownRect.width * 2;
-    const dropdownHeight = dropdownRect.height * 2;
+    const dropdownWidth = dropdownRect.width * multiplier;
+    const dropdownHeight = dropdownRect.height * multiplier;
 
     let top = triggerRect.bottom;
     let left = triggerRect.right - dropdownWidth; // Align to the right of the trigger
