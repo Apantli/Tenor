@@ -89,7 +89,7 @@ export default function Dropdown({
 
   return (
     <div
-      className={cn("relative flex items-center justify-center", className)}
+      className={cn("relative flex items-center justify-center z-[200]", className)}
       ref={ref}
     >
       <button onClick={toggleOpen}>{label}</button>
