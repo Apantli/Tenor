@@ -271,6 +271,7 @@ function PopupShowcase() {
         show={showSmallPopup}
         size="small"
         dismiss={() => setShowSmallPopup(false)}
+        showEdit
         footer={
           <div className="flex gap-2">
             <SecondaryButton>Show user stories</SecondaryButton>
@@ -298,6 +299,7 @@ function PopupShowcase() {
           setShowLargePopup(false);
           setShowSidebarPopup(false);
         }}
+        showEdit
         footer={
           <PrimaryButton onClick={() => setShowSidebarPopup(true)}>
             Open sidebar
