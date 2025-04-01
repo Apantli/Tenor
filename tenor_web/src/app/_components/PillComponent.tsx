@@ -13,12 +13,14 @@ interface Props {
   currentTag: Tag;
   allTags: Tag[];
   callBack: (tag: Tag) => void;
+  labelClassName: string;
 }
 
 export default function PillComponent({
   currentTag,
   allTags,
   callBack,
+  labelClassName,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
 
@@ -47,6 +49,7 @@ export default function PillComponent({
       <DropdownButton
         onClick={() => callBack(tag)}
         className="flex items-center gap-2 border-b border-app-border px-2 py-1 last:border-none"
+        key={tag.name}
       >
         <Check
           fontSize="inherit"
@@ -69,7 +72,10 @@ export default function PillComponent({
   const createPillLabel = (tag: Tag) => {
     return (
       <div
-        className="flex items-center justify-between rounded-3xl border-solid py-1 pl-3 pr-2 font-medium"
+        className={cn(
+          "flex items-center justify-between rounded-3xl border-solid py-1 pl-3 pr-2 font-medium",
+          labelClassName,
+        )}
         style={{
           borderColor: `${tag.color}40`,
           borderWidth: "1.4px",
