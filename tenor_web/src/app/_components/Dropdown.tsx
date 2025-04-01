@@ -1,7 +1,7 @@
 "use client";
 
 import React, {
-  type ButtonHTMLAttributes,
+  type PropsWithChildren,
   useEffect,
   useRef,
   useState,
@@ -11,6 +11,7 @@ import useClickOutside from "../_hooks/useClickOutside";
 import { type ClassNameValue } from "tailwind-merge";
 import useWindowResize from "../_hooks/useWindowResize";
 import useAfterScroll from "../_hooks/useAfterScroll";
+import BaseButton, { type BaseButtonProps } from "./buttons/BaseButton";
 
 interface Props {
   label: React.ReactNode;
@@ -195,20 +196,29 @@ export function DropdownButton({
   className,
   dontCloseOnClick,
   ...props
-}: DropdownButtonProps & ButtonHTMLAttributes<HTMLButtonElement>) {
+}: DropdownButtonProps & BaseButtonProps & PropsWithChildren) {
+  const handleClick = (
+    e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>,
+  ) => {
+    if (dontCloseOnClick) e.stopPropagation();
+    if (props.onClick) {
+      props.onClick(
+        e as React.MouseEvent<HTMLButtonElement, MouseEvent> &
+          React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+      );
+    }
+  };
+
   return (
-    <button
+    <BaseButton
       className={cn(
-        "w-full whitespace-nowrap px-3 py-2 text-left transition hover:bg-slate-100",
+        "inline-block w-full whitespace-nowrap px-3 py-2 text-left transition hover:bg-slate-100",
         className,
       )}
       {...props}
-      onClick={(e) => {
-        if (dontCloseOnClick) e.stopPropagation();
-        props.onClick?.(e);
-      }}
+      onClick={handleClick}
     >
       {children}
-    </button>
+    </BaseButton>
   );
 }

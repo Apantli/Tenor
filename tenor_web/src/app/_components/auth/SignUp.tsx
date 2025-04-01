@@ -141,7 +141,7 @@ export default function SignUp() {
       >
         Password
       </FloatingLabelInput>
-      <PrimaryButton onClick={handleSignUp} loading={loading}>
+      <PrimaryButton onClick={handleSignUp} loading={loading} floatingSpinner>
         Create account
       </PrimaryButton>
     </div>

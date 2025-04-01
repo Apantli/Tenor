@@ -12,6 +12,7 @@ import Popup, { SidebarPopup } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 
 // This file is to showcase how to use the components available in Tenor
 
@@ -23,6 +24,7 @@ export default function ComponentShowcasePage() {
       </Link>
       <h1 className="my-5 text-3xl font-semibold">Component Showcase</h1>
       <div className="flex flex-col gap-10">
+        <ButtonShowcase />
         <AlertShowcase />
         <PillShowcase />
         <TableShowcase />
@@ -30,6 +32,37 @@ export default function ComponentShowcasePage() {
         <ConfirmationShowcase />
       </div>
     </main>
+  );
+}
+
+function ButtonShowcase() {
+  // This showcases how to use the buttons available in Tenor
+  // You can use the PrimaryButton and SecondaryButton components to create buttons with different styles
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Buttons</h2>
+      <div className="flex gap-2">
+        <PrimaryButton>Primary Button</PrimaryButton>
+        <SecondaryButton>Secondary Button</SecondaryButton>
+        <TertiaryButton>Tertiary Button</TertiaryButton>
+        <DeleteButton>Delete Button</DeleteButton>
+      </div>
+      <p className="mt-4">Disabled buttons</p>
+      <div className="mt-2 flex gap-2">
+        <PrimaryButton disabled>Primary Button</PrimaryButton>
+        <SecondaryButton disabled>Secondary Button</SecondaryButton>
+        <TertiaryButton disabled>Tertiary Button</TertiaryButton>
+        <DeleteButton disabled>Delete Button</DeleteButton>
+      </div>
+      <p className="mt-4">Buttons with a loading state</p>
+      <div className="mt-2 flex gap-2">
+        <PrimaryButton loading>Primary Button</PrimaryButton>
+        <SecondaryButton loading>Secondary Button</SecondaryButton>
+        <DeleteButton loading>Delete Button</DeleteButton>
+      </div>
+    </div>
   );
 }
 

@@ -10,7 +10,7 @@ export default function LoadingSpinner({ color }: Props) {
     <div>
       <div
         className={cn(
-          "h-6 w-6 animate-spin rounded-full border-4 border-r-transparent opacity-90",
+          "h-6 w-6 animate-spin rounded-full border-4 border-r-transparent",
           {
             "border-y-white border-l-white": color === "white",
             "border-y-app-primary border-l-app-primary": color === "primary",

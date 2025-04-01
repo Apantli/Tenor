@@ -1,36 +1,38 @@
-import React from "react";
-import { type ClassNameValue } from "tailwind-merge";
+import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
+import BaseButton, { type BaseButtonProps } from "./BaseButton";
 
 interface Props {
-  children: React.ReactNode;
-  className?: ClassNameValue;
   loading?: boolean;
+  floatingSpinner?: boolean;
 }
 
 export default function PrimaryButton({
   children,
   className,
   loading,
-  ...buttonProps
-}: Props & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  floatingSpinner,
+  ...props
+}: BaseButtonProps & Props & PropsWithChildren) {
   return (
-    <button
-      {...buttonProps}
+    <BaseButton
       className={cn(
-        "relative h-10 rounded-lg bg-app-primary p-2 px-4 text-white transition hover:bg-app-hover-primary disabled:opacity-80",
+        "flex h-10 justify-center gap-2 whitespace-nowrap rounded-lg bg-app-primary p-2 px-4 text-white transition hover:bg-app-hover-primary disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-app-primary",
+        {
+          relative: floatingSpinner,
+        },
         className,
       )}
-      disabled={loading}
+      {...props}
+      disabled={loading ?? ("disabled" in props && props.disabled)}
     >
       {children}
-
       {loading && (
-        <span className="absolute right-3">
+        <span className={cn({ "absolute right-3": floatingSpinner })}>
           <LoadingSpinner />
         </span>
       )}
-    </button>
+    </BaseButton>
   );
 }

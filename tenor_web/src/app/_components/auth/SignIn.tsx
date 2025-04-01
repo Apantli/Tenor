@@ -106,7 +106,7 @@ export default function SignIn() {
       >
         Password
       </FloatingLabelInput>
-      <PrimaryButton loading={loading} onClick={handleSignIn}>
+      <PrimaryButton loading={loading} floatingSpinner onClick={handleSignIn}>
         Sign in
       </PrimaryButton>
     </div>

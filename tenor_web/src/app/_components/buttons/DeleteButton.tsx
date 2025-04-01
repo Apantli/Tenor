@@ -1,37 +1,43 @@
-import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
+import BaseButton, { type BaseButtonProps } from "./BaseButton";
+import { type PropsWithChildren } from "react";
 
 interface Props {
-  children: React.ReactNode;
-  className?: ClassNameValue;
   loading?: boolean;
+  floatingSpinner?: boolean;
 }
 
 export default function DeleteButton({
   children,
   className,
   loading,
-  ...buttonProps
-}: Props & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  floatingSpinner,
+  ...props
+}: BaseButtonProps & Props & PropsWithChildren) {
   return (
-    <button
-      {...buttonProps}
+    <BaseButton
       className={cn(
-        "relative flex h-10 items-center gap-2 rounded-lg bg-app-fail p-2 px-4 text-white transition hover:bg-app-hover-fail disabled:opacity-80",
+        "flex h-10 items-center justify-center gap-2 rounded-lg bg-app-fail p-2 px-4 text-white transition hover:bg-app-hover-fail disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:bg-app-fail",
+        {
+          relative: floatingSpinner,
+        },
         className,
       )}
-      disabled={loading}
+      {...props}
+      disabled={loading ?? ("disabled" in props && props.disabled)}
     >
-      <DeleteIcon />
-      {children}
+      <div className="flex gap-2">
+        <DeleteIcon />
+        {children}
+      </div>
 
       {loading && (
-        <span className="absolute right-3">
-          <LoadingSpinner color="white" />
+        <span className={cn({ "absolute right-3": floatingSpinner })}>
+          <LoadingSpinner />
         </span>
       )}
-    </button>
+    </BaseButton>
   );
 }
