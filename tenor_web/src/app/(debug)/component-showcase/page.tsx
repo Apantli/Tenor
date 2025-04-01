@@ -224,10 +224,18 @@ function PillShowcase() {
   ];
 
   const [tag, setTag] = useState(tags[0] as Tag);
+  const [tag2, setTag2] = useState(tags[1] as Tag);
 
   const dropdownCallback = async (tag: Tag) => {
     try {
       setTag(tag);
+    } catch (error) {
+      console.error("Error in pill dropdown callback", error);
+    }
+  };
+  const dropdownCallback2 = async (tag: Tag) => {
+    try {
+      setTag2(tag);
     } catch (error) {
       console.error("Error in pill dropdown callback", error);
     }
@@ -237,11 +245,18 @@ function PillShowcase() {
     <div>
       <hr />
       <h2 className="my-2 text-2xl font-medium">Pills</h2>
-      <div className="flex justify-start">
+      <div className="flex justify-start gap-2">
         <PillComponent
           currentTag={tag}
           allTags={tags}
           callBack={dropdownCallback}
+          labelClassName="w-32"  
+        />
+        <PillComponent
+          currentTag={tag2}
+          allTags={tags}
+          callBack={dropdownCallback2}
+          labelClassName="w-64"  
         />
       </div>
     </div>
