@@ -33,6 +33,7 @@ export default function Dropdown({
   >("top-right");
   const ref = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const startScrollPos = useRef<number | null>(null);
 
   const childrenArray = Array.isArray(children)
     ? children.filter((c) => !!c)
@@ -48,24 +49,40 @@ export default function Dropdown({
   useWindowResize(() => {
     if (isOpen) {
       setOpenDirection(positionDropdown(1));
+      startScrollPos.current = scrollContainer?.current?.scrollTop ?? null;
     }
   });
 
   useAfterScroll(() => {
     if (isOpen) {
       setOpenDirection(positionDropdown(1));
+      startScrollPos.current = scrollContainer?.current?.scrollTop ?? null;
     }
   });
 
   useAfterScroll(() => {
-    if (isOpen) {
+    if (!scrollContainer?.current || !isOpen) return;
+
+    const currentScroll = scrollContainer.current.scrollTop;
+    const scrollDiff = Math.abs(
+      (startScrollPos.current ?? currentScroll) - currentScroll,
+    );
+
+    if (scrollDiff < 40) {
       setOpenDirection(positionDropdown(1));
+    } else {
+      setIsOpen(false);
     }
   }, scrollContainer);
+
+  useEffect(() => {
+    startScrollPos.current = scrollContainer?.current?.scrollTop ?? null;
+  }, [scrollContainer]);
 
   const toggleOpen = () => {
     if (!isOpen) {
       setOpenDirection(positionDropdown(2));
+      startScrollPos.current = scrollContainer?.current?.scrollTop ?? null;
     }
     setIsOpen(!isOpen);
   };

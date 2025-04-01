@@ -120,6 +120,17 @@ function TableShowcase() {
     { id: 4, degree: "ITC", name: "Oscar", age: 21 },
     { id: 5, degree: "ITC", name: "Luis", age: 21 },
     { id: 6, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 7, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 8, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 9, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 10, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 11, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 12, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 13, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 14, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 15, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 16, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 17, degree: "ITC", name: "Nicolas", age: 21 },
   ];
 
   // You also need to provide column definitions for the table
@@ -353,6 +364,11 @@ function ConfirmationShowcase() {
     ) {
       // If the function returns true, the user confirmed the action
       console.log("User confirmed");
+      await confirm(
+        "Are you really really sure?",
+        "This action is not revertible",
+        "Delete item",
+      );
     } else {
       // Otherwise, the user clicked cancel or dismissed the popup in another way
       console.log("User cancelled");

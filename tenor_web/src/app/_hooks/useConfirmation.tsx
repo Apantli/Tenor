@@ -65,7 +65,7 @@ export const ConfirmationProvider = ({ children }: PropsWithChildren) => {
   };
 
   const handleResolve = (result: boolean) => {
-    promiseCallback.current?.(result);
+    setTimeout(() => promiseCallback.current?.(result), 200);
     setShowConfirmation(false);
   };
 
