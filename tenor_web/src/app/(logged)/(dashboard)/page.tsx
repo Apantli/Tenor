@@ -56,6 +56,15 @@ function ProjectList() {
   } = api.projects.listProjects.useQuery();
   const [filteredProjects, setFilteredProjects] = useState<typeof projects>([]);
 
+  /**
+   * * This function is used to open a project when the user clicks on the project image.
+   * * This would be something provisional while we are in the development phase.
+   */
+  const router = useRouter();
+  const handleOpenProject = (projectId: string) => {
+    router.push(`/project/${projectId}`);
+  };
+
   useEffect(() => {
     if (projects) {
       setFilteredProjects(projects);
@@ -100,13 +109,13 @@ function ProjectList() {
             className="flex h-full max-w-[490px] justify-start border-b-2 py-[8]"
             key={project.id}
           >
-            <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
+            <button onClick={() => handleOpenProject(project.id)} className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
               <img
                 className="object-scale-down p-[4px]"
                 src={project.logoUrl}
                 alt={project.name}
               />
-            </div>
+            </button>
             <div className="ml-2 flex max-h-full w-full flex-col justify-start">
               <h3 className="my-[7px] text-lg font-semibold">{project.name}</h3>
               <p className="text-sm">{project.description}</p>
