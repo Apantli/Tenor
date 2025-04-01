@@ -227,18 +227,10 @@ function PillShowcase() {
   const [tag2, setTag2] = useState(tags[1] as Tag);
 
   const dropdownCallback = async (tag: Tag) => {
-    try {
-      setTag(tag);
-    } catch (error) {
-      console.error("Error in pill dropdown callback", error);
-    }
+    setTag(tag);
   };
   const dropdownCallback2 = async (tag: Tag) => {
-    try {
-      setTag2(tag);
-    } catch (error) {
-      console.error("Error in pill dropdown callback", error);
-    }
+    setTag2(tag);
   };
 
   return (
