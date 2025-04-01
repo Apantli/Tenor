@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useState } from "react";
+import React , { useState } from "react";
 import SecondaryButton from "~/app/_components/SecondaryButton";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
@@ -12,9 +12,9 @@ import Popup, { SidebarPopup } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/PrimaryButton";
 import DeleteButton from "~/app/_components/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import { SegmentedControl } from "~/app/_components/SegmentedControl";
 
 // This file is to showcase how to use the components available in Tenor
-
 export default function ComponentShowcasePage() {
   return (
     <main className="p-4">
@@ -28,10 +28,12 @@ export default function ComponentShowcasePage() {
         <TableShowcase />
         <PopupShowcase />
         <ConfirmationShowcase />
+        <SegmentedControlShowcase />
       </div>
     </main>
   );
 }
+
 
 function AlertShowcase() {
   // Add the useAlert hook to any client component where you want to show alerts
@@ -407,3 +409,20 @@ function ConfirmationShowcase() {
     </div>
   );
 }
+
+// This is a simple showcase of the segmented control component
+function SegmentedControlShowcase(){
+  const [selectedValue, setSelectedValue] = useState("Selected Option");
+  return (
+    <div className="p-6">
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Segmented Control</h2>
+      <SegmentedControl 
+        options={['Selected Option', 'Option', 'Option']} 
+        selectedOption={selectedValue}
+        onChange={setSelectedValue}
+        className="w-full max-w-md"
+      />
+    </div>
+  );
+};
