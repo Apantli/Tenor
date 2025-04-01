@@ -418,7 +418,7 @@ function SegmentedControlShowcase(){
       <hr />
       <h2 className="my-2 text-2xl font-medium">Segmented Control</h2>
       <SegmentedControl 
-        options={['Selected Option', 'Option', 'Option']} 
+        options={['1st', 'Option', '2nd Option']} 
         selectedOption={selectedValue}
         onChange={setSelectedValue}
         className="w-full max-w-md"
