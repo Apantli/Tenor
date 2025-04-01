@@ -1,7 +1,7 @@
 import React, { type PropsWithChildren } from "react";
 import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../LoadingSpinner";
 import Link from "next/link";
 
 interface ButtonProps {

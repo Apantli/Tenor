@@ -1,7 +1,7 @@
 import React from "react";
 import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../LoadingSpinner";
 
 interface Props {
   children: React.ReactNode;

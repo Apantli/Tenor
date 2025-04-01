@@ -2,15 +2,15 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
-import SecondaryButton from "~/app/_components/SecondaryButton";
+import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import PillComponent from "~/app/_components/PillComponent";
 import Popup, { SidebarPopup } from "~/app/_components/Popup";
-import PrimaryButton from "~/app/_components/PrimaryButton";
-import DeleteButton from "~/app/_components/DeleteButton";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 
 // This file is to showcase how to use the components available in Tenor

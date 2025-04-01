@@ -2,7 +2,7 @@
 
 import { auth } from "~/utils/firebaseClient";
 import { signInWithPopup, GithubAuthProvider } from "firebase/auth";
-import SecondaryButton from "../SecondaryButton";
+import SecondaryButton from "../buttons/SecondaryButton";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";

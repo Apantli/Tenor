@@ -1,6 +1,6 @@
 import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "../LoadingSpinner";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 
 interface Props {
@@ -19,7 +19,7 @@ export default function DeleteButton({
     <button
       {...buttonProps}
       className={cn(
-        "hover:bg-app-hover-fail relative flex h-10 items-center gap-2 rounded-lg bg-app-fail p-2 px-4 text-white transition disabled:opacity-80",
+        "relative flex h-10 items-center gap-2 rounded-lg bg-app-fail p-2 px-4 text-white transition hover:bg-app-hover-fail disabled:opacity-80",
         className,
       )}
       disabled={loading}

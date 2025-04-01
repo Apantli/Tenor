@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
-import PrimaryButton from "../PrimaryButton";
+import PrimaryButton from "../buttons/PrimaryButton";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
