@@ -18,6 +18,7 @@ interface TableRowProps<I, T> {
   extraOptions?: TableOptions<I>[];
   deletable?: boolean;
   onDelete?: (ids: I[]) => void;
+  scrollContainerRef: React.RefObject<HTMLDivElement>;
 }
 
 function TableRow<
@@ -33,6 +34,7 @@ function TableRow<
   extraOptions,
   deletable,
   onDelete,
+  scrollContainerRef,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable === true;
   const columnEntries = React.useMemo(
@@ -72,6 +74,7 @@ function TableRow<
             label={<span className="font-bold text-app-light">• • •</span>}
             className="flex h-full items-center justify-end text-sm font-semibold transition"
             menuClassName="font-normal whitespace-nowrap"
+            scrollContainer={scrollContainerRef}
           >
             {extraOptions?.map((option, i) => (
               <DropdownButton

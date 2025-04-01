@@ -64,7 +64,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
 
   return (
     <div
-      className="sticky top-0 z-[100] grid w-fit min-w-full gap-2 border-b border-app-border bg-white px-2"
+      className="sticky top-0 z-[60] grid w-fit min-w-full gap-2 border-b border-app-border bg-white px-2"
       style={{ gridTemplateColumns }}
     >
       {multiselect && (

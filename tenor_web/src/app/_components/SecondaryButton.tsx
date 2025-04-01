@@ -33,7 +33,7 @@ export default function SecondaryButton({
       <Link
         {...props}
         className={cn(
-          "relative inline-block h-10 rounded-lg border border-app-border p-2 text-app-text transition hover:bg-app-hover-border",
+          "relative inline-block h-10 rounded-lg border border-app-border p-2 px-4 text-app-text transition hover:bg-app-hover-border",
           className,
         )}
       >
@@ -52,7 +52,7 @@ export default function SecondaryButton({
       <button
         {...props}
         className={cn(
-          "relative h-10 rounded-lg border border-app-border p-2 text-app-text transition hover:bg-app-hover-border",
+          "relative h-10 rounded-lg border border-app-border p-2 px-4 text-app-text transition hover:bg-app-hover-border",
           className,
         )}
         disabled={loading}
