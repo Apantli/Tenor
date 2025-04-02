@@ -305,6 +305,11 @@ function TagShowcase() {
       color: "#9932CC", // Bright purple color
       deleted: false,
     },
+    {
+      name: "P0",
+      color: "#EA2B4E", // App fail color
+      deleted: false,
+    },
   ];
 
   return (
@@ -317,7 +322,7 @@ function TagShowcase() {
             key={tag.name}
             color={tag.color}
             reducedPadding
-            className="w-8"
+            className="min-w-8"
           >
             {tag.name}
           </TagComponent>
@@ -325,6 +330,7 @@ function TagShowcase() {
       </div>
       <br />
       <div className="flex justify-start gap-2">
+        <TagComponent>US001</TagComponent>
         <TagComponent onDelete={() => console.log("HELLO")}>US003</TagComponent>
         <TagComponent onDelete={() => console.log("HELLO")} color="#009719">
           Login

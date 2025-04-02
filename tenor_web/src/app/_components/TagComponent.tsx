@@ -31,7 +31,7 @@ export default function TagComponent({
       }}
       {...props}
     >
-      <span className="w-full">{children}</span>
+      <span className="w-full text-center">{children}</span>
       {onDelete !== undefined && (
         <button
           className="mb-[3px] flex h-8 items-center text-2xl font-thin"
