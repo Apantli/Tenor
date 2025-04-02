@@ -33,7 +33,13 @@ export function DatePicker({
   }, [selectedDate]);
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = e.target.value ? new Date(e.target.value) : null;
+    if (!e.target.value) {
+      setDate(null);
+      onChange(null);
+      return;
+    }
+    
+    const newDate = new Date(`${e.target.value}T12:00:00`);
     setDate(newDate);
     onChange(newDate);
   };
