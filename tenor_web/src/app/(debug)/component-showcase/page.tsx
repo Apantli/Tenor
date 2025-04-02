@@ -443,7 +443,7 @@ function DatePickerShowcase (){
         selectedDate={selectedDate}
         onChange={setSelectedDate}
         placeholder="Select a date"
-        className="w-64"
+        className="w-48 h-3.5"
       />
     </div>
   )
