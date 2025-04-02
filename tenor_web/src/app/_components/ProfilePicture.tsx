@@ -23,7 +23,7 @@ function getUserGradient(uid: string, hashFuncName = "sha256") {
 
   // Darken the RGB values (adjust the factor as needed)
   const initialFactor = 0.95; // 0.0 - 1.0 (1.0 = no change, 0.0 = black)
-  const darkenFactor = 0.9; // 0.0 - 1.0 (1.0 = no change, 0.0 = black)
+  const darkenFactor = 0.7; // 0.0 - 1.0 (1.0 = no change, 0.0 = black)
   r = Math.floor(r * initialFactor);
   g = Math.floor(g * initialFactor);
   b = Math.floor(b * initialFactor);
