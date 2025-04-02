@@ -13,7 +13,7 @@ interface Props {
   currentTag: Tag;
   allTags: Tag[];
   callBack: (tag: Tag) => void;
-  labelClassName: string;
+  labelClassName?: string;
 }
 
 export default function PillComponent({
@@ -83,7 +83,7 @@ export default function PillComponent({
           color: tag.color,
         }}
       >
-        {tag.name}
+        <span className="truncate">{tag.name}</span>
         <ArrowDropDownIcon />
       </div>
     );
