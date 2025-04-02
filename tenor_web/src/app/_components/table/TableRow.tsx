@@ -63,7 +63,7 @@ function TableRow<
         ></input>
       )}
       {columnEntries.map(([key, column]) => (
-        <div key={key} className="text-lg">
+        <div key={key}>
           {column.render ? column.render(value) : value[key]}
         </div>
       ))}

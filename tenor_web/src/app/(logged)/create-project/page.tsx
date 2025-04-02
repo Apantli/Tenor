@@ -1,51 +1,130 @@
 "use client";
 import PrimaryButton from "~/app/_components/PrimaryButton";
 import { FilterSearch } from "~/app/_components/FilterSearch";
+import Navbar from "~/app/_components/Navbar";
+import Link from "next/link";
+import Tabbar from "~/app/_components/Tabbar";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputFileField from "~/app/_components/inputs/InputFileField";
+import { useState } from "react";
+import Table, { TableColumns } from "~/app/_components/table/Table";
+import MemberTable, { type TeamMember } from "~/app/_components/inputs/MemberTable";
+import LinkList from "~/app/_components/inputs/LinkList";
+import FileList from "~/app/_components/inputs/FileList";
+
+
 
 export default function ProjectCreator() {
+  const [ form, setForm ] = useState({
+    name: "",
+    description: "",
+    context: "",
+    context_files: "",
+  });
+
+  // FIXME: I couldnt find a User type that has the displayed information in the Figma
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
+    { id: 1, picture_url: "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg", name: "Alonso Huerta", email: "email@addres.com", role: "Admin" },
+    { id: 2, picture_url: "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg", name: "Sergio Gonzalez", email: "email@addres.com", role: "Scrum Master" },
+    { id: 3, picture_url: "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg", name: "Luis Amado", email: "email@addres.com", role: "Developer" },
+  ]);
+
+  // Icon File
+  const [icon, setImage] = useState<File | null>(null);
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    console.log("Image changed");
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+    }
+  }
+
+  // Context Files
+  const [files, setFiles] = useState<File[]>([]);
+  function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (files) {
+      const filesArray = Array.from(files);
+      setFiles((prev) => [...prev, ...filesArray]);
+    }
+  }
+
+  const [links, setLinks] = useState<string[]>(["https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://www.tiktok.com/@ramizeinn/video/7474372494661635358"]);
+  // (string => void)receives a string and adds it to the list of links
+  function handleLinkChange(link: string) {
+    setLinks((prev) => [...prev, link]);
+  }
+
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
   return (
     <div>
-      <div className="header w-full h-32 flex justify-between">
-        <h2>Project Creator</h2>
-        <PrimaryButton>Generate Project</PrimaryButton>
+      <Navbar>
+        <div className="flex gap-3">
+          <Link href="/" className="font-semibold">
+            Projects
+          </Link>
+          <span>/ ProjectName</span>
+        </div>
+      </Navbar>
+      <Tabbar disabled mainPageName="Project Creator" />
+      <main className="m-6 p-4">
+      <div className="header w-full pb-6 flex justify-between">
+        <h1 className="text-2xl font-semibold">Project Creator</h1>
+        {/* FIXME: create project and redirect to page if successful, display error if not */}
+        <PrimaryButton onClick={() => { console.log("Creating project") }}>Generate Project</PrimaryButton>
       </div>
-      <div className="content">
-        <div className="project-primary-info">
-          <div className="project-name-icon">
-            <div>
-              <h3>Project Name</h3>
-              <input type="text" placeholder="Example" />
+      <hr />
+      <div className="content pt-6 flex gap-4 w-full">
+
+        <div className="project-primary-info flex flex-col gap-y-4 min-w-[45%]">
+
+          <div className="project-name-icon flex flex-wrap gap-4">
+            {/* Project Name */}
+            <div className="flex-1 min-w-[300px]">
+              <InputTextField label="Project Name" value={form.name} onChange={handleChange} name="name"/>
             </div>
-            <div>
-              <h3>Project Icon</h3>
-              <button>Attach Image...</button>
+
+            {/* Project Icon */}
+            <div className="flex-1">
+              <InputFileField label="Icon" accept=".jpg, .jpeg, .png" image={icon} handleImageChange={handleImageChange} />
             </div>
           </div>
-          <div className="project-description">
-            <h3>Project Description</h3>
-            <textarea placeholder="Description..." />
-          </div>
-          <div className="project-team-members">
-            <h3>Team Members</h3>
-            <div>
-              <FilterSearch list={[]} onSearch={(searchTerm) => console.log(searchTerm)}></FilterSearch>
-              <PrimaryButton>+ Add Member</PrimaryButton>
-            </div>
+
+          {/* Project Description */}
+          <InputTextAreaField label="Description" html-rows="4" placeholder="Lorem Ipsum" className="w-full min-h-[140px]" value={form.description} onChange={handleChange} name="description"/>
+
+          {/* Member Table */}
+          <div className="project-team-members gap-y-4">
+            <MemberTable label="Team Members" teamMembers={teamMembers} className="w-full" />
           </div>
         </div>
-        <div>
-          <div className="project-context">
-            <h3>Project Context</h3>
-            <textarea placeholder="Context..." />
-          </div>
+
+        <div className="project-context flex flex-col gap-y-4 w-full">
+          {/* Context Text */}
+          <InputTextAreaField className="min-h-[180px]" label="Context" html-rows="20" placeholder="Tell us about your project..."/>
+
+          {/* Contexr Files */}
           <div className="context-files">
-
+            < FileList label="Context Files" files={files} handleFilesChange={handleFilesChange} />
           </div>
-          <div className="context-links">
 
+          {/* Context Links */}
+          <div className="context-files">
+            < LinkList label="Context Links" links={links} handleLinkChange={handleLinkChange}/>
           </div>
+
         </div>
       </div>
+      </main>
     </div>
   )
 }

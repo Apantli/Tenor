@@ -4,7 +4,11 @@ import { useParams, usePathname } from "next/navigation";
 import React, { type MouseEventHandler } from "react";
 import { cn } from "~/lib/utils";
 
-export default function Tabbar() {
+interface Props {
+  disabled?: boolean;
+  mainPageName?: string;
+}
+export default function Tabbar({ disabled, mainPageName } : Props ) {
   const pathname = usePathname();
   const params = useParams();
   const projectPath = `/project/${params.projectId as string}`;
@@ -12,7 +16,7 @@ export default function Tabbar() {
 
   // TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
   const tabs = [
-    { title: "Overview", link: "/" },
+    { title: mainPageName ?? "Overview", link: "/" },
     { title: "Requirements", link: "/requirements" },
     { title: "User Stories", link: "/user-stories" },
     { title: "Issues", link: "/issues" },
@@ -39,6 +43,7 @@ export default function Tabbar() {
             "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
             {
               "bg-white text-app-primary": link === cutPathname,
+              "text-gray-300  pointer-events-none": disabled && link !== cutPathname,
             },
           )}
           href={projectPath + link}
