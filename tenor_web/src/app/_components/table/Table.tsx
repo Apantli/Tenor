@@ -44,10 +44,6 @@ interface TableProps<I, T> {
   className?: ClassNameValue;
 }
 
-// TODO: Allow for multiselect on "filterable: list" headers
-// TODO: Allow filter for objects (like tags). Neither work: list crashes and search-only does not compare correctly
-// TODO: Make sort work with objects, like tags. Allow for custom comparator!!
-// TODO: Make dots ••• be more responsive (they become vertical • with low space).
 export default function Table<
   I extends string | number,
   // eslint-disable-next-line
