@@ -108,7 +108,7 @@ export interface Settings {
 
 export interface Tag {
   name: string;
-  color: string;
+  color: string; // Hex value without #
   deleted: boolean;
 }
 

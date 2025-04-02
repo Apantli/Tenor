@@ -49,7 +49,7 @@ function TableRow<
   return (
     <div
       className={cn(
-        "grid w-fit min-w-full gap-2 border-b border-app-border p-2 transition",
+        "grid w-fit min-w-full gap-2 border-b border-app-border p-2 transition flex-auto items-center",
         { "bg-gray-100": selection.has(value.id) },
       )}
       style={{ gridTemplateColumns }}
