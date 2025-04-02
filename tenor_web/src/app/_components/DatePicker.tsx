@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CloseIcon from '@mui/icons-material/Close';
 
 interface DatePickerProps {
@@ -45,7 +45,7 @@ export function DatePicker({
   return (
     <div className={`relative ${className}`}>
       <div className="flex items-center justify-between bg-gray-100 hover:bg-gray-200 rounded-lg p-2 relative">
-        <CalendarTodayIcon 
+        <CalendarMonthIcon 
           className="w-5 h-5 text-gray-700 mr-2 cursor-pointer" 
           onClick={openDatePicker}
         />
