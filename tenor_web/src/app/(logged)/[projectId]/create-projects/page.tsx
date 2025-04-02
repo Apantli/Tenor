@@ -28,7 +28,7 @@ export default function ProjectCreator() {
           <div className="project-team-members">
             <h3>Team Members</h3>
             <div>
-              <FilterSearch list={[]} onSearch={(searchTerm) => console.log(searchTerm)}></FilterSearch>
+              <FilterSearch list={[]} onSearch={(searchTerm) => console.log(searchTerm)} placeholder="Search user..."></FilterSearch>
               <PrimaryButton>+ Add Member</PrimaryButton>
             </div>
           </div>

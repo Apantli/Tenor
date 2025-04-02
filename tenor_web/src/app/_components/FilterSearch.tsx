@@ -3,10 +3,11 @@ import Image from "next/image";
 
 interface FilterSearchProps {
   list: string[];
+  placeholder: string
   onSearch: (searchTerm: string[]) => void;
 }
 
-export function FilterSearch({list, onSearch}: FilterSearchProps) {
+export function FilterSearch({list, onSearch, placeholder}: FilterSearchProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleSearch = (event: ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +38,7 @@ export function FilterSearch({list, onSearch}: FilterSearchProps) {
         type="text"
         value={searchQuery}
         onChange={handleSearch}
-        placeholder="Search projects..."
+        placeholder={placeholder}
         className="pl-8 py-2 text-[#59636E] h-full w-full border-2 py-[3px] rounded-md"
       />
     </div>

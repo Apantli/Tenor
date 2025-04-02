@@ -100,6 +100,7 @@ function ProjectList() {
         <FilterSearch
           list={projects?.map((p) => p.name) ?? []}
           onSearch={handleFilter}
+          placeholder="Search project..."
         />
         <CreateNewProject />
       </div>
