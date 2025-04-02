@@ -19,7 +19,7 @@ export default function DeleteButton({
   return (
     <BaseButton
       className={cn(
-        "flex h-10 items-center justify-center gap-2 rounded-lg bg-app-fail p-2 px-4 text-white transition hover:bg-app-hover-fail disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:bg-app-fail",
+        "flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-app-fail p-2 px-4 text-white transition hover:bg-app-hover-fail disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:bg-app-fail",
         {
           relative: floatingSpinner,
         },

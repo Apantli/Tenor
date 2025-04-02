@@ -13,6 +13,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
+import TagComponent from "~/app/_components/TagComponent";
 
 // This file is to showcase how to use the components available in Tenor
 
@@ -27,6 +28,7 @@ export default function ComponentShowcasePage() {
         <ButtonShowcase />
         <AlertShowcase />
         <PillShowcase />
+        <TagShowcase />
         <TableShowcase />
         <PopupShowcase />
         <ConfirmationShowcase />
@@ -279,6 +281,54 @@ function PillShowcase() {
           callBack={dropdownCallback2}
           labelClassName="w-64"
         />
+      </div>
+    </div>
+  );
+}
+
+function TagShowcase() {
+  // This showcases how to use the Tag component, which is supposed to display a tag with a name and a color
+
+  const tags = [
+    {
+      name: "S",
+      color: "#009719",
+      deleted: false,
+    },
+    {
+      name: "L",
+      color: "#CC9900", // Darker yellow color
+      deleted: false,
+    },
+    {
+      name: "M",
+      color: "#9932CC", // Bright purple color
+      deleted: false,
+    },
+  ];
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Tags</h2>
+      <div className="flex justify-start gap-2">
+        {tags.map((tag) => (
+          <TagComponent
+            key={tag.name}
+            color={tag.color}
+            reducedPadding
+            className="w-8"
+          >
+            {tag.name}
+          </TagComponent>
+        ))}
+      </div>
+      <br />
+      <div className="flex justify-start gap-2">
+        <TagComponent onDelete={() => console.log("HELLO")}>US003</TagComponent>
+        <TagComponent onDelete={() => console.log("HELLO")} color="#009719">
+          Login
+        </TagComponent>
       </div>
     </div>
   );

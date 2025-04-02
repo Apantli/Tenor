@@ -212,7 +212,7 @@ export function DropdownButton({
   return (
     <BaseButton
       className={cn(
-        "inline-block w-full whitespace-nowrap px-3 py-2 text-left transition hover:bg-slate-100",
+        "inline-block w-full whitespace-nowrap px-3 py-2 text-left transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white",
         className,
       )}
       {...props}
