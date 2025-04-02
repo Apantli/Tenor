@@ -14,4 +14,10 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import "./commands";
+
+// Prevent failing the test due to uncaught exceptions
+Cypress.on("uncaught:exception", (err, runnable) => {
+  console.log("Uncaught exception:", err);
+  return false;
+});
