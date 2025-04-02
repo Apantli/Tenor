@@ -168,7 +168,7 @@ export default function Table<
 
   return (
     <div
-      className={cn("flex h-full flex-col overflow-x-scroll", className)}
+      className={cn("flex h-full flex-col overflow-x-scroll text-lg", className)}
       ref={scrollContainerRef}
     >
       <TableHeader
