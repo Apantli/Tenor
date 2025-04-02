@@ -64,6 +64,21 @@ function ButtonShowcase() {
         <SecondaryButton loading>Secondary Button</SecondaryButton>
         <DeleteButton loading>Delete Button</DeleteButton>
       </div>
+      <p className="mt-4">Links that look like buttons</p>
+      <div className="mt-2 flex gap-2">
+        {/* When you include an href prop, the underlying component automatically becomes a <Link /> component instead of a button */}
+        {/* This also works with dropdown buttons */}
+        <PrimaryButton href="/component-showcase/why">
+          Go to other page
+        </PrimaryButton>
+        {/* You can use any prop for links such as target="_blank" */}
+        <SecondaryButton href="/component-showcase/why" target="_blank">
+          Open in another tab
+        </SecondaryButton>
+        <TertiaryButton href="/component-showcase/why">
+          Go to other page
+        </TertiaryButton>
+      </div>
     </div>
   );
 }
