@@ -1,4 +1,4 @@
-name: Node.js build
+name: Cypress E2E Tests
 
 on:
   push:
@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [22.x]
 
     steps:
       - uses: actions/checkout@v4
@@ -33,10 +33,10 @@ jobs:
           # echo "$VARS_CONTEXT" | to_envs >> $GITHUB_ENV
           echo "$SECRETS_CONTEXT" | to_envs >> $GITHUB_ENV
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./tenor_web
-
-      - name: Build project
-        run: npm run build
-        working-directory: ./tenor_web
+      - name: Run Cypress tests
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: tenor_web
+          start: npm run e2e:headless
+          wait-on: http://localhost:3000
+          browser: chrome
