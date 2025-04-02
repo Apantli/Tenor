@@ -414,27 +414,28 @@ function ConfirmationShowcase() {
 
 // Showcase of the segmented control component
 function SegmentedControlShowcase(){
-  // Default value must match with one of the options (in this case "Selected option" as it is seen in the options array).
+  // Default value must match with one of the options to prevent bugs
+  // (in this case "Selected option" as it is seen in the options array).
   const [selectedValue, setSelectedValue] = useState("Selected Option");
   return (
     <div>
       <hr />
       <h2 className="my-2 text-2xl font-medium">Segmented Control</h2>
       <SegmentedControl 
-        // Can add more than 2 options
+        // Can add more than 2 options, this is just an example.
         options={['Selected Option', 'Option']} 
         selectedOption={selectedValue}
         onChange={setSelectedValue}
-        // Adjust the text and component size to your needs"
+        // Adjust the text and component size to the desired size
         className="w-full max-w-md"
       />
     </div>
   );
 };
 
+// Showcase of the date picker component
 function DatePickerShowcase (){
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
   return (
     <div>
       <hr />
@@ -442,7 +443,9 @@ function DatePickerShowcase (){
       <DatePicker
         selectedDate={selectedDate}
         onChange={setSelectedDate}
+        // Any placeholder, can be due date or something similar
         placeholder="Select a date"
+        // Adjust for any size
         className="w-48 h-3.5"
       />
     </div>
