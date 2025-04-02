@@ -13,6 +13,7 @@ import PrimaryButton from "~/app/_components/PrimaryButton";
 import DeleteButton from "~/app/_components/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
+import { DatePicker } from "~/app/_components/DatePicker";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -28,6 +29,7 @@ export default function ComponentShowcasePage() {
         <TableShowcase />
         <PopupShowcase />
         <ConfirmationShowcase />
+        <DatePickerShowcase />
         <SegmentedControlShowcase />
       </div>
     </main>
@@ -429,3 +431,20 @@ function SegmentedControlShowcase(){
     </div>
   );
 };
+
+function DatePickerShowcase (){
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Date Picker</h2>
+      <DatePicker
+        selectedDate={selectedDate}
+        onChange={setSelectedDate}
+        placeholder="Select a date"
+        className="w-64"
+      />
+    </div>
+  )
+}
