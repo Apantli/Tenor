@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 
@@ -61,6 +61,7 @@ export default function Table<
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selection, setSelection] = useState<Set<I>>(new Set());
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const sortedData = useMemo(() => {
     if (!sortColumnKey) return data;
@@ -166,7 +167,10 @@ export default function Table<
   };
 
   return (
-    <div className={cn("flex h-full flex-col overflow-x-scroll", className)}>
+    <div
+      className={cn("flex h-full flex-col overflow-x-scroll", className)}
+      ref={scrollContainerRef}
+    >
       <TableHeader
         columns={columns}
         sortColumnKey={sortColumnKey}
@@ -195,6 +199,7 @@ export default function Table<
           extraOptions={extraOptions}
           deletable={deletable}
           onDelete={onDelete}
+          scrollContainerRef={scrollContainerRef}
         />
       ))}
     </div>

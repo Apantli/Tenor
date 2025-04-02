@@ -56,6 +56,15 @@ function ProjectList() {
   } = api.projects.listProjects.useQuery();
   const [filteredProjects, setFilteredProjects] = useState<typeof projects>([]);
 
+  /**
+   * * This function is used to open a project when the user clicks on the project image.
+   * * This would be something provisional while we are in the development phase.
+   */
+  const router = useRouter();
+  const handleOpenProject = (projectId: string) => {
+    router.push(`/project/${projectId}`);
+  };
+
   useEffect(() => {
     if (projects) {
       setFilteredProjects(projects);
