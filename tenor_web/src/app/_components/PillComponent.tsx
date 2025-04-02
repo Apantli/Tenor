@@ -48,7 +48,7 @@ export default function PillComponent({
     return (
       <DropdownButton
         onClick={() => callBack(tag)}
-        className="flex items-center gap-2 border-b border-app-border px-2 py-1 last:border-none"
+        className="flex items-center gap-2 border-b border-app-border px-2 py-2 last:border-none"
         key={tag.name}
       >
         <Check
@@ -101,7 +101,7 @@ export default function PillComponent({
           onChange={handleUpdateSearch}
         />
       </DropdownItem>
-      <div className="w-full whitespace-nowrap px-3 py-2 text-left">
+      <div className="whitespace-nowraptext-left w-full">
         <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}
           {filteredTags.length == 0 && (
