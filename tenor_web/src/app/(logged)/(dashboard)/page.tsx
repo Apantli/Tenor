@@ -106,16 +106,17 @@ function ProjectList() {
       <ul>
         {filteredProjects?.map((project) => (
           <li
-            className="flex h-full max-w-[490px] justify-start border-b-2 py-[8]"
+            className="flex cursor-pointer h-full max-w-[490px] justify-start border-b-2 py-[8]"
             key={project.id}
+            onClick={() => handleOpenProject(project.id)}
           >
-            <button onClick={() => handleOpenProject(project.id)} className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
+            <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
               <img
                 className="object-scale-down p-[4px]"
                 src={project.logoUrl}
                 alt={project.name}
               />
-            </button>
+            </div>
             <div className="ml-2 flex max-h-full w-full flex-col justify-start">
               <h3 className="my-[7px] text-lg font-semibold">{project.name}</h3>
               <p className="text-sm">{project.description}</p>

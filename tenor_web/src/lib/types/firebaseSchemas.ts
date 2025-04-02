@@ -63,7 +63,7 @@ export interface Project {
     active: boolean;
   }[];
 
-  requirements: Requirement[];
+  // requirements: Requirement[];
   userStories: UserStory[];
   issues: Issue[];
   epics: Epic[];
