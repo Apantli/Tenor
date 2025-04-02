@@ -68,7 +68,7 @@ export function SegmentedControl({
         }}
       />
       
-      {/* Option buttons */}
+      {/* Option buttons for each option */}
       {options.map((option) => (
         <button
           key={option}

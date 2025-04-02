@@ -410,17 +410,20 @@ function ConfirmationShowcase() {
   );
 }
 
-// This is a simple showcase of the segmented control component
+// Showcase of the segmented control component
 function SegmentedControlShowcase(){
+  // Default value must match with one of the options (in this case "Selected option" as it is seen in the options array).
   const [selectedValue, setSelectedValue] = useState("Selected Option");
   return (
-    <div className="p-6">
+    <div>
       <hr />
       <h2 className="my-2 text-2xl font-medium">Segmented Control</h2>
       <SegmentedControl 
-        options={['1st', 'Option', '2nd Option']} 
+        // Can add more than 2 options
+        options={['Selected Option', 'Option']} 
         selectedOption={selectedValue}
         onChange={setSelectedValue}
+        // Adjust the text and component size to your needs"
         className="w-full max-w-md"
       />
     </div>
