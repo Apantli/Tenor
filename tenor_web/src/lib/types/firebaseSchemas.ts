@@ -63,12 +63,11 @@ export interface Project {
     active: boolean;
   }[];
 
-  // FIXME: From what I understand, these need to be deleted because they're going to be stored as subcollections
   // requirements: Requirement[];
-  // userStories: UserStory[];
-  // issues: Issue[];
-  // epics: Epic[];
-  // genericItems: BacklogItem[];
+  userStories: UserStory[];
+  issues: Issue[];
+  epics: Epic[];
+  genericItems: BacklogItem[];
 
   // sprints: Sprint[];
   // sprintSnapshots: SprintSnapshot[];

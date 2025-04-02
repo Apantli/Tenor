@@ -1,13 +1,20 @@
 import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
+import { z } from "zod";
 import type {
   Project,
   WithId,
   User,
   Settings,
+  Requirement,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
+import { dbAdmin } from "~/utils/firebaseAdmin";
+
+// interface User {
+//   uid: string;
+//   projectIds: string[];
+// }
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -25,6 +32,19 @@ const emptySettings: Settings = {
   // roles: [],
 };
 
+type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL"; 
+
+export const emptyRequeriment = (): Requirement  => ({
+    name: "",
+    description: "",
+    priorityId: "",
+    requirementTypeId: "",
+    requirementFocusId: "",
+    size: "M",
+    scrumId: 0,
+    deleted: false,
+});
+
 export const createEmptyProject = (): Project => {
   return {
     name: "",
@@ -37,10 +57,10 @@ export const createEmptyProject = (): Project => {
     users: [],
 
     // requirements: [],
-    // userStories: [],
-    // issues: [],
-    // epics: [],
-    // genericItems: [],
+    userStories: [],
+    issues: [],
+    epics: [],
+    genericItems: [],
 
     // sprints: [],
     // sprintSnapshots: [],
@@ -130,20 +150,53 @@ export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     const projects = await fetchUserProjects(useruid, ctx.firestore);
-
     return projects;
   }),
-  createProject: protectedProcedure
-    .input(ProjectSchema)
-    .mutation(async ({ ctx }) => {
-      const useruid = ctx.session.uid;
 
-      try {
-        const project = createEmptyProject();
-        const projectRef = await ctx.firestore
-          .collection("projects")
-          .add(project);
-        console.log("Project added with ID: ", projectRef.id);
+  getProjectById: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ input, ctx }) => {
+    const { id } = input;
+
+    try {
+      const projectRef = ctx.firestore.collection("projects").doc(id);
+      const projectSnapshot = await projectRef.get();
+
+      if (!projectSnapshot.exists) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+      }
+
+      const projectData = projectSnapshot.data() as Project;
+
+      // Get the requirements collection for the project
+      const requirementsSnapshot = await projectRef.collection("requirements").get();
+
+      const requirements: (Requirement & {id: string})[] = requirementsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...emptyRequeriment(),
+        ...doc.data(),
+      }));
+
+      return {
+        id: projectRef.id,
+        ...projectData,
+        requirements,
+      };
+    } catch (error) {
+      console.error("Error getting project:", error);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch project" });
+    }
+  }),
+
+  createProject: protectedProcedure.mutation(async ({ ctx }) => {
+    const useruid = ctx.session.uid;
+
+    try {
+      const project = createEmptyProject();
+      const projectRef = await ctx.firestore
+        .collection("projects")
+        .add(project);
+      console.log("Project added with ID: ", projectRef.id);
+
+      await dbAdmin.collection("projects").doc(projectRef.id).collection("requirements").add(emptyRequeriment);
 
         const userRef = ctx.firestore.collection("users").doc(useruid);
         await userRef.update(
