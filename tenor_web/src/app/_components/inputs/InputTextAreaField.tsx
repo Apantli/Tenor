@@ -5,19 +5,26 @@ interface Props {
   label: string;
 }
 
-export default function InputTextAreaField({ label, className, ...props }: Props & React.InputHTMLAttributes<HTMLTextAreaElement>) {
+export default function InputTextAreaField({
+  label,
+  className,
+  ...props
+}: Props & React.InputHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <div className="w-full">
-    <label htmlFor="project-description" className="text-sm font-semibold" >
+      <label htmlFor="project-description" className="text-sm font-semibold">
         {label}
-    </label>
-    <textarea
+      </label>
+      <textarea
         id="project-description"
-        name="project-description" 
-        html-rows="4" 
-        className={cn("block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none", className)}
-        {...props}>
-    </textarea>
+        name="project-description"
+        html-rows="4"
+        className={cn(
+          "block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+          className,
+        )}
+        {...props}
+      ></textarea>
     </div>
   );
 }
