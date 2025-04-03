@@ -663,7 +663,7 @@ function EditableBoxShowCase() {
   return (
     <div>
       <hr />
-      <h2 className="my-2 text-2xl font-medium">Image Selector</h2>
+      <h2 className="my-2 text-2xl font-medium">Editable Box</h2>
       <EditableBox
         options={people}
         selectedOption={selectedPerson}
