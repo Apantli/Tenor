@@ -4,6 +4,8 @@ import { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import InsertLinkIcon from "@mui/icons-material/InsertLink";
 import PrimaryButton from "../buttons/PrimaryButton";
+import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
+import InputTextField from "./InputTextField";
 
 interface Props {
   label: string;
@@ -20,24 +22,51 @@ export default function LinkList({
   handleLinkRemove,
   links,
 }: Props) {
-  const handleAddLinkClick = () => {
-    const newLink = prompt("Enter the link:");
-    if (newLink?.trim()) {
-      handleLinkAdd(newLink.trim());
-    }
-  };
+  // FIXME: Replace for Dropdown method
+  // const handleAddLinkClick = () => {
+  //   const newLink = prompt("Enter the link:");
+  //   if (newLink?.trim()) {
+  //     handleLinkAdd(newLink.trim());
+  //   }
+  // };
+
+  const [link, setLink] = React.useState("");
 
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <label className="text-sm font-semibold">{label}</label>
-        <PrimaryButton
-          className="flex max-h-[40px] items-center text-sm font-semibold"
-          onClick={handleAddLinkClick}
+        <Dropdown
+          label={
+            <PrimaryButton className="flex max-h-[40px] items-center text-sm font-semibold">
+              {" "}
+              Add Context Link +{" "}
+            </PrimaryButton>
+          }
         >
-          {" "}
-          Add Context Link +{" "}
-        </PrimaryButton>
+          <DropdownItem>
+            <InputTextField
+              label={null}
+              placeholder="https://example.com"
+              value={link}
+              onChange={(e) => {
+                setLink(e.target.value);
+              }}
+            />
+          </DropdownItem>
+
+          <DropdownButton
+            className="flex items-center justify-between"
+            onClick={() => {
+              if (link.trim()) {
+                handleLinkAdd(link.trim());
+                setLink("");
+              }
+            }}
+          >
+            <span>Add Link</span>
+          </DropdownButton>
+        </Dropdown>
       </div>
       <ul
         className={cn(

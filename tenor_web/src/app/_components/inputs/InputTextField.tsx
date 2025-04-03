@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "~/lib/utils";
 
 interface Props {
-  label: string;
+  label: string | null;
 }
 
 export default function InputTextField({
@@ -13,9 +13,11 @@ export default function InputTextField({
 }: Props & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="w-full">
-      <label htmlFor={id} className="text-sm font-semibold">
-        {label}
-      </label>
+      {label && (
+        <label htmlFor={id} className="text-sm font-semibold">
+          {label}
+        </label>
+      )}
       <input
         id={id}
         className={cn(

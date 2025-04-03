@@ -40,7 +40,7 @@ export default function ProjectCreator() {
       name: form.name,
       description: form.description,
       // FIXME: Generate icon URL
-      logoUrl: "",
+      logoUrl: icon?.bytes.toString() ?? "",
       // FIMXE: Pass correct userId and roleID
       users: teamMembers.map((member) => ({
         userId: member.email,

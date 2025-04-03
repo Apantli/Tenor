@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "~/lib/utils";
 
 interface Props {
-  label: string;
+  label: string | null;
 }
 
 export default function InputTextAreaField({
@@ -12,9 +12,11 @@ export default function InputTextAreaField({
 }: Props & React.InputHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <div className="w-full">
-      <label htmlFor="project-description" className="text-sm font-semibold">
-        {label}
-      </label>
+      {label && (
+        <label htmlFor="project-description" className="text-sm font-semibold">
+          {label}
+        </label>
+      )}
       <textarea
         id="project-description"
         name="project-description"
