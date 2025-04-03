@@ -23,7 +23,6 @@ import InputFileField from "~/app/_components/inputs/InputFileField";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import TagComponent from "~/app/_components/TagComponent";
 
-
 // This file is to showcase how to use the components available in Tenor
 
 export default function ComponentShowcasePage() {
