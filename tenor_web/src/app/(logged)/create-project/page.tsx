@@ -34,7 +34,6 @@ export default function ProjectCreator() {
   const { alert, predefinedAlerts } = useAlert();
   const handleCreateProject = async () => {
     if (!form.name) {
-      console.error("Please fill the Project Name Field");
       alert("Oops...", "Project Name must have a value.", {
         type: "error",
         duration: 5000, // time in ms (5 seconds)
