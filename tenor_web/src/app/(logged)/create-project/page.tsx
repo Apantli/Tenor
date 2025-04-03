@@ -74,7 +74,14 @@ export default function ProjectCreator() {
     if (response.success) {
       router.push(`/project/${response.projectId}`);
     } else {
-      console.error("Error creating project");
+      alert(
+        "Oops...",
+        "There was an error creating the project. Try again later.",
+        {
+          type: "error",
+          duration: 5000, // time in ms (5 seconds)
+        },
+      );
     }
   };
 
