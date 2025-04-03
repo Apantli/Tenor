@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { cn } from '~/lib/utils';
 
 interface SegmentedControlProps {
   options: string[];
@@ -53,10 +54,7 @@ export function SegmentedControl({
   };
   
   return (
-    <div 
-      ref={containerRef}
-      className={`relative flex rounded-lg bg-gray-100 p-1 ${className}`}
-    >
+    <div ref={containerRef} className={cn('relative flex rounded-lg bg-gray-100 p-1', className)}>
       {/* Animated selector background */}
       <div 
         className="absolute bg-app-primary rounded-md transition-all duration-300 ease-in-out"
@@ -67,7 +65,6 @@ export function SegmentedControl({
           top: '0.25rem'
         }}
       />
-      
       {/* Option buttons for each option */}
       {options.map((option) => (
         <button
