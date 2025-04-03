@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { EpicSchema, EpicOverviewSchema } from "~/lib/types/zodFirebaseSchema";
+import { EpicSchema, ExistingEpicSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { FieldPath } from "firebase-admin/firestore";
 
@@ -12,11 +12,12 @@ export const epicsRouter = createTRPCRouter({
         .doc(input.projectId)
         .collection("epics")
         .select("scrumId", "name")
+        .where("deleted", "==", false)
         .orderBy("scrumId")
         .get();
 
       const epics = epicsSnapshot.docs.map((doc) =>
-        EpicOverviewSchema.parse({
+        ExistingEpicSchema.parse({
           ...doc.data(),
         }),
       );
@@ -25,20 +26,23 @@ export const epicsRouter = createTRPCRouter({
     }),
 
   getEpic: protectedProcedure
-    .input(z.object({ projectId: z.string(), epicId: z.string() }))
+    .input(z.object({ projectId: z.string(), epicId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const epicDoc = await ctx.firestore
+      const snapshot = await ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .collection("epics")
-        .doc(input.epicId)
+        .where("scrumId", "==", input.epicId)
+        .limit(1)
         .get();
 
-      if (!epicDoc.exists) {
+      if (snapshot.empty) {
         throw new Error("Epic not found");
       }
 
-      return { id: epicDoc.id, ...epicDoc.data() };
+      const epicDoc = snapshot.docs[0];
+
+      return EpicSchema.parse({ ...epicDoc?.data() });
     }),
 
   createOrModifyEpic: protectedProcedure

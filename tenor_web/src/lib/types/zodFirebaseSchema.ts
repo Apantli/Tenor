@@ -84,6 +84,14 @@ export const BacklogItemSchema = BasicInfoSchema.extend({
 
 export const EpicSchema = BasicInfoSchema;
 
+// Mark the id as mandatorty
+export const ExistingEpicSchema = EpicSchema.merge(
+  z.object({
+    scrumId: z.number(),
+    description: z.string().optional(),
+  }),
+);
+
 export const EpicOverviewSchema = EpicSchema.omit({
   description: true,
   deleted: true,
