@@ -12,6 +12,14 @@ import Popup, { SidebarPopup } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import FileList from "~/app/_components/inputs/FileList";
+import LinkList from "~/app/_components/inputs/LinkList";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import MemberTable, {
+  type TeamMember,
+} from "~/app/_components/inputs/MemberTable";
+import InputFileField from "~/app/_components/inputs/InputFileField";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { DatePicker } from "~/app/_components/DatePicker";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
@@ -33,6 +41,7 @@ export default function ComponentShowcasePage() {
         <TableShowcase />
         <PopupShowcase />
         <ConfirmationShowcase />
+        <InputComponents />
         <DatePickerShowcase />
         <SegmentedControlShowcase />
       </div>
@@ -515,6 +524,89 @@ function ConfirmationShowcase() {
   );
 }
 
+
+function InputComponents() {
+  const teamMembers = [
+    {
+      id: 1,
+      picture_url:
+        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+      name: "Alonso Huerta",
+      email: "email@addres.com",
+      role: "Admin",
+    },
+    {
+      id: 2,
+      picture_url:
+        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+      name: "Sergio Gonzalez",
+      email: "email@addres.com",
+      role: "Scrum Master",
+    },
+    {
+      id: 3,
+      picture_url:
+        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+      name: "Luis Amado",
+      email: "email@addres.com",
+      role: "Developer",
+    },
+  ] as TeamMember[];
+
+  const links = [
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://www.tiktok.com/@ramizeinn/video/7474372494661635358",
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://www.tiktok.com/@ramizeinn/video/7474372494661635358",
+  ];
+
+  return (
+    <div>
+      <InputTextField label="Text Field" />
+      <InputFileField
+        label="File"
+        accept="image/*"
+        image={null}
+        handleImageChange={() => {
+          console.log("File added");
+        }}
+      />
+
+      <InputTextAreaField label="Text Area" />
+      <FileList
+        label="Context Files"
+        files={[]}
+        handleFileAdd={() => {
+          console.log("File added");
+        }}
+        handleFileRemove={() => {
+          console.log("File added");
+        }}
+      />
+      <LinkList
+        label="Context Links"
+        links={links}
+        handleLinkAdd={() => {
+          console.log("File added");
+        }}
+        handleLinkRemove={() => {
+          console.log("File added");
+        }}
+      />
+      <MemberTable
+        label="Team Members"
+        teamMembers={teamMembers}
+        handleMemberAdd={() => {
+          console.log("File added");
+        }}
+        handleMemberRemove={() => {
+          console.log("File added");
+        }}
+      />
+    </div>
+  );
+}
+        
 // Showcase of the segmented control component
 function SegmentedControlShowcase(){
   // Default value must match with one of the options to prevent bugs

@@ -6,6 +6,7 @@ import CrossIcon from "@mui/icons-material/Close";
 import CrossFilterIcon from "@mui/icons-material/FilterListOff";
 
 import {
+  type DeleteOptions,
   filterVisibleColumns,
   type TableColumns,
   type TableOptions,
@@ -28,7 +29,7 @@ interface TableHeaderProps<I, T> {
   // eslint-disable-next-line
   setFilter: (columnKey: keyof T, value: any) => void;
   extraOptions?: TableOptions<I>[];
-  deletable?: boolean;
+  deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[]) => void;
 }
 
@@ -50,7 +51,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   deletable,
   onDelete,
 }: TableHeaderProps<I, T>) {
-  const showThreeDots = extraOptions !== undefined || deletable === true;
+  const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
     () => filterVisibleColumns(Object.entries(columns)),
     [columns],

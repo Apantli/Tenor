@@ -34,12 +34,17 @@ export interface TableOptions<I> {
   icon: React.JSX.Element;
 }
 
+export interface DeleteOptions {
+  deleteText: string;
+  deleteIcon?: React.JSX.Element;
+}
+
 interface TableProps<I, T> {
   data: T[];
   columns: TableColumns<T>;
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
-  deletable?: boolean;
+  deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[]) => void;
   className?: ClassNameValue;
 }
@@ -168,7 +173,10 @@ export default function Table<
 
   return (
     <div
-      className={cn("flex h-full flex-col overflow-x-scroll", className)}
+      className={cn(
+        "flex h-full flex-col overflow-x-scroll text-lg",
+        className,
+      )}
       ref={scrollContainerRef}
     >
       <TableHeader
