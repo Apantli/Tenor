@@ -24,6 +24,8 @@ import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { DatePicker } from "~/app/_components/DatePicker";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import TagComponent from "~/app/_components/TagComponent";
+import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
+import type { Option } from "~/app/_components/EditableBox/EditableBox";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -44,6 +46,7 @@ export default function ComponentShowcasePage() {
         <InputComponents />
         <DatePickerShowcase />
         <SegmentedControlShowcase />
+        <EditableBoxShowCase />
       </div>
     </main>
   );
@@ -642,6 +645,31 @@ function DatePickerShowcase() {
         placeholder="Select a date"
         // Adjust for any size
         className="h-3.5 w-48"
+      />
+    </div> 
+  );
+}
+
+function EditableBoxShowCase() {
+  const [selectedPerson, setSelectedPerson] = useState<Option | null>(null);
+  
+  // Ejemplo de opciones
+  const people: Option[] = [
+    { id: '1', name: 'Luis Amado', image: '~/app/_components/EditableBox/test.jpg' },
+    { id: '2', name: 'Ana García', image: '~/app/_components/EditableBox/test.jpg' },
+    { id: '3', name: 'Carlos Pérez', image: '~/app/_components/EditableBox/test.jpg' },
+  ];
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Image Selector</h2>
+      <EditableBox
+        options={people}
+        selectedOption={selectedPerson}
+        onChange={setSelectedPerson}
+        placeholder="Select a person"
+        className="w-64"
       />
     </div>
   );
