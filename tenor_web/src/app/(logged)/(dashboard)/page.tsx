@@ -24,17 +24,8 @@ export default function ProjectPage() {
 
 const CreateNewProject = () => {
   const router = useRouter();
-  const { mutateAsync: createProject } =
-    api.projects.createProject.useMutation();
-
   const handleCreateProject = async () => {
-    const response = await createProject();
-
-    if (response.success) {
-      router.push(`/project/${response.projectId}`);
-    } else {
-      console.error("Error creating project");
-    }
+    router.push("/create-project");
   };
 
   return (

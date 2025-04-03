@@ -524,7 +524,6 @@ function ConfirmationShowcase() {
   );
 }
 
-
 function InputComponents() {
   const teamMembers = [
     {
@@ -576,6 +575,7 @@ function InputComponents() {
       <FileList
         label="Context Files"
         files={[]}
+        memoryLimit={100_000_000} // 100MB
         handleFileAdd={() => {
           console.log("File added");
         }}
@@ -606,9 +606,9 @@ function InputComponents() {
     </div>
   );
 }
-        
+
 // Showcase of the segmented control component
-function SegmentedControlShowcase(){
+function SegmentedControlShowcase() {
   // Default value must match with one of the options to prevent bugs
   // (in this case "Selected option" as it is seen in the options array).
   const [selectedValue, setSelectedValue] = useState("Selected Option");
@@ -616,9 +616,9 @@ function SegmentedControlShowcase(){
     <div>
       <hr />
       <h2 className="my-2 text-2xl font-medium">Segmented Control</h2>
-      <SegmentedControl 
+      <SegmentedControl
         // Can add more than 2 options, this is just an example.
-        options={['Selected Option', 'Option']} 
+        options={["Selected Option", "Option"]}
         selectedOption={selectedValue}
         onChange={setSelectedValue}
         // Adjust the text and component size to the desired size
@@ -626,10 +626,10 @@ function SegmentedControlShowcase(){
       />
     </div>
   );
-};
+}
 
 // Showcase of the date picker component
-function DatePickerShowcase (){
+function DatePickerShowcase() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   return (
     <div>
@@ -641,8 +641,8 @@ function DatePickerShowcase (){
         // Any placeholder, can be due date or something similar
         placeholder="Select a date"
         // Adjust for any size
-        className="w-48 h-3.5"
+        className="h-3.5 w-48"
       />
     </div>
-  )
+  );
 }

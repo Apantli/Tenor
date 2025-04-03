@@ -138,26 +138,7 @@ export const projectsRouter = createTRPCRouter({
 
     return projects;
   }),
-  createProject: protectedProcedure.mutation(async ({ ctx }) => {
-    const useruid = ctx.session.uid;
-
-    try {
-      const project = createEmptyProject();
-      const projectRef = await ctx.firestore
-        .collection("projects")
-        .add(project);
-      console.log("Project added with ID: ", projectRef.id);
-
-      const userRef = ctx.firestore.collection("users").doc(useruid);
-      await userRef.update("projectIds", FieldValue.arrayUnion(projectRef.id));
-
-      return { success: true, projectId: projectRef.id };
-    } catch (error) {
-      console.error("Error adding document: ", error);
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-    }
-  }),
-  createProject2: protectedProcedure
+  createProject: protectedProcedure
     .input(ProjectSchema)
     .mutation(async ({ ctx }) => {
       const useruid = ctx.session.uid;

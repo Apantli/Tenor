@@ -117,15 +117,7 @@ export const SettingsSchema = z.object({
   maximumSprintStoryPoints: z.number().default(10000),
   aiContext: z.object({
     text: z.string().default(""),
-    files: z
-      .array(
-        z.object({
-          name: z.string(),
-          type: z.enum(["pdf", "docx", "xlsx", "mp4"]),
-          content: z.string(),
-        }),
-      )
-      .default([]),
+    files: z.array(z.string()).default([]),
     links: z.array(z.string()).default([]),
   }),
   requirementFocusTags: z.array(TagSchema).default([]),
@@ -139,7 +131,7 @@ export const SettingsSchema = z.object({
 export const ProjectSchema = z.object({
   name: z.string(),
   description: z.string(),
-  logoUrl: z.string(),
+  logo: z.string().optional(),
   deleted: z.boolean().default(false),
 
   settings: SettingsSchema,
