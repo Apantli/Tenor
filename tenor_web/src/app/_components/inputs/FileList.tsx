@@ -6,10 +6,12 @@ import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import PrimaryButton from "../buttons/PrimaryButton";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
   label: string;
   files: File[];
+  memoryLimit: number;
   className?: ClassNameValue;
   handleFileAdd: (files: File[]) => void;
   handleFileRemove: (file: File) => void;
@@ -19,6 +21,7 @@ export default function FileList({
   label,
   className,
   files,
+  memoryLimit,
   handleFileAdd,
   handleFileRemove,
 }: Props) {
@@ -28,10 +31,22 @@ export default function FileList({
     fileInputRef.current?.click();
   };
 
+  function filesSumSize() {
+    return files.reduce((total, item) => total + item.size, 0);
+  }
+
+  const { alert, predefinedAlerts } = useAlert();
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <label className="text-sm font-semibold">{label}</label>
+        <div>
+          <label className="text-sm font-semibold">{label}</label>
+          <span className="ml-2 text-xs text-gray-500">
+            {(filesSumSize() / 1_000_000).toFixed(1)}
+            MB / {(memoryLimit / 1_000_000).toFixed(1)}MB
+          </span>
+        </div>
 
         <div>
           <PrimaryButton
@@ -48,10 +63,23 @@ export default function FileList({
             ref={fileInputRef}
             onChange={(e) => {
               const files = e.target.files;
-              if (files) {
-                const fileArray = Array.from(files);
-                handleFileAdd(fileArray);
+              if (!files) return;
+
+              const fileArray = Array.from(files);
+              const filesSize = fileArray.reduce(
+                (total, file) => total + file.size,
+                0,
+              );
+
+              if (filesSumSize() + filesSize > memoryLimit) {
+                alert("Oops...", "You exceeded the file size limit.", {
+                  type: "error",
+                  duration: 5000, // time in ms (5 seconds)
+                });
+                return;
               }
+
+              handleFileAdd(fileArray);
             }}
             multiple
           />

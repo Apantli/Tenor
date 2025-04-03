@@ -7,15 +7,62 @@ import Tabbar from "~/app/_components/Tabbar";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import InputFileField from "~/app/_components/inputs/InputFileField";
-import { useState } from "react";
 import Table, { TableColumns } from "~/app/_components/table/Table";
 import MemberTable, {
   type TeamMember,
 } from "~/app/_components/inputs/MemberTable";
 import LinkList from "~/app/_components/inputs/LinkList";
 import FileList from "~/app/_components/inputs/FileList";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { api } from "~/trpc/react";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 export default function ProjectCreator() {
+  const router = useRouter();
+  const { mutateAsync: createProject } =
+    // FIXME: There are two create project endpoints, I was told to you createProject2
+    // FIXME: Delete the non used one
+    api.projects.createProject.useMutation();
+
+  const { alert, predefinedAlerts } = useAlert();
+  const handleCreateProject = async () => {
+    if (!form.name) {
+      console.error("Please fill the Project Name Field");
+      alert("Oops...", "Project Name must have a value.", {
+        type: "error",
+        duration: 5000, // time in ms (5 seconds)
+      });
+      return;
+    }
+
+    const response = await createProject({
+      name: form.name,
+      description: form.description,
+      // FIXME: Generate icon URL
+      logoUrl: "",
+      // FIMXE: Pass correct userId and roleID
+      users: teamMembers.map((member) => ({
+        userId: member.email,
+        roleId: member.role,
+      })),
+      settings: {
+        aiContext: {
+          text: form.context,
+          // FIXME: Generate Context files URL
+          files: [],
+          links: links,
+        },
+      },
+    });
+
+    if (response.success) {
+      router.push(`/project/${response.projectId}`);
+    } else {
+      console.error("Error creating project");
+    }
+  };
+
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -91,11 +138,7 @@ export default function ProjectCreator() {
         <div className="header flex w-full justify-between pb-6">
           <h1 className="text-2xl font-semibold">Project Creator</h1>
           {/* FIXME: create project and redirect to page if successful, display error if not */}
-          <PrimaryButton
-            onClick={() => {
-              console.log("Creating project");
-            }}
-          >
+          <PrimaryButton onClick={handleCreateProject}>
             Generate Project
           </PrimaryButton>
         </div>
@@ -164,6 +207,7 @@ export default function ProjectCreator() {
               <FileList
                 label="Context Files"
                 files={files}
+                memoryLimit={10_000_000} // 10MB
                 handleFileAdd={handleFilesAdd}
                 handleFileRemove={handleFilesDelete}
               />
