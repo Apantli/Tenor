@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "~/lib/utils";
 
 interface Props {
-  label: string | null;
+  label?: string;
 }
 
 export default function InputTextAreaField({

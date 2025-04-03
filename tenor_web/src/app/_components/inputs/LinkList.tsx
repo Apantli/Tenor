@@ -22,14 +22,6 @@ export default function LinkList({
   handleLinkRemove,
   links,
 }: Props) {
-  // FIXME: Replace for Dropdown method
-  // const handleAddLinkClick = () => {
-  //   const newLink = prompt("Enter the link:");
-  //   if (newLink?.trim()) {
-  //     handleLinkAdd(newLink.trim());
-  //   }
-  // };
-
   const [link, setLink] = React.useState("");
 
   return (
@@ -46,7 +38,6 @@ export default function LinkList({
         >
           <DropdownItem>
             <InputTextField
-              label={null}
               placeholder="https://example.com"
               value={link}
               onChange={(e) => {

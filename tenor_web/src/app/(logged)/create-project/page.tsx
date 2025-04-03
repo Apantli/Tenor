@@ -19,10 +19,16 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 export default function ProjectCreator() {
+  const toBase64 = (file: File) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+    });
+
   const router = useRouter();
   const { mutateAsync: createProject } =
-    // FIXME: There are two create project endpoints, I was told to you createProject2
-    // FIXME: Delete the non used one
     api.projects.createProject.useMutation();
 
   const { alert, predefinedAlerts } = useAlert();
@@ -36,11 +42,21 @@ export default function ProjectCreator() {
       return;
     }
 
+    let logoBase64Encoded: string | undefined = undefined;
+    if (icon) {
+      logoBase64Encoded = (await toBase64(icon)) as string;
+    }
+
+    const filesBase64Encoded: string[] = [];
+    for (const file of files) {
+      const fileBase64 = (await toBase64(file)) as string;
+      filesBase64Encoded.push(fileBase64);
+    }
+
     const response = await createProject({
       name: form.name,
       description: form.description,
-      // FIXME: Generate icon URL
-      logoUrl: icon?.bytes.toString() ?? "",
+      logoBase64Encoded: logoBase64Encoded,
       // FIMXE: Pass correct userId and roleID
       users: teamMembers.map((member) => ({
         userId: member.email,
@@ -49,8 +65,7 @@ export default function ProjectCreator() {
       settings: {
         aiContext: {
           text: form.context,
-          // FIXME: Generate Context files URL
-          files: [],
+          files: filesBase64Encoded,
           links: links,
         },
       },
