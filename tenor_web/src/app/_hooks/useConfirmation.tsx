@@ -8,9 +8,9 @@ import React, {
   type PropsWithChildren,
 } from "react";
 import Popup from "../_components/Popup";
-import SecondaryButton from "../_components/SecondaryButton";
-import PrimaryButton from "../_components/PrimaryButton";
-import DeleteButton from "../_components/DeleteButton";
+import SecondaryButton from "../_components/buttons/SecondaryButton";
+import PrimaryButton from "../_components/buttons/PrimaryButton";
+import DeleteButton from "../_components/buttons/DeleteButton";
 
 export interface Confirmation {
   title: string;

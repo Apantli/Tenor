@@ -7,11 +7,12 @@ import type {
   Settings,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-
 // interface User {
 //   uid: string;
 //   projectIds: string[];
 // }
+
+import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -137,7 +138,6 @@ export const projectsRouter = createTRPCRouter({
 
     return projects;
   }),
-
   createProject: protectedProcedure.mutation(async ({ ctx }) => {
     const useruid = ctx.session.uid;
 
@@ -157,4 +157,28 @@ export const projectsRouter = createTRPCRouter({
       throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
     }
   }),
+  createProject2: protectedProcedure
+    .input(ProjectSchema)
+    .mutation(async ({ ctx }) => {
+      const useruid = ctx.session.uid;
+
+      try {
+        const project = createEmptyProject();
+        const projectRef = await ctx.firestore
+          .collection("projects")
+          .add(project);
+        console.log("Project added with ID: ", projectRef.id);
+
+        const userRef = ctx.firestore.collection("users").doc(useruid);
+        await userRef.update(
+          "projectIds",
+          FieldValue.arrayUnion(projectRef.id),
+        );
+
+        return { success: true, projectId: projectRef.id };
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+    }),
 });

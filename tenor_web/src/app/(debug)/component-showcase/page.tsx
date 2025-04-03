@@ -1,19 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import React , { useState } from "react";
-import SecondaryButton from "~/app/_components/SecondaryButton";
+import React, { useState } from "react";
+import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import PillComponent from "~/app/_components/PillComponent";
 import Popup, { SidebarPopup } from "~/app/_components/Popup";
-import PrimaryButton from "~/app/_components/PrimaryButton";
-import DeleteButton from "~/app/_components/DeleteButton";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { DatePicker } from "~/app/_components/DatePicker";
+import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
+import TagComponent from "~/app/_components/TagComponent";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -24,8 +26,10 @@ export default function ComponentShowcasePage() {
       </Link>
       <h1 className="my-5 text-3xl font-semibold">Component Showcase</h1>
       <div className="flex flex-col gap-10">
+        <ButtonShowcase />
         <AlertShowcase />
         <PillShowcase />
+        <TagShowcase />
         <TableShowcase />
         <PopupShowcase />
         <ConfirmationShowcase />
@@ -36,6 +40,51 @@ export default function ComponentShowcasePage() {
   );
 }
 
+function ButtonShowcase() {
+  // This showcases how to use the buttons available in Tenor
+  // You can use the PrimaryButton and SecondaryButton components to create buttons with different styles
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Buttons</h2>
+      <div className="flex gap-2">
+        <PrimaryButton>Primary Button</PrimaryButton>
+        <SecondaryButton>Secondary Button</SecondaryButton>
+        <TertiaryButton>Tertiary Button</TertiaryButton>
+        <DeleteButton>Delete Button</DeleteButton>
+      </div>
+      <p className="mt-4">Disabled buttons</p>
+      <div className="mt-2 flex gap-2">
+        <PrimaryButton disabled>Primary Button</PrimaryButton>
+        <SecondaryButton disabled>Secondary Button</SecondaryButton>
+        <TertiaryButton disabled>Tertiary Button</TertiaryButton>
+        <DeleteButton disabled>Delete Button</DeleteButton>
+      </div>
+      <p className="mt-4">Buttons with a loading state</p>
+      <div className="mt-2 flex gap-2">
+        <PrimaryButton loading>Primary Button</PrimaryButton>
+        <SecondaryButton loading>Secondary Button</SecondaryButton>
+        <DeleteButton loading>Delete Button</DeleteButton>
+      </div>
+      <p className="mt-4">Links that look like buttons</p>
+      <div className="mt-2 flex gap-2">
+        {/* When you include an href prop, the underlying component automatically becomes a <Link /> component instead of a button */}
+        {/* This also works with dropdown buttons */}
+        <PrimaryButton href="/component-showcase/why">
+          Go to other page
+        </PrimaryButton>
+        {/* You can use any prop for links such as target="_blank" */}
+        <SecondaryButton href="/component-showcase/why" target="_blank">
+          Open in another tab
+        </SecondaryButton>
+        <TertiaryButton href="/component-showcase/why">
+          Go to other page
+        </TertiaryButton>
+      </div>
+    </div>
+  );
+}
 
 function AlertShowcase() {
   // Add the useAlert hook to any client component where you want to show alerts
@@ -250,6 +299,60 @@ function PillShowcase() {
           callBack={dropdownCallback2}
           labelClassName="w-64"
         />
+      </div>
+    </div>
+  );
+}
+
+function TagShowcase() {
+  // This showcases how to use the Tag component, which is supposed to display a tag with a name and a color
+
+  const tags = [
+    {
+      name: "S",
+      color: "#009719",
+      deleted: false,
+    },
+    {
+      name: "L",
+      color: "#CC9900", // Darker yellow color
+      deleted: false,
+    },
+    {
+      name: "M",
+      color: "#9932CC", // Bright purple color
+      deleted: false,
+    },
+    {
+      name: "P0",
+      color: "#EA2B4E", // App fail color
+      deleted: false,
+    },
+  ];
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Tags</h2>
+      <div className="flex justify-start gap-2">
+        {tags.map((tag) => (
+          <TagComponent
+            key={tag.name}
+            color={tag.color}
+            reducedPadding
+            className="min-w-8"
+          >
+            {tag.name}
+          </TagComponent>
+        ))}
+      </div>
+      <br />
+      <div className="flex justify-start gap-2">
+        <TagComponent>US001</TagComponent>
+        <TagComponent onDelete={() => console.log("HELLO")}>US003</TagComponent>
+        <TagComponent onDelete={() => console.log("HELLO")} color="#009719">
+          Login
+        </TagComponent>
       </div>
     </div>
   );
