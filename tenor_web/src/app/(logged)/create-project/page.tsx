@@ -111,6 +111,7 @@ export default function ProjectCreator() {
                   value={form.name}
                   onChange={handleChange}
                   name="name"
+                  placeholder="What is your project called?"
                 />
               </div>
 

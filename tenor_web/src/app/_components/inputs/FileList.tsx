@@ -36,7 +36,7 @@ export default function FileList({
         <div>
           <PrimaryButton
             onClick={openFilePicker}
-            className="max-h-[40px] text-sm font-semibold"
+            className="flex max-h-[40px] items-center text-sm font-semibold"
           >
             Add Context File +
           </PrimaryButton>

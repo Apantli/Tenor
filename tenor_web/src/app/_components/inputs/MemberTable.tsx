@@ -38,7 +38,7 @@ export default function MemberTable({
   const columns: TableColumns<TeamMember> = {
     id: { visible: false },
     picture_url: {
-      label: "Picture",
+      label: "",
       width: 50,
       render(row) {
         return (
@@ -53,19 +53,14 @@ export default function MemberTable({
     name: {
       label: "Name",
       width: 140,
-      filterable: "list",
     },
     email: {
       label: "Email",
       width: 180,
-      sortable: false,
-      filterable: "search-only",
     },
     role: {
       label: "Role",
       width: 120,
-      filterable: "list",
-      sortable: true,
     },
   };
 
@@ -81,7 +76,10 @@ export default function MemberTable({
         >
           {label}
         </label>
-        <PrimaryButton className="text-sm" onClick={handleAddLinkClick}>
+        <PrimaryButton
+          className="flex items-center text-sm"
+          onClick={handleAddLinkClick}
+        >
           + Add Member
         </PrimaryButton>
       </div>
@@ -91,7 +89,9 @@ export default function MemberTable({
         data={teamMembers}
         columns={columns}
         multiselect
-        deletable
+        deletable={{
+          deleteText: "Remove",
+        }}
         onDelete={(ids) => handleMemberRemove(ids)}
       />
     </div>

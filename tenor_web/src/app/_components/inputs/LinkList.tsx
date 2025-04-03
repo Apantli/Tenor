@@ -32,7 +32,7 @@ export default function LinkList({
       <div className="flex items-center justify-between py-4">
         <label className="text-sm font-semibold">{label}</label>
         <PrimaryButton
-          className="max-h-[40px] text-sm font-semibold"
+          className="flex max-h-[40px] items-center text-sm font-semibold"
           onClick={handleAddLinkClick}
         >
           {" "}
