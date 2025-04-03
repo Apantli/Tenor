@@ -16,19 +16,32 @@ import FileList from "~/app/_components/inputs/FileList";
 
 
 export default function ProjectCreator() {
-  const [ form, setForm ] = useState({
-    name: "",
-    description: "",
-    context: "",
-    context_files: "",
-  });
+    const [ form, setForm ] = useState({
+      name: "",
+      description: "",
+      context: "",
+    });
 
-  // FIXME: I couldnt find a User type that has the displayed information in the Figma
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     { id: 1, picture_url: "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg", name: "Alonso Huerta", email: "email@addres.com", role: "Admin" },
     { id: 2, picture_url: "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg", name: "Sergio Gonzalez", email: "email@addres.com", role: "Scrum Master" },
     { id: 3, picture_url: "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg", name: "Luis Amado", email: "email@addres.com", role: "Developer" },
   ]);
+  const handleRemoveTeamMember = (id: (string | number)[]) => {
+    setTeamMembers((prev) => prev.filter((member) => !id.includes(member.id)));
+  }
+  // FIXME: Fetch user and load information
+  const handleAddTeamMember = (email: string) => {
+    const id: number = teamMembers.length > 0 ? Math.max(...teamMembers.map((member) => member.id)) + 1 : 1;
+    const newMember = {
+      id: id,
+      picture_url: "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+      name: email,
+      email: email,
+      role: "Developer",
+    };
+    setTeamMembers((prev) => [...prev, newMember]);
+  }
 
   // Icon File
   const [icon, setImage] = useState<File | null>(null);
@@ -42,20 +55,25 @@ export default function ProjectCreator() {
 
   // Context Files
   const [files, setFiles] = useState<File[]>([]);
-  function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleFilesAdd(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files;
     if (files) {
       const filesArray = Array.from(files);
       setFiles((prev) => [...prev, ...filesArray]);
     }
   }
+  function handleFilesDelete(file: File) {
+    setFiles((prev) => prev.filter((f) => f !== file));
+  }
 
   const [links, setLinks] = useState<string[]>(["https://www.youtube.com/watch?v=dQw4w9WgXcQ", "https://www.tiktok.com/@ramizeinn/video/7474372494661635358"]);
   // (string => void)receives a string and adds it to the list of links
-  function handleLinkChange(link: string) {
+  function handleLinkAdd(link: string) {
     setLinks((prev) => [...prev, link]);
   }
-
+  function handleLinkDelete(link: string) {
+    setLinks((prev) => prev.filter((l) => l !== link));
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -85,9 +103,9 @@ export default function ProjectCreator() {
       <hr />
       <div className="content pt-6 flex gap-4 w-full">
 
-        <div className="project-primary-info flex flex-col gap-y-4 min-w-[45%]">
+        <div className="flex flex-col gap-y-4 min-w-[45%]">
 
-          <div className="project-name-icon flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4">
             {/* Project Name */}
             <div className="flex-1 min-w-[300px]">
               <InputTextField label="Project Name" value={form.name} onChange={handleChange} name="name"/>
@@ -95,31 +113,31 @@ export default function ProjectCreator() {
 
             {/* Project Icon */}
             <div className="flex-1">
-              <InputFileField label="Icon" accept=".jpg, .jpeg, .png" image={icon} handleImageChange={handleImageChange} />
+              <InputFileField label="Icon" accept="image/*" image={icon} handleImageChange={handleImageChange} />
             </div>
           </div>
 
           {/* Project Description */}
-          <InputTextAreaField label="Description" html-rows="4" placeholder="Lorem Ipsum" className="w-full min-h-[140px]" value={form.description} onChange={handleChange} name="description"/>
+          <InputTextAreaField label="Description" html-rows="4" placeholder="What is this project about?" className="w-full min-h-[140px]" value={form.description} onChange={handleChange} name="description"/>
 
           {/* Member Table */}
-          <div className="project-team-members gap-y-4">
-            <MemberTable label="Team Members" teamMembers={teamMembers} className="w-full" />
+          <div className="gap-y-4">
+            <MemberTable label="Team Members" teamMembers={teamMembers} className="w-full" handleMemberAdd={handleAddTeamMember} handleMemberRemove={handleRemoveTeamMember}/>
           </div>
         </div>
 
-        <div className="project-context flex flex-col gap-y-4 w-full">
+        <div className="flex flex-col gap-y-4 w-full">
           {/* Context Text */}
           <InputTextAreaField className="min-h-[180px]" label="Context" html-rows="20" placeholder="Tell us about your project..."/>
 
           {/* Contexr Files */}
-          <div className="context-files">
-            < FileList label="Context Files" files={files} handleFilesChange={handleFilesChange} />
+          <div>
+            < FileList label="Context Files" files={files} handleFilesChange={handleFilesAdd} handleFileRemove={handleFilesDelete}/>
           </div>
 
           {/* Context Links */}
-          <div className="context-files">
-            < LinkList label="Context Links" links={links} handleLinkChange={handleLinkChange}/>
+          <div>
+                <LinkList label="Context Links" links={links} handleLinkAdd={handleLinkAdd} handleLinkRemove={handleLinkDelete}/>
           </div>
 
         </div>

@@ -8,17 +8,19 @@ import InsertLinkIcon from '@mui/icons-material/InsertLink';
 interface Props {
   label: string;
   links: string[];
-  handleLinkChange: (link: string) => void;
+  handleLinkAdd: (link: string) => void;
+  handleLinkRemove: (link: string) => void;
   className?: ClassNameValue;
 }
 
-export default function LinkList({ label, className, handleLinkChange, links , ...props }: Props) {
+export default function LinkList({ label, className, handleLinkAdd, handleLinkRemove, links , ...props }: Props) {
     const handleAddLinkClick = () => {
         const newLink = prompt("Enter the link:");
         if (newLink?.trim()) {
-          handleLinkChange(newLink.trim());
+            handleLinkAdd(newLink.trim());
         }
       };
+
 
     return (
         <div className="w-full">
@@ -29,7 +31,7 @@ export default function LinkList({ label, className, handleLinkChange, links , .
                 < PrimaryButton 
                     className="text-sm font-semibold max-h-[40px]"
                     onClick={handleAddLinkClick}
-                > Add Link + </PrimaryButton>
+                > Add Context Link + </PrimaryButton>
             </div>
             <ul
             className={cn(
@@ -38,14 +40,19 @@ export default function LinkList({ label, className, handleLinkChange, links , .
             )}
             >
             {links.map((link, index) => (
-                <li key={index} className="flex-shrink-0 h-[100px]" title={link}>
+                <li key={index} className="flex-shrink-0 h-[100px]" title={link}
+                onClick={() => {handleLinkRemove(link)}} >
                 <span
                 title={link} 
                     className="flex flex-col items-center text-gray-500 hover:text-blue-500"
                 >
-                    <InsertLinkIcon style={{ fontSize: '4rem' }} />
+                    <InsertLinkIcon style={{ fontSize: '4rem' }} data-tooltip-id="tooltip"
+data-tooltip-content={link}/>
                     <span className="text-xs mt-1 truncate max-w-[80px] text-center">
-                    {link}
+                    {
+                        // remove the protocol from the link
+                        link.replace(/^(http:\/\/|https:\/\/)/, "")
+                    }
                     </span>
                 </span>
                 </li>

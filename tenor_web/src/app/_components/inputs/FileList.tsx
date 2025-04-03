@@ -4,15 +4,20 @@ import { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import PrimaryButton from "../PrimaryButton";
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import DescriptionIcon from '@mui/icons-material/Description';
+
+
 
 interface Props {
   label: string;
   files: File[];
   className?: ClassNameValue;
   handleFilesChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleFileRemove: (file: File) => void;
 }
 
-export default function FileList({ label, className, files, handleFilesChange, ...props }: Props) {
+export default function FileList({ label, className, files, handleFilesChange, handleFileRemove }: Props) {
     const fileInputRef = useRef<HTMLInputElement | null>(null);
 
     const openFilePicker = () => {
@@ -31,11 +36,12 @@ export default function FileList({ label, className, files, handleFilesChange, .
                     onClick={openFilePicker}
                     className="text-sm font-semibold max-h-[40px]"
                 >
-                    Add Link +
+                    Add Context File +
                 </PrimaryButton>
 
                 <input
                     type="file"
+                    accept=".pdf, .txt, .csv"
                     className="hidden"
                     ref={fileInputRef}
                     onChange={handleFilesChange}
@@ -51,11 +57,24 @@ export default function FileList({ label, className, files, handleFilesChange, .
         )}
         >
         {files.map((file, index) => (
-            <li key={index} className="flex-shrink-0 h-[100px]">
+            <li key={index} className="flex-shrink-0 h-[100px]"
+            onClick={() => handleFileRemove(file)}
+            title={file.name}
+            >
             <span
                 className="flex flex-col items-center text-gray-500 hover:text-blue-500"
             >
+                {/* Load Icon based on file type */}
+                {file.type === "application/pdf" ? (
                 <PictureAsPdfIcon style={{ fontSize: '4rem' }} />
+                ) : file.type === "text/csv" ? (
+                <TableChartIcon style={{ fontSize: '4rem' }} />
+                ) : (
+                <DescriptionIcon style={{ fontSize: '4rem' }} />
+                )}
+                
+
+                {/* <PictureAsPdfIcon style={{ fontSize: '4rem' }} /> */}
                 <span className="text-xs mt-1 truncate max-w-[80px] text-center">
                 {file.name}
                 </span>

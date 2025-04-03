@@ -15,23 +15,22 @@ export default function InputFileField({ label, id, className, handleImageChange
         {label}
         </label>
         
-        <label className = {cn("block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none ", className)}>
+        <div className = {cn("block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none ", className)}>
+          <div className="flex">
+            <DriveFolderUploadIcon />
+            <span className="pl-2 block max-w-[200px] truncate text-sm text-gray-700">
+              {image?.name ?? "Attach Image"}
+            </span>
+          </div>
 
-        <div className="flex">
-          <DriveFolderUploadIcon />
-          <span className="pl-2 block max-w-[200px] truncate text-sm text-gray-700">
-            {image?.name ?? "Attach Image"}
-          </span>
+          <input
+              id={id}
+              type="file"
+              className="hidden"
+              onChange={handleImageChange}
+              {...props}
+          />
         </div>
-
-        <input
-            id={id}
-            type="file"
-            className="hidden"
-            onChange={handleImageChange}
-            {...props}
-        />
-        </label>
     </div>
   );
 }

@@ -8,6 +8,8 @@ import PrimaryButton from "../PrimaryButton";
 interface Props {
   label: string;
   teamMembers: TeamMember[];
+  handleMemberAdd: (email: string) => void;
+  handleMemberRemove: (id: (string | number)[]) => void;
   className?: ClassNameValue;
 }
 
@@ -19,7 +21,14 @@ export interface TeamMember {
     role: string;
   }
 
-export default function MemberTable({ label, teamMembers, className }: Props) {
+export default function MemberTable({ label, teamMembers, handleMemberAdd, handleMemberRemove, className }: Props) {
+    const handleAddLinkClick = () => {
+        const memberName = prompt("Enter member email:");
+        if (memberName?.trim()) {
+            handleMemberAdd(memberName.trim());
+        }
+    };
+
     const columns: TableColumns<TeamMember> = {
         id: { visible: false },
         picture_url : {
@@ -67,18 +76,16 @@ export default function MemberTable({ label, teamMembers, className }: Props) {
     
     <div className="flex justify-between items-center mb-4 py-4">
         <FilterSearch list={[]} onSearch={(searchTerm) => console.log(searchTerm)} placeholder="Search member..."></FilterSearch>
-        <PrimaryButton className="text-sm">+ Add Member</PrimaryButton>
+        <PrimaryButton className="text-sm" onClick={handleAddLinkClick}>+ Add Member</PrimaryButton>
     </div>
 
     <Table
         className="h-[200px] text-sm"
         data={teamMembers}
         columns={columns}
-        // extraOptions={extraOptions}
-        // multiselect
-        // deletable
-        // FIXME:
-        // onDelete={(ids) => console.log("Deleted", ids)}
+        multiselect
+        deletable
+        onDelete={(ids) => handleMemberRemove(ids)}
     />
     </div>
   );
