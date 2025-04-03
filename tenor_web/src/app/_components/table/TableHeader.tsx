@@ -81,11 +81,11 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       {columnEntries.map(([key, column]) => (
         <div
           key={key}
-          className="flex items-center justify-between pr-4 text-gray-500"
+          className="flex items-center justify-between overflow-hidden pr-4 text-gray-500"
         >
           <span className="text-sm">{column.label}</span>
           {(!!column.sortable || column.filterable) && (
-            <div className="flex items-center justify-end gap-4">
+            <div className="flex items-center justify-end gap-2 pl-2">
               {sortColumnKey === key && sortDirection === "asc" && (
                 <button onClick={stopSorting} className="text-app-light">
                   <UpArrowIcon />
@@ -105,7 +105,11 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
                 </button>
               )}
               <Dropdown
-                label={<span className="font-bold text-app-light">• • •</span>}
+                label={
+                  <span className="text-nowrap font-bold text-app-light">
+                    • • •
+                  </span>
+                }
               >
                 {column.sortable && (
                   <DropdownButton

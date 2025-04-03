@@ -49,6 +49,7 @@ interface TableProps<I, T> {
   className?: ClassNameValue;
 }
 
+// TODO: Make columns' width be customizable on runtime by user
 export default function Table<
   I extends string | number,
   // eslint-disable-next-line
