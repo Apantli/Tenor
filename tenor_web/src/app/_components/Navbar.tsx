@@ -9,10 +9,12 @@ import { type PropsWithChildren } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import useShiftKey from "../_hooks/useShiftKey";
 import useLogout from "../_hooks/useLogout";
+import { useRouter } from "next/navigation";
 
 export default function Navbar({ children }: PropsWithChildren) {
   const { user } = useFirebaseAuth();
   const logout = useLogout();
+  const router = useRouter();
 
   const shiftClicked = useShiftKey();
 
@@ -61,6 +63,11 @@ export default function Navbar({ children }: PropsWithChildren) {
               onClick={handleCopyUID}
             >
               Copy your user id
+            </DropdownButton>
+          )}
+          {shiftClicked && (
+            <DropdownButton onClick={() => router.push("/component-showcase")}>
+              Component showcase
             </DropdownButton>
           )}
         </Dropdown>

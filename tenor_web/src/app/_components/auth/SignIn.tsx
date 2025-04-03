@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
-import PrimaryButton from "../PrimaryButton";
+import PrimaryButton from "../buttons/PrimaryButton";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { useRouter } from "next/navigation";
@@ -106,7 +106,7 @@ export default function SignIn() {
       >
         Password
       </FloatingLabelInput>
-      <PrimaryButton loading={loading} onClick={handleSignIn}>
+      <PrimaryButton loading={loading} floatingSpinner onClick={handleSignIn}>
         Sign in
       </PrimaryButton>
     </div>

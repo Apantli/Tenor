@@ -7,6 +7,7 @@ import {
   filterVisibleColumns,
   type TableColumns,
   type TableOptions,
+  type DeleteOptions,
 } from "./Table";
 
 interface TableRowProps<I, T> {
@@ -16,7 +17,7 @@ interface TableRowProps<I, T> {
   selection: Set<I>;
   toggleSelect: (id: I) => void;
   extraOptions?: TableOptions<I>[];
-  deletable?: boolean;
+  deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[]) => void;
   scrollContainerRef: React.RefObject<HTMLDivElement>;
 }
@@ -36,7 +37,7 @@ function TableRow<
   onDelete,
   scrollContainerRef,
 }: TableRowProps<I, T>) {
-  const showThreeDots = extraOptions !== undefined || deletable === true;
+  const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
     () => filterVisibleColumns(Object.entries(columns)),
     [columns],
@@ -63,7 +64,7 @@ function TableRow<
         ></input>
       )}
       {columnEntries.map(([key, column]) => (
-        <div key={key} className="text-lg">
+        <div key={key} className="flex items-center">
           {column.render ? column.render(value) : value[key]}
         </div>
       ))}
@@ -86,7 +87,7 @@ function TableRow<
                 {option.icon}
               </DropdownButton>
             ))}
-            {deletable && (
+            {deletable === true && (
               <DropdownButton
                 className="flex items-center justify-between gap-8"
                 onClick={() => onDelete?.([value.id])}
@@ -95,6 +96,19 @@ function TableRow<
                 <DeleteIcon htmlColor="red" />
               </DropdownButton>
             )}
+            {deletable &&
+              typeof deletable === "object" &&
+              "deleteText" in deletable && (
+                <DropdownButton
+                  className="flex items-center justify-between gap-8"
+                  onClick={() => onDelete?.([value.id])}
+                >
+                  <span className="text-app-fail">{deletable.deleteText}</span>
+                  <span className="text-app-fail">
+                    {deletable.deleteIcon ?? <DeleteIcon />}
+                  </span>
+                </DropdownButton>
+              )}
           </Dropdown>
         </>
       )}

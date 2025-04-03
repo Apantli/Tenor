@@ -4,7 +4,7 @@ import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { FilterSearch } from "~/app/_components/FilterSearch";
-import PrimaryButton from "~/app/_components/PrimaryButton";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 
 export default function ProjectPage() {
   return (
@@ -95,6 +95,7 @@ function ProjectList() {
         <FilterSearch
           list={projects?.map((p) => p.name) ?? []}
           onSearch={handleFilter}
+          placeholder="Search project..."
         />
         <CreateNewProject />
       </div>

@@ -42,7 +42,10 @@ function TableFilter<T extends Record<string, any>>({
   };
 
   const filteredData = data.filter((row) => {
-    if (searchValue !== "" && !String(row[columnKey]).includes(searchValue)) {
+    if (
+      searchValue !== "" &&
+      !String(row[columnKey]).toLowerCase().includes(searchValue.toLowerCase())
+    ) {
       return false;
     }
     return true;

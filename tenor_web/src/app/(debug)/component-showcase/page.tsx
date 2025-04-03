@@ -2,19 +2,30 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
-import SecondaryButton from "~/app/_components/SecondaryButton";
+import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import PillComponent from "~/app/_components/PillComponent";
 import Popup, { SidebarPopup } from "~/app/_components/Popup";
-import PrimaryButton from "~/app/_components/PrimaryButton";
-import DeleteButton from "~/app/_components/DeleteButton";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import FileList from "~/app/_components/inputs/FileList";
+import LinkList from "~/app/_components/inputs/LinkList";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import MemberTable, {
+  type TeamMember,
+} from "~/app/_components/inputs/MemberTable";
+import InputFileField from "~/app/_components/inputs/InputFileField";
+import { SegmentedControl } from "~/app/_components/SegmentedControl";
+import { DatePicker } from "~/app/_components/DatePicker";
+import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
+import TagComponent from "~/app/_components/TagComponent";
 
 // This file is to showcase how to use the components available in Tenor
-
 export default function ComponentShowcasePage() {
   return (
     <main className="p-4">
@@ -23,13 +34,64 @@ export default function ComponentShowcasePage() {
       </Link>
       <h1 className="my-5 text-3xl font-semibold">Component Showcase</h1>
       <div className="flex flex-col gap-10">
+        <ButtonShowcase />
         <AlertShowcase />
         <PillShowcase />
+        <TagShowcase />
         <TableShowcase />
         <PopupShowcase />
         <ConfirmationShowcase />
+        <InputComponents />
+        <DatePickerShowcase />
+        <SegmentedControlShowcase />
       </div>
     </main>
+  );
+}
+
+function ButtonShowcase() {
+  // This showcases how to use the buttons available in Tenor
+  // You can use the PrimaryButton and SecondaryButton components to create buttons with different styles
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Buttons</h2>
+      <div className="flex gap-2">
+        <PrimaryButton>Primary Button</PrimaryButton>
+        <SecondaryButton>Secondary Button</SecondaryButton>
+        <TertiaryButton>Tertiary Button</TertiaryButton>
+        <DeleteButton>Delete Button</DeleteButton>
+      </div>
+      <p className="mt-4">Disabled buttons</p>
+      <div className="mt-2 flex gap-2">
+        <PrimaryButton disabled>Primary Button</PrimaryButton>
+        <SecondaryButton disabled>Secondary Button</SecondaryButton>
+        <TertiaryButton disabled>Tertiary Button</TertiaryButton>
+        <DeleteButton disabled>Delete Button</DeleteButton>
+      </div>
+      <p className="mt-4">Buttons with a loading state</p>
+      <div className="mt-2 flex gap-2">
+        <PrimaryButton loading>Primary Button</PrimaryButton>
+        <SecondaryButton loading>Secondary Button</SecondaryButton>
+        <DeleteButton loading>Delete Button</DeleteButton>
+      </div>
+      <p className="mt-4">Links that look like buttons</p>
+      <div className="mt-2 flex gap-2">
+        {/* When you include an href prop, the underlying component automatically becomes a <Link /> component instead of a button */}
+        {/* This also works with dropdown buttons */}
+        <PrimaryButton href="/component-showcase/why">
+          Go to other page
+        </PrimaryButton>
+        {/* You can use any prop for links such as target="_blank" */}
+        <SecondaryButton href="/component-showcase/why" target="_blank">
+          Open in another tab
+        </SecondaryButton>
+        <TertiaryButton href="/component-showcase/why">
+          Go to other page
+        </TertiaryButton>
+      </div>
+    </div>
   );
 }
 
@@ -251,6 +313,60 @@ function PillShowcase() {
   );
 }
 
+function TagShowcase() {
+  // This showcases how to use the Tag component, which is supposed to display a tag with a name and a color
+
+  const tags = [
+    {
+      name: "S",
+      color: "#009719",
+      deleted: false,
+    },
+    {
+      name: "L",
+      color: "#CC9900", // Darker yellow color
+      deleted: false,
+    },
+    {
+      name: "M",
+      color: "#9932CC", // Bright purple color
+      deleted: false,
+    },
+    {
+      name: "P0",
+      color: "#EA2B4E", // App fail color
+      deleted: false,
+    },
+  ];
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Tags</h2>
+      <div className="flex justify-start gap-2">
+        {tags.map((tag) => (
+          <TagComponent
+            key={tag.name}
+            color={tag.color}
+            reducedPadding
+            className="min-w-8"
+          >
+            {tag.name}
+          </TagComponent>
+        ))}
+      </div>
+      <br />
+      <div className="flex justify-start gap-2">
+        <TagComponent>US001</TagComponent>
+        <TagComponent onDelete={() => console.log("HELLO")}>US003</TagComponent>
+        <TagComponent onDelete={() => console.log("HELLO")} color="#009719">
+          Login
+        </TagComponent>
+      </div>
+    </div>
+  );
+}
+
 function PopupShowcase() {
   // Theres 2 kinds of popups you can use: small, large
   // These are customizable so that you can show whatever information you want to the user.
@@ -406,4 +522,127 @@ function ConfirmationShowcase() {
       </div>
     </div>
   );
+}
+
+
+function InputComponents() {
+  const teamMembers = [
+    {
+      id: 1,
+      picture_url:
+        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+      name: "Alonso Huerta",
+      email: "email@addres.com",
+      role: "Admin",
+    },
+    {
+      id: 2,
+      picture_url:
+        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+      name: "Sergio Gonzalez",
+      email: "email@addres.com",
+      role: "Scrum Master",
+    },
+    {
+      id: 3,
+      picture_url:
+        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
+      name: "Luis Amado",
+      email: "email@addres.com",
+      role: "Developer",
+    },
+  ] as TeamMember[];
+
+  const links = [
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://www.tiktok.com/@ramizeinn/video/7474372494661635358",
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "https://www.tiktok.com/@ramizeinn/video/7474372494661635358",
+  ];
+
+  return (
+    <div>
+      <InputTextField label="Text Field" />
+      <InputFileField
+        label="File"
+        accept="image/*"
+        image={null}
+        handleImageChange={() => {
+          console.log("File added");
+        }}
+      />
+
+      <InputTextAreaField label="Text Area" />
+      <FileList
+        label="Context Files"
+        files={[]}
+        handleFileAdd={() => {
+          console.log("File added");
+        }}
+        handleFileRemove={() => {
+          console.log("File added");
+        }}
+      />
+      <LinkList
+        label="Context Links"
+        links={links}
+        handleLinkAdd={() => {
+          console.log("File added");
+        }}
+        handleLinkRemove={() => {
+          console.log("File added");
+        }}
+      />
+      <MemberTable
+        label="Team Members"
+        teamMembers={teamMembers}
+        handleMemberAdd={() => {
+          console.log("File added");
+        }}
+        handleMemberRemove={() => {
+          console.log("File added");
+        }}
+      />
+    </div>
+  );
+}
+        
+// Showcase of the segmented control component
+function SegmentedControlShowcase(){
+  // Default value must match with one of the options to prevent bugs
+  // (in this case "Selected option" as it is seen in the options array).
+  const [selectedValue, setSelectedValue] = useState("Selected Option");
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Segmented Control</h2>
+      <SegmentedControl 
+        // Can add more than 2 options, this is just an example.
+        options={['Selected Option', 'Option']} 
+        selectedOption={selectedValue}
+        onChange={setSelectedValue}
+        // Adjust the text and component size to the desired size
+        className="w-full max-w-md"
+      />
+    </div>
+  );
+};
+
+// Showcase of the date picker component
+function DatePickerShowcase (){
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Date Picker</h2>
+      <DatePicker
+        selectedDate={selectedDate}
+        onChange={setSelectedDate}
+        // Any placeholder, can be due date or something similar
+        placeholder="Select a date"
+        // Adjust for any size
+        className="w-48 h-3.5"
+      />
+    </div>
+  )
 }

@@ -2,12 +2,12 @@ import React from "react";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import { cn } from "~/lib/utils";
 
-import { type TableOptions } from "./Table";
+import { type DeleteOptions, type TableOptions } from "./Table";
 
 interface TableActionsProps<I> {
   selection: Set<I>;
   extraOptions?: TableOptions<I>[];
-  deletable?: boolean;
+  deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[]) => void;
 }
 
@@ -39,7 +39,7 @@ function TableActions<I extends string | number>({
           {option.icon}
         </button>
       ))}
-      {deletable && (
+      {deletable === true && (
         <button
           data-tooltip-id="tooltip"
           data-tooltip-content={`Delete selected (${selection.size})`}
@@ -51,6 +51,20 @@ function TableActions<I extends string | number>({
           <DeleteIcon />
         </button>
       )}
+      {deletable &&
+        typeof deletable === "object" &&
+        "deleteText" in deletable && (
+          <button
+            data-tooltip-id="tooltip"
+            data-tooltip-content={`${deletable.deleteText} selected (${selection.size})`}
+            data-tooltip-place="top-start"
+            data-tooltip-hidden={selection.size === 0}
+            className="text-gray-500 transition hover:text-app-fail"
+            onClick={() => onDelete?.(Array.from(selection))}
+          >
+            {deletable.deleteIcon ?? <DeleteIcon />}
+          </button>
+        )}
     </div>
   );
 }
