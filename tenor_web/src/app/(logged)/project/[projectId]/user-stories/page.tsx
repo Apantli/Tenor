@@ -1,13 +1,15 @@
 "use client";
 
-import PrimaryButton from "~/app/_components/PrimaryButton";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import Popup from "~/app/_components/Popup";
 import { useState } from "react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useEffect } from "react";
-import DeleteButton from "~/app/_components/DeleteButton";
+import DeleteButton from "~/app/_components/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 
 export default function ProjectUserStories() {
   const { mutateAsync: createEpic } =
@@ -101,6 +103,7 @@ export default function ProjectUserStories() {
       <Popup
         show={showSmallPopup}
         size="small"
+        className="min-h-[400px] min-w-[500px]"
         dismiss={() => setShowSmallPopup(false)}
         footer={
           <div className="flex gap-2">
@@ -115,25 +118,29 @@ export default function ProjectUserStories() {
           </div>
         }
       >
-        <h1 className="mb-5 text-2xl">
-          <strong>EP{(epics?.length ?? 0) + 1}:</strong>{" "}
-          <input
+        <div className="flex flex-col gap-4">
+          <h1 className="text-2xl">
+            <strong>EP{(epics?.length ?? 0) + 1}:</strong>{" "}
+          </h1>
+          <InputTextField
             type="text"
             placeholder="Your epic name"
+            label="Epic name"
             value={newEpicName}
             onChange={(e) => setNewEpicName(e.target.value)}
           />
-        </h1>
-
-        <textarea
-          value={newEpicDescription}
-          onChange={(e) => setNewEpicDescription(e.target.value)}
-          placeholder="Your epic descriptions"
-          className="h-auto w-full"
-        />
+          <InputTextAreaField
+            label="Epic description"
+            value={newEpicDescription}
+            onChange={(e) => setNewEpicDescription(e.target.value)}
+            placeholder="Your epic description"
+            className="h-auto w-full"
+          />
+        </div>
       </Popup>
       <Popup
         show={showEditPopup}
+        className="min-h-[400px] min-w-[500px]"
         showEdit
         size="small"
         onEdit={() => setEditEpic(!editEpic)}
@@ -188,42 +195,46 @@ export default function ProjectUserStories() {
           setEditEpic(false);
         }}
       >
-        {epicLoading ? (
-          <div className="flex flex-col items-center gap-y-7">
-            <h3 className="text-2xl font-bold">Loading...</h3>
-            <LoadingSpinner color="dark" />
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-row items-baseline gap-x-2">
-              <h1 className="mb-5 text-2xl">
-                <strong>EP{epic?.scrumId}:</strong>{" "}
-              </h1>
+        <>
+          {epicLoading ? (
+            <div className="flex flex-col items-center gap-y-7">
+              <h3 className="text-2xl font-bold">Loading...</h3>
+              <LoadingSpinner color="dark" />
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col items-baseline gap-x-2">
+                <div className="flex flex-row">
+                  <h1 className="mb-5 text-2xl">
+                    <strong>EP{epic?.scrumId}:</strong>{" "}
+                  </h1>
+                  {!editEpic && <p className="mr-5 text-2xl">{epic?.name}</p>}
+                </div>
+                {editEpic && (
+                  <InputTextField
+                    label="Epic name"
+                    type="text"
+                    placeholder="Your epic name"
+                    value={editEpicName}
+                    onChange={(e) => setEditEpicName(e.target.value)}
+                  />
+                )}
+              </div>
+
               {editEpic ? (
-                <input
-                  type="text"
-                  placeholder="Your epic name"
-                  value={editEpicName}
-                  className="text-2xl"
-                  onChange={(e) => setEditEpicName(e.target.value)}
+                <InputTextAreaField
+                  label="Epic description"
+                  value={editEpicDescription}
+                  onChange={(e) => setEditEpicDescription(e.target.value)}
+                  placeholder="Your epic descriptions"
+                  className="h-auto w-full"
                 />
               ) : (
-                <p className="mr-5 text-2xl">{epic?.name}</p>
+                <p>{epic?.description}</p>
               )}
             </div>
-
-            {editEpic ? (
-              <textarea
-                value={editEpicDescription}
-                onChange={(e) => setEditEpicDescription(e.target.value)}
-                placeholder="Your epic descriptions"
-                className="h-auto w-full"
-              />
-            ) : (
-              <p>{epic?.description}</p>
-            )}
-          </>
-        )}
+          )}
+        </>
       </Popup>
     </div>
   );
