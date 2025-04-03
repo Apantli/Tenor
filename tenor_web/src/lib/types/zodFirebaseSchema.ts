@@ -65,10 +65,10 @@ export const RoleSchema = z.object({
 });
 
 export const BasicInfoSchema = z.object({
-  scrumId: z.number(),
+  scrumId: z.number().optional(),
   name: z.string(),
   description: z.string(),
-  deleted: z.boolean(),
+  deleted: z.boolean().default(false),
 });
 
 export const SizeSchema = z.enum(["XS", "S", "M", "L", "XL", "XXL"]);
@@ -83,6 +83,11 @@ export const BacklogItemSchema = BasicInfoSchema.extend({
 });
 
 export const EpicSchema = BasicInfoSchema;
+
+export const EpicOverviewSchema = EpicSchema.omit({
+  description: true,
+  deleted: true,
+});
 
 export const UserStorySchema = BacklogItemSchema.extend({
   epicId: z.string(),
