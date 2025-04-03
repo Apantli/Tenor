@@ -56,7 +56,7 @@ export default function ProjectCreator() {
     const response = await createProject({
       name: form.name,
       description: form.description,
-      logoBase64Encoded: logoBase64Encoded,
+      logo: logoBase64Encoded,
       // FIMXE: Pass correct userId and roleID
       users: teamMembers.map((member) => ({
         userId: member.email,
