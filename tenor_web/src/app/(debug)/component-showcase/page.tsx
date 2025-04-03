@@ -20,11 +20,12 @@ import MemberTable, {
   type TeamMember,
 } from "~/app/_components/inputs/MemberTable";
 import InputFileField from "~/app/_components/inputs/InputFileField";
+import { SegmentedControl } from "~/app/_components/SegmentedControl";
+import { DatePicker } from "~/app/_components/DatePicker";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import TagComponent from "~/app/_components/TagComponent";
 
 // This file is to showcase how to use the components available in Tenor
-
 export default function ComponentShowcasePage() {
   return (
     <main className="p-4">
@@ -41,6 +42,8 @@ export default function ComponentShowcasePage() {
         <PopupShowcase />
         <ConfirmationShowcase />
         <InputComponents />
+        <DatePickerShowcase />
+        <SegmentedControlShowcase />
       </div>
     </main>
   );
@@ -521,6 +524,7 @@ function ConfirmationShowcase() {
   );
 }
 
+
 function InputComponents() {
   const teamMembers = [
     {
@@ -601,4 +605,44 @@ function InputComponents() {
       />
     </div>
   );
+}
+        
+// Showcase of the segmented control component
+function SegmentedControlShowcase(){
+  // Default value must match with one of the options to prevent bugs
+  // (in this case "Selected option" as it is seen in the options array).
+  const [selectedValue, setSelectedValue] = useState("Selected Option");
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Segmented Control</h2>
+      <SegmentedControl 
+        // Can add more than 2 options, this is just an example.
+        options={['Selected Option', 'Option']} 
+        selectedOption={selectedValue}
+        onChange={setSelectedValue}
+        // Adjust the text and component size to the desired size
+        className="w-full max-w-md"
+      />
+    </div>
+  );
+};
+
+// Showcase of the date picker component
+function DatePickerShowcase (){
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Date Picker</h2>
+      <DatePicker
+        selectedDate={selectedDate}
+        onChange={setSelectedDate}
+        // Any placeholder, can be due date or something similar
+        placeholder="Select a date"
+        // Adjust for any size
+        className="w-48 h-3.5"
+      />
+    </div>
+  )
 }
