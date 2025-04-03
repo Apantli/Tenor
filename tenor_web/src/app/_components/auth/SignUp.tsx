@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import FloatingLabelInput from "../FloatingLabelInput";
-import PrimaryButton from "../PrimaryButton";
+import PrimaryButton from "../buttons/PrimaryButton";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -141,7 +141,7 @@ export default function SignUp() {
       >
         Password
       </FloatingLabelInput>
-      <PrimaryButton onClick={handleSignUp} loading={loading}>
+      <PrimaryButton onClick={handleSignUp} loading={loading} floatingSpinner>
         Create account
       </PrimaryButton>
     </div>

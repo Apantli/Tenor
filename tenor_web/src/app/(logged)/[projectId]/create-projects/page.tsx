@@ -1,11 +1,11 @@
 "use client";
-import PrimaryButton from "~/app/_components/PrimaryButton";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { FilterSearch } from "~/app/_components/FilterSearch";
 
 export default function ProjectCreator() {
   return (
     <div>
-      <div className="header w-full h-32 flex justify-between">
+      <div className="header flex h-32 w-full justify-between">
         <h2>Project Creator</h2>
         <PrimaryButton>Generate Project</PrimaryButton>
       </div>
@@ -28,7 +28,6 @@ export default function ProjectCreator() {
           <div className="project-team-members">
             <h3>Team Members</h3>
             <div>
-              <FilterSearch list={[]} onSearch={(searchTerm) => console.log(searchTerm)} placeholder="Search user..."></FilterSearch>
               <PrimaryButton>+ Add Member</PrimaryButton>
             </div>
           </div>
@@ -38,14 +37,10 @@ export default function ProjectCreator() {
             <h3>Project Context</h3>
             <textarea placeholder="Context..." />
           </div>
-          <div className="context-files">
-
-          </div>
-          <div className="context-links">
-
-          </div>
+          <div className="context-files"></div>
+          <div className="context-links"></div>
         </div>
       </div>
     </div>
-  )
+  );
 }
