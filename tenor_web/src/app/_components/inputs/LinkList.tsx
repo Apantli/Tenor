@@ -2,8 +2,8 @@ import { Class } from "node_modules/superjson/dist/types";
 import React from "react";
 import { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
-import PrimaryButton from "../PrimaryButton";
 import InsertLinkIcon from "@mui/icons-material/InsertLink";
+import PrimaryButton from "../buttons/PrimaryButton";
 
 interface Props {
   label: string;

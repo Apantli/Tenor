@@ -3,7 +3,7 @@ import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import Table, { type TableColumns } from "../table/Table";
 import { FilterSearch } from "../FilterSearch";
-import PrimaryButton from "../PrimaryButton";
+import PrimaryButton from "../buttons/PrimaryButton";
 
 interface Props {
   label: string;

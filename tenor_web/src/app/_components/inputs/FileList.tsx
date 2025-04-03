@@ -2,10 +2,10 @@ import { Class } from "node_modules/superjson/dist/types";
 import React, { useRef } from "react";
 import { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
-import PrimaryButton from "../PrimaryButton";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import DescriptionIcon from "@mui/icons-material/Description";
+import PrimaryButton from "../buttons/PrimaryButton";
 
 interface Props {
   label: string;
