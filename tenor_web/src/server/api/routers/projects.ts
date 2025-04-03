@@ -1,5 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
+import { z } from "zod";
 import type {
   Project,
   WithId,
@@ -7,6 +8,8 @@ import type {
   Settings,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import type { UserStory } from "~/lib/types/firebaseSchemas";
+
 // interface User {
 //   uid: string;
 //   projectIds: string[];
@@ -131,6 +134,77 @@ const fetchUserProjects = async (
   }
 };
 
+function getRandomInt(min: number, max: number): number {
+  if (min > max) {
+    throw new Error("Min must be less than or equal to max");
+  }
+
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// TODO: Change to real new US
+const createDummyUserStory = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+) => {
+  try {
+    const userStoryCollectionRef = dbAdmin.collection(
+      `projects/${projectId}/userStory`,
+    );
+
+    const sampleUserStory: UserStory = {
+      scrumId: getRandomInt(1, 999),
+      name: "Implement Login Feature",
+      description:
+        "Users should be able to log in using their email and password.",
+      deleted: false,
+      sprintId: "sprint-123",
+      tasks: [],
+      complete: false,
+      tagIds: [],
+      size: "M",
+      priorityId: "",
+      epicId: "",
+      acceptanceCriteria:
+        "- Users can enter email and password.\n- System validates credentials.\n- Users are redirected to the dashboard upon successful login.",
+      dependencyIds: [],
+      requiredByIds: [],
+    };
+
+    const docRef = await userStoryCollectionRef.add(sampleUserStory);
+    console.log("temp US added at", docRef.id);
+  } catch (e) {
+    console.log("Some Error occured while creating sample US:", e);
+  }
+};
+
+const getUserStoriesFromProject = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+) => {
+  const userStoryCollectionRef = dbAdmin.collection(
+    `projects/${projectId}/userStory`,
+  );
+  const snap = await userStoryCollectionRef.get();
+
+  const docs = snap.docs.map((doc) => {
+    return {
+      id: doc.id,
+      ...doc.data(),
+    };
+  });
+
+  const userStories: WithId<UserStory>[] = docs.filter(
+    (userStory): userStory is WithId<UserStory> => userStory !== null,
+  );
+
+  console.log("doing fetch inside!");
+
+  return userStories;
+};
+
 export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
@@ -138,7 +212,41 @@ export const projectsRouter = createTRPCRouter({
 
     return projects;
   }),
-  createProject: protectedProcedure
+
+  // TODO: Fix endpoint
+  createUserStory: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ ctx, input }) => {
+      await createDummyUserStory(ctx.firestore, input);
+    }),
+
+  getUSFromProject: protectedProcedure
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      console.log("doing fetch!");
+      return await getUserStoriesFromProject(ctx.firestore, input);
+    }),
+
+  createProject: protectedProcedure.mutation(async ({ ctx }) => {
+    const useruid = ctx.session.uid;
+
+    try {
+      const project = createEmptyProject();
+      const projectRef = await ctx.firestore
+        .collection("projects")
+        .add(project);
+      console.log("Project added with ID: ", projectRef.id);
+
+      const userRef = ctx.firestore.collection("users").doc(useruid);
+      await userRef.update("projectIds", FieldValue.arrayUnion(projectRef.id));
+
+      return { success: true, projectId: projectRef.id };
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  }),
+  createProject2: protectedProcedure
     .input(ProjectSchema)
     .mutation(async ({ ctx }) => {
       const useruid = ctx.session.uid;
