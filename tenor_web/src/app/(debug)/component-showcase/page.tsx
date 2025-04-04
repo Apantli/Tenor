@@ -26,6 +26,8 @@ import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import TagComponent from "~/app/_components/TagComponent";
 import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
 import type { Option } from "~/app/_components/EditableBox/EditableBox";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -45,8 +47,8 @@ export default function ComponentShowcasePage() {
         <ConfirmationShowcase />
         <InputComponents />
         <DatePickerShowcase />
-        <SegmentedControlShowcase />
         <EditableBoxShowCase />
+        <SegmentedControlShowcase />
       </div>
     </main>
   );
@@ -652,12 +654,13 @@ function DatePickerShowcase() {
 
 function EditableBoxShowCase() {
   const [selectedPerson, setSelectedPerson] = useState<Option | null>(null);
+  const { user } = useFirebaseAuth()
   
-  // Ejemplo de opciones
+  // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
   const people: Option[] = [
-    { id: '1', name: 'Luis Amado', image: '~/app/_components/EditableBox/test.jpg' },
-    { id: '2', name: 'Ana García', image: '~/app/_components/EditableBox/test.jpg' },
-    { id: '3', name: 'Carlos Pérez', image: '~/app/_components/EditableBox/test.jpg' },
+    { id: user?.uid ?? '' , name: user?.displayName ?? '', user: user },
+    { id: '2', name: 'Ana García' },
+    { id: '3', name: 'Carlos Pérez' },
   ];
 
   return (
@@ -669,7 +672,7 @@ function EditableBoxShowCase() {
         selectedOption={selectedPerson}
         onChange={setSelectedPerson}
         placeholder="Select a person"
-        className="w-64"
+        className="w-48 h-4"
       />
     </div>
   );
