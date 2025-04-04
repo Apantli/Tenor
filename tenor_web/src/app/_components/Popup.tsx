@@ -16,6 +16,7 @@ interface Props {
   showEdit?: boolean;
   reduceTopPadding?: boolean;
   zIndex?: number;
+  className?: string;
 }
 
 export default function Popup({
@@ -30,6 +31,7 @@ export default function Popup({
   showEdit,
   reduceTopPadding,
   zIndex,
+  className,
 }: Props & PropsWithChildren) {
   const [popIn, setPopIn] = useState(false);
 
@@ -77,6 +79,7 @@ export default function Popup({
               "h-[700px] w-[956px]": size === "large",
               "scale-100 opacity-100": popIn && show,
             },
+            className,
           )}
           style={{ zIndex: (zIndex ?? 100) + 1 }}
         >
