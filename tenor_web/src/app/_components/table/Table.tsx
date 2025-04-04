@@ -49,6 +49,8 @@ interface TableProps<I, T> {
   className?: ClassNameValue;
 }
 
+// TODO: Make columns width be resizable on runtime by user
+// TODO: Make pills work in sorting & filter (needs custom sorting function)
 export default function Table<
   I extends string | number,
   // eslint-disable-next-line
@@ -187,6 +189,7 @@ export default function Table<
         multiselect={multiselect}
         filteredData={filteredData}
         selection={selection}
+        setSelection={setSelection}
         toggleSelectAll={toggleSelectAll}
         handleToggleSorting={handleToggleSorting}
         stopSorting={stopSorting}

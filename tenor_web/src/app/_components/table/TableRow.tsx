@@ -50,7 +50,7 @@ function TableRow<
   return (
     <div
       className={cn(
-        "grid w-fit min-w-full gap-2 border-b border-app-border p-2 transition",
+        "grid w-fit min-w-full items-center gap-2 border-b border-app-border p-2 transition",
         { "bg-gray-100": selection.has(value.id) },
       )}
       style={{ gridTemplateColumns }}
@@ -70,10 +70,9 @@ function TableRow<
       ))}
       {showThreeDots && (
         <>
-          <div></div>
           <Dropdown
             label={<span className="font-bold text-app-light">• • •</span>}
-            className="flex h-full items-center justify-end text-sm font-semibold transition"
+            className="flex h-full w-12 items-center justify-start pl-5 text-sm font-semibold transition"
             menuClassName="font-normal whitespace-nowrap"
             scrollContainer={scrollContainerRef}
           >

@@ -7,10 +7,6 @@ import type {
   Settings,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-// interface User {
-//   uid: string;
-//   projectIds: string[];
-// }
 import { fetchMultipleHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles } from "~/utils/filecontent";
 import { uploadBase64File } from "~/utils/firebaseBucket";

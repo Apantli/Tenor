@@ -156,7 +156,7 @@ export default function ProjectCreator() {
   return (
     <div>
       <Navbar>
-        <div className="flex gap-3">
+        <div className="flex gap-1">
           <Link href="/" className="font-semibold">
             Projects
           </Link>

@@ -22,6 +22,7 @@ interface TableHeaderProps<I, T> {
   multiselect?: boolean;
   filteredData: T[];
   selection: Set<I>;
+  setSelection: React.Dispatch<React.SetStateAction<Set<I>>>;
   toggleSelectAll: () => void;
   handleToggleSorting: (columnKey: keyof T, direction: "asc" | "desc") => void;
   stopSorting: () => void;
@@ -50,6 +51,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   extraOptions,
   deletable,
   onDelete,
+  setSelection,
 }: TableHeaderProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
@@ -81,11 +83,11 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       {columnEntries.map(([key, column]) => (
         <div
           key={key}
-          className="flex items-center justify-between pr-4 text-gray-500"
+          className="flex items-center justify-between overflow-hidden pr-4 text-gray-500"
         >
           <span className="text-sm">{column.label}</span>
           {(!!column.sortable || column.filterable) && (
-            <div className="flex items-center justify-end gap-4">
+            <div className="flex items-center justify-end gap-2 pl-2">
               {sortColumnKey === key && sortDirection === "asc" && (
                 <button onClick={stopSorting} className="text-app-light">
                   <UpArrowIcon />
@@ -105,7 +107,11 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
                 </button>
               )}
               <Dropdown
-                label={<span className="font-bold text-app-light">• • •</span>}
+                label={
+                  <span className="text-nowrap font-bold text-app-light">
+                    • • •
+                  </span>
+                }
               >
                 {column.sortable && (
                   <DropdownButton
@@ -157,6 +163,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
           <div></div>
           <TableActions
             selection={selection}
+            setSelection={setSelection}
             extraOptions={extraOptions}
             deletable={deletable}
             onDelete={onDelete}

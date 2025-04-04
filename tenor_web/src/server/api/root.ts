@@ -5,6 +5,7 @@ import { fridaRouter } from "./routers/frida";
 import { filesRouter } from "./routers/files";
 import { authRouter } from "./routers/auth";
 import { epicsRouter } from "./routers/epics";
+import { userStoriesRouter } from "./routers/userStories";
 
 /**
  * This is the primary router for your server.
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   logs: logsRouter,
   projects: projectsRouter,
+  userStories: userStoriesRouter,
   frida: fridaRouter,
   files: filesRouter,
   epics: epicsRouter,
