@@ -1,4 +1,3 @@
-import { settings } from ".eslintrc.cjs";
 import { z } from "zod";
 
 export const SprintInfoSchema = z.object({
@@ -130,9 +129,18 @@ export const SettingsSchema = z.object({
   maximumSprintStoryPoints: z.number().default(10000),
   aiContext: z.object({
     text: z.string().default(""),
-    files: z.array(z.string()).default([]),
+    files: z
+      .array(
+        z.object({
+          name: z.string(),
+          type: z.string(),
+          content: z.string(),
+        }),
+      )
+      .default([]),
     links: z.array(z.string()).default([]),
   }),
+
   requirementFocusTags: z.array(TagSchema).default([]),
   requirementTypeTags: z.array(TagSchema).default([]),
   backlogTags: z.array(TagSchema).default([]),
@@ -144,7 +152,7 @@ export const SettingsSchema = z.object({
 export const ProjectSchema = z.object({
   name: z.string(),
   description: z.string(),
-  logo: z.string().optional(),
+  logo: z.string(),
   deleted: z.boolean().default(false),
 
   settings: SettingsSchema,

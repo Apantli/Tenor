@@ -46,16 +46,25 @@ export default function ProjectCreator() {
       logoBase64Encoded = (await toBase64(icon)) as string;
     }
 
-    const filesBase64Encoded: string[] = [];
+    const filesBase64Encoded: {
+      name: string;
+      type: string;
+      content: string;
+    }[] = [];
+
     for (const file of files) {
       const fileBase64 = (await toBase64(file)) as string;
-      filesBase64Encoded.push(fileBase64);
+      filesBase64Encoded.push({
+        name: file.name,
+        type: file.type,
+        content: fileBase64,
+      });
     }
 
     const response = await createProject({
       name: form.name,
       description: form.description,
-      logo: logoBase64Encoded,
+      logo: logoBase64Encoded ?? "",
       // FIMXE: Pass correct userId and roleID
       users: teamMembers.map((member) => ({
         userId: member.email,

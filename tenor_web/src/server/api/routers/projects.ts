@@ -11,8 +11,12 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 //   uid: string;
 //   projectIds: string[];
 // }
-
+import { fetchMultipleHTML } from "~/utils/webcontent";
+import { fetchMultipleFiles } from "~/utils/filecontent";
+import { uploadBase64File } from "~/utils/firebaseBucket";
 import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
+import { isBase64Valid } from "~/utils/base64";
+import { v4 as uuidv4 } from "uuid";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -34,7 +38,7 @@ export const createEmptyProject = (): Project => {
   return {
     name: "",
     description: "",
-    logoUrl: "",
+    logo: "",
     deleted: false,
 
     settings: emptySettings, // Deberías definir un `emptySettings` si `Settings` tiene valores requeridos
@@ -140,15 +144,52 @@ export const projectsRouter = createTRPCRouter({
   }),
   createProject: protectedProcedure
     .input(ProjectSchema)
-    .mutation(async ({ ctx }) => {
+    .mutation(async ({ ctx, input }) => {
       const useruid = ctx.session.uid;
 
+      // FIXME: remove duplicated users from input.users
+      // FIXME: get ids from input.users, use ids to add users to project
+      // FIXME: validate valid links before fetching html
+
+      // Add creator as project admin
+      input.users.push({
+        userId: useruid,
+        roleId: "admin",
+        active: true,
+      });
+
+      // Fetch HTML from links
+      const links = input.settings.aiContext.links;
+      input.settings.aiContext.links = await fetchMultipleHTML(links);
+
+      // Fetch text from files
+      const b64Files = input.settings.aiContext.files.map(
+        (file) => file.content,
+      );
+      const fileText = await fetchMultipleFiles(b64Files);
+
+      const files = input.settings.aiContext.files.map((file, index) => ({
+        name: file.name,
+        type: file.type,
+        content: fileText[index] ?? "",
+      }));
+
+      input.settings.aiContext.files = files;
+
+      // Upload logo
+      const isLogoValid = isBase64Valid(input.logo);
+      if (isLogoValid) {
+        const logoPath = uuidv4() + "." + isLogoValid;
+        input.logo = await uploadBase64File(logoPath, input.logo);
+      } else {
+        // Use default icon
+        input.logo = "/defaultProject.png";
+      }
+
       try {
-        const project = createEmptyProject();
         const projectRef = await ctx.firestore
           .collection("projects")
-          .add(project);
-        console.log("Project added with ID: ", projectRef.id);
+          .add(input);
 
         const userRef = ctx.firestore.collection("users").doc(useruid);
         await userRef.update(

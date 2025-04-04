@@ -100,7 +100,7 @@ function ProjectList() {
               <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
                 <img
                   className="object-scale-down p-[4px]"
-                  src={project.logoUrl}
+                  src={project.logo}
                   alt={project.name}
                 />
               </div>

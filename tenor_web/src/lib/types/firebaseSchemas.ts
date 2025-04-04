@@ -42,7 +42,7 @@ export interface SprintSnapshot extends SprintInfo {
 export interface Project {
   name: string;
   description: string;
-  logoUrl: string;
+  logo: string;
   deleted: boolean;
 
   settings: Settings;
