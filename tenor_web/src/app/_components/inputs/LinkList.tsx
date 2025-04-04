@@ -77,12 +77,10 @@ export default function LinkList({
             <span
               title={link}
               className="flex flex-col items-center text-gray-500 hover:text-blue-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content={link}
             >
-              <InsertLinkIcon
-                style={{ fontSize: "4rem" }}
-                data-tooltip-id="tooltip"
-                data-tooltip-content={link}
-              />
+              <InsertLinkIcon style={{ fontSize: "4rem" }} />
               <span className="mt-1 max-w-[80px] truncate text-center text-xs">
                 {
                   // remove the protocol from the link
