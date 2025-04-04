@@ -9,7 +9,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 export default function ProjectPage() {
   return (
     <div className="flex h-full w-full flex-row">
-      <div className="w-1/2 w-full">
+      <div className="w-full">
         <div className="">
           <h1>Projects</h1>
         </div>
@@ -17,7 +17,7 @@ export default function ProjectPage() {
           <ProjectList />
         </div>
       </div>
-      <div className="w-1/2 w-full"></div>
+      <div className="w-full"></div>
     </div>
   );
 }
@@ -52,10 +52,11 @@ function ProjectList() {
    * * This would be something provisional while we are in the development phase.
    */
   const router = useRouter();
+  
   const handleOpenProject = (projectId: string) => {
     router.push(`/project/${projectId}`);
   };
-
+  
   useEffect(() => {
     if (projects) {
       setFilteredProjects(projects);
