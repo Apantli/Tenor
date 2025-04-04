@@ -68,7 +68,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
         <h1 className="text-2xl font-bold">Epics</h1>
         <PrimaryButton
           className={
-            "h-full w-full max-w-[103px] self-center text-xs font-bold hover:cursor-pointer"
+            "h-full w-full max-w-[120px] self-center hover:cursor-pointer"
           }
           onClick={() => setShowSmallPopup(true)}
         >
