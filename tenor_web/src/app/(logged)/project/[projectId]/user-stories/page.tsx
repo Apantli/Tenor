@@ -10,18 +10,26 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import type { UserStoryCol } from "~/server/api/routers/userStories";
 import { ProjectEpics } from "~/app/_components/sections/ProjectEpics";
+import { cn } from "~/lib/utils";
+
+const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function ProjectUserStories() {
   const { projectId } = useParams();
   return (
-    <div className="flex flex-row gap-4">
-      <div className="h-[80vh] w-96 border-r-2 pr-5 pt-6">
+    <div className="flex w-full flex-row gap-4">
+      <div
+        className={cn(
+          "min-w-[300px] border-r-2 pr-5 pt-6",
+          heightOfContent,
+        )}
+      >
         <ProjectEpics projectId={projectId as string} />
         {/* Popup to create epic */}
       </div>
-      <UserStoryList/>
+      <UserStoryList />
     </div>
-  )
+  );
 }
 
 export function UserStoryList() {
@@ -108,8 +116,15 @@ export function UserStoryList() {
       },
       title: {
         label: "Title",
-        width: 400,
+        width: 220,
         sortable: true,
+        render(row) {
+          return (
+            <span className="truncate">
+              {row.title}
+            </span>
+          );
+        }
       },
       epicId: {
         label: "Epic",
@@ -122,10 +137,10 @@ export function UserStoryList() {
       },
       priority: {
         label: "Priority",
-        width: 160,
+        width: 140,
         render(row) {
           return (
-            <span className="flex justify-start">
+            <span className="flex justify-start w-32">
               <PillComponent
                 currentTag={row.priority}
                 allTags={priorityTags}
@@ -136,7 +151,7 @@ export function UserStoryList() {
                     ),
                   );
                 }}
-                labelClassName="w-32"
+                labelClassName="w-[7rem]"
               />
             </span>
           );
@@ -195,7 +210,7 @@ export function UserStoryList() {
     // TODO: Decide on best height for the table (or make it responsive preferably)
     return (
       <Table
-        className="h-[calc(100vh-285px)] w-full"
+        className={cn("w-full", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}
         multiselect
@@ -206,7 +221,7 @@ export function UserStoryList() {
   };
 
   return (
-    <div className="flex flex-col items-start gap-3">
+    <div className="flex w-[calc(100%-300px)] flex-col items-start gap-3">
       <h1 className="text-3xl font-semibold">User Stories</h1>
 
       <div className="flex w-full items-center gap-3 pb-2">
@@ -222,4 +237,3 @@ export function UserStoryList() {
     </div>
   );
 }
-

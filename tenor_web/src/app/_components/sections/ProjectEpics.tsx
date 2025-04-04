@@ -64,8 +64,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   };
   return (
     <>
-      {/* <div className="h-[80vh] w-96 border-r-2 pr-5 pt-6"> */}
-      <div className="flex flex-row justify-between border-b-2 pb-2">
+      <div className="flex flex-row justify-between border-b-2 pb-2 flex-wrap gap-2">
         <h1 className="text-2xl font-bold">Epics</h1>
         <PrimaryButton
           className={
