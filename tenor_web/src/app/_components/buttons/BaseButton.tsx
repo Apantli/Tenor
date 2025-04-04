@@ -26,6 +26,6 @@ export default function BaseButton({
     return <Link {...props}>{children}</Link>;
   } else {
     // Render a button
-    return <button {...props}>{children}</button>;
+    return <span {...props}>{children}</span>;
   }
 }
