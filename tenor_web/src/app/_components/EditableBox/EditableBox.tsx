@@ -105,6 +105,7 @@ export function EditableBox({
           />
         ) : (
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
+            {/* Perhaps is better to just show the name if there is no image, I added this because is better in case just one element has an image an others don't */}
             <span className="text-sm font-medium text-gray-500">
               {option.name.charAt(0).toUpperCase()}
             </span>
@@ -115,7 +116,7 @@ export function EditableBox({
     );
   };
   
-  // Perhaps apply cn in renderDropdownLabel instead of here to make it cleaner.
+  // Perhaps apply cn in renderDropdownLabel instead of here to make it cleaner
   return (
     <div className={cn('w-full', className)}>
       <Dropdown label={renderDropdownLabel()} >
