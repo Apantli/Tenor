@@ -11,6 +11,14 @@ import SearchBar from "~/app/_components/SearchBar";
 import type { UserStoryCol } from "~/server/api/routers/userStories";
 
 export default function ProjectUserStories() {
+  return (
+    <>
+      <UserStoryList/>
+    </>
+  )
+}
+
+export function UserStoryList() {
   // Hooks
   const params = useParams();
   const [userStoryData, setUserStoryData] = useState<UserStoryCol[]>([]);
