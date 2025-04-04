@@ -8,7 +8,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
-import type { UserStoryCol } from "~/server/api/routers/projects";
+import type { UserStoryCol } from "~/server/api/routers/userStories";
 
 export default function ProjectUserStories() {
   // Hooks
@@ -17,12 +17,13 @@ export default function ProjectUserStories() {
   const [searchValue, setSearchValue] = useState("");
 
   // TRPC
-  const { mutateAsync: createUS } = api.projects.createUserStory.useMutation();
+  const { mutateAsync: createUS } =
+    api.userStories.createUserStory.useMutation();
   const {
     data: userStories,
     isLoading: isLoadingUS,
     refetch: refetchUS,
-  } = api.projects.getUserStoriesTableFriendly.useQuery(
+  } = api.userStories.getUserStoriesTableFriendly.useQuery(
     params.projectId as string,
   );
 
@@ -164,7 +165,7 @@ export default function ProjectUserStories() {
       },
       taskProgress: {
         label: "Task progress",
-        width: 60,
+        width: 110,
         render(row) {
           return (
             <span className="flex justify-start gap-1">
@@ -180,7 +181,7 @@ export default function ProjectUserStories() {
     // TODO: Decide on best height for the table (or make it responsive preferably)
     return (
       <Table
-        className="h-[80vh] w-full"
+        className="h-[calc(10vh - 220px)] w-full"
         data={userStoryData}
         columns={tableColumns}
         multiselect
