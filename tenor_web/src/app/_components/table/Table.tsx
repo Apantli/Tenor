@@ -49,7 +49,8 @@ interface TableProps<I, T> {
   className?: ClassNameValue;
 }
 
-// TODO: Make columns' width be customizable on runtime by user
+// TODO: Make columns width be resizable on runtime by user
+// TODO: Make pills work in sorting & filter (needs custom sorting function)
 export default function Table<
   I extends string | number,
   // eslint-disable-next-line

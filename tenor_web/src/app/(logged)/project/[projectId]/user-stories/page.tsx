@@ -2,46 +2,13 @@
 
 import PillComponent from "~/app/_components/PillComponent";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
-import type { Tag, WithId, UserStory } from "~/lib/types/firebaseSchemas";
+import type { Tag } from "~/lib/types/firebaseSchemas";
 import { useEffect, useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
-
-interface UserStoryCol {
-  id: number;
-  title: string;
-  epicId: number;
-  priority: Tag;
-  size: Tag;
-  sprintId: number;
-  taskProgress: [number | undefined, number | undefined];
-}
-
-const createTableData = (data: WithId<UserStory>[] | undefined) => {
-  if (!data) return [];
-
-  const defaultPriority: Tag = {
-    name: "Other",
-    color: "#FFD700",
-    deleted: false,
-  };
-  const defaultSize: Tag = { name: "M", color: "#00BFFF", deleted: false };
-
-  return data.map((userStory) => ({
-    id: userStory.scrumId,
-    title: userStory.name,
-    epicId: Math.floor(Math.random() * 10),
-    priority: defaultPriority,
-    size: defaultSize,
-    sprintId: Math.floor(Math.random() * 10),
-    taskProgress: [0, userStory.tasks.length] as [
-      number | undefined,
-      number | undefined,
-    ],
-  }));
-};
+import type { UserStoryCol } from "~/server/api/routers/projects";
 
 export default function ProjectUserStories() {
   // Hooks
@@ -55,20 +22,23 @@ export default function ProjectUserStories() {
     data: userStories,
     isLoading: isLoadingUS,
     refetch: refetchUS,
-  } = api.projects.getUSFromProject.useQuery(params.projectId as string);
+  } = api.projects.getUserStoriesTableFriendly.useQuery(
+    params.projectId as string,
+  );
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchValue(e.target.value);
+    if (!userStories) {
+      return;
+    }
     const searchValue = e.target.value.toLowerCase();
-    const filteredData = userStories?.filter(
+    const filteredData = userStories.filter(
       (userStory) =>
-        userStory.name.toLowerCase().includes(searchValue) ||
-        ("us" + userStory.scrumId.toString().padStart(3, "0")).includes(searchValue),
+        userStory.title.toLowerCase().includes(searchValue) ||
+        ("us" + userStory.id.toString().padStart(3, "0")).includes(searchValue),
     );
-    setUserStoryData(
-      createTableData(filteredData).sort((a, b) => (a.id < b.id ? -1 : 1)),
-    );
+    setUserStoryData(filteredData.sort((a, b) => (a.id < b.id ? -1 : 1)));
   };
 
   const handleCreateUS = async () => {
@@ -79,9 +49,7 @@ export default function ProjectUserStories() {
   useEffect(() => {
     if (userStories) {
       // default sort by id. This is overriden by the table sorting feature
-      setUserStoryData(
-        createTableData(userStories).sort((a, b) => (a.id < b.id ? -1 : 1)),
-      );
+      setUserStoryData(userStories.sort((a, b) => (a.id < b.id ? -1 : 1)));
     }
   }, [userStories]);
 
@@ -134,7 +102,7 @@ export default function ProjectUserStories() {
         sortable: true,
         filterable: "search-only",
         render(row) {
-          return <span>EP{row.epicId.toString().padStart(3, "0")}</span>;
+          return <span>EP{row.epicId.toString().padStart(2, "0")}</span>;
         },
       },
       priority: {
@@ -209,10 +177,10 @@ export default function ProjectUserStories() {
       },
     };
 
-    // FIXME: Make table show in the remaining of the screen, without overflow in y axis (only scroll inside the table, not outside)
+    // TODO: Decide on best height for the table (or make it responsive preferably)
     return (
       <Table
-        className="max-h-full w-full"
+        className="h-[80vh] w-full"
         data={userStoryData}
         columns={tableColumns}
         multiselect
