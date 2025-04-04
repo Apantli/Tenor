@@ -527,28 +527,25 @@ function ConfirmationShowcase() {
 function InputComponents() {
   const teamMembers = [
     {
-      id: 1,
-      picture_url:
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-      name: "Alonso Huerta",
+      id: "1",
+      photoURL: undefined,
+      displayName: "Alonso Huerta",
       email: "email@addres.com",
-      role: "Admin",
+      role: "developer_role_id",
     },
     {
-      id: 2,
-      picture_url:
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-      name: "Sergio Gonzalez",
+      id: "2",
+      photoURL: undefined,
+      displayName: "Sergio Gonzalez",
       email: "email@addres.com",
-      role: "Scrum Master",
+      role: "admin_role_id",
     },
     {
-      id: 3,
-      picture_url:
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-      name: "Luis Amado",
+      id: "3",
+      photoURL: undefined,
+      displayName: "Luis Amado",
       email: "email@addres.com",
-      role: "Developer",
+      role: "viewer_role_id",
     },
   ] as TeamMember[];
 
@@ -600,6 +597,9 @@ function InputComponents() {
           console.log("File added");
         }}
         handleMemberRemove={() => {
+          console.log("File added");
+        }}
+        handleEditMemberRole={() => {
           console.log("File added");
         }}
       />

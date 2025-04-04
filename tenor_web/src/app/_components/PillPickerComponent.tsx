@@ -18,6 +18,7 @@ interface Props {
   allItems: Item[];
   onChange: (item: Item) => void;
   className?: ClassNameValue;
+  hideSearch?: boolean;
 }
 
 export default function PillPickerComponent({
@@ -25,6 +26,7 @@ export default function PillPickerComponent({
   allItems,
   onChange,
   className,
+  hideSearch,
 }: Props) {
   const [searchValue, setSearchValue] = useState("");
 
@@ -64,16 +66,18 @@ export default function PillPickerComponent({
         </div>
       }
     >
-      <DropdownItem className="flex w-52 flex-col">
-        <span className="mb-2 text-sm text-gray-500">Select an item</span>
-        <input
-          type="text"
-          className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
-          placeholder="Search..."
-          value={searchValue}
-          onChange={handleSearchChange}
-        />
-      </DropdownItem>
+      {!hideSearch && (
+        <DropdownItem className="flex w-52 flex-col">
+          <span className="mb-2 text-sm text-gray-500">Select an item</span>
+          <input
+            type="text"
+            className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
+            placeholder="Search..."
+            value={searchValue}
+            onChange={handleSearchChange}
+          />
+        </DropdownItem>
+      )}
       <div className="whitespate-nowrap w-52 text-left">
         <div className="flex max-h-40 w-full flex-col overflow-y-scroll rounded-b-lg">
           {filteredItems.map((item) => (
@@ -87,9 +91,11 @@ export default function PillPickerComponent({
                 className={cn({ "opacity-0": item.id !== selectedItem.id })}
               ></Check>
               <div className="flex flex-col justify-start gap-0">
-                <span className="w-full truncate text-xs font-semibold">
-                  {item.prefix}:
-                </span>
+                {item.prefix !== undefined && (
+                  <span className="w-full truncate text-xs font-semibold">
+                    {item.prefix}:
+                  </span>
+                )}
                 <span className="w-full truncate">{item.label}</span>
               </div>
             </DropdownButton>

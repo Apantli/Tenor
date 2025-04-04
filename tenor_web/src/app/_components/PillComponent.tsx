@@ -14,6 +14,7 @@ interface Props {
   allTags: Tag[];
   callBack: (tag: Tag) => void;
   labelClassName: string;
+  hideSearch?: boolean;
 }
 
 export default function PillComponent({
@@ -21,6 +22,7 @@ export default function PillComponent({
   allTags,
   callBack,
   labelClassName,
+  hideSearch,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
 
@@ -91,16 +93,18 @@ export default function PillComponent({
 
   return (
     <Dropdown label={createPillLabel(currentTag)}>
-      <DropdownItem className="flex w-52 flex-col">
-        <span className="mb-2 text-sm text-gray-500">Select an item</span>
-        <input
-          type="text"
-          className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
-          placeholder="Search..."
-          value={searchValue}
-          onChange={handleUpdateSearch}
-        />
-      </DropdownItem>
+      {!hideSearch && (
+        <DropdownItem className="flex w-52 flex-col">
+          <span className="mb-2 text-sm text-gray-500">Select an item</span>
+          <input
+            type="text"
+            className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
+            placeholder="Search..."
+            value={searchValue}
+            onChange={handleUpdateSearch}
+          />
+        </DropdownItem>
+      )}
       <div className="whitespace-nowraptext-left w-full">
         <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}

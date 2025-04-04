@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { UserRecord } from "node_modules/firebase-admin/lib/auth/user-record";
 
 export default function ProjectCreator() {
   const toBase64 = (file: File) =>
@@ -58,7 +59,7 @@ export default function ProjectCreator() {
       logo: logoBase64Encoded,
       // FIMXE: Pass correct userId and roleID
       users: teamMembers.map((member) => ({
-        userId: member.email,
+        userId: member.id,
         roleId: member.role,
       })),
       settings: {
@@ -95,20 +96,28 @@ export default function ProjectCreator() {
     setTeamMembers((prev) => prev.filter((member) => !id.includes(member.id)));
   };
   // FIXME: Fetch user and load information
-  const handleAddTeamMember = (email: string) => {
-    const id: number =
-      teamMembers.length > 0
-        ? Math.max(...teamMembers.map((member) => member.id)) + 1
-        : 1;
+  const handleAddTeamMember = (user: UserRecord) => {
     const newMember = {
-      id: id,
-      picture_url:
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-      name: email,
-      email: email,
-      role: "Developer",
+      id: user.uid,
+      photoURL: user.photoURL,
+      displayName: user.displayName ?? "Unknown User",
+      email: user.email ?? "Unknown",
+      role: "developer_role_id",
     };
     setTeamMembers((prev) => [...prev, newMember]);
+  };
+  const handleEditMemberRole = (id: string, role: string) => {
+    setTeamMembers((prev) =>
+      prev.map((member) => {
+        if (member.id === id) {
+          return {
+            ...member,
+            role: role,
+          };
+        }
+        return member;
+      }),
+    );
   };
 
   // Icon File
@@ -210,6 +219,7 @@ export default function ProjectCreator() {
                 className="w-full"
                 handleMemberAdd={handleAddTeamMember}
                 handleMemberRemove={handleRemoveTeamMember}
+                handleEditMemberRole={handleEditMemberRole}
               />
             </div>
           </div>

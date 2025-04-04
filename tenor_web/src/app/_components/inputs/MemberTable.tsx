@@ -1,22 +1,32 @@
+"user client";
 import React, { useState } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import Table, { type TableColumns } from "../table/Table";
 import { FilterSearch } from "../FilterSearch";
 import PrimaryButton from "../buttons/PrimaryButton";
+import { api } from "~/trpc/react";
+import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
+import ProfilePicture from "../ProfilePicture";
+import { UserRecord } from "node_modules/firebase-admin/lib/auth/user-record";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import PillComponent from "../PillComponent";
+import { Tag } from "~/lib/types/firebaseSchemas";
+import PillPickerComponent from "../PillPickerComponent";
 
 interface Props {
   label: string;
   teamMembers: TeamMember[];
-  handleMemberAdd: (email: string) => void;
+  handleMemberAdd: (user: UserRecord) => void;
   handleMemberRemove: (id: (string | number)[]) => void;
+  handleEditMemberRole: (id: string, role: string) => void;
   className?: ClassNameValue;
 }
 
 export interface TeamMember {
-  id: number;
-  picture_url: string;
-  name: string;
+  id: string;
+  photoURL?: string;
+  displayName: string;
   email: string;
   role: string;
 }
@@ -26,31 +36,27 @@ export default function MemberTable({
   teamMembers,
   handleMemberAdd,
   handleMemberRemove,
+  handleEditMemberRole,
   className,
 }: Props) {
-  const handleAddLinkClick = () => {
-    const memberEmail = prompt("Enter member email:");
-    if (memberEmail?.trim()) {
-      handleMemberAdd(memberEmail.trim());
-    }
-  };
+  const { data: users, isLoading } = api.users.getUserList.useQuery();
+
+  const roles = [
+    { id: "admin_role_id", label: "Admin" },
+    { id: "developer_role_id", label: "Developer" },
+    { id: "viewer_role_id", label: "Viewer" },
+  ];
 
   const columns: TableColumns<TeamMember> = {
     id: { visible: false },
-    picture_url: {
+    photoURL: {
       label: "",
       width: 50,
       render(row) {
-        return (
-          <img
-            className="h-8 w-8 rounded-full"
-            src={row.picture_url}
-            alt="User picture"
-          />
-        );
+        return <ProfilePicture user={{ ...row, uid: row.id }} hideTooltip />;
       },
     },
-    name: {
+    displayName: {
       label: "Name",
       width: 140,
     },
@@ -61,10 +67,30 @@ export default function MemberTable({
     role: {
       label: "Role",
       width: 120,
+      render(row) {
+        return (
+          // FIXME: Get real role ids
+          <PillPickerComponent
+            hideSearch
+            selectedItem={
+              roles.find((role) => role.id === row.role) ?? {
+                id: "viewer_role_id",
+                label: "Viewer",
+              }
+            }
+            allItems={roles}
+            onChange={(item) => {
+              handleEditMemberRole(row.id, item.id);
+            }}
+          />
+        );
+      },
     },
   };
 
   const [searchTerm, setSearchTerm] = useState("");
+
+  const session = useFirebaseAuth();
 
   return (
     <div className={cn("w-full", className)}>
@@ -76,12 +102,37 @@ export default function MemberTable({
         >
           {label}
         </label>
-        <PrimaryButton
-          className="flex items-center text-sm"
-          onClick={handleAddLinkClick}
+        <Dropdown
+          label={
+            <PrimaryButton className="flex items-center text-sm">
+              + Add Member
+            </PrimaryButton>
+          }
         >
-          + Add Member
-        </PrimaryButton>
+          <div className="whitespace-nowraptext-left w-full">
+            <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
+              {session.user &&
+                users?.users.map((user) => {
+                  if (user.uid === session.user?.uid) return null;
+                  if (teamMembers.find((member) => member.id === user.uid))
+                    return null;
+
+                  return (
+                    <DropdownButton
+                      key={user.uid}
+                      onClick={() => handleMemberAdd(user)}
+                      className="cursor-pointer border-b border-app-border last:border-none"
+                    >
+                      <div className="flex items-center">
+                        <ProfilePicture user={user ?? null} hideTooltip />
+                        <span className="ml-2 text-sm">{user.displayName}</span>
+                      </div>
+                    </DropdownButton>
+                  );
+                })}
+            </div>
+          </div>
+        </Dropdown>
       </div>
 
       <Table
