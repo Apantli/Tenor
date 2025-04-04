@@ -1,4 +1,3 @@
-import { settings } from ".eslintrc.cjs";
 import { z } from "zod";
 
 export const SprintInfoSchema = z.object({

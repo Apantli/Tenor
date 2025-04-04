@@ -7,11 +7,6 @@ import type {
   Settings,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-// interface User {
-//   uid: string;
-//   projectIds: string[];
-// }
-
 import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
 
 const emptySettings: Settings = {
