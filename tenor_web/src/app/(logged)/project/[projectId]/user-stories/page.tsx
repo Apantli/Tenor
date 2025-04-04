@@ -81,7 +81,7 @@ export default function ProjectUserStories() {
       ).values(),
     );
 
-    // TODO: Add correct leading 0 to ids (which depends on max id). Currently, 3 digits on all ids
+    // TODO: Add correct leading 0 to ids (which depends on max id). Currently hardcoded
     const tableColumns: TableColumns<UserStoryCol> = {
       id: {
         label: "Id",

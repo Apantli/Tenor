@@ -264,7 +264,6 @@ export const projectsRouter = createTRPCRouter({
     return projects;
   }),
 
-  // TODO: Fix endpoint
   createUserStory: protectedProcedure
     .input(z.string())
     .mutation(async ({ ctx, input }) => {

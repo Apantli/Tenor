@@ -214,7 +214,7 @@ function TableShowcase() {
     },
     name: {
       label: "Name",
-      width: 10200,
+      width: 400,
       sortable: true,
       filterable: "search-only", // search-only: The user must type their query
     },
