@@ -13,3 +13,15 @@
     scrollbar-width: none; /* Firefox */
   }
 }
+
+@layer components {
+  .markdown-content ul,
+  .markdown-content ol {
+    list-style: inherit;
+    padding-left: 1.5rem;
+  }
+
+  .markdown-content li {
+    list-style: inherit;
+  }
+}

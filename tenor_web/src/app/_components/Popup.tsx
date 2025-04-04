@@ -1,43 +1,63 @@
 "use client";
 
-import { useEffect, useState, type PropsWithChildren } from "react";
+import {
+  useEffect,
+  useState,
+  type PropsWithChildren,
+  createContext,
+  useRef,
+  useContext,
+} from "react";
 import { cn } from "~/lib/utils";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import { type ClassNameValue } from "tailwind-merge";
+import PrimaryButton from "./buttons/PrimaryButton";
 
 interface Props {
   show: boolean;
   size: "small" | "large";
   dismiss: () => void;
-  onEdit?: () => void;
+  title?: React.ReactNode;
   footer?: React.ReactNode;
   disablePassiveDismiss?: boolean;
   sidebar?: React.ReactNode;
-  showEdit?: boolean;
+  sidebarClassName?: ClassNameValue;
+  editMode?: boolean;
+  setEditMode?: (edit: boolean) => void;
   reduceTopPadding?: boolean;
   zIndex?: number;
   className?: string;
 }
 
+const PopupContext = createContext<React.RefObject<HTMLDivElement> | null>(
+  null,
+);
+
 export default function Popup({
   show,
   size,
   dismiss,
-  onEdit,
   children,
+  title,
   footer,
   disablePassiveDismiss,
   sidebar,
-  showEdit,
+  editMode,
+  setEditMode,
   reduceTopPadding,
+  sidebarClassName,
   zIndex,
   className,
 }: Props & PropsWithChildren) {
   const [popIn, setPopIn] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (show) {
-      setPopIn(true);
+      // setPopIn(true);
+      const timeout = setTimeout(() => setPopIn(true), 1);
+      return () => clearTimeout(timeout);
     } else {
       const timeout = setTimeout(() => setPopIn(false), 150);
       return () => clearTimeout(timeout);
@@ -57,7 +77,7 @@ export default function Popup({
 
   return (
     (show || popIn) && (
-      <>
+      <PopupContext.Provider value={containerRef}>
         <div
           className={cn(
             "fixed left-0 top-0 h-screen w-screen bg-black opacity-0 transition duration-200",
@@ -82,26 +102,40 @@ export default function Popup({
             className,
           )}
           style={{ zIndex: (zIndex ?? 100) + 1 }}
+          ref={containerRef}
         >
           <div className="grow justify-between gap-4 overflow-y-hidden">
             <div className="flex h-full justify-between">
               <div
-                className={cn("flex grow flex-col justify-between pt-10", {
+                className={cn("flex grow flex-col justify-between pt-8", {
                   "pt-0": !!reduceTopPadding,
                 })}
               >
-                <div className="flex grow justify-between overflow-y-hidden">
-                  <div className="flex-1 overflow-y-scroll p-2">{children}</div>
-                  {showEdit && (
-                    <div className="flex shrink-0 flex-col gap-2">
-                      <button
-                        className="text-3xl text-gray-600"
-                        onClick={onEdit}
-                      >
-                        <EditIcon fontSize="inherit" />
-                      </button>
+                <div className="flex flex-1 shrink grow justify-between overflow-y-hidden">
+                  <div className="flex flex-1 flex-col overflow-hidden p-2">
+                    <div className="flex justify-between gap-2">
+                      {title !== undefined && title}
+                      {title === undefined && <div></div>}
+                      {editMode === false && (
+                        <div className="flex shrink-0 flex-col gap-2">
+                          <button
+                            className="text-3xl text-gray-600"
+                            onClick={() => setEditMode?.(true)}
+                          >
+                            <EditIcon fontSize="inherit" />
+                          </button>
+                        </div>
+                      )}
+                      {editMode === true && (
+                        <div className="flex shrink-0 flex-col gap-2">
+                          <PrimaryButton onClick={() => setEditMode?.(false)}>
+                            Save
+                          </PrimaryButton>
+                        </div>
+                      )}
                     </div>
-                  )}
+                    <div className="flex-1 overflow-y-scroll">{children}</div>
+                  </div>
                 </div>
 
                 {footer !== undefined && (
@@ -109,7 +143,12 @@ export default function Popup({
                 )}
               </div>
               {sidebar !== undefined && (
-                <div className="ml-3 h-full grow-0 border-l border-app-border px-3 pb-3 pt-12">
+                <div
+                  className={cn(
+                    "ml-3 h-full shrink-0 overflow-y-scroll border-l border-app-border px-3 pb-3 pl-5 pt-12",
+                    sidebarClassName,
+                  )}
+                >
                   {sidebar}
                 </div>
               )}
@@ -125,10 +164,15 @@ export default function Popup({
             <CloseIcon fontSize="inherit" />
           </button>
         </div>
-      </>
+      </PopupContext.Provider>
     )
   );
 }
+
+export const usePopupContainer = () => {
+  const context = useContext(PopupContext);
+  return context;
+};
 
 interface SidebarPopupProps {
   show: boolean;

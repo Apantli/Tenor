@@ -50,7 +50,7 @@ function TableRow<
   return (
     <div
       className={cn(
-        "grid w-fit min-w-full items-center gap-2 border-b border-app-border p-2 transition",
+        "grid items-center gap-2 border-b border-app-border p-2 transition",
         { "bg-gray-100": selection.has(value.id) },
       )}
       style={{ gridTemplateColumns }}
@@ -64,7 +64,7 @@ function TableRow<
         ></input>
       )}
       {columnEntries.map(([key, column]) => (
-        <div key={key} className="flex items-center">
+        <div key={key} className="w-full truncate">
           {column.render ? column.render(value) : value[key]}
         </div>
       ))}

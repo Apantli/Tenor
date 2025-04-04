@@ -12,6 +12,7 @@ import { type ClassNameValue } from "tailwind-merge";
 import useWindowResize from "../_hooks/useWindowResize";
 import useAfterScroll from "../_hooks/useAfterScroll";
 import BaseButton, { type BaseButtonProps } from "./buttons/BaseButton";
+import { usePopupContainer } from "./Popup";
 
 interface Props {
   label: React.ReactNode;
@@ -35,6 +36,8 @@ export default function Dropdown({
   const ref = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const startScrollPos = useRef<number | null>(null);
+
+  const popupContainer = usePopupContainer();
 
   const childrenArray = Array.isArray(children)
     ? children.filter((c) => !!c)
@@ -93,6 +96,7 @@ export default function Dropdown({
 
     const triggerRect = ref.current.getBoundingClientRect();
     const dropdownRect = dropdownRef.current.getBoundingClientRect();
+    const popupRect = popupContainer?.current?.getBoundingClientRect();
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -100,8 +104,8 @@ export default function Dropdown({
     const dropdownWidth = dropdownRect.width * multiplier;
     const dropdownHeight = dropdownRect.height * multiplier;
 
-    let top = triggerRect.bottom;
-    let left = triggerRect.right - dropdownWidth; // Align to the right of the trigger
+    let top = triggerRect.bottom - (popupRect?.top ?? 0);
+    let left = triggerRect.right - dropdownWidth - (popupRect?.left ?? 0); // Align to the right of the trigger
 
     let vertAlignment = "top";
     let horiAlignment = "right";
@@ -137,7 +141,9 @@ export default function Dropdown({
       className={cn("relative flex items-center justify-center", className)}
       ref={ref}
     >
-      <button onClick={toggleOpen}>{label}</button>
+      <button onClick={toggleOpen} className="w-full">
+        {label}
+      </button>
       <div
         className={cn(
           "pointer-events-none fixed z-[200] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",

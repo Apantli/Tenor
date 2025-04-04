@@ -3,7 +3,7 @@ import React, {
   type ButtonHTMLAttributes,
   type ChangeEventHandler,
 } from "react";
-import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import Dropdown, { DropdownButton, DropdownItem } from "./Dropdown";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";
@@ -13,7 +13,7 @@ interface Props {
   currentTag: Tag;
   allTags: Tag[];
   callBack: (tag: Tag) => void;
-  labelClassName: string;
+  labelClassName?: string;
 }
 
 export default function PillComponent({
@@ -21,6 +21,7 @@ export default function PillComponent({
   allTags,
   callBack,
   labelClassName,
+  className,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
 
@@ -73,7 +74,7 @@ export default function PillComponent({
     return (
       <div
         className={cn(
-          "flex items-center justify-between rounded-3xl border-solid py-1 pl-3 pr-2 font-medium",
+          "flex items-center justify-between rounded-3xl border-solid py-1 pl-3 pr-2 font-medium transition-all",
           labelClassName,
         )}
         style={{
@@ -90,7 +91,7 @@ export default function PillComponent({
   };
 
   return (
-    <Dropdown label={createPillLabel(currentTag)}>
+    <Dropdown label={createPillLabel(currentTag)} className={className}>
       <DropdownItem className="flex w-52 flex-col">
         <span className="mb-2 text-sm text-gray-500">Select an item</span>
         <input
@@ -101,7 +102,7 @@ export default function PillComponent({
           onChange={handleUpdateSearch}
         />
       </DropdownItem>
-      <div className="whitespace-nowraptext-left w-full">
+      <div className="w-full whitespace-nowrap text-left">
         <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}
           {filteredTags.length == 0 && (
@@ -112,5 +113,52 @@ export default function PillComponent({
         </div>
       </div>
     </Dropdown>
+  );
+}
+
+interface SizePillComponentProps {
+  currentSize: Size;
+  callback: (size: Size) => void;
+  className?: string;
+}
+
+export function SizePillComponent({
+  currentSize,
+  callback,
+  className,
+}: SizePillComponentProps) {
+  const sizeTags: Tag[] = [
+    { name: "XS", color: "#4A90E2", deleted: false }, // Light Blue
+    { name: "S", color: "#2ECC71", deleted: false }, // Green
+    { name: "M", color: "#F1C40F", deleted: false }, // Yellow
+    { name: "L", color: "#E67E22", deleted: false }, // Orange
+    { name: "XL", color: "#E74C3C", deleted: false }, // Red
+    { name: "XXL", color: "#8E44AD", deleted: false }, // Purple
+  ] as const;
+
+  const sizeToInt = (size: Size): 0 | 1 | 2 | 3 | 4 | 5 => {
+    switch (size) {
+      case "XS":
+        return 0;
+      case "S":
+        return 1;
+      case "M":
+        return 2;
+      case "L":
+        return 3;
+      case "XL":
+        return 4;
+      case "XXL":
+        return 5;
+    }
+  };
+
+  return (
+    <PillComponent
+      allTags={sizeTags}
+      currentTag={sizeTags[sizeToInt(currentSize)]!}
+      callBack={(tag) => callback(tag.name as Size)}
+      labelClassName={className ?? ""}
+    />
   );
 }
