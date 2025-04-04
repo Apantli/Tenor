@@ -6,6 +6,7 @@ import { type DeleteOptions, type TableOptions } from "./Table";
 
 interface TableActionsProps<I> {
   selection: Set<I>;
+  setSelection: React.Dispatch<React.SetStateAction<Set<I>>>;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[]) => void;
@@ -13,6 +14,7 @@ interface TableActionsProps<I> {
 
 function TableActions<I extends string | number>({
   selection,
+  setSelection,
   extraOptions,
   deletable,
   onDelete,
@@ -46,7 +48,10 @@ function TableActions<I extends string | number>({
           data-tooltip-place="top-start"
           data-tooltip-hidden={selection.size === 0}
           className="text-gray-500 transition hover:text-app-fail"
-          onClick={() => onDelete?.(Array.from(selection))}
+          onClick={() => {
+            onDelete?.(Array.from(selection));
+            setSelection(new Set());
+          }}
         >
           <DeleteIcon />
         </button>
@@ -60,7 +65,10 @@ function TableActions<I extends string | number>({
             data-tooltip-place="top-start"
             data-tooltip-hidden={selection.size === 0}
             className="text-gray-500 transition hover:text-app-fail"
-            onClick={() => onDelete?.(Array.from(selection))}
+            onClick={() => {
+              onDelete?.(Array.from(selection));
+              setSelection(new Set());
+            }}
           >
             {deletable.deleteIcon ?? <DeleteIcon />}
           </button>

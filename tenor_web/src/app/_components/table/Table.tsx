@@ -187,6 +187,7 @@ export default function Table<
         multiselect={multiselect}
         filteredData={filteredData}
         selection={selection}
+        setSelection={setSelection}
         toggleSelectAll={toggleSelectAll}
         handleToggleSorting={handleToggleSorting}
         stopSorting={stopSorting}

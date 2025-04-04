@@ -22,6 +22,7 @@ interface TableHeaderProps<I, T> {
   multiselect?: boolean;
   filteredData: T[];
   selection: Set<I>;
+  setSelection: React.Dispatch<React.SetStateAction<Set<I>>>;
   toggleSelectAll: () => void;
   handleToggleSorting: (columnKey: keyof T, direction: "asc" | "desc") => void;
   stopSorting: () => void;
@@ -50,6 +51,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   extraOptions,
   deletable,
   onDelete,
+  setSelection,
 }: TableHeaderProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
@@ -157,6 +159,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
           <div></div>
           <TableActions
             selection={selection}
+            setSelection={setSelection}
             extraOptions={extraOptions}
             deletable={deletable}
             onDelete={onDelete}
