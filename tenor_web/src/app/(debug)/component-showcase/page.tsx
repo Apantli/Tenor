@@ -658,9 +658,9 @@ function EditableBoxShowCase() {
   
   // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
   const people: Option[] = [
-    { id: user?.uid ?? '' , name: user?.displayName ?? '', user: user },
-    { id: '2', name: 'Ana García' },
-    { id: '3', name: 'Carlos Pérez' },
+    { id: user?.uid ?? "" , name: user?.displayName ?? "" , user: user },
+    { id: "2", name: "Ana García" },
+    { id: "3", name: "Carlos Pérez" },
   ];
 
   return (
@@ -672,7 +672,7 @@ function EditableBoxShowCase() {
         selectedOption={selectedPerson}
         onChange={setSelectedPerson}
         placeholder="Select a person"
-        className="w-48 h-4"
+        className="h-4 w-48"
       />
     </div>
   );
