@@ -181,7 +181,7 @@ export default function ProjectUserStories() {
     // TODO: Decide on best height for the table (or make it responsive preferably)
     return (
       <Table
-        className="h-[calc(10vh - 220px)] w-full"
+        className="h-[calc(100vh-285px)] w-full"
         data={userStoryData}
         columns={tableColumns}
         multiselect
