@@ -7,7 +7,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
   return (
     <div>
       <Navbar>
-        <div className="flex gap-3">
+        <div className="flex gap-1">
           <Link href="/" className="font-semibold">
             Projects
           </Link>
