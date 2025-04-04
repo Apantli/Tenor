@@ -9,12 +9,18 @@ import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import type { UserStoryCol } from "~/server/api/routers/userStories";
+import { ProjectEpics } from "~/app/_components/sections/ProjectEpics";
 
 export default function ProjectUserStories() {
+  const { projectId } = useParams();
   return (
-    <>
+    <div className="flex flex-row gap-4">
+      <div className="h-[80vh] w-96 border-r-2 pr-5 pt-6">
+        <ProjectEpics projectId={projectId as string} />
+        {/* Popup to create epic */}
+      </div>
       <UserStoryList/>
-    </>
+    </div>
   )
 }
 
@@ -216,3 +222,4 @@ export function UserStoryList() {
     </div>
   );
 }
+
