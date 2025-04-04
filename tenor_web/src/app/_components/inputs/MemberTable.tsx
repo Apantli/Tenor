@@ -13,6 +13,7 @@ import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import PillComponent from "../PillComponent";
 import { Tag } from "~/lib/types/firebaseSchemas";
 import PillPickerComponent from "../PillPickerComponent";
+import SearchBar from "../SearchBar";
 
 interface Props {
   label: string;
@@ -21,6 +22,7 @@ interface Props {
   handleMemberRemove: (id: (string | number)[]) => void;
   handleEditMemberRole: (id: string, role: string) => void;
   className?: ClassNameValue;
+  roleList: { id: string; label: string }[];
 }
 
 export interface TeamMember {
@@ -38,14 +40,10 @@ export default function MemberTable({
   handleMemberRemove,
   handleEditMemberRole,
   className,
+  roleList,
 }: Props) {
   const { data: users, isLoading } = api.users.getUserList.useQuery();
-
-  const roles = [
-    { id: "admin_role_id", label: "Admin" },
-    { id: "developer_role_id", label: "Developer" },
-    { id: "viewer_role_id", label: "Viewer" },
-  ];
+  const [searchValue, setSearchValue] = useState("");
 
   const columns: TableColumns<TeamMember> = {
     id: { visible: false },
@@ -69,16 +67,16 @@ export default function MemberTable({
       width: 120,
       render(row) {
         return (
-          // FIXME: Get real role ids
           <PillPickerComponent
+            className="w-full"
             hideSearch
             selectedItem={
-              roles.find((role) => role.id === row.role) ?? {
+              roleList.find((role) => role.id === row.role) ?? {
                 id: "viewer_role_id",
                 label: "Viewer",
               }
             }
-            allItems={roles}
+            allItems={roleList}
             onChange={(item) => {
               handleEditMemberRole(row.id, item.id);
             }}
@@ -109,6 +107,16 @@ export default function MemberTable({
             </PrimaryButton>
           }
         >
+          <DropdownItem>
+            <SearchBar
+              searchValue={searchValue}
+              placeholder={"Member's name"}
+              handleUpdateSearch={(e) => {
+                setSearchValue(e.target.value);
+              }}
+            ></SearchBar>
+          </DropdownItem>
+
           <div className="whitespace-nowraptext-left w-full">
             <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
               {session.user &&
@@ -117,10 +125,14 @@ export default function MemberTable({
                   if (teamMembers.find((member) => member.id === user.uid))
                     return null;
 
+                  if (!user.displayName?.includes(searchValue)) return null;
                   return (
                     <DropdownButton
                       key={user.uid}
-                      onClick={() => handleMemberAdd(user)}
+                      onClick={() => {
+                        handleMemberAdd(user);
+                        setSearchValue("");
+                      }}
                       className="cursor-pointer border-b border-app-border last:border-none"
                     >
                       <div className="flex items-center">

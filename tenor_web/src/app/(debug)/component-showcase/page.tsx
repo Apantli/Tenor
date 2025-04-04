@@ -602,6 +602,11 @@ function InputComponents() {
         handleEditMemberRole={() => {
           console.log("File added");
         }}
+        roleList={[
+          { id: "admin_role_id", label: "Admin" },
+          { id: "developer_role_id", label: "Developer" },
+          { id: "viewer_role_id", label: "Viewer" },
+        ]}
       />
     </div>
   );

@@ -95,7 +95,6 @@ export default function ProjectCreator() {
   const handleRemoveTeamMember = (id: (string | number)[]) => {
     setTeamMembers((prev) => prev.filter((member) => !id.includes(member.id)));
   };
-  // FIXME: Fetch user and load information
   const handleAddTeamMember = (user: UserRecord) => {
     const newMember = {
       id: user.uid,
@@ -167,7 +166,6 @@ export default function ProjectCreator() {
       <main className="m-6 p-4">
         <div className="header flex w-full justify-between pb-6">
           <h1 className="text-2xl font-semibold">Project Creator</h1>
-          {/* FIXME: create project and redirect to page if successful, display error if not */}
           <PrimaryButton onClick={handleCreateProject}>
             Generate Project
           </PrimaryButton>
@@ -220,6 +218,11 @@ export default function ProjectCreator() {
                 handleMemberAdd={handleAddTeamMember}
                 handleMemberRemove={handleRemoveTeamMember}
                 handleEditMemberRole={handleEditMemberRole}
+                roleList={[
+                  { id: "admin_role_id", label: "Admin" },
+                  { id: "developer_role_id", label: "Developer" },
+                  { id: "viewer_role_id", label: "Viewer" },
+                ]}
               />
             </div>
           </div>
