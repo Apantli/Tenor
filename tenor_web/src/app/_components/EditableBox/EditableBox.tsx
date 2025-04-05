@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { cn } from '~/lib/utils';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import CloseIcon from '@mui/icons-material/Close';
@@ -31,7 +31,6 @@ export function EditableBox({
   placeholder = 'Select an option',
 }: EditableBoxProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredOptions = options.filter(option => 
     option.name?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -71,12 +70,12 @@ export function EditableBox({
               )}
               <span className="text-gray-700 font-medium">{selectedOption.name}</span>
             </div>
-            <span 
+            <button 
               onClick={handleClear}
               className="ml-2 text-gray-500 hover:text-gray-700 transition-colors"
             >
               <CloseIcon className="w-5 h-5" />
-            </span>
+            </button>
           </>
         ) : (
           <>
@@ -123,7 +122,6 @@ export function EditableBox({
         <DropdownItem className="flex w-full flex-col">
           <span className="mb-2 text-sm text-gray-500">Select a person</span>
           <input
-            ref={searchInputRef}
             type="text"
             className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
             placeholder="Search..."
