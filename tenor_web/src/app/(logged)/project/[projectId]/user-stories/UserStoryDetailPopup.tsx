@@ -97,7 +97,7 @@ export default function UserStoryDetailPopup({
     };
 
     // Cancel ongoing queries for this user story data
-    utils.userStories.getUserStoryDetail.cancel({
+    await utils.userStories.getUserStoryDetail.cancel({
       projectId: projectId as string,
       userStoryId,
     });
