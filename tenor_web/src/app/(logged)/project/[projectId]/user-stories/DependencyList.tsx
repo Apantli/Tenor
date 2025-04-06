@@ -12,6 +12,7 @@ import { UserStoryPreview } from "~/lib/types/detailSchemas";
 import { api } from "~/trpc/react";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";
+import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
 
 interface Props {
   userStories: UserStoryPreview[];
@@ -40,6 +41,8 @@ export default function DependencyList({
   const allUserStoriesExceptCurrent = allUserStories?.filter(
     (userStory) => userStory.id !== userStoryId,
   );
+
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
   const filteredUserStories = allUserStoriesExceptCurrent?.filter(
     (userStory) => {
@@ -153,7 +156,7 @@ export default function DependencyList({
               data-tooltip-content={userStory.name}
               onClick={() => console.log("OPEN")}
             >
-              US{String(userStory.scrumId).padStart(3, "0")}
+              {formatUserStoryScrumId(userStory.scrumId)}
             </TagComponent>
           ))}
         {(userStories.length ?? 0) > 6 && (

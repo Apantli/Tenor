@@ -14,6 +14,10 @@ import { usePopupVisibilityState } from "../Popup";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import CreateUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/CreateUserStoryPopup";
+import {
+  useFormatEpicScrumId,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scumIdHooks";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -27,6 +31,9 @@ export default function UserStoryList() {
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   const [renderNewStory, showNewStory, setShowNewStory] =
     usePopupVisibilityState();
+
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatEpicScrumId = useFormatEpicScrumId();
 
   // TRPC
   const {
@@ -47,7 +54,7 @@ export default function UserStoryList() {
     const filteredData = userStories.filter(
       (userStory) =>
         userStory.title.toLowerCase().includes(searchValue) ||
-        ("us" + userStory.id.toString().padStart(3, "0")).includes(searchValue),
+        formatUserStoryScrumId(userStory.scrumId).includes(searchValue),
     );
     setUserStoryData(filteredData.sort((a, b) => (a.id < b.id ? -1 : 1)));
   };
@@ -93,7 +100,7 @@ export default function UserStoryList() {
                 setShowDetail(true);
               }}
             >
-              US{row.scrumId.toString().padStart(3, "0")}
+              {formatUserStoryScrumId(row.scrumId)}
             </button>
           );
         },
@@ -122,7 +129,8 @@ export default function UserStoryList() {
         sortable: true,
         filterable: "search-only",
         render(row) {
-          return <span>EP{row.epicId.toString().padStart(2, "0")}</span>;
+          // FIXME: The actual epic scrum id should be sent to the client, along the normal id
+          return <span>{formatEpicScrumId(row.epicId)}</span>;
         },
       },
       priority: {

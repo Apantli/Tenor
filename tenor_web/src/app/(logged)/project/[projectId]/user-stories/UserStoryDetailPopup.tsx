@@ -21,6 +21,10 @@ import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  useFormatEpicScrumId,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scumIdHooks";
 
 interface Props {
   userStoryId: string;
@@ -57,6 +61,8 @@ export default function UserStoryDetailPopup({
     acceptanceCriteria: "",
   });
   const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
+
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
   // Copy the editable data from the user story
   useEffect(() => {
@@ -245,7 +251,9 @@ export default function UserStoryDetailPopup({
         <>
           {!isLoading && userStoryDetail && (
             <h1 className="mb-4 text-3xl">
-              <span className="font-bold">US0{userStoryDetail.scrumId}: </span>
+              <span className="font-bold">
+                {formatUserStoryScrumId(userStoryDetail.scrumId)}:{" "}
+              </span>
               <span>{userStoryDetail.name}</span>
             </h1>
           )}

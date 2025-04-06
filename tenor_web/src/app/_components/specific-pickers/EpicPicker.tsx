@@ -5,6 +5,7 @@ import React from "react";
 import { api } from "~/trpc/react";
 import PillPickerComponent from "../PillPickerComponent";
 import { ExistingEpic } from "~/lib/types/detailSchemas";
+import { useFormatEpicScrumId } from "~/app/_hooks/scumIdHooks";
 
 interface Props {
   epic?: ExistingEpic;
@@ -18,8 +19,10 @@ export default function EpicPicker({ epic, onChange }: Props) {
     projectId: projectId as string,
   });
 
+  const formatEpicScrumId = useFormatEpicScrumId();
+
   const getEpicId = (epic: ExistingEpic) => {
-    return "EP" + epic.scrumId.toString().padStart(3, "0");
+    return formatEpicScrumId(epic.scrumId);
   };
 
   const epicToItem = (epic?: ExistingEpic) => ({
