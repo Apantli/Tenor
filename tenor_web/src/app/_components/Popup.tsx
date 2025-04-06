@@ -96,7 +96,7 @@ export default function Popup({
         ></div>
         <div
           className={cn(
-            "fixed left-1/2 top-1/2 flex max-h-[calc(100vh-40px)] max-w-[calc(100vw-40px)] -translate-x-1/2 -translate-y-1/2 scale-90 flex-col justify-between gap-4 overflow-hidden rounded-2xl bg-white p-5 opacity-0 transition duration-200",
+            "fixed left-1/2 top-1/2 flex max-h-[calc(100vh-40px)] max-w-[calc(100vw-40px)] -translate-x-1/2 -translate-y-1/2 scale-90 flex-col justify-between gap-4 rounded-2xl bg-white p-5 opacity-0 transition duration-200",
             {
               "max-h-[min(500px,calc(100vh-40px))] max-w-[min(700px,calc(100vw-40px))]":
                 size === "small",

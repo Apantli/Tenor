@@ -65,7 +65,7 @@ export const RoleSchema = z.object({
 
 export const BasicInfoSchema = z.object({
   scrumId: z.number(),
-  name: z.string(),
+  name: z.string().min(1, "Name is required"),
   description: z.string(),
   deleted: z.boolean().default(false),
 });

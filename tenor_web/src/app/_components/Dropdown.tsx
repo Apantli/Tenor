@@ -108,14 +108,19 @@ export default function Dropdown({
     const dropdownHeight = dropdownRect.height * multiplier;
 
     let top = triggerRect.bottom - (popupRect?.top ?? 0);
+    const realTop = triggerRect.bottom;
     let left = triggerRect.right - dropdownWidth - (popupRect?.left ?? 0); // Align to the right of the trigger
+    const realLeft = triggerRect.right - dropdownWidth;
+    console.log("dropdownHeight", dropdownHeight);
+    console.log("viewportHeight", viewportHeight);
+    console.log("top", top);
 
     let vertAlignment = "top";
     let horiAlignment = "right";
 
     // Check if dropdown goes off-screen vertically
-    if (top + dropdownHeight > viewportHeight) {
-      top = triggerRect.top - dropdownHeight; // Position above trigger
+    if (realTop + dropdownHeight > viewportHeight) {
+      top = triggerRect.top - dropdownHeight - (popupRect?.top ?? 0); // Position above trigger
       vertAlignment = "bottom";
     }
 
@@ -123,7 +128,7 @@ export default function Dropdown({
     if (left < 0) {
       // Check if left edge is off-screen
       left = 0; // Align to left edge of viewport
-    } else if (left + dropdownWidth > viewportWidth) {
+    } else if (realLeft + dropdownWidth > viewportWidth) {
       left = viewportWidth - dropdownWidth; // align to right edge of viewport.
       horiAlignment = "left";
     }
