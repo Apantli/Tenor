@@ -67,9 +67,10 @@ export const createQueryClient = () => {
         retry: (failureCount, err) => {
           if (failureCount > 3) {
             return false;
-          } else {
-            return true; // Retry up to 3 times
+          } else if (isTRPCError(err) && err.data?.code == "UNAUTHORIZED") {
+            void refreshToken();
           }
+          return true; // Retry up to 3 times
         },
       },
       dehydrate: {
