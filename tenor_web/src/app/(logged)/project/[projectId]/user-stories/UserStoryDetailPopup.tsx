@@ -96,6 +96,12 @@ export default function UserStoryDetailPopup({
       requiredByIds: updatedData?.requiredBy.map((us) => us.id) ?? [],
     };
 
+    // Cancel ongoing queries for this user story data
+    utils.userStories.getUserStoryDetail.cancel({
+      projectId: projectId as string,
+      userStoryId,
+    });
+
     // Optimistically update the query data
     utils.userStories.getUserStoryDetail.setData(
       {
