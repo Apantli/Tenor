@@ -67,6 +67,7 @@ export const createQueryClient = () => {
         retry: (failureCount, err) => {
           if (failureCount > 3) {
             return false;
+            // eslint-disable-next-line
           } else if (isTRPCError(err) && err.data?.code == "UNAUTHORIZED") {
             void refreshToken();
           }
