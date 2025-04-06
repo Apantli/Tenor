@@ -167,72 +167,74 @@ export default function UserStoryDetailPopup({
       size="large"
       sidebarClassName="basis-[210px]"
       sidebar={
-        <>
-          {!isLoading && userStoryDetail && (
-            <>
-              <h3 className="text-lg font-semibold">Epic</h3>
-              <EpicPicker
-                epic={userStoryDetail?.epic}
-                onChange={async (epic) => {
-                  await handleSave({ ...userStoryDetail, epic });
-                }}
-              />
+        isLoading ? undefined : (
+          <>
+            {!isLoading && userStoryDetail && (
+              <>
+                <h3 className="text-lg font-semibold">Epic</h3>
+                <EpicPicker
+                  epic={userStoryDetail?.epic}
+                  onChange={async (epic) => {
+                    await handleSave({ ...userStoryDetail, epic });
+                  }}
+                />
 
-              <div className="mt-4 flex gap-2">
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">Priority</h3>
-                  <PriorityPicker
-                    priority={userStoryDetail.priority}
-                    onChange={async (priority) => {
-                      await handleSave({ ...userStoryDetail, priority });
-                    }}
-                  />
+                <div className="mt-4 flex gap-2">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">Priority</h3>
+                    <PriorityPicker
+                      priority={userStoryDetail.priority}
+                      onChange={async (priority) => {
+                        await handleSave({ ...userStoryDetail, priority });
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">Size</h3>
+                    <SizePillComponent
+                      currentSize={userStoryDetail.size}
+                      callback={async (size) => {
+                        await handleSave({ ...userStoryDetail, size });
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-lg font-semibold">Size</h3>
-                  <SizePillComponent
-                    currentSize={userStoryDetail.size}
-                    callback={async (size) => {
-                      await handleSave({ ...userStoryDetail, size });
-                    }}
-                  />
-                </div>
-              </div>
 
-              <BacklogTagList
-                tags={userStoryDetail.tags}
-                onChange={async (tags) => {
-                  await handleSave({ ...userStoryDetail, tags });
-                }}
-              />
+                <BacklogTagList
+                  tags={userStoryDetail.tags}
+                  onChange={async (tags) => {
+                    await handleSave({ ...userStoryDetail, tags });
+                  }}
+                />
 
-              <h3 className="mt-4 text-lg">
-                <span className="font-semibold">Sprint: </span>
-                {userStoryDetail.sprintNumber
-                  ? `Sprint ${userStoryDetail.sprintNumber}`
-                  : "Unassigned"}
-              </h3>
+                <h3 className="mt-4 text-lg">
+                  <span className="font-semibold">Sprint: </span>
+                  {userStoryDetail.sprintNumber
+                    ? `Sprint ${userStoryDetail.sprintNumber}`
+                    : "Unassigned"}
+                </h3>
 
-              <DependencyList
-                label="Dependencies"
-                userStoryId={userStoryDetail.id}
-                userStories={userStoryDetail.dependencies}
-                onChange={async (dependencies) => {
-                  await handleSave({ ...userStoryDetail, dependencies });
-                }}
-              />
+                <DependencyList
+                  label="Dependencies"
+                  userStoryId={userStoryDetail.id}
+                  userStories={userStoryDetail.dependencies}
+                  onChange={async (dependencies) => {
+                    await handleSave({ ...userStoryDetail, dependencies });
+                  }}
+                />
 
-              <DependencyList
-                label="Required by"
-                userStoryId={userStoryDetail.id}
-                userStories={userStoryDetail.requiredBy}
-                onChange={async (requiredBy) => {
-                  await handleSave({ ...userStoryDetail, requiredBy });
-                }}
-              />
-            </>
-          )}
-        </>
+                <DependencyList
+                  label="Required by"
+                  userStoryId={userStoryDetail.id}
+                  userStories={userStoryDetail.requiredBy}
+                  onChange={async (requiredBy) => {
+                    await handleSave({ ...userStoryDetail, requiredBy });
+                  }}
+                />
+              </>
+            )}
+          </>
+        )
       }
       footer={
         !isLoading && (
