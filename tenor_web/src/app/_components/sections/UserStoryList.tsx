@@ -12,8 +12,8 @@ import type { UserStoryCol } from "~/server/api/routers/userStories";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../Popup";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
-import NewUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/NewUserStoryPopup";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
+import CreateUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/CreateUserStoryPopup";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -237,7 +237,7 @@ export default function UserStoryList() {
         )}
 
         {renderNewStory && (
-          <NewUserStoryPopup
+          <CreateUserStoryPopup
             onUserStoryAdded={onUserStoryAdded}
             showPopup={showNewStory}
             setShowPopup={setShowNewStory}

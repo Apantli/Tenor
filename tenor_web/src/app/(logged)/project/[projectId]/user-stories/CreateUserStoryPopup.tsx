@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import Popup from "~/app/_components/Popup";
-import PillComponent from "~/app/_components/PillComponent";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
@@ -12,10 +11,10 @@ import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
-import TagList from "~/app/_components/BacklogTagList";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import { api } from "~/trpc/react";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
   showPopup: boolean;
@@ -23,7 +22,7 @@ interface Props {
   onUserStoryAdded: (userStoryId: string) => void;
 }
 
-export default function NewUserStoryPopup({
+export default function CreateUserStoryPopup({
   showPopup,
   setShowPopup,
   onUserStoryAdded,
@@ -58,6 +57,7 @@ export default function NewUserStoryPopup({
   });
 
   const confirm = useConfirmation();
+  const { alert } = useAlert();
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -72,6 +72,14 @@ export default function NewUserStoryPopup({
   };
 
   const handleCreateUserStory = async () => {
+    if (createForm.name === "") {
+      alert("Oops", "Please enter a name for the user story.", {
+        type: "error",
+        duration: 5000,
+      });
+      return;
+    }
+
     const { userStoryId } = await createUserStory({
       projectId: projectId as string,
       userStoryData: {
