@@ -148,7 +148,9 @@ export const ProjectSchema = z.object({
   logo: z.string().optional(),
   deleted: z.boolean().default(false),
 
-  settings: SettingsSchema,
+  // settings: SettingsSchema,
+
+  // Will users also be in their subcollection?
   users: z.array(
     z.object({
       userId: z.string(),
@@ -169,13 +171,13 @@ export const ProjectSchema = z.object({
     }),
   ),
   // FIXME: Same as the normal schemas, I think these need to be removed and be their own subcollections instead
-  requirements: z.array(RequirementSchema).default([]),
-  userStories: z.array(UserStorySchema).default([]),
-  issues: z.array(IssueSchema).default([]),
-  epics: z.array(EpicSchema).default([]),
-  genericItems: z.array(BacklogItemSchema).default([]),
-  sprints: z.array(SprintSchema).default([]),
-  sprintSnapshots: z.array(SprintSnapshotSchema).default([]),
+  // requirements: z.array(RequirementSchema).default([]),
+  // userStories: z.array(UserStorySchema).default([]),
+  // issues: z.array(IssueSchema).default([]),
+  // epics: z.array(EpicSchema).default([]),
+  // genericItems: z.array(BacklogItemSchema).default([]),
+  // sprints: z.array(SprintSchema).default([]),
+  // sprintSnapshots: z.array(SprintSnapshotSchema).default([]),
   currentSprintId: z.string().default("1"),
   activities: z
     .array(

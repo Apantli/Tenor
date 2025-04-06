@@ -17,12 +17,12 @@ const emptySettings: Settings = {
     files: [],
     links: [],
   },
-  requirementFocusTags: [],
-  requirementTypeTags: [],
-  backlogTags: [],
-  priorityTypes: [],
-  statusTabs: [],
-  roles: [],
+  // requirementFocusTags: [],
+  // requirementTypeTags: [],
+  // backlogTags: [],
+  // priorityTypes: [],
+  // statusTabs: [],
+  // roles: [],
 };
 
 export const createEmptyProject = (): Project => {
@@ -36,14 +36,14 @@ export const createEmptyProject = (): Project => {
 
     users: [],
 
-    requirements: [],
-    userStories: [],
-    issues: [],
-    epics: [],
-    genericItems: [],
+    // requirements: [],
+    // userStories: [],
+    // issues: [],
+    // epics: [],
+    // genericItems: [],
 
-    sprints: [],
-    sprintSnapshots: [],
+    // sprints: [],
+    // sprintSnapshots: [],
     currentSprintId: "",
 
     activities: [],
