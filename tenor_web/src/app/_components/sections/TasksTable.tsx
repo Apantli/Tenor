@@ -8,6 +8,7 @@ import ProfilePicture from "../ProfilePicture";
 import { User } from "firebase/auth";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
+import { useFormatTaskScrumId } from "~/app/_hooks/scumIdHooks";
 
 interface Props {
   tasks: TaskPreview[];
@@ -25,13 +26,15 @@ export default function TasksTable({ tasks }: Props) {
     return true;
   });
 
+  const formatTaskScrumId = useFormatTaskScrumId();
+
   const taskColumns: TableColumns<TaskPreview> = {
     id: { visible: false },
     scrumId: {
       label: "Id",
       width: 80,
       render(row) {
-        return `TS${String(row.scrumId).padStart(3, "0")}`;
+        return formatTaskScrumId(row.scrumId);
       },
     },
     name: {
