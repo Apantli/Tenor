@@ -175,22 +175,22 @@ export const projectsRouter = createTRPCRouter({
             // roles: [],
           });
 
-        const backlogTagsCollection = projectRef
+        const priorityTypesCollection = projectRef
           .collection("settings")
           .doc("settings")
           .collection("priorityTypes");
 
-        await backlogTagsCollection.add({
+        await priorityTypesCollection.add({
           name: "P2",
           color: "#2c7817",
           deleted: false,
         });
-        await backlogTagsCollection.add({
+        await priorityTypesCollection.add({
           name: "P1",
           color: "#d1b01d",
           deleted: false,
         });
-        await backlogTagsCollection.add({
+        await priorityTypesCollection.add({
           name: "P0",
           color: "#FF0000",
           deleted: false,
