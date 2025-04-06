@@ -139,7 +139,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       <Popup
         show={showEditPopup}
         className="min-h-[400px] min-w-[500px]"
-        editMode={true}
+        editMode={editEpic}
         size="small"
         setEditMode={() => setEditEpic(!editEpic)}
         footer={
