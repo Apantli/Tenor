@@ -6,6 +6,7 @@ import { filesRouter } from "./routers/files";
 import { authRouter } from "./routers/auth";
 import { epicsRouter } from "./routers/epics";
 import { userStoriesRouter } from "./routers/userStories";
+import settingsRouter from "./routers/settings";
 
 /**
  * This is the primary router for your server.
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
   frida: fridaRouter,
   files: filesRouter,
   epics: epicsRouter,
+  settings: settingsRouter,
 });
 
 // export type definition of API

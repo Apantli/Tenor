@@ -5,12 +5,14 @@ import Link from "next/link";
 interface ButtonProps {
   children: React.ReactNode;
   className?: ClassNameValue;
+  asSpan?: boolean;
 }
 
 interface LinkProps {
   children: React.ReactNode;
   className?: ClassNameValue;
   href: string;
+  asSpan?: boolean;
 }
 
 export type BaseButtonProps =
@@ -19,13 +21,27 @@ export type BaseButtonProps =
 
 export default function BaseButton({
   children,
+  asSpan,
+  className,
   ...props
 }: BaseButtonProps & PropsWithChildren) {
+  if (asSpan) {
+    return <span className={className}>{children}</span>;
+  }
+
   if ("href" in props) {
     // Render a Link component
-    return <Link {...props}>{children}</Link>;
+    return (
+      <Link className={className} {...props}>
+        {children}
+      </Link>
+    );
   } else {
     // Render a button
-    return <button {...props}>{children}</button>;
+    return (
+      <button className={className} {...props}>
+        {children}
+      </button>
+    );
   }
 }

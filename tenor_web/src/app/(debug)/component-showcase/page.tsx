@@ -28,7 +28,6 @@ import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
 import type { Option } from "~/app/_components/EditableBox/EditableBox";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 
-
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
   return (
@@ -403,7 +402,7 @@ function PopupShowcase() {
         show={showSmallPopup}
         size="small"
         dismiss={() => setShowSmallPopup(false)}
-        showEdit
+        editMode={false}
         footer={
           <div className="flex gap-2">
             <SecondaryButton>Show user stories</SecondaryButton>
@@ -431,7 +430,7 @@ function PopupShowcase() {
           setShowLargePopup(false);
           setShowSidebarPopup(false);
         }}
-        showEdit
+        editMode={false}
         footer={
           <PrimaryButton onClick={() => setShowSidebarPopup(true)}>
             Open sidebar
@@ -648,17 +647,17 @@ function DatePickerShowcase() {
         // Adjust for any size
         className="h-3.5 w-48"
       />
-    </div> 
+    </div>
   );
 }
 
 function EditableBoxShowCase() {
   const [selectedPerson, setSelectedPerson] = useState<Option | null>(null);
-  const { user } = useFirebaseAuth()
-  
+  const { user } = useFirebaseAuth();
+
   // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
   const people: Option[] = [
-    { id: user?.uid ?? "" , name: user?.displayName ?? "" , user: user },
+    { id: user?.uid ?? "", name: user?.displayName ?? "", user: user },
     { id: "2", name: "Ana García" },
     { id: "3", name: "Carlos Pérez" },
   ];

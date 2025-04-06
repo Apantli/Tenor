@@ -17,12 +17,12 @@ const emptySettings: Settings = {
     files: [],
     links: [],
   },
-  requirementFocusTags: [],
-  requirementTypeTags: [],
-  backlogTags: [],
-  priorityTypes: [],
-  statusTabs: [],
-  roles: [],
+  // requirementFocusTags: [],
+  // requirementTypeTags: [],
+  // backlogTags: [],
+  // priorityTypes: [],
+  // statusTabs: [],
+  // roles: [],
 };
 
 export const createEmptyProject = (): Project => {
@@ -36,14 +36,14 @@ export const createEmptyProject = (): Project => {
 
     users: [],
 
-    requirements: [],
-    userStories: [],
-    issues: [],
-    epics: [],
-    genericItems: [],
+    // requirements: [],
+    // userStories: [],
+    // issues: [],
+    // epics: [],
+    // genericItems: [],
 
-    sprints: [],
-    sprintSnapshots: [],
+    // sprints: [],
+    // sprintSnapshots: [],
     currentSprintId: "",
 
     activities: [],
@@ -150,6 +150,51 @@ export const projectsRouter = createTRPCRouter({
           "projectIds",
           FieldValue.arrayUnion(projectRef.id),
         );
+
+        // FIXME: Create proper default settings in the project
+        await projectRef
+          .collection("settings")
+          .doc("settings")
+          .set({
+            sprintDuration: 0,
+            maximumSprintStoryPoints: 0,
+            aiContext: {
+              text: "",
+              files: [],
+              links: [],
+            },
+            // requirementFocusTags: [],
+            // requirementTypeTags: [],
+            // backlogTags: [],
+            // priorityTypes: [
+            //   { name: "P2", color: "#2c7817", deleted: false },
+            //   { name: "P1", color: "#d1b01d", deleted: false },
+            //   { name: "P0", color: "#FF0000", deleted: false },
+            // ],
+            // statusTabs: [],
+            // roles: [],
+          });
+
+        const priorityTypesCollection = projectRef
+          .collection("settings")
+          .doc("settings")
+          .collection("priorityTypes");
+
+        await priorityTypesCollection.add({
+          name: "P2",
+          color: "#2c7817",
+          deleted: false,
+        });
+        await priorityTypesCollection.add({
+          name: "P1",
+          color: "#d1b01d",
+          deleted: false,
+        });
+        await priorityTypesCollection.add({
+          name: "P0",
+          color: "#FF0000",
+          deleted: false,
+        });
 
         return { success: true, projectId: projectRef.id };
       } catch (error) {

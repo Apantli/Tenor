@@ -1,0 +1,344 @@
+"use client";
+
+import React, { useEffect, useState } from "react";
+import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
+import Popup from "~/app/_components/Popup";
+import Markdown from "react-markdown";
+import PillComponent from "~/app/_components/PillComponent";
+import TagComponent from "~/app/_components/TagComponent";
+import PillPickerComponent from "~/app/_components/PillPickerComponent";
+import DeleteButton from "~/app/_components/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import useConfirmation from "~/app/_hooks/useConfirmation";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import { api } from "~/trpc/react";
+import { useParams } from "next/navigation";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import DependencyList from "./DependencyList";
+import TasksTable from "~/app/_components/sections/TasksTable";
+import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
+import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
+import BacklogTagList from "~/app/_components/BacklogTagList";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  useFormatEpicScrumId,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scumIdHooks";
+
+interface Props {
+  userStoryId: string;
+  showDetail: boolean;
+  setShowDetail: (show: boolean) => void;
+}
+
+export default function UserStoryDetailPopup({
+  userStoryId,
+  showDetail,
+  setShowDetail,
+}: Props) {
+  const { projectId } = useParams();
+  const queryClient = useQueryClient();
+
+  const {
+    data: userStoryDetail,
+    isLoading,
+    refetch,
+  } = api.userStories.getUserStoryDetail.useQuery({
+    projectId: projectId as string,
+    userStoryId,
+  });
+  const { mutateAsync: updateUserStory } =
+    api.userStories.modifyUserStory.useMutation();
+  const { mutateAsync: deleteUserStory } =
+    api.userStories.deleteUserStory.useMutation();
+  const utils = api.useUtils();
+
+  const [editMode, setEditMode] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+    acceptanceCriteria: "",
+  });
+  const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
+
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+
+  // Copy the editable data from the user story
+  useEffect(() => {
+    if (!userStoryDetail) return;
+    setEditForm({
+      name: userStoryDetail.name,
+      description: userStoryDetail.description,
+      acceptanceCriteria: userStoryDetail.acceptanceCriteria,
+    });
+  }, [userStoryDetail]);
+
+  const confirm = useConfirmation();
+
+  const isModified = () => {
+    if (editForm.name !== userStoryDetail?.name) return true;
+    if (editForm.description !== userStoryDetail?.description) return true;
+    if (editForm.acceptanceCriteria !== userStoryDetail?.acceptanceCriteria)
+      return true;
+    return false;
+  };
+
+  const handleSave = async (
+    updatedData: NonNullable<typeof userStoryDetail>,
+  ) => {
+    const updatedUserStory = {
+      name: updatedData.name,
+      description: updatedData.description,
+      acceptanceCriteria: updatedData.acceptanceCriteria,
+      tagIds:
+        updatedData?.tags
+          .map((tag) => tag.id)
+          .filter((tag) => tag !== undefined) ?? [],
+      priorityId: updatedData?.priority?.id,
+      size: updatedData?.size,
+      epicId: updatedData?.epic?.id ?? "",
+      dependencyIds: updatedData?.dependencies.map((us) => us.id) ?? [],
+      requiredByIds: updatedData?.requiredBy.map((us) => us.id) ?? [],
+    };
+
+    // Cancel ongoing queries for this user story data
+    await utils.userStories.getUserStoryDetail.cancel({
+      projectId: projectId as string,
+      userStoryId,
+    });
+
+    // Optimistically update the query data
+    utils.userStories.getUserStoryDetail.setData(
+      {
+        projectId: projectId as string,
+        userStoryId,
+      },
+      (oldData) => {
+        if (!oldData) return undefined;
+        return {
+          ...oldData,
+          ...updatedData,
+        };
+      },
+    );
+
+    await updateUserStory({
+      projectId: projectId as string,
+      userStoryId: userStoryId,
+      userStoryData: updatedUserStory,
+    });
+
+    // Make other places refetch the data
+    await utils.userStories.getUserStoriesTableFriendly.invalidate();
+    await utils.userStories.getAllUserStoryPreviews.invalidate();
+
+    await refetch();
+  };
+
+  const handleDelete = async () => {
+    if (
+      await confirm(
+        "Are you sure?",
+        "This action cannot be undone.",
+        "Delete user story",
+        "Cancel",
+      )
+    ) {
+      await deleteUserStory({
+        projectId: projectId as string,
+        userStoryId: userStoryId,
+      });
+      await utils.userStories.getAllUserStoryPreviews.invalidate();
+      await utils.userStories.getUserStoriesTableFriendly.invalidate();
+      setShowDetail(false);
+    }
+  };
+
+  return (
+    <Popup
+      show={showDetail}
+      dismiss={async () => {
+        if (editMode && isModified()) {
+          const confirmation = await confirm(
+            "Are you sure?",
+            "Your changes will be discarded.",
+            "Discard changes",
+            "Keep Editing",
+          );
+          if (!confirmation) return;
+        }
+        setShowDetail(false);
+      }}
+      size="large"
+      sidebarClassName="basis-[210px]"
+      sidebar={
+        isLoading ? undefined : (
+          <>
+            {!isLoading && userStoryDetail && (
+              <>
+                <h3 className="text-lg font-semibold">Epic</h3>
+                <EpicPicker
+                  epic={userStoryDetail?.epic}
+                  onChange={async (epic) => {
+                    await handleSave({ ...userStoryDetail, epic });
+                  }}
+                />
+
+                <div className="mt-4 flex gap-2">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">Priority</h3>
+                    <PriorityPicker
+                      priority={userStoryDetail.priority}
+                      onChange={async (priority) => {
+                        await handleSave({ ...userStoryDetail, priority });
+                      }}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold">Size</h3>
+                    <SizePillComponent
+                      currentSize={userStoryDetail.size}
+                      callback={async (size) => {
+                        await handleSave({ ...userStoryDetail, size });
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <BacklogTagList
+                  tags={userStoryDetail.tags}
+                  onChange={async (tags) => {
+                    await handleSave({ ...userStoryDetail, tags });
+                  }}
+                />
+
+                <h3 className="mt-4 text-lg">
+                  <span className="font-semibold">Sprint: </span>
+                  {userStoryDetail.sprintNumber
+                    ? `Sprint ${userStoryDetail.sprintNumber}`
+                    : "Unassigned"}
+                </h3>
+
+                <DependencyList
+                  label="Dependencies"
+                  userStoryId={userStoryDetail.id}
+                  userStories={userStoryDetail.dependencies}
+                  onChange={async (dependencies) => {
+                    await handleSave({ ...userStoryDetail, dependencies });
+                  }}
+                />
+
+                <DependencyList
+                  label="Required by"
+                  userStoryId={userStoryDetail.id}
+                  userStories={userStoryDetail.requiredBy}
+                  onChange={async (requiredBy) => {
+                    await handleSave({ ...userStoryDetail, requiredBy });
+                  }}
+                />
+              </>
+            )}
+          </>
+        )
+      }
+      footer={
+        !isLoading && (
+          <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
+        )
+      }
+      title={
+        <>
+          {!isLoading && userStoryDetail && (
+            <h1 className="mb-4 text-3xl">
+              <span className="font-bold">
+                {formatUserStoryScrumId(userStoryDetail.scrumId)}:{" "}
+              </span>
+              <span>{userStoryDetail.name}</span>
+            </h1>
+          )}
+        </>
+      }
+      editMode={isLoading ? undefined : editMode}
+      setEditMode={async (isEditing) => {
+        setEditMode(isEditing);
+
+        if (!userStoryDetail) return;
+        if (!isEditing) {
+          const updatedData = {
+            ...userStoryDetail,
+            name: editForm.name,
+            description: editForm.description,
+            acceptanceCriteria: editForm.acceptanceCriteria,
+          };
+          await handleSave(updatedData);
+        }
+      }}
+      disablePassiveDismiss={editMode}
+    >
+      {editMode && (
+        <>
+          <InputTextField
+            label="Story name"
+            value={editForm.name}
+            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            placeholder="Short summary of the story..."
+            className="mb-4"
+          />
+          <InputTextAreaField
+            label="Story description"
+            value={editForm.description}
+            onChange={(e) =>
+              setEditForm({ ...editForm, description: e.target.value })
+            }
+            placeholder="Explain the story in detail..."
+            className="mb-4 h-36 min-h-36"
+          />
+          <InputTextAreaField
+            label="Acceptance Criteria"
+            value={editForm.acceptanceCriteria}
+            onChange={(e) =>
+              setEditForm({ ...editForm, acceptanceCriteria: e.target.value })
+            }
+            placeholder="Describe the work that needs to be done..."
+            className="h-36 min-h-36"
+          />
+        </>
+      )}
+      {!editMode && !isLoading && userStoryDetail && (
+        <div className="overflow-hidden">
+          <div className="markdown-content overflow-hidden text-lg">
+            <Markdown>{userStoryDetail.description}</Markdown>
+          </div>
+
+          {userStoryDetail.acceptanceCriteria !== "" && (
+            <>
+              <div className="mt-4 flex items-center gap-4">
+                <h2 className="text-2xl font-semibold">Acceptance Criteria</h2>
+                <TertiaryButton
+                  onClick={() =>
+                    setShowAcceptanceCriteria(!showAcceptanceCriteria)
+                  }
+                >
+                  {showAcceptanceCriteria ? "Hide" : "Show"}
+                </TertiaryButton>
+              </div>
+              {showAcceptanceCriteria && (
+                <div className="markdown-content overflow-hidden text-lg">
+                  <Markdown>{userStoryDetail.acceptanceCriteria}</Markdown>
+                </div>
+              )}
+            </>
+          )}
+
+          <TasksTable tasks={userStoryDetail.tasks} />
+        </div>
+      )}
+      {isLoading && (
+        <div className="flex h-full w-full items-center justify-center">
+          <LoadingSpinner color="primary" />
+        </div>
+      )}
+    </Popup>
+  );
+}
