@@ -25,9 +25,11 @@ interface Props {
   sidebarClassName?: ClassNameValue;
   editMode?: boolean;
   setEditMode?: (edit: boolean) => void;
+  saving?: boolean;
   reduceTopPadding?: boolean;
   zIndex?: number;
   className?: string;
+  saveText?: string;
 }
 
 const PopupContext = createContext<React.RefObject<HTMLDivElement> | null>(
@@ -45,10 +47,12 @@ export default function Popup({
   sidebar,
   editMode,
   setEditMode,
+  saving,
   reduceTopPadding,
   sidebarClassName,
   zIndex,
   className,
+  saveText = "Save",
 }: Props & PropsWithChildren) {
   const [popIn, setPopIn] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -128,8 +132,11 @@ export default function Popup({
                       )}
                       {editMode === true && (
                         <div className="flex shrink-0 flex-col gap-2">
-                          <PrimaryButton onClick={() => setEditMode?.(false)}>
-                            Save
+                          <PrimaryButton
+                            onClick={() => setEditMode?.(false)}
+                            loading={saving}
+                          >
+                            {saveText}
                           </PrimaryButton>
                         </div>
                       )}
@@ -168,6 +175,29 @@ export default function Popup({
     )
   );
 }
+
+// Use this hook instead of managing your own state when you want the popup not always be rendered
+export const usePopupVisibilityState = () => {
+  const [showInternal, setShowInternal] = useState(false);
+  const [animating, setAnimating] = useState(false);
+
+  const setShow = (newShow: boolean) => {
+    if (newShow) {
+      setShowInternal(true);
+      setAnimating(true);
+    } else {
+      setShowInternal(false);
+      setTimeout(() => {
+        setAnimating(false);
+      }, 300);
+    }
+  };
+
+  // The component should render based on 'showInternal' or 'animating'
+  const isVisible = showInternal || animating;
+
+  return [isVisible, showInternal, setShow] as const;
+};
 
 export const usePopupContainer = () => {
   const context = useContext(PopupContext);

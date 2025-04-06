@@ -63,6 +63,7 @@ export interface Project {
     active: boolean;
   }[];
 
+  // FIXME: From what I understand, these need to be deleted because they're going to be stored as subcollections
   requirements: Requirement[];
   userStories: UserStory[];
   issues: Issue[];
@@ -107,6 +108,7 @@ export interface Settings {
 }
 
 export interface Tag {
+  id?: string;
   name: string;
   color: string;
   deleted: boolean;
@@ -155,7 +157,7 @@ export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
 
 export interface BacklogItem extends BasicInfo {
   sprintId: string;
-  tasks: Task[];
+  taskIds: string[];
   complete: boolean;
   tagIds: string[];
   size: Size;

@@ -47,6 +47,7 @@ interface TableProps<I, T> {
   deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[]) => void;
   className?: ClassNameValue;
+  emptyMessage?: string;
 }
 
 // TODO: Make columns width be resizable on runtime by user
@@ -63,6 +64,7 @@ export default function Table<
   deletable,
   onDelete,
   className,
+  emptyMessage,
 }: TableProps<I, T>) {
   const [sortColumnKey, setSortColumnKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -211,6 +213,11 @@ export default function Table<
             scrollContainerRef={scrollContainerRef}
           />
         ))}
+        {filteredData.length === 0 && emptyMessage && (
+          <div className="flex w-full items-center justify-center border-b border-app-border p-3 text-gray-500">
+            <span className="text-base">{emptyMessage}</span>
+          </div>
+        )}
       </div>
     </div>
   );

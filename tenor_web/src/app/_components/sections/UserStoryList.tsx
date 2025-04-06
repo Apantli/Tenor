@@ -10,212 +10,240 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import type { UserStoryCol } from "~/server/api/routers/userStories";
 import { cn } from "~/lib/utils";
+import { usePopupVisibilityState } from "../Popup";
+import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
+import NewUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/NewUserStoryPopup";
+import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function UserStoryList() {
-    // Hooks
-    const params = useParams();
-    const [userStoryData, setUserStoryData] = useState<UserStoryCol[]>([]);
-    const [searchValue, setSearchValue] = useState("");
-  
-    // TRPC
-    const { mutateAsync: createUS } =
-      api.userStories.createUserStory.useMutation();
-    const {
-      data: userStories,
-      isLoading: isLoadingUS,
-      refetch: refetchUS,
-    } = api.userStories.getUserStoriesTableFriendly.useQuery(
-      params.projectId as string,
+  // Hooks
+  const params = useParams();
+  const [userStoryData, setUserStoryData] = useState<UserStoryCol[]>([]);
+  const [searchValue, setSearchValue] = useState("");
+
+  const [selectedUS, setSelectedUS] = useState<string>("");
+  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  const [renderNewStory, showNewStory, setShowNewStory] =
+    usePopupVisibilityState();
+
+  // TRPC
+  const {
+    data: userStories,
+    isLoading: isLoadingUS,
+    refetch: refetchUS,
+  } = api.userStories.getUserStoriesTableFriendly.useQuery(
+    params.projectId as string,
+  );
+
+  // Handles
+  const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setSearchValue(e.target.value);
+    if (!userStories) {
+      return;
+    }
+    const searchValue = e.target.value.toLowerCase();
+    const filteredData = userStories.filter(
+      (userStory) =>
+        userStory.title.toLowerCase().includes(searchValue) ||
+        ("us" + userStory.id.toString().padStart(3, "0")).includes(searchValue),
     );
-  
-    // Handles
-    const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
-      setSearchValue(e.target.value);
-      if (!userStories) {
-        return;
-      }
-      const searchValue = e.target.value.toLowerCase();
-      const filteredData = userStories.filter(
-        (userStory) =>
-          userStory.title.toLowerCase().includes(searchValue) ||
-          ("us" + userStory.id.toString().padStart(3, "0")).includes(searchValue),
-      );
-      setUserStoryData(filteredData.sort((a, b) => (a.id < b.id ? -1 : 1)));
+    setUserStoryData(filteredData.sort((a, b) => (a.id < b.id ? -1 : 1)));
+  };
+
+  useEffect(() => {
+    if (userStories) {
+      setUserStoryData(userStories);
+    }
+  }, [userStories]);
+
+  // Function to get the US table or message instead
+  const getTable = () => {
+    if (userStories == undefined || isLoadingUS) {
+      return <span>Loading...</span>;
+    }
+
+    if (userStoryData?.length == 0) {
+      return <span>No User stories found</span>;
+    }
+
+    const priorityTags: Tag[] = Array.from(
+      new Map(
+        userStoryData.map((tag) => [
+          tag.priority.name + tag.priority.color + tag.priority.deleted,
+          tag.priority,
+        ]),
+      ).values(),
+    );
+
+    // TODO: Add correct leading 0 to ids (which depends on max id). Currently hardcoded
+    const tableColumns: TableColumns<UserStoryCol> = {
+      id: { visible: false },
+      scrumId: {
+        label: "Id",
+        width: 80,
+        sortable: true,
+        render(row) {
+          return (
+            <button
+              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              onClick={() => {
+                setSelectedUS(row.id);
+                setShowDetail(true);
+              }}
+            >
+              US{row.scrumId.toString().padStart(3, "0")}
+            </button>
+          );
+        },
+      },
+      title: {
+        label: "Title",
+        width: 220,
+        sortable: true,
+        render(row) {
+          return (
+            <button
+              className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              onClick={() => {
+                setSelectedUS(row.id);
+                setShowDetail(true);
+              }}
+            >
+              {row.title}
+            </button>
+          );
+        },
+      },
+      epicId: {
+        label: "Epic",
+        width: 100,
+        sortable: true,
+        filterable: "search-only",
+        render(row) {
+          return <span>EP{row.epicId.toString().padStart(2, "0")}</span>;
+        },
+      },
+      priority: {
+        label: "Priority",
+        width: 140,
+        render(row) {
+          return (
+            <span className="flex w-32 justify-start">
+              <PillComponent
+                currentTag={row.priority}
+                allTags={priorityTags}
+                callBack={(tag: Tag) => {
+                  setUserStoryData((prevData) =>
+                    prevData.map((item) =>
+                      item.id === row.id ? { ...item, priority: tag } : item,
+                    ),
+                  );
+                }}
+                className="w-[calc(100%-10px)]"
+              />
+            </span>
+          );
+        },
+      },
+      size: {
+        label: "Size",
+        width: 100,
+        render(row) {
+          return (
+            <span className="flex justify-start">
+              <SizePillComponent
+                currentSize={row.size}
+                callback={() => {}}
+                className="w-[calc(100%-10px)]"
+              />
+            </span>
+          );
+        },
+      },
+      sprintId: {
+        label: "Sprint",
+        width: 100,
+        sortable: true,
+        filterable: "list",
+        render(row) {
+          return (
+            <span>
+              {row.sprintId == 0 ? "No Sprint" : "Sprint " + row.sprintId}
+            </span>
+          );
+        },
+      },
+      taskProgress: {
+        label: "Task progress",
+        width: 110,
+        render(row) {
+          return (
+            <span className="flex justify-start gap-1">
+              <span>{row.taskProgress[0] ?? 0}</span>
+              <span>/</span>
+              <span>{row.taskProgress[1] ?? "?"}</span>
+            </span>
+          );
+        },
+      },
     };
-  
-    const handleCreateUS = async () => {
-      await createUS(params.projectId as string);
-      await refetchUS();
-    };
-  
-    useEffect(() => {
-      if (userStories) {
-        // default sort by id. This is overriden by the table sorting feature
-        setUserStoryData(userStories.sort((a, b) => (a.id < b.id ? -1 : 1)));
-      }
-    }, [userStories]);
-  
-    // Function to get the US table or message instead
-    const getTable = () => {
-      if (userStories == undefined || isLoadingUS) {
-        return <span>Loading...</span>;
-      }
-  
-      if (userStoryData?.length == 0) {
-        return <span>No User stories found</span>;
-      }
-  
-      const priorityTags: Tag[] = Array.from(
-        new Map(
-          userStoryData.map((tag) => [
-            tag.priority.name + tag.priority.color + tag.priority.deleted,
-            tag.priority,
-          ]),
-        ).values(),
-      );
-  
-      const sizeTags: Tag[] = Array.from(
-        new Map(
-          userStoryData.map((tag) => [
-            tag.size.name + tag.size.color + tag.size.deleted,
-            tag.size,
-          ]),
-        ).values(),
-      );
-  
-      // TODO: Add correct leading 0 to ids (which depends on max id). Currently hardcoded
-      const tableColumns: TableColumns<UserStoryCol> = {
-        id: {
-          label: "Id",
-          width: 80,
-          sortable: true,
-          render(row) {
-            return <span>US{row.id.toString().padStart(3, "0")}</span>;
-          },
-        },
-        title: {
-          label: "Title",
-          width: 220,
-          sortable: true,
-          render(row) {
-            return (
-              <span className="truncate">
-                {row.title}
-              </span>
-            );
-          }
-        },
-        epicId: {
-          label: "Epic",
-          width: 100,
-          sortable: true,
-          filterable: "search-only",
-          render(row) {
-            return <span>EP{row.epicId.toString().padStart(2, "0")}</span>;
-          },
-        },
-        priority: {
-          label: "Priority",
-          width: 140,
-          render(row) {
-            return (
-              <span className="flex justify-start w-32">
-                <PillComponent
-                  currentTag={row.priority}
-                  allTags={priorityTags}
-                  callBack={(tag: Tag) => {
-                    setUserStoryData((prevData) =>
-                      prevData.map((item) =>
-                        item.id === row.id ? { ...item, priority: tag } : item,
-                      ),
-                    );
-                  }}
-                  labelClassName="w-[7rem]"
-                />
-              </span>
-            );
-          },
-        },
-        size: {
-          label: "Size",
-          width: 100,
-          render(row) {
-            return (
-              <span className="flex justify-start">
-                <PillComponent
-                  currentTag={row.size}
-                  allTags={sizeTags}
-                  callBack={(tag: Tag) => {
-                    setUserStoryData((prevData) =>
-                      prevData.map((item) =>
-                        item.id === row.id ? { ...item, size: tag } : item,
-                      ),
-                    );
-                  }}
-                  labelClassName="w-20"
-                />
-              </span>
-            );
-          },
-        },
-        sprintId: {
-          label: "Sprint",
-          width: 100,
-          sortable: true,
-          filterable: "list",
-          render(row) {
-            return (
-              <span>
-                {row.sprintId == 0 ? "No Sprint" : "Sprint " + row.sprintId}
-              </span>
-            );
-          },
-        },
-        taskProgress: {
-          label: "Task progress",
-          width: 110,
-          render(row) {
-            return (
-              <span className="flex justify-start gap-1">
-                <span>{row.taskProgress[0] ?? 0}</span>
-                <span>/</span>
-                <span>{row.taskProgress[1] ?? "?"}</span>
-              </span>
-            );
-          },
-        },
-      };
-  
-      // TODO: Decide on best height for the table (or make it responsive preferably)
-      return (
-        <Table
-          className={cn("w-full", heightOfContent)}
-          data={userStoryData}
-          columns={tableColumns}
-          multiselect
-          deletable
-          onDelete={(ids) => console.log("Deleted", ids)}
-        />
-      );
-    };
-  
+
+    // TODO: Decide on best height for the table (or make it responsive preferably)
     return (
+      <Table
+        className={cn("w-full", heightOfContent)}
+        data={userStoryData}
+        columns={tableColumns}
+        multiselect
+        deletable
+        onDelete={(ids) => console.log("Deleted", ids)}
+      />
+    );
+  };
+
+  const onUserStoryAdded = async (userStoryId: string) => {
+    await refetchUS();
+    setShowNewStory(false);
+    setSelectedUS(userStoryId);
+    setShowDetail(true);
+  };
+
+  return (
+    <>
       <div className="flex w-[calc(100%-300px)] flex-col items-start gap-3">
         <h1 className="text-3xl font-semibold">User Stories</h1>
-  
+
         <div className="flex w-full items-center gap-3 pb-2">
           <SearchBar
             searchValue={searchValue}
             handleUpdateSearch={handleUpdateSearch}
             placeholder="Find a user story by title or Id..."
           ></SearchBar>
-          <PrimaryButton onClick={handleCreateUS}>+ New Story</PrimaryButton>
+          <PrimaryButton onClick={() => setShowNewStory(true)}>
+            + New Story
+          </PrimaryButton>
         </div>
-  
+
         {getTable()}
+
+        {renderDetail && (
+          <UserStoryDetailPopup
+            showDetail={showDetail}
+            setShowDetail={setShowDetail}
+            userStoryId={selectedUS}
+          />
+        )}
+
+        {renderNewStory && (
+          <NewUserStoryPopup
+            onUserStoryAdded={onUserStoryAdded}
+            showPopup={showNewStory}
+            setShowPopup={setShowNewStory}
+          />
+        )}
       </div>
-    );
-  }
-  
+    </>
+  );
+}

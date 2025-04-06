@@ -64,7 +64,7 @@ export const RoleSchema = z.object({
 });
 
 export const BasicInfoSchema = z.object({
-  scrumId: z.number().optional(),
+  scrumId: z.number(),
   name: z.string(),
   description: z.string(),
   deleted: z.boolean().default(false),
@@ -73,12 +73,12 @@ export const BasicInfoSchema = z.object({
 export const SizeSchema = z.enum(["XS", "S", "M", "L", "XL", "XXL"]);
 
 export const BacklogItemSchema = BasicInfoSchema.extend({
-  sprintId: z.string(),
-  tasks: z.array(z.object({})), // TODO: Define Task schema
-  complete: z.boolean(),
+  sprintId: z.string().optional(),
+  taskIds: z.array(z.string()).default([]),
+  complete: z.boolean().default(false),
   tagIds: z.array(z.string()),
-  size: SizeSchema,
-  priorityId: z.string(),
+  size: SizeSchema.optional(),
+  priorityId: z.string().optional(),
 });
 
 export const EpicSchema = BasicInfoSchema;
@@ -132,12 +132,14 @@ export const SettingsSchema = z.object({
     files: z.array(z.string()).default([]),
     links: z.array(z.string()).default([]),
   }),
-  requirementFocusTags: z.array(TagSchema).default([]),
-  requirementTypeTags: z.array(TagSchema).default([]),
-  backlogTags: z.array(TagSchema).default([]),
-  priorityTypes: z.array(TagSchema).default([]),
-  statusTabs: z.array(TagSchema).default([]),
-  roles: z.array(RoleSchema).default([]),
+  // Removed because they should be in subcollections
+
+  // requirementFocusTags: z.array(TagSchema).default([]),
+  // requirementTypeTags: z.array(TagSchema).default([]),
+  // backlogTags: z.array(TagSchema).default([]),
+  // priorityTypes: z.array(TagSchema).default([]),
+  // statusTabs: z.array(TagSchema).default([]),
+  // roles: z.array(RoleSchema).default([]),
 });
 
 export const ProjectSchema = z.object({
@@ -166,6 +168,7 @@ export const ProjectSchema = z.object({
       active: z.boolean().default(true),
     }),
   ),
+  // FIXME: Same as the normal schemas, I think these need to be removed and be their own subcollections instead
   requirements: z.array(RequirementSchema).default([]),
   userStories: z.array(UserStorySchema).default([]),
   issues: z.array(IssueSchema).default([]),

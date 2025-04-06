@@ -9,6 +9,7 @@ import {
   type TableOptions,
   type DeleteOptions,
 } from "./Table";
+import InputCheckbox from "../inputs/InputCheckbox";
 
 interface TableRowProps<I, T> {
   value: T;
@@ -50,18 +51,16 @@ function TableRow<
   return (
     <div
       className={cn(
-        "grid items-center gap-2 border-b border-app-border p-2 transition",
+        "grid min-w-fit items-center gap-2 border-b border-app-border p-2 transition",
         { "bg-gray-100": selection.has(value.id) },
       )}
       style={{ gridTemplateColumns }}
     >
       {multiselect && (
-        <input
-          type="checkbox"
-          className="w-4"
+        <InputCheckbox
           checked={selection.has(value.id)}
           onChange={() => toggleSelect(value.id)}
-        ></input>
+        />
       )}
       {columnEntries.map(([key, column]) => (
         <div key={key} className="w-full truncate">
@@ -70,9 +69,10 @@ function TableRow<
       ))}
       {showThreeDots && (
         <>
+          <div></div>
           <Dropdown
             label={<span className="font-bold text-app-light">• • •</span>}
-            className="flex h-full w-12 items-center justify-start pl-5 text-sm font-semibold transition"
+            className="flex h-full w-full items-center justify-start text-sm font-semibold transition"
             menuClassName="font-normal whitespace-nowrap"
             scrollContainer={scrollContainerRef}
           >

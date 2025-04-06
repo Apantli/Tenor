@@ -16,11 +16,10 @@ export const epicsRouter = createTRPCRouter({
         .orderBy("scrumId")
         .get();
 
-      const epics = epicsSnapshot.docs.map((doc) =>
-        ExistingEpicSchema.parse({
-          ...doc.data(),
-        }),
-      );
+      const epics = epicsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...ExistingEpicSchema.parse(doc.data()),
+      }));
 
       return epics;
     }),
@@ -65,7 +64,7 @@ export const epicsRouter = createTRPCRouter({
         .doc(input.projectId)
         .collection("epics");
 
-      if (input.scrumId) {
+      if (input.scrumId !== -1) {
         const epicDocs = await epicsRef
           .where("scrumId", "==", input.scrumId)
           .get();

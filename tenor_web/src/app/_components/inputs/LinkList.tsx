@@ -30,9 +30,11 @@ export default function LinkList({
         <label className="text-sm font-semibold">{label}</label>
         <Dropdown
           label={
-            <PrimaryButton className="flex max-h-[40px] items-center text-sm font-semibold">
-              {" "}
-              Add Context Link +{" "}
+            <PrimaryButton
+              asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
+              className="flex max-h-[40px] items-center text-sm font-semibold"
+            >
+              Add Context Link +
             </PrimaryButton>
           }
         >

@@ -26,7 +26,7 @@ export default function TagComponent({
         {
           "border border-app-border": !color,
           "h-auto px-2 py-0": reducedPadding,
-          "text-md gap-2 px-3": expanded,
+          "gap-2 px-3": expanded,
           "cursor-pointer transition hover:bg-app-hover-border":
             onClick !== undefined,
           "transition has-[button:hover]:border-app-fail has-[button:hover]:bg-white has-[button:hover]:text-app-fail":

@@ -20,6 +20,7 @@ interface Props {
   className?: ClassNameValue;
   menuClassName?: ClassNameValue;
   scrollContainer?: React.RefObject<HTMLDivElement>;
+  onOpen?: () => void;
 }
 
 export default function Dropdown({
@@ -28,6 +29,7 @@ export default function Dropdown({
   className,
   menuClassName,
   scrollContainer,
+  onOpen,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDirection, setOpenDirection] = useState<
@@ -86,6 +88,7 @@ export default function Dropdown({
   const toggleOpen = () => {
     if (!isOpen) {
       setOpenDirection(positionDropdown(2));
+      onOpen?.();
       startScrollPos.current = scrollContainer?.current?.scrollTop ?? null;
     }
     setIsOpen(!isOpen);

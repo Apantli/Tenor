@@ -54,6 +54,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       projectId: projectId,
       name: newEpicName,
       description: newEpicDescription,
+      scrumId: -1,
     });
     await utils.epics.getProjectEpicsOverview.invalidate();
 
@@ -64,7 +65,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   };
   return (
     <>
-      <div className="flex flex-row justify-between border-b-2 pb-2 flex-wrap gap-2">
+      <div className="flex flex-row flex-wrap justify-between gap-2 border-b-2 pb-2">
         <h1 className="text-2xl font-bold">Epics</h1>
         <PrimaryButton
           className={
@@ -138,9 +139,9 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       <Popup
         show={showEditPopup}
         className="min-h-[400px] min-w-[500px]"
-        showEdit
+        editMode={true}
         size="small"
-        onEdit={() => setEditEpic(!editEpic)}
+        setEditMode={() => setEditEpic(!editEpic)}
         footer={
           <div className="flex gap-2">
             {editEpic && (

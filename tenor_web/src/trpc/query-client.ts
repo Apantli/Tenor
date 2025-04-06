@@ -64,12 +64,12 @@ export const createQueryClient = () => {
         },
       },
       mutations: {
-        retry: (failureCount, _error) => {
-          if (failureCount < 3) {
-            void refreshToken();
+        retry: (failureCount, err) => {
+          if (failureCount > 3) {
+            return false;
+          } else {
             return true; // Retry up to 3 times
           }
-          return false;
         },
       },
       dehydrate: {

@@ -1,16 +1,17 @@
 import React, {
+  useRef,
   useState,
   type ButtonHTMLAttributes,
   type ChangeEventHandler,
 } from "react";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Tag } from "~/lib/types/firebaseSchemas";
 import Dropdown, { DropdownButton, DropdownItem } from "./Dropdown";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";
 
 interface Props {
-  currentTag: Tag;
+  currentTag?: Tag;
   allTags: Tag[];
   callBack: (tag: Tag) => void;
   labelClassName?: string;
@@ -24,6 +25,13 @@ export default function PillComponent({
   className,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const noneSelectedTag = {
+    name: "",
+    color: "#333333",
+    deleted: false,
+  };
 
   const filteredTags = allTags.filter((tag) => {
     if (
@@ -38,7 +46,6 @@ export default function PillComponent({
 
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchValue(e.target.value);
-    console.log(e.target.value);
   };
 
   const areEqual = (t1: Tag, t2: Tag) => {
@@ -54,7 +61,9 @@ export default function PillComponent({
       >
         <Check
           fontSize="inherit"
-          className={cn({ "opacity-0": !areEqual(tag, currentTag) })}
+          className={cn({
+            "opacity-0": !areEqual(tag, currentTag ?? noneSelectedTag),
+          })}
         ></Check>
         <span
           className="inline-block h-3 w-3 rounded-full"
@@ -74,7 +83,7 @@ export default function PillComponent({
     return (
       <div
         className={cn(
-          "flex items-center justify-between rounded-3xl border-solid py-1 pl-3 pr-2 font-medium transition-all",
+          "flex items-center justify-between truncate rounded-3xl border-solid py-1 pl-3 pr-2 font-medium transition-all",
           labelClassName,
         )}
         style={{
@@ -84,17 +93,24 @@ export default function PillComponent({
           color: tag.color,
         }}
       >
-        {tag.name}
-        <ArrowDropDownIcon />
+        <span className="truncate">{tag.name}</span>
+        <span className="basis-[5px]">
+          <ArrowDropDownIcon />
+        </span>
       </div>
     );
   };
 
   return (
-    <Dropdown label={createPillLabel(currentTag)} className={className}>
+    <Dropdown
+      label={createPillLabel(currentTag ?? noneSelectedTag)}
+      className={className}
+      onOpen={() => inputRef.current?.focus()}
+    >
       <DropdownItem className="flex w-52 flex-col">
         <span className="mb-2 text-sm text-gray-500">Select an item</span>
         <input
+          ref={inputRef}
           type="text"
           className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
           placeholder="Search..."
@@ -113,52 +129,5 @@ export default function PillComponent({
         </div>
       </div>
     </Dropdown>
-  );
-}
-
-interface SizePillComponentProps {
-  currentSize: Size;
-  callback: (size: Size) => void;
-  className?: string;
-}
-
-export function SizePillComponent({
-  currentSize,
-  callback,
-  className,
-}: SizePillComponentProps) {
-  const sizeTags: Tag[] = [
-    { name: "XS", color: "#4A90E2", deleted: false }, // Light Blue
-    { name: "S", color: "#2ECC71", deleted: false }, // Green
-    { name: "M", color: "#F1C40F", deleted: false }, // Yellow
-    { name: "L", color: "#E67E22", deleted: false }, // Orange
-    { name: "XL", color: "#E74C3C", deleted: false }, // Red
-    { name: "XXL", color: "#8E44AD", deleted: false }, // Purple
-  ] as const;
-
-  const sizeToInt = (size: Size): 0 | 1 | 2 | 3 | 4 | 5 => {
-    switch (size) {
-      case "XS":
-        return 0;
-      case "S":
-        return 1;
-      case "M":
-        return 2;
-      case "L":
-        return 3;
-      case "XL":
-        return 4;
-      case "XXL":
-        return 5;
-    }
-  };
-
-  return (
-    <PillComponent
-      allTags={sizeTags}
-      currentTag={sizeTags[sizeToInt(currentSize)]!}
-      callBack={(tag) => callback(tag.name as Size)}
-      labelClassName={className ?? ""}
-    />
   );
 }
