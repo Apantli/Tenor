@@ -1,3 +1,6 @@
+// FIXME: These padding numbers are temporary
+// Decided to make these helper functions hooks to be able to call make an API call here (to query count)
+
 export const useFormatUserStoryScrumId = () => {
   return (scrumId: number) => `US${String(scrumId).padStart(3, "0")}`;
 };
