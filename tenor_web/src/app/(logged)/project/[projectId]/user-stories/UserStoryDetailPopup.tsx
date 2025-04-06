@@ -118,8 +118,8 @@ export default function UserStoryDetailPopup({
     });
 
     // Make other places refetch the data
-    utils.userStories.getUserStoriesTableFriendly.invalidate();
-    utils.userStories.getAllUserStoryPreviews.invalidate();
+    await utils.userStories.getUserStoriesTableFriendly.invalidate();
+    await utils.userStories.getAllUserStoryPreviews.invalidate();
 
     await refetch();
   };
@@ -137,8 +137,8 @@ export default function UserStoryDetailPopup({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
-      utils.userStories.getAllUserStoryPreviews.invalidate();
-      utils.userStories.getUserStoriesTableFriendly.invalidate();
+      await utils.userStories.getAllUserStoryPreviews.invalidate();
+      await utils.userStories.getUserStoriesTableFriendly.invalidate();
       setShowDetail(false);
     }
   };
@@ -167,8 +167,8 @@ export default function UserStoryDetailPopup({
               <h3 className="text-lg font-semibold">Epic</h3>
               <EpicPicker
                 epic={userStoryDetail?.epic}
-                onChange={(epic) => {
-                  handleSave({ ...userStoryDetail, epic });
+                onChange={async (epic) => {
+                  await handleSave({ ...userStoryDetail, epic });
                 }}
               />
 
@@ -177,8 +177,8 @@ export default function UserStoryDetailPopup({
                   <h3 className="text-lg font-semibold">Priority</h3>
                   <PriorityPicker
                     priority={userStoryDetail.priority}
-                    onChange={(priority) => {
-                      handleSave({ ...userStoryDetail, priority });
+                    onChange={async (priority) => {
+                      await handleSave({ ...userStoryDetail, priority });
                     }}
                   />
                 </div>
@@ -186,8 +186,8 @@ export default function UserStoryDetailPopup({
                   <h3 className="text-lg font-semibold">Size</h3>
                   <SizePillComponent
                     currentSize={userStoryDetail.size}
-                    callback={(size) => {
-                      handleSave({ ...userStoryDetail, size });
+                    callback={async (size) => {
+                      await handleSave({ ...userStoryDetail, size });
                     }}
                   />
                 </div>
@@ -195,8 +195,8 @@ export default function UserStoryDetailPopup({
 
               <BacklogTagList
                 tags={userStoryDetail.tags}
-                onChange={(tags) => {
-                  handleSave({ ...userStoryDetail, tags });
+                onChange={async (tags) => {
+                  await handleSave({ ...userStoryDetail, tags });
                 }}
               />
 
@@ -211,8 +211,8 @@ export default function UserStoryDetailPopup({
                 label="Dependencies"
                 userStoryId={userStoryDetail.id}
                 userStories={userStoryDetail.dependencies}
-                onChange={(dependencies) => {
-                  handleSave({ ...userStoryDetail, dependencies });
+                onChange={async (dependencies) => {
+                  await handleSave({ ...userStoryDetail, dependencies });
                 }}
               />
 
@@ -220,8 +220,8 @@ export default function UserStoryDetailPopup({
                 label="Required by"
                 userStoryId={userStoryDetail.id}
                 userStories={userStoryDetail.requiredBy}
-                onChange={(requiredBy) => {
-                  handleSave({ ...userStoryDetail, requiredBy });
+                onChange={async (requiredBy) => {
+                  await handleSave({ ...userStoryDetail, requiredBy });
                 }}
               />
             </>

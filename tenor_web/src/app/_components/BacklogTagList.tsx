@@ -144,7 +144,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
                   onClick={handleCreateTag}
                   className="max-w-52 truncate"
                 >
-                  Create tag "{searchValue}"
+                  Create tag &quot;{searchValue}&quot;
                 </DropdownButton>
               )}
             </div>

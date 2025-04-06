@@ -90,8 +90,8 @@ export default function NewUserStoryPopup({
     });
     onUserStoryAdded(userStoryId);
 
-    utils.userStories.getUserStoriesTableFriendly.invalidate();
-    utils.userStories.getAllUserStoryPreviews.invalidate();
+    await utils.userStories.getUserStoriesTableFriendly.invalidate();
+    await utils.userStories.getAllUserStoryPreviews.invalidate();
   };
 
   return (
@@ -169,8 +169,8 @@ export default function NewUserStoryPopup({
         </h1>
       }
       editMode={true}
-      setEditMode={(editMode) => {
-        if (!editMode) handleCreateUserStory();
+      setEditMode={async (editMode) => {
+        if (!editMode) await handleCreateUserStory();
       }}
       disablePassiveDismiss={isModified()}
     >
