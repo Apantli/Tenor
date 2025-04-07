@@ -68,7 +68,7 @@ export default function MemberTable({
       render(row) {
         return (
           <PillPickerComponent
-            className="w-full"
+            className="w-full text-sm"
             hideSearch
             selectedItem={
               roleList.find((role) => role.id === row.role) ?? {
@@ -102,7 +102,7 @@ export default function MemberTable({
         </label>
         <Dropdown
           label={
-            <PrimaryButton className="flex items-center text-sm">
+            <PrimaryButton className="flex items-center text-sm" asSpan>
               + Add Member
             </PrimaryButton>
           }
