@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -8,14 +8,13 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
 import DependencyList from "./DependencyList";
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
-import { Size, Tag } from "~/lib/types/firebaseSchemas";
-import { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
+import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { utimesSync } from "fs";
 
 interface Props {
   showPopup: boolean;

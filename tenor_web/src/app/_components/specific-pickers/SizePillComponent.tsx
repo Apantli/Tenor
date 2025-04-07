@@ -1,4 +1,4 @@
-import { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import PillComponent from "../PillComponent";
 
 interface Props {

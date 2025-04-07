@@ -1,6 +1,5 @@
 import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
-import SecondaryButton from "./buttons/SecondaryButton";
 
 interface Props {
   color?: string;

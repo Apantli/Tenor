@@ -1,4 +1,3 @@
-import { Class } from "node_modules/superjson/dist/types";
 import React, { useRef } from "react";
 import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
@@ -35,7 +34,7 @@ export default function FileList({
     return files.reduce((total, item) => total + item.size, 0);
   }
 
-  const { alert, predefinedAlerts } = useAlert();
+  const { alert } = useAlert();
 
   return (
     <div className="w-full">

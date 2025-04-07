@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import Table, { type TableColumns } from "../table/Table";
-import { FilterSearch } from "../FilterSearch";
 import PrimaryButton from "../buttons/PrimaryButton";
 
 interface Props {
@@ -63,8 +62,6 @@ export default function MemberTable({
       width: 120,
     },
   };
-
-  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div className={cn("w-full", className)}>
