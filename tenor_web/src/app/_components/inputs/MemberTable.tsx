@@ -91,7 +91,7 @@ export default function MemberTable({
   const session = useFirebaseAuth();
 
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn("w-full text-sm", className)}>
       {/* FIMXE: Add seach bar */}
       <div className="flex items-center justify-between py-4">
         <label
@@ -117,8 +117,8 @@ export default function MemberTable({
             ></SearchBar>
           </DropdownItem>
 
-          <div className="whitespace-nowraptext-left w-full">
-            <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
+          <div className="whitespace-nowraptext-left w-full text-sm">
+            <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg text-sm">
               {session.user &&
                 users?.map((user) => {
                   if (user.id === session.user?.uid) return null;

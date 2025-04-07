@@ -75,17 +75,17 @@ export default function PillPickerComponent({
       onOpen={() => inputRef.current?.focus()}
     >
       {!hideSearch && (
-      <DropdownItem className="flex w-52 flex-col">
-        <span className="mb-2 text-sm text-gray-500">{label}</span>
-        <input
-          ref={inputRef}
-          type="text"
-          className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
-          placeholder="Search..."
-          value={searchValue}
-          onChange={handleSearchChange}
-        />
-      </DropdownItem>
+        <DropdownItem className="flex w-52 flex-col">
+          <span className="mb-2 text-sm text-gray-500">{label}</span>
+          <input
+            ref={inputRef}
+            type="text"
+            className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
+            placeholder="Search..."
+            value={searchValue}
+            onChange={handleSearchChange}
+          />
+        </DropdownItem>
       )}
       {allowClear && searchValue === "" && (
         <DropdownButton
@@ -115,9 +115,11 @@ export default function PillPickerComponent({
                   className={cn({ "opacity-0": item.id !== selectedItem.id })}
                 ></Check>
                 <div className="flex flex-col justify-start gap-0">
-                  <span className="w-full truncate text-xs font-semibold">
-                    {item.prefix}:
-                  </span>
+                  {item.prefix !== undefined && (
+                    <span className="w-full truncate text-xs font-semibold">
+                      {item.prefix}:
+                    </span>
+                  )}
                   <span className="w-full truncate">{item.label}</span>
                 </div>
               </DropdownButton>
