@@ -122,8 +122,15 @@ export default function UserStoryDetailPopup({
     });
 
     // Make other places refetch the data
-    await utils.userStories.getUserStoriesTableFriendly.invalidate();
-    await utils.userStories.getAllUserStoryPreviews.invalidate();
+    await utils.userStories.getUserStoriesTableFriendly.invalidate(
+      projectId as string,
+    );
+    await utils.userStories.getAllUserStoryPreviews.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      projectId: projectId as string,
+    });
 
     await refetch();
   };
@@ -141,8 +148,15 @@ export default function UserStoryDetailPopup({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
-      await utils.userStories.getAllUserStoryPreviews.invalidate();
-      await utils.userStories.getUserStoriesTableFriendly.invalidate();
+      await utils.userStories.getUserStoriesTableFriendly.invalidate(
+        projectId as string,
+      );
+      await utils.userStories.getAllUserStoryPreviews.invalidate({
+        projectId: projectId as string,
+      });
+      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+        projectId: projectId as string,
+      });
       setShowDetail(false);
     }
   };

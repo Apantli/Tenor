@@ -20,7 +20,10 @@ export default function InputCheckbox({ className, checked, onChange }: Props) {
         },
         className,
       )}
-      onClick={() => onChange(!checked)}
+      onClick={(e) => {
+        e.stopPropagation();
+        onChange(!checked);
+      }}
     >
       <Check
         className={cn("text-white opacity-0 transition", {
