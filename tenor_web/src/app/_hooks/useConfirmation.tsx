@@ -95,10 +95,12 @@ export const ConfirmationProvider = ({ children }: PropsWithChildren) => {
             )}
           </div>
         }
+        title={
+          <h1 className="mb-5 min-w-96 text-2xl font-semibold">
+            {confirmationInfo?.title}
+          </h1>
+        }
       >
-        <h1 className="mb-5 min-w-96 text-2xl font-semibold">
-          {confirmationInfo?.title}
-        </h1>
         <p className="text-lg">{confirmationInfo?.message}</p>
       </Popup>
     </ConfirmationContext.Provider>

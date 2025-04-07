@@ -1,16 +1,21 @@
-import admin, { type ServiceAccount } from 'firebase-admin';
-import { env } from '~/env';
+import admin, { type ServiceAccount } from "firebase-admin";
+import { env } from "~/env";
 
 if (!admin.apps.length) {
   try {
-    const serviceAccountKey = JSON.parse(env.FIREBASE_SERVICE_ACCOUNT_KEY) as ServiceAccount;
+    const serviceAccountKey = JSON.parse(
+      env.FIREBASE_SERVICE_ACCOUNT_KEY,
+    ) as ServiceAccount;
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccountKey),
       storageBucket: env.FIREBASE_STORAGE_BUCKET,
     });
 
+    admin.firestore().settings({
+      ignoreUndefinedProperties: true,
+    });
   } catch (error) {
-    console.error('Firebase admin initialization error', error);
+    console.error("Firebase admin initialization error", error);
   }
 }
 

@@ -1,6 +1,6 @@
 import { Class } from "node_modules/superjson/dist/types";
 import React, { useRef } from "react";
-import { ClassNameValue } from "tailwind-merge";
+import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
