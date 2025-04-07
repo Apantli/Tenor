@@ -44,14 +44,20 @@ function TableFilter<T extends Record<string, any>>({
   const filteredData = data.filter((row) => {
     if (
       searchValue !== "" &&
-      !String(row[columnKey]).toLowerCase().includes(searchValue.toLowerCase())
+      !String(column.filterValue?.(row) ?? row[columnKey])
+        .toLowerCase()
+        .includes(searchValue.toLowerCase())
     ) {
       return false;
     }
     return true;
   });
-  // eslint-disable-next-line
-  const uniqueData = [...new Set(filteredData.map((row) => row[columnKey]))];
+  const uniqueData = [
+    ...new Set(
+      // eslint-disable-next-line
+      filteredData.map((row) => column.filterValue?.(row) ?? row[columnKey]),
+    ),
+  ];
 
   return (
     <DropdownItem className="flex w-52 flex-col">

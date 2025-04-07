@@ -12,6 +12,8 @@ export interface VisibleColumn<T> {
   width: number;
   sortable?: boolean;
   filterable?: "list" | "search-only";
+  sorter?: (a: T, b: T) => number;
+  filterValue?: (row: T) => string;
   render?: (row: T) => React.ReactNode;
 }
 
@@ -76,11 +78,22 @@ export default function Table<
     if (!sortColumnKey) return data;
 
     const sorted = [...data].sort((a, b) => {
-      const aValue = a[sortColumnKey];
-      const bValue = b[sortColumnKey];
+      if (!("label" in columns[sortColumnKey])) return 0;
 
-      if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      // Check if the column has a custom sorter function
+      if (columns[sortColumnKey]?.sorter) {
+        return (
+          columns[sortColumnKey].sorter(a, b) *
+          (sortDirection === "asc" ? 1 : -1)
+        );
+      } else {
+        const aValue =
+          columns[sortColumnKey].filterValue?.(a) ?? a[sortColumnKey];
+        const bValue =
+          columns[sortColumnKey].filterValue?.(b) ?? b[sortColumnKey];
+        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+      }
       return 0;
     });
 
@@ -95,12 +108,15 @@ export default function Table<
 
     if (
       columns[columnKey]?.filterable === "search-only" &&
-      !String(row[columnKey]).toLowerCase().includes(filterValue.toLowerCase())
+      !String(columns[columnKey].filterValue?.(row) ?? row[columnKey])
+        .toLowerCase()
+        .includes(filterValue.toLowerCase())
     ) {
       return false;
     } else if (
       columns[columnKey]?.filterable === "list" &&
-      String(row[columnKey]) !== filterValue
+      String(columns[columnKey].filterValue?.(row) ?? row[columnKey]) !==
+        filterValue
     ) {
       return false;
     }
