@@ -5,6 +5,13 @@ import Table, { type TableColumns } from "~/app/_components/table/Table";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
 import { api } from "~/trpc/react";
 import { type Requirement } from "~/lib/types/firebaseSchemas";
+"use client"; 
+
+import { useParams } from "next/navigation";
+import Table, { type TableColumns } from "~/app/_components/table/Table";
+import HideIcon from "@mui/icons-material/HideImageOutlined";
+import { api } from "~/trpc/react";
+import { type Requirement } from "~/lib/types/firebaseSchemas";
 
 export default function ProjectRequirements() {
   const { projectId } = useParams();
@@ -79,4 +86,6 @@ export default function ProjectRequirements() {
       />
     </div>
   );
+  );
 }
+
