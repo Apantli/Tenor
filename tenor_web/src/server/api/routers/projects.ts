@@ -8,6 +8,8 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
+import { z } from "zod";
+import { dbAdmin } from "~/utils/firebaseAdmin";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -201,5 +203,18 @@ export const projectsRouter = createTRPCRouter({
         console.error("Error adding document: ", error);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
+    }),
+
+  getGeneralConfig: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const project = await dbAdmin
+        .collection("projects")
+        .doc(input.projectId)
+        .get();
+
+      console.log("Project data:", project.data());
+
+      return project;
     }),
 });
