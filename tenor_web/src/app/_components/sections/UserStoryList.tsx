@@ -18,6 +18,8 @@ import {
   useFormatEpicScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scumIdHooks";
+import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
+import PriorityPicker from "../specific-pickers/PriorityPicker";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -36,13 +38,16 @@ export default function UserStoryList() {
   const formatEpicScrumId = useFormatEpicScrumId();
 
   // TRPC
+  const utils = api.useUtils();
   const {
     data: userStories,
     isLoading: isLoadingUS,
     refetch: refetchUS,
-  } = api.userStories.getUserStoriesTableFriendly.useQuery(
-    params.projectId as string,
-  );
+  } = api.userStories.getUserStoriesTableFriendly.useQuery({
+    projectId: params.projectId as string,
+  });
+  const { mutateAsync: updateUserStoryTags } =
+    api.userStories.modifyUserStoryTags.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -74,15 +79,6 @@ export default function UserStoryList() {
     if (userStoryData?.length == 0) {
       return <span>No User stories found</span>;
     }
-
-    const priorityTags: Tag[] = Array.from(
-      new Map(
-        userStoryData.map((tag) => [
-          tag.priority.name + tag.priority.color + tag.priority.deleted,
-          tag.priority,
-        ]),
-      ).values(),
-    );
 
     // TODO: Add correct leading 0 to ids (which depends on max id). Currently hardcoded
     const tableColumns: TableColumns<UserStoryCol> = {
@@ -139,17 +135,49 @@ export default function UserStoryList() {
         render(row) {
           return (
             <span className="flex w-32 justify-start">
-              <PillComponent
-                currentTag={row.priority}
-                allTags={priorityTags}
-                callBack={(tag: Tag) => {
-                  setUserStoryData((prevData) =>
-                    prevData.map((item) =>
-                      item.id === row.id ? { ...item, priority: tag } : item,
-                    ),
+              <PriorityPicker
+                priority={row.priority}
+                onChange={async (tag: Tag) => {
+                  const rowIndex = userStoryData.indexOf(row);
+                  if (
+                    !userStoryData[rowIndex] ||
+                    userStoryData[rowIndex].priority?.id === tag.id
+                  ) {
+                    return; // No update needed
+                  }
+                  const [userStoryRow] = userStoryData.splice(rowIndex, 1);
+                  if (!userStoryRow) {
+                    return; // Typescript _needs_ this, but it should never happen
+                  }
+                  userStoryRow.priority = tag;
+
+                  const newData = [...userStoryData, userStoryRow].sort(
+                    (a, b) => (a.scrumId < b.scrumId ? -1 : 1),
                   );
+
+                  // Uses optimistic update to update the priority of the user story
+                  await utils.userStories.getUserStoriesTableFriendly.cancel({
+                    projectId: params.projectId as string,
+                  });
+
+                  utils.userStories.getUserStoriesTableFriendly.setData(
+                    { projectId: params.projectId as string },
+                    newData,
+                  );
+
+                  // UseEffect atomatically updates the data
+
+                  // Update the priority in the database
+                  await updateUserStoryTags({
+                    projectId: params.projectId as string,
+                    userStoryId: row.id,
+                    priorityTag: tag.id,
+                    sizeTag: undefined,
+                  });
+
+                  await refetchUS();
                 }}
-                className="w-[calc(100%-10px)]"
+                // className="w-[calc(100%-10px)]"
               />
             </span>
           );
@@ -198,7 +226,6 @@ export default function UserStoryList() {
       },
     };
 
-    // TODO: Decide on best height for the table (or make it responsive preferably)
     return (
       <Table
         className={cn("w-full", heightOfContent)}
@@ -206,7 +233,7 @@ export default function UserStoryList() {
         columns={tableColumns}
         multiselect
         deletable
-        onDelete={(ids) => console.log("Deleted", ids)}
+        onDelete={(ids) => console.log("Deleted", ids)} // TODO: Implement delete
       />
     );
   };
