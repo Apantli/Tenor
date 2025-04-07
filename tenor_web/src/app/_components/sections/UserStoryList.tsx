@@ -1,6 +1,5 @@
 "use client";
 
-import PillComponent from "~/app/_components/PillComponent";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { useEffect, useState, type ChangeEventHandler } from "react";
@@ -18,14 +17,13 @@ import {
   useFormatEpicScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scumIdHooks";
-import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function UserStoryList() {
   // Hooks
-  const params = useParams();
+  const { projectId } = useParams();
   const [userStoryData, setUserStoryData] = useState<UserStoryCol[]>([]);
   const [searchValue, setSearchValue] = useState("");
 
@@ -44,10 +42,12 @@ export default function UserStoryList() {
     isLoading: isLoadingUS,
     refetch: refetchUS,
   } = api.userStories.getUserStoriesTableFriendly.useQuery({
-    projectId: params.projectId as string,
+    projectId: projectId as string,
   });
   const { mutateAsync: updateUserStoryTags } =
     api.userStories.modifyUserStoryTags.useMutation();
+  const { mutateAsync: deleteUserStory } =
+    api.userStories.deleteUserStory.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -153,11 +153,11 @@ export default function UserStoryList() {
 
             // Uses optimistic update to update the priority of the user story
             await utils.userStories.getUserStoriesTableFriendly.cancel({
-              projectId: params.projectId as string,
+              projectId: projectId as string,
             });
 
             utils.userStories.getUserStoriesTableFriendly.setData(
-              { projectId: params.projectId as string },
+              { projectId: projectId as string },
               newData,
             );
 
@@ -165,7 +165,7 @@ export default function UserStoryList() {
 
             // Update the priority in the database
             await updateUserStoryTags({
-              projectId: params.projectId as string,
+              projectId: projectId as string,
               userStoryId: row.id,
               priorityTag: tag.id,
             });
@@ -202,10 +202,10 @@ export default function UserStoryList() {
 
             // Uses optimistic update to update the size of the user story
             await utils.userStories.getUserStoriesTableFriendly.cancel({
-              projectId: params.projectId as string,
+              projectId: projectId as string,
             });
             utils.userStories.getUserStoriesTableFriendly.setData(
-              { projectId: params.projectId as string },
+              { projectId: projectId as string },
               newData,
             );
 
@@ -213,7 +213,7 @@ export default function UserStoryList() {
 
             // Update the size in the database
             await updateUserStoryTags({
-              projectId: params.projectId as string,
+              projectId: projectId as string,
               userStoryId: row.id,
               size: size,
             });
@@ -257,14 +257,40 @@ export default function UserStoryList() {
       },
     };
 
+    const handleDelete = async (ids: string[]) => {
+      const newData = userStoryData.filter(
+        (userStory) => !ids.includes(userStory.id),
+      );
+
+      // Uses optimistic update to update the size of the user story
+      await utils.userStories.getUserStoriesTableFriendly.cancel({
+        projectId: projectId as string,
+      });
+      utils.userStories.getUserStoriesTableFriendly.setData(
+        { projectId: projectId as string },
+        newData,
+      );
+
+      // Deletes in database
+      await Promise.all(
+        ids.map((id) =>
+          deleteUserStory({
+            projectId: projectId as string,
+            userStoryId: id,
+          }),
+        ),
+      );
+      await refetchUS();
+    };
+    
     return (
       <Table
         className={cn("w-full", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}
+        onDelete={handleDelete}
         multiselect
         deletable
-        onDelete={(ids) => console.log("Deleted", ids)} // TODO: Implement delete
       />
     );
   };
