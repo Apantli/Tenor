@@ -8,11 +8,18 @@ interface Props {
   disabled?: boolean;
   mainPageName?: string;
 }
-export default function Tabbar({ disabled, mainPageName } : Props ) {
+export default function Tabbar({ disabled, mainPageName }: Props) {
   const pathname = usePathname();
   const params = useParams();
   const projectPath = `/project/${params.projectId as string}`;
-  const cutPathname = pathname.slice(projectPath.length) || "/";
+  let cutPathname = pathname.slice(projectPath.length) || "/";
+
+  // Consider the immediate parent directory, ignoring nested directories
+  if (cutPathname.split("/").length > 1) {
+    cutPathname = "/" + cutPathname.split("/")[1]!;
+  }
+
+  console.log("cutPathname", cutPathname);
 
   // TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
   const tabs = [
@@ -43,7 +50,8 @@ export default function Tabbar({ disabled, mainPageName } : Props ) {
             "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
             {
               "bg-white text-app-primary": link === cutPathname,
-              "text-gray-300  pointer-events-none": disabled && link !== cutPathname,
+              "pointer-events-none text-gray-300":
+                disabled && link !== cutPathname,
             },
           )}
           href={projectPath + link}
