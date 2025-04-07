@@ -57,7 +57,6 @@ export default function ProjectCreator() {
       name: form.name,
       description: form.description,
       logo: logoBase64Encoded,
-      // FIMXE: Pass correct userId and roleID
       users: teamMembers.map((member) => ({
         userId: member.id,
         roleId: member.role,
@@ -95,15 +94,8 @@ export default function ProjectCreator() {
   const handleRemoveTeamMember = (id: (string | number)[]) => {
     setTeamMembers((prev) => prev.filter((member) => !id.includes(member.id)));
   };
-  const handleAddTeamMember = (user: UserRecord) => {
-    const newMember = {
-      id: user.uid,
-      photoURL: user.photoURL,
-      displayName: user.displayName ?? "Unknown User",
-      email: user.email ?? "Unknown",
-      role: "developer_role_id",
-    };
-    setTeamMembers((prev) => [...prev, newMember]);
+  const handleAddTeamMember = (user: TeamMember) => {
+    setTeamMembers((prev) => [...prev, user]);
   };
   const handleEditMemberRole = (id: string, role: string) => {
     setTeamMembers((prev) =>

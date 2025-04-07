@@ -18,7 +18,7 @@ import SearchBar from "../SearchBar";
 interface Props {
   label: string;
   teamMembers: TeamMember[];
-  handleMemberAdd: (user: UserRecord) => void;
+  handleMemberAdd: (user: TeamMember) => void;
   handleMemberRemove: (id: (string | number)[]) => void;
   handleEditMemberRole: (id: string, role: string) => void;
   className?: ClassNameValue;
@@ -120,15 +120,15 @@ export default function MemberTable({
           <div className="whitespace-nowraptext-left w-full">
             <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
               {session.user &&
-                users?.users.map((user) => {
-                  if (user.uid === session.user?.uid) return null;
-                  if (teamMembers.find((member) => member.id === user.uid))
+                users?.map((user) => {
+                  if (user.id === session.user?.uid) return null;
+                  if (teamMembers.find((member) => member.id === user.id))
                     return null;
 
                   if (!user.displayName?.includes(searchValue)) return null;
                   return (
                     <DropdownButton
-                      key={user.uid}
+                      key={user.id}
                       onClick={() => {
                         handleMemberAdd(user);
                         setSearchValue("");
