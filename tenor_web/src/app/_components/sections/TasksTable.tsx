@@ -47,6 +47,7 @@ export default function TasksTable({ tasks }: Props) {
       render(row) {
         return (
           <PillComponent
+            labelClassName=""
             currentTag={row.status}
             allTags={[row.status]}
             callBack={() => {}}

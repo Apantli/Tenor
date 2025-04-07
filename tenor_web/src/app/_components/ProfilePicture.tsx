@@ -6,7 +6,11 @@ import { cn } from "~/lib/utils";
 import * as crypto from "crypto";
 
 interface Props {
-  user: User | UserRecord | null;
+  user:
+    | User
+    | UserRecord
+    | { displayName?: string; photoURL?: string; uid?: string }
+    | null;
   hideTooltip?: boolean;
   className?: ClassNameValue;
 }
