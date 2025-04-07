@@ -332,11 +332,11 @@ export const userStoriesRouter = createTRPCRouter({
         projectId: z.string(),
         userStoryId: z.string(),
         priorityTag: z.string().optional(),
-        sizeTag: z.string().optional(),
+        size: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, userStoryId, priorityTag, sizeTag } = input;
+      const { projectId, userStoryId, priorityTag, size } = input;
       const userStoryRef = ctx.firestore
         .collection("projects")
         .doc(projectId)
@@ -351,7 +351,7 @@ export const userStoriesRouter = createTRPCRouter({
       const newUserStoryData = {
         ...userStoryData,
         priorityId: priorityTag ?? userStoryData.priorityId,
-        size: sizeTag ?? userStoryData.size,
+        size: size ?? userStoryData.size,
       };
 
       await userStoryRef.update(newUserStoryData);

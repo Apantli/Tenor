@@ -2,7 +2,7 @@
 
 import PillComponent from "~/app/_components/PillComponent";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
-import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { useEffect, useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
@@ -133,53 +133,51 @@ export default function UserStoryList() {
         label: "Priority",
         width: 140,
         render(row) {
+          const handlePriorityChange = async (tag: Tag) => {
+            const rowIndex = userStoryData.indexOf(row);
+            if (
+              !userStoryData[rowIndex] ||
+              userStoryData[rowIndex].priority?.id === tag.id
+            ) {
+              return; // No update needed
+            }
+            const [userStoryRow] = userStoryData.splice(rowIndex, 1);
+            if (!userStoryRow) {
+              return; // Typescript _needs_ this, but it should never happen
+            }
+            userStoryRow.priority = tag;
+
+            const newData = [...userStoryData, userStoryRow].sort((a, b) =>
+              a.scrumId < b.scrumId ? -1 : 1,
+            );
+
+            // Uses optimistic update to update the priority of the user story
+            await utils.userStories.getUserStoriesTableFriendly.cancel({
+              projectId: params.projectId as string,
+            });
+
+            utils.userStories.getUserStoriesTableFriendly.setData(
+              { projectId: params.projectId as string },
+              newData,
+            );
+
+            // UseEffect atomatically updates the data
+
+            // Update the priority in the database
+            await updateUserStoryTags({
+              projectId: params.projectId as string,
+              userStoryId: row.id,
+              priorityTag: tag.id,
+            });
+
+            await refetchUS();
+          };
+
           return (
-            <span className="flex w-32 justify-start">
-              <PriorityPicker
-                priority={row.priority}
-                onChange={async (tag: Tag) => {
-                  const rowIndex = userStoryData.indexOf(row);
-                  if (
-                    !userStoryData[rowIndex] ||
-                    userStoryData[rowIndex].priority?.id === tag.id
-                  ) {
-                    return; // No update needed
-                  }
-                  const [userStoryRow] = userStoryData.splice(rowIndex, 1);
-                  if (!userStoryRow) {
-                    return; // Typescript _needs_ this, but it should never happen
-                  }
-                  userStoryRow.priority = tag;
-
-                  const newData = [...userStoryData, userStoryRow].sort(
-                    (a, b) => (a.scrumId < b.scrumId ? -1 : 1),
-                  );
-
-                  // Uses optimistic update to update the priority of the user story
-                  await utils.userStories.getUserStoriesTableFriendly.cancel({
-                    projectId: params.projectId as string,
-                  });
-
-                  utils.userStories.getUserStoriesTableFriendly.setData(
-                    { projectId: params.projectId as string },
-                    newData,
-                  );
-
-                  // UseEffect atomatically updates the data
-
-                  // Update the priority in the database
-                  await updateUserStoryTags({
-                    projectId: params.projectId as string,
-                    userStoryId: row.id,
-                    priorityTag: tag.id,
-                    sizeTag: undefined,
-                  });
-
-                  await refetchUS();
-                }}
-                // className="w-[calc(100%-10px)]"
-              />
-            </span>
+            <PriorityPicker
+              priority={row.priority}
+              onChange={handlePriorityChange}
+            />
           );
         },
       },
@@ -187,14 +185,47 @@ export default function UserStoryList() {
         label: "Size",
         width: 100,
         render(row) {
+          const handleSizeChange = async (size: Size) => {
+            const rowIndex = userStoryData.indexOf(row);
+            if (!userStoryData[rowIndex]) {
+              return; // No update needed
+            }
+            const [userStoryRow] = userStoryData.splice(rowIndex, 1);
+            if (!userStoryRow) {
+              return; // Typescript _needs_ this, but it should never happen
+            }
+            userStoryRow.size = size;
+
+            const newData = [...userStoryData, userStoryRow].sort((a, b) =>
+              a.scrumId < b.scrumId ? -1 : 1,
+            );
+
+            // Uses optimistic update to update the size of the user story
+            await utils.userStories.getUserStoriesTableFriendly.cancel({
+              projectId: params.projectId as string,
+            });
+            utils.userStories.getUserStoriesTableFriendly.setData(
+              { projectId: params.projectId as string },
+              newData,
+            );
+
+            // UseEffect atomatically updates the data
+
+            // Update the size in the database
+            await updateUserStoryTags({
+              projectId: params.projectId as string,
+              userStoryId: row.id,
+              size: size,
+            });
+
+            await refetchUS();
+          };
+
           return (
-            <span className="flex justify-start">
-              <SizePillComponent
-                currentSize={row.size}
-                callback={() => {}}
-                className="w-[calc(100%-10px)]"
-              />
-            </span>
+            <SizePillComponent
+              currentSize={row.size}
+              callback={handleSizeChange}
+            />
           );
         },
       },
