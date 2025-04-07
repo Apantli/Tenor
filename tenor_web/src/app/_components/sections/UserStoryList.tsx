@@ -140,6 +140,7 @@ export default function UserStoryList() {
           return (
             <span className="flex w-32 justify-start">
               <PillComponent
+                labelClassName=""
                 currentTag={row.priority}
                 allTags={priorityTags}
                 callBack={(tag: Tag) => {
