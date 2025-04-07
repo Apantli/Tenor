@@ -13,6 +13,7 @@ import {
 } from "./Table";
 import TableFilter from "./TableFilter";
 import TableActions from "./TableActions";
+import InputCheckbox from "../inputs/InputCheckbox";
 
 interface TableHeaderProps<I, T> {
   columns: TableColumns<T>;
@@ -67,18 +68,16 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
 
   return (
     <div
-      className="sticky top-0 z-[60] grid w-fit min-w-full gap-2 border-b border-app-border bg-white px-2"
+      className="sticky top-0 z-[60] grid h-8 min-w-fit items-center gap-2 border-b border-app-border bg-white px-2"
       style={{ gridTemplateColumns }}
     >
       {multiselect && (
-        <input
-          type="checkbox"
-          className="w-4"
+        <InputCheckbox
           checked={
             selection.size == filteredData.length && filteredData.length > 0
           }
           onChange={toggleSelectAll}
-        ></input>
+        />
       )}
       {columnEntries.map(([key, column]) => (
         <div

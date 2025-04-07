@@ -6,6 +6,7 @@ import BaseButton, { type BaseButtonProps } from "./BaseButton";
 interface Props {
   loading?: boolean;
   floatingSpinner?: boolean;
+  asSpan?: boolean;
 }
 
 export default function PrimaryButton({
@@ -13,6 +14,7 @@ export default function PrimaryButton({
   className,
   loading,
   floatingSpinner,
+  asSpan,
   ...props
 }: BaseButtonProps & Props & PropsWithChildren) {
   return (
@@ -26,6 +28,7 @@ export default function PrimaryButton({
       )}
       {...props}
       disabled={loading ?? ("disabled" in props && props.disabled)}
+      asSpan={asSpan}
     >
       {children}
       {loading && (

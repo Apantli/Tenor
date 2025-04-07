@@ -1,4 +1,5 @@
 import React, {
+  useRef,
   useState,
   type ButtonHTMLAttributes,
   type ChangeEventHandler,
@@ -10,10 +11,11 @@ import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";
 
 interface Props {
-  currentTag: Tag;
+  currentTag?: Tag;
   allTags: Tag[];
   callBack: (tag: Tag) => void;
   labelClassName: string;
+  hideSearch?: boolean;
 }
 
 export default function PillComponent({
@@ -21,8 +23,17 @@ export default function PillComponent({
   allTags,
   callBack,
   labelClassName,
+  hideSearch,
+  className,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const noneSelectedTag = {
+    name: "",
+    color: "#333333",
+    deleted: false,
+  };
 
   const filteredTags = allTags.filter((tag) => {
     if (
@@ -37,7 +48,6 @@ export default function PillComponent({
 
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchValue(e.target.value);
-    console.log(e.target.value);
   };
 
   const areEqual = (t1: Tag, t2: Tag) => {
@@ -53,7 +63,9 @@ export default function PillComponent({
       >
         <Check
           fontSize="inherit"
-          className={cn({ "opacity-0": !areEqual(tag, currentTag) })}
+          className={cn({
+            "opacity-0": !areEqual(tag, currentTag ?? noneSelectedTag),
+          })}
         ></Check>
         <span
           className="inline-block h-3 w-3 rounded-full"
@@ -73,7 +85,7 @@ export default function PillComponent({
     return (
       <div
         className={cn(
-          "flex items-center justify-between rounded-3xl border-solid py-1 pl-3 pr-2 font-medium",
+          "flex items-center justify-between truncate rounded-3xl border-solid py-1 pl-3 pr-2 font-medium transition-all",
           labelClassName,
         )}
         style={{
@@ -83,17 +95,25 @@ export default function PillComponent({
           color: tag.color,
         }}
       >
-        {tag.name}
-        <ArrowDropDownIcon />
+        <span className="truncate">{tag.name}</span>
+        <span className="basis-[5px]">
+          <ArrowDropDownIcon />
+        </span>
       </div>
     );
   };
 
   return (
-    <Dropdown label={createPillLabel(currentTag)}>
+    <Dropdown
+      label={createPillLabel(currentTag ?? noneSelectedTag)}
+      className={className}
+      onOpen={() => inputRef.current?.focus()}
+    >
+    {!hideSearch && (
       <DropdownItem className="flex w-52 flex-col">
         <span className="mb-2 text-sm text-gray-500">Select an item</span>
         <input
+          ref={inputRef}
           type="text"
           className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
           placeholder="Search..."
@@ -101,7 +121,8 @@ export default function PillComponent({
           onChange={handleUpdateSearch}
         />
       </DropdownItem>
-      <div className="whitespace-nowraptext-left w-full">
+           )}
+      <div className="w-full whitespace-nowrap text-left">
         <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}
           {filteredTags.length == 0 && (

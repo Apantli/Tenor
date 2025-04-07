@@ -64,8 +64,8 @@ export const RoleSchema = z.object({
 });
 
 export const BasicInfoSchema = z.object({
-  scrumId: z.number().optional(),
-  name: z.string(),
+  scrumId: z.number(),
+  name: z.string().min(1, "Name is required"),
   description: z.string(),
   deleted: z.boolean().default(false),
 });
@@ -73,12 +73,12 @@ export const BasicInfoSchema = z.object({
 export const SizeSchema = z.enum(["XS", "S", "M", "L", "XL", "XXL"]);
 
 export const BacklogItemSchema = BasicInfoSchema.extend({
-  sprintId: z.string(),
-  tasks: z.array(z.object({})), // TODO: Define Task schema
-  complete: z.boolean(),
+  sprintId: z.string().optional(),
+  taskIds: z.array(z.string()).default([]),
+  complete: z.boolean().default(false),
   tagIds: z.array(z.string()),
-  size: SizeSchema,
-  priorityId: z.string(),
+  size: SizeSchema.optional(),
+  priorityId: z.string().optional(),
 });
 
 export const EpicSchema = BasicInfoSchema;
@@ -140,13 +140,14 @@ export const SettingsSchema = z.object({
       .default([]),
     links: z.array(z.string()).default([]),
   }),
+  // Removed because they should be in subcollections
 
-  requirementFocusTags: z.array(TagSchema).default([]),
-  requirementTypeTags: z.array(TagSchema).default([]),
-  backlogTags: z.array(TagSchema).default([]),
-  priorityTypes: z.array(TagSchema).default([]),
-  statusTabs: z.array(TagSchema).default([]),
-  roles: z.array(RoleSchema).default([]),
+  // requirementFocusTags: z.array(TagSchema).default([]),
+  // requirementTypeTags: z.array(TagSchema).default([]),
+  // backlogTags: z.array(TagSchema).default([]),
+  // priorityTypes: z.array(TagSchema).default([]),
+  // statusTabs: z.array(TagSchema).default([]),
+  // roles: z.array(RoleSchema).default([]),
 });
 
 export const ProjectSchema = z.object({
@@ -155,7 +156,10 @@ export const ProjectSchema = z.object({
   logo: z.string(),
   deleted: z.boolean().default(false),
 
+  // FIXME: This should be a subcollection
   settings: SettingsSchema,
+
+  // Will users also be in their subcollection?
   users: z.array(
     z.object({
       userId: z.string(),
@@ -175,13 +179,14 @@ export const ProjectSchema = z.object({
       active: z.boolean().default(true),
     }),
   ),
-  requirements: z.array(RequirementSchema).default([]),
-  userStories: z.array(UserStorySchema).default([]),
-  issues: z.array(IssueSchema).default([]),
-  epics: z.array(EpicSchema).default([]),
-  genericItems: z.array(BacklogItemSchema).default([]),
-  sprints: z.array(SprintSchema).default([]),
-  sprintSnapshots: z.array(SprintSnapshotSchema).default([]),
+  // FIXME: Same as the normal schemas, I think these need to be removed and be their own subcollections instead
+  // requirements: z.array(RequirementSchema).default([]),
+  // userStories: z.array(UserStorySchema).default([]),
+  // issues: z.array(IssueSchema).default([]),
+  // epics: z.array(EpicSchema).default([]),
+  // genericItems: z.array(BacklogItemSchema).default([]),
+  // sprints: z.array(SprintSchema).default([]),
+  // sprintSnapshots: z.array(SprintSnapshotSchema).default([]),
   currentSprintId: z.string().default("1"),
   activities: z
     .array(

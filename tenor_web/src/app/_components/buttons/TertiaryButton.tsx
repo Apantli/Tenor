@@ -10,7 +10,7 @@ export default function TertiaryButton({
   return (
     <BaseButton
       className={cn(
-        "h-10 whitespace-nowrap rounded-lg p-2 text-app-text underline underline-offset-8 disabled:cursor-not-allowed disabled:no-underline disabled:opacity-80",
+        "h-10 whitespace-nowrap rounded-lg p-2 text-app-text underline underline-offset-4 disabled:cursor-not-allowed disabled:no-underline disabled:opacity-80",
         className,
       )}
       {...props}

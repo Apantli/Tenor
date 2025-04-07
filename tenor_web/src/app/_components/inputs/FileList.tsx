@@ -1,6 +1,6 @@
 import { Class } from "node_modules/superjson/dist/types";
 import React, { useRef } from "react";
-import { ClassNameValue } from "tailwind-merge";
+import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
@@ -99,7 +99,11 @@ export default function FileList({
             onClick={() => handleFileRemove(file)}
             title={file.name}
           >
-            <span className="flex flex-col items-center text-gray-500 hover:text-blue-500">
+            <span
+              className="flex flex-col items-center text-gray-500 hover:text-blue-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content={file.name}
+            >
               {/* Load Icon based on file type */}
               {file.type === "application/pdf" ? (
                 <PictureAsPdfIcon style={{ fontSize: "4rem" }} />

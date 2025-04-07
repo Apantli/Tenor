@@ -30,9 +30,11 @@ export default function LinkList({
         <label className="text-sm font-semibold">{label}</label>
         <Dropdown
           label={
-            <PrimaryButton className="flex max-h-[40px] items-center text-sm font-semibold">
-              {" "}
-              Add Context Link +{" "}
+            <PrimaryButton
+              asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
+              className="flex max-h-[40px] items-center text-sm font-semibold"
+            >
+              Add Context Link +
             </PrimaryButton>
           }
         >
@@ -77,12 +79,10 @@ export default function LinkList({
             <span
               title={link}
               className="flex flex-col items-center text-gray-500 hover:text-blue-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content={link}
             >
-              <InsertLinkIcon
-                style={{ fontSize: "4rem" }}
-                data-tooltip-id="tooltip"
-                data-tooltip-content={link}
-              />
+              <InsertLinkIcon style={{ fontSize: "4rem" }} />
               <span className="mt-1 max-w-[80px] truncate text-center text-xs">
                 {
                   // remove the protocol from the link

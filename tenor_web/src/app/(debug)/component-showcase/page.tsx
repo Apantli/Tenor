@@ -24,6 +24,9 @@ import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { DatePicker } from "~/app/_components/DatePicker";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import TagComponent from "~/app/_components/TagComponent";
+import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
+import type { Option } from "~/app/_components/EditableBox/EditableBox";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -43,6 +46,7 @@ export default function ComponentShowcasePage() {
         <ConfirmationShowcase />
         <InputComponents />
         <DatePickerShowcase />
+        <EditableBoxShowCase />
         <SegmentedControlShowcase />
       </div>
     </main>
@@ -398,7 +402,7 @@ function PopupShowcase() {
         show={showSmallPopup}
         size="small"
         dismiss={() => setShowSmallPopup(false)}
-        showEdit
+        editMode={false}
         footer={
           <div className="flex gap-2">
             <SecondaryButton>Show user stories</SecondaryButton>
@@ -426,7 +430,7 @@ function PopupShowcase() {
           setShowLargePopup(false);
           setShowSidebarPopup(false);
         }}
-        showEdit
+        editMode={false}
         footer={
           <PrimaryButton onClick={() => setShowSidebarPopup(true)}>
             Open sidebar
@@ -527,28 +531,25 @@ function ConfirmationShowcase() {
 function InputComponents() {
   const teamMembers = [
     {
-      id: 1,
-      picture_url:
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-      name: "Alonso Huerta",
+      id: "1",
+      photoURL: undefined,
+      displayName: "Alonso Huerta",
       email: "email@addres.com",
-      role: "Admin",
+      role: "developer_role_id",
     },
     {
-      id: 2,
-      picture_url:
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-      name: "Sergio Gonzalez",
+      id: "2",
+      photoURL: undefined,
+      displayName: "Sergio Gonzalez",
       email: "email@addres.com",
-      role: "Scrum Master",
+      role: "admin_role_id",
     },
     {
-      id: 3,
-      picture_url:
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-      name: "Luis Amado",
+      id: "3",
+      photoURL: undefined,
+      displayName: "Luis Amado",
       email: "email@addres.com",
-      role: "Developer",
+      role: "viewer_role_id",
     },
   ] as TeamMember[];
 
@@ -602,6 +603,14 @@ function InputComponents() {
         handleMemberRemove={() => {
           console.log("File added");
         }}
+        handleEditMemberRole={() => {
+          console.log("File added");
+        }}
+        roleList={[
+          { id: "admin_role_id", label: "Admin" },
+          { id: "developer_role_id", label: "Developer" },
+          { id: "viewer_role_id", label: "Viewer" },
+        ]}
       />
     </div>
   );
@@ -642,6 +651,32 @@ function DatePickerShowcase() {
         placeholder="Select a date"
         // Adjust for any size
         className="h-3.5 w-48"
+      />
+    </div>
+  );
+}
+
+function EditableBoxShowCase() {
+  const [selectedPerson, setSelectedPerson] = useState<Option | null>(null);
+  const { user } = useFirebaseAuth();
+
+  // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
+  const people: Option[] = [
+    { id: user?.uid ?? "", name: user?.displayName ?? "", user: user },
+    { id: "2", name: "Ana García" },
+    { id: "3", name: "Carlos Pérez" },
+  ];
+
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Editable Box</h2>
+      <EditableBox
+        options={people}
+        selectedOption={selectedPerson}
+        onChange={setSelectedPerson}
+        placeholder="Select a person"
+        className="h-4 w-48"
       />
     </div>
   );

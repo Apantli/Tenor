@@ -47,6 +47,7 @@ interface TableProps<I, T> {
   deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[]) => void;
   className?: ClassNameValue;
+  emptyMessage?: string;
 }
 
 // TODO: Make columns width be resizable on runtime by user
@@ -63,6 +64,7 @@ export default function Table<
   deletable,
   onDelete,
   className,
+  emptyMessage,
 }: TableProps<I, T>) {
   const [sortColumnKey, setSortColumnKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
@@ -174,45 +176,49 @@ export default function Table<
   };
 
   return (
-    <div
-      className={cn(
-        "flex h-full flex-col overflow-x-scroll text-lg",
-        className,
-      )}
-      ref={scrollContainerRef}
-    >
-      <TableHeader
-        columns={columns}
-        sortColumnKey={sortColumnKey}
-        sortDirection={sortDirection}
-        filters={filters}
-        multiselect={multiselect}
-        filteredData={filteredData}
-        selection={selection}
-        setSelection={setSelection}
-        toggleSelectAll={toggleSelectAll}
-        handleToggleSorting={handleToggleSorting}
-        stopSorting={stopSorting}
-        clearFilter={clearFilter}
-        setFilter={setFilter}
-        extraOptions={extraOptions}
-        deletable={deletable}
-        onDelete={onDelete}
-      />
-      {filteredData.map((value) => (
-        <TableRow
-          key={value.id}
-          value={value}
+    <div className={cn("w-full overflow-x-hidden", className)}>
+      <div
+        className="flex h-full flex-col overflow-x-scroll"
+        ref={scrollContainerRef}
+      >
+        <TableHeader
           columns={columns}
+          sortColumnKey={sortColumnKey}
+          sortDirection={sortDirection}
+          filters={filters}
           multiselect={multiselect}
+          filteredData={filteredData}
           selection={selection}
-          toggleSelect={toggleSelect}
+          setSelection={setSelection}
+          toggleSelectAll={toggleSelectAll}
+          handleToggleSorting={handleToggleSorting}
+          stopSorting={stopSorting}
+          clearFilter={clearFilter}
+          setFilter={setFilter}
           extraOptions={extraOptions}
           deletable={deletable}
           onDelete={onDelete}
-          scrollContainerRef={scrollContainerRef}
         />
-      ))}
+        {filteredData.map((value) => (
+          <TableRow
+            key={value.id}
+            value={value}
+            columns={columns}
+            multiselect={multiselect}
+            selection={selection}
+            toggleSelect={toggleSelect}
+            extraOptions={extraOptions}
+            deletable={deletable}
+            onDelete={onDelete}
+            scrollContainerRef={scrollContainerRef}
+          />
+        ))}
+        {filteredData.length === 0 && emptyMessage && (
+          <div className="flex w-full items-center justify-center border-b border-app-border p-3 text-gray-500">
+            <span className="text-base">{emptyMessage}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

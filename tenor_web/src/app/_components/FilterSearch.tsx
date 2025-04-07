@@ -39,7 +39,7 @@ export function FilterSearch({list, onSearch, placeholder}: FilterSearchProps) {
         value={searchQuery}
         onChange={handleSearch}
         placeholder={placeholder}
-        className="pl-8 py-2 text-[#59636E] h-full w-full border-2 py-[3px] rounded-md"
+        className="pl-8 text-[#59636E] h-full w-full border-2 py-[3px] rounded-md"
       />
     </div>
   )

@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { UserRecord } from "node_modules/firebase-admin/lib/auth/user-record";
 
 export default function ProjectCreator() {
   const toBase64 = (file: File) =>
@@ -65,9 +66,8 @@ export default function ProjectCreator() {
       name: form.name,
       description: form.description,
       logo: logoBase64Encoded ?? "",
-      // FIMXE: Pass correct userId and roleID
       users: teamMembers.map((member) => ({
-        userId: member.email,
+        userId: member.id,
         roleId: member.role,
       })),
       settings: {
@@ -103,21 +103,21 @@ export default function ProjectCreator() {
   const handleRemoveTeamMember = (id: (string | number)[]) => {
     setTeamMembers((prev) => prev.filter((member) => !id.includes(member.id)));
   };
-  // FIXME: Fetch user and load information
-  const handleAddTeamMember = (email: string) => {
-    const id: number =
-      teamMembers.length > 0
-        ? Math.max(...teamMembers.map((member) => member.id)) + 1
-        : 1;
-    const newMember = {
-      id: id,
-      picture_url:
-        "https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg",
-      name: email,
-      email: email,
-      role: "Developer",
-    };
-    setTeamMembers((prev) => [...prev, newMember]);
+  const handleAddTeamMember = (user: TeamMember) => {
+    setTeamMembers((prev) => [...prev, user]);
+  };
+  const handleEditMemberRole = (id: string, role: string) => {
+    setTeamMembers((prev) =>
+      prev.map((member) => {
+        if (member.id === id) {
+          return {
+            ...member,
+            role: role,
+          };
+        }
+        return member;
+      }),
+    );
   };
 
   // Icon File
@@ -167,7 +167,6 @@ export default function ProjectCreator() {
       <main className="m-6 p-4">
         <div className="header flex w-full justify-between pb-6">
           <h1 className="text-2xl font-semibold">Project Creator</h1>
-          {/* FIXME: create project and redirect to page if successful, display error if not */}
           <PrimaryButton onClick={handleCreateProject}>
             Generate Project
           </PrimaryButton>
@@ -219,6 +218,12 @@ export default function ProjectCreator() {
                 className="w-full"
                 handleMemberAdd={handleAddTeamMember}
                 handleMemberRemove={handleRemoveTeamMember}
+                handleEditMemberRole={handleEditMemberRole}
+                roleList={[
+                  { id: "admin_role_id", label: "Admin" },
+                  { id: "developer_role_id", label: "Developer" },
+                  { id: "viewer_role_id", label: "Viewer" },
+                ]}
               />
             </div>
           </div>

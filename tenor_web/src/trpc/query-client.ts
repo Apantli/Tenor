@@ -64,12 +64,14 @@ export const createQueryClient = () => {
         },
       },
       mutations: {
-        retry: (failureCount, _error) => {
-          if (failureCount < 3) {
+        retry: (failureCount, err) => {
+          if (failureCount > 3) {
+            return false;
+            // eslint-disable-next-line
+          } else if (isTRPCError(err) && err.data?.code == "UNAUTHORIZED") {
             void refreshToken();
-            return true; // Retry up to 3 times
           }
-          return false;
+          return true; // Retry up to 3 times
         },
       },
       dehydrate: {
