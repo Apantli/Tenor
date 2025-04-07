@@ -47,6 +47,7 @@ const settingsRouter = createTRPCRouter({
       );
       const backlogTags = await projectSettingsRef
         .collection("backlogTags")
+        .where("deleted", "==", false)
         .get();
       const backlogTagsData = backlogTags.docs.map((doc) => ({
         id: doc.id,

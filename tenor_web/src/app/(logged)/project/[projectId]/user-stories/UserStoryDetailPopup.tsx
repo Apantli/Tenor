@@ -4,9 +4,6 @@ import React, { useEffect, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup from "~/app/_components/Popup";
 import Markdown from "react-markdown";
-import PillComponent from "~/app/_components/PillComponent";
-import TagComponent from "~/app/_components/TagComponent";
-import PillPickerComponent from "~/app/_components/PillPickerComponent";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -20,11 +17,7 @@ import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillCo
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { useQueryClient } from "@tanstack/react-query";
-import {
-  useFormatEpicScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scumIdHooks";
+import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
 
 interface Props {
   userStoryId: string;
@@ -38,7 +31,6 @@ export default function UserStoryDetailPopup({
   setShowDetail,
 }: Props) {
   const { projectId } = useParams();
-  const queryClient = useQueryClient();
 
   const {
     data: userStoryDetail,
@@ -130,8 +122,15 @@ export default function UserStoryDetailPopup({
     });
 
     // Make other places refetch the data
-    await utils.userStories.getUserStoriesTableFriendly.invalidate();
-    await utils.userStories.getAllUserStoryPreviews.invalidate();
+    await utils.userStories.getUserStoriesTableFriendly.invalidate(
+      projectId as string,
+    );
+    await utils.userStories.getAllUserStoryPreviews.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      projectId: projectId as string,
+    });
 
     await refetch();
   };
@@ -149,8 +148,15 @@ export default function UserStoryDetailPopup({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
-      await utils.userStories.getAllUserStoryPreviews.invalidate();
-      await utils.userStories.getUserStoriesTableFriendly.invalidate();
+      await utils.userStories.getUserStoriesTableFriendly.invalidate(
+        projectId as string,
+      );
+      await utils.userStories.getAllUserStoryPreviews.invalidate({
+        projectId: projectId as string,
+      });
+      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+        projectId: projectId as string,
+      });
       setShowDetail(false);
     }
   };

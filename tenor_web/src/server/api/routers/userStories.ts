@@ -9,9 +9,8 @@ import {
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
-import { UserStoryDetail } from "~/lib/types/detailSchemas";
+import { type UserStoryDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
-import { identity } from "node_modules/cypress/types/lodash";
 
 export interface UserStoryCol {
   id: string;

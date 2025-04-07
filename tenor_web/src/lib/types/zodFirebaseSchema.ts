@@ -8,6 +8,7 @@ export const SprintInfoSchema = z.object({
   description: z.string(),
   startDate: TimestampType,
   endDate: TimestampType,
+  deleted: z.boolean().default(false),
 });
 
 export const SprintSchema = SprintInfoSchema.extend({
@@ -76,7 +77,7 @@ export const BasicInfoSchema = z.object({
 export const SizeSchema = z.enum(["XS", "S", "M", "L", "XL", "XXL"]);
 
 export const BacklogItemSchema = BasicInfoSchema.extend({
-  sprintId: z.string().optional(),
+  sprintId: z.string().default(""),
   taskIds: z.array(z.string()).default([]),
   complete: z.boolean().default(false),
   tagIds: z.array(z.string()),
