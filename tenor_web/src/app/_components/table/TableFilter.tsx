@@ -1,4 +1,9 @@
-import React, { useState, useEffect, type ChangeEventHandler } from "react";
+import React, {
+  useState,
+  useEffect,
+  type ChangeEventHandler,
+  useMemo,
+} from "react";
 import { DropdownButton, DropdownItem } from "../Dropdown";
 import CrossIcon from "@mui/icons-material/Close";
 
@@ -52,10 +57,27 @@ function TableFilter<T extends Record<string, any>>({
     }
     return true;
   });
+
+  const sortedData = useMemo(() => {
+    const sorted = [...filteredData].sort((a, b) => {
+      if (column?.sorter) {
+        return column.sorter(a, b);
+      } else {
+        const aValue = a[columnKey];
+        const bValue = b[columnKey];
+        if (aValue < bValue) return -1;
+        if (aValue > bValue) return 1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  }, [data, filteredData]);
+
   const uniqueData = [
     ...new Set(
       // eslint-disable-next-line
-      filteredData.map((row) => column.filterValue?.(row) ?? row[columnKey]),
+      sortedData.map((row) => column.filterValue?.(row) ?? row[columnKey]),
     ),
   ];
 

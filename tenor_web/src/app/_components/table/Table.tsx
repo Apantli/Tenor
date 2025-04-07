@@ -87,10 +87,8 @@ export default function Table<
           (sortDirection === "asc" ? 1 : -1)
         );
       } else {
-        const aValue =
-          columns[sortColumnKey].filterValue?.(a) ?? a[sortColumnKey];
-        const bValue =
-          columns[sortColumnKey].filterValue?.(b) ?? b[sortColumnKey];
+        const aValue = a[sortColumnKey];
+        const bValue = b[sortColumnKey];
         if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
         if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
       }
