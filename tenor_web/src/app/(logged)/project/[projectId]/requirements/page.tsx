@@ -15,50 +15,38 @@ export default function ProjectRequirements() {
   );
 
   const columns: TableColumns<Requirement> = {
-    scrumId: { visible: false },
-    name: {
-      label: "Name",
+    scrumId: {
+      label: "Id",
       width: 200,
       filterable: "list", // list: shows the user a list of row values to filter by
-      // Optionally: You may provide a render function to present the information in any way you like
-      // This is to be used when displaying a pill in the table, but can be used to add any component you like
-      render(row) {
-        return <span className="font-bold">{row.name}</span>;
-      },
     },
-    description: {
-      label: "Description",
+    name: {
+      label: "Title",
       width: 400,
-      sortable: true,
+      sortable: false,
     },
     priorityId: {
       label: "Priority",
-      width: 200,
+      width: 120,
       filterable: "list",
       sortable: true,
     },
     size: {
-      label: "Size",
-      width: 150,
-      sortable: true,
+      visible: false,
     },
     requirementTypeId: {
-      label: "Type",
-      width: 150,
+      label: "Req. Type",
+      width: 180,
       filterable: "list",
     },
     requirementFocusId: {
-      label: "Focus",
-      width: 150,
+      label: "Req. Focus",
+      width: 220,
       filterable: "list",
     },
     deleted: {
-      label: "Deleted",
-      width: 100,
-      render(row) {
-        return <span>{row.deleted ? "Yes" : "No"}</span>;
-      },
-    },
+      visible: false,
+    },  
   };
 
   const extraOptions = [
@@ -74,8 +62,7 @@ export default function ProjectRequirements() {
 
   return (
     <div>
-      <hr />
-      <h2 className="my-2 text-2xl font-medium">Tables</h2>
+      <h2 className="my-2 text-2xl font-medium">Requirements</h2>
       {/* Include the table component in your page, give it a maximum height, as well as the data and columns */}
       {/* Optionally include extraOptions */}
       {/* multiselect: Show the checkboxes next to each row and in the header */}
