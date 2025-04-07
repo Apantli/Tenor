@@ -88,6 +88,9 @@ const getBacklogTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
   taskId: string,
 ) => {
+  if (taskId === undefined) {
+    return undefined;
+  }
   const tag = await settingsRef.collection("backlogTags").doc(taskId).get();
   if (!tag.exists) {
     return undefined;
