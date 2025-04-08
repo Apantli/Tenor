@@ -1,5 +1,3 @@
-"use client";
-
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import Popup from "~/app/_components/Popup";
@@ -10,7 +8,7 @@ import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
-import { Timestamp } from "firebase-admin/firestore";
+import { Timestamp } from "firebase/firestore";
 import { TimestampType } from "~/lib/types/zodFirebaseSchema";
 
 export const ProjectSprintsManager = ({ projectId }: { projectId: string }) => {
@@ -20,9 +18,6 @@ export const ProjectSprintsManager = ({ projectId }: { projectId: string }) => {
   const [showSmallPopup, setShowSmallPopup] = useState(false);
 
   // New sprint vairables
-  // export const TimestampType = z.custom<Timestamp>(
-  //   (value) => value instanceof Timestamp,
-  // );
   const [newSprintDescription, setNewSprintDescription] = useState("");
   const [newSprintStartDate, setNewSprintStartDate] = useState(new Date());
   const [newSprintEndDate, setNewSprintEndDate] = useState(new Date());
@@ -32,8 +27,8 @@ export const ProjectSprintsManager = ({ projectId }: { projectId: string }) => {
       projectId: projectId,
       number: -1,
       description: newSprintDescription,
-      startDate: newSprintStartDate,
-      endDate: newSprintEndDate,
+      startDate: Timestamp.fromDate(newSprintStartDate),
+      endDate: Timestamp.fromDate(newSprintEndDate),
     });
     await utils.sprints.getProjectSprintsOverview.invalidate();
 
@@ -67,27 +62,12 @@ export const ProjectSprintsManager = ({ projectId }: { projectId: string }) => {
         </PrimaryButton>
       </div>
       <div className="flex flex-col gap-4 pt-4">
-        {/* {epics?.map((epic) => (
-          <div
-            onClick={() => {
-              setSelectedEpic(epic.scrumId);
-              setShowEditPopup(true);
-            }}
-            key={epic.scrumId}
-            className="border-b-2 py-2 hover:cursor-pointer"
-          >
-            <div className="flex flex-col gap-y-1">
-              <h3 className="text-2xl font-bold">EP{epic.scrumId}</h3>
-              <p className="">{epic.name}</p>
-            </div>
-          </div>
-        ))} */}
         {sprints?.map((sprint) => (
           <div key={sprint.id}>Sprint {sprint.number}</div>
         ))}
       </div>
       <div>
-        {/* Popup to create epic */}
+        {/* Popup to create sprint */}
         <Popup
           show={showSmallPopup}
           size="small"

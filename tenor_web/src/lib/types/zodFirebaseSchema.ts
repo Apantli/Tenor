@@ -1,22 +1,13 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 
-export const TimestampType = z.custom<Timestamp>(
-  (value) => value instanceof Timestamp,
-);
+export const TimestampType = z.custom<Timestamp>((value) => value as Timestamp);
 
 export const SprintInfoSchema = z.object({
   number: z.number(),
   description: z.string(),
   startDate: TimestampType,
   endDate: TimestampType,
-});
-
-export const SprintRawInfoSchema = z.object({
-  number: z.number(),
-  description: z.string(),
-  startDate: z.date(),
-  endDate: z.date(),
 });
 
 export const SprintSchema = SprintInfoSchema.extend({

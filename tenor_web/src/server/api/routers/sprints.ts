@@ -4,7 +4,6 @@ import type { Project, Sprint } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
   SprintInfoSchema,
-  SprintRawInfoSchema,
   SprintSchema,
   SprintSnapshotSchema,
 } from "~/lib/types/zodFirebaseSchema";
@@ -51,7 +50,7 @@ export const sprintsRouter = createTRPCRouter({
       return SprintSchema.parse({ ...sprintDoc?.data() });
     }),
   createOrModifySprint: protectedProcedure
-    .input(SprintRawInfoSchema.extend({ projectId: z.string() }))
+    .input(SprintInfoSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const projectCount = (
         await ctx.firestore
