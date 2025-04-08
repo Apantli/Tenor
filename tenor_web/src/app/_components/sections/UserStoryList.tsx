@@ -15,6 +15,7 @@ import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import CreateUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/CreateUserStoryPopup";
 import {
   useFormatEpicScrumId,
+  useFormatSprintNumber,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
@@ -34,6 +35,7 @@ export default function UserStoryList() {
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatEpicScrumId = useFormatEpicScrumId();
+  const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
 
   // TRPC
@@ -122,11 +124,11 @@ export default function UserStoryList() {
         sortable: true,
         filterable: "search-only",
         filterValue(row) {
-          return row.epicId == 0 ? "No Epic" : formatEpicScrumId(row.epicId);
+          return formatEpicScrumId(row.scrumId);
         },
         render(row) {
           // FIXME: The actual epic scrum id should be sent to the client, along the normal id
-          return <span>{formatEpicScrumId(row.epicId)}</span>;
+          return <span>{formatEpicScrumId(row.scrumId)}</span>;
         },
       },
       priority: {
@@ -138,10 +140,10 @@ export default function UserStoryList() {
           return row.priority?.name ?? "";
         },
         sorter(a, b) {
-            if (!a.priority && !b.priority) return 0;
-            if (!a.priority) return 1;
-            if (!b.priority) return -1;
-            return a.priority?.name.localeCompare(b.priority?.name) ? -1 : 1;
+          if (!a.priority && !b.priority) return 0;
+          if (!a.priority) return 1;
+          if (!b.priority) return -1;
+          return a.priority?.name.localeCompare(b.priority?.name) ? -1 : 1;
         },
         render(row) {
           const handlePriorityChange = async (tag: Tag) => {
@@ -197,16 +199,16 @@ export default function UserStoryList() {
           return row.size ?? "";
         },
         sorter(a, b) {
-            const sizeOrder: Record<Size, number> = {
-              XS: 0,
-              S: 1,
-              M: 2,
-              L: 3,
-              XL: 4,
-              XXL: 5,
-            };
+          const sizeOrder: Record<Size, number> = {
+            XS: 0,
+            S: 1,
+            M: 2,
+            L: 3,
+            XL: 4,
+            XXL: 5,
+          };
 
-            return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
+          return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
         },
         render(row) {
           const handleSizeChange = async (size: Size) => {
@@ -255,14 +257,10 @@ export default function UserStoryList() {
         sortable: true,
         filterable: "list",
         filterValue(row) {
-          return row.sprintId == 0 ? "No Sprint" : "Sprint " + row.sprintId;
+          return formatSprintNumber(row.sprintId).toString();
         },
         render(row) {
-          return (
-            <span>
-              {row.sprintId == 0 ? "No Sprint" : "Sprint " + row.sprintId}
-            </span>
-          );
+          return <span>{formatSprintNumber(row.sprintId)}</span>;
         },
       },
       taskProgress: {

@@ -66,7 +66,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   return (
     <>
       <div className="flex flex-row flex-wrap justify-between gap-2 border-b-2 pb-2">
-        <h1 className="text-2xl font-bold">Epics</h1>
+      <h1 className="text-3xl font-semibold">Epics</h1>
         <PrimaryButton
           className={
             "h-full w-full max-w-[120px] self-center hover:cursor-pointer"
