@@ -121,7 +121,7 @@ export const sprintsRouter = createTRPCRouter({
         .doc(projectId)
         .collection("sprints")
         .where("deleted", "==", false)
-        .orderBy("sprintNumber", "asc") // missing index
+        .orderBy("number", "asc") // missing index
         .get();
       const sprintsData = z
         .array(SprintSchema.extend({ id: z.string() }))
@@ -131,6 +131,7 @@ export const sprintsRouter = createTRPCRouter({
           startDate: timestampToDate(sprint.startDate),
           endDate: timestampToDate(sprint.endDate),
         }));
+      console.log("Sprints: ", sprintsData);
 
       const backlogTags = await ctx.firestore
         .collection("projects")
@@ -173,6 +174,7 @@ export const sprintsRouter = createTRPCRouter({
           (userStory) => userStory.sprintId === sprint.id,
         ),
       }));
+      console.log(sprintsWithUserStories);
 
       const unassignedUserStories = userStoriesPreviews.filter(
         (userStory) => userStory.sprintId === "",

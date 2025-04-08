@@ -23,9 +23,11 @@ export default function SprintCardColumn({
   setDetailUserStoryId,
   setShowDetail,
 }: Props) {
-  const allSelected = column.userStories.every((userStory) =>
-    selectedUserStories.has(userStory.id),
-  );
+  const allSelected =
+    column.userStories.length > 0 &&
+    column.userStories.every((userStory) =>
+      selectedUserStories.has(userStory.id),
+    );
 
   const toggleSelectAll = () => {
     const newSelection = new Set(selectedUserStories);
@@ -45,14 +47,6 @@ export default function SprintCardColumn({
     month: "short",
     day: "2-digit",
   });
-
-  // Check there's selected user stories and none of them are in this sprint
-  const availableToBeAssignedTo =
-    selectedUserStories.size > 0 &&
-    Array.from(selectedUserStories).every(
-      (userStoryId) =>
-        !column.userStories.some((userStory) => userStory.id === userStoryId),
-    );
 
   return (
     <div
@@ -98,19 +92,6 @@ export default function SprintCardColumn({
           </div>
         }
       />
-      <div
-        className={cn(
-          "pointer-events-none absolute left-0 top-0 flex h-full w-full items-center justify-center bg-app-secondary text-white opacity-0 transition",
-          {
-            "pointer-events-auto cursor-pointer opacity-30 hover:opacity-50":
-              availableToBeAssignedTo,
-          },
-        )}
-      >
-        <h1 className="text-center text-3xl">
-          Click to assign selected user stories
-        </h1>
-      </div>
     </div>
   );
 }
