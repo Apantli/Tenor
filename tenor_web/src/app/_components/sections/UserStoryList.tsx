@@ -128,6 +128,9 @@ export default function UserStoryList() {
         width: 100,
         sortable: true,
         filterable: "search-only",
+        filterValue(row) {
+          return row.epicId == 0 ? "No Epic" : formatEpicScrumId(row.epicId);
+        },
         render(row) {
           // FIXME: The actual epic scrum id should be sent to the client, along the normal id
           return <span>{formatEpicScrumId(row.epicId)}</span>;
@@ -176,6 +179,9 @@ export default function UserStoryList() {
         width: 100,
         sortable: true,
         filterable: "list",
+        filterValue(row) {
+          return row.sprintId == 0 ? "No Sprint" : "Sprint " + row.sprintId;
+        },
         render(row) {
           return (
             <span>
