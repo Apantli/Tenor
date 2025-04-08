@@ -15,7 +15,6 @@ import { uploadBase64File } from "~/utils/firebaseBucket";
 import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
 import { isBase64Valid } from "~/utils/base64";
 import { v4 as uuidv4 } from "uuid";
-import { z } from "zod";
 const emptySettings: Settings = {
   sprintDuration: 0,
   maximumSprintStoryPoints: 0,

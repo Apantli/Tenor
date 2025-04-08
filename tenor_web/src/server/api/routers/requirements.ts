@@ -1,11 +1,7 @@
 import type { Requirement, Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
-import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
-import { dbAdmin } from "~/utils/firebaseAdmin";
-import { boolean, z } from "zod";
-import { createRequire } from "module";
+import { TagSchema } from "~/lib/types/zodFirebaseSchema";
+import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { title } from "process";
-import TagComponent from "~/app/_components/TagComponent";
 import { getProjectSettingsRef } from "./settings";
 
 export interface RequirementCol {
@@ -33,13 +29,6 @@ const getRequirementsFromProject = async (
   const requirementsSnapshot = await requirementsRef.get();
 
   console.log("Requirements snapshot:", requirementsSnapshot.docs);
-
-  const docs = requirementsSnapshot.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...doc.data(),
-    }
-  });
 
   const requirements: WithId<Requirement>[] = [];
   requirementsSnapshot.forEach((doc) => {
@@ -170,7 +159,7 @@ const createRequirementsTableData = async (
     scrumId: requirement.scrumId,
   })) as RequirementCol[];
 
-  return {allTags, fixedData, allRequirementTypeTags};
+  return {allTags, fixedData, allRequirementTypeTags, allRequirementFocusTags};
 };
 
 export const requirementsRouter = createTRPCRouter({
