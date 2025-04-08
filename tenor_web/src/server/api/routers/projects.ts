@@ -7,8 +7,13 @@ import type {
   Settings,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { fetchMultipleHTML } from "~/utils/webcontent";
+import { fetchMultipleFiles } from "~/utils/filecontent";
+import { uploadBase64File } from "~/utils/firebaseBucket";
 import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
-
+import { isBase64Valid } from "~/utils/base64";
+import { v4 as uuidv4 } from "uuid";
+import type { z } from "zod";
 const emptySettings: Settings = {
   sprintDuration: 0,
   maximumSprintStoryPoints: 0,
@@ -29,7 +34,7 @@ export const createEmptyProject = (): Project => {
   return {
     name: "",
     description: "",
-    logoUrl: "",
+    logo: "",
     deleted: false,
 
     settings: emptySettings, // Deberías definir un `emptySettings` si `Settings` tiene valores requeridos
@@ -135,45 +140,80 @@ export const projectsRouter = createTRPCRouter({
   }),
   createProject: protectedProcedure
     .input(ProjectSchema)
-    .mutation(async ({ ctx }) => {
+    .mutation(async ({ ctx, input }) => {
       const useruid = ctx.session.uid;
 
+      // FIXME: remove duplicated users from input.users
+      // FIXME: get ids from input.users, use ids to add users to project
+      // FIXME: validate valid links before fetching html
+
+      // Add creator as project admin
+      input.users.push({
+        userId: useruid,
+        roleId: "admin",
+        active: true,
+      });
+
+      // Remove duplicated users (preserve first occurrence)
+      const seen = new Map<
+        string,
+        z.infer<typeof ProjectSchema>["users"][number]
+      >();
+
+      for (const user of input.users) {
+        if (!seen.has(user.userId)) {
+          seen.set(user.userId, user);
+        }
+      }
+
+      input.users = Array.from(seen.values());
+
+      // Fetch HTML from links
+      const links = input.settings.aiContext.links;
+      input.settings.aiContext.links = await fetchMultipleHTML(links);
+
+      // Fetch text from files
+      const b64Files = input.settings.aiContext.files.map(
+        (file) => file.content,
+      );
+      const fileText = await fetchMultipleFiles(b64Files);
+
+      const files = input.settings.aiContext.files.map((file, index) => ({
+        name: file.name,
+        type: file.type,
+        content: fileText[index] ?? "",
+      }));
+
+      input.settings.aiContext.files = files;
+
+      // Upload logo
+      const isLogoValid = isBase64Valid(input.logo);
+      if (isLogoValid) {
+        const logoPath = uuidv4() + "." + isLogoValid;
+        input.logo = await uploadBase64File(logoPath, input.logo);
+      } else {
+        // Use default icon
+        input.logo = "/defaultProject.png";
+      }
+
       try {
-        const project = createEmptyProject();
+        const { settings, ...projectData } = input;
+
         const projectRef = await ctx.firestore
           .collection("projects")
-          .add(project);
-        console.log("Project added with ID: ", projectRef.id);
+          .add(projectData);
 
-        const userRef = ctx.firestore.collection("users").doc(useruid);
-        await userRef.update(
-          "projectIds",
-          FieldValue.arrayUnion(projectRef.id),
+        const userRefs = input.users.map((user) =>
+          ctx.firestore.collection("users").doc(user.userId),
         );
 
+        await Promise.all(
+          userRefs.map((userRef) =>
+            userRef.update("projectIds", FieldValue.arrayUnion(projectRef.id)),
+          ),
+        );
         // FIXME: Create proper default settings in the project
-        await projectRef
-          .collection("settings")
-          .doc("settings")
-          .set({
-            sprintDuration: 0,
-            maximumSprintStoryPoints: 0,
-            aiContext: {
-              text: "",
-              files: [],
-              links: [],
-            },
-            // requirementFocusTags: [],
-            // requirementTypeTags: [],
-            // backlogTags: [],
-            // priorityTypes: [
-            //   { name: "P2", color: "#2c7817", deleted: false },
-            //   { name: "P1", color: "#d1b01d", deleted: false },
-            //   { name: "P0", color: "#FF0000", deleted: false },
-            // ],
-            // statusTabs: [],
-            // roles: [],
-          });
+        await projectRef.collection("settings").doc("settings").set(settings);
 
         const priorityTypesCollection = projectRef
           .collection("settings")
