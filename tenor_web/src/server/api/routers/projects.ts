@@ -10,11 +10,12 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles } from "~/utils/filecontent";
 import { uploadBase64File } from "~/utils/firebaseBucket";
-import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
+import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { dbAdmin } from "~/utils/firebaseAdmin";
 import { isBase64Valid } from "~/utils/base64";
 import { v4 as uuidv4 } from "uuid";
+import { settings } from ".eslintrc.cjs";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -141,7 +142,7 @@ export const projectsRouter = createTRPCRouter({
     return projects;
   }),
   createProject: protectedProcedure
-    .input(ProjectSchema)
+    .input(ProjectSchema.extend({ settings: SettingsSchema }))
     .mutation(async ({ ctx, input }) => {
       const useruid = ctx.session.uid;
 
@@ -247,14 +248,46 @@ export const projectsRouter = createTRPCRouter({
 
   getGeneralConfig: protectedProcedure
     .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const project = await dbAdmin
+    .query(async ({ input, ctx }) => {
+      const project = await ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .get();
 
       console.log("Project data:", project.data());
 
-      return project;
+      return ProjectSchema.parse(project.data());
+    }),
+
+  modifyGeneralConfig: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        name: z.string(),
+        description: z.string(),
+        logo: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const projectRef = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId);
+
+      const isLogoValid = isBase64Valid(input.logo);
+      if (isLogoValid) {
+        const logoPath = uuidv4() + "." + isLogoValid;
+        input.logo = await uploadBase64File(logoPath, input.logo);
+      } else {
+        // Use default icon
+        input.logo = "/defaultProject.png";
+      }
+
+      await projectRef.update({
+        name: input.name,
+        description: input.description,
+        logo: input.logo,
+      });
+
+      return { success: true };
     }),
 });
