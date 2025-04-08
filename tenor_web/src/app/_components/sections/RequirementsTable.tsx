@@ -15,6 +15,9 @@ export default function RequirementsTable() {
   //Hooks
   const params = useParams();
   const [requirementsData, setRequirementsData] = useState<RequirementCol[]>([]);
+  const [allTags, setAllTags] = useState<Tag[]>([]);  // States for the tags
+  const [allReqTypeTags, setAllReqTypeTags] = useState<Tag[]>([]);  // States for the req type tags
+  const [allFocusTags, setAllFocusTags] = useState<Tag[]>([]);  // States for the focus tags
   const [searchValue, setSearchValue] = useState("");
   
 
@@ -29,7 +32,10 @@ export default function RequirementsTable() {
 
   useEffect(() => {
     if (requirements) {
-      setRequirementsData(requirements);
+      setRequirementsData(requirements.fixedData);
+      setAllTags(requirements.allTags);
+      setAllReqTypeTags(requirements.allRequirementTypeTags);
+      setAllFocusTags(requirements.allRequirementFocusTags || []);
     }
   }, [requirements]);
 
@@ -41,15 +47,6 @@ export default function RequirementsTable() {
     if (requirementsData?.length == 0) {
       return <div>No Requirements found</div>;
     }
-
-    const priorityTags: Tag[] = Array.from(
-      new Map(
-        requirementsData.map((tag) => [
-          tag.priorityId.name + tag.priorityId.color + tag.priorityId.deleted,
-          tag.priorityId,
-        ]),
-      ).values(),
-    );
 
     const tableColumns: TableColumns<RequirementCol> = {
       id: { visible: false },
@@ -95,7 +92,7 @@ export default function RequirementsTable() {
               <PillComponent
                 labelClassName="w-full"
                 currentTag={row.priorityId}
-                allTags={priorityTags}
+                allTags={allTags}
                 callBack={(tag: Tag) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
@@ -115,12 +112,48 @@ export default function RequirementsTable() {
       requirementTypeId: {
         label: "Req. Type",
         width: 220,
-        filterable: "list",
+        render(row) {
+          return (
+            <span className="flex w-full justify-start">
+              <PillComponent
+                labelClassName="w-full"
+                currentTag={row.requirementTypeId}
+                allTags={allReqTypeTags}
+                callBack={(tag: Tag) => {
+                  setRequirementsData((prevData) =>
+                    prevData.map((item) =>
+                      item.id === row.id ? { ...item, requirementTypeId: tag } : item,
+                    ),
+                  );
+                }}
+                className="w-[calc(100%-10px)]"
+              />
+            </span>
+          );
+        },
       },
       requirementFocusId: {
         label: "Req. Focus",
         width: 250,
-        filterable: "list",
+        render(row) {
+          return (
+            <span className="flex w-full justify-start">
+              <PillComponent
+                labelClassName="w-full"
+                currentTag={row.requirementFocusId}
+                allTags={allFocusTags}
+                callBack={(tag: Tag) => {
+                  setRequirementsData((prevData) =>
+                    prevData.map((item) =>
+                      item.id === row.id ? { ...item, requirementFocusId: tag } : item,
+                    ),
+                  );
+                }}
+                className="w-[calc(100%-10px)]"
+              />
+            </span>
+          );
+        },
       },
     };
 

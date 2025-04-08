@@ -13,11 +13,15 @@ export interface RequirementCol {
   name?: string;
   description: string;
   priorityId: Tag;
-  requirementTypeId: string;
-  requirementFocusId: string;
+  requirementTypeId: Tag;
+  requirementFocusId: Tag;
   size: Size;
   scrumId: number;
 }
+
+
+// Get the tags for the requirements type
+
 
 const getRequirementsFromProject = async (
   dbAdmin: FirebaseFirestore.Firestore,
@@ -50,13 +54,34 @@ const createRequirementsTableData = async (
   projectId: string,
   dbAdmin: FirebaseFirestore.Firestore,
 ) => {
-  if (data.length === 0) return [];
+  if (data.length === 0) {
+    return { allTags: [], fixedData: [], allRequirementTypeTags: [], allRequirementFocusTags: [] };
+  }
+
+  // Get all the unique requirementFocusId, requirementTypeIds and priorityIds from the requirements
+  const uniqueRequirementTypeIds = Array.from(
+    new Set(data.map((req) => req.requirementTypeId).filter(Boolean)),
+  );
 
   const uniquePriorityIds = Array.from(
     new Set(data.map((req) => req.priorityId).filter(Boolean)),
   );
 
+  const uniqueRequirementFocusIds = Array.from(
+    new Set(data.map((req) => req.requirementFocusId).filter(Boolean)),
+  );
+
+  // Get the project settings reference
   const settingsRef = getProjectSettingsRef(projectId, dbAdmin);
+
+  // Get all the tags from the collection "priorityTypes"
+  const allTagsSnapshot = await settingsRef.collection("priorityTypes").get();
+  const allTags: Tag[] = allTagsSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as Tag),
+  }));
+
+  // Get only the tags assign to the requirements
   const tagsData = await Promise.all(
     uniquePriorityIds.map(async (tagId) => {
       const tagSnap = await settingsRef.collection("priorityTypes").doc(tagId).get();
@@ -64,9 +89,57 @@ const createRequirementsTableData = async (
       return { id: tagId, ...TagSchema.parse(tagSnap.data()) };
     }),
   );
+  console.log(tagsData);
 
+  // Get all the tags from the collection "requirementTypeTags"
+  const allRequirementTypeTagsSnapshot = await settingsRef.collection("requirementTypes").get();
+  const allRequirementTypeTags: Tag[] = allRequirementTypeTagsSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as Tag),
+  }));
+
+  // Get only the tags assign to the requirements
+  const requirementTypeTagsData = await Promise.all(
+    uniqueRequirementTypeIds.map(async (tagId) => {
+      const tagSnap = await settingsRef.collection("requirementTypes").doc(tagId).get();
+      if (!tagSnap.exists) return null;
+      return { id: tagId, ...TagSchema.parse(tagSnap.data()) };
+    }),
+  );
+  console.log(requirementTypeTagsData);
+
+  // Get all the tags from the collection "requirementFocusTags"
+  const allRequirementFocusTagsSnapshot = await settingsRef.collection("requirementFocus").get();
+  const allRequirementFocusTags: Tag[] = allRequirementFocusTagsSnapshot.docs.map((doc) => ({
+    id: doc.id,
+    ...(doc.data() as Tag),
+  }));
+
+  // Get only the tags assign to the requirements
+  const requirementFocusTagsData = await Promise.all(
+    uniqueRequirementFocusIds.map(async (tagId) => {
+      const tagSnap = await settingsRef.collection("requirementFocus").doc(tagId).get();
+      if (!tagSnap.exists) return null;
+      return { id: tagId, ...TagSchema.parse(tagSnap.data()) };
+    })
+  );
+  console.log(requirementFocusTagsData);
+
+  // Map the tags to their ids
   const tagMap = new Map(
     tagsData
+      .filter((tag): tag is Tag & { id: string } => tag !== null)
+      .map((tag) => [tag.id, tag]),
+  );
+
+  const reqTypeTagMap = new Map(
+    requirementTypeTagsData
+      .filter((tag): tag is Tag & { id: string } => tag !== null)
+      .map((tag) => [tag.id, tag]),
+  );
+
+  const reqFocusTagMap = new Map(
+    requirementFocusTagsData
       .filter((tag): tag is Tag & { id: string } => tag !== null)
       .map((tag) => [tag.id, tag]),
   );
@@ -81,13 +154,23 @@ const createRequirementsTableData = async (
       color: "#CCCCCC",
       deleted: false,
     },
-    requirementTypeId: requirement.requirementTypeId,
-    requirementFocusId: requirement.requirementFocusId,
+    requirementTypeId: reqTypeTagMap.get(requirement.requirementTypeId ?? "") ?? {
+      id: "unknown",
+      name: "Unknown",
+      color: "#CCCCCC",
+      deleted: false,
+    },
+    requirementFocusId: reqFocusTagMap.get(requirement.requirementFocusId ?? "") ?? {
+      id: "unknown",
+      name: "Unknown",
+      color: "#CCCCCC",
+      deleted: false,
+    },
     size: requirement.size,
     scrumId: requirement.scrumId,
   })) as RequirementCol[];
 
-  return fixedData;
+  return {allTags, fixedData, allRequirementTypeTags};
 };
 
 export const requirementsRouter = createTRPCRouter({
@@ -95,12 +178,12 @@ export const requirementsRouter = createTRPCRouter({
   .input(z.object({ projectId: z.string() }))
   .query(async ({ ctx, input }) => {
     const rawRequirements = await getRequirementsFromProject(ctx.firestore, input.projectId);
-    const tableData = await createRequirementsTableData(
+    const {fixedData, allTags, allRequirementTypeTags, allRequirementFocusTags} = await createRequirementsTableData(
       rawRequirements,
       input.projectId,
       ctx.firestore,
     );
-    return tableData;
+    return { fixedData, allTags, allRequirementTypeTags, allRequirementFocusTags };
   }),
 });
   
