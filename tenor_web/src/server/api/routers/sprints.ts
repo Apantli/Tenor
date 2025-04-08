@@ -1,13 +1,19 @@
-import { TRPCError } from "@trpc/server";
-import { FieldPath, FieldValue } from "firebase-admin/firestore";
-import type { Project, Sprint } from "~/lib/types/firebaseSchemas";
+import { FieldPath, Timestamp } from "firebase-admin/firestore";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
   SprintInfoSchema,
   SprintSchema,
-  SprintSnapshotSchema,
+  TagSchema,
+  UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
+
+const timestampToDate = (timestamp: {
+  seconds: number;
+  nanoseconds: number;
+}) => {
+  return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+};
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: protectedProcedure
@@ -50,7 +56,7 @@ export const sprintsRouter = createTRPCRouter({
       return SprintSchema.parse({ ...sprintDoc?.data() });
     }),
   createOrModifySprint: protectedProcedure
-    .input(SprintInfoSchema.extend({ projectId: z.string() }))
+    .input(SprintSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const projectCount = (
         await ctx.firestore
@@ -115,11 +121,16 @@ export const sprintsRouter = createTRPCRouter({
         .doc(projectId)
         .collection("sprints")
         .where("deleted", "==", false)
-        // .orderBy("sprintNumber", "asc") // missing index
+        .orderBy("sprintNumber", "asc") // missing index
         .get();
       const sprintsData = z
         .array(SprintSchema.extend({ id: z.string() }))
-        .parse(sprints.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+        .parse(sprints.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+        .map((sprint) => ({
+          ...sprint,
+          startDate: timestampToDate(sprint.startDate),
+          endDate: timestampToDate(sprint.endDate),
+        }));
 
       const backlogTags = await ctx.firestore
         .collection("projects")

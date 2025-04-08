@@ -2,11 +2,10 @@ import type { inferRouterOutputs } from "@trpc/server";
 import React from "react";
 import UserStoryCardColumn from "~/app/_components/cards/UserStoryCardColumn";
 import { cn } from "~/lib/utils";
-import type sprintsRouter from "~/server/api/routers/sprints";
+import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
-
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
@@ -94,9 +93,7 @@ export default function SprintCardColumn({
               {dateFormatter.format(column.sprint.startDate)} -{" "}
               {dateFormatter.format(column.sprint.endDate)}
             </span>
-            <p className="mb-2">
-              In this sprint we focus on working in Login and Register features.
-            </p>
+            <p className="mb-2">{column.sprint.description}</p>
             <hr className="mb-2 w-full border border-app-border" />
           </div>
         }
