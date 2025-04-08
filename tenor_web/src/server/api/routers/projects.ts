@@ -132,7 +132,7 @@ const fetchUserProjects = async (
 };
 
 export const projectsRouter = createTRPCRouter({
-  fetchDeafultSprintDuration: protectedProcedure
+  fetchDefaultSprintDuration: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSprintDuration = await ctx.firestore
