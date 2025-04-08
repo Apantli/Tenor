@@ -9,13 +9,18 @@ import type { User } from "firebase/auth";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scumIdHooks";
+import { SidebarPopup } from "../Popup";
+import { CreateTaskForm } from "../tasks/CreateTaskPopup";
 
 interface Props {
   tasks: TaskPreview[];
+  userStoryId?: string; 
 }
 
-export default function TasksTable({ tasks }: Props) {
+export default function TasksTable({ tasks, userStoryId }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
+  const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+  
   const filteredTasks = tasks.filter((task) => {
     if (
       taskSearchText !== "" &&
@@ -25,10 +30,11 @@ export default function TasksTable({ tasks }: Props) {
     }
     return true;
   });
-
+  
   const formatTaskScrumId = useFormatTaskScrumId();
-
+  
   const taskColumns: TableColumns<TaskPreview> = {
+    // Your existing columns definition
     id: { visible: false },
     scrumId: {
       label: "Id",
@@ -56,8 +62,6 @@ export default function TasksTable({ tasks }: Props) {
           </PillComponent>
         );
       },
-      // filterable: "list",
-      // sortable: true,
     },
     assignee: {
       label: "Assignee",
@@ -71,12 +75,16 @@ export default function TasksTable({ tasks }: Props) {
       },
     },
   };
+  
+  // Calculate completed tasks
+  const completedTasks = tasks.filter(task => task.status?.name === "Done").length;
 
   return (
     <>
       <div className="mt-4 flex items-center justify-between">
-        {/* Calculate number of done tasks */}
-        <h2 className="text-2xl font-semibold">Tasks (0 / {tasks.length})</h2>
+        <h2 className="text-2xl font-semibold">
+          Tasks ({completedTasks} / {tasks.length})
+        </h2>
         <div className="flex items-center gap-3">
           {tasks.length > 0 && (
             <CollapsableSearchBar
@@ -84,10 +92,12 @@ export default function TasksTable({ tasks }: Props) {
               setSearchText={setTaskSearchText}
             />
           )}
-          <PrimaryButton>+ Add task</PrimaryButton>
+          <PrimaryButton onClick={() => setShowAddTaskPopup(true)}>
+            + Add task
+          </PrimaryButton>
         </div>
       </div>
-
+      
       <Table
         data={filteredTasks}
         columns={taskColumns}
@@ -95,6 +105,14 @@ export default function TasksTable({ tasks }: Props) {
         multiselect
         emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
       />
+      
+      <SidebarPopup 
+        show={showAddTaskPopup}
+        dismiss={() => setShowAddTaskPopup(false)}
+      >
+        <CreateTaskForm />
+      </SidebarPopup>
     </>
   );
 }
+
