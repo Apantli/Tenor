@@ -30,7 +30,7 @@ export default function ProjectSprints() {
   );
 
   const {
-    data: deafultSprintDuration,
+    data: defaultSprintDuration,
     isLoading: isLoadingSprintDuration,
     error,
   } = api.projects.fetchDefaultSprintDuration.useQuery({
@@ -43,7 +43,7 @@ export default function ProjectSprints() {
   useEffect(() => {
     if (
       !isLoadingSprintDuration &&
-      deafultSprintDuration !== undefined &&
+      defaultSprintDuration !== undefined &&
       userStoriesBySprint != undefined
     ) {
       for (const sprint of userStoriesBySprint?.sprints ?? []) {
