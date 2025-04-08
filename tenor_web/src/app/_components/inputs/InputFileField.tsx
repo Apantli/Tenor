@@ -5,15 +5,21 @@ import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 interface Props {
   label: string;
   image: File | null;
+  labelClassName?: string;
+  containerClassName?: string;
   handleImageChange: (file: File) => void;
+  displayText?: string;
 }
 
 export default function InputFileField({
   label,
   id,
   className,
+  containerClassName,
+  labelClassName,
   handleImageChange,
   image,
+  displayText = "Attach Image",
   ...props
 }: Props & React.InputHTMLAttributes<HTMLInputElement>) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -23,8 +29,11 @@ export default function InputFileField({
   };
 
   return (
-    <div className="w-full">
-      <label htmlFor={id} className="text-sm font-semibold">
+    <div className={cn("w-full", containerClassName)}>
+      <label
+        htmlFor={id}
+        className={cn("text-sm font-semibold", labelClassName)}
+      >
         {label}
       </label>
 
@@ -46,7 +55,7 @@ export default function InputFileField({
             )) ?? <DriveFolderUploadIcon />}
           </div>
           <span className="flex h-10 max-w-[200px] items-center truncate pl-2 text-sm text-gray-700">
-            {image?.name ?? "Attach Image"}
+            {image?.name ?? displayText}
           </span>
         </div>
 

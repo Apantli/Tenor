@@ -3,18 +3,25 @@ import { cn } from "~/lib/utils";
 
 interface Props {
   label?: string;
+  labelClassName?: string;
+  containerClassName?: string;
 }
 
 export default function InputTextAreaField({
   label,
   className,
+  containerClassName,
+  labelClassName,
   id,
   ...props
 }: Props & React.InputHTMLAttributes<HTMLTextAreaElement>) {
   return (
-    <div className="w-full">
+    <div className={cn("w-full", containerClassName)}>
       {label && (
-        <label htmlFor={id} className="text-sm font-semibold">
+        <label
+          htmlFor={id}
+          className={cn("text-sm font-semibold", labelClassName)}
+        >
           {label}
         </label>
       )}
