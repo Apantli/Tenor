@@ -5,6 +5,7 @@ import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   EpicSchema,
+  SprintSchema,
   TagSchema,
   TaskSchema,
   UserStorySchema,
@@ -265,7 +266,19 @@ export const userStoriesRouter = createTRPCRouter({
       );
 
       // FIXME: Get sprint number from database
-      const sprintNumber = undefined;
+      let sprintNumber = undefined;
+      if (userStoryData.sprintId !== "") {
+        const sprint = await ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("sprints")
+          .doc(userStoryData.sprintId)
+          .get();
+        if (sprint.exists) {
+          const sprintData = SprintSchema.parse(sprint.data());
+          sprintNumber = sprintData.number;
+        }
+      }
 
       const filteredTasks = tasks.filter((task) => task.deleted === false);
       return {

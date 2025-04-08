@@ -17,6 +17,8 @@ import { Timestamp } from "firebase/firestore";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
+import type { sprintsRouter } from "~/server/api/routers/sprints";
+import type { inferRouterOutputs } from "@trpc/server";
 
 export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
