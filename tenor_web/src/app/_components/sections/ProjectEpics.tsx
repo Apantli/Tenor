@@ -7,16 +7,20 @@ import { useEffect } from "react";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import { useFormatEpicScrumId } from "~/app/_hooks/scumIdHooks";
+import CollapsableSearchBar from "../CollapsableSearchBar";
 
 export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   const { mutateAsync: createEpic } =
     api.epics.createOrModifyEpic.useMutation();
 
   const utils = api.useUtils();
+  const formatEpicScrumId = useFormatEpicScrumId();
 
   const [showSmallPopup, setShowSmallPopup] = useState(false);
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [editEpic, setEditEpic] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const [selectedEpic, setSelectedEpic] = useState<number | null>(null);
 
@@ -25,6 +29,11 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       projectId: projectId,
     },
     { enabled: !!projectId },
+  );
+  const filteredEpics = epics?.filter((epic) =>
+    (epic.name + epic.name + formatEpicScrumId(epic.scrumId))
+      .toLowerCase()
+      .includes(searchText.toLowerCase()),
   );
 
   const { data: epic, isLoading: epicLoading } = api.epics.getEpic.useQuery(
@@ -65,31 +74,36 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   };
   return (
     <>
-      <div className="flex flex-row flex-wrap justify-between gap-2 border-b-2 pb-2">
-      <h1 className="text-3xl font-semibold">Epics</h1>
+      <div className="flex flex-row justify-between gap-2 border-b-2 pb-2">
+        <h1 className="text-3xl font-semibold">Epics</h1>
+        <CollapsableSearchBar
+          searchText={searchText}
+          setSearchText={setSearchText}
+        ></CollapsableSearchBar>
         <PrimaryButton
           className={
             "h-full w-full max-w-[120px] self-center hover:cursor-pointer"
           }
           onClick={() => setShowSmallPopup(true)}
         >
-          {" "}
-          + New Epic{" "}
+          + New Epic
         </PrimaryButton>
       </div>
-      <div className="flex flex-col gap-4 pt-4">
-        {epics?.map((epic) => (
+      <div className="flex flex-col gap-4">
+        {filteredEpics?.map((epic) => (
           <div
             onClick={() => {
               setSelectedEpic(epic.scrumId);
               setShowEditPopup(true);
             }}
             key={epic.scrumId}
-            className="border-b-2 py-2 hover:cursor-pointer"
+            className="border-b-2 py-3 hover:cursor-pointer"
           >
-            <div className="flex flex-col gap-y-1">
-              <h3 className="text-2xl font-bold">EP{epic.scrumId}</h3>
-              <p className="">{epic.name}</p>
+            <div className="flex flex-col gap-y-2">
+              <h3 className="text-xl font-semibold">
+                {formatEpicScrumId(epic.scrumId)}
+              </h3>
+              <p className="text-xl">{epic.name}</p>
             </div>
           </div>
         ))}
