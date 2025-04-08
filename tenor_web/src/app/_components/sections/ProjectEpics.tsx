@@ -119,7 +119,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
           + New Epic{" "}
         </PrimaryButton>
       </div>
-      <div className="flex flex-col gap-4 pt-4">
+      <div className="flex h-[calc(100vh-250px)] flex-col gap-4 overflow-y-scroll pt-4">
         {epics?.map((epic) => (
           <div
             onClick={() => {
