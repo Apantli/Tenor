@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useRef } from 'react';
+import React, { useRef } from "react";
 import { cn } from "~/lib/utils";
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import CloseIcon from '@mui/icons-material/Close';
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface DatePickerProps {
   onChange: (date: Date | null) => void;
@@ -16,16 +16,15 @@ export function DatePicker({
   onChange,
   selectedDate = null,
   className,
-  placeholder = 'No date'
+  placeholder = "No date",
 }: DatePickerProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -50,35 +49,30 @@ export function DatePicker({
   };
 
   return (
-    <div ref={containerRef} className={cn('relative', className)}>
-      <div className= 'flex items-center justify-between rounded-lg border border-gray-300 p-2 hover:bg-gray-200 transition-colors'>
-        <CalendarMonthIcon 
-          className="w-5 h-5 text-gray-700 mr-2 cursor-pointer" 
-          onClick={openDatePicker}
-        />
-        <div className="flex flex-grow items-center" onClick={openDatePicker}>
-          <div className="cursor-pointer text-gray-700 font-medium">
+    <div className={cn("relative", className)} onClick={openDatePicker}>
+      <div className="flex cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
+        <CalendarMonthIcon className="mr-2 h-5 w-5 cursor-pointer text-gray-700" />
+        <div className="flex flex-grow items-center">
+          <div className="cursor-pointer font-medium text-gray-700">
             {selectedDate ? formatDate(selectedDate) : placeholder}
           </div>
           <input
             ref={dateInputRef}
             type="date"
-            className="absolute opacity-0 w-0 h-0"
-            value={selectedDate ? selectedDate.toISOString().split('T')[0] : ''}
+            className="absolute h-0 w-0 opacity-0"
+            value={selectedDate ? selectedDate.toISOString().split("T")[0] : ""}
             onChange={handleDateChange}
           />
         </div>
         {selectedDate && (
-          <button 
+          <button
             onClick={handleClear}
-            className="ml-2 text-gray-500 hover:text-gray-700 transition-colors"
+            className="ml-2 text-gray-500 transition-colors hover:text-gray-700"
           >
-            <CloseIcon className="w-5 h-5" />
+            <CloseIcon className="h-5 w-5" />
           </button>
         )}
       </div>
     </div>
   );
 }
-
-

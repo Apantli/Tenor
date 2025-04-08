@@ -18,6 +18,7 @@ import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
   userStoryId: string;
@@ -36,6 +37,7 @@ export default function UserStoryDetailPopup({
     data: userStoryDetail,
     isLoading,
     refetch,
+    error,
   } = api.userStories.getUserStoryDetail.useQuery({
     projectId: projectId as string,
     userStoryId,
@@ -55,6 +57,7 @@ export default function UserStoryDetailPopup({
   const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const { predefinedAlerts } = useAlert();
 
   // Copy the editable data from the user story
   useEffect(() => {
@@ -67,6 +70,13 @@ export default function UserStoryDetailPopup({
   }, [userStoryDetail]);
 
   const confirm = useConfirmation();
+
+  useEffect(() => {
+    if (error) {
+      setShowDetail(false);
+      predefinedAlerts.unexpectedError();
+    }
+  }, [error]);
 
   const isModified = () => {
     if (editForm.name !== userStoryDetail?.name) return true;

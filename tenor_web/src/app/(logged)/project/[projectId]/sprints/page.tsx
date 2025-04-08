@@ -6,13 +6,16 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import { usePopupVisibilityState } from "~/app/_components/Popup";
+import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import UserStoryCardColumn from "~/app/_components/cards/UserStoryCardColumn";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
 import SprintCardColumn from "./SprintCardColumn";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import { Timestamp } from "firebase/firestore";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import { DatePicker } from "~/app/_components/DatePicker";
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
@@ -25,90 +28,42 @@ export default function ProjectSprints() {
     new Set(),
   );
 
-  if (userStoriesBySprint) {
-    userStoriesBySprint.sprints = [
-      {
-        sprint: {
-          id: "1",
-          description:
-            "In this sprint we focus on working in Login and Register features.",
-          number: 1,
-          startDate: new Date(),
-          endDate: new Date(),
-        },
-        userStories: [
-          {
-            id: "1",
-            sprintId: "1",
-            name: "Login feature",
-            scrumId: 99,
-            size: "S",
-            tags: [],
-          },
-        ],
-      },
-      {
-        sprint: {
-          id: "2",
-          description:
-            "In this sprint we focus on working in Login and Register features.",
-          number: 2,
-          startDate: new Date(),
-          endDate: new Date(),
-        },
-        userStories: [
-          {
-            id: "2",
-            sprintId: "2",
-            name: "Login feature",
-            scrumId: 98,
-            size: "S",
-            tags: [],
-          },
-        ],
-      },
-      {
-        sprint: {
-          id: "3",
-          description:
-            "In this sprint we focus on working in Login and Register features.",
-          number: 3,
-          startDate: new Date(),
-          endDate: new Date(),
-        },
-        userStories: [
-          {
-            id: "3",
-            sprintId: "3",
-            name: "Login feature",
-            scrumId: 97,
-            size: "S",
-            tags: [],
-          },
-        ],
-      },
-      {
-        sprint: {
-          id: "4",
-          description:
-            "In this sprint we focus on working in Login and Register features.",
-          number: 4,
-          startDate: new Date(),
-          endDate: new Date(),
-        },
-        userStories: [
-          {
-            id: "4",
-            sprintId: "4",
-            name: "Login feature",
-            scrumId: 96,
-            size: "S",
-            tags: [],
-          },
-        ],
-      },
-    ];
-  }
+  const { mutateAsync: createSprint } =
+    api.sprints.createOrModifySprint.useMutation();
+  const utils = api.useUtils();
+  const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
+    usePopupVisibilityState();
+
+  // New sprint variables
+  const [newSprintDescription, setNewSprintDescription] = useState("");
+  const [newSprintStartDate, setNewSprintStartDate] = useState<Date | null>(
+    null,
+  );
+  const [newSprintEndDate, setNewSprintEndDate] = useState<Date | null>(null);
+
+  const handleCreateSprint = async () => {
+    if (newSprintStartDate === null || newSprintEndDate === null) return;
+
+    const response = await createSprint({
+      projectId: projectId as string,
+      number: -1,
+      description: newSprintDescription,
+      startDate: Timestamp.fromDate(newSprintStartDate),
+      endDate: Timestamp.fromDate(newSprintEndDate),
+      userStoryIds: [],
+      genericItemIds: [],
+      issueIds: [],
+    });
+    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      projectId: projectId as string,
+    });
+
+    setNewSprintDescription("");
+    setNewSprintStartDate(new Date());
+    setNewSprintEndDate(new Date());
+
+    console.log(response);
+  };
 
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   const [detailUserStoryId, setDetailUserStoryId] = useState("");
@@ -180,7 +135,13 @@ export default function ProjectSprints() {
         <div className="ml-5 flex h-full grow flex-col overflow-x-hidden">
           <div className="flex w-full justify-between gap-5 pb-4">
             <h1 className="text-3xl font-semibold">Sprints</h1>
-            <PrimaryButton onClick={() => {}}>+ Add Sprint</PrimaryButton>
+            <PrimaryButton
+              onClick={() => {
+                setShowSmallPopup(true);
+              }}
+            >
+              + Add Sprint
+            </PrimaryButton>
           </div>
           <div className="flex w-full flex-1 gap-4 overflow-x-scroll">
             {isLoading && (
@@ -207,6 +168,66 @@ export default function ProjectSprints() {
           showDetail={showDetail}
           userStoryId={detailUserStoryId}
         />
+      )}
+      {renderSmallPopup && (
+        <Popup
+          show={showSmallPopup}
+          reduceTopPadding
+          size="small"
+          className="min-h-[400px] min-w-[500px]"
+          dismiss={() => setShowSmallPopup(false)}
+          footer={
+            <div className="flex gap-2">
+              <PrimaryButton
+                onClick={async () => {
+                  await handleCreateSprint();
+                  setShowSmallPopup(false);
+                }}
+              >
+                Create Sprint
+              </PrimaryButton>
+            </div>
+          }
+        >
+          {" "}
+          <div className="flex flex-col gap-4">
+            <h1 className="text-2xl">
+              <strong>New Sprint</strong>{" "}
+            </h1>
+            <InputTextAreaField
+              height={15}
+              label="Sprint description"
+              value={newSprintDescription}
+              onChange={(e) => setNewSprintDescription(e.target.value)}
+              placeholder="Your sprint description"
+              className="h-[200px] w-full"
+            />
+            <div className="flex w-full justify-center gap-4">
+              <div className="w-full">
+                <h3 className="text-sm font-semibold">Start date</h3>
+                <DatePicker
+                  selectedDate={newSprintStartDate}
+                  placeholder="Select date"
+                  className="w-full"
+                  onChange={(e) => {
+                    setNewSprintStartDate(e);
+                  }}
+                />
+              </div>
+              <div className="w-full">
+                <h3 className="text-sm font-semibold">End date</h3>
+                <DatePicker
+                  selectedDate={newSprintEndDate}
+                  placeholder="Select date"
+                  className="w-full"
+                  onChange={(e) => {
+                    setNewSprintEndDate(e);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </Popup>
       )}
     </>
   );
