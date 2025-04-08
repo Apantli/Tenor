@@ -189,6 +189,7 @@ export const projectsRouter = createTRPCRouter({
       // Upload logo
       const isLogoValid = isBase64Valid(input.logo);
       if (isLogoValid) {
+        // eslint-disable-next-line
         const logoPath = uuidv4() + "." + isLogoValid;
         input.logo = await uploadBase64File(logoPath, input.logo);
       } else {

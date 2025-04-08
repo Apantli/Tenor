@@ -1,6 +1,6 @@
 import type { inferRouterOutputs } from "@trpc/server";
 import React from "react";
-import type sprintsRouter from "~/server/api/routers/sprints";
+import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CardColumn from "./CardColumn";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
 import TagComponent from "../TagComponent";

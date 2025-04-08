@@ -132,9 +132,9 @@ export default function UserStoryDetailPopup({
     });
 
     // Make other places refetch the data
-    await utils.userStories.getUserStoriesTableFriendly.invalidate(
-      projectId as string,
-    );
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId as string,
+    });
     await utils.userStories.getAllUserStoryPreviews.invalidate({
       projectId: projectId as string,
     });
@@ -158,9 +158,9 @@ export default function UserStoryDetailPopup({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
-      await utils.userStories.getUserStoriesTableFriendly.invalidate(
-        projectId as string,
-      );
+      await utils.userStories.getUserStoriesTableFriendly.invalidate({
+        projectId: projectId as string,
+      });
       await utils.userStories.getAllUserStoryPreviews.invalidate({
         projectId: projectId as string,
       });
