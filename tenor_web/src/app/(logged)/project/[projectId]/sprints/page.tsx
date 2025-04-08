@@ -41,16 +41,37 @@ export default function ProjectSprints() {
   let defaultSprintEndDate: Date | null = null;
   // update values once loaded
   useEffect(() => {
-    if (!isLoadingSprintDuration && deafultSprintDuration !== undefined) {
-      defaultSprintInitialDate = new Date();
+    if (
+      !isLoadingSprintDuration &&
+      deafultSprintDuration !== undefined &&
+      userStoriesBySprint != undefined
+    ) {
+      for (const sprint of userStoriesBySprint?.sprints ?? []) {
+        if (
+          defaultSprintInitialDate == null ||
+          sprint.sprint.endDate > defaultSprintInitialDate
+        ) {
+          defaultSprintInitialDate = sprint.sprint.endDate;
+        }
+      }
+
+      // Set defaultSprintInitialDate to one day after the latest sprint endDate
+      if (defaultSprintInitialDate != null) {
+        defaultSprintInitialDate = new Date(
+          defaultSprintInitialDate.getTime() + 24 * 60 * 60 * 1000,
+        );
+      } else {
+        defaultSprintEndDate = new Date();
+      }
+
       defaultSprintEndDate = new Date(
-        defaultSprintInitialDate.getTime() +
+        (defaultSprintInitialDate ?? new Date()).getTime() +
           deafultSprintDuration * 24 * 60 * 60 * 1000,
       );
       setNewSprintStartDate(defaultSprintInitialDate);
       setNewSprintEndDate(defaultSprintEndDate);
     }
-  }, [isLoadingSprintDuration, deafultSprintDuration]);
+  }, [isLoadingSprintDuration, deafultSprintDuration, userStoriesBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
