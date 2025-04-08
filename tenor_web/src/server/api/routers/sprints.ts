@@ -115,7 +115,7 @@ export const sprintsRouter = createTRPCRouter({
         .doc(projectId)
         .collection("sprints")
         .where("deleted", "==", false)
-        // .orderBy("sprintNumber", "asc")
+        // .orderBy("sprintNumber", "asc") // missing index
         .get();
       const sprintsData = z
         .array(SprintSchema.extend({ id: z.string() }))

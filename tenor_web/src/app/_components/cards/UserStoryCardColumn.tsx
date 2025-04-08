@@ -5,6 +5,8 @@ import CardColumn from "./CardColumn";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
 import TagComponent from "../TagComponent";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
+import type { ClassNameValue } from "tailwind-merge";
+import { cn } from "~/lib/utils";
 
 interface Props {
   userStories: inferRouterOutputs<
@@ -16,6 +18,7 @@ interface Props {
   setShowDetail: (showDetail: boolean) => void;
   isLoading?: boolean;
   header?: React.ReactNode;
+  className?: ClassNameValue;
 }
 
 export default function UserStoryCardColumn({
@@ -26,6 +29,7 @@ export default function UserStoryCardColumn({
   setShowDetail,
   isLoading,
   header,
+  className,
 }: Props) {
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
@@ -39,7 +43,9 @@ export default function UserStoryCardColumn({
       isLoading={isLoading}
       header={header}
       renderCard={(userStory) => (
-        <div className="flex w-full flex-col items-start gap-2">
+        <div
+          className={cn("flex w-full flex-col items-start gap-2", className)}
+        >
           <div>
             <span className="font-semibold">
               {formatUserStoryScrumId(userStory.scrumId)}:{" "}

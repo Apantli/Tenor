@@ -5,12 +5,14 @@ import InputCheckbox from "../inputs/InputCheckbox";
 interface Props {
   selected: boolean;
   onChange?: (selected: boolean) => void;
+  showCheckbox?: boolean;
 }
 
 export default function SelectableCard({
   selected,
   children,
   onChange,
+  showCheckbox,
   ...props
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
   return (
@@ -27,7 +29,7 @@ export default function SelectableCard({
         className={cn(
           "shrink-0 grow basis-0 overflow-hidden py-2 opacity-0 transition-all group-hover:basis-6 group-hover:opacity-100",
           {
-            "basis-6 opacity-100": selected,
+            "basis-6 opacity-100": selected || !!showCheckbox,
           },
         )}
       >
