@@ -35,7 +35,7 @@ export default function RequirementsTable() {
       setRequirementsData(requirements.fixedData);
       setAllTags(requirements.allTags);
       setAllReqTypeTags(requirements.allRequirementTypeTags);
-      setAllFocusTags(requirements.allRequirementFocusTags || []);
+      setAllFocusTags(requirements.allRequirementFocusTags ?? []);
     }
   }, [requirements]);
 
