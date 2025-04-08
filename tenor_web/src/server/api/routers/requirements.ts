@@ -1,16 +1,18 @@
 import type { Requirement, Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
-import { RequirementSchema } from "~/lib/types/zodFirebaseSchema";
+import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { dbAdmin } from "~/utils/firebaseAdmin";
-import { z } from "zod";
+import { boolean, z } from "zod";
 import { createRequire } from "module";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { title } from "process";
+import TagComponent from "~/app/_components/TagComponent";
+import { getProjectSettingsRef } from "./settings";
 
 export interface RequirementCol {
   id: string;
   name: string;
   description: string;
-  priorityId: string;
+  priorityId: Tag;
   requirementTypeId: string;
   requirementFocusId: string;
   size: Size;
@@ -63,29 +65,62 @@ const getPriorityTag = () => {
   } as Tag;
 };
 
-const createRequirementsTableData = (data: WithId<Requirement>[]) => {
+const createRequirementsTableData = async (
+  data: WithId<Requirement>[],
+  projectId: string,
+  dbAdmin: FirebaseFirestore.Firestore,
+) => {
   if (data.length === 0) return [];
+
+  const uniquePriorityIds = Array.from(
+    new Set(data.map((req) => req.priorityId).filter(Boolean)),
+  );
+
+  const settingsRef = getProjectSettingsRef(projectId, dbAdmin);
+  const tagsData = await Promise.all(
+    uniquePriorityIds.map(async (tagId) => {
+      const tagSnap = await settingsRef.collection("priorityTypes").doc(tagId).get();
+      if (!tagSnap.exists) return null;
+      return { id: tagId, ...TagSchema.parse(tagSnap.data()) };
+    }),
+  );
+
+  const tagMap = new Map(
+    tagsData
+      .filter((tag): tag is Tag & { id: string } => tag !== null)
+      .map((tag) => [tag.id, tag]),
+  );
 
   const fixedData = data.map((requirement) => ({
     id: requirement.id,
     name: requirement.name,
     description: requirement.description,
-    priorityId: requirement.priorityId,
+    priorityId: tagMap.get(requirement.priorityId ?? "") ?? {
+      id: "unknown",
+      name: "Unknown",
+      color: "#CCCCCC",
+      deleted: false,
+    },
     requirementTypeId: requirement.requirementTypeId,
     requirementFocusId: requirement.requirementFocusId,
     size: requirement.size,
     scrumId: requirement.scrumId,
   })) as RequirementCol[];
+
   return fixedData;
-}
+};
 
 export const requirementsRouter = createTRPCRouter({
   getRequirementsTableFriendly: protectedProcedure
-    .input(z.string())
-    .query(async ({ ctx, input}) => {
-      const rawReq = await getRequirementsFromProject(ctx.firestore, input);
-      const tableData = createRequirementsTableData(rawReq);
-      return tableData;
-    }),
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const rawRequirements = await getRequirementsFromProject(ctx.firestore, input.projectId);
+    const tableData = await createRequirementsTableData(
+      rawRequirements,
+      input.projectId,
+      ctx.firestore,
+    );
+    return tableData;
+  }),
 });
   

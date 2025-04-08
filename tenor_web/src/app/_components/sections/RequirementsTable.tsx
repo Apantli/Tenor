@@ -25,7 +25,7 @@ export default function RequirementsTable() {
     data: requirements,
     isLoading: isLoadingRequirements,
     refetch: refetchRequirements,
-  } = api.requirements.getRequirementsTableFriendly.useQuery(params.projectId as string,);
+  } = api.requirements.getRequirementsTableFriendly.useQuery({ projectId: params.projectId as string });
 
   useEffect(() => {
     if (requirements) {
@@ -42,21 +42,21 @@ export default function RequirementsTable() {
       return <div>No Requirements found</div>;
     }
 
-    // const priorityTags: Tag[] = Array.from(
-    //   new Map(
-    //     requirementsData.map((tag) => [
-    //       tag.priorityId.name + tag.priorityId.color + tag.priorityId.deleted,
-    //       tag.priorityId,
-    //     ]),
-    //   ).values(),
-    // );
+    const priorityTags: Tag[] = Array.from(
+      new Map(
+        requirementsData.map((tag) => [
+          tag.priorityId.name + tag.priorityId.color + tag.priorityId.deleted,
+          tag.priorityId,
+        ]),
+      ).values(),
+    );
 
     const tableColumns: TableColumns<RequirementCol> = {
       id: { visible: false },
       scrumId: {
         label: "Id",
         width: 80, 
-        sortable: true,
+        sortable: false,
         render(row) {
           return (
           <button
@@ -70,8 +70,8 @@ export default function RequirementsTable() {
       },
       name: {
         label: "Title",
-        width: 220,
-        sortable: true,
+        width: 450,
+        sortable: false,
         render(row) {
           return (
             <button
@@ -84,55 +84,41 @@ export default function RequirementsTable() {
         },
       },
       description: {
-        label: "Description",
-        width: 400,
-        sortable: true,
-        render(row) {
-          return (
-            <button
-              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
-              
-            >
-              {row.description}
-            </button>
-          );
-        },
+        visible: false,
       },
       priorityId: {
         label: "Priority",
         width: 120,
-        filterable: "list",
-        sortable: true,
-        // render(row) {
-          // return (
-            // <span className="flex w-32 justify-start">
-            //   <PillComponent
-            //     currentTag={row.priorityId}
-            //     allTags={priorityTags}
-            //     callBack={(tag: Tag) => {
-            //       setRequirementsData((prevData) =>
-            //         prevData.map((item) =>
-            //           item.id === row.id ? { ...item, priority: tag } : item,
-            //         ),
-            //       );
-            //     }}
-            //     className="w-[calc(100%-10px)]"
-            //   />
-            // </span>
-          // );
-        // },
+        render(row) {
+          return (
+            <span className="flex w-32 justify-start">
+              <PillComponent
+                currentTag={row.priorityId}
+                allTags={priorityTags}
+                callBack={(tag: Tag) => {
+                  setRequirementsData((prevData) =>
+                    prevData.map((item) =>
+                      item.id === row.id ? { ...item, priorityId: tag } : item,
+                    ),
+                  );
+                }}
+                className="w-[calc(100%-10px)]"
+              />
+            </span>
+          );
+        },
       },
       size: {
         visible: false,
       },
       requirementTypeId: {
         label: "Req. Type",
-        width: 180,
+        width: 220,
         filterable: "list",
       },
       requirementFocusId: {
         label: "Req. Focus",
-        width: 220,
+        width: 250,
         filterable: "list",
       },
     };

@@ -165,20 +165,10 @@ export const projectsRouter = createTRPCRouter({
       }
 
       const projectData = projectSnapshot.data() as Project;
-
-      // Get the requirements collection for the project
-      const requirementsSnapshot = await projectRef.collection("requirements").get();
-
-      const requirements: (Requirement & {id: string})[] = requirementsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...emptyRequeriment(),
-        ...doc.data(),
-      }));
-
+      
       return {
         id: projectRef.id,
         ...projectData,
-        requirements,
       };
     } catch (error) {
       console.error("Error getting project:", error);
