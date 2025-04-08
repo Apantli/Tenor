@@ -15,7 +15,6 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { UserRecord } from "node_modules/firebase-admin/lib/auth/user-record";
 
 export default function ProjectCreator() {
   const toBase64 = (file: File) =>
@@ -27,7 +26,7 @@ export default function ProjectCreator() {
     });
 
   const router = useRouter();
-  const { mutateAsync: createProject } =
+  const { mutateAsync: createProject, isPending } =
     api.projects.createProject.useMutation();
 
   const { alert } = useAlert();
@@ -165,7 +164,7 @@ export default function ProjectCreator() {
       <main className="m-6 p-4">
         <div className="header flex w-full justify-between pb-6">
           <h1 className="text-2xl font-semibold">Project Creator</h1>
-          <PrimaryButton onClick={handleCreateProject}>
+          <PrimaryButton onClick={handleCreateProject} loading={isPending}>
             Generate Project
           </PrimaryButton>
         </div>
