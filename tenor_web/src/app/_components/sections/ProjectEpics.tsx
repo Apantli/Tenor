@@ -260,6 +260,16 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
                 </DeleteButton>
               </>
             )}
+            {!editEpic && (
+              <PrimaryButton
+                className="mt-32"
+                // FIXME: set filted for user stories related to epic
+                onClick={() => handleEditDismiss()}
+              >
+                {" "}
+                View user stories{" "}
+              </PrimaryButton>
+            )}
           </div>
         }
         dismiss={async () => {
