@@ -18,6 +18,7 @@ import {
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -33,6 +34,7 @@ export default function UserStoryList() {
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatEpicScrumId = useFormatEpicScrumId();
+  const confirm = useConfirmation();
 
   // TRPC
   const utils = api.useUtils();
@@ -142,7 +144,7 @@ export default function UserStoryList() {
             }
             userStoryRow.priority = tag;
 
-            const newData = [...userStoryData, userStoryRow]
+            const newData = [...userStoryData, userStoryRow];
 
             // Uses optimistic update to update the priority of the user story
             await utils.userStories.getUserStoriesTableFriendly.cancel({
@@ -187,7 +189,7 @@ export default function UserStoryList() {
             }
             userStoryRow.size = size;
 
-            const newData = [...userStoryData, userStoryRow]
+            const newData = [...userStoryData, userStoryRow];
 
             // Uses optimistic update to update the size of the user story
             await utils.userStories.getUserStoriesTableFriendly.cancel({
@@ -245,6 +247,17 @@ export default function UserStoryList() {
     };
 
     const handleDelete = async (ids: string[]) => {
+      const confirmMessage = ids.length > 1 ? "user stories" : "user story";
+      if (
+        !(await confirm(
+          `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
+          "This action is not revertible",
+          `Delete ${confirmMessage}`,
+        ))
+      ) {
+        return;
+      }
+
       const newData = userStoryData.filter(
         (userStory) => !ids.includes(userStory.id),
       );
