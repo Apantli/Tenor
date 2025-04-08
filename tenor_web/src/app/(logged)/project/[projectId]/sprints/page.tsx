@@ -33,7 +33,7 @@ export default function ProjectSprints() {
     data: deafultSprintDuration,
     isLoading: isLoadingSprintDuration,
     error,
-  } = api.projects.fetchDeafultSprintDuration.useQuery({
+  } = api.projects.fetchDefaultSprintDuration.useQuery({
     projectId: projectId as string,
   });
 
