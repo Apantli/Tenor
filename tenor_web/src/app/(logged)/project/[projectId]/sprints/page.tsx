@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
@@ -28,6 +28,50 @@ export default function ProjectSprints() {
   const [selectedUserStories, setSelectedUserStories] = useState<Set<string>>(
     new Set(),
   );
+
+  const {
+    data: defaultSprintDuration,
+    isLoading: isLoadingSprintDuration,
+    error,
+  } = api.projects.fetchDefaultSprintDuration.useQuery({
+    projectId: projectId as string,
+  });
+
+  let defaultSprintInitialDate: Date | null = null;
+  let defaultSprintEndDate: Date | null = null;
+  // update values once loaded
+  useEffect(() => {
+    if (
+      !isLoadingSprintDuration &&
+      defaultSprintDuration !== undefined &&
+      userStoriesBySprint != undefined
+    ) {
+      for (const sprint of userStoriesBySprint?.sprints ?? []) {
+        if (
+          defaultSprintInitialDate == null ||
+          sprint.sprint.endDate > defaultSprintInitialDate
+        ) {
+          defaultSprintInitialDate = sprint.sprint.endDate;
+        }
+      }
+
+      // Set defaultSprintInitialDate to one day after the latest sprint endDate
+      if (defaultSprintInitialDate != null) {
+        defaultSprintInitialDate = new Date(
+          defaultSprintInitialDate.getTime() + 24 * 60 * 60 * 1000,
+        );
+      } else {
+        defaultSprintEndDate = new Date();
+      }
+
+      defaultSprintEndDate = new Date(
+        (defaultSprintInitialDate ?? new Date()).getTime() +
+          defaultSprintDuration * 24 * 60 * 60 * 1000,
+      );
+      setNewSprintStartDate(defaultSprintInitialDate);
+      setNewSprintEndDate(defaultSprintEndDate);
+    }
+  }, [isLoadingSprintDuration, defaultSprintDuration, userStoriesBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
@@ -72,8 +116,8 @@ export default function ProjectSprints() {
     });
 
     setNewSprintDescription("");
-    setNewSprintStartDate(new Date());
-    setNewSprintEndDate(new Date());
+    setNewSprintStartDate(defaultSprintInitialDate);
+    setNewSprintEndDate(defaultSprintEndDate);
 
     console.log(response);
   };
