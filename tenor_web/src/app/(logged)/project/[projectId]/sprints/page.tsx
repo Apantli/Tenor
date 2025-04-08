@@ -61,7 +61,7 @@ export default function ProjectSprints() {
           defaultSprintInitialDate.getTime() + 24 * 60 * 60 * 1000,
         );
       } else {
-        defaultSprintEndDate = new Date();
+        defaultSprintInitialDate = new Date();
       }
 
       defaultSprintEndDate = new Date(
