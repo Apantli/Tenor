@@ -66,12 +66,12 @@ export default function ProjectSprints() {
 
       defaultSprintEndDate = new Date(
         (defaultSprintInitialDate ?? new Date()).getTime() +
-          deafultSprintDuration * 24 * 60 * 60 * 1000,
+          defaultSprintDuration * 24 * 60 * 60 * 1000,
       );
       setNewSprintStartDate(defaultSprintInitialDate);
       setNewSprintEndDate(defaultSprintEndDate);
     }
-  }, [isLoadingSprintDuration, deafultSprintDuration, userStoriesBySprint]);
+  }, [isLoadingSprintDuration, defaultSprintDuration, userStoriesBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
