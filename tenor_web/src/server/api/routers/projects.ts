@@ -13,7 +13,7 @@ import { uploadBase64File } from "~/utils/firebaseBucket";
 import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
 import { isBase64Valid } from "~/utils/base64";
 import { v4 as uuidv4 } from "uuid";
-import type { z } from "zod";
+import { z } from "zod";
 const emptySettings: Settings = {
   sprintDuration: 0,
   maximumSprintStoryPoints: 0,
@@ -132,6 +132,21 @@ const fetchUserProjects = async (
 };
 
 export const projectsRouter = createTRPCRouter({
+  fetchDeafultSprintDuration: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSprintDuration = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .select("sprintDuration")
+        .limit(1)
+        .get();
+
+      return (
+        (projectSprintDuration.docs[0]?.data().sprintDuration as number) ?? 7
+      );
+    }),
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     const projects = await fetchUserProjects(useruid, ctx.firestore);

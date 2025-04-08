@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
@@ -28,8 +28,32 @@ export default function ProjectSprints() {
     new Set(),
   );
 
+  const {
+    data: deafultSprintDuration,
+    isLoading: isLoadingSprintDuration,
+    error,
+  } = api.projects.fetchDeafultSprintDuration.useQuery({
+    projectId: projectId as string,
+  });
+
+  let defaultSprintInitialDate: Date | null = null;
+  let defaultSprintEndDate: Date | null = null;
+  // update values once loaded
+  useEffect(() => {
+    if (!isLoadingSprintDuration && deafultSprintDuration !== undefined) {
+      defaultSprintInitialDate = new Date();
+      defaultSprintEndDate = new Date(
+        defaultSprintInitialDate.getTime() +
+          deafultSprintDuration * 24 * 60 * 60 * 1000,
+      );
+      setNewSprintStartDate(defaultSprintInitialDate);
+      setNewSprintEndDate(defaultSprintEndDate);
+    }
+  }, [isLoadingSprintDuration, deafultSprintDuration]);
+
   const { mutateAsync: createSprint } =
     api.sprints.createOrModifySprint.useMutation();
+
   const utils = api.useUtils();
   const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
     usePopupVisibilityState();
@@ -181,6 +205,8 @@ export default function ProjectSprints() {
               <PrimaryButton
                 onClick={async () => {
                   await handleCreateSprint();
+                  setNewSprintStartDate(defaultSprintInitialDate);
+                  setNewSprintEndDate(defaultSprintEndDate);
                   setShowSmallPopup(false);
                 }}
               >
