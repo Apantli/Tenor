@@ -11,6 +11,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scumIdHooks";
 import CollapsableSearchBar from "../CollapsableSearchBar";
+import Markdown from "react-markdown";
 
 export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   const { mutateAsync: createEpic, isPending: creatingEpic } =
@@ -131,7 +132,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
           + New Epic
         </PrimaryButton>
       </div>
-      <div className="flex h-[calc(100vh-250px)] flex-col gap-4 overflow-y-scroll">
+      <div className="flex h-[calc(100vh-230px)] flex-col gap-4 overflow-y-scroll">
         {filteredEpics?.map((epic) => (
           <div
             onClick={() => {
@@ -184,7 +185,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       >
         <div className="flex flex-col gap-4">
           <h1 className="text-2xl">
-            <strong>EP:</strong>{" "}
+            <strong>Create new epic</strong>{" "}
           </h1>
           <InputTextField
             type="text"
@@ -206,9 +207,32 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       {/* Popup to view, modify, or delete epic */}
       <Popup
         show={showEditPopup}
-        className="min-h-[400px] min-w-[500px]"
+        className="h-[400px] min-w-[500px]"
         editMode={editEpic}
         size="small"
+        title={
+          <div>
+            <div className="flex flex-row gap-x-2">
+              <h1 className="mb-4 text-3xl">
+                <span className="font-bold">
+                  {epic?.scrumId
+                    ? formatEpicScrumId(epic.scrumId) + ":"
+                    : ""}{" "}
+                </span>
+                {!editEpic && <span>{epic?.name}</span>}
+              </h1>
+            </div>
+            {editEpic && (
+              <InputTextField
+                label="Epic name"
+                type="text"
+                placeholder="Your epic name"
+                value={editEpicName}
+                onChange={(e) => setEditEpicName(e.target.value)}
+              />
+            )}
+          </div>
+        }
         setEditMode={async (editing) => {
           if (editing) {
             setEditEpic(!editEpic);
@@ -276,7 +300,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
             )}
             {!editEpic && (
               <PrimaryButton
-                className="mt-32"
+                className="mt-1"
                 // FIXME: set filted for user stories related to epic
                 onClick={() => handleEditDismiss()}
               >
@@ -305,35 +329,27 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
             <LoadingSpinner color="dark" />
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col items-baseline gap-x-2">
-              <div className="flex flex-row gap-x-2">
-                <h1 className="mb-5 text-2xl">
-                  <strong>EP{epic?.scrumId}:</strong>{" "}
-                </h1>
-                {!editEpic && <p className="mr-5 text-2xl">{epic?.name}</p>}
-              </div>
-              {editEpic && (
-                <InputTextField
-                  label="Epic name"
-                  type="text"
-                  placeholder="Your epic name"
-                  value={editEpicName}
-                  onChange={(e) => setEditEpicName(e.target.value)}
-                />
-              )}
-            </div>
-
+          <div className="pt-3 grow">
             {editEpic ? (
               <InputTextAreaField
                 label="Epic description"
                 value={editEpicDescription}
                 onChange={(e) => setEditEpicDescription(e.target.value)}
-                placeholder="Your epic descriptions"
-                className="h-auto w-full"
+                placeholder="Your epic description"
+                className="h-auto min-h-24 w-full resize-none"
               />
             ) : (
-              <p>{epic?.description}</p>
+              <>
+                {epic?.description == "" ? (
+                  <p className="italic text-gray-500">
+                    No description provided.
+                  </p>
+                ) : (
+                  <div className="markdown-content text-ld">
+                    <Markdown>{epic?.description ?? ""}</Markdown>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
