@@ -111,9 +111,6 @@ export default function Dropdown({
     const realTop = triggerRect.bottom;
     let left = triggerRect.right - dropdownWidth - (popupRect?.left ?? 0); // Align to the right of the trigger
     const realLeft = triggerRect.right - dropdownWidth;
-    console.log("dropdownHeight", dropdownHeight);
-    console.log("viewportHeight", viewportHeight);
-    console.log("top", top);
 
     let vertAlignment = "top";
     let horiAlignment = "right";

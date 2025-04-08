@@ -9,16 +9,15 @@ import {
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
-import { UserStoryDetail } from "~/lib/types/detailSchemas";
+import type { UserStoryDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
-import { identity } from "node_modules/cypress/types/lodash";
 
 export interface UserStoryCol {
   id: string;
   scrumId: number;
   title: string;
   epicId: number;
-  priority: Tag;
+  priority?: Tag;
   size: Size;
   sprintId: number;
   taskProgress: [number | undefined, number | undefined];
@@ -68,36 +67,40 @@ const getEpicScrumId = () => {
   return getRandomInt(1, 30);
 };
 
-// TODO: Fetch from db
-const getPriorityTag = () => {
-  const rand = getRandomInt(1, 2);
-  return {
-    name: rand == 1 ? "High" : "Low",
-    color: rand == 1 ? "#FF4C4C" : "#009719",
-    deleted: false,
-  } as Tag;
+const getPriorityTag = async (
+  settingsRef: FirebaseFirestore.DocumentReference,
+  priorityId: string,
+) => {
+  if (priorityId === undefined) {
+    return undefined;
+  }
+  const tag = await settingsRef
+    .collection("priorityTypes")
+    .doc(priorityId ?? "")
+    .get();
+  if (!tag.exists) {
+    return undefined;
+  }
+  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+};
+
+const getBacklogTag = async (
+  settingsRef: FirebaseFirestore.DocumentReference,
+  taskId: string,
+) => {
+  if (taskId === undefined) {
+    return undefined;
+  }
+  const tag = await settingsRef.collection("backlogTags").doc(taskId).get();
+  if (!tag.exists) {
+    return undefined;
+  }
+  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
 };
 
 // TODO: Fetch from db
 const getTaskProgress = () => {
   return [0, 0] as [number | undefined, number | undefined];
-};
-
-const createUSTableData = (data: WithId<UserStory>[]) => {
-  if (data.length === 0) return [];
-
-  const fixedData = data.map((userStory) => ({
-    id: userStory.id,
-    scrumId: userStory.scrumId,
-    title: userStory.name,
-    epicId: getEpicScrumId(),
-    priority: getPriorityTag(),
-    size: userStory.size,
-    sprintId: getSprintScrumId(),
-    taskProgress: getTaskProgress(),
-  })) as UserStoryCol[];
-  // console.log("fixedData", fixedData);
-  return fixedData;
 };
 
 export const userStoriesRouter = createTRPCRouter({
@@ -132,11 +135,30 @@ export const userStoriesRouter = createTRPCRouter({
     }),
 
   getUserStoriesTableFriendly: protectedProcedure
-    .input(z.string())
+    .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const rawUs = await getUserStoriesFromProject(ctx.firestore, input);
-      const tableData = createUSTableData(rawUs);
-      return tableData;
+      const { projectId } = input;
+      const rawUs = await getUserStoriesFromProject(ctx.firestore, projectId);
+
+      // Transforming into table format
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+
+      const fixedData = await Promise.all(
+        rawUs.map(async (userStory) => {
+          return {
+            id: userStory.id,
+            scrumId: userStory.scrumId,
+            title: userStory.name,
+            epicId: getEpicScrumId(),
+            priority: await getPriorityTag(settingsRef, userStory.priorityId),
+            size: userStory.size,
+            sprintId: getSprintScrumId(),
+            taskProgress: getTaskProgress(),
+          };
+        }),
+      );
+
+      return fixedData as UserStoryCol[];
     }),
 
   getUserStoryDetail: protectedProcedure
@@ -196,20 +218,15 @@ export const userStoriesRouter = createTRPCRouter({
 
       let priorityTag = undefined;
       if (userStoryData.priorityId !== undefined) {
-        const tag = await settingsRef
-          .collection("priorityTypes")
-          .doc(userStoryData.priorityId)
-          .get();
-        priorityTag = { id: tag.id, ...TagSchema.parse(tag.data()) };
+        priorityTag = await getPriorityTag(
+          settingsRef,
+          userStoryData.priorityId,
+        );
       }
 
       const tags = await Promise.all(
         userStoryData.tagIds.map(async (tagId) => {
-          const tag = await settingsRef
-            .collection("backlogTags")
-            .doc(tagId)
-            .get();
-          return { id: tag.id, ...TagSchema.parse(tag.data()) };
+          return await getBacklogTag(settingsRef, tagId);
         }),
       );
 
@@ -309,6 +326,39 @@ export const userStoriesRouter = createTRPCRouter({
         .collection("userStories")
         .doc(userStoryId);
       await userStoryRef.update(userStoryData);
+      return { success: true };
+    }),
+
+  modifyUserStoryTags: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        userStoryId: z.string(),
+        priorityId: z.string().optional(),
+        size: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userStoryId, priorityId, size } = input;
+      if (priorityId === undefined && size === undefined) {
+        return;
+      }
+
+      const userStoryRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("userStories")
+        .doc(userStoryId);
+      const userStory = await userStoryRef.get();
+      if (!userStory.exists) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      const newUserStoryData = {
+        priorityId: priorityId,
+        size: size,
+      };
+      await userStoryRef.update(newUserStoryData);
       return { success: true };
     }),
 

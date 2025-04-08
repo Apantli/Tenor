@@ -3,7 +3,6 @@ import React, { useState } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import Table, { type TableColumns } from "../table/Table";
-import { FilterSearch } from "../FilterSearch";
 import PrimaryButton from "../buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
@@ -85,8 +84,6 @@ export default function MemberTable({
       },
     },
   };
-
-  const [searchTerm, setSearchTerm] = useState("");
 
   const session = useFirebaseAuth();
 

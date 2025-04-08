@@ -1,7 +1,7 @@
 import { SettingsSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
-import { FieldValue, Firestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
 
 export const getProjectSettingsRef = (
   projectId: string,
