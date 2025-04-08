@@ -90,12 +90,12 @@ export function CreateTaskForm({}) {
         <div className="flex gap-3 mb-2">
           <div className="flex-1">
             <label className="mb-1 block text-sm font-medium">Status</label>
-            {/* <PillComponent
+            <PillComponent
               currentTag={selectedStatus}
               allTags={statusOptions}
               callBack={setSelectedStatus}
               labelClassName="w-full"
-            /> */}
+            />
           </div>
           
           <div className="flex-1">

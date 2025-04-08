@@ -49,7 +49,7 @@ export function EditableBox({
 
   const renderDropdownLabel = () => {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-gray-300 p-2 relative cursor-pointer hover:bg-gray-200 transition-colors w-full">
+      <div className="flex items-center justify-between rounded-lg border border-gray-300 p-2 relative cursor-pointer hover:bg-gray-200 transition-colors w-full h-10">
         {selectedOption ? (
           <>
             <div className="flex items-center flex-grow gap-2">
