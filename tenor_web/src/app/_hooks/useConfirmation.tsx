@@ -96,7 +96,7 @@ export const ConfirmationProvider = ({ children }: PropsWithChildren) => {
           </div>
         }
         title={
-          <h1 className="mb-5 min-w-96 text-2xl font-semibold">
+          <h1 className="mb-5 min-w-96 text-2xl font-semibold pr-10">
             {confirmationInfo?.title}
           </h1>
         }

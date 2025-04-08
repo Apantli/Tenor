@@ -1,9 +1,8 @@
 "use client";
 
-import PillComponent from "~/app/_components/PillComponent";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
-import type { Tag } from "~/lib/types/firebaseSchemas";
-import { useEffect, useState, type ChangeEventHandler } from "react";
+import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import { useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -18,13 +17,14 @@ import {
   useFormatEpicScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scumIdHooks";
+import PriorityPicker from "../specific-pickers/PriorityPicker";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function UserStoryList() {
   // Hooks
-  const params = useParams();
-  const [userStoryData, setUserStoryData] = useState<UserStoryCol[]>([]);
+  const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
 
   const [selectedUS, setSelectedUS] = useState<string>("");
@@ -34,36 +34,38 @@ export default function UserStoryList() {
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatEpicScrumId = useFormatEpicScrumId();
+  const confirm = useConfirmation();
 
   // TRPC
+  const utils = api.useUtils();
   const {
     data: userStories,
     isLoading: isLoadingUS,
     refetch: refetchUS,
-  } = api.userStories.getUserStoriesTableFriendly.useQuery(
-    params.projectId as string,
-  );
+  } = api.userStories.getUserStoriesTableFriendly.useQuery({
+    projectId: projectId as string,
+  });
+  const { mutateAsync: updateUserStoryTags } =
+    api.userStories.modifyUserStoryTags.useMutation();
+  const { mutateAsync: deleteUserStory } =
+    api.userStories.deleteUserStory.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchValue(e.target.value);
-    if (!userStories) {
-      return;
-    }
-    const searchValue = e.target.value.toLowerCase();
-    const filteredData = userStories.filter(
-      (userStory) =>
-        userStory.title.toLowerCase().includes(searchValue) ||
-        formatUserStoryScrumId(userStory.scrumId).includes(searchValue),
-    );
-    setUserStoryData(filteredData.sort((a, b) => (a.id < b.id ? -1 : 1)));
   };
 
-  useEffect(() => {
-    if (userStories) {
-      setUserStoryData(userStories);
-    }
-  }, [userStories]);
+  const filteredData = (userStories ?? []).filter((userStory) => {
+    const lowerSearchValue = searchValue.toLowerCase();
+    return (
+      userStory.title.toLowerCase().includes(lowerSearchValue) ||
+      formatUserStoryScrumId(userStory.scrumId).includes(lowerSearchValue)
+    );
+  });
+
+  const userStoryData = filteredData.sort((a, b) =>
+    a.scrumId < b.scrumId ? -1 : 1,
+  );
 
   // Function to get the US table or message instead
   const getTable = () => {
@@ -74,15 +76,6 @@ export default function UserStoryList() {
     if (userStoryData?.length == 0) {
       return <span>No User stories found</span>;
     }
-
-    const priorityTags: Tag[] = Array.from(
-      new Map(
-        userStoryData.map((tag) => [
-          tag.priority.name + tag.priority.color + tag.priority.deleted,
-          tag.priority,
-        ]),
-      ).values(),
-    );
 
     // TODO: Add correct leading 0 to ids (which depends on max id). Currently hardcoded
     const tableColumns: TableColumns<UserStoryCol> = {
@@ -128,6 +121,9 @@ export default function UserStoryList() {
         width: 100,
         sortable: true,
         filterable: "search-only",
+        filterValue(row) {
+          return row.epicId == 0 ? "No Epic" : formatEpicScrumId(row.epicId);
+        },
         render(row) {
           // FIXME: The actual epic scrum id should be sent to the client, along the normal id
           return <span>{formatEpicScrumId(row.epicId)}</span>;
@@ -135,23 +131,49 @@ export default function UserStoryList() {
       },
       priority: {
         label: "Priority",
-        width: 140,
+        width: 100,
         render(row) {
+          const handlePriorityChange = async (tag: Tag) => {
+            const rowIndex = userStoryData.indexOf(row);
+            if (
+              !userStoryData[rowIndex] ||
+              userStoryData[rowIndex].priority?.id === tag.id
+            ) {
+              return; // No update needed
+            }
+            const [userStoryRow] = userStoryData.splice(rowIndex, 1);
+            if (!userStoryRow) {
+              return; // Typescript _needs_ this, but it should never happen
+            }
+            userStoryRow.priority = tag;
+
+            const newData = [...userStoryData, userStoryRow];
+
+            // Uses optimistic update to update the priority of the user story
+            await utils.userStories.getUserStoriesTableFriendly.cancel({
+              projectId: projectId as string,
+            });
+
+            utils.userStories.getUserStoriesTableFriendly.setData(
+              { projectId: projectId as string },
+              newData,
+            );
+
+            // Update the priority in the database
+            await updateUserStoryTags({
+              projectId: projectId as string,
+              userStoryId: row.id,
+              priorityId: tag.id,
+            });
+
+            await refetchUS();
+          };
+
           return (
-            <span className="flex w-32 justify-start">
-              <PillComponent
-                currentTag={row.priority}
-                allTags={priorityTags}
-                callBack={(tag: Tag) => {
-                  setUserStoryData((prevData) =>
-                    prevData.map((item) =>
-                      item.id === row.id ? { ...item, priority: tag } : item,
-                    ),
-                  );
-                }}
-                className="w-[calc(100%-10px)]"
-              />
-            </span>
+            <PriorityPicker
+              priority={row.priority}
+              onChange={handlePriorityChange}
+            />
           );
         },
       },
@@ -159,14 +181,43 @@ export default function UserStoryList() {
         label: "Size",
         width: 100,
         render(row) {
+          const handleSizeChange = async (size: Size) => {
+            const rowIndex = userStoryData.indexOf(row);
+            if (!userStoryData[rowIndex]) {
+              return; // No update needed
+            }
+            const [userStoryRow] = userStoryData.splice(rowIndex, 1);
+            if (!userStoryRow) {
+              return; // Typescript _needs_ this, but it should never happen
+            }
+            userStoryRow.size = size;
+
+            const newData = [...userStoryData, userStoryRow];
+
+            // Uses optimistic update to update the size of the user story
+            await utils.userStories.getUserStoriesTableFriendly.cancel({
+              projectId: projectId as string,
+            });
+            utils.userStories.getUserStoriesTableFriendly.setData(
+              { projectId: projectId as string },
+              newData,
+            );
+
+            // Update the size in the database
+            await updateUserStoryTags({
+              projectId: projectId as string,
+              userStoryId: row.id,
+              size: size,
+            });
+
+            await refetchUS();
+          };
+
           return (
-            <span className="flex justify-start">
-              <SizePillComponent
-                currentSize={row.size}
-                callback={() => {}}
-                className="w-[calc(100%-10px)]"
-              />
-            </span>
+            <SizePillComponent
+              currentSize={row.size}
+              callback={handleSizeChange}
+            />
           );
         },
       },
@@ -175,6 +226,9 @@ export default function UserStoryList() {
         width: 100,
         sortable: true,
         filterable: "list",
+        filterValue(row) {
+          return row.sprintId == 0 ? "No Sprint" : "Sprint " + row.sprintId;
+        },
         render(row) {
           return (
             <span>
@@ -198,15 +252,51 @@ export default function UserStoryList() {
       },
     };
 
-    // TODO: Decide on best height for the table (or make it responsive preferably)
+    const handleDelete = async (ids: string[]) => {
+      const confirmMessage = ids.length > 1 ? "user stories" : "user story";
+      if (
+        !(await confirm(
+          `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
+          "This action is not revertible",
+          `Delete ${confirmMessage}`,
+        ))
+      ) {
+        return;
+      }
+
+      const newData = userStoryData.filter(
+        (userStory) => !ids.includes(userStory.id),
+      );
+
+      // Uses optimistic update to update the size of the user story
+      await utils.userStories.getUserStoriesTableFriendly.cancel({
+        projectId: projectId as string,
+      });
+      utils.userStories.getUserStoriesTableFriendly.setData(
+        { projectId: projectId as string },
+        newData,
+      );
+
+      // Deletes in database
+      await Promise.all(
+        ids.map((id) =>
+          deleteUserStory({
+            projectId: projectId as string,
+            userStoryId: id,
+          }),
+        ),
+      );
+      await refetchUS();
+    };
+
     return (
       <Table
         className={cn("w-full", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}
+        onDelete={handleDelete}
         multiselect
         deletable
-        onDelete={(ids) => console.log("Deleted", ids)}
       />
     );
   };

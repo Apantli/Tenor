@@ -8,7 +8,7 @@ import Dropdown, {
   DropdownItem,
 } from "~/app/_components/Dropdown";
 import TagComponent from "~/app/_components/TagComponent";
-import { UserStoryPreview } from "~/lib/types/detailSchemas";
+import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import { api } from "~/trpc/react";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";

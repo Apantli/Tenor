@@ -42,7 +42,7 @@ export interface SprintSnapshot extends SprintInfo {
 export interface Project {
   name: string;
   description: string;
-  logoUrl: string;
+  logo: string;
   deleted: boolean;
 
   settings: Settings;
@@ -147,7 +147,7 @@ export interface Role {
 
 export interface BasicInfo {
   scrumId: number;
-  name: string;
+  name?: string;
   description: string; // Markdown
   deleted: boolean;
 }

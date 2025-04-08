@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { TaskPreview } from "~/lib/types/detailSchemas";
-import Table, { TableColumns } from "../table/Table";
+import type { TaskPreview } from "~/lib/types/detailSchemas";
+import Table, { type TableColumns } from "../table/Table";
 import PillComponent from "../PillComponent";
 import ProfilePicture from "../ProfilePicture";
-import { User } from "firebase/auth";
+import type { User } from "firebase/auth";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scumIdHooks";
@@ -47,6 +47,7 @@ export default function TasksTable({ tasks }: Props) {
       render(row) {
         return (
           <PillComponent
+            labelClassName=""
             currentTag={row.status}
             allTags={[row.status]}
             callBack={() => {}}

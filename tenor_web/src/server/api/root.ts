@@ -6,7 +6,9 @@ import { filesRouter } from "./routers/files";
 import { authRouter } from "./routers/auth";
 import { epicsRouter } from "./routers/epics";
 import { userStoriesRouter } from "./routers/userStories";
+import { userRouter } from "./routers/users";
 import settingsRouter from "./routers/settings";
+import { sprintsRouter } from "./routers/sprints";
 import { requirementsRouter } from "./routers/requirements";
 
 /**
@@ -23,7 +25,9 @@ export const appRouter = createTRPCRouter({
   frida: fridaRouter,
   files: filesRouter,
   epics: epicsRouter,
+  users: userRouter,
   settings: settingsRouter,
+  sprints: sprintsRouter,
 });
 
 // export type definition of API

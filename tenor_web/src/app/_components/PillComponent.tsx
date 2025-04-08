@@ -14,7 +14,8 @@ interface Props {
   currentTag?: Tag;
   allTags: Tag[];
   callBack: (tag: Tag) => void;
-  labelClassName?: string;
+  labelClassName: string;
+  hideSearch?: boolean;
 }
 
 export default function PillComponent({
@@ -22,6 +23,7 @@ export default function PillComponent({
   allTags,
   callBack,
   labelClassName,
+  hideSearch,
   className,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
@@ -107,6 +109,7 @@ export default function PillComponent({
       className={className}
       onOpen={() => inputRef.current?.focus()}
     >
+    {!hideSearch && (
       <DropdownItem className="flex w-52 flex-col">
         <span className="mb-2 text-sm text-gray-500">Select an item</span>
         <input
@@ -118,6 +121,7 @@ export default function PillComponent({
           onChange={handleUpdateSearch}
         />
       </DropdownItem>
+           )}
       <div className="w-full whitespace-nowrap text-left">
         <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}

@@ -92,26 +92,41 @@ function ProjectList() {
         <CreateNewProject />
       </div>
       <ul>
-        {filteredProjects?.map((project) => (
-          <li
-            className="flex cursor-pointer h-full max-w-[490px] justify-start border-b-2 py-[8]"
-            key={project.id}
-            onClick={() => handleOpenProject(project.id)}
-          >
-            <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
-              <img
-                className="object-scale-down p-[4px]"
-                src={project.logoUrl}
-                alt={project.name}
-              />
-            </div>
-            <div className="ml-2 flex max-h-full w-full flex-col justify-start">
-              <h3 className="my-[7px] text-lg font-semibold">{project.name}</h3>
-              <p className="text-sm">{project.description}</p>
+        {filteredProjects && filteredProjects?.length > 0 ? (
+          filteredProjects?.map((project) => (
+            <li
+              className="flex h-full max-w-[490px] justify-start border-b-2 py-[8] hover:cursor-pointer"
+              key={project.id}
+              onClick={() => handleOpenProject(project.id)}
+            >
+              <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
+                <img
+                  className="object-scale-down p-[4px]"
+                  src={project.logo}
+                  alt={project.name}
+                />
+              </div>
+              <div className="ml-2 flex max-h-full w-full flex-col justify-start">
+                <h3 className="my-[7px] text-lg font-semibold">
+                  {project.name}
+                </h3>
+                <p className="text-sm">{project.description}</p>
+              </div>
+            </li>
+          ))
+        ) : (
+          <li className="flex h-full max-w-[490px] justify-start border-b-2 py-[8]">
+            <div className="mt-4">
+              <p className="text-gray-500">No projects found.</p>
+
+              <p className="text-sm text-gray-500">
+                Try creating a project or ask a project owner to add you to a
+                project.{" "}
+              </p>
             </div>
           </li>
         )
-        )}
+        }
       </ul>
     </div>
   );

@@ -10,7 +10,7 @@ import { getProjectSettingsRef } from "./settings";
 
 export interface RequirementCol {
   id: string;
-  name: string;
+  name?: string;
   description: string;
   priorityId: Tag;
   requirementTypeId: string;
@@ -44,26 +44,6 @@ const getRequirementsFromProject = async (
   });
   return requirements;
 }
-
-function getRandomInt(min: number, max: number): number {
-  if (min > max) {
-    throw new Error("Min must be less than or equal to max");
-  }
-
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-// TODO: Fetch from db
-const getPriorityTag = () => {
-  const rand = getRandomInt(1, 2);
-  return {
-    name: rand == 1 ? "High" : "Low",
-    color: rand == 1 ? "#FF4C4C" : "#009719",
-    deleted: false,
-  } as Tag;
-};
 
 const createRequirementsTableData = async (
   data: WithId<Requirement>[],

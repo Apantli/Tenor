@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import React from "react";
 import { api } from "~/trpc/react";
 import PillPickerComponent from "../PillPickerComponent";
-import { ExistingEpic } from "~/lib/types/detailSchemas";
+import type { ExistingEpic } from "~/lib/types/detailSchemas";
 import { useFormatEpicScrumId } from "~/app/_hooks/scumIdHooks";
 
 interface Props {

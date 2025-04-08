@@ -16,7 +16,7 @@ export default function RequirementsTable() {
   const params = useParams();
   const [requirementsData, setRequirementsData] = useState<RequirementCol[]>([]);
   const [searchValue, setSearchValue] = useState("");
-  const [selectedUS, setSelectedUS] = useState<string>("");
+  
 
   console.log("projectId:", params.projectId);
 
@@ -93,6 +93,7 @@ export default function RequirementsTable() {
           return (
             <span className="flex w-32 justify-start">
               <PillComponent
+                labelClassName="w-full"
                 currentTag={row.priorityId}
                 allTags={priorityTags}
                 callBack={(tag: Tag) => {

@@ -15,7 +15,6 @@ export default function ProjectUserStories() {
         className={cn("min-w-[300px] border-r-2 pr-5 pt-6", heightOfContent)}
       >
         <ProjectEpics projectId={projectId as string} />
-        {/* Popup to create epic */}
       </div>
       <UserStoryList />
     </div>
