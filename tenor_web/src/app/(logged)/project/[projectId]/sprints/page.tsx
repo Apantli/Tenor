@@ -16,6 +16,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { Timestamp } from "firebase/firestore";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
+import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
@@ -27,6 +28,18 @@ export default function ProjectSprints() {
   const [selectedUserStories, setSelectedUserStories] = useState<Set<string>>(
     new Set(),
   );
+
+  const [searchValue, setSearchValue] = useState("");
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+
+  const filteredUnassignedStories =
+    userStoriesBySprint?.unassignedUserStories.filter((userStory) => {
+      const tagsList = userStory.tags.map((tag) => "Tag:" + tag.name).join(" ");
+      const fullUserStoryName = `${formatUserStoryScrumId(userStory.scrumId)}: ${userStory.name} ${tagsList} Size:${userStory.size}`;
+      return fullUserStoryName
+        .toLowerCase()
+        .includes(searchValue.toLowerCase());
+    }) ?? [];
 
   const { mutateAsync: createSprint } =
     api.sprints.createOrModifySprint.useMutation();
@@ -69,20 +82,18 @@ export default function ProjectSprints() {
   const [detailUserStoryId, setDetailUserStoryId] = useState("");
 
   // Check if all unassigned user stories are selected
-  const allUnassignedSelected =
-    userStoriesBySprint?.unassignedUserStories.every((userStory) =>
-      selectedUserStories.has(userStory.id),
-    );
+  const allUnassignedSelected = filteredUnassignedStories.every((userStory) =>
+    selectedUserStories.has(userStory.id),
+  );
 
   const toggleSelectAllUnassigned = () => {
-    if (!userStoriesBySprint?.unassignedUserStories) return;
     const newSelection = new Set(selectedUserStories);
     if (allUnassignedSelected) {
-      userStoriesBySprint.unassignedUserStories.forEach((userStory) => {
+      filteredUnassignedStories.forEach((userStory) => {
         newSelection.delete(userStory.id);
       });
     } else {
-      userStoriesBySprint.unassignedUserStories.forEach((userStory) => {
+      filteredUnassignedStories.forEach((userStory) => {
         newSelection.add(userStory.id);
       });
     }
@@ -100,14 +111,14 @@ export default function ProjectSprints() {
 
           <div className="flex w-full items-center gap-3 pb-4">
             <SearchBar
-              searchValue={""}
-              handleUpdateSearch={() => {}}
+              searchValue={searchValue}
+              handleUpdateSearch={(e) => setSearchValue(e.target.value)}
               placeholder="Search by title or tag..."
             ></SearchBar>
           </div>
 
           <UserStoryCardColumn
-            userStories={userStoriesBySprint?.unassignedUserStories ?? []}
+            userStories={filteredUnassignedStories}
             isLoading={isLoading}
             selection={selectedUserStories}
             setSelection={setSelectedUserStories}
