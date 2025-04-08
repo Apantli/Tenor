@@ -9,17 +9,33 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import { useAlert } from "~/app/_hooks/useAlert";
+import { toBase64 } from "~/utils/base64";
 
 export default function ProjectGeneralSettings() {
   const { projectId } = useParams();
-  const [icon, setImage] = useState<File | null>(null);
-  function handleImageChange(file: File) {
-    setImage(file);
-  }
+  const [icon, setIcon] = useState<File | null>(null);
+  const handleImageChange = async (file: File) => {
+    const iconBase64 = (await toBase64(file)) as string;
+
+    console.log("iconBase64", iconBase64);
+    setIcon(file);
+    setEditForm((prev) => ({
+      ...prev,
+      icon: iconBase64,
+    }));
+  };
+
+  const utils = api.useUtils();
+
+  const { alert } = useAlert();
 
   const { data: project } = api.projects.getGeneralConfig.useQuery({
     projectId: projectId as string,
   });
+
+  const { mutateAsync: modifyProject, isPending: modifyingProject } =
+    api.projects.modifyGeneralConfig.useMutation();
 
   const [editForm, setEditForm] = useState({
     name: "",
@@ -60,13 +76,47 @@ export default function ProjectGeneralSettings() {
     <div className="flex h-full flex-col">
       <div className="flex flex-row justify-between">
         <h1 className="mb-4 text-3xl font-bold">General</h1>
-        {project && isModified() && <PrimaryButton>Save</PrimaryButton>}
+        {project && isModified() && (
+          <PrimaryButton
+            onClick={async () => {
+              if (!projectId) return;
+              if (!editForm.name) {
+                alert("Oops...", "Please enter a project name.", {
+                  type: "error",
+                  duration: 5000, // time in ms (5 seconds)
+                });
+                return;
+              }
+
+              await modifyProject({
+                projectId: projectId as string,
+                name: editForm.name,
+                description: editForm.description,
+                logo: editForm.icon,
+              });
+              await utils.projects.getGeneralConfig.invalidate();
+            }}
+            loading={modifyingProject}
+          >
+            Save
+          </PrimaryButton>
+        )}
       </div>
       <p className="mb-2 text-lg font-bold">Project icon</p>
       {project ? (
         <div className="flex h-full flex-col gap-y-8">
           <div className="flex flex-row gap-x-3">
-            <img src={editForm.icon} alt="Project logo" className="h-20 w-20" />
+            <img
+              src={
+                editForm.icon == ""
+                  ? undefined
+                  : icon
+                    ? URL.createObjectURL(icon)
+                    : editForm.icon
+              }
+              alt="Project logo"
+              className="h-20 w-20"
+            />
             <InputFileField
               label=""
               accept="image/*"

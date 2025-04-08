@@ -9,6 +9,7 @@ interface Props {
   containerClassName?: string;
   handleImageChange: (file: File) => void;
   displayText?: string;
+  imagePreview?: boolean;
 }
 
 export default function InputFileField({
@@ -18,6 +19,7 @@ export default function InputFileField({
   containerClassName,
   labelClassName,
   handleImageChange,
+  imagePreview,
   image,
   displayText = "Attach Image",
   ...props
@@ -46,7 +48,7 @@ export default function InputFileField({
         <div className="flex h-10 items-center py-2" onClick={openFilePicker}>
           {/* Show file thumbnail */}
           <div>
-            {(image && (
+            {(image && imagePreview && (
               <img
                 src={URL.createObjectURL(image)}
                 alt="Selected"

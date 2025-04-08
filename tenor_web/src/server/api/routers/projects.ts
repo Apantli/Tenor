@@ -12,10 +12,8 @@ import { fetchMultipleFiles } from "~/utils/filecontent";
 import { uploadBase64File } from "~/utils/firebaseBucket";
 import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { dbAdmin } from "~/utils/firebaseAdmin";
 import { isBase64Valid } from "~/utils/base64";
 import { v4 as uuidv4 } from "uuid";
-import { settings } from ".eslintrc.cjs";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -273,13 +271,20 @@ export const projectsRouter = createTRPCRouter({
         .collection("projects")
         .doc(input.projectId);
 
-      const isLogoValid = isBase64Valid(input.logo);
-      if (isLogoValid) {
-        const logoPath = uuidv4() + "." + isLogoValid;
-        input.logo = await uploadBase64File(logoPath, input.logo);
-      } else {
-        // Use default icon
-        input.logo = "/defaultProject.png";
+      const projectData = (await projectRef.get()).data() as Project;
+
+      // Modify logo only if it has changed
+      if (projectData.logo !== input.logo) {
+        const isLogoValid = isBase64Valid(input.logo);
+
+        if (isLogoValid) {
+          const logoPath = uuidv4() + "." + isLogoValid;
+          input.logo = await uploadBase64File(logoPath, input.logo);
+          console.log("after uploading logo");
+        } else {
+          // Use default icon
+          input.logo = "/defaultProject.png";
+        }
       }
 
       await projectRef.update({
@@ -287,6 +292,8 @@ export const projectsRouter = createTRPCRouter({
         description: input.description,
         logo: input.logo,
       });
+
+      console.log("Updated project data...");
 
       return { success: true };
     }),
