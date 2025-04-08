@@ -5,7 +5,7 @@ import Tabbar from "~/app/_components/Tabbar";
 
 export default function ProjectLayout({ children }: PropsWithChildren) {
   return (
-    <div>
+    <div className="flex h-screen flex-col overflow-hidden">
       <Navbar>
         <div className="flex gap-1">
           <Link href="/" className="font-semibold">
@@ -15,7 +15,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
         </div>
       </Navbar>
       <Tabbar />
-      <main className="m-6 p-4">{children}</main>
+      <main className="m-6 flex-1 overflow-hidden p-4">{children}</main>
     </div>
   );
 }
