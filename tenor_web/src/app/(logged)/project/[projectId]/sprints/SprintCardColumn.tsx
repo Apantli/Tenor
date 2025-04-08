@@ -79,7 +79,7 @@ export default function SprintCardColumn({
                   )}
                 </button>
                 <Dropdown label={"• • •"}>
-                  <DropdownButton>Something</DropdownButton>
+                  <DropdownButton>Edit sprint</DropdownButton>
                 </Dropdown>
               </div>
             </div>
