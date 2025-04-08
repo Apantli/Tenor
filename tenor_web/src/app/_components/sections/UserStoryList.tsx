@@ -126,7 +126,7 @@ export default function UserStoryList() {
       },
       priority: {
         label: "Priority",
-        width: 140,
+        width: 100,
         render(row) {
           const handlePriorityChange = async (tag: Tag) => {
             const rowIndex = userStoryData.indexOf(row);
@@ -158,7 +158,7 @@ export default function UserStoryList() {
             await updateUserStoryTags({
               projectId: projectId as string,
               userStoryId: row.id,
-              priorityTag: tag.id,
+              priorityId: tag.id,
             });
 
             await refetchUS();

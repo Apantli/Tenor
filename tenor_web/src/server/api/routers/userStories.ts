@@ -334,12 +334,16 @@ export const userStoriesRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         userStoryId: z.string(),
-        priorityTag: z.string().optional(),
+        priorityId: z.string().optional(),
         size: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, userStoryId, priorityTag, size } = input;
+      const { projectId, userStoryId, priorityId, size } = input;
+      if (priorityId === undefined && size === undefined) {
+        return;
+      }
+
       const userStoryRef = ctx.firestore
         .collection("projects")
         .doc(projectId)
@@ -350,13 +354,10 @@ export const userStoriesRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      const userStoryData = UserStorySchema.parse(userStory.data());
       const newUserStoryData = {
-        ...userStoryData,
-        priorityId: priorityTag ?? userStoryData.priorityId,
-        size: size ?? userStoryData.size,
+        priorityId: priorityId,
+        size: size,
       };
-
       await userStoryRef.update(newUserStoryData);
       return { success: true };
     }),
