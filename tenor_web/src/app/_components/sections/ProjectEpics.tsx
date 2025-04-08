@@ -170,7 +170,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       >
         <div className="flex flex-col gap-4">
           <h1 className="text-2xl">
-            <strong>EP{(epics?.length ?? 0) + 1}:</strong>{" "}
+            <strong>EP:</strong>{" "}
           </h1>
           <InputTextField
             type="text"
@@ -232,6 +232,13 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
                 <DeleteButton
                   loading={deletingEpic}
                   onClick={async () => {
+                    const confirmation = await confirm(
+                      "Confirm deletion?",
+                      "This is irreversible.",
+                      "Delete permanently",
+                      "Cancel",
+                    );
+                    if (!confirmation) return;
                     if (!epic?.scrumId) {
                       console.log("Warning: epic not found");
                       return;
