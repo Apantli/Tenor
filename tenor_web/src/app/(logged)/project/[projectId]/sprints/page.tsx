@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
@@ -28,6 +28,29 @@ export default function ProjectSprints() {
   const [selectedUserStories, setSelectedUserStories] = useState<Set<string>>(
     new Set(),
   );
+
+  const {
+    data: deafultSprintDuration,
+    isLoading: isLoadingSprintDuration,
+    error,
+  } = api.projects.fetchDeafultSprintDuration.useQuery({
+    projectId: projectId as string,
+  });
+
+  let defaultSprintInitialDate: Date | null = null;
+  let defaultSprintEndDate: Date | null = null;
+  // update values once loaded
+  useEffect(() => {
+    if (!isLoadingSprintDuration && deafultSprintDuration !== undefined) {
+      defaultSprintInitialDate = new Date();
+      defaultSprintEndDate = new Date(
+        defaultSprintInitialDate.getTime() +
+          deafultSprintDuration * 24 * 60 * 60 * 1000,
+      );
+      setNewSprintStartDate(defaultSprintInitialDate);
+      setNewSprintEndDate(defaultSprintEndDate);
+    }
+  }, [isLoadingSprintDuration, deafultSprintDuration]);
 
   const [searchValue, setSearchValue] = useState("");
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
@@ -72,8 +95,8 @@ export default function ProjectSprints() {
     });
 
     setNewSprintDescription("");
-    setNewSprintStartDate(new Date());
-    setNewSprintEndDate(new Date());
+    setNewSprintStartDate(defaultSprintInitialDate);
+    setNewSprintEndDate(defaultSprintEndDate);
 
     console.log(response);
   };
