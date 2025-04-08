@@ -114,6 +114,8 @@ export const TaskSchema = BasicInfoSchema.extend({
   dueDate: z.date().nullable(),
   finishedDate: z.date().nullable(),
   size: SizeSchema,
+  itemId: z.string(),
+  itemType: z.enum(["US", "IS", "IT"])
 });
 
 export const IssueSchema = BacklogItemSchema.extend({
