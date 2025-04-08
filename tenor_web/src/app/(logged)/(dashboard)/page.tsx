@@ -95,13 +95,14 @@ function ProjectList() {
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
-              className="flex h-full max-w-[490px] justify-start border-b-2 py-[8]"
+              className="flex h-full max-w-[490px] justify-start border-b-2 py-[8] hover:cursor-pointer"
               key={project.id}
+              onClick={() => handleOpenProject(project.id)}
             >
               <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
                 <img
                   className="object-scale-down p-[4px]"
-                  src={project.logoUrl}
+                  src={project.logo}
                   alt={project.name}
                 />
               </div>

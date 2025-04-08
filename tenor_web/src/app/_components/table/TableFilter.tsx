@@ -1,4 +1,9 @@
-import React, { useState, useEffect, type ChangeEventHandler } from "react";
+import React, {
+  useState,
+  useEffect,
+  type ChangeEventHandler,
+  useMemo,
+} from "react";
 import { DropdownButton, DropdownItem } from "../Dropdown";
 import CrossIcon from "@mui/icons-material/Close";
 
@@ -44,14 +49,37 @@ function TableFilter<T extends Record<string, any>>({
   const filteredData = data.filter((row) => {
     if (
       searchValue !== "" &&
-      !String(row[columnKey]).toLowerCase().includes(searchValue.toLowerCase())
+      !String(column.filterValue?.(row) ?? row[columnKey])
+        .toLowerCase()
+        .includes(searchValue.toLowerCase())
     ) {
       return false;
     }
     return true;
   });
-  // eslint-disable-next-line
-  const uniqueData = [...new Set(filteredData.map((row) => row[columnKey]))];
+
+  const sortedData = useMemo(() => {
+    const sorted = [...filteredData].sort((a, b) => {
+      if (column?.sorter) {
+        return column.sorter(a, b);
+      } else {
+        const aValue = a[columnKey];
+        const bValue = b[columnKey];
+        if (aValue < bValue) return -1;
+        if (aValue > bValue) return 1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  }, [data, filteredData]);
+
+  const uniqueData = [
+    ...new Set(
+      // eslint-disable-next-line
+      sortedData.map((row) => column.filterValue?.(row) ?? row[columnKey]),
+    ),
+  ];
 
   return (
     <DropdownItem className="flex w-52 flex-col">

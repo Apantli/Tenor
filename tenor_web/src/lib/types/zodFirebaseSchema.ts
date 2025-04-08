@@ -129,7 +129,15 @@ export const SettingsSchema = z.object({
   maximumSprintStoryPoints: z.number().default(10000),
   aiContext: z.object({
     text: z.string().default(""),
-    files: z.array(z.string()).default([]),
+    files: z
+      .array(
+        z.object({
+          name: z.string(),
+          type: z.string(),
+          content: z.string(),
+        }),
+      )
+      .default([]),
     links: z.array(z.string()).default([]),
   }),
   // Removed because they should be in subcollections
@@ -145,7 +153,7 @@ export const SettingsSchema = z.object({
 export const ProjectSchema = z.object({
   name: z.string(),
   description: z.string(),
-  logo: z.string().optional(),
+  logo: z.string(),
   deleted: z.boolean().default(false),
 
   // FIXME: This should be a subcollection

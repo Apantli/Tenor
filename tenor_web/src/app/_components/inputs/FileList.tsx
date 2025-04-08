@@ -99,7 +99,11 @@ export default function FileList({
             onClick={() => handleFileRemove(file)}
             title={file.name}
           >
-            <span className="flex flex-col items-center text-gray-500 hover:text-blue-500">
+            <span
+              className="flex flex-col items-center text-gray-500 hover:text-blue-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content={file.name}
+            >
               {/* Load Icon based on file type */}
               {file.type === "application/pdf" ? (
                 <PictureAsPdfIcon style={{ fontSize: "4rem" }} />
