@@ -2,7 +2,7 @@
 
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
-import { useEffect, useState, type ChangeEventHandler } from "react";
+import { useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -24,7 +24,6 @@ export const heightOfContent = "h-[calc(100vh-285px)]";
 export default function UserStoryList() {
   // Hooks
   const { projectId } = useParams();
-  const [userStoryData, setUserStoryData] = useState<UserStoryCol[]>([]);
   const [searchValue, setSearchValue] = useState("");
 
   const [selectedUS, setSelectedUS] = useState<string>("");
@@ -52,23 +51,19 @@ export default function UserStoryList() {
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchValue(e.target.value);
-    if (!userStories) {
-      return;
-    }
-    const searchValue = e.target.value.toLowerCase();
-    const filteredData = userStories.filter(
-      (userStory) =>
-        userStory.title.toLowerCase().includes(searchValue) ||
-        formatUserStoryScrumId(userStory.scrumId).includes(searchValue),
-    );
-    setUserStoryData(filteredData.sort((a, b) => (a.id < b.id ? -1 : 1)));
   };
 
-  useEffect(() => {
-    if (userStories) {
-      setUserStoryData(userStories);
-    }
-  }, [userStories]);
+  const filteredData = (userStories ?? []).filter((userStory) => {
+    const lowerSearchValue = searchValue.toLowerCase();
+    return (
+      userStory.title.toLowerCase().includes(lowerSearchValue) ||
+      formatUserStoryScrumId(userStory.scrumId).includes(lowerSearchValue)
+    );
+  });
+
+  const userStoryData = filteredData.sort((a, b) =>
+    a.scrumId < b.scrumId ? -1 : 1,
+  );
 
   // Function to get the US table or message instead
   const getTable = () => {
@@ -147,9 +142,7 @@ export default function UserStoryList() {
             }
             userStoryRow.priority = tag;
 
-            const newData = [...userStoryData, userStoryRow].sort((a, b) =>
-              a.scrumId < b.scrumId ? -1 : 1,
-            );
+            const newData = [...userStoryData, userStoryRow]
 
             // Uses optimistic update to update the priority of the user story
             await utils.userStories.getUserStoriesTableFriendly.cancel({
@@ -160,8 +153,6 @@ export default function UserStoryList() {
               { projectId: projectId as string },
               newData,
             );
-
-            // UseEffect atomatically updates the data
 
             // Update the priority in the database
             await updateUserStoryTags({
@@ -196,9 +187,7 @@ export default function UserStoryList() {
             }
             userStoryRow.size = size;
 
-            const newData = [...userStoryData, userStoryRow].sort((a, b) =>
-              a.scrumId < b.scrumId ? -1 : 1,
-            );
+            const newData = [...userStoryData, userStoryRow]
 
             // Uses optimistic update to update the size of the user story
             await utils.userStories.getUserStoriesTableFriendly.cancel({
@@ -208,8 +197,6 @@ export default function UserStoryList() {
               { projectId: projectId as string },
               newData,
             );
-
-            // UseEffect atomatically updates the data
 
             // Update the size in the database
             await updateUserStoryTags({
@@ -282,7 +269,7 @@ export default function UserStoryList() {
       );
       await refetchUS();
     };
-    
+
     return (
       <Table
         className={cn("w-full", heightOfContent)}
