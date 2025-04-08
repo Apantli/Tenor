@@ -132,6 +132,17 @@ export default function UserStoryList() {
       priority: {
         label: "Priority",
         width: 100,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.priority?.name ?? "";
+        },
+        sorter(a, b) {
+            if (!a.priority && !b.priority) return 0;
+            if (!a.priority) return 1;
+            if (!b.priority) return -1;
+            return a.priority?.name.localeCompare(b.priority?.name) ? -1 : 1;
+        },
         render(row) {
           const handlePriorityChange = async (tag: Tag) => {
             const rowIndex = userStoryData.indexOf(row);
@@ -180,6 +191,23 @@ export default function UserStoryList() {
       size: {
         label: "Size",
         width: 100,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.size ?? "";
+        },
+        sorter(a, b) {
+            const sizeOrder: Record<Size, number> = {
+              XS: 0,
+              S: 1,
+              M: 2,
+              L: 3,
+              XL: 4,
+              XXL: 5,
+            };
+
+            return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
+        },
         render(row) {
           const handleSizeChange = async (size: Size) => {
             const rowIndex = userStoryData.indexOf(row);
