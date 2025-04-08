@@ -7,11 +7,17 @@ import { useEffect } from "react";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import useConfirmation from "~/app/_hooks/useConfirmation";
+import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scumIdHooks";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 
 export const ProjectEpics = ({ projectId }: { projectId: string }) => {
-  const { mutateAsync: createEpic } =
+  const { mutateAsync: createEpic, isPending: creatingEpic } =
+    api.epics.createOrModifyEpic.useMutation();
+
+  // Make a copy to show the loading state
+  const { mutateAsync: deleteEpic, isPending: deletingEpic } =
     api.epics.createOrModifyEpic.useMutation();
 
   const utils = api.useUtils();
@@ -58,19 +64,55 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   const [editEpicName, setEditEpicName] = useState("");
   const [editEpicDescription, setEditEpicDescription] = useState("");
 
-  const handleCreateEpic = async () => {
-    const response = await createEpic({
-      projectId: projectId,
-      name: newEpicName,
-      description: newEpicDescription,
-      scrumId: -1,
-    });
-    await utils.epics.getProjectEpicsOverview.invalidate();
+  const confirm = useConfirmation();
+  const { alert } = useAlert();
 
-    setNewEpicDescription("");
+  const isNewEpicModified = () => {
+    if (newEpicName !== "") return true;
+    if (newEpicDescription !== "") return true;
+
+    return false;
+  };
+
+  const isEditEpicModified = () => {
+    if (editEpicName !== epic?.name) return true;
+    if (editEpicDescription !== epic.description) return true;
+    return false;
+  };
+
+  const handleCreateDismiss = () => {
+    setShowSmallPopup(false);
     setNewEpicName("");
+    setNewEpicDescription("");
+  };
 
-    console.log(response);
+  const handleEditDismiss = () => {
+    setShowEditPopup(false);
+    setSelectedEpic(null);
+    setEditEpic(false);
+    setEditEpicName("");
+    setEditEpicDescription("");
+  };
+
+  const handleCreateEpic = async () => {
+    if (newEpicName === "") {
+      alert("Oops", "Please enter a name for the epic.", {
+        type: "error",
+        duration: 5000,
+      });
+      return;
+    }
+
+    if (!creatingEpic) {
+      await createEpic({
+        projectId: projectId,
+        name: newEpicName,
+        description: newEpicDescription,
+        scrumId: -1,
+      });
+      await utils.epics.getProjectEpicsOverview.invalidate();
+      handleCreateDismiss();
+    }
   };
   return (
     <>
@@ -89,7 +131,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
           + New Epic
         </PrimaryButton>
       </div>
-      <div className="flex flex-col gap-4">
+      <div className="flex h-[calc(100vh-250px)] flex-col gap-4 overflow-y-scroll">
         {filteredEpics?.map((epic) => (
           <div
             onClick={() => {
@@ -108,20 +150,31 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
           </div>
         ))}
       </div>
-      {/* </div> */}
 
       {/* Popup to create epic */}
       <Popup
         show={showSmallPopup}
         size="small"
         className="min-h-[400px] min-w-[500px]"
-        dismiss={() => setShowSmallPopup(false)}
+        dismiss={async () => {
+          if (isNewEpicModified()) {
+            const confirmation = await confirm(
+              "Are you sure?",
+              "Your changes will be discarded.",
+              "Discard changes",
+              "Keep Editing",
+            );
+            if (!confirmation) return;
+          }
+          handleCreateDismiss();
+        }}
+        disablePassiveDismiss={isNewEpicModified()}
         footer={
           <div className="flex gap-2">
             <PrimaryButton
+              loading={creatingEpic}
               onClick={async () => {
-                await handleCreateEpic();
-                setShowSmallPopup(false);
+                if (!creatingEpic) await handleCreateEpic();
               }}
             >
               Create epic
@@ -131,7 +184,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       >
         <div className="flex flex-col gap-4">
           <h1 className="text-2xl">
-            <strong>EP{(epics?.length ?? 0) + 1}:</strong>{" "}
+            <strong>EP:</strong>{" "}
           </h1>
           <InputTextField
             type="text"
@@ -149,62 +202,101 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
           />
         </div>
       </Popup>
+
       {/* Popup to view, modify, or delete epic */}
       <Popup
         show={showEditPopup}
         className="min-h-[400px] min-w-[500px]"
         editMode={editEpic}
         size="small"
-        setEditMode={() => setEditEpic(!editEpic)}
+        setEditMode={async (editing) => {
+          if (editing) {
+            setEditEpic(!editEpic);
+            return;
+          }
+
+          if (epic?.scrumId) {
+            if (!creatingEpic) {
+              if (editEpicName === "") {
+                alert("Oops", "Please enter a name for the epic.", {
+                  type: "error",
+                  duration: 5000,
+                });
+                return;
+              }
+              await createEpic({
+                projectId: projectId,
+                scrumId: epic?.scrumId,
+                name: editEpicName,
+                description: editEpicDescription,
+              });
+              await utils.epics.invalidate();
+            }
+          } else {
+            console.log("Warning: epic not found");
+          }
+          setEditEpic(!editEpic);
+        }}
+        saving={creatingEpic}
+        disablePassiveDismiss={isEditEpicModified()}
         footer={
           <div className="flex gap-2">
             {editEpic && (
               <>
-                <PrimaryButton
-                  onClick={async () => {
-                    if (epic?.scrumId) {
-                      await createEpic({
-                        projectId: projectId,
-                        scrumId: epic?.scrumId,
-                        name: editEpicName,
-                        description: editEpicDescription,
-                      });
-                      await utils.epics.invalidate();
-                    } else {
-                      console.log("Warning: epic not found");
-                    }
-                    setEditEpic(false);
-                  }}
-                >
-                  Modify Epic
-                </PrimaryButton>
                 <DeleteButton
+                  loading={deletingEpic}
                   onClick={async () => {
+                    const confirmation = await confirm(
+                      "Confirm deletion?",
+                      "This is irreversible.",
+                      "Delete permanently",
+                      "Cancel",
+                    );
+                    if (!confirmation) return;
                     if (!epic?.scrumId) {
                       console.log("Warning: epic not found");
                       return;
                     }
-                    await createEpic({
-                      projectId: projectId,
-                      scrumId: epic?.scrumId,
-                      name: editEpicName,
-                      description: editEpicDescription,
-                      deleted: true,
-                    });
-                    await utils.epics.invalidate();
-                    setShowEditPopup(false);
+                    if (!deletingEpic) {
+                      await deleteEpic({
+                        projectId: projectId,
+                        scrumId: epic?.scrumId,
+                        name: editEpicName,
+                        description: editEpicDescription,
+                        deleted: true,
+                      });
+                      await utils.epics.invalidate();
+                      handleEditDismiss();
+                    }
                   }}
                 >
                   Delete epic
                 </DeleteButton>
               </>
             )}
+            {!editEpic && (
+              <PrimaryButton
+                className="mt-32"
+                // FIXME: set filted for user stories related to epic
+                onClick={() => handleEditDismiss()}
+              >
+                {" "}
+                View user stories{" "}
+              </PrimaryButton>
+            )}
           </div>
         }
-        dismiss={() => {
-          setShowEditPopup(false);
-          setSelectedEpic(null);
-          setEditEpic(false);
+        dismiss={async () => {
+          if (isEditEpicModified()) {
+            const confirmation = await confirm(
+              "Are you sure?",
+              "Your changes will be discarded.",
+              "Discard changes",
+              "Keep Editing",
+            );
+            if (!confirmation) return;
+          }
+          handleEditDismiss();
         }}
       >
         {epicLoading ? (
