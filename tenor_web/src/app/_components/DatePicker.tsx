@@ -33,7 +33,7 @@ export function DatePicker({
       onChange(null);
       return;
     }
-    const newDate = new Date(`${e.target.value}T12:00:00`);
+    const newDate = new Date(`${e.target.value}T23:59:59`);
     onChange(newDate);
   };
 
