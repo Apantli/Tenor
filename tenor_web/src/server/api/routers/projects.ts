@@ -13,7 +13,7 @@ import { uploadBase64File } from "~/utils/firebaseBucket";
 import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
 import { isBase64Valid } from "~/utils/base64";
 import { v4 as uuidv4 } from "uuid";
-
+import type { z } from "zod";
 const emptySettings: Settings = {
   sprintDuration: 0,
   maximumSprintStoryPoints: 0,
@@ -154,6 +154,20 @@ export const projectsRouter = createTRPCRouter({
         active: true,
       });
 
+      // Remove duplicated users (preserve first occurrence)
+      const seen = new Map<
+        string,
+        z.infer<typeof ProjectSchema>["users"][number]
+      >();
+
+      for (const user of input.users) {
+        if (!seen.has(user.userId)) {
+          seen.set(user.userId, user);
+        }
+      }
+
+      input.users = Array.from(seen.values());
+
       // Fetch HTML from links
       const links = input.settings.aiContext.links;
       input.settings.aiContext.links = await fetchMultipleHTML(links);
@@ -183,39 +197,23 @@ export const projectsRouter = createTRPCRouter({
       }
 
       try {
+        const { settings, ...projectData } = input;
+
         const projectRef = await ctx.firestore
           .collection("projects")
-          .add(input);
+          .add(projectData);
 
-        const userRef = ctx.firestore.collection("users").doc(useruid);
-        await userRef.update(
-          "projectIds",
-          FieldValue.arrayUnion(projectRef.id),
+        const userRefs = input.users.map((user) =>
+          ctx.firestore.collection("users").doc(user.userId),
         );
 
+        await Promise.all(
+          userRefs.map((userRef) =>
+            userRef.update("projectIds", FieldValue.arrayUnion(projectRef.id)),
+          ),
+        );
         // FIXME: Create proper default settings in the project
-        await projectRef
-          .collection("settings")
-          .doc("settings")
-          .set({
-            sprintDuration: 0,
-            maximumSprintStoryPoints: 0,
-            aiContext: {
-              text: "",
-              files: [],
-              links: [],
-            },
-            // requirementFocusTags: [],
-            // requirementTypeTags: [],
-            // backlogTags: [],
-            // priorityTypes: [
-            //   { name: "P2", color: "#2c7817", deleted: false },
-            //   { name: "P1", color: "#d1b01d", deleted: false },
-            //   { name: "P0", color: "#FF0000", deleted: false },
-            // ],
-            // statusTabs: [],
-            // roles: [],
-          });
+        await projectRef.collection("settings").doc("settings").set(settings);
 
         const priorityTypesCollection = projectRef
           .collection("settings")
