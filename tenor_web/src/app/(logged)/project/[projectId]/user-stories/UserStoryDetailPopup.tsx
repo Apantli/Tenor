@@ -349,7 +349,7 @@ export default function UserStoryDetailPopup({
             </>
           )}
 
-          <TasksTable tasks={userStoryDetail.tasks} />
+          <TasksTable tasks={userStoryDetail.tasks} itemId={userStoryId} itemType="US"/>
         </div>
       )}
       {isLoading && (

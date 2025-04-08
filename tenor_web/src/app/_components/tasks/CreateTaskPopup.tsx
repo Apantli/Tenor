@@ -8,6 +8,7 @@ import { type Option, EditableBox }  from "../EditableBox/EditableBox";
 import PrimaryButton from "../buttons/PrimaryButton";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import PillComponent from "../PillComponent";
+import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 
 export function CreateTaskForm({}) {
   const { user } = useFirebaseAuth();
@@ -27,16 +28,10 @@ export function CreateTaskForm({}) {
     { name: "Done", color: "#10B981", deleted: false },
   ];
   
-  const sizeOptions = [
-    { name: "XS", color: "#8B5CF6", deleted: false },
-    { name: "S", color: "#8B5CF6", deleted: false },
-    { name: "M", color: "#8B5CF6", deleted: false },
-    { name: "L", color: "#8B5CF6", deleted: false },
-    { name: "XL", color: "#8B5CF6", deleted: false },
-  ];
-  
   const [selectedStatus, setSelectedStatus] = useState(statusOptions[0]);
-  const [selectedSize, setSelectedSize] = useState(sizeOptions[2]); // 'M' por defecto
+  const [selectedSize, setSelectedSize] = useState(); 
+
+  // UTILIZAR SIZEPILL COMPONENT
   
   const peopleOptions = [
     { id: user?.uid ?? "", name: user?.displayName ?? "", user },
@@ -70,7 +65,7 @@ export function CreateTaskForm({}) {
   return (
     <div className="p-2 max-w-2xl">
       <h2 className="text-2xl font-semibold mb-4">Add New Task</h2>
-      <form className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Task Name</label>
           <InputTextField
@@ -95,22 +90,23 @@ export function CreateTaskForm({}) {
         <div className="flex gap-3 mb-2">
           <div className="flex-1">
             <label className="mb-1 block text-sm font-medium">Status</label>
-            <PillComponent
+            {/* <PillComponent
               currentTag={selectedStatus}
               allTags={statusOptions}
               callBack={setSelectedStatus}
               labelClassName="w-full"
-            />
+            /> */}
           </div>
           
           <div className="flex-1">
             <label className="mb-1 block text-sm font-medium">Size</label>
-            <PillComponent
+            {/* <PillComponent
               currentTag={selectedSize}
               allTags={sizeOptions}
               callBack={setSelectedSize}
               labelClassName="w-full"
             />
+            */}
           </div>
         </div>
         
@@ -143,7 +139,7 @@ export function CreateTaskForm({}) {
             Create Task
           </PrimaryButton>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

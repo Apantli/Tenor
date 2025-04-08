@@ -14,10 +14,11 @@ import { CreateTaskForm } from "../tasks/CreateTaskPopup";
 
 interface Props {
   tasks: TaskPreview[];
-  userStoryId?: string; 
+  itemId: string; // user story
+  itemType: "US" | "IS" | "IT";
 }
 
-export default function TasksTable({ tasks, userStoryId }: Props) {
+export default function TasksTable({ tasks, itemId, itemType }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
   
