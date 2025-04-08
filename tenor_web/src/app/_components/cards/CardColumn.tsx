@@ -45,12 +45,13 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
         </div>
       )}
       {!isLoading && header !== undefined && (
-        <div className="px-4 pt-4">{header}</div>
+        <div className="px-6 pt-6">{header}</div>
       )}
-      <div className="flex h-full flex-1 flex-col gap-2 overflow-y-scroll p-4 pt-2">
+      <div className="flex h-full flex-1 flex-col gap-2 overflow-y-scroll p-6 pt-2">
         {cards.map((cardInfo) => (
           <SelectableCard
             key={cardInfo.id}
+            showCheckbox={selection.size > 0}
             selected={selection.has(cardInfo.id)}
             onChange={(selected) => {
               let cardsInRange = [cardInfo.id];

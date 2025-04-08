@@ -8,9 +8,11 @@ import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import UserStoryCardColumn from "~/app/_components/cards/UserStoryCardColumn";
-import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
-import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
-import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
+import CheckAll from "@mui/icons-material/DoneAll";
+import CheckNone from "@mui/icons-material/RemoveDone";
+import { cn } from "~/lib/utils";
+import SprintCardColumn from "./SprintCardColumn";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
@@ -23,6 +25,91 @@ export default function ProjectSprints() {
     new Set(),
   );
 
+  if (userStoriesBySprint) {
+    userStoriesBySprint.sprints = [
+      {
+        sprint: {
+          id: "1",
+          description:
+            "In this sprint we focus on working in Login and Register features.",
+          number: 1,
+          startDate: new Date(),
+          endDate: new Date(),
+        },
+        userStories: [
+          {
+            id: "1",
+            sprintId: "1",
+            name: "Login feature",
+            scrumId: 99,
+            size: "S",
+            tags: [],
+          },
+        ],
+      },
+      {
+        sprint: {
+          id: "2",
+          description:
+            "In this sprint we focus on working in Login and Register features.",
+          number: 2,
+          startDate: new Date(),
+          endDate: new Date(),
+        },
+        userStories: [
+          {
+            id: "2",
+            sprintId: "2",
+            name: "Login feature",
+            scrumId: 98,
+            size: "S",
+            tags: [],
+          },
+        ],
+      },
+      {
+        sprint: {
+          id: "3",
+          description:
+            "In this sprint we focus on working in Login and Register features.",
+          number: 3,
+          startDate: new Date(),
+          endDate: new Date(),
+        },
+        userStories: [
+          {
+            id: "3",
+            sprintId: "3",
+            name: "Login feature",
+            scrumId: 97,
+            size: "S",
+            tags: [],
+          },
+        ],
+      },
+      {
+        sprint: {
+          id: "4",
+          description:
+            "In this sprint we focus on working in Login and Register features.",
+          number: 4,
+          startDate: new Date(),
+          endDate: new Date(),
+        },
+        userStories: [
+          {
+            id: "4",
+            sprintId: "4",
+            name: "Login feature",
+            scrumId: 96,
+            size: "S",
+            tags: [],
+          },
+        ],
+      },
+    ];
+  }
+
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   const [detailUserStoryId, setDetailUserStoryId] = useState("");
 
@@ -31,26 +118,19 @@ export default function ProjectSprints() {
     userStoriesBySprint?.unassignedUserStories.every((userStory) =>
       selectedUserStories.has(userStory.id),
     );
-  const someUnassignedSelected =
-    userStoriesBySprint?.unassignedUserStories.some((userStory) =>
-      selectedUserStories.has(userStory.id),
-    );
 
-  const selectAllUnassigned = () => {
+  const toggleSelectAllUnassigned = () => {
     if (!userStoriesBySprint?.unassignedUserStories) return;
-    const newSelection = new Set<string>();
-    userStoriesBySprint.unassignedUserStories.forEach((userStory) => {
-      newSelection.add(userStory.id);
-    });
-    setSelectedUserStories(newSelection);
-  };
-
-  const deselectAllUnassigned = () => {
-    if (!userStoriesBySprint?.unassignedUserStories) return;
-    const newSelection = new Set<string>();
-    userStoriesBySprint.unassignedUserStories.forEach((userStory) => {
-      newSelection.delete(userStory.id);
-    });
+    const newSelection = new Set(selectedUserStories);
+    if (allUnassignedSelected) {
+      userStoriesBySprint.unassignedUserStories.forEach((userStory) => {
+        newSelection.delete(userStory.id);
+      });
+    } else {
+      userStoriesBySprint.unassignedUserStories.forEach((userStory) => {
+        newSelection.add(userStory.id);
+      });
+    }
     setSelectedUserStories(newSelection);
   };
 
@@ -69,7 +149,6 @@ export default function ProjectSprints() {
               handleUpdateSearch={() => {}}
               placeholder="Search by title or tag..."
             ></SearchBar>
-            {/* {allUnassignedSelected ? "Deselect all" : "Select all"} */}
           </div>
 
           <UserStoryCardColumn
@@ -80,28 +159,45 @@ export default function ProjectSprints() {
             setDetailId={setDetailUserStoryId}
             setShowDetail={setShowDetail}
             header={
-              <div className="flex justify-between pb-2 pr-1">
+              <div className="flex items-center justify-between pb-2 pr-1">
                 <span>Unassigned items</span>
-                <Dropdown label={"• • •"}>
-                  {!allUnassignedSelected && (
-                    <DropdownButton onClick={selectAllUnassigned}>
-                      Select all
-                    </DropdownButton>
+                <button
+                  className={cn("rounded-lg px-1 text-app-text transition", {
+                    "text-app-secondary": allUnassignedSelected,
+                  })}
+                  onClick={toggleSelectAllUnassigned}
+                >
+                  {allUnassignedSelected ? (
+                    <CheckNone fontSize="small" />
+                  ) : (
+                    <CheckAll fontSize="small" />
                   )}
-                  {someUnassignedSelected && (
-                    <DropdownButton onClick={deselectAllUnassigned}>
-                      Deselect all
-                    </DropdownButton>
-                  )}
-                </Dropdown>
+                </button>
               </div>
             }
           />
         </div>
-        <div className="ml-5 flex h-full grow">
+        <div className="ml-5 flex h-full grow flex-col overflow-x-hidden">
           <div className="flex w-full justify-between gap-5 pb-4">
             <h1 className="text-3xl font-semibold">Sprints</h1>
             <PrimaryButton onClick={() => {}}>+ Add Sprint</PrimaryButton>
+          </div>
+          <div className="flex w-full flex-1 gap-4 overflow-x-scroll">
+            {isLoading && (
+              <div className="flex h-full w-full items-center justify-center">
+                <LoadingSpinner color="primary" />
+              </div>
+            )}
+            {userStoriesBySprint?.sprints.map((column) => (
+              <SprintCardColumn
+                column={column}
+                key={column.sprint.id}
+                selectedUserStories={selectedUserStories}
+                setSelectedUserStories={setSelectedUserStories}
+                setDetailUserStoryId={setDetailUserStoryId}
+                setShowDetail={setShowDetail}
+              />
+            ))}
           </div>
         </div>
       </div>
