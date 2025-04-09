@@ -20,6 +20,7 @@ export interface SprintInfo {
 
 // This sprint is modifiable
 export interface Sprint extends SprintInfo {
+  id?: string;
   userStoryIds: string[];
   issueIds: string[];
   genericItemIds: string[];
@@ -176,10 +177,11 @@ export interface UserStory extends BacklogItem {
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
-  // reviewerId: string; // Scope creep. Ignore for now
   dueDate: Date | null;
   finishedDate: Date | null;
   size: Size;
+  itemId: string;
+  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 }
 
 export interface Issue extends BacklogItem {

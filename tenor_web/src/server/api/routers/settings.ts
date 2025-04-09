@@ -38,6 +38,25 @@ const settingsRouter = createTRPCRouter({
 
       return priorityTypesData;
     }),
+
+  getStatusTypes: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const statusTypes = await projectSettingsRef
+        .collection("statusTypes")
+        .get();
+      const statusTypesData = statusTypes.docs.map((doc) => ({
+        id: doc.id,
+        ...TagSchema.parse(doc.data()),
+      }));
+
+      return statusTypesData;
+    }),
+
   getBacklogTags: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

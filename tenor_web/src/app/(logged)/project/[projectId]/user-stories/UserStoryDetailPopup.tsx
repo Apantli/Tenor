@@ -17,8 +17,13 @@ import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillCo
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
+import {
+  useFormatSprintNumber,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
+import type { TaskPreview, UserPreview } from "~/lib/types/detailSchemas";
+import type { Tag } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   userStoryId: string;
@@ -42,6 +47,22 @@ export default function UserStoryDetailPopup({
     projectId: projectId as string,
     userStoryId,
   });
+
+  const { data: tasksTableData, isLoading: isLoadingTasks } = api.tasks.getTasksTableFriendly.useQuery({
+    projectId: projectId as string,
+    itemId: userStoryId,
+  }, {
+    enabled: showDetail
+  });
+
+  const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(task => ({
+    id: task.id,
+    scrumId: task.scrumId,
+    name: task.title,
+    status: task.status,
+    assignee: task.assignee
+  }));
+
   const { mutateAsync: updateUserStory } =
     api.userStories.modifyUserStory.useMutation();
   const { mutateAsync: deleteUserStory } =
@@ -58,6 +79,7 @@ export default function UserStoryDetailPopup({
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { predefinedAlerts } = useAlert();
+  const formatSprintNumber = useFormatSprintNumber();
 
   // Copy the editable data from the user story
   useEffect(() => {
@@ -77,6 +99,8 @@ export default function UserStoryDetailPopup({
       predefinedAlerts.unexpectedError();
     }
   }, [error]);
+
+  const { mutateAsync: changeStatus} = api.tasks.changeTaskStatus.useMutation();
 
   const isModified = () => {
     if (editForm.name !== userStoryDetail?.name) return true;
@@ -143,6 +167,46 @@ export default function UserStoryDetailPopup({
     });
 
     await refetch();
+  };
+
+  const handleTaskStatusChange = async (
+    taskId : string,
+    status : Tag,
+  ) => {
+    const updatedTasks = tasksTableData?.map((task) => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          status: status
+        };
+      }
+      return task;
+    });
+
+    await utils.tasks.getTasksTableFriendly.cancel({
+      projectId: projectId as string,
+      itemId: userStoryId,
+    });
+
+    utils.tasks.getTasksTableFriendly.setData({
+      projectId: projectId as string,
+      itemId: userStoryId,
+    }, (oldData) => {
+      if (!oldData) return undefined;
+      return updatedTasks ?? [];
+    })
+
+    await changeStatus({
+      taskId,
+      projectId: projectId as string,
+      statusId: status.id ?? "",
+    })
+
+    await utils.tasks.getTasksTableFriendly.invalidate({
+      projectId: projectId as string,
+      itemId: userStoryId,
+    });
+    
   };
 
   const handleDelete = async () => {
@@ -231,9 +295,7 @@ export default function UserStoryDetailPopup({
 
                 <h3 className="mt-4 text-lg">
                   <span className="font-semibold">Sprint: </span>
-                  {userStoryDetail.sprintNumber
-                    ? `Sprint ${userStoryDetail.sprintNumber}`
-                    : "Unassigned"}
+                  {formatSprintNumber(userStoryDetail.sprintNumber)}
                 </h3>
 
                 <DependencyList
@@ -346,8 +408,13 @@ export default function UserStoryDetailPopup({
               )}
             </>
           )}
-
-          <TasksTable tasks={userStoryDetail.tasks} />
+          
+          <TasksTable 
+            tasks={transformedTasks ?? []} 
+            itemId={userStoryId} 
+            itemType="US"
+            onTaskStatusChange={handleTaskStatusChange}
+          />
         </div>
       )}
       {isLoading && (

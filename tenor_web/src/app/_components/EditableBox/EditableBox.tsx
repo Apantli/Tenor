@@ -7,12 +7,17 @@ import CloseIcon from '@mui/icons-material/Close';
 import Dropdown, { DropdownItem, DropdownButton } from '../Dropdown';
 import ProfilePicture from '../ProfilePicture';
 import { type User } from 'firebase/auth';
+import { type UserRecord } from 'node_modules/firebase-admin/lib/auth/user-record';
 
 export interface Option {
   id: string | number | null;
   name: string;
   image?: string;
-  user?: User | null;
+  user?: {
+    uid: string;
+    displayName?: string;
+    photoURL?: string;
+  }
 }
 
 interface EditableBoxProps {
@@ -49,7 +54,7 @@ export function EditableBox({
 
   const renderDropdownLabel = () => {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-gray-300 p-2 relative cursor-pointer hover:bg-gray-200 transition-colors w-full">
+      <div className="flex items-center justify-between rounded-lg border border-gray-300 p-2 relative cursor-pointer hover:bg-gray-200 transition-colors w-full h-10">
         {selectedOption ? (
           <>
             <div className="flex items-center flex-grow gap-2">
@@ -70,12 +75,12 @@ export function EditableBox({
               )}
               <span className="text-gray-700 font-medium">{selectedOption.name}</span>
             </div>
-            <button 
+            <div 
               onClick={handleClear}
               className="ml-2 text-gray-500 hover:text-gray-700 transition-colors"
             >
               <CloseIcon className="w-5 h-5" />
-            </button>
+            </div>
           </>
         ) : (
           <>

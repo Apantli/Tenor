@@ -12,7 +12,7 @@ import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import { api } from "~/trpc/react";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
+import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 
 interface Props {
   userStories: UserStoryPreview[];

@@ -660,9 +660,15 @@ function EditableBoxShowCase() {
   const [selectedPerson, setSelectedPerson] = useState<Option | null>(null);
   const { user } = useFirebaseAuth();
 
+  const mockUser = {
+    uid: user?.uid ?? "",
+    displayName: user?.displayName ?? "",
+    photoURL: user?.photoURL ?? "",
+  }
+
   // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
   const people: Option[] = [
-    { id: user?.uid ?? "", name: user?.displayName ?? "", user: user },
+    { id: user?.uid ?? "", name: user?.displayName ?? "", user: mockUser},
     { id: "2", name: "Ana García" },
     { id: "3", name: "Carlos Pérez" },
   ];

@@ -9,7 +9,7 @@ export const uploadBase64File = async (
 ): Promise<string> => {
   const buffer = base64ToBuffer(base64);
   const bucket = storageAdmin.bucket(env.FIREBASE_STORAGE_BUCKET);
-  const fileRef = bucket.file(`uploads/${uploadPath}`);
+  const fileRef = bucket.file(uploadPath);
 
   await fileRef.save(buffer, {
     metadata: {
@@ -23,4 +23,36 @@ export const uploadBase64File = async (
   });
 
   return url;
+};
+
+export const deleteFile = async (filePath: string) => {
+  const bucket = storageAdmin.bucket(env.FIREBASE_STORAGE_BUCKET);
+  const fileRef = bucket.file(filePath);
+
+  await fileRef.delete();
+};
+
+export const getLogoPath = ({
+  logo,
+  projectId,
+}: {
+  logo: string;
+  projectId: string;
+}) => {
+  return `${projectStorgeDirectory(projectId)}/${logo}`;
+};
+
+const projectStorgeDirectory = (projectId: string) => {
+  return `uploads/${projectId}`;
+};
+
+export const deleteStartsWith = async (prefix: string) => {
+  const bucket = storageAdmin.bucket(env.FIREBASE_STORAGE_BUCKET);
+  const [files] = await bucket.getFiles({ prefix });
+
+  await Promise.all(
+    files.map((file) => {
+      return file.delete();
+    }),
+  );
 };

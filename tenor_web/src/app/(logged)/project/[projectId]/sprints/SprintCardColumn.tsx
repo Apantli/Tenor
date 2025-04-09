@@ -6,38 +6,44 @@ import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import { type UserStories } from "./page";
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
   >["getUserStoryPreviewsBySprint"]["sprints"][number];
+  userStories: UserStories;
   selectedUserStories: Set<string>;
   setSelectedUserStories: (newSelection: Set<string>) => void;
   setDetailUserStoryId: (detailId: string) => void;
   setShowDetail: (showDetail: boolean) => void;
+  assignSelectionToSprint: (sprintId: string) => Promise<void>;
 }
 
 export default function SprintCardColumn({
   column,
+  userStories,
   selectedUserStories,
   setSelectedUserStories,
   setDetailUserStoryId,
   setShowDetail,
+  assignSelectionToSprint,
 }: Props) {
   const allSelected =
-    column.userStories.length > 0 &&
-    column.userStories.every((userStory) =>
-      selectedUserStories.has(userStory.id),
+    column.userStoryIds.length > 0 &&
+    column.userStoryIds.every((userStoryId) =>
+      selectedUserStories.has(userStoryId),
     );
 
   const toggleSelectAll = () => {
     const newSelection = new Set(selectedUserStories);
     if (allSelected) {
-      column.userStories.forEach((userStory) => {
-        newSelection.delete(userStory.id);
+      column.userStoryIds.forEach((userStoryId) => {
+        newSelection.delete(userStoryId);
       });
     } else {
-      column.userStories.forEach((userStory) => {
-        newSelection.add(userStory.id);
+      column.userStoryIds.forEach((userStoryId) => {
+        newSelection.add(userStoryId);
       });
     }
     setSelectedUserStories(newSelection);
@@ -48,17 +54,32 @@ export default function SprintCardColumn({
     day: "2-digit",
   });
 
+  // Check there's selected user stories and none of them are in this sprint
+  const availableToBeAssignedTo =
+    selectedUserStories.size > 0 &&
+    Array.from(selectedUserStories).every(
+      (selectedUserStoryId) =>
+        !column.userStoryIds.some(
+          (userStoryId) => userStoryId === selectedUserStoryId,
+        ),
+    );
+
   return (
     <div
       className="relative h-full w-96 min-w-96 overflow-hidden rounded-lg"
       key={column.sprint.id}
     >
       <UserStoryCardColumn
-        userStories={column.userStories}
+        userStories={
+          column.userStoryIds
+            .map((userStoryId) => userStories[userStoryId])
+            .filter((val) => val !== undefined) ?? []
+        }
         selection={selectedUserStories}
         setSelection={setSelectedUserStories}
         setDetailId={setDetailUserStoryId}
         setShowDetail={setShowDetail}
+        className={cn({ "pb-10": availableToBeAssignedTo })}
         header={
           <div className="flex flex-col items-start pr-1">
             <div className="flex w-full justify-between">
@@ -92,6 +113,21 @@ export default function SprintCardColumn({
           </div>
         }
       />
+      <div
+        className={cn(
+          "pointer-events-none absolute bottom-0 left-0 flex w-full items-center justify-center p-3 text-center text-white opacity-0 transition",
+          {
+            "pointer-events-auto opacity-100": availableToBeAssignedTo,
+          },
+        )}
+      >
+        <PrimaryButton
+          className="w-full"
+          onClick={() => assignSelectionToSprint(column.sprint.id)}
+        >
+          Move to sprint
+        </PrimaryButton>
+      </div>
     </div>
   );
 }

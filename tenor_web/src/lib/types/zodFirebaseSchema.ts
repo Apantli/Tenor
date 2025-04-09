@@ -110,10 +110,12 @@ export const UserStorySchema = BacklogItemSchema.extend({
 export const TaskSchema = BasicInfoSchema.extend({
   statusId: z.string(),
   assigneeId: z.string(),
+  dueDate: TimestampType.nullable(),
+  finishedDate: TimestampType.nullable(),
+  itemId: z.string(),
+  itemType: z.enum(["US", "IS", "IT"]),
+  size: SizeSchema.optional(),
   // reviewerId: z.string(), // Scope creep. Ignore for now
-  dueDate: z.date().nullable(),
-  finishedDate: z.date().nullable(),
-  size: SizeSchema,
 });
 
 export const IssueSchema = BacklogItemSchema.extend({
@@ -159,9 +161,6 @@ export const ProjectSchema = z.object({
   logo: z.string(),
   deleted: z.boolean().default(false),
 
-  // FIXME: This should be a subcollection
-  settings: SettingsSchema,
-
   // Will users also be in their subcollection?
   users: z.array(
     z.object({
@@ -190,6 +189,9 @@ export const ProjectSchema = z.object({
   // genericItems: z.array(BacklogItemSchema).default([]),
   // sprints: z.array(SprintSchema).default([]),
   // sprintSnapshots: z.array(SprintSnapshotSchema).default([]),
+  // FIXME: This should be a subcollection
+  // settings: SettingsSchema.optional(),
+
   currentSprintId: z.string().default("1"),
   activities: z
     .array(

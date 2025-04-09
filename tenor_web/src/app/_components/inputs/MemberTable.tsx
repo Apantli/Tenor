@@ -122,7 +122,9 @@ export default function MemberTable({
                   if (teamMembers.find((member) => member.id === user.id))
                     return null;
 
-                  if (!user.displayName?.includes(searchValue)) return null;
+                  if (!(user.email + user.displayName).includes(searchValue))
+                    return null;
+
                   return (
                     <DropdownButton
                       key={user.id}
@@ -134,7 +136,9 @@ export default function MemberTable({
                     >
                       <div className="flex items-center">
                         <ProfilePicture user={user ?? null} hideTooltip />
-                        <span className="ml-2 text-sm">{user.displayName}</span>
+                        <span className="ml-2 text-sm">
+                          {user.displayName ?? user.email}
+                        </span>
                       </div>
                     </DropdownButton>
                   );
