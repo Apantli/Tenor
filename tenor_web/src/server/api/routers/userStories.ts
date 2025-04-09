@@ -142,7 +142,7 @@ export const userStoriesRouter = createTRPCRouter({
 
       const fixedData = await Promise.all(
         rawUs.map(async (userStory) => {
-          console.log(userStory)
+          console.log(userStory);
           const sprint = await getSprint(settingsRef, userStory.sprintId);
           const epic = await getEpic(settingsRef, userStory.epicId);
           return {
