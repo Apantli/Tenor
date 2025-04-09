@@ -178,10 +178,11 @@ export interface UserStory extends BacklogItem {
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
-  // reviewerId: string; // Scope creep. Ignore for now
   dueDate: Date | null;
   finishedDate: Date | null;
   size: Size;
+  itemId: string;
+  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 }
 
 export interface Issue extends BacklogItem {

@@ -262,6 +262,29 @@ export const projectsRouter = createTRPCRouter({
           deleted: false,
         });
 
+        const statusCollection = newProjectRef
+          .collection("settings")
+          .doc("settings")
+          .collection("statusTypes");
+
+        await statusCollection.add({
+          name: "Todo",
+          color: "#0737E3",
+          deleted: false,
+        });
+
+        await statusCollection.add({
+          name: "Doing",
+          color: "#AD7C00",
+          deleted: false,
+        });
+
+        await statusCollection.add({
+          name: "Done",
+          color: "#009719",
+          deleted: false,
+        });
+
         return { success: true, projectId: newProjectRef.id };
       } catch (error) {
         console.error("Error adding document: ", error);

@@ -110,10 +110,12 @@ export const UserStorySchema = BacklogItemSchema.extend({
 export const TaskSchema = BasicInfoSchema.extend({
   statusId: z.string(),
   assigneeId: z.string(),
+  dueDate: TimestampType.nullable(),
+  finishedDate: TimestampType.nullable(),
+  itemId: z.string(),
+  itemType: z.enum(["US", "IS", "IT"]),
+  size: SizeSchema.optional(),
   // reviewerId: z.string(), // Scope creep. Ignore for now
-  dueDate: z.date().nullable(),
-  finishedDate: z.date().nullable(),
-  size: SizeSchema,
 });
 
 export const IssueSchema = BacklogItemSchema.extend({
