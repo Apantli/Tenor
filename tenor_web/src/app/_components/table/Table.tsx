@@ -47,7 +47,7 @@ interface TableProps<I, T> {
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
-  onDelete?: (ids: I[]) => Promise<boolean>;
+  onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   className?: ClassNameValue;
   emptyMessage?: string;
 }
@@ -220,6 +220,7 @@ export default function Table<
             columns={columns}
             multiselect={multiselect}
             selection={selection}
+            setSelection={setSelection}
             toggleSelect={toggleSelect}
             extraOptions={extraOptions}
             deletable={deletable}
