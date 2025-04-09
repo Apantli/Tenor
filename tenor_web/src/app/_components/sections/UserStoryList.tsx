@@ -80,10 +80,6 @@ export default function UserStoryList() {
       );
     }
 
-    if (userStoryData?.length == 0) {
-      return <span>No User stories found</span>;
-    }
-
     // TODO: Add correct leading 0 to ids (which depends on max id). Currently hardcoded
     const tableColumns: TableColumns<UserStoryCol> = {
       id: { visible: false },
@@ -321,6 +317,7 @@ export default function UserStoryList() {
 
     return (
       <Table
+        emptyMessage="No user stories found"
         className={cn("w-full", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}
