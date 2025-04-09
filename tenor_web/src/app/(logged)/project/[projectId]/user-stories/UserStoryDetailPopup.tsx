@@ -48,20 +48,26 @@ export default function UserStoryDetailPopup({
     userStoryId,
   });
 
-  const { data: tasksTableData, isLoading: isLoadingTasks } = api.tasks.getTasksTableFriendly.useQuery({
-    projectId: projectId as string,
-    itemId: userStoryId,
-  }, {
-    enabled: showDetail
-  });
+  const { data: tasksTableData, isLoading: isLoadingTasks } =
+    api.tasks.getTasksTableFriendly.useQuery(
+      {
+        projectId: projectId as string,
+        itemId: userStoryId,
+      },
+      {
+        enabled: showDetail,
+      },
+    );
 
-  const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(task => ({
-    id: task.id,
-    scrumId: task.scrumId,
-    name: task.title,
-    status: task.status,
-    assignee: task.assignee
-  }));
+  const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
+    (task) => ({
+      id: task.id,
+      scrumId: task.scrumId,
+      name: task.title,
+      status: task.status,
+      assignee: task.assignee,
+    }),
+  );
 
   const { mutateAsync: updateUserStory } =
     api.userStories.modifyUserStory.useMutation();
@@ -100,7 +106,8 @@ export default function UserStoryDetailPopup({
     }
   }, [error]);
 
-  const { mutateAsync: changeStatus} = api.tasks.changeTaskStatus.useMutation();
+  const { mutateAsync: changeStatus } =
+    api.tasks.changeTaskStatus.useMutation();
 
   const isModified = () => {
     if (editForm.name !== userStoryDetail?.name) return true;
@@ -124,6 +131,7 @@ export default function UserStoryDetailPopup({
       priorityId: updatedData?.priority?.id,
       size: updatedData?.size,
       epicId: updatedData?.epic?.id ?? "",
+      sprintId: updatedData?.sprint?.id ?? "",
       dependencyIds: updatedData?.dependencies.map((us) => us.id) ?? [],
       requiredByIds: updatedData?.requiredBy.map((us) => us.id) ?? [],
     };
@@ -169,15 +177,12 @@ export default function UserStoryDetailPopup({
     await refetch();
   };
 
-  const handleTaskStatusChange = async (
-    taskId : string,
-    status : Tag,
-  ) => {
+  const handleTaskStatusChange = async (taskId: string, status: Tag) => {
     const updatedTasks = tasksTableData?.map((task) => {
       if (task.id === taskId) {
         return {
           ...task,
-          status: status
+          status: status,
         };
       }
       return task;
@@ -188,25 +193,27 @@ export default function UserStoryDetailPopup({
       itemId: userStoryId,
     });
 
-    utils.tasks.getTasksTableFriendly.setData({
-      projectId: projectId as string,
-      itemId: userStoryId,
-    }, (oldData) => {
-      if (!oldData) return undefined;
-      return updatedTasks ?? [];
-    })
+    utils.tasks.getTasksTableFriendly.setData(
+      {
+        projectId: projectId as string,
+        itemId: userStoryId,
+      },
+      (oldData) => {
+        if (!oldData) return undefined;
+        return updatedTasks ?? [];
+      },
+    );
 
     await changeStatus({
       taskId,
       projectId: projectId as string,
       statusId: status.id ?? "",
-    })
+    });
 
     await utils.tasks.getTasksTableFriendly.invalidate({
       projectId: projectId as string,
       itemId: userStoryId,
     });
-    
   };
 
   const handleDelete = async () => {
@@ -295,7 +302,7 @@ export default function UserStoryDetailPopup({
 
                 <h3 className="mt-4 text-lg">
                   <span className="font-semibold">Sprint: </span>
-                  {formatSprintNumber(userStoryDetail.sprintNumber)}
+                  {formatSprintNumber(userStoryDetail.sprint?.number)}
                 </h3>
 
                 <DependencyList
@@ -408,10 +415,10 @@ export default function UserStoryDetailPopup({
               )}
             </>
           )}
-          
-          <TasksTable 
-            tasks={transformedTasks ?? []} 
-            itemId={userStoryId} 
+
+          <TasksTable
+            tasks={transformedTasks ?? []}
+            itemId={userStoryId}
             itemType="US"
             onTaskStatusChange={handleTaskStatusChange}
           />
