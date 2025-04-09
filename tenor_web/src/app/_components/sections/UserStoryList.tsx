@@ -287,7 +287,7 @@ export default function UserStoryList() {
           `Delete ${confirmMessage}`,
         ))
       ) {
-        return;
+        return false;
       }
 
       const newData = userStoryData.filter(
@@ -313,6 +313,7 @@ export default function UserStoryList() {
         ),
       );
       await refetchUS();
+      return true;
     };
 
     return (
