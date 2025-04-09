@@ -18,7 +18,7 @@ export interface UserStoryCol {
   id: string;
   scrumId: number;
   title: string;
-  epicId: number;
+  epicScrumId?: number;
   priority?: Tag;
   size: Size;
   sprintNumber?: number;
@@ -132,12 +132,16 @@ export const userStoriesRouter = createTRPCRouter({
             projectId,
             userStory.sprintId,
           );
-          const epic = await getEpic(settingsRef, userStory.epicId);
+          const epic = await getEpic(
+            ctx.firestore,
+            projectId,
+            userStory.epicId,
+          );
           return {
             id: userStory.id,
             scrumId: userStory.scrumId,
             title: userStory.name,
-            epicId: epic?.scrumId ?? undefined,
+            epicScrumId: epic?.scrumId,
             priority: await getPriorityTag(settingsRef, userStory.priorityId),
             size: userStory.size,
             sprintNumber: sprint?.number,

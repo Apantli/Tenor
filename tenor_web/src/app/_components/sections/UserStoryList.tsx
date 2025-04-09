@@ -118,16 +118,16 @@ export default function UserStoryList() {
           );
         },
       },
-      epicId: {
+      epicScrumId: {
         label: "Epic",
         width: 100,
         sortable: true,
         filterable: "search-only",
         filterValue(row) {
-          return formatEpicScrumId(row.scrumId);
+          return formatEpicScrumId(row.epicScrumId);
         },
         render(row) {
-          return <span>{formatEpicScrumId(row.scrumId)}</span>;
+          return <span>{formatEpicScrumId(row.epicScrumId)}</span>;
         },
       },
       priority: {

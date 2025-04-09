@@ -5,18 +5,24 @@ import { FieldPath } from "firebase-admin/firestore";
 
 // TODO: Use this function within the epic procedures (did not do it because of possible conflicts)
 export const getEpic = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
   epicId: string,
 ) => {
   if (epicId === undefined || epicId === "") {
     return undefined;
   }
-  const epic = await settingsRef.collection("sprints").doc(epicId).get();
+  const sprintRef = dbAdmin
+    .collection("projects")
+    .doc(projectId)
+    .collection("epics")
+    .doc(epicId);
+  const sprint = await sprintRef.get();
 
-  if (!epic.exists) {
+  if (!sprint.exists) {
     return undefined;
   }
-  return { id: epic.id, ...EpicSchema.parse(epic.data()) };
+  return { id: sprint.id, ...EpicSchema.parse(sprint.data()) };
 };
 
 export const epicsRouter = createTRPCRouter({
