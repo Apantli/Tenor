@@ -11,14 +11,13 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { toBase64 } from "~/utils/base64";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export default function ProjectGeneralSettings() {
   const { projectId } = useParams();
   const [icon, setIcon] = useState<File | null>(null);
   const handleImageChange = async (file: File) => {
     const iconBase64 = (await toBase64(file)) as string;
-
-    console.log("iconBase64", iconBase64);
     setIcon(file);
     setEditForm((prev) => ({
       ...prev,
@@ -33,9 +32,13 @@ export default function ProjectGeneralSettings() {
   const { data: project } = api.projects.getGeneralConfig.useQuery({
     projectId: projectId as string,
   });
+  const confirm = useConfirmation();
 
   const { mutateAsync: modifyProject, isPending: modifyingProject } =
     api.projects.modifyGeneralConfig.useMutation();
+
+  const { mutateAsync: deleteProject, isPending: deletingProject } =
+    api.projects.deleteProject.useMutation();
 
   const [editForm, setEditForm] = useState({
     name: "",
@@ -57,7 +60,6 @@ export default function ProjectGeneralSettings() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    console.log(name, value);
     setEditForm((prev) => ({
       ...prev,
       [name]: value,
@@ -67,7 +69,7 @@ export default function ProjectGeneralSettings() {
   const isModified = () => {
     return (
       editForm.name !== project?.name ||
-      editForm.icon !== project?.logo ||
+      (editForm.icon !== project?.logo && icon !== null) ||
       editForm.description !== project?.description
     );
   };
@@ -87,14 +89,18 @@ export default function ProjectGeneralSettings() {
                 });
                 return;
               }
+              if (!modifyingProject) {
+                await modifyProject({
+                  projectId: projectId as string,
+                  name: editForm.name,
+                  description: editForm.description,
+                  logo: editForm.icon,
+                });
+                await utils.projects.getGeneralConfig.invalidate();
 
-              await modifyProject({
-                projectId: projectId as string,
-                name: editForm.name,
-                description: editForm.description,
-                logo: editForm.icon,
-              });
-              await utils.projects.getGeneralConfig.invalidate();
+                // update project in the cache
+                setIcon(null);
+              }
             }}
             loading={modifyingProject}
           >
@@ -137,7 +143,7 @@ export default function ProjectGeneralSettings() {
           <InputTextAreaField
             label="Project Description"
             labelClassName="text-lg font-bold"
-            className="mt-auto w-full"
+            className="mt-auto h-[230px] w-full"
             value={editForm.description}
             name="description"
             onChange={handleChange}
@@ -153,11 +159,25 @@ export default function ProjectGeneralSettings() {
                 <p className="text-sm">Once deleted, you cannot recover it.</p>
               </div>
               <DeleteButton
-                className="mt-auto"
-                onClick={() => {
-                  console.log("Delete project");
+                className="mb-10 mt-auto"
+                onClick={async () => {
+                  if (
+                    !(await confirm(
+                      "Delete project?",
+                      "This action is not revertible",
+                      "Delete item",
+                    ))
+                  ) {
+                    return;
+                  }
+
+                  if (!deletingProject) {
+                    await deleteProject({
+                      projectId: projectId as string,
+                    });
+                  }
                 }}
-                loading={false}
+                loading={deletingProject}
                 floatingSpinner={false}
               >
                 Delete project

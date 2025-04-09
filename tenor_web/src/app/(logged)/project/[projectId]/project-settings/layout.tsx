@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { type PropsWithChildren } from "react";
-import Navbar from "~/app/_components/Navbar";
-import Tabbar from "~/app/_components/Tabbar";
+import { type PropsWithChildren, useState } from "react";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -22,6 +20,8 @@ const join_path = (...paths: string[]) => {
 export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
   const pathname = usePathname();
 
+  const [isModified, setIsModified] = useState(false);
+
   const pages = [
     { title: "General", link: "/", icon: SettingsIcon },
     {
@@ -33,8 +33,6 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
     { title: "Scrum Preferences", link: "/scrum-preferences", icon: RouteIcon },
     { title: "Tags & Kanban", link: "/tags-kanban", icon: LabelOutlinedIcon },
   ];
-
-  console.log("pathname", pathname);
 
   const layout_dir = "project-settings";
 
@@ -74,57 +72,3 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
     </div>
   );
 }
-
-// export default function Tabbar({ disabled, mainPageName } : Props ) {
-//   const pathname = usePathname();
-//   const params = useParams();
-//   const projectPath = `/project/${params.projectId as string}`;
-//   const cutPathname = pathname.slice(projectPath.length) || "/";
-
-//   // TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
-//   const tabs = [
-//     { title: mainPageName ?? "Overview", link: "/" },
-//     { title: "Requirements", link: "/requirements" },
-//     { title: "User Stories", link: "/user-stories" },
-//     { title: "Issues", link: "/issues" },
-//     { title: "Sprints", link: "/sprints" },
-//     { title: "Kanban", link: "/kanban" },
-//     { title: "Calendar", link: "/calendar" },
-//     { title: "Performance", link: "/performance" },
-//     { title: "Project Settings", link: "/project-settings" },
-//   ];
-
-//   const handleClick: MouseEventHandler = (e) => {
-//     const element = e.target as HTMLAnchorElement;
-//     element.scrollIntoView({
-//       behavior: "smooth",
-//     });
-//   };
-
-//   return (
-//     <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-scroll whitespace-nowrap bg-app-primary px-8">
-//       {tabs.map(({ title, link }, i) => (
-//         <Link
-//           key={i}
-//           className={cn(
-//             "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
-//             {
-//               "bg-white text-app-primary": link === cutPathname,
-//               "text-gray-300  pointer-events-none": disabled && link !== cutPathname,
-//             },
-//           )}
-//           href={projectPath + link}
-//           onClick={handleClick}
-//         >
-//           {title}
-//           {link === cutPathname && (
-//             <>
-//               <div className="absolute -left-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[5px_5px_0_0_white]"></div>
-//               <div className="absolute -right-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[-5px_5px_0_0_white]"></div>
-//             </>
-//           )}
-//         </Link>
-//       ))}
-//     </div>
-//   );
-// }
