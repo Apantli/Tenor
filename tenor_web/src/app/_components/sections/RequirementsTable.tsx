@@ -45,9 +45,9 @@ export default function RequirementsTable() {
   const defaultRequirement = {
     name: "",
     description: "",
-    priorityId: allTags[0],
-    requirementTypeId: allReqTypeTags[0],
-    requirementFocusId: allFocusTags[0],
+    priorityId: undefined as Tag | undefined,
+    requirementTypeId: undefined as Tag | undefined,
+    requirementFocusId: undefined as Tag | undefined,
     size: undefined as Tag | undefined,
   };
   const [newRequirement, setNewRequirement] = useState(defaultRequirement);
