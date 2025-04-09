@@ -16,10 +16,11 @@ interface TableRowProps<I, T> {
   columns: TableColumns<T>;
   multiselect?: boolean;
   selection: Set<I>;
+  setSelection: React.Dispatch<React.SetStateAction<Set<I>>>;
   toggleSelect: (id: I) => void;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
-  onDelete?: (ids: I[]) => void;
+  onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   scrollContainerRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -32,6 +33,7 @@ function TableRow<
   columns,
   multiselect,
   selection,
+  setSelection,
   toggleSelect,
   extraOptions,
   deletable,
@@ -47,6 +49,16 @@ function TableRow<
     (multiselect ? "20px " : "") +
     columnEntries.map(([, column]) => `${column.width}px`).join(" ") +
     (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+
+  const handleDelete = async () => {
+    onDelete?.([value.id], (del) => {
+      if (del) {
+        const newSelection = selection;
+        newSelection.delete(value.id);
+        setSelection(newSelection);
+      }
+    });
+  };
 
   return (
     <div
@@ -89,7 +101,7 @@ function TableRow<
             {deletable === true && (
               <DropdownButton
                 className="flex items-center justify-between gap-8"
-                onClick={() => onDelete?.([value.id])}
+                onClick={handleDelete}
               >
                 <span className="text-app-fail">Delete</span>
                 <DeleteIcon htmlColor="red" />
@@ -100,7 +112,7 @@ function TableRow<
               "deleteText" in deletable && (
                 <DropdownButton
                   className="flex items-center justify-between gap-8"
-                  onClick={() => onDelete?.([value.id])}
+                  onClick={handleDelete}
                 >
                   <span className="text-app-fail">{deletable.deleteText}</span>
                   <span className="text-app-fail">
