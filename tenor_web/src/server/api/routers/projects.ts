@@ -258,4 +258,16 @@ export const projectsRouter = createTRPCRouter({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
+
+  getProjectName: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const project = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .get();
+      const projectData = ProjectSchema.parse(project.data());
+      return { projectName: projectData.name };
+    }),
 });
