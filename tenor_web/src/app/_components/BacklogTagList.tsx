@@ -137,7 +137,9 @@ export default function BacklogTagList({ tags, onChange }: Props) {
                 </DropdownButton>
               ))}
               {allTags?.length === 0 && searchValue === "" && (
-                <div className="p-3 text-sm text-gray-500">No tags exist</div>
+                <div className="p-2 text-center text-sm text-gray-600">
+                  No tags exist
+                </div>
               )}
               {filteredTags?.length === 0 && searchValue !== "" && (
                 <DropdownButton
