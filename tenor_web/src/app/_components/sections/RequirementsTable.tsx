@@ -60,7 +60,7 @@ export default function RequirementsTable() {
       [name]: value,
     }));
   };
-  const { mutateAsync: createRequirement } =
+  const { mutateAsync: createRequirement, isPending } =
     api.requirements.createRequirement.useMutation();
   const handleCreateRequirement = async () => {
     const {
@@ -290,6 +290,7 @@ export default function RequirementsTable() {
                   await handleCreateRequirement();
                   setShowSmallPopup(false);
                 }}
+                loading={isPending}
               >
                 Create Requirement
               </PrimaryButton>
