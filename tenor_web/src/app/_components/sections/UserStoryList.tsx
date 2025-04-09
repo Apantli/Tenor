@@ -250,16 +250,16 @@ export default function UserStoryList() {
           );
         },
       },
-      sprintId: {
+      sprintNumber: {
         label: "Sprint",
         width: 100,
         sortable: true,
         filterable: "list",
         filterValue(row) {
-          return formatSprintNumber(row.sprintId).toString();
+          return formatSprintNumber(row.sprintNumber).toString();
         },
         render(row) {
-          return <span>{formatSprintNumber(row.sprintId)}</span>;
+          return <span>{formatSprintNumber(row.sprintNumber)}</span>;
         },
       },
       taskProgress: {
