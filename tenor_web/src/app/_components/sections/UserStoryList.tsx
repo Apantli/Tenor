@@ -20,6 +20,7 @@ import {
 } from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import LoadingSpinner from "../LoadingSpinner";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -72,7 +73,11 @@ export default function UserStoryList() {
   // Function to get the US table or message instead
   const getTable = () => {
     if (userStories == undefined || isLoadingUS) {
-      return <span>Loading...</span>;
+      return (
+        <div className="flex h-full w-full flex-1 items-start justify-center p-10">
+          <LoadingSpinner color="primary" />
+        </div>
+      );
     }
 
     if (userStoryData?.length == 0) {
