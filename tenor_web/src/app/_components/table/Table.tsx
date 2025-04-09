@@ -6,6 +6,8 @@ import { type ClassNameValue } from "tailwind-merge";
 
 import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
+import useClickOutside from "~/app/_hooks/useClickOutside";
+import useShiftKey from "~/app/_hooks/useShiftKey";
 
 export interface VisibleColumn<T> {
   label: string;
@@ -73,6 +75,7 @@ export default function Table<
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selection, setSelection] = useState<Set<I>>(new Set());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastSelectedIndexRef = useRef<number>();
 
   const sortedData = useMemo(() => {
     if (!sortColumnKey) return data;
@@ -140,13 +143,31 @@ export default function Table<
     }
   };
 
+  const shiftClick = useShiftKey();
+
   const toggleSelect = (id: I) => {
     const newSelection = new Set(selection);
-    if (selection.has(id)) {
-      newSelection.delete(id);
-    } else {
-      newSelection.add(id);
+    const currentIndex = data.findIndex((row) => row.id === id);
+
+    let min = currentIndex;
+    let max = currentIndex;
+    if (shiftClick) {
+      min = Math.min(lastSelectedIndexRef.current ?? Infinity, currentIndex);
+      max = Math.max(lastSelectedIndexRef.current ?? -Infinity, currentIndex);
     }
+
+    for (let i = min; i <= max; i++) {
+      const row = data[i];
+      if (row) {
+        const rowId = row.id;
+        if (selection.has(id)) {
+          newSelection.delete(rowId);
+        } else {
+          newSelection.add(rowId);
+        }
+      }
+    }
+    lastSelectedIndexRef.current = currentIndex;
     setSelection(newSelection);
   };
 
@@ -188,6 +209,10 @@ export default function Table<
     delete filters[columnKey as string];
     setFilters({ ...filters });
   };
+
+  useClickOutside(scrollContainerRef, () => {
+    lastSelectedIndexRef.current = undefined;
+  });
 
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
