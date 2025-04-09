@@ -11,6 +11,7 @@ import PrimaryButton from "../buttons/PrimaryButton";
 import PillPickerComponent from "../PillPickerComponent";
 import InputTextField from "../inputs/InputTextField";
 import InputTextAreaField from "../inputs/InputTextAreaField";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -49,6 +50,8 @@ export default function RequirementsTable() {
       [name]: value,
     }));
   };
+
+  const { alert } = useAlert();
   const { mutateAsync: createRequirement, isPending } =
     api.requirements.createRequirement.useMutation();
   const handleCreateRequirement = async () => {
@@ -60,8 +63,21 @@ export default function RequirementsTable() {
       description,
     } = newRequirement;
 
-    if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id)
+    if (!name) {
+      alert("Oops...", "Requirement Name must have a value.", {
+        type: "error",
+        duration: 5000, // time in ms (5 seconds)
+      });
       return;
+    }
+
+    if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
+      alert("Oops...", "All Properties must have a value.", {
+        type: "error",
+        duration: 5000, // time in ms (5 seconds)
+      });
+      return;
+    }
 
     // Unwrap values
     const unwrappedPriorityId = priorityId.id;
@@ -85,6 +101,7 @@ export default function RequirementsTable() {
 
     setNewRequirement(defaultRequirement);
 
+    setShowSmallPopup(false);
     console.log(response);
   };
 
@@ -265,7 +282,6 @@ export default function RequirementsTable() {
               <PrimaryButton
                 onClick={async () => {
                   await handleCreateRequirement();
-                  setShowSmallPopup(false);
                 }}
                 loading={isPending}
               >
