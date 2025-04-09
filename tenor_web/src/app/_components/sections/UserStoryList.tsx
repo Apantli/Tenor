@@ -127,7 +127,6 @@ export default function UserStoryList() {
           return formatEpicScrumId(row.scrumId);
         },
         render(row) {
-          // FIXME: The actual epic scrum id should be sent to the client, along the normal id
           return <span>{formatEpicScrumId(row.scrumId)}</span>;
         },
       },
