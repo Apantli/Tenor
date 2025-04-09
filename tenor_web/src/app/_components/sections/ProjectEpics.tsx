@@ -12,6 +12,7 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scumIdHooks";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import Markdown from "react-markdown";
+import SecondaryButton from "../buttons/SecondaryButton";
 
 export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   const { mutateAsync: createEpic, isPending: creatingEpic } =
@@ -211,27 +212,16 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
         editMode={editEpic}
         size="small"
         title={
-          <div>
-            <div className="flex flex-row gap-x-2">
-              <h1 className="mb-4 text-3xl">
-                <span className="font-bold">
-                  {epic?.scrumId
-                    ? formatEpicScrumId(epic.scrumId) + ":"
-                    : ""}{" "}
-                </span>
-                {!editEpic && <span>{epic?.name}</span>}
-              </h1>
-            </div>
-            {editEpic && (
-              <InputTextField
-                label="Epic name"
-                type="text"
-                placeholder="Your epic name"
-                value={editEpicName}
-                onChange={(e) => setEditEpicName(e.target.value)}
-              />
-            )}
-          </div>
+          <>
+            <h1 className="mb-4 text-3xl">
+              <span className="font-bold">
+                {epic?.scrumId
+                  ? formatEpicScrumId(epic.scrumId) + ":"
+                  : ""}{" "}
+              </span>
+              {epic?.name}
+            </h1>
+          </>
         }
         setEditMode={async (editing) => {
           if (editing) {
@@ -264,50 +254,45 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
         saving={creatingEpic}
         disablePassiveDismiss={isEditEpicModified()}
         footer={
-          <div className="flex gap-2">
-            {editEpic && (
-              <>
-                <DeleteButton
-                  loading={deletingEpic}
-                  onClick={async () => {
-                    const confirmation = await confirm(
-                      "Confirm deletion?",
-                      "This is irreversible.",
-                      "Delete permanently",
-                      "Cancel",
-                    );
-                    if (!confirmation) return;
-                    if (!epic?.scrumId) {
-                      console.log("Warning: epic not found");
-                      return;
-                    }
-                    if (!deletingEpic) {
-                      await deleteEpic({
-                        projectId: projectId,
-                        scrumId: epic?.scrumId,
-                        name: editEpicName,
-                        description: editEpicDescription,
-                        deleted: true,
-                      });
-                      await utils.epics.invalidate();
-                      handleEditDismiss();
-                    }
-                  }}
-                >
-                  Delete epic
-                </DeleteButton>
-              </>
-            )}
+          <div className="flex items-start gap-2">
             {!editEpic && (
-              <PrimaryButton
-                className="mt-1"
-                // FIXME: set filted for user stories related to epic
+              <SecondaryButton
+                // FIXME: set filter for user stories related to epic
                 onClick={() => handleEditDismiss()}
               >
-                {" "}
-                View user stories{" "}
-              </PrimaryButton>
+                Show user stories
+              </SecondaryButton>
             )}
+
+            <DeleteButton
+              loading={deletingEpic}
+              onClick={async () => {
+                const confirmation = await confirm(
+                  "Confirm deletion?",
+                  "This is irreversible.",
+                  "Delete permanently",
+                  "Cancel",
+                );
+                if (!confirmation) return;
+                if (!epic?.scrumId) {
+                  console.log("Warning: epic not found");
+                  return;
+                }
+                if (!deletingEpic) {
+                  await deleteEpic({
+                    projectId: projectId,
+                    scrumId: epic?.scrumId,
+                    name: editEpicName,
+                    description: editEpicDescription,
+                    deleted: true,
+                  });
+                  await utils.epics.invalidate();
+                  handleEditDismiss();
+                }
+              }}
+            >
+              Delete epic
+            </DeleteButton>
           </div>
         }
         dismiss={async () => {
@@ -323,14 +308,23 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
           handleEditDismiss();
         }}
       >
-        {epicLoading ? (
-          <div className="flex flex-col items-center gap-y-7">
-            <h3 className="text-2xl font-bold">Loading...</h3>
-            <LoadingSpinner color="dark" />
-          </div>
-        ) : (
-          <div className="pt-3 grow">
-            {editEpic ? (
+        <div className="grow pt-3">
+          {epicLoading && (
+            <div className="flex flex-col items-center gap-y-7">
+              <h3 className="text-2xl font-bold">Loading...</h3>
+              <LoadingSpinner color="dark" />
+            </div>
+          )}
+
+          {!epicLoading && editEpic && (
+            <>
+              <InputTextField
+                label="Epic name"
+                type="text"
+                placeholder="Your epic name"
+                value={editEpicName}
+                onChange={(e) => setEditEpicName(e.target.value)}
+              />
               <InputTextAreaField
                 label="Epic description"
                 value={editEpicDescription}
@@ -338,21 +332,21 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
                 placeholder="Your epic description"
                 className="h-auto min-h-24 w-full resize-none"
               />
-            ) : (
-              <>
-                {epic?.description == "" ? (
-                  <p className="italic text-gray-500">
-                    No description provided.
-                  </p>
-                ) : (
-                  <div className="markdown-content text-ld">
-                    <Markdown>{epic?.description ?? ""}</Markdown>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )}
+            </>
+          )}
+
+          {!epicLoading && !editEpic && (
+            <>
+              {epic?.description == "" ? (
+                <p className="italic text-gray-500">No description provided.</p>
+              ) : (
+                <div className="markdown-content text-ld">
+                  <Markdown>{epic?.description ?? ""}</Markdown>
+                </div>
+              )}
+            </>
+          )}
+        </div>
       </Popup>
     </>
   );
