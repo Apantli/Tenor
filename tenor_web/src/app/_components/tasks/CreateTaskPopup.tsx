@@ -26,8 +26,9 @@ export function CreateTaskForm({
   itemId,
 }: Props) {
   const { projectId } = useParams();
+  const projectIdString = projectId as string;
 
-  const { data: users, isLoading } = api.users.getUserListEdiBox.useQuery();
+  const { data: users, isLoading } = api.users.getUserListEdiBox.useQuery({projectId : projectIdString});
 
   const { mutateAsync: createTask, isPending } = api.tasks.createTask.useMutation();
 
