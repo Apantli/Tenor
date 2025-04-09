@@ -249,7 +249,7 @@ export const requirementsRouter = createTRPCRouter({
         allRequirementFocusTags,
       };
     }),
-  createRequirement: protectedProcedure
+  createOrModifyRequirement: protectedProcedure
     .input(RequirementSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const projectCount = (

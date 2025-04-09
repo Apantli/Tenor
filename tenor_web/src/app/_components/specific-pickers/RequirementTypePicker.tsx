@@ -5,6 +5,7 @@ import React from "react";
 import { api } from "~/trpc/react";
 import PillComponent from "../PillComponent";
 import type { Tag } from "~/lib/types/firebaseSchemas";
+import { cn } from "~/lib/utils";
 
 interface Props {
   type?: Tag;
