@@ -12,9 +12,11 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { toBase64 } from "~/utils/base64";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import { useModification } from "~/app/_hooks/useModification";
 
 export default function ProjectGeneralSettings() {
   const { projectId } = useParams();
+  const { setIsModified, isModified } = useModification();
   const [icon, setIcon] = useState<File | null>(null);
   const handleImageChange = async (file: File) => {
     const iconBase64 = (await toBase64(file)) as string;
@@ -66,7 +68,7 @@ export default function ProjectGeneralSettings() {
     }));
   };
 
-  const isModified = () => {
+  const computeIsModified = () => {
     return (
       editForm.name !== project?.name ||
       (editForm.icon !== project?.logo && icon !== null) ||
@@ -74,11 +76,17 @@ export default function ProjectGeneralSettings() {
     );
   };
 
+  useEffect(() => {
+    if (computeIsModified() !== isModified.current) {
+      setIsModified(computeIsModified());
+    }
+  }, [computeIsModified(), isModified]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-row justify-between">
         <h1 className="mb-4 text-3xl font-bold">General</h1>
-        {project && isModified() && (
+        {project && computeIsModified() && (
           <PrimaryButton
             onClick={async () => {
               if (!projectId) return;
