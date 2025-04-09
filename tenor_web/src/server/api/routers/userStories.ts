@@ -265,7 +265,6 @@ export const userStoriesRouter = createTRPCRouter({
         }),
       );
 
-      // FIXME: Get sprint number from database
       let sprintNumber = undefined;
       if (userStoryData.sprintId !== "") {
         const sprint = await ctx.firestore
