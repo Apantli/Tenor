@@ -15,6 +15,7 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
 import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
+import SearchBar from "../SearchBar";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -171,12 +172,12 @@ export default function RequirementsTable() {
                 onChange={(tag: Tag) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
-                      item.id === row.id ? { ...item, priorityId: newPriority } : item,
+                      item.id === row.id ? { ...item, priorityId: tag } : item,
                     ),
                   );
                 }}
               />
-            </div>
+            </span>
           );
         },
       },
