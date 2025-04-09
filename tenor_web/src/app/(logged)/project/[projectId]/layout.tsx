@@ -5,17 +5,15 @@ import { useParams } from "next/navigation";
 import React, { type PropsWithChildren } from "react";
 import Navbar from "~/app/_components/Navbar";
 import Tabbar from "~/app/_components/Tabbar";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export default function ProjectLayout({ children }: PropsWithChildren) {
   const { projectId } = useParams();
 
-  const { data: projectNameData, isLoading } =
-    api.projects.getProjectName.useQuery({ projectId: projectId as string });
-
-  if (isLoading || !projectNameData) {
-    return <></>;
-  }
+  const { data: projectNameData } = api.projects.getProjectName.useQuery({
+    projectId: projectId as string,
+  });
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -24,7 +22,13 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
           <Link href="/" className="font-semibold">
             Projects
           </Link>
-          <span>/ {projectNameData.projectName}</span>
+          <span
+            className={cn("opacity-0 transition", {
+              "opacity-100": !!projectNameData,
+            })}
+          >
+            / {projectNameData?.projectName ?? ""}
+          </span>
         </div>
       </Navbar>
       <Tabbar />
