@@ -19,6 +19,7 @@ import { DatePicker } from "~/app/_components/DatePicker";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
@@ -116,8 +117,41 @@ export default function ProjectSprints() {
   );
   const [newSprintEndDate, setNewSprintEndDate] = useState<Date | null>(null);
 
+  const { alert } = useAlert();
   const handleCreateSprint = async () => {
     if (newSprintStartDate === null || newSprintEndDate === null) return;
+
+    // Validate dates
+    if (newSprintStartDate >= newSprintEndDate) {
+      alert("Oops...", "Dates are invalid.", {
+        type: "error",
+        duration: 5000, // time in ms (5 seconds)
+      });
+      return;
+    }
+
+    for (const sprint of userStoriesBySprint?.sprints ?? []) {
+      if (
+        (sprint.sprint.startDate <= newSprintStartDate &&
+          sprint.sprint.endDate >= newSprintStartDate) ||
+        (sprint.sprint.startDate <= newSprintEndDate &&
+          sprint.sprint.endDate >= newSprintEndDate) ||
+        (newSprintStartDate <= sprint.sprint.startDate &&
+          newSprintEndDate >= sprint.sprint.startDate) ||
+        (newSprintStartDate <= sprint.sprint.endDate &&
+          newSprintEndDate >= sprint.sprint.endDate)
+      ) {
+        alert(
+          "Oops...",
+          `Dates collide with Sprint number ${sprint.sprint.number}.`,
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+        return;
+      }
+    }
 
     const response = await createSprint({
       projectId: projectId as string,
@@ -137,6 +171,7 @@ export default function ProjectSprints() {
     setNewSprintStartDate(defaultSprintInitialDate);
     setNewSprintEndDate(defaultSprintEndDate);
 
+    setShowSmallPopup(false);
     console.log(response);
   };
 
@@ -389,7 +424,6 @@ export default function ProjectSprints() {
               <PrimaryButton
                 onClick={async () => {
                   await handleCreateSprint();
-                  setShowSmallPopup(false);
                 }}
                 loading={isPending}
               >
