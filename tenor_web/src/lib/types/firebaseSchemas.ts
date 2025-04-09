@@ -20,6 +20,7 @@ export interface SprintInfo {
 
 // This sprint is modifiable
 export interface Sprint extends SprintInfo {
+  id?: string;
   userStoryIds: string[];
   issueIds: string[];
   genericItemIds: string[];

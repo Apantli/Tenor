@@ -12,6 +12,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import type { UserStoryDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
+import { getEpic } from "./epics";
 
 export interface UserStoryCol {
   id: string;
@@ -22,16 +23,6 @@ export interface UserStoryCol {
   size: Size;
   sprintId: number;
   taskProgress: [number | undefined, number | undefined];
-}
-
-function getRandomInt(min: number, max: number): number {
-  if (min > max) {
-    throw new Error("Min must be less than or equal to max");
-  }
-
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 const getUserStoriesFromProject = async (
@@ -58,14 +49,19 @@ const getUserStoriesFromProject = async (
   return userStories;
 };
 
-// TODO: Fetch from db
-const getSprintScrumId = () => {
-  return getRandomInt(1, 10);
-};
+const getSprint = async (
+  settingsRef: FirebaseFirestore.DocumentReference,
+  sprintId: string,
+) => {
+  if (sprintId === undefined || sprintId === "") {
+    return undefined;
+  }
+  const sprint = await settingsRef.collection("sprints").doc(sprintId).get();
 
-// TODO: Fetch from db
-const getEpicScrumId = () => {
-  return getRandomInt(1, 30);
+  if (!sprint.exists) {
+    return undefined;
+  }
+  return { id: sprint.id, ...SprintSchema.parse(sprint.data()) };
 };
 
 const getPriorityTag = async (
@@ -77,7 +73,7 @@ const getPriorityTag = async (
   }
   const tag = await settingsRef
     .collection("priorityTypes")
-    .doc(priorityId ?? "")
+    .doc(priorityId)
     .get();
   if (!tag.exists) {
     return undefined;
@@ -146,14 +142,17 @@ export const userStoriesRouter = createTRPCRouter({
 
       const fixedData = await Promise.all(
         rawUs.map(async (userStory) => {
+          console.log(userStory)
+          const sprint = await getSprint(settingsRef, userStory.sprintId);
+          const epic = await getEpic(settingsRef, userStory.epicId);
           return {
             id: userStory.id,
             scrumId: userStory.scrumId,
             title: userStory.name,
-            epicId: getEpicScrumId(),
+            epicId: epic?.scrumId ?? undefined,
             priority: await getPriorityTag(settingsRef, userStory.priorityId),
             size: userStory.size,
-            sprintId: getSprintScrumId(),
+            sprintId: sprint?.number ?? undefined,
             taskProgress: getTaskProgress(),
           };
         }),

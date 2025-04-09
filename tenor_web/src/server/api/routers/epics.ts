@@ -3,6 +3,22 @@ import { EpicSchema, ExistingEpicSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { FieldPath } from "firebase-admin/firestore";
 
+// TODO: Use this function within the epic procedures (did not do it because of possible conflicts)
+export const getEpic = async (
+  settingsRef: FirebaseFirestore.DocumentReference,
+  epicId: string,
+) => {
+  if (epicId === undefined || epicId === "") {
+    return undefined;
+  }
+  const epic = await settingsRef.collection("sprints").doc(epicId).get();
+
+  if (!epic.exists) {
+    return undefined;
+  }
+  return { id: epic.id, ...EpicSchema.parse(epic.data()) };
+};
+
 export const epicsRouter = createTRPCRouter({
   getProjectEpicsOverview: protectedProcedure
     .input(z.object({ projectId: z.string() }))

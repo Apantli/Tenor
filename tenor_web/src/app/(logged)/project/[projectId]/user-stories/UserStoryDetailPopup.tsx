@@ -17,7 +17,10 @@ import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillCo
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
+import {
+  useFormatSprintNumber,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
@@ -58,6 +61,7 @@ export default function UserStoryDetailPopup({
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { predefinedAlerts } = useAlert();
+  const formatSprintNumber = useFormatSprintNumber();
 
   // Copy the editable data from the user story
   useEffect(() => {
@@ -231,9 +235,7 @@ export default function UserStoryDetailPopup({
 
                 <h3 className="mt-4 text-lg">
                   <span className="font-semibold">Sprint: </span>
-                  {userStoryDetail.sprintNumber
-                    ? `Sprint ${userStoryDetail.sprintNumber}`
-                    : "Unassigned"}
+                  {formatSprintNumber(userStoryDetail.sprintNumber)}
                 </h3>
 
                 <DependencyList
