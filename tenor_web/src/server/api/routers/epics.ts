@@ -12,17 +12,17 @@ export const getEpic = async (
   if (epicId === undefined || epicId === "") {
     return undefined;
   }
-  const sprintRef = dbAdmin
+  const epicRef = dbAdmin
     .collection("projects")
     .doc(projectId)
     .collection("epics")
     .doc(epicId);
-  const sprint = await sprintRef.get();
+  const epic = await epicRef.get();
 
-  if (!sprint.exists) {
+  if (!epic.exists) {
     return undefined;
   }
-  return { id: sprint.id, ...EpicSchema.parse(sprint.data()) };
+  return { id: epic.id, ...EpicSchema.parse(epic.data()) };
 };
 
 export const epicsRouter = createTRPCRouter({
