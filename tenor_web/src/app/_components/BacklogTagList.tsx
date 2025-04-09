@@ -37,7 +37,7 @@ export const acceptableTagColors = [
 
 function generateRandomColor(): string {
   const randomIndex = Math.floor(Math.random() * acceptableTagColors.length);
-  return acceptableTagColors[randomIndex] ?? "#FF5733";
+  return acceptableTagColors[randomIndex] ?? "#d9543d";
 }
 
 export default function BacklogTagList({ tags, onChange }: Props) {
