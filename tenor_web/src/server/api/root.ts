@@ -10,6 +10,7 @@ import { userRouter } from "./routers/users";
 import settingsRouter from "./routers/settings";
 import { sprintsRouter } from "./routers/sprints";
 import { tasksRouter } from "./routers/tasks";
+import { requirementsRouter } from "./routers/requirements";
 
 /**
  * This is the primary router for your server.
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   logs: logsRouter,
   projects: projectsRouter,
   userStories: userStoriesRouter,
+  requirements: requirementsRouter,
   frida: fridaRouter,
   files: filesRouter,
   epics: epicsRouter,

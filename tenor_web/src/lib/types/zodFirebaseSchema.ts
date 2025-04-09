@@ -124,7 +124,6 @@ export const IssueSchema = BacklogItemSchema.extend({
 });
 
 export const RequirementSchema = BasicInfoSchema.extend({
-  size: SizeSchema,
   priorityId: z.string(),
   requirementTypeId: z.string(),
   requirementFocusId: z.string(),

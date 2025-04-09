@@ -5,6 +5,7 @@ import type {
   WithId,
   User,
   Settings,
+  Requirement,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
@@ -34,6 +35,17 @@ const emptySettings: Settings = {
   // roles: [],
 };
 
+export const emptyRequeriment = (): Requirement  => ({
+    name: "",
+    description: "",
+    priorityId: "",
+    requirementTypeId: "",
+    requirementFocusId: "",
+    size: "M",
+    scrumId: 0,
+    deleted: false,
+});
+
 export const createEmptyProject = (): Project => {
   return {
     name: "",
@@ -46,10 +58,10 @@ export const createEmptyProject = (): Project => {
     users: [],
 
     // requirements: [],
-    // userStories: [],
-    // issues: [],
-    // epics: [],
-    // genericItems: [],
+    userStories: [],
+    issues: [],
+    epics: [],
+    genericItems: [],
 
     // sprints: [],
     // sprintSnapshots: [],
@@ -154,7 +166,6 @@ export const projectsRouter = createTRPCRouter({
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     const projects = await fetchUserProjects(useruid, ctx.firestore);
-
     return projects;
   }),
   createProject: protectedProcedure

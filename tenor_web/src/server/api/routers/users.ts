@@ -1,7 +1,6 @@
-import { z } from "zod";
-
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type TeamMember } from "~/app/_components/inputs/MemberTable";
+import { z } from "zod";
 
 export const userRouter = createTRPCRouter({
   getUserList: protectedProcedure.query(async ({ ctx }) => {

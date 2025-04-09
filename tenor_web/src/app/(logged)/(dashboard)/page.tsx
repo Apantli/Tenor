@@ -76,7 +76,7 @@ function ProjectList() {
       setFilteredProjects(projects ?? []);
     } else {
       setFilteredProjects(
-        projects?.filter((p) => filterList.includes(p.name)) ?? [],
+        projects?.filter((p) => filterList.includes(p.name)) ?? []
       );
     }
   };
@@ -125,7 +125,8 @@ function ProjectList() {
               </p>
             </div>
           </li>
-        )}
+        )
+        }
       </ul>
     </div>
   );
