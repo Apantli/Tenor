@@ -8,7 +8,7 @@ import ProfilePicture from "../ProfilePicture";
 import type { User } from "firebase/auth";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
-import { useFormatTaskScrumId } from "~/app/_hooks/scumIdHooks";
+import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 
 interface Props {
   tasks: TaskPreview[];

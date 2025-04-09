@@ -17,7 +17,7 @@ import {
   useFormatEpicScrumId,
   useFormatSprintNumber,
   useFormatUserStoryScrumId,
-} from "~/app/_hooks/scumIdHooks";
+} from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 

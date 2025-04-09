@@ -20,7 +20,7 @@ import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
   useFormatUserStoryScrumId,
-} from "~/app/_hooks/scumIdHooks";
+} from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
