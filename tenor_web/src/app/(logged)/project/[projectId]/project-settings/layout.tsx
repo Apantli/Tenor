@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { type PropsWithChildren, useState, useRef } from "react";
+import { type PropsWithChildren, useRef } from "react";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -13,7 +12,7 @@ import path from "path";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { ModificationContext } from "~/app/_hooks/useModification";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-const join_path = (...paths: string[]) => {
+const joinPath = (...paths: string[]) => {
   const joined = path.join(...paths);
   return joined.endsWith("/") ? joined.slice(0, -1) : joined;
 };
@@ -48,18 +47,18 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
 
   return (
     <div className="flex h-[78vh] flex-row">
-      <div className="flex h-full w-[450px] flex-col border-r-2 pr-3">
-        <h1 className="mb-5 text-3xl font-bold">Project Settings</h1>
+      <div className="flex h-full w-[450px] flex-col border-r-2 pr-10">
+        <h1 className="mb-5 text-3xl font-semibold">Project Settings</h1>
         {pages.map(({ title, link, icon: Icon }, i) => (
           <button
             key={link}
             className={cn(
               "flex items-center gap-3 border-t-2 p-4 hover:bg-gray-100",
               i === pages.length - 1 && "border-b-2",
-              join_path(rootPath, link) === pathname && "bg-gray-100",
+              joinPath(rootPath, link) === pathname && "bg-gray-100",
             )}
             onClick={async () => {
-              if (join_path(rootPath, link) === pathname) return;
+              if (joinPath(rootPath, link) === pathname) return;
               if (isModified.current) {
                 const confirmation = await confirm(
                   "Are you sure?",
@@ -70,25 +69,25 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
                 if (!confirmation) return;
               }
               isModified.current = false;
-              router.push(join_path(rootPath, link));
+              router.push(joinPath(rootPath, link));
             }}
           >
             <Icon fontSize="large" />
             <span
               className={cn(
                 "text-lg",
-                join_path(rootPath, link) === pathname && "font-semibold",
+                joinPath(rootPath, link) === pathname && "font-semibold",
               )}
             >
               {title}
             </span>
-            {join_path(rootPath, link) !== pathname && (
+            {joinPath(rootPath, link) !== pathname && (
               <ArrowForwardIosIcon className="ml-auto text-gray-300" />
             )}
           </button>
         ))}
       </div>
-      <div className="m-6 p-4">
+      <div className="ml-10">
         <ModificationContext.Provider value={{ setIsModified, isModified }}>
           {children}
         </ModificationContext.Provider>

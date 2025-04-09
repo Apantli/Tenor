@@ -19,8 +19,6 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     cutPathname = "/" + cutPathname.split("/")[1]!;
   }
 
-  console.log("cutPathname", cutPathname);
-
   // TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
   const tabs = [
     { title: mainPageName ?? "Overview", link: "/" },

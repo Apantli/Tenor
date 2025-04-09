@@ -86,7 +86,7 @@ export default function ProjectGeneralSettings() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-row justify-between">
-        <h1 className="mb-4 text-3xl font-bold">General</h1>
+        <h1 className="mb-4 text-3xl font-semibold">General</h1>
         {project && computeIsModified() && (
           <PrimaryButton
             onClick={async () => {
