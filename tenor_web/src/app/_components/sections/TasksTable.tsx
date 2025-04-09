@@ -15,6 +15,8 @@ import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import { type Tag } from "~/lib/types/firebaseSchemas";
+import useConfirmation from "~/app/_hooks/useConfirmation";
+import { TaskCol } from "~/server/api/routers/tasks";
 
 interface Props {
   tasks: TaskPreview[];
@@ -22,14 +24,18 @@ interface Props {
   itemType: "US" | "IS" | "IT";
   onTaskStatusChange: (
     taskId: string,
-    statusId: Tag,) => void;
+    statusId: Tag,
+  ) => void;
 }
 
 export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
-
-  const { projectId } = useParams();  
+  
+  const { projectId } = useParams();
+  const confirm = useConfirmation();
+  const utils = api.useUtils();
+  const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
   
   const filteredTasks = tasks.filter((task) => {
     if (
@@ -43,7 +49,7 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
   
   const formatTaskScrumId = useFormatTaskScrumId();
   
-  const completedTasks = tasks.filter(task => 
+  const completedTasks = tasks.filter(task =>
     task.status?.name === "Done"
   ).length;
   
@@ -64,17 +70,16 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
       label: "Status",
       width: 150,
       render(row) {
-
         return(
           <StatusPicker
             status={row.status}
-            onChange={ async (status) => {
-            onTaskStatusChange (
+            onChange={async (status) => {
+              onTaskStatusChange(
                 row.id,
                 status
               )
             }}
-            className = "w-32"
+            className="w-32"
           />
         )
       },
@@ -89,14 +94,68 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
         return (
           <div>
             {row.assignee && (
-              <ProfilePicture 
-                user={row.assignee} 
+              <ProfilePicture
+                user={row.assignee}
               />
             )}
           </div>
         );
       },
     },
+  };
+
+  const handleTaskDelete = async (ids: string[], callback: (del: boolean) => void) => {
+    const confirmMessage = ids.length > 1 ? "tasks" : "task";
+    if (
+      !(await confirm(
+        `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
+        "This action is not revertible.",
+        `Delete ${confirmMessage}`,
+      ))
+    ) {
+      callback(false);
+      return;
+    }
+    callback(true);
+
+    // Optimistic update - filter out deleted tasks
+    const newTasks = tasks.filter(
+      (task) => !ids.includes(task.id)
+    );
+
+    await utils.tasks.getTasksTableFriendly.cancel({
+      projectId: projectId as string,
+      itemId: itemId,
+    });
+
+    const transformedTasks = newTasks.map(task => ({
+      id: task.id,
+      scrumId: task.scrumId,
+      title: task.name, // name to title
+      status: task.status,
+      assignee: task.assignee
+    }));
+
+    utils.tasks.getTasksTableFriendly.setData(
+      { projectId: projectId as string, itemId: itemId },
+      transformedTasks,
+    );
+
+    await Promise.all(
+      ids.map((id) =>
+        deleteTask({
+          projectId: projectId as string,
+          taskId: id,
+        }),
+      ),
+    );
+
+    await utils.tasks.getTasksTableFriendly.invalidate({
+      projectId: projectId as string,
+      itemId: itemId,
+    });
+
+    return true;
   };
 
   return (
@@ -122,24 +181,22 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
         <Table
           data={filteredTasks}
           columns={taskColumns}
-          className="font-sm w-full table-fixed overflow-visible rounded-lg border border-gray-100"
+          className="font-sm w-full table-fixed overflow-visible"
           multiselect
           deletable
-          onDelete={(ids) =>{
-
-          }  }
+          onDelete={handleTaskDelete}
           emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
         />
       </div>
       
-      <SidebarPopup 
+      <SidebarPopup
         show={showAddTaskPopup}
         dismiss={() => setShowAddTaskPopup(false)}
       >
-        <CreateTaskForm 
-          itemId={itemId} 
-          itemType={itemType} 
-          onTaskAdded={() => setShowAddTaskPopup(false)} 
+        <CreateTaskForm
+          itemId={itemId}
+          itemType={itemType}
+          onTaskAdded={() => setShowAddTaskPopup(false)}
         />
       </SidebarPopup>
     </>
