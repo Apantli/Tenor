@@ -13,7 +13,7 @@ export const useFormatEpicScrumId = () => {
 export const useFormatSprintNumber = () => {
   return (sprintNumber: number | undefined) => {
     if (sprintNumber === undefined) return "Unassigned";
-    return "Sprint " + sprintNumber;
+    return `Sprint ${sprintNumber}`;
   };
 };
 
