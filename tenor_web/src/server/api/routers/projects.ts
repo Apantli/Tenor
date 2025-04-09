@@ -136,6 +136,21 @@ const fetchUserProjects = async (
 };
 
 export const projectsRouter = createTRPCRouter({
+  fetchDefaultSprintDuration: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSprintDuration = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .select("sprintDuration")
+        .limit(1)
+        .get();
+
+      return (
+        (projectSprintDuration.docs[0]?.data().sprintDuration as number) ?? 7
+      );
+    }),
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     const projects = await fetchUserProjects(useruid, ctx.firestore);
@@ -327,5 +342,16 @@ export const projectsRouter = createTRPCRouter({
         deleted: true,
       });
       return { success: true };
+    }),
+  getProjectName: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const project = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .get();
+      const projectData = ProjectSchema.parse(project.data());
+      return { projectName: projectData.name };
     }),
 });

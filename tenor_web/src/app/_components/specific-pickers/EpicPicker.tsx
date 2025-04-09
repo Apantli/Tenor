@@ -5,7 +5,7 @@ import React from "react";
 import { api } from "~/trpc/react";
 import PillPickerComponent from "../PillPickerComponent";
 import type { ExistingEpic } from "~/lib/types/detailSchemas";
-import { useFormatEpicScrumId } from "~/app/_hooks/scumIdHooks";
+import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
 
 interface Props {
   epic?: ExistingEpic;

@@ -17,7 +17,11 @@ import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillCo
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
+import {
+  useFormatSprintNumber,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scrumIdHooks";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
   userStoryId: string;
@@ -36,6 +40,7 @@ export default function UserStoryDetailPopup({
     data: userStoryDetail,
     isLoading,
     refetch,
+    error,
   } = api.userStories.getUserStoryDetail.useQuery({
     projectId: projectId as string,
     userStoryId,
@@ -55,6 +60,8 @@ export default function UserStoryDetailPopup({
   const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const { predefinedAlerts } = useAlert();
+  const formatSprintNumber = useFormatSprintNumber();
 
   // Copy the editable data from the user story
   useEffect(() => {
@@ -67,6 +74,13 @@ export default function UserStoryDetailPopup({
   }, [userStoryDetail]);
 
   const confirm = useConfirmation();
+
+  useEffect(() => {
+    if (error) {
+      setShowDetail(false);
+      predefinedAlerts.unexpectedError();
+    }
+  }, [error]);
 
   const isModified = () => {
     if (editForm.name !== userStoryDetail?.name) return true;
@@ -122,8 +136,15 @@ export default function UserStoryDetailPopup({
     });
 
     // Make other places refetch the data
-    await utils.userStories.getUserStoriesTableFriendly.invalidate();
-    await utils.userStories.getAllUserStoryPreviews.invalidate();
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.userStories.getAllUserStoryPreviews.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      projectId: projectId as string,
+    });
 
     await refetch();
   };
@@ -141,8 +162,15 @@ export default function UserStoryDetailPopup({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
-      await utils.userStories.getAllUserStoryPreviews.invalidate();
-      await utils.userStories.getUserStoriesTableFriendly.invalidate();
+      await utils.userStories.getUserStoriesTableFriendly.invalidate({
+        projectId: projectId as string,
+      });
+      await utils.userStories.getAllUserStoryPreviews.invalidate({
+        projectId: projectId as string,
+      });
+      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+        projectId: projectId as string,
+      });
       setShowDetail(false);
     }
   };
@@ -207,9 +235,7 @@ export default function UserStoryDetailPopup({
 
                 <h3 className="mt-4 text-lg">
                   <span className="font-semibold">Sprint: </span>
-                  {userStoryDetail.sprintNumber
-                    ? `Sprint ${userStoryDetail.sprintNumber}`
-                    : "Unassigned"}
+                  {formatSprintNumber(userStoryDetail.sprintNumber)}
                 </h3>
 
                 <DependencyList
