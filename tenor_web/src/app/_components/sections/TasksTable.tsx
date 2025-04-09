@@ -8,7 +8,7 @@ import PillComponent from "../PillComponent";
 import type { User } from "firebase/auth";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
-import { useFormatTaskScrumId } from "~/app/_hooks/scumIdHooks";
+import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { SidebarPopup } from "../Popup";
 import { CreateTaskForm } from "../tasks/CreateTaskPopup";
 import { api } from "~/trpc/react";
@@ -126,7 +126,7 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
           multiselect
           deletable
           onDelete={(ids) =>{
-            
+
           }  }
           emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
         />
