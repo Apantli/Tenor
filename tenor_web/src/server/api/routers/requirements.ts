@@ -17,7 +17,6 @@ export interface RequirementCol {
   priorityId: Tag;
   requirementTypeId: Tag;
   requirementFocusId: Tag;
-  size: Size;
   scrumId: number;
 }
 

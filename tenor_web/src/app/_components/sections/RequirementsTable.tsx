@@ -11,7 +11,6 @@ import PrimaryButton from "../buttons/PrimaryButton";
 import PillPickerComponent from "../PillPickerComponent";
 import InputTextField from "../inputs/InputTextField";
 import InputTextAreaField from "../inputs/InputTextAreaField";
-import { SizeSchema } from "~/lib/types/zodFirebaseSchema";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -32,15 +31,6 @@ export default function RequirementsTable() {
   const [allFocusTags, setAllFocusTags] = useState<Tag[]>([]); // States for the focus tags
   const [searchValue, setSearchValue] = useState("");
 
-  const sizeTags: Tag[] = SizeSchema.options.map((size) => ({
-    id: size.valueOf(),
-    name: size.valueOf(),
-    color: "#444444",
-    deleted: false,
-  }));
-
-  console.log("projectId:", params.projectId);
-
   // New requirement values
   const defaultRequirement = {
     name: "",
@@ -48,7 +38,6 @@ export default function RequirementsTable() {
     priorityId: undefined as Tag | undefined,
     requirementTypeId: undefined as Tag | undefined,
     requirementFocusId: undefined as Tag | undefined,
-    size: undefined as Tag | undefined,
   };
   const [newRequirement, setNewRequirement] = useState(defaultRequirement);
   const handleChange = (
@@ -69,7 +58,6 @@ export default function RequirementsTable() {
       requirementFocusId,
       name,
       description,
-      size,
     } = newRequirement;
 
     if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id)
@@ -80,13 +68,6 @@ export default function RequirementsTable() {
     const unwrappedRequirementTypeId = requirementTypeId.id;
     const unwrappedRequirementFocusId = requirementFocusId.id;
 
-    // Validate size
-    const sizeValidation = SizeSchema.safeParse(size?.id);
-    if (!sizeValidation.success) {
-      console.error("Invalid size value:", size);
-      return;
-    }
-
     const response = await createRequirement({
       projectId: projectId as string,
       name,
@@ -94,7 +75,6 @@ export default function RequirementsTable() {
       priorityId: unwrappedPriorityId,
       requirementTypeId: unwrappedRequirementTypeId,
       requirementFocusId: unwrappedRequirementFocusId,
-      size: sizeValidation.data,
       scrumId: -1,
       deleted: false,
     });
@@ -186,9 +166,6 @@ export default function RequirementsTable() {
             </span>
           );
         },
-      },
-      size: {
-        visible: false,
       },
       requirementTypeId: {
         label: "Req. Type",
@@ -338,21 +315,6 @@ export default function RequirementsTable() {
                     setNewRequirement((prev) => ({
                       ...prev,
                       requirementFocusId: tag,
-                    }));
-                  }}
-                  className="w-full"
-                />
-              </div>
-              <div className="w-full space-y-2">
-                <label>Size</label>
-                <PillComponent
-                  labelClassName="w-full"
-                  currentTag={newRequirement.size}
-                  allTags={sizeTags}
-                  callBack={(tag: Tag) => {
-                    setNewRequirement((prev) => ({
-                      ...prev,
-                      size: tag,
                     }));
                   }}
                   className="w-full"
