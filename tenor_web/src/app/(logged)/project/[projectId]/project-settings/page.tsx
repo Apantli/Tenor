@@ -3,7 +3,7 @@
 import InputFileField from "~/app/_components/inputs/InputFileField";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
@@ -26,6 +26,7 @@ export default function ProjectGeneralSettings() {
       icon: iconBase64,
     }));
   };
+  const router = useRouter();
 
   const utils = api.useUtils();
 
@@ -173,7 +174,7 @@ export default function ProjectGeneralSettings() {
                     !(await confirm(
                       "Delete project?",
                       "This action is not revertible",
-                      "Delete item",
+                      "Delete project",
                     ))
                   ) {
                     return;
@@ -183,6 +184,7 @@ export default function ProjectGeneralSettings() {
                     await deleteProject({
                       projectId: projectId as string,
                     });
+                    router.push("/");
                   }
                 }}
                 loading={deletingProject}
