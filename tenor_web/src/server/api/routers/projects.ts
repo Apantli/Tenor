@@ -9,12 +9,14 @@ import type {
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles } from "~/utils/filecontent";
-import { uploadBase64File } from "~/utils/firebaseBucket";
+import {
+  uploadBase64File,
+  getLogoPath,
+  deleteStartsWith,
+} from "~/utils/firebaseBucket";
 import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
-import { isBase64Valid } from "~/utils/base64";
-import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-
+import { isBase64Valid } from "~/utils/base64";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -158,7 +160,7 @@ export const projectsRouter = createTRPCRouter({
   createProject: protectedProcedure
     .input(ProjectSchema.extend({ settings: SettingsSchema }))
     .mutation(async ({ ctx, input }) => {
-      const useruid = ctx.session.uid;
+      const newProjectRef = ctx.firestore.collection("projects").doc();
 
       // FIXME: remove duplicated users from input.users
       // FIXME: get ids from input.users, use ids to add users to project
@@ -166,7 +168,7 @@ export const projectsRouter = createTRPCRouter({
 
       // Add creator as project admin
       input.users.push({
-        userId: useruid,
+        userId: ctx.session.uid,
         roleId: "admin",
         active: true,
       });
@@ -206,9 +208,11 @@ export const projectsRouter = createTRPCRouter({
       // Upload logo
       const isLogoValid = isBase64Valid(input.logo);
       if (isLogoValid) {
-        // eslint-disable-next-line
-        const logoPath = uuidv4() + "." + isLogoValid;
-        input.logo = await uploadBase64File(logoPath, input.logo);
+        const logoPath = newProjectRef.id + "." + isLogoValid;
+        input.logo = await uploadBase64File(
+          getLogoPath({ logo: logoPath, projectId: newProjectRef.id }),
+          input.logo,
+        );
       } else {
         // Use default icon
         input.logo = "/defaultProject.png";
@@ -217,9 +221,7 @@ export const projectsRouter = createTRPCRouter({
       try {
         const { settings, ...projectData } = input;
 
-        const projectRef = await ctx.firestore
-          .collection("projects")
-          .add(projectData);
+        await newProjectRef.set(projectData);
 
         const userRefs = input.users.map((user) =>
           ctx.firestore.collection("users").doc(user.userId),
@@ -227,13 +229,19 @@ export const projectsRouter = createTRPCRouter({
 
         await Promise.all(
           userRefs.map((userRef) =>
-            userRef.update("projectIds", FieldValue.arrayUnion(projectRef.id)),
+            userRef.update(
+              "projectIds",
+              FieldValue.arrayUnion(newProjectRef.id),
+            ),
           ),
         );
         // FIXME: Create proper default settings in the project
-        await projectRef.collection("settings").doc("settings").set(settings);
+        await newProjectRef
+          .collection("settings")
+          .doc("settings")
+          .set(settings);
 
-        const priorityTypesCollection = projectRef
+        const priorityTypesCollection = newProjectRef
           .collection("settings")
           .doc("settings")
           .collection("priorityTypes");
@@ -253,8 +261,8 @@ export const projectsRouter = createTRPCRouter({
           color: "#FF0000",
           deleted: false,
         });
-        
-        const statusCollection = projectRef
+
+        const statusCollection = newProjectRef
           .collection("settings")
           .doc("settings")
           .collection("statusTypes");
@@ -277,13 +285,87 @@ export const projectsRouter = createTRPCRouter({
           deleted: false,
         });
 
-        return { success: true, projectId: projectRef.id };
+        return { success: true, projectId: newProjectRef.id };
       } catch (error) {
         console.error("Error adding document: ", error);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
 
+  getGeneralConfig: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const project = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .get();
+
+      return ProjectSchema.parse(project.data());
+    }),
+
+  modifyGeneralConfig: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        name: z.string(),
+        description: z.string(),
+        logo: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const projectRef = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId);
+
+      const projectData = (await projectRef.get()).data() as Project;
+
+      // Modify logo only if it has changed
+      if (projectData.logo !== input.logo) {
+        const isLogoValid = isBase64Valid(input.logo);
+
+        if (isLogoValid && projectData.logo !== "/defaultProject.png") {
+          // Delete previous logo, assume the name starts with the projectId
+          await deleteStartsWith(
+            getLogoPath({ logo: input.projectId, projectId: input.projectId }),
+          );
+        }
+
+        if (isLogoValid) {
+          const logoPath = input.projectId + "." + isLogoValid;
+          input.logo = await uploadBase64File(
+            getLogoPath({ logo: logoPath, projectId: input.projectId }),
+            input.logo,
+          );
+        } else {
+          // Use default icon
+          input.logo = "/defaultProject.png";
+        }
+      }
+
+      await projectRef.update({
+        name: input.name,
+        description: input.description,
+        logo: input.logo,
+      });
+
+      return { success: true };
+    }),
+  deleteProject: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const projectRef = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId);
+
+      await projectRef.update({
+        deleted: true,
+      });
+      return { success: true };
+    }),
   getProjectName: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

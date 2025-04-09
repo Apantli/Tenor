@@ -162,9 +162,6 @@ export const ProjectSchema = z.object({
   logo: z.string(),
   deleted: z.boolean().default(false),
 
-  // FIXME: This should be a subcollection
-  // settings: SettingsSchema,
-
   // Will users also be in their subcollection?
   users: z.array(
     z.object({
@@ -193,6 +190,9 @@ export const ProjectSchema = z.object({
   // genericItems: z.array(BacklogItemSchema).default([]),
   // sprints: z.array(SprintSchema).default([]),
   // sprintSnapshots: z.array(SprintSnapshotSchema).default([]),
+  // FIXME: This should be a subcollection
+  // settings: SettingsSchema.optional(),
+
   currentSprintId: z.string().default("1"),
   activities: z
     .array(
