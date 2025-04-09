@@ -291,7 +291,7 @@ export default function RequirementsTable() {
                   setShowSmallPopup(false);
                 }}
               >
-                Create Sprint
+                Create Requirement
               </PrimaryButton>
             </div>
           }
