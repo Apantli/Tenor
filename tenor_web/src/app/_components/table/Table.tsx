@@ -75,7 +75,7 @@ export default function Table<
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selection, setSelection] = useState<Set<I>>(new Set());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const lastSelectedIndexRef = useRef<number>();
+  const lastSelectedIdRef = useRef<I>();
 
   const sortedData = useMemo(() => {
     if (!sortColumnKey) return data;
@@ -147,17 +147,20 @@ export default function Table<
 
   const toggleSelect = (id: I) => {
     const newSelection = new Set(selection);
-    const currentIndex = data.findIndex((row) => row.id === id);
+    const currentIndex = filteredData.findIndex((row) => row.id === id);
+    const lastSelectedIndex = filteredData.findIndex(
+      (row) => row.id === lastSelectedIdRef.current,
+    );
 
     let min = currentIndex;
     let max = currentIndex;
-    if (shiftClick) {
-      min = Math.min(lastSelectedIndexRef.current ?? Infinity, currentIndex);
-      max = Math.max(lastSelectedIndexRef.current ?? -Infinity, currentIndex);
+    if (shiftClick && lastSelectedIndex !== -1) {
+      min = Math.min(lastSelectedIndex, currentIndex);
+      max = Math.max(lastSelectedIndex, currentIndex);
     }
 
     for (let i = min; i <= max; i++) {
-      const row = data[i];
+      const row = filteredData[i];
       if (row) {
         const rowId = row.id;
         if (selection.has(id)) {
@@ -167,7 +170,7 @@ export default function Table<
         }
       }
     }
-    lastSelectedIndexRef.current = currentIndex;
+    lastSelectedIdRef.current = id;
     setSelection(newSelection);
   };
 
@@ -211,7 +214,7 @@ export default function Table<
   };
 
   useClickOutside(scrollContainerRef, () => {
-    lastSelectedIndexRef.current = undefined;
+    lastSelectedIdRef.current = undefined;
   });
 
   return (
