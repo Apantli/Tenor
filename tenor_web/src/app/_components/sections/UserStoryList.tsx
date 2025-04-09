@@ -278,17 +278,22 @@ export default function UserStoryList() {
       },
     };
 
-    const handleDelete = async (ids: string[]) => {
+    const handleDelete = async (
+      ids: string[],
+      callback: (del: boolean) => void,
+    ) => {
       const confirmMessage = ids.length > 1 ? "user stories" : "user story";
       if (
         !(await confirm(
           `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
-          "This action is not revertible",
+          "This action is not revertible.",
           `Delete ${confirmMessage}`,
         ))
       ) {
-        return false;
+        callback(false);
+        return;
       }
+      callback(true); // call the callback as soon as possible
 
       const newData = userStoryData.filter(
         (userStory) => !ids.includes(userStory.id),

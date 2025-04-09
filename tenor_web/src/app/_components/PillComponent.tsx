@@ -109,19 +109,19 @@ export default function PillComponent({
       className={className}
       onOpen={() => inputRef.current?.focus()}
     >
-    {!hideSearch && (
-      <DropdownItem className="flex w-52 flex-col">
-        <span className="mb-2 text-sm text-gray-500">Select an item</span>
-        <input
-          ref={inputRef}
-          type="text"
-          className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
-          placeholder="Search..."
-          value={searchValue}
-          onChange={handleUpdateSearch}
-        />
-      </DropdownItem>
-           )}
+      {!hideSearch && (
+        <DropdownItem className="flex w-52 flex-col">
+          <span className="mb-2 text-sm text-gray-500">Select an item</span>
+          <input
+            ref={inputRef}
+            type="text"
+            className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
+            placeholder="Search..."
+            value={searchValue}
+            onChange={handleUpdateSearch}
+          />
+        </DropdownItem>
+      )}
       <div className="w-full whitespace-nowrap text-left">
         <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}
