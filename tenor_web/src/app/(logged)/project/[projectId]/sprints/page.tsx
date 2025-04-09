@@ -17,6 +17,12 @@ import { Timestamp } from "firebase/firestore";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
+import type { sprintsRouter } from "~/server/api/routers/sprints";
+import type { inferRouterOutputs } from "@trpc/server";
+
+export type UserStories = inferRouterOutputs<
+  typeof sprintsRouter
+>["getUserStoryPreviewsBySprint"]["userStories"];
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
@@ -77,7 +83,10 @@ export default function ProjectSprints() {
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
   const filteredUnassignedStories =
-    userStoriesBySprint?.unassignedUserStories.filter((userStory) => {
+    userStoriesBySprint?.unassignedUserStoryIds.filter((userStoryId) => {
+      const userStory = userStoriesBySprint?.userStories[userStoryId];
+      if (!userStory) return false;
+
       const tagsList = userStory.tags.map((tag) => "Tag:" + tag.name).join(" ");
       const fullUserStoryName = `${formatUserStoryScrumId(userStory.scrumId)}: ${userStory.name} ${tagsList} Size:${userStory.size}`;
       return fullUserStoryName
@@ -85,11 +94,20 @@ export default function ProjectSprints() {
         .includes(searchValue.toLowerCase());
     }) ?? [];
 
-  const { mutateAsync: createSprint } =
+  const { mutateAsync: createSprint, isPending } =
     api.sprints.createOrModifySprint.useMutation();
   const utils = api.useUtils();
   const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
     usePopupVisibilityState();
+
+  const cancelUserStoryPreviewQuery = async () => {
+    await utils.sprints.getUserStoryPreviewsBySprint.cancel({
+      projectId: projectId as string,
+    });
+  };
+
+  const { mutateAsync: assignUserStoriesToSprint } =
+    api.sprints.assignUserStoriesToSprint.useMutation();
 
   // New sprint variables
   const [newSprintDescription, setNewSprintDescription] = useState("");
@@ -126,28 +144,137 @@ export default function ProjectSprints() {
   const [detailUserStoryId, setDetailUserStoryId] = useState("");
 
   // Check if all unassigned user stories are selected
-  const allUnassignedSelected = filteredUnassignedStories.every((userStory) =>
-    selectedUserStories.has(userStory.id),
+  const allUnassignedSelected = filteredUnassignedStories.every((userStoryId) =>
+    selectedUserStories.has(userStoryId),
   );
 
   const toggleSelectAllUnassigned = () => {
     const newSelection = new Set(selectedUserStories);
     if (allUnassignedSelected) {
-      filteredUnassignedStories.forEach((userStory) => {
-        newSelection.delete(userStory.id);
+      filteredUnassignedStories.forEach((userStoryId) => {
+        newSelection.delete(userStoryId);
       });
     } else {
-      filteredUnassignedStories.forEach((userStory) => {
-        newSelection.add(userStory.id);
+      filteredUnassignedStories.forEach((userStoryId) => {
+        newSelection.add(userStoryId);
       });
     }
     setSelectedUserStories(newSelection);
   };
 
+  const assignSelectionToSprint = async (sprintId: string) => {
+    const userStoryIds = Array.from(selectedUserStories);
+    const userStories = userStoriesBySprint?.userStories;
+    if (!userStories) return;
+
+    // Cancel previous fetches for the sprint data
+    await cancelUserStoryPreviewQuery();
+
+    utils.sprints.getUserStoryPreviewsBySprint.setData(
+      {
+        projectId: projectId as string,
+      },
+      (oldData) => {
+        if (!oldData) return undefined;
+
+        const sortByScrumId = (a: string, b: string) => {
+          const storyA = userStories[a];
+          const storyB = userStories[b];
+          return (storyA?.scrumId ?? 0) - (storyB?.scrumId ?? 0);
+        };
+
+        const sprints = oldData.sprints.map((sprint) => {
+          if (sprint.sprint.id === sprintId) {
+            const sortedUserStoryIds = [
+              ...sprint.userStoryIds,
+              ...userStoryIds,
+            ].sort(sortByScrumId);
+            return {
+              ...sprint,
+              userStoryIds: sortedUserStoryIds,
+            };
+          } else {
+            return {
+              ...sprint,
+              userStoryIds: sprint.userStoryIds.filter(
+                (userStoryId) => !userStoryIds.includes(userStoryId),
+              ),
+            };
+          }
+        });
+
+        let newUnassignedUserStoryIds = [];
+        if (sprintId === "") {
+          newUnassignedUserStoryIds = [
+            ...oldData.unassignedUserStoryIds,
+            ...userStoryIds,
+          ].sort(sortByScrumId);
+        } else {
+          newUnassignedUserStoryIds = oldData.unassignedUserStoryIds.filter(
+            (userStoryId) => !userStoryIds.includes(userStoryId),
+          );
+        }
+
+        const updatedUserStories = Object.fromEntries(
+          Object.entries(oldData.userStories).map(([id, userStory]) => {
+            if (userStoryIds.includes(id)) {
+              return [
+                id,
+                {
+                  ...userStory,
+                  sprintId: sprintId,
+                },
+              ];
+            }
+            return [id, userStory];
+          }),
+        );
+
+        return {
+          sprints,
+          unassignedUserStoryIds: newUnassignedUserStoryIds,
+          userStories: updatedUserStories,
+        };
+      },
+    );
+    setSelectedUserStories(new Set());
+
+    await assignUserStoriesToSprint({
+      projectId: projectId as string,
+      sprintId,
+      userStoryIds,
+    });
+
+    // Cancel previous fetches for the sprint data
+    await cancelUserStoryPreviewQuery();
+
+    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId as string,
+    });
+    await Promise.all(
+      userStoryIds.map(async (userStoryId) => {
+        await utils.userStories.getUserStoryDetail.invalidate({
+          projectId: projectId as string,
+          userStoryId,
+        });
+      }),
+    );
+  };
+
+  const availableToBeAssignedTo =
+    selectedUserStories.size > 0 &&
+    Array.from(selectedUserStories).every(
+      (selectedUserStoryId) =>
+        userStoriesBySprint?.userStories[selectedUserStoryId]?.sprintId !== "",
+    );
+
   return (
     <>
       <div className="flex h-full overflow-hidden">
-        <div className="flex h-full w-[420px] min-w-[420px] flex-col overflow-hidden border-r-2 pr-5">
+        <div className="relative flex h-full w-[420px] min-w-[420px] flex-col overflow-hidden border-r-2 pr-5">
           <div className="flex w-full justify-between pb-4">
             <h1 className="text-3xl font-semibold">Product Backlog</h1>
             <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
@@ -162,7 +289,14 @@ export default function ProjectSprints() {
           </div>
 
           <UserStoryCardColumn
-            userStories={filteredUnassignedStories}
+            userStories={
+              filteredUnassignedStories
+                .map(
+                  (userStoryId) =>
+                    userStoriesBySprint?.userStories[userStoryId],
+                )
+                .filter((val) => val !== undefined) ?? []
+            }
             isLoading={isLoading}
             selection={selectedUserStories}
             setSelection={setSelectedUserStories}
@@ -173,7 +307,9 @@ export default function ProjectSprints() {
                 <span>Unassigned items</span>
                 <button
                   className={cn("rounded-lg px-1 text-app-text transition", {
-                    "text-app-secondary": allUnassignedSelected,
+                    "text-app-secondary":
+                      filteredUnassignedStories.length > 0 &&
+                      allUnassignedSelected,
                   })}
                   onClick={toggleSelectAllUnassigned}
                 >
@@ -186,6 +322,21 @@ export default function ProjectSprints() {
               </div>
             }
           />
+          <div
+            className={cn(
+              "pointer-events-none absolute bottom-0 left-0 flex w-full p-3 opacity-0 transition",
+              {
+                "pointer-events-auto opacity-100": availableToBeAssignedTo,
+              },
+            )}
+          >
+            <PrimaryButton
+              className="mr-5 flex-1"
+              onClick={() => assignSelectionToSprint("")}
+            >
+              Unassign selection
+            </PrimaryButton>
+          </div>
         </div>
         <div className="ml-5 flex h-full grow flex-col overflow-x-hidden">
           <div className="flex w-full justify-between gap-5 pb-4">
@@ -206,7 +357,9 @@ export default function ProjectSprints() {
             )}
             {userStoriesBySprint?.sprints.map((column) => (
               <SprintCardColumn
+                assignSelectionToSprint={assignSelectionToSprint}
                 column={column}
+                userStories={userStoriesBySprint.userStories}
                 key={column.sprint.id}
                 selectedUserStories={selectedUserStories}
                 setSelectedUserStories={setSelectedUserStories}
@@ -238,6 +391,7 @@ export default function ProjectSprints() {
                   await handleCreateSprint();
                   setShowSmallPopup(false);
                 }}
+                loading={isPending}
               >
                 Create Sprint
               </PrimaryButton>

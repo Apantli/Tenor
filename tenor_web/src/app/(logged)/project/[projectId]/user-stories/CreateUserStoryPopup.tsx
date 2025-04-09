@@ -100,6 +100,7 @@ export default function CreateUserStoryPopup({
 
     await utils.userStories.getUserStoriesTableFriendly.invalidate();
     await utils.userStories.getAllUserStoryPreviews.invalidate();
+    await utils.sprints.getUserStoryPreviewsBySprint.invalidate();
   };
 
   return (

@@ -11,7 +11,7 @@ import { cn } from "~/lib/utils";
 interface Props {
   userStories: inferRouterOutputs<
     typeof sprintsRouter
-  >["getUserStoryPreviewsBySprint"]["unassignedUserStories"];
+  >["getUserStoryPreviewsBySprint"]["userStories"][string][];
   selection: Set<string>;
   setSelection: (newSelection: Set<string>) => void;
   setDetailId: (detailId: string) => void;
@@ -42,10 +42,9 @@ export default function UserStoryCardColumn({
       setShowDetail={setShowDetail}
       isLoading={isLoading}
       header={header}
+      className={className}
       renderCard={(userStory) => (
-        <div
-          className={cn("flex w-full flex-col items-start gap-2", className)}
-        >
+        <div className={cn("flex w-full flex-col items-start gap-2")}>
           <div>
             <span className="font-semibold">
               {formatUserStoryScrumId(userStory.scrumId)}:{" "}
