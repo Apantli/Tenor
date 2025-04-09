@@ -20,6 +20,7 @@ import {
 } from "~/app/_hooks/scumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import LoadingSpinner from "../LoadingSpinner";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -72,11 +73,11 @@ export default function UserStoryList() {
   // Function to get the US table or message instead
   const getTable = () => {
     if (userStories == undefined || isLoadingUS) {
-      return <span>Loading...</span>;
-    }
-
-    if (userStoryData?.length == 0) {
-      return <span>No User stories found</span>;
+      return (
+        <div className="flex h-full w-full flex-1 items-start justify-center p-10">
+          <LoadingSpinner color="primary" />
+        </div>
+      );
     }
 
     // TODO: Add correct leading 0 to ids (which depends on max id). Currently hardcoded
@@ -277,17 +278,22 @@ export default function UserStoryList() {
       },
     };
 
-    const handleDelete = async (ids: string[]) => {
+    const handleDelete = async (
+      ids: string[],
+      callback: (del: boolean) => void,
+    ) => {
       const confirmMessage = ids.length > 1 ? "user stories" : "user story";
       if (
         !(await confirm(
           `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
-          "This action is not revertible",
+          "This action is not revertible.",
           `Delete ${confirmMessage}`,
         ))
       ) {
+        callback(false);
         return;
       }
+      callback(true); // call the callback as soon as possible
 
       const newData = userStoryData.filter(
         (userStory) => !ids.includes(userStory.id),
@@ -312,10 +318,12 @@ export default function UserStoryList() {
         ),
       );
       await refetchUS();
+      return true;
     };
 
     return (
       <Table
+        emptyMessage="No user stories found"
         className={cn("w-full", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}

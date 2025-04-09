@@ -10,7 +10,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles } from "~/utils/filecontent";
 import { uploadBase64File } from "~/utils/firebaseBucket";
-import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
+import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
 import { isBase64Valid } from "~/utils/base64";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
@@ -154,7 +154,7 @@ export const projectsRouter = createTRPCRouter({
     return projects;
   }),
   createProject: protectedProcedure
-    .input(ProjectSchema)
+    .input(ProjectSchema.extend({ settings: SettingsSchema }))
     .mutation(async ({ ctx, input }) => {
       const useruid = ctx.session.uid;
 
@@ -257,5 +257,17 @@ export const projectsRouter = createTRPCRouter({
         console.error("Error adding document: ", error);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
+    }),
+
+  getProjectName: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const project = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .get();
+      const projectData = ProjectSchema.parse(project.data());
+      return { projectName: projectData.name };
     }),
 });
