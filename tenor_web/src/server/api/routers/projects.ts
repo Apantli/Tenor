@@ -31,8 +31,6 @@ const emptySettings: Settings = {
   // roles: [],
 };
 
-type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL"; 
-
 export const emptyRequeriment = (): Requirement  => ({
     name: "",
     description: "",

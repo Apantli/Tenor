@@ -6,6 +6,8 @@ import { api } from "~/trpc/react";
 import Table, { TableColumns } from "../table/Table";
 import PillComponent from "../PillComponent";
 import { cn } from "~/lib/utils";
+import SearchBar from "../SearchBar";
+import PriorityPicker from "../specific-pickers/PriorityPicker";
 
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
@@ -19,9 +21,6 @@ export default function RequirementsTable() {
   const [allReqTypeTags, setAllReqTypeTags] = useState<Tag[]>([]);  // States for the req type tags
   const [allFocusTags, setAllFocusTags] = useState<Tag[]>([]);  // States for the focus tags
   const [searchValue, setSearchValue] = useState("");
-  
-
-  console.log("projectId:", params.projectId);
 
   // TRPC
   const  {
@@ -88,21 +87,18 @@ export default function RequirementsTable() {
         width: 120,
         render(row) {
           return (
-            <span className="flex w-32 justify-start">
-              <PillComponent
-                labelClassName="w-full"
-                currentTag={row.priorityId}
-                allTags={allTags}
-                callBack={(tag: Tag) => {
+            <div className="flex w-32 justify-start">
+              <PriorityPicker
+                priority={row.priorityId}
+                onChange={(newPriority: Tag) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
-                      item.id === row.id ? { ...item, priorityId: tag } : item,
+                      item.id === row.id ? { ...item, priorityId: newPriority } : item,
                     ),
                   );
                 }}
-                className="w-[calc(100%-10px)]"
               />
-            </span>
+            </div>
           );
         },
       },
@@ -173,13 +169,13 @@ export default function RequirementsTable() {
     <div className="flex flex-col gap-2">
       <div className="flex w-full justify-between">
         <h2 className="text-2xl font-medium">Requirements</h2>
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          className="w-1/3 rounded-md border-2 border-gray-300 p-2"
-        />
+        <div className="w-1/3 p-2"> 
+          <SearchBar
+            placeholder="Search..."
+            searchValue={searchValue}
+            handleUpdateSearch={(e) => setSearchValue(e.target.value)}
+          />
+        </div>
       </div>
       {getTable()}
     </div>
