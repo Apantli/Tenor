@@ -45,7 +45,12 @@ export const userRouter = createTRPCRouter({
           id: firebaseUser.uid,
           // No available name happens if the user doesn't have a github name registered
           name: firebaseUser.displayName ?? "No available name",
-          user: firebaseUser,
+          // Repeating stuff but needed only for the EditableBox 
+          user: {
+            uid: firebaseUser.uid,
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+          },
         });
       } catch (error) {
         console.error(`Error al obtener los datos del usuario ${userData.uid}:`, error);

@@ -13,7 +13,11 @@ export interface Option {
   id: string | number | null;
   name: string;
   image?: string;
-  user?: UserRecord | User | null;
+  user?: {
+    uid: string;
+    displayName?: string;
+    photoURL?: string;
+  }
 }
 
 interface EditableBoxProps {
