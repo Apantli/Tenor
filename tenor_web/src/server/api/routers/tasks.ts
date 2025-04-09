@@ -20,7 +20,11 @@ export interface TaskCol {
   scrumId: number;
   title: string;
   status: Tag;
-  assigneeId?: string;
+  assignee?: {
+    uid: string;
+    displayName: string;
+    photoURL: string;
+  };
 }
 
 const getTasksFromProject = async (
@@ -80,7 +84,7 @@ const getStatusTag = async (
   if (taskId === undefined) {
     return undefined;
   }
-  const tag = await settingsRef.collection("statusTags").doc(taskId).get();
+  const tag = await settingsRef.collection("statusTypes").doc(taskId).get();
   if (!tag.exists) {
     return undefined;
   }
@@ -129,12 +133,21 @@ export const tasksRouter = createTRPCRouter({
 
       const fixedData = await Promise.all(
         rawUs.map(async (task) => {
+          let assignee = undefined;
+          if (task.assigneeId !== undefined && task.assigneeId !== "") {
+            const assigneeData = await ctx.firebaseAdmin.auth().getUser(task.assigneeId);
+            assignee = {
+              uid: assigneeData.uid,
+              displayName: assigneeData.displayName,
+              photoURL: assigneeData.photoURL,
+            }
+          }
           return {
             id: task.id,
             scrumId: task.scrumId,
             title: task.name,
             status: await getStatusTag(settingsRef, task.statusId),
-            assigneeId: task.assigneeId,
+            assignee: assignee,
           };
         }),
       );
@@ -192,77 +205,60 @@ export const tasksRouter = createTRPCRouter({
       } as TaskDetail;
     }),
 
-  modifyUserStory: protectedProcedure
+  modifyTask: protectedProcedure
     .input(
       z.object({
         projectId: z.string(),
-        userStoryId: z.string(),
-        userStoryData: UserStorySchema.omit({ scrumId: true, deleted: true }),
+        taskId: z.string(),
+        taskData: TaskSchema.omit({ scrumId: true, deleted: true }),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, userStoryId, userStoryData } = input;
-      const userStoryRef = ctx.firestore
+      const { projectId, taskId, taskData } = input;
+      const taskRef = ctx.firestore
         .collection("projects")
         .doc(projectId)
-        .collection("userStories")
-        .doc(userStoryId);
-      await userStoryRef.update(userStoryData);
+        .collection("tasks")
+        .doc(taskId);
+      await taskRef.update(taskData);
       return { success: true };
     }),
 
-
-    // modify task status
-  modifyUserStoryTags: protectedProcedure
+  changeTaskStatus: protectedProcedure
     .input(
       z.object({
         projectId: z.string(),
-        userStoryId: z.string(),
-        priorityId: z.string().optional(),
-        size: z.string().optional(),
+        taskId: z.string(),
+        statusId: z.string().default(""),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, userStoryId, priorityId, size } = input;
-      if (priorityId === undefined && size === undefined) {
-        return;
-      }
-
-      const userStoryRef = ctx.firestore
+      const { projectId, taskId, statusId } = input;
+      const taskRef = ctx.firestore
         .collection("projects")
         .doc(projectId)
-        .collection("userStories")
-        .doc(userStoryId);
-      const userStory = await userStoryRef.get();
-      if (!userStory.exists) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
-
-      const newUserStoryData = {
-        priorityId: priorityId,
-        size: size,
-      };
-      await userStoryRef.update(newUserStoryData);
+        .collection("tasks")
+        .doc(taskId);
+      await taskRef.update({statusId});
       return { success: true };
     }),
-
 
     // deleted task 
-  deleteUserStory: protectedProcedure
+  deleteTask: protectedProcedure
     .input(
       z.object({
         projectId: z.string(),
-        userStoryId: z.string(),
+        taskId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, userStoryId } = input;
-      const userStoryRef = ctx.firestore
+      const { projectId, taskId } = input;
+      const taskRef = ctx.firestore
         .collection("projects")
         .doc(projectId)
-        .collection("userStories")
-        .doc(userStoryId);
-      await userStoryRef.update({ deleted: true });
+        .collection("tasks")
+        .doc(taskId);
+      await taskRef.update({ deleted: true });
       return { success: true };
     }),
 });

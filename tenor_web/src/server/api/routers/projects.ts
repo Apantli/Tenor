@@ -14,6 +14,8 @@ import { ProjectSchema } from "~/lib/types/zodFirebaseSchema";
 import { isBase64Valid } from "~/utils/base64";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
+
+
 const emptySettings: Settings = {
   sprintDuration: 0,
   maximumSprintStoryPoints: 0,
@@ -249,6 +251,29 @@ export const projectsRouter = createTRPCRouter({
         await priorityTypesCollection.add({
           name: "P0",
           color: "#FF0000",
+          deleted: false,
+        });
+        
+        const statusCollection = projectRef
+          .collection("settings")
+          .doc("settings")
+          .collection("statusTypes");
+
+        await statusCollection.add({
+          name: "Todo",
+          color: "#0737E3",
+          deleted: false,
+        });
+
+        await statusCollection.add({
+          name: "Doing",
+          color: "#AD7C00",
+          deleted: false,
+        });
+
+        await statusCollection.add({
+          name: "Done",
+          color: "#009719",
           deleted: false,
         });
 

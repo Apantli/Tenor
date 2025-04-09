@@ -3,24 +3,33 @@
 import React, { useState } from "react";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
-import PillComponent from "../PillComponent";
 import ProfilePicture from "../ProfilePicture";
+import PillComponent from "../PillComponent";
 import type { User } from "firebase/auth";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scumIdHooks";
 import { SidebarPopup } from "../Popup";
 import { CreateTaskForm } from "../tasks/CreateTaskPopup";
+import { api } from "~/trpc/react";
+import StatusPicker from "../specific-pickers/StatusPicker";
+import { useParams } from "next/navigation";
+import { type Tag } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   tasks: TaskPreview[];
   itemId: string;
   itemType: "US" | "IS" | "IT";
+  onTaskStatusChange: (
+    taskId: string,
+    statusId: Tag,) => void;
 }
 
-export default function TasksTable({ tasks, itemId, itemType }: Props) {
+export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
+
+  const { projectId } = useParams();  
   
   const filteredTasks = tasks.filter((task) => {
     if (
@@ -34,51 +43,61 @@ export default function TasksTable({ tasks, itemId, itemType }: Props) {
   
   const formatTaskScrumId = useFormatTaskScrumId();
   
+  const completedTasks = tasks.filter(task => 
+    task.status?.name === "Done"
+  ).length;
+  
   const taskColumns: TableColumns<TaskPreview> = {
-    // Your existing columns definition
     id: { visible: false },
     scrumId: {
       label: "Id",
-      width: 80,
+      width: 100,
       render(row) {
         return formatTaskScrumId(row.scrumId);
       },
     },
     name: {
       label: "Title",
-      width: 280,
+      width: 200,
     },
     status: {
       label: "Status",
       width: 150,
       render(row) {
-        return (
-          <PillComponent
-            labelClassName=""
-            currentTag={row.status}
-            allTags={[row.status]}
-            callBack={() => {}}
-          >
-            {row.status.name}
-          </PillComponent>
-        );
+
+        return(
+          <StatusPicker
+            status={row.status}
+            onChange={ async (status) => {
+            onTaskStatusChange (
+                row.id,
+                status
+              )
+            }}
+            className = "w-32"
+          />
+        )
       },
     },
     assignee: {
       label: "Assignee",
-      width: 80,
+      width: 100,
       render(row) {
+        if (!row.assignee) {
+          return <div></div>;
+        }
         return (
-          row.assignee && (
-            <ProfilePicture user={row.assignee as User} hideTooltip />
-          )
+          <div>
+            {row.assignee && (
+              <ProfilePicture 
+                user={row.assignee} 
+              />
+            )}
+          </div>
         );
       },
     },
   };
-  
-  // Calculate completed tasks
-  const completedTasks = tasks.filter(task => task.status?.name === "Done").length;
 
   return (
     <>
@@ -99,22 +118,29 @@ export default function TasksTable({ tasks, itemId, itemType }: Props) {
         </div>
       </div>
       
-      <Table
-        data={filteredTasks}
-        columns={taskColumns}
-        className="font-sm mt-4 h-40 w-full overflow-hidden"
-        multiselect
-        emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
-      />
+      <div className="mt-4 w-full max-w-full">
+        <Table
+          data={filteredTasks}
+          columns={taskColumns}
+          className="font-sm w-full table-fixed overflow-visible rounded-lg border border-gray-100"
+          multiselect
+          deletable
+          onDelete={(ids) =>{
+            
+          }  }
+          emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
+        />
+      </div>
       
       <SidebarPopup 
         show={showAddTaskPopup}
         dismiss={() => setShowAddTaskPopup(false)}
       >
         <CreateTaskForm 
-          itemId = {itemId} 
-          itemType = {itemType} 
-          onTaskAdded={() => setShowAddTaskPopup(false)} />
+          itemId={itemId} 
+          itemType={itemType} 
+          onTaskAdded={() => setShowAddTaskPopup(false)} 
+        />
       </SidebarPopup>
     </>
   );

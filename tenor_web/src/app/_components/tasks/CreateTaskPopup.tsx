@@ -13,6 +13,8 @@ import PillComponent from "~/app/_components/PillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { type Size, type Tag } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
+import StatusPicker from "../specific-pickers/StatusPicker";
+import { WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -38,30 +40,20 @@ export function CreateTaskForm({
   const [createForm, setCreateForm] = useState<{
     name: string;
     description: string;
-    status?: string;
+    status?: Tag;
     assignee?: string;
     size?: Size;
     dueDate?: Date;
   }>({
     name: "",
     description: "",
-    status: "",
+    status: undefined,
     assignee: "",
     size: undefined,
     dueDate: undefined,
   });
 
-  const [selectedStatus, setSelectedStatus] = useState<Tag | undefined>();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedAssignee, setSelectedAssignee] = useState<Option | undefined>();
-
-  const statusOptions: Tag[] = [
-    { id: "todo", name: "Todo", color: "#6B7280", deleted: false },
-    { id: "in-progress", name: "In Progress", color: "#3B82F6", deleted: false },
-    { id: "review", name: "Review", color: "#F59E0B", deleted: false },
-    { id: "done", name: "Done", color: "#10B981", deleted: false },
-  ];
-
   const people: Option[] = users ?? [];
 
   const handleCreateTask = async () => {
@@ -74,8 +66,8 @@ export function CreateTaskForm({
     }
 
     let dueDate: Timestamp | null = null;
-    if (selectedDate) {
-      dueDate = Timestamp.fromDate(selectedDate);
+    if (createForm.dueDate) {
+      dueDate = Timestamp.fromDate(createForm.dueDate);
     }
 
     const { taskId } = await createTask({
@@ -83,7 +75,7 @@ export function CreateTaskForm({
       taskData: {
         name: createForm.name,
         description: createForm.description,
-        statusId: selectedStatus?.id ?? "",
+        statusId: createForm.status?.id ?? "",
         assigneeId: createForm.assignee ?? "",
         size: createForm.size,
         dueDate: dueDate,
@@ -127,17 +119,13 @@ export function CreateTaskForm({
         <div className="flex gap-3 mb-2">
           <div className="flex-1">
             <label className="mb-1 block text-sm font-medium">Status</label>
-            <PillComponent
-              currentTag={selectedStatus}
-              allTags={statusOptions}
-              callBack={(status) => {
-                setSelectedStatus(status);
-                setCreateForm({ ...createForm, status: status.id });
+            <StatusPicker
+              status={createForm.status}
+              onChange={(status) => {
+                setCreateForm({ ...createForm, status: status });
               }}
-              labelClassName="w-full"
             />
           </div>
-
           <div className="flex-1">
             <label className="mb-1 block text-sm font-medium">Size</label>
             <SizePillComponent
@@ -164,9 +152,8 @@ export function CreateTaskForm({
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Due Date</label>
           <DatePicker
-            selectedDate={selectedDate}
+            selectedDate={createForm.dueDate}
             onChange={(date) => {
-              setSelectedDate(date ?? undefined);
               setCreateForm({ ...createForm, dueDate: date ?? undefined});
             }}
             placeholder="Select a due date"
