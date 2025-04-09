@@ -5,13 +5,19 @@ import { FieldPath } from "firebase-admin/firestore";
 
 // TODO: Use this function within the epic procedures (did not do it because of possible conflicts)
 export const getEpic = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
   epicId: string,
 ) => {
   if (epicId === undefined || epicId === "") {
     return undefined;
   }
-  const epic = await settingsRef.collection("sprints").doc(epicId).get();
+  const epicRef = dbAdmin
+    .collection("projects")
+    .doc(projectId)
+    .collection("epics")
+    .doc(epicId);
+  const epic = await epicRef.get();
 
   if (!epic.exists) {
     return undefined;

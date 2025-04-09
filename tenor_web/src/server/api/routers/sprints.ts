@@ -15,6 +15,27 @@ const timestampToDate = (timestamp: {
   return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
 };
 
+export const getSprint = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  if (sprintId === undefined || sprintId === "") {
+    return undefined;
+  }
+  const sprintRef = dbAdmin
+    .collection("projects")
+    .doc(projectId)
+    .collection("sprints")
+    .doc(sprintId);
+  const sprint = await sprintRef.get();
+
+  if (!sprint.exists) {
+    return undefined;
+  }
+  return { id: sprint.id, ...SprintSchema.parse(sprint.data()) };
+};
+
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: protectedProcedure
     .input(z.object({ projectId: z.string() }))

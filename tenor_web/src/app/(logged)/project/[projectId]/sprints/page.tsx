@@ -16,7 +16,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { Timestamp } from "firebase/firestore";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scumIdHooks";
+import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
 

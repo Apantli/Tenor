@@ -13,15 +13,15 @@ import {
 import type { UserStoryDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
 import { getEpic } from "./epics";
-
+import { getSprint } from "./sprints";
 export interface UserStoryCol {
   id: string;
   scrumId: number;
   title: string;
-  epicId: number;
+  epicScrumId?: number;
   priority?: Tag;
   size: Size;
-  sprintId: number;
+  sprintNumber?: number;
   taskProgress: [number | undefined, number | undefined];
 }
 
@@ -47,21 +47,6 @@ const getUserStoriesFromProject = async (
   );
 
   return userStories;
-};
-
-const getSprint = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  sprintId: string,
-) => {
-  if (sprintId === undefined || sprintId === "") {
-    return undefined;
-  }
-  const sprint = await settingsRef.collection("sprints").doc(sprintId).get();
-
-  if (!sprint.exists) {
-    return undefined;
-  }
-  return { id: sprint.id, ...SprintSchema.parse(sprint.data()) };
 };
 
 const getPriorityTag = async (
@@ -142,17 +127,24 @@ export const userStoriesRouter = createTRPCRouter({
 
       const fixedData = await Promise.all(
         rawUs.map(async (userStory) => {
-          console.log(userStory);
-          const sprint = await getSprint(settingsRef, userStory.sprintId);
-          const epic = await getEpic(settingsRef, userStory.epicId);
+          const sprint = await getSprint(
+            ctx.firestore,
+            projectId,
+            userStory.sprintId,
+          );
+          const epic = await getEpic(
+            ctx.firestore,
+            projectId,
+            userStory.epicId,
+          );
           return {
             id: userStory.id,
             scrumId: userStory.scrumId,
             title: userStory.name,
-            epicId: epic?.scrumId ?? undefined,
+            epicScrumId: epic?.scrumId,
             priority: await getPriorityTag(settingsRef, userStory.priorityId),
             size: userStory.size,
-            sprintId: sprint?.number ?? undefined,
+            sprintNumber: sprint?.number,
             taskProgress: getTaskProgress(),
           };
         }),

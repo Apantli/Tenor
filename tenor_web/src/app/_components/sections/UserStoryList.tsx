@@ -17,7 +17,7 @@ import {
   useFormatEpicScrumId,
   useFormatSprintNumber,
   useFormatUserStoryScrumId,
-} from "~/app/_hooks/scumIdHooks";
+} from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import LoadingSpinner from "../LoadingSpinner";
@@ -119,16 +119,16 @@ export default function UserStoryList() {
           );
         },
       },
-      epicId: {
+      epicScrumId: {
         label: "Epic",
         width: 100,
         sortable: true,
         filterable: "search-only",
         filterValue(row) {
-          return formatEpicScrumId(row.scrumId);
+          return formatEpicScrumId(row.epicScrumId);
         },
         render(row) {
-          return <span>{formatEpicScrumId(row.scrumId)}</span>;
+          return <span>{formatEpicScrumId(row.epicScrumId)}</span>;
         },
       },
       priority: {
@@ -251,16 +251,16 @@ export default function UserStoryList() {
           );
         },
       },
-      sprintId: {
+      sprintNumber: {
         label: "Sprint",
         width: 100,
         sortable: true,
         filterable: "list",
         filterValue(row) {
-          return formatSprintNumber(row.sprintId).toString();
+          return formatSprintNumber(row.sprintNumber).toString();
         },
         render(row) {
-          return <span>{formatSprintNumber(row.sprintId)}</span>;
+          return <span>{formatSprintNumber(row.sprintNumber)}</span>;
         },
       },
       taskProgress: {

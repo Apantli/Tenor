@@ -9,7 +9,7 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { useFormatEpicScrumId } from "~/app/_hooks/scumIdHooks";
+import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import Markdown from "react-markdown";
 import SecondaryButton from "../buttons/SecondaryButton";
