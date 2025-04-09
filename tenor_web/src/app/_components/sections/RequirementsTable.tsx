@@ -20,6 +20,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import { set } from "node_modules/cypress/types/lodash";
 import TagComponent from "../TagComponent";
 import { Label } from "recharts";
+import{ UseFormatForAssignReqTypeScrumId }from "~/app/_hooks/requirementHook";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -191,7 +192,7 @@ export default function RequirementsTable() {
         render(row) {
           return (
             <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
-              {row.scrumId}
+              {UseFormatForAssignReqTypeScrumId(row.requirementTypeId.name, row.scrumId)}
             </button>
           );
         },
@@ -313,7 +314,7 @@ export default function RequirementsTable() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex w-full justify-between">
-        <h2 className="text-2xl font-medium">Requirements</h2>
+        <h2 className="text-3xl font-semibold">Requirements</h2>
         <div className="flex w-3/4 items-center justify-end gap-2">
           <div className="w-1/3 p-2">
             <SearchBar

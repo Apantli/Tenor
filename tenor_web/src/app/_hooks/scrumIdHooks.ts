@@ -6,7 +6,15 @@ export const useFormatUserStoryScrumId = () => {
 };
 
 export const useFormatEpicScrumId = () => {
-  return (scrumId: number) => `EP${String(scrumId).padStart(2, "0")}`;
+  return (scrumId: number | undefined) =>
+    (scrumId == undefined || scrumId == 0) ? "No Epic" : `EP${String(scrumId).padStart(2, "0")}`;
+};
+
+export const useFormatSprintNumber = () => {
+  return (sprintNumber: number | undefined) => {
+    if (sprintNumber === undefined) return "Unassigned";
+    return `Sprint ${sprintNumber}`;
+  };
 };
 
 export const useFormatTaskScrumId = () => {

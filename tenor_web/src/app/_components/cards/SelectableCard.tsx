@@ -18,7 +18,7 @@ export default function SelectableCard({
   return (
     <div
       className={cn(
-        "group relative flex w-full cursor-pointer rounded-lg border border-app-border bg-white p-2 py-2 shadow-xl transition duration-100",
+        "group relative flex w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-2 shadow-xl transition duration-100",
         {
           "ring-2 ring-app-secondary": selected,
         },

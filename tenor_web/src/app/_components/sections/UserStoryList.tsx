@@ -15,10 +15,12 @@ import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import CreateUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/CreateUserStoryPopup";
 import {
   useFormatEpicScrumId,
+  useFormatSprintNumber,
   useFormatUserStoryScrumId,
-} from "~/app/_hooks/scumIdHooks";
+} from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import LoadingSpinner from "../LoadingSpinner";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -34,6 +36,7 @@ export default function UserStoryList() {
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatEpicScrumId = useFormatEpicScrumId();
+  const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
 
   // TRPC
@@ -70,11 +73,11 @@ export default function UserStoryList() {
   // Function to get the US table or message instead
   const getTable = () => {
     if (userStories == undefined || isLoadingUS) {
-      return <span>Loading...</span>;
-    }
-
-    if (userStoryData?.length == 0) {
-      return <span>No User stories found</span>;
+      return (
+        <div className="flex h-full w-full flex-1 items-start justify-center p-10">
+          <LoadingSpinner color="primary" />
+        </div>
+      );
     }
 
     // TODO: Add correct leading 0 to ids (which depends on max id). Currently hardcoded
@@ -116,22 +119,32 @@ export default function UserStoryList() {
           );
         },
       },
-      epicId: {
+      epicScrumId: {
         label: "Epic",
         width: 100,
         sortable: true,
         filterable: "search-only",
         filterValue(row) {
-          return row.epicId == 0 ? "No Epic" : formatEpicScrumId(row.epicId);
+          return formatEpicScrumId(row.epicScrumId);
         },
         render(row) {
-          // FIXME: The actual epic scrum id should be sent to the client, along the normal id
-          return <span>{formatEpicScrumId(row.epicId)}</span>;
+          return <span>{formatEpicScrumId(row.epicScrumId)}</span>;
         },
       },
       priority: {
         label: "Priority",
         width: 100,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.priority?.name ?? "";
+        },
+        sorter(a, b) {
+          if (!a.priority && !b.priority) return 0;
+          if (!a.priority) return 1;
+          if (!b.priority) return -1;
+          return a.priority?.name.localeCompare(b.priority?.name) ? -1 : 1;
+        },
         render(row) {
           const handlePriorityChange = async (tag: Tag) => {
             const rowIndex = userStoryData.indexOf(row);
@@ -180,6 +193,23 @@ export default function UserStoryList() {
       size: {
         label: "Size",
         width: 100,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.size ?? "";
+        },
+        sorter(a, b) {
+          const sizeOrder: Record<Size, number> = {
+            XS: 0,
+            S: 1,
+            M: 2,
+            L: 3,
+            XL: 4,
+            XXL: 5,
+          };
+
+          return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
+        },
         render(row) {
           const handleSizeChange = async (size: Size) => {
             const rowIndex = userStoryData.indexOf(row);
@@ -221,20 +251,16 @@ export default function UserStoryList() {
           );
         },
       },
-      sprintId: {
+      sprintNumber: {
         label: "Sprint",
         width: 100,
         sortable: true,
         filterable: "list",
         filterValue(row) {
-          return row.sprintId == 0 ? "No Sprint" : "Sprint " + row.sprintId;
+          return formatSprintNumber(row.sprintNumber).toString();
         },
         render(row) {
-          return (
-            <span>
-              {row.sprintId == 0 ? "No Sprint" : "Sprint " + row.sprintId}
-            </span>
-          );
+          return <span>{formatSprintNumber(row.sprintNumber)}</span>;
         },
       },
       taskProgress: {
@@ -252,17 +278,22 @@ export default function UserStoryList() {
       },
     };
 
-    const handleDelete = async (ids: string[]) => {
+    const handleDelete = async (
+      ids: string[],
+      callback: (del: boolean) => void,
+    ) => {
       const confirmMessage = ids.length > 1 ? "user stories" : "user story";
       if (
         !(await confirm(
           `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
-          "This action is not revertible",
+          "This action is not revertible.",
           `Delete ${confirmMessage}`,
         ))
       ) {
+        callback(false);
         return;
       }
+      callback(true); // call the callback as soon as possible
 
       const newData = userStoryData.filter(
         (userStory) => !ids.includes(userStory.id),
@@ -287,10 +318,12 @@ export default function UserStoryList() {
         ),
       );
       await refetchUS();
+      return true;
     };
 
     return (
       <Table
+        emptyMessage="No user stories found"
         className={cn("w-full", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}

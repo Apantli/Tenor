@@ -234,7 +234,7 @@ export function SidebarPopup({
       <>
         <div
           className={cn(
-            "absolute left-0 top-0 z-10 h-full w-full bg-black opacity-0 transition duration-200",
+            "absolute left-0 top-0 z-[61] h-full w-full bg-black opacity-0 transition duration-200",
             {
               "opacity-30": show && slideIn,
             },
@@ -244,9 +244,10 @@ export function SidebarPopup({
             e.stopPropagation();
           }}
         ></div>
+        <div className="absolute right-0 top-0 h-full w-full rounded-2xl overflow-hidden">
         <div
           className={cn(
-            "absolute right-0 top-0 z-[11] h-full w-1/2 translate-x-full bg-white p-5 pt-12 shadow-md transition duration-200",
+            "absolute right-0 top-0 z-[65] h-full w-1/2 translate-x-full bg-white p-5 pt-12 shadow-md transition duration-200",
             {
               "translate-x-0": show && slideIn,
             },
@@ -268,6 +269,7 @@ export function SidebarPopup({
           >
             <CloseIcon fontSize="inherit" />
           </button>
+        </div>
         </div>
       </>
     )

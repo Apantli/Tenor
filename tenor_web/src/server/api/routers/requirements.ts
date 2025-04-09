@@ -264,29 +264,29 @@ export const requirementsRouter = createTRPCRouter({
         throw new Error("Project not found");
       }
 
-      const requierementsRef = ctx.firestore
+      const requirementsRef = ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .collection("requirements");
 
       if (input.scrumId !== -1) {
-        const requierementDocs = await requierementsRef
+        const requirementDocs = await requirementsRef
           .where("scrumId", "==", input.scrumId)
           .get();
 
-        if (requierementDocs.empty) {
+        if (requirementDocs.empty) {
           throw new Error("Requirement not found");
         }
 
-        const requierementDoc = requierementDocs.docs[0];
-        await requierementDoc?.ref.update(input);
+        const requirementDoc = requirementDocs.docs[0];
+        await requirementDoc?.ref.update(input);
         return "Requirement updated successfully";
       } else {
         const existingRequirementCount = (
-          await requierementsRef.count().get()
+          await requirementsRef.count().get()
         ).data().count;
         input.scrumId = existingRequirementCount + 1;
-        await requierementsRef.add(input);
+        await requirementsRef.add(input);
         return "Requirement created successfully";
       }
     }),

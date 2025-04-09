@@ -9,6 +9,7 @@ import { userStoriesRouter } from "./routers/userStories";
 import { userRouter } from "./routers/users";
 import settingsRouter from "./routers/settings";
 import { sprintsRouter } from "./routers/sprints";
+import { tasksRouter } from "./routers/tasks";
 import { requirementsRouter } from "./routers/requirements";
 
 /**
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
   users: userRouter,
   settings: settingsRouter,
   sprints: sprintsRouter,
+  tasks: tasksRouter,
 });
 
 // export type definition of API

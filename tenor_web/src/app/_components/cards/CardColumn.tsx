@@ -3,6 +3,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import SelectableCard from "./SelectableCard";
 import useShiftKey from "~/app/_hooks/useShiftKey";
 import useClickOutside from "~/app/_hooks/useClickOutside";
+import type { ClassNameValue } from "tailwind-merge";
 
 interface Props<T extends { id: string; scrumId: number }> {
   selection: Set<string>;
@@ -10,6 +11,7 @@ interface Props<T extends { id: string; scrumId: number }> {
   setDetailId: (detailId: string) => void;
   setShowDetail: (showDetail: boolean) => void;
   header?: React.ReactNode;
+  className: ClassNameValue;
 
   cards: T[];
   renderCard: (item: T) => React.ReactNode;

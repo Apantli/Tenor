@@ -1,4 +1,4 @@
-import { FieldPath, Timestamp } from "firebase-admin/firestore";
+import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
   SprintInfoSchema,
@@ -13,6 +13,27 @@ const timestampToDate = (timestamp: {
   nanoseconds: number;
 }) => {
   return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
+};
+
+export const getSprint = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  if (sprintId === undefined || sprintId === "") {
+    return undefined;
+  }
+  const sprintRef = dbAdmin
+    .collection("projects")
+    .doc(projectId)
+    .collection("sprints")
+    .doc(sprintId);
+  const sprint = await sprintRef.get();
+
+  if (!sprint.exists) {
+    return undefined;
+  }
+  return { id: sprint.id, ...SprintSchema.parse(sprint.data()) };
 };
 
 export const sprintsRouter = createTRPCRouter({
@@ -31,8 +52,6 @@ export const sprintsRouter = createTRPCRouter({
         id: doc.id,
         ...SprintInfoSchema.parse(doc.data()),
       }));
-
-      console.log("Sprints: ", sprints);
 
       return sprints;
     }),
@@ -131,7 +150,6 @@ export const sprintsRouter = createTRPCRouter({
           startDate: timestampToDate(sprint.startDate),
           endDate: timestampToDate(sprint.endDate),
         }));
-      console.log("Sprints: ", sprintsData);
 
       const backlogTags = await ctx.firestore
         .collection("projects")
@@ -170,19 +188,81 @@ export const sprintsRouter = createTRPCRouter({
           startDate: sprint.startDate,
           endDate: sprint.endDate,
         },
-        userStories: userStoriesPreviews.filter(
-          (userStory) => userStory.sprintId === sprint.id,
-        ),
+        userStoryIds: userStoriesPreviews
+          .filter((userStory) => userStory.sprintId === sprint.id)
+          .map((userStory) => userStory.id),
       }));
-      console.log(sprintsWithUserStories);
 
-      const unassignedUserStories = userStoriesPreviews.filter(
-        (userStory) => userStory.sprintId === "",
-      );
+      const unassignedUserStoryIds = userStoriesPreviews
+        .filter((userStory) => userStory.sprintId === "")
+        .map((userStory) => userStory.id);
 
       return {
         sprints: sprintsWithUserStories,
-        unassignedUserStories: unassignedUserStories,
+        unassignedUserStoryIds,
+        userStories: Object.fromEntries(
+          userStoriesPreviews.map((userStory) => [userStory.id, userStory]),
+        ),
       };
+    }),
+
+  assignUserStoriesToSprint: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string().optional(),
+        userStoryIds: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, sprintId, userStoryIds } = input;
+
+      // Update the user stories in parallel
+      await Promise.all(
+        userStoryIds.map(async (userStoryId) => {
+          // Obtain user story data
+          const userStoryRef = ctx.firestore
+            .collection("projects")
+            .doc(projectId)
+            .collection("userStories")
+            .doc(userStoryId);
+          const userStory = await userStoryRef.get();
+          const userStoryData = UserStorySchema.extend({
+            id: z.string(),
+          }).parse({
+            id: userStoryId,
+            ...userStory.data(),
+          });
+
+          // Remove from previously assigned sprint
+          if (userStoryData.sprintId !== "") {
+            const prevSprintRef = ctx.firestore
+              .collection("projects")
+              .doc(projectId)
+              .collection("sprints")
+              .doc(userStoryData.sprintId);
+            await prevSprintRef.update({
+              userStoryIds: FieldValue.arrayRemove(userStoryId),
+            });
+          }
+
+          // Update the user story with the new sprint ID
+          await userStoryRef.update({
+            sprintId: sprintId ?? "",
+          });
+        }),
+      );
+
+      // Assign to the requested sprint
+      if (sprintId && sprintId !== "") {
+        const sprintRef = ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("sprints")
+          .doc(sprintId);
+        await sprintRef.update({
+          userStoryIds: FieldValue.arrayUnion(...userStoryIds),
+        });
+      }
     }),
 });

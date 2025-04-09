@@ -5,32 +5,24 @@ import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   EpicSchema,
+  SprintSchema,
   TagSchema,
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
 import type { UserStoryDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
-
+import { getEpic } from "./epics";
+import { getSprint } from "./sprints";
 export interface UserStoryCol {
   id: string;
   scrumId: number;
   title: string;
-  epicId: number;
+  epicScrumId?: number;
   priority?: Tag;
   size: Size;
-  sprintId: number;
+  sprintNumber?: number;
   taskProgress: [number | undefined, number | undefined];
-}
-
-function getRandomInt(min: number, max: number): number {
-  if (min > max) {
-    throw new Error("Min must be less than or equal to max");
-  }
-
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 const getUserStoriesFromProject = async (
@@ -57,16 +49,6 @@ const getUserStoriesFromProject = async (
   return userStories;
 };
 
-// TODO: Fetch from db
-const getSprintScrumId = () => {
-  return getRandomInt(1, 10);
-};
-
-// TODO: Fetch from db
-const getEpicScrumId = () => {
-  return getRandomInt(1, 30);
-};
-
 const getPriorityTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
   priorityId: string,
@@ -76,7 +58,7 @@ const getPriorityTag = async (
   }
   const tag = await settingsRef
     .collection("priorityTypes")
-    .doc(priorityId ?? "")
+    .doc(priorityId)
     .get();
   if (!tag.exists) {
     return undefined;
@@ -145,14 +127,24 @@ export const userStoriesRouter = createTRPCRouter({
 
       const fixedData = await Promise.all(
         rawUs.map(async (userStory) => {
+          const sprint = await getSprint(
+            ctx.firestore,
+            projectId,
+            userStory.sprintId,
+          );
+          const epic = await getEpic(
+            ctx.firestore,
+            projectId,
+            userStory.epicId,
+          );
           return {
             id: userStory.id,
             scrumId: userStory.scrumId,
             title: userStory.name,
-            epicId: getEpicScrumId(),
+            epicScrumId: epic?.scrumId,
             priority: await getPriorityTag(settingsRef, userStory.priorityId),
             size: userStory.size,
-            sprintId: getSprintScrumId(),
+            sprintNumber: sprint?.number,
             taskProgress: getTaskProgress(),
           };
         }),
@@ -264,8 +256,19 @@ export const userStoriesRouter = createTRPCRouter({
         }),
       );
 
-      // FIXME: Get sprint number from database
-      const sprintNumber = undefined;
+      let sprintNumber = undefined;
+      if (userStoryData.sprintId !== "") {
+        const sprint = await ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("sprints")
+          .doc(userStoryData.sprintId)
+          .get();
+        if (sprint.exists) {
+          const sprintData = SprintSchema.parse(sprint.data());
+          sprintNumber = sprintData.number;
+        }
+      }
 
       const filteredTasks = tasks.filter((task) => task.deleted === false);
       return {

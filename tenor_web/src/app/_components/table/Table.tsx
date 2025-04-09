@@ -6,6 +6,8 @@ import { type ClassNameValue } from "tailwind-merge";
 
 import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
+import useClickOutside from "~/app/_hooks/useClickOutside";
+import useShiftKey from "~/app/_hooks/useShiftKey";
 
 export interface VisibleColumn<T> {
   label: string;
@@ -47,7 +49,7 @@ interface TableProps<I, T> {
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
-  onDelete?: (ids: I[]) => void;
+  onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   className?: ClassNameValue;
   emptyMessage?: string;
 }
@@ -73,6 +75,7 @@ export default function Table<
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selection, setSelection] = useState<Set<I>>(new Set());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastSelectedIdRef = useRef<I>();
 
   const sortedData = useMemo(() => {
     if (!sortColumnKey) return data;
@@ -140,13 +143,34 @@ export default function Table<
     }
   };
 
+  const shiftClick = useShiftKey();
+
   const toggleSelect = (id: I) => {
     const newSelection = new Set(selection);
-    if (selection.has(id)) {
-      newSelection.delete(id);
-    } else {
-      newSelection.add(id);
+    const currentIndex = filteredData.findIndex((row) => row.id === id);
+    const lastSelectedIndex = filteredData.findIndex(
+      (row) => row.id === lastSelectedIdRef.current,
+    );
+
+    let min = currentIndex;
+    let max = currentIndex;
+    if (shiftClick && lastSelectedIndex !== -1) {
+      min = Math.min(lastSelectedIndex, currentIndex);
+      max = Math.max(lastSelectedIndex, currentIndex);
     }
+
+    for (let i = min; i <= max; i++) {
+      const row = filteredData[i];
+      if (row) {
+        const rowId = row.id;
+        if (selection.has(id)) {
+          newSelection.delete(rowId);
+        } else {
+          newSelection.add(rowId);
+        }
+      }
+    }
+    lastSelectedIdRef.current = id;
     setSelection(newSelection);
   };
 
@@ -189,6 +213,10 @@ export default function Table<
     setFilters({ ...filters });
   };
 
+  useClickOutside(scrollContainerRef, () => {
+    lastSelectedIdRef.current = undefined;
+  });
+
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
@@ -220,6 +248,7 @@ export default function Table<
             columns={columns}
             multiselect={multiselect}
             selection={selection}
+            setSelection={setSelection}
             toggleSelect={toggleSelect}
             extraOptions={extraOptions}
             deletable={deletable}

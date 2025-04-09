@@ -33,7 +33,7 @@ export function DatePicker({
       onChange(null);
       return;
     }
-    const newDate = new Date(`${e.target.value}T12:00:00`);
+    const newDate = new Date(`${e.target.value}T23:59:59`);
     onChange(newDate);
   };
 
@@ -50,7 +50,7 @@ export function DatePicker({
 
   return (
     <div className={cn("relative", className)} onClick={openDatePicker}>
-      <div className="flex cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
+      <div className="flex cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200 h-10">
         <CalendarMonthIcon className="mr-2 h-5 w-5 cursor-pointer text-gray-700" />
         <div className="flex flex-grow items-center">
           <div className="cursor-pointer font-medium text-gray-700">
