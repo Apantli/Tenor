@@ -47,7 +47,7 @@ interface TableProps<I, T> {
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
-  onDelete?: (ids: I[]) => void;
+  onDelete?: (ids: I[]) => Promise<boolean>;
   className?: ClassNameValue;
   emptyMessage?: string;
 }

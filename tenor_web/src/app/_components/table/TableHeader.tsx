@@ -32,7 +32,7 @@ interface TableHeaderProps<I, T> {
   setFilter: (columnKey: keyof T, value: any) => void;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
-  onDelete?: (ids: I[]) => void;
+  onDelete?: (ids: I[]) => Promise<boolean>;
 }
 
 // eslint-disable-next-line

@@ -161,7 +161,7 @@ export const ProjectSchema = z.object({
   deleted: z.boolean().default(false),
 
   // FIXME: This should be a subcollection
-  settings: SettingsSchema.optional(),
+  // settings: SettingsSchema,
 
   // Will users also be in their subcollection?
   users: z.array(

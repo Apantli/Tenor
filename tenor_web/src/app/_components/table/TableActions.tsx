@@ -9,7 +9,7 @@ interface TableActionsProps<I> {
   setSelection: React.Dispatch<React.SetStateAction<Set<I>>>;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
-  onDelete?: (ids: I[]) => void;
+  onDelete?: (ids: I[]) => Promise<boolean>;
 }
 
 function TableActions<I extends string | number>({
@@ -48,9 +48,10 @@ function TableActions<I extends string | number>({
           data-tooltip-place="top-start"
           data-tooltip-hidden={selection.size === 0}
           className="text-gray-500 transition hover:text-app-fail"
-          onClick={() => {
-            onDelete?.(Array.from(selection));
-            setSelection(new Set());
+          onClick={async () => {
+            if (await onDelete?.(Array.from(selection))) {
+              setSelection(new Set());
+            }
           }}
         >
           <DeleteIcon />

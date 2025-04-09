@@ -19,7 +19,7 @@ interface TableRowProps<I, T> {
   toggleSelect: (id: I) => void;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
-  onDelete?: (ids: I[]) => void;
+  onDelete?: (ids: I[]) => Promise<boolean>;
   scrollContainerRef: React.RefObject<HTMLDivElement>;
 }
 
