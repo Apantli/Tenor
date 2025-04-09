@@ -196,6 +196,35 @@ const createRequirementsTableData = async (
 };
 
 export const requirementsRouter = createTRPCRouter({
+  getRequirementTypeTags: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+
+      const tagsSnapshot = await settingsRef
+        .collection("requirementTypes")
+        .where("deleted", "==", false)
+        .get();
+      const tags: Tag[] = tagsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Tag),
+      }));
+      return tags;
+    }),
+  getRequirementFocusTags: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+      const tagsSnapshot = await settingsRef
+        .collection("requirementFocus")
+        .where("deleted", "==", false)
+        .get();
+      const tags: Tag[] = tagsSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...(doc.data() as Tag),
+      }));
+      return tags;
+    }),
   getRequirementsTableFriendly: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

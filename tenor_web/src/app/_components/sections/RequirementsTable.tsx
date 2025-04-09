@@ -12,6 +12,9 @@ import PillPickerComponent from "../PillPickerComponent";
 import InputTextField from "../inputs/InputTextField";
 import InputTextAreaField from "../inputs/InputTextAreaField";
 import { useAlert } from "~/app/_hooks/useAlert";
+import PriorityPicker from "../specific-pickers/PriorityPicker";
+import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
+import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -27,9 +30,7 @@ export default function RequirementsTable() {
   const [requirementsData, setRequirementsData] = useState<RequirementCol[]>(
     [],
   );
-  const [allTags, setAllTags] = useState<Tag[]>([]); // States for the tags
-  const [allReqTypeTags, setAllReqTypeTags] = useState<Tag[]>([]); // States for the req type tags
-  const [allFocusTags, setAllFocusTags] = useState<Tag[]>([]); // States for the focus tags
+
   const [searchValue, setSearchValue] = useState("");
 
   // New requirement values
@@ -117,9 +118,6 @@ export default function RequirementsTable() {
   useEffect(() => {
     if (requirements) {
       setRequirementsData(requirements.fixedData);
-      setAllTags(requirements.allTags);
-      setAllReqTypeTags(requirements.allRequirementTypeTags);
-      setAllFocusTags(requirements.allRequirementFocusTags ?? []);
     }
   }, [requirements]);
 
@@ -167,18 +165,16 @@ export default function RequirementsTable() {
         render(row) {
           return (
             <span className="flex w-32 justify-start">
-              <PillComponent
-                labelClassName="w-full"
-                currentTag={row.priorityId}
-                allTags={allTags}
-                callBack={(tag: Tag) => {
+              <PriorityPicker
+                priority={row.priorityId}
+                // FIXME: Change value in DB
+                onChange={(tag: Tag) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
                       item.id === row.id ? { ...item, priorityId: tag } : item,
                     ),
                   );
                 }}
-                className="w-[calc(100%-10px)]"
               />
             </span>
           );
@@ -190,20 +186,18 @@ export default function RequirementsTable() {
         render(row) {
           return (
             <span className="flex w-full justify-start">
-              <PillComponent
-                labelClassName="w-full"
-                currentTag={row.requirementTypeId}
-                allTags={allReqTypeTags}
-                callBack={(tag: Tag) => {
+              <RequirementTypePicker
+                type={row.requirementTypeId}
+                // FIXME: Change value in DB
+                onChange={(requirementTypeId) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
                       item.id === row.id
-                        ? { ...item, requirementTypeId: tag }
+                        ? { ...item, requirementTypeId: requirementTypeId }
                         : item,
                     ),
                   );
                 }}
-                className="w-[calc(100%-10px)]"
               />
             </span>
           );
@@ -215,20 +209,18 @@ export default function RequirementsTable() {
         render(row) {
           return (
             <span className="flex w-full justify-start">
-              <PillComponent
-                labelClassName="w-full"
-                currentTag={row.requirementFocusId}
-                allTags={allFocusTags}
-                callBack={(tag: Tag) => {
+              <RequirementFocusPicker
+                focus={row.requirementFocusId}
+                // FIXME: Change value in DB
+                onChange={(requirementFocusId) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
                       item.id === row.id
-                        ? { ...item, requirementFocusId: tag }
+                        ? { ...item, requirementFocusId: requirementFocusId }
                         : item,
                     ),
                   );
                 }}
-                className="w-[calc(100%-10px)]"
               />
             </span>
           );
@@ -293,47 +285,38 @@ export default function RequirementsTable() {
             <div className="w-[200px] space-y-2 text-xs font-bold">
               <div className="w-full space-y-2">
                 <label>Priority</label>
-                <PillComponent
-                  labelClassName="w-full"
-                  currentTag={newRequirement.priorityId}
-                  allTags={allTags}
-                  callBack={(tag: Tag) => {
+                <PriorityPicker
+                  priority={newRequirement.priorityId}
+                  onChange={(priority) => {
                     setNewRequirement((prev) => ({
                       ...prev,
-                      priorityId: tag,
+                      priorityId: priority,
                     }));
                   }}
-                  className="w-full"
                 />
               </div>
               <div className="w-full space-y-2">
                 <label>Type</label>
-                <PillComponent
-                  labelClassName="w-full"
-                  currentTag={newRequirement.requirementTypeId}
-                  allTags={allReqTypeTags}
-                  callBack={(tag: Tag) => {
+                <RequirementTypePicker
+                  type={newRequirement.requirementTypeId}
+                  onChange={(priority) => {
                     setNewRequirement((prev) => ({
                       ...prev,
-                      requirementTypeId: tag,
+                      requirementTypeId: priority,
                     }));
                   }}
-                  className="w-full"
                 />
               </div>
               <div className="w-full space-y-2">
                 <label>Focus</label>
-                <PillComponent
-                  labelClassName="w-full"
-                  currentTag={newRequirement.requirementFocusId}
-                  allTags={allFocusTags}
-                  callBack={(tag: Tag) => {
+                <RequirementFocusPicker
+                  focus={newRequirement.requirementFocusId}
+                  onChange={(priority) => {
                     setNewRequirement((prev) => ({
                       ...prev,
-                      requirementFocusId: tag,
+                      requirementFocusId: priority,
                     }));
                   }}
-                  className="w-full"
                 />
               </div>
             </div>
