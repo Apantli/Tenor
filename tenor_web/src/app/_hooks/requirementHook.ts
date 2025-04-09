@@ -1,6 +1,6 @@
 
 
-export const useFormatForAssignReqTypeScrumId = (reqType: string, scrumId: number) => {
+export const UseFormatForAssignReqTypeScrumId = (reqType: string, scrumId: number) => {
   // Takes the first letter of each word, uppercases it, and adds the scrumId
   const prefix = reqType
     .split(" ")

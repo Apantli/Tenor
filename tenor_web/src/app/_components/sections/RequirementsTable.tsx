@@ -16,7 +16,7 @@ import PriorityPicker from "../specific-pickers/PriorityPicker";
 import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
 import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 import SearchBar from "../SearchBar";
-import{ useFormatForAssignReqTypeScrumId }from "~/app/_hooks/requirementHook";
+import{ UseFormatForAssignReqTypeScrumId }from "~/app/_hooks/requirementHook";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -141,7 +141,7 @@ export default function RequirementsTable() {
         render(row) {
           return (
             <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
-              {useFormatForAssignReqTypeScrumId(row.requirementTypeId.name, row.scrumId)}
+              {UseFormatForAssignReqTypeScrumId(row.requirementTypeId.name, row.scrumId)}
             </button>
           );
         },
