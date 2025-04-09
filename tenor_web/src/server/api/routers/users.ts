@@ -16,4 +16,17 @@ export const userRouter = createTRPCRouter({
     })) as TeamMember[];
     return usersList;
   }),
+
+  getUserListEdiBox: protectedProcedure.query(async ({ ctx }) => {
+    const users = await ctx.firebaseAdmin.auth().listUsers(1000);
+    
+    // Map users to Option format
+    const usersList = users.users.map((user) => ({
+      id: user.uid,
+      name: user.displayName ?? "No name",
+      user: user,
+    }));
+    
+    return usersList;
+  }),
 });

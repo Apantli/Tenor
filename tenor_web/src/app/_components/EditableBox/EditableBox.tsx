@@ -7,12 +7,13 @@ import CloseIcon from '@mui/icons-material/Close';
 import Dropdown, { DropdownItem, DropdownButton } from '../Dropdown';
 import ProfilePicture from '../ProfilePicture';
 import { type User } from 'firebase/auth';
+import { type UserRecord } from 'node_modules/firebase-admin/lib/auth/user-record';
 
 export interface Option {
   id: string | number | null;
   name: string;
   image?: string;
-  user?: User | null;
+  user?: UserRecord | User | null;
 }
 
 interface EditableBoxProps {

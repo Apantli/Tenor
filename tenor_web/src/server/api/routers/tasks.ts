@@ -92,7 +92,7 @@ export const tasksRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
-        taskData: TaskSchema.omit({ scrumId: true }),
+        taskData: TaskSchema.omit({ scrumId: true , finishedDate: true}),
       }),
     )
     .mutation(async ({ ctx, input }) => {

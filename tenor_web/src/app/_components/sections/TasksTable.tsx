@@ -14,7 +14,7 @@ import { CreateTaskForm } from "../tasks/CreateTaskPopup";
 
 interface Props {
   tasks: TaskPreview[];
-  itemId: string; // user story
+  itemId: string;
   itemType: "US" | "IS" | "IT";
 }
 
@@ -111,7 +111,10 @@ export default function TasksTable({ tasks, itemId, itemType }: Props) {
         show={showAddTaskPopup}
         dismiss={() => setShowAddTaskPopup(false)}
       >
-        <CreateTaskForm />
+        <CreateTaskForm 
+          itemId = {itemId} 
+          itemType = {itemType} 
+          onTaskAdded={() => setShowAddTaskPopup(false)} />
       </SidebarPopup>
     </>
   );

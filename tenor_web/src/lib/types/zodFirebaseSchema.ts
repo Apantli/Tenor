@@ -112,9 +112,9 @@ export const TaskSchema = BasicInfoSchema.extend({
   assigneeId: z.string(),
   dueDate: TimestampType.nullable(),
   finishedDate: TimestampType.nullable(),
-  size: SizeSchema,
   itemId: z.string(),
-  itemType: z.enum(["US", "IS", "IT"])
+  itemType: z.enum(["US", "IS", "IT"]),
+  size: SizeSchema.optional(),
   // reviewerId: z.string(), // Scope creep. Ignore for now
 });
 
