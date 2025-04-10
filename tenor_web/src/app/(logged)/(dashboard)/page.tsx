@@ -11,7 +11,7 @@ export default function ProjectPage() {
     <div className="flex h-full w-full flex-row">
       <div className="w-full">
         <div className="">
-          <h1>Projects</h1>
+          <h1 className="text-xl font-bold">Projects</h1>
         </div>
         <div className="">
           <ProjectList />
