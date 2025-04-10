@@ -307,19 +307,10 @@ export default function ProjectSprints() {
         userStoriesBySprint?.userStories[selectedUserStoryId]?.sprintId !== "",
     );
 
-  // Drag and drop operations
-  // const [draggingId, setDraggingId] = useState<string | null>(null);
-  // const draggingUserStory =
-  //   draggingId == null
-  //     ? null
-  //     : (userStoriesBySprint?.userStories[draggingId] ?? null);
+  //// Drag and drop operations
+  let dndOperationsInProgress = 0;
 
-  // const handleDragStart = (event: any) => {
-  //   const { active } = event;
-  //   setDraggingId(active.id as string);
-  // };
-
-  // can possibly me simplified by combining it with assignSelectionToSprint
+  // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (userStoryId: string, sprintId: string) => {
     if (sprintId == noSprintId) {
       sprintId = "";
@@ -328,6 +319,8 @@ export default function ProjectSprints() {
     if (!userStories || userStories[userStoryId]?.sprintId === sprintId) return;
 
     const userStoryIds = [userStoryId];
+
+    dndOperationsInProgress += 1;
 
     // Cancel previous fetches for the sprint data
     await cancelUserStoryPreviewQuery();
@@ -410,20 +403,26 @@ export default function ProjectSprints() {
     // Cancel previous fetches for the sprint data
     await cancelUserStoryPreviewQuery();
 
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
-    await Promise.all(
-      userStoryIds.map(async (userStoryId) => {
-        await utils.userStories.getUserStoryDetail.invalidate({
-          projectId: projectId as string,
-          userStoryId,
-        });
-      }),
-    );
+    // Only fetch again if this is the last operation
+    if (dndOperationsInProgress == 1) {
+      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+        projectId: projectId as string,
+      });
+      await utils.userStories.getUserStoriesTableFriendly.invalidate({
+        projectId: projectId as string,
+      });
+      await Promise.all(
+        userStoryIds.map(async (userStoryId) => {
+          await utils.userStories.getUserStoryDetail.invalidate({
+            projectId: projectId as string,
+            userStoryId,
+          });
+        }),
+      );
+    }
+
+    // Mark operation as finished
+    dndOperationsInProgress -= 1;
   };
 
   return (
@@ -472,7 +471,7 @@ export default function ProjectSprints() {
               setShowDetail={setShowDetail}
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
-                  <span>Unassigned items</span>
+                  <span className="text-xl font-medium">Unassigned items</span>
                   <button
                     className={cn("rounded-lg px-1 text-app-text transition", {
                       "text-app-secondary":

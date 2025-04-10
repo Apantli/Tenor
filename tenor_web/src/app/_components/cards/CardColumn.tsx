@@ -47,10 +47,10 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-gray-200 transition-colors",
+        "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-sprint-column-background transition-colors",
         className,
         {
-          "bg-gray-300": isDropTarget,
+          "bg-sprint-column-background-hovered": isDropTarget,
         },
       )}
       // Merging refs to avoid a new div
