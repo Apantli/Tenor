@@ -117,6 +117,9 @@ export default function RequirementsTable() {
     projectId: params.projectId as string,
   });
 
+  const { mutateAsync: deleteRequirement } =
+    api.requirements.deleteRequirement.useMutation();
+
   useEffect(() => {
     if (requirements) {
       const filtered = requirements.fixedData.filter((req) => {
@@ -144,7 +147,7 @@ export default function RequirementsTable() {
       scrumId: {
         label: "Id",
         width: 80,
-        sortable: false,
+        sortable: true,
         render(row) {
           return (
             <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
@@ -156,7 +159,7 @@ export default function RequirementsTable() {
       name: {
         label: "Title",
         width: 450,
-        sortable: false,
+        sortable: true,
         render(row) {
           return (
             <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
@@ -171,6 +174,17 @@ export default function RequirementsTable() {
       priorityId: {
         label: "Priority",
         width: 120,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.priorityId?.name ?? "";
+        },
+        sorter(a, b) {
+          if (!a.priorityId && !b.priorityId) return 0;
+          if (!a.priorityId) return -1;
+          if (!b.priorityId) return 1;
+          return a.priorityId?.name.localeCompare(b.priorityId?.name);
+        },
         render(row) {
           return (
             <span className="flex w-32 justify-start">
@@ -192,6 +206,19 @@ export default function RequirementsTable() {
       requirementTypeId: {
         label: "Req. Type",
         width: 220,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.requirementTypeId?.name ?? "";
+        },
+        sorter(a, b) {
+          if (!a.requirementTypeId && !b.requirementTypeId) return 0;
+          if (!a.requirementTypeId) return -1;
+          if (!b.requirementTypeId) return 1;
+          return a.requirementTypeId?.name.localeCompare(
+            b.requirementTypeId?.name,
+          );
+        },
         render(row) {
           return (
             <span className="flex w-full justify-start">
@@ -215,6 +242,19 @@ export default function RequirementsTable() {
       requirementFocusId: {
         label: "Req. Focus",
         width: 250,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.requirementFocusId?.name ?? "";
+        },
+        sorter(a, b) {
+          if (!a.requirementFocusId && !b.requirementFocusId) return 0;
+          if (!a.requirementFocusId) return -1;
+          if (!b.requirementFocusId) return 1;
+          return a.requirementFocusId?.name.localeCompare(
+            b.requirementFocusId?.name,
+          );
+        },
         render(row) {
           return (
             <span className="flex w-full justify-start">
@@ -237,14 +277,60 @@ export default function RequirementsTable() {
       },
     };
 
+    const handleDelete = async (
+      ids: string[],
+      callback: (del: boolean) => void,
+    ) => {
+      const confirmMessage = ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
+      if (
+        !(await confirm(
+          `Are you sure you want to ${confirmMessage}?\nThis action cannot be undone.\nThis action is not reversible.`,
+        ))
+      ) {
+        callback(false);
+        return;
+      }
+      callback(true); // call the callback as soon as posible
+
+      const newData = requirementsData.filter(
+        (item) => !ids.includes(item.id),
+      );
+
+      await utils.requirements.getRequirementsTableFriendly.cancel({
+        projectId: params.projectId as string,
+      });
+      utils.requirements.getRequirementsTableFriendly.setData(
+        { projectId: params.projectId as string },
+        (prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            fixedData: newData,
+          };
+        },
+      )
+
+      //Deletes in database
+      await Promise.all(
+        ids.map((id) =>
+          deleteRequirement({
+            projectId: params.projectId as string,
+            requirementId: id,
+          }),
+        ),
+      );
+      await refetchRequirements();
+      return true;
+    };
+
     return (
       <Table
         className={cn("w-full", heightOfContent)}
         data={requirementsData}
         columns={tableColumns}
+        onDelete={handleDelete}
         multiselect
         deletable
-        onDelete={(ids) => console.log("Deleted", ids)}
       />
     );
   };
