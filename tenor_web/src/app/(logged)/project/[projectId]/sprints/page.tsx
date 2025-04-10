@@ -27,7 +27,7 @@ export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
 >["getUserStoryPreviewsBySprint"]["userStories"];
 
-export const noSprintId = "noSprintId";
+const noSprintId = "noSprintId";
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
