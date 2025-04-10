@@ -143,7 +143,8 @@ export default function RequirementsTable() {
     const unwrappedPriorityId = priorityId.id;
     const unwrappedRequirementTypeId = requirementTypeId.id;
     const unwrappedRequirementFocusId = requirementFocusId.id;
-    const response = await createOrModifyRequirement({
+
+    const newRequirement = {
       projectId: projectId as string,
       name,
       description,
@@ -152,11 +153,20 @@ export default function RequirementsTable() {
       requirementFocusId: unwrappedRequirementFocusId,
       scrumId,
       deleted: false,
+    };
+
+    await utils.requirements.getRequirement.cancel({
+      projectId: projectId as string,
+      requirementId: requirement.id,
     });
+
+    const response = await createOrModifyRequirement(newRequirement);
+
     await utils.requirements.getRequirementsTableFriendly.invalidate({
       projectId: projectId as string,
     });
 
+    setShowSmallPopup(false);
     console.log(response);
   };
 
@@ -355,9 +365,18 @@ export default function RequirementsTable() {
           size="small"
           className="min-h-[400px] min-w-[500px]"
           // FIXME Actually save the value
-          dismiss={() => setShowSmallPopup(false)}
+          setEditMode={
+            requirementEdited
+              ? async () => {
+                  await handleEditRequirement(requirementEdited);
+                  setShowSmallPopup(false);
+                }
+              : () => {}
+          }
           editMode={requirementEdited ? editingRequirement : undefined}
-          setEditMode={requirementEdited ? setEditingRequirement : undefined}
+          dismiss={() => {
+            setShowSmallPopup(false);
+          }}
           title={
             <h1 className="text-2xl">
               <strong>
@@ -381,8 +400,14 @@ export default function RequirementsTable() {
           footer={
             <div className="flex gap-2">
               {requirementEdited ? (
-                // FIXME add delete functionality
-                <DeleteButton>Delete</DeleteButton>
+                // FIXME add delete functionality (NEW PR)
+                <DeleteButton
+                  onClick={async () => {
+                    console.log("Deleting");
+                  }}
+                >
+                  Delete
+                </DeleteButton>
               ) : (
                 <PrimaryButton
                   onClick={async () => {
@@ -442,14 +467,54 @@ export default function RequirementsTable() {
                   }
                   name="description"
                 />
+                {requirementEdited === null && (
+                  <div className="flex gap-2 pt-4">
+                    <div className="w-[150px] space-y-2">
+                      <label className="text-sm font-semibold">Priority</label>
+                      <PriorityPicker
+                        priority={newRequirement.priorityId}
+                        onChange={async (priority) => {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            priorityId: priority,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className="w-[160px] space-y-2">
+                      <label className="text-sm font-semibold">Type</label>
+                      <RequirementTypePicker
+                        type={newRequirement.requirementTypeId}
+                        onChange={async (type) => {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            requirementTypeId: type,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className="w-full space-y-2">
+                      <label className="text-sm font-semibold">Focus</label>
+                      <RequirementFocusPicker
+                        focus={newRequirement.requirementFocusId}
+                        onChange={async (focus) => {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            requirementFocusId: focus,
+                          }));
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div>
                 <p className="text-lg">{requirementEdited.description}</p>
                 <br />
-                <div className="flex gap-2 pt-4 text-xs font-bold">
+                <div className="flex gap-2 pt-4">
                   <div className="w-[150px] space-y-2">
-                    <label>Priority</label>
+                    <label className="text-sm font-semibold">Priority</label>
                     <PriorityPicker
                       priority={
                         requirementEdited
@@ -476,7 +541,7 @@ export default function RequirementsTable() {
                     />
                   </div>
                   <div className="w-[160px] space-y-2">
-                    <label>Type</label>
+                    <label className="text-sm font-semibold">Type</label>
                     <RequirementTypePicker
                       type={
                         requirementEdited
@@ -503,7 +568,7 @@ export default function RequirementsTable() {
                     />
                   </div>
                   <div className="w-full space-y-2">
-                    <label>Focus</label>
+                    <label className="text-sm font-semibold">Focus</label>
                     <RequirementFocusPicker
                       focus={
                         requirementEdited
