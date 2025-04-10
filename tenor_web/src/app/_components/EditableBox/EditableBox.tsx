@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
-import { cn } from '~/lib/utils';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import CloseIcon from '@mui/icons-material/Close';
-import Dropdown, { DropdownItem, DropdownButton } from '../Dropdown';
-import ProfilePicture from '../ProfilePicture';
-import { type User } from 'firebase/auth';
-import { type UserRecord } from 'node_modules/firebase-admin/lib/auth/user-record';
+import React, { useRef, useState } from "react";
+import { cn } from "~/lib/utils";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import CloseIcon from "@mui/icons-material/Close";
+import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
+import ProfilePicture from "../ProfilePicture";
+import { type User } from "firebase/auth";
+import { type UserRecord } from "node_modules/firebase-admin/lib/auth/user-record";
 
 export interface Option {
   id: string | number | null;
@@ -17,7 +17,7 @@ export interface Option {
     uid: string;
     displayName?: string;
     photoURL?: string;
-  }
+  };
 }
 
 interface EditableBoxProps {
@@ -33,59 +33,61 @@ export function EditableBox({
   selectedOption = null,
   onChange,
   className,
-  placeholder = 'Select an option',
+  placeholder = "Select an option",
 }: EditableBoxProps) {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredOptions = options.filter(option => 
-    option.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredOptions = options.filter((option) =>
+    option.name?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleSelect = (option: Option) => {
     onChange(option);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
     onChange(null);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   const renderDropdownLabel = () => {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-gray-300 p-2 relative cursor-pointer hover:bg-gray-200 transition-colors w-full h-10">
+      <div className="relative flex h-12 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
         {selectedOption ? (
           <>
-            <div className="flex items-center flex-grow gap-2">
+            <div className="flex flex-grow items-center gap-2">
               {selectedOption.user ? (
                 <ProfilePicture user={selectedOption.user} hideTooltip />
               ) : selectedOption.image ? (
-                <img 
-                  src={selectedOption.image} 
-                  alt={selectedOption.name} 
-                  className="w-8 h-8 rounded-full object-cover"
+                <img
+                  src={selectedOption.image}
+                  alt={selectedOption.name}
+                  className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
                   <span className="text-sm font-medium text-gray-500">
                     {selectedOption.name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
-              <span className="text-gray-700 font-medium">{selectedOption.name}</span>
+              <span className="font-medium text-gray-700">
+                {selectedOption.name}
+              </span>
             </div>
-            <div 
+            <div
               onClick={handleClear}
-              className="ml-2 text-gray-500 hover:text-gray-700 transition-colors"
+              className="ml-2 text-gray-500 transition-colors hover:text-gray-700"
             >
-              <CloseIcon className="w-5 h-5" />
+              <CloseIcon className="h-5 w-5" />
             </div>
           </>
         ) : (
           <>
-            <span className="text-gray-700 font-medium">{placeholder}</span>
-            <ArrowDropDownIcon className="w-5 h-5 text-gray-700" />
+            <span className="font-medium text-gray-700">{placeholder}</span>
+            <ArrowDropDownIcon className="h-5 w-5 text-gray-700" />
           </>
         )}
       </div>
@@ -105,7 +107,7 @@ export function EditableBox({
           <img
             src={option.image}
             alt={option.name}
-            className="w-8 h-8 rounded-full object-cover"
+            className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
@@ -119,11 +121,17 @@ export function EditableBox({
       </DropdownButton>
     );
   };
-  
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
   // Perhaps apply cn in renderDropdownLabel instead of here to make it cleaner
   return (
-    <div className={cn('w-full', className)}>
-      <Dropdown label={renderDropdownLabel()} >
+    <div className={cn("w-full", className)}>
+      <Dropdown
+        label={renderDropdownLabel()}
+        onOpen={() => inputRef.current?.focus()}
+        menuClassName="w-56"
+      >
         <DropdownItem className="flex w-full flex-col">
           <span className="mb-2 text-sm text-gray-500">Select a person</span>
           <input
@@ -132,10 +140,10 @@ export function EditableBox({
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            autoFocus
+            ref={inputRef}
           />
         </DropdownItem>
-        <div className="whitespace-nowrap text-left w-full">
+        <div className="w-full whitespace-nowrap text-left">
           <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => createOption(option))
@@ -143,11 +151,10 @@ export function EditableBox({
               <span className="w-full px-2 py-1 text-sm text-gray-500">
                 No options found
               </span>
-           )}
+            )}
           </div>
         </div>
       </Dropdown>
     </div>
   );
 }
-
