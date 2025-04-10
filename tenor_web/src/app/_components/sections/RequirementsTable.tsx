@@ -166,7 +166,6 @@ export default function RequirementsTable() {
       projectId: projectId as string,
     });
 
-    setShowSmallPopup(false);
     console.log(response);
   };
 
@@ -363,8 +362,7 @@ export default function RequirementsTable() {
           show={showSmallPopup}
           reduceTopPadding
           size="small"
-          className="min-h-[400px] min-w-[500px]"
-          // FIXME Actually save the value
+          className="h-[700px] w-[600px]"
           setEditMode={
             requirementEdited !== null
               ? async () => {
@@ -416,10 +414,11 @@ export default function RequirementsTable() {
                 <PrimaryButton
                   onClick={async () => {
                     await handleCreateRequirement();
+                    setShowSmallPopup(false);
                   }}
                   loading={isPending}
                 >
-                  {requirementEdited ? "Edit " : "Create "} Requirement
+                  Create Requirement
                 </PrimaryButton>
               )}
             </div>
@@ -473,7 +472,7 @@ export default function RequirementsTable() {
                 />
                 {requirementEdited === null && (
                   <div className="flex gap-2 pt-4">
-                    <div className="w-[150px] space-y-2">
+                    <div className="w-full space-y-2">
                       <label className="text-sm font-semibold">Priority</label>
                       <PriorityPicker
                         priority={newRequirement.priorityId}
@@ -485,7 +484,7 @@ export default function RequirementsTable() {
                         }}
                       />
                     </div>
-                    <div className="w-[160px] space-y-2">
+                    <div className="w-full space-y-2">
                       <label className="text-sm font-semibold">Type</label>
                       <RequirementTypePicker
                         type={newRequirement.requirementTypeId}
@@ -517,7 +516,7 @@ export default function RequirementsTable() {
                 <p className="text-lg">{requirementEdited.description}</p>
                 <br />
                 <div className="flex gap-2 pt-4">
-                  <div className="w-[150px] space-y-2">
+                  <div className="w-full space-y-2">
                     <label className="text-sm font-semibold">Priority</label>
                     <PriorityPicker
                       priority={
