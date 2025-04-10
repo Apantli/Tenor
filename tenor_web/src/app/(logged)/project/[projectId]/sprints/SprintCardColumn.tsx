@@ -70,6 +70,7 @@ export default function SprintCardColumn({
       key={column.sprint.id}
     >
       <UserStoryCardColumn
+        dndId={column.sprint.id}
         userStories={
           column.userStoryIds
             .map((userStoryId) => userStories[userStoryId])

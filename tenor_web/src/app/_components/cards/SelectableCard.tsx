@@ -1,20 +1,29 @@
 import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import InputCheckbox from "../inputs/InputCheckbox";
+import { useDraggable } from "@dnd-kit/core";
 
 interface Props {
   selected: boolean;
   onChange?: (selected: boolean) => void;
   showCheckbox?: boolean;
+  dndId: string;
 }
+
+// TODO: Add warnings about dragging and dropping
 
 export default function SelectableCard({
   selected,
   children,
   onChange,
   showCheckbox,
+  dndId,
   ...props
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: dndId,
+  });
+
   return (
     <div
       className={cn(
@@ -24,12 +33,15 @@ export default function SelectableCard({
         },
       )}
       {...props}
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
     >
       <div
         className={cn(
           "shrink-0 grow basis-0 overflow-hidden py-2 opacity-0 transition-all group-hover:basis-6 group-hover:opacity-100",
           {
-            "basis-6 opacity-100": selected || !!showCheckbox,
+            "basis-6 opacity-100": (selected || showCheckbox) && !isDragging,
           },
         )}
       >

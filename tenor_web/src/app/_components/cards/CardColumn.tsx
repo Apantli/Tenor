@@ -5,6 +5,7 @@ import useShiftKey from "~/app/_hooks/useShiftKey";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
+import { useDroppable } from "@dnd-kit/core";
 
 interface Props<T extends { id: string; scrumId: number }> {
   selection: Set<string>;
@@ -17,6 +18,8 @@ interface Props<T extends { id: string; scrumId: number }> {
   cards: T[];
   renderCard: (item: T) => React.ReactNode;
   isLoading?: boolean;
+
+  dndId: string;
 }
 
 export default function CardColumn<T extends { id: string; scrumId: number }>({
@@ -29,6 +32,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
   isLoading,
   header,
   className,
+  dndId,
 }: Props<T>) {
   const shiftClick = useShiftKey();
   const lastSelectedCard = useRef<number>();
@@ -38,13 +42,21 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
     lastSelectedCard.current = undefined;
   });
 
+  const { setNodeRef, isOver } = useDroppable({ id: dndId });
+
   return (
     <div
       className={cn(
         "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-gray-200",
         className,
       )}
-      ref={ref}
+      // Merging refs to avoid a new div
+      ref={(el) => {
+        if (ref.current !== el) {
+          (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+        }
+        setNodeRef(el);
+      }}
     >
       {isLoading && (
         <div className="flex h-full w-full items-center justify-center">
@@ -58,6 +70,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
         {cards.map((cardInfo) => (
           <SelectableCard
             key={cardInfo.id}
+            dndId={cardInfo.id}
             showCheckbox={selection.size > 0}
             selected={selection.has(cardInfo.id)}
             onChange={(selected) => {
