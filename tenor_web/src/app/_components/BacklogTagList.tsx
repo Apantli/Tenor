@@ -35,7 +35,7 @@ export const acceptableTagColors = [
   "#524849",
 ] as const;
 
-function generateRandomColor(): string {
+export function generateRandomColor(): string {
   const randomIndex = Math.floor(Math.random() * acceptableTagColors.length);
   return acceptableTagColors[randomIndex] ?? "#d9543d";
 }

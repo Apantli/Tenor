@@ -9,6 +9,7 @@ import Dropdown, { DropdownButton, DropdownItem } from "./Dropdown";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";
+import { generateRandomColor } from "./BacklogTagList";
 
 interface Props {
   currentTag?: Tag;
@@ -118,7 +119,7 @@ export default function PillComponent({
             ref={inputRef}
             type="text"
             className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
-            placeholder="Search..."
+            placeholder={addTag === null ? "Search..." : "Search or create..."}
             value={searchValue}
             onChange={handleUpdateSearch}
           />
@@ -127,7 +128,7 @@ export default function PillComponent({
       <div className="w-full whitespace-nowrap text-left">
         <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}
-          {filteredTags.length == 0 && (
+          {addTag === null && filteredTags.length == 0 && (
             <span className="w-full px-2 py-1 text-sm text-gray-500">
               No items found
             </span>
@@ -137,9 +138,7 @@ export default function PillComponent({
       {addTag && filteredTags?.length === 0 && searchValue !== "" && (
         <DropdownButton
           onClick={async () => {
-            // FIXME Pick nice colors
-            const randomHexColor =
-              "#" + Math.floor(Math.random() * 16777215).toString(16);
+            const randomHexColor = generateRandomColor();
 
             const newTag = await addTag({
               name: searchValue,

@@ -21,6 +21,7 @@ import { set } from "node_modules/cypress/types/lodash";
 import { Label } from "recharts";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
 import TagComponent from "../TagComponent";
+import DeleteButton from "../buttons/DeleteButton";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -191,7 +192,14 @@ export default function RequirementsTable() {
         sortable: false,
         render(row) {
           return (
-            <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
+            <button
+              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              onClick={() => {
+                setEditingRequirement(false);
+                setRequirementEdited(row);
+                setShowSmallPopup(true);
+              }}
+            >
               {UseFormatForAssignReqTypeScrumId(
                 row.requirementTypeId.name,
                 row.scrumId,
@@ -209,6 +217,7 @@ export default function RequirementsTable() {
             <button
               className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
+                setEditingRequirement(false);
                 setRequirementEdited(row);
                 setShowSmallPopup(true);
               }}
@@ -345,30 +354,35 @@ export default function RequirementsTable() {
           reduceTopPadding
           size="small"
           className="min-h-[400px] min-w-[500px]"
+          // FIXME Actually save the value
           dismiss={() => setShowSmallPopup(false)}
+          editMode={requirementEdited ? editingRequirement : undefined}
+          setEditMode={requirementEdited ? setEditingRequirement : undefined}
+          title={
+            <h1 className="text-2xl">
+              <strong>
+                {requirementEdited ? (
+                  <h1 className="font-semibold">
+                    {UseFormatForAssignReqTypeScrumId(
+                      requirementEdited.requirementTypeId.name,
+                      requirementEdited.scrumId,
+                    )}
+                    :{" "}
+                    <span className="font-normal">
+                      {requirementEdited.name}
+                    </span>
+                  </h1>
+                ) : (
+                  <h1>New Requirement</h1>
+                )}
+              </strong>{" "}
+            </h1>
+          }
           footer={
             <div className="flex gap-2">
               {requirementEdited ? (
-                editingRequirement ? (
-                  <PrimaryButton
-                    onClick={async () => {
-                      await handleEditRequirement(requirementEdited);
-                      setEditingRequirement(false);
-                    }}
-                  >
-                    {" "}
-                    Save Requirement{" "}
-                  </PrimaryButton>
-                ) : (
-                  <PrimaryButton
-                    onClick={() => {
-                      setEditingRequirement(true);
-                    }}
-                  >
-                    {" "}
-                    Edit Requirement{" "}
-                  </PrimaryButton>
-                )
+                // FIXME add delete functionality
+                <DeleteButton>Delete</DeleteButton>
               ) : (
                 <PrimaryButton
                   onClick={async () => {
@@ -384,18 +398,11 @@ export default function RequirementsTable() {
         >
           {" "}
           <div className="flex flex-col gap-4">
-            <h1 className="text-2xl">
-              <strong>
-                {requirementEdited
-                  ? `Requirement ${requirementEdited.scrumId}`
-                  : "New Requirement"}
-              </strong>{" "}
-            </h1>
             {!requirementEdited || editingRequirement ? (
               <div>
                 <InputTextField
                   label="Title"
-                  className="h-12"
+                  className="mb-4 h-12"
                   value={
                     requirementEdited
                       ? requirementEdited.name
@@ -435,6 +442,11 @@ export default function RequirementsTable() {
                   }
                   name="description"
                 />
+              </div>
+            ) : (
+              <div>
+                <p className="text-lg">{requirementEdited.description}</p>
+                <br />
                 <div className="flex gap-2 pt-4 text-xs font-bold">
                   <div className="w-[150px] space-y-2">
                     <label>Priority</label>
@@ -444,7 +456,7 @@ export default function RequirementsTable() {
                           ? requirementEdited.priorityId
                           : newRequirement.priorityId
                       }
-                      onChange={(priority) => {
+                      onChange={async (priority) => {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
@@ -455,6 +467,10 @@ export default function RequirementsTable() {
                             ...prev!,
                             priorityId: priority,
                           }));
+                          await handleEditRequirement({
+                            ...requirementEdited,
+                            priorityId: priority,
+                          });
                         }
                       }}
                     />
@@ -467,7 +483,7 @@ export default function RequirementsTable() {
                           ? requirementEdited.requirementTypeId
                           : newRequirement.requirementTypeId
                       }
-                      onChange={(type) => {
+                      onChange={async (type) => {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
@@ -478,6 +494,10 @@ export default function RequirementsTable() {
                             ...prev!,
                             requirementTypeId: type,
                           }));
+                          await handleEditRequirement({
+                            ...requirementEdited,
+                            requirementTypeId: type,
+                          });
                         }
                       }}
                     />
@@ -490,7 +510,7 @@ export default function RequirementsTable() {
                           ? requirementEdited.requirementFocusId
                           : newRequirement.requirementFocusId
                       }
-                      onChange={(focus) => {
+                      onChange={async (focus) => {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
@@ -501,79 +521,13 @@ export default function RequirementsTable() {
                             ...prev!,
                             requirementFocusId: focus,
                           }));
+                          await handleEditRequirement({
+                            ...requirementEdited,
+                            requirementFocusId: focus,
+                          });
                         }
                       }}
                     />
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div>
-                  <label className="text-sm font-semibold">
-                    <strong>Title</strong>
-                  </label>
-                  <p className="text-sm">{requirementEdited.name}</p>
-                </div>
-                <br />
-                <div>
-                  <label className="text-sm font-semibold">
-                    <strong>Description</strong>
-                  </label>
-                  <p className="text-sm">{requirementEdited.description}</p>
-                </div>
-                <br />
-                <div className="flex gap-2 pt-4 text-xs font-bold">
-                  <div className="w-[150px] space-y-2">
-                    <label>Priority</label>
-                    <TagComponent
-                      color={
-                        requirementEdited
-                          ? requirementEdited.priorityId.color
-                          : newRequirement.priorityId?.color
-                      }
-                      expanded
-                    >
-                      <label>
-                        {requirementEdited
-                          ? requirementEdited.priorityId.name
-                          : newRequirement.priorityId?.name}
-                      </label>
-                    </TagComponent>
-                  </div>
-                  <div className="w-[160px] space-y-2">
-                    <label>Type</label>
-                    <TagComponent
-                      color={
-                        requirementEdited
-                          ? requirementEdited.requirementTypeId.color
-                          : newRequirement.requirementTypeId?.color
-                      }
-                      expanded
-                    >
-                      <label>
-                        {requirementEdited
-                          ? requirementEdited.requirementTypeId.name
-                          : newRequirement.requirementTypeId?.name}
-                      </label>
-                    </TagComponent>
-                  </div>
-                  <div className="w-full space-y-2">
-                    <label>Focus</label>
-                    <TagComponent
-                      color={
-                        requirementEdited
-                          ? requirementEdited.requirementFocusId.color
-                          : newRequirement.requirementFocusId?.color
-                      }
-                      expanded
-                    >
-                      <label>
-                        {requirementEdited
-                          ? requirementEdited.requirementFocusId.name
-                          : newRequirement.requirementFocusId?.name}
-                      </label>
-                    </TagComponent>
                   </div>
                 </div>
               </div>
