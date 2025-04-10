@@ -237,8 +237,8 @@ export default function TaskDetailPopup({
         </>
       )}
       {!editMode && !isLoading && taskDetail && (
-        <div className="overflow-hidden">
-          <div className="markdown-content overflow-hidden text-lg">
+        <div className="flex flex-col gap-2">
+          <div className="mb-2">
             <Markdown>{taskDetail.description}</Markdown>
           </div>
           <div className="mb-2 flex gap-3">
@@ -252,7 +252,7 @@ export default function TaskDetailPopup({
               />
             </div>
             <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium">Status</label>
+              <label className="mb-1 block text-sm font-medium">Size</label>
               <SizePillComponent
                 currentSize={taskDetail.size}
                 callback={async (size) => {
