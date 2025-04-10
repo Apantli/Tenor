@@ -5,7 +5,7 @@ import useShiftKey from "~/app/_hooks/useShiftKey";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
-import { useDroppable } from "@dnd-kit/core";
+import { useDroppable } from "@dnd-kit/react";
 
 interface Props<T extends { id: string; scrumId: number }> {
   selection: Set<string>;
@@ -42,7 +42,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
     lastSelectedCard.current = undefined;
   });
 
-  const { setNodeRef, isOver } = useDroppable({ id: dndId });
+  const { ref: refDnd } = useDroppable({ id: dndId });
 
   return (
     <div
@@ -55,7 +55,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
         if (ref.current !== el) {
           (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
         }
-        setNodeRef(el);
+        refDnd(el);
       }}
     >
       {isLoading && (

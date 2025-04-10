@@ -1,7 +1,7 @@
 import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import InputCheckbox from "../inputs/InputCheckbox";
-import { useDraggable } from "@dnd-kit/core";
+import { useDraggable } from "@dnd-kit/react";
 
 interface Props {
   selected: boolean;
@@ -20,7 +20,7 @@ export default function SelectableCard({
   dndId,
   ...props
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+  const { ref: setNodeRef, isDragging } = useDraggable({
     id: dndId,
   });
 
@@ -34,8 +34,6 @@ export default function SelectableCard({
       )}
       {...props}
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
     >
       <div
         className={cn(

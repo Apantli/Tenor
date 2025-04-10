@@ -20,12 +20,7 @@ import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-} from "@dnd-kit/core";
+import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { set } from "node_modules/cypress/types/lodash";
 import CardRender from "~/app/_components/cards/CardRender";
 
@@ -317,27 +312,22 @@ export default function ProjectSprints() {
     );
 
   // Drag and drop operations
-  const [draggingId, setDraggingId] = useState<string | null>(null);
-  const draggingUserStory =
-    draggingId == null
-      ? null
-      : (userStoriesBySprint?.userStories[draggingId] ?? null);
+  // const [draggingId, setDraggingId] = useState<string | null>(null);
+  // const draggingUserStory =
+  //   draggingId == null
+  //     ? null
+  //     : (userStoriesBySprint?.userStories[draggingId] ?? null);
 
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    setDraggingId(active.id as string);
-  };
+  // const handleDragStart = (event: any) => {
+  //   const { active } = event;
+  //   setDraggingId(active.id as string);
+  // };
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    setDraggingId(null);
-    const { active, over } = event;
-    if (over == null) return;
-    console.log(event);
-
-    // Very similar to assignSelectionToSprint from here onwards
-    const userStoryId = active.id as string;
-    const sprintId =
-      (over.id as string) == noSprintId ? "" : (over.id as string);
+  // can possibly me simplified by combining it with assignSelectionToSprint
+  const handleDragEnd = async (userStoryId: string, sprintId: string) => {
+    if (sprintId == noSprintId) {
+      sprintId = "";
+    }
     const userStories = userStoriesBySprint?.userStories;
     if (!userStories || userStories[userStoryId]?.sprintId === sprintId) return;
 
@@ -442,7 +432,26 @@ export default function ProjectSprints() {
 
   return (
     <>
-      <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+      <DragDropProvider
+        onDragStart={(event) => {
+          const { operation } = event;
+          const { source } = operation;
+          if (!source) {
+            return;
+          }
+          console.log(`Started dragging ${source.id}`);
+        }}
+        onDragEnd={async (event) => {
+          const { operation, canceled } = event;
+          const { source, target } = operation;
+
+          if (!source || canceled || !target) {
+            return;
+          }
+
+          await handleDragEnd(source.id as string, target.id as string);
+        }}
+      >
         <div className="flex h-full overflow-hidden">
           <div className="relative flex h-full w-[420px] min-w-[420px] flex-col overflow-hidden border-r-2 pr-5">
             <div className="flex w-full justify-between pb-4">
@@ -542,12 +551,19 @@ export default function ProjectSprints() {
           </div>
         </div>
 
-        <DragOverlay dropAnimation={null}>
-          {draggingUserStory && (
-            <CardRender userStory={draggingUserStory} showBackground={true} />
-          )}
+        <DragOverlay>
+          {(source) => {
+            const userStoryId = source.id as string;
+            if (!userStoryId) return null;
+            const draggingUserStory =
+              userStoriesBySprint?.userStories[userStoryId];
+            if (!draggingUserStory) return null;
+            return (
+              <CardRender userStory={draggingUserStory} showBackground={true} />
+            );
+          }}
         </DragOverlay>
-      </DndContext>
+      </DragDropProvider>
 
       {renderDetail && (
         <UserStoryDetailPopup
