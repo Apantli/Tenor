@@ -308,6 +308,9 @@ export default function ProjectSprints() {
 
   //// Drag and drop operations
   let dndOperationsInProgress = 0;
+  const [lastDraggedUserStoryId, setLastDraggedUserStoryId] = useState<
+    string | null
+  >(null);
 
   // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (userStoryId: string, sprintId: string) => {
@@ -317,12 +320,12 @@ export default function ProjectSprints() {
     const userStories = userStoriesBySprint?.userStories;
     if (!userStories || userStories[userStoryId]?.sprintId === sprintId) return;
 
-    const userStoryIds = [userStoryId];
-
     dndOperationsInProgress += 1;
-
     // Cancel previous fetches for the sprint data
     await cancelUserStoryPreviewQuery();
+
+    setLastDraggedUserStoryId(userStoryId);
+    const userStoryIds = [userStoryId];
 
     utils.sprints.getUserStoryPreviewsBySprint.setData(
       {
@@ -454,6 +457,7 @@ export default function ProjectSprints() {
             </div>
 
             <UserStoryCardColumn
+              lastDraggedUserStoryId={lastDraggedUserStoryId}
               dndId={noSprintId}
               userStories={
                 filteredUnassignedStories
@@ -523,6 +527,7 @@ export default function ProjectSprints() {
               )}
               {userStoriesBySprint?.sprints.map((column) => (
                 <SprintCardColumn
+                  lastDraggedUserStoryId={lastDraggedUserStoryId}
                   assignSelectionToSprint={assignSelectionToSprint}
                   column={column}
                   userStories={userStoriesBySprint.userStories}

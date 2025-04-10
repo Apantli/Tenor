@@ -18,6 +18,7 @@ interface Props {
   setDetailUserStoryId: (detailId: string) => void;
   setShowDetail: (showDetail: boolean) => void;
   assignSelectionToSprint: (sprintId: string) => Promise<void>;
+  lastDraggedUserStoryId: string | null;
 }
 
 export default function SprintCardColumn({
@@ -28,6 +29,7 @@ export default function SprintCardColumn({
   setDetailUserStoryId,
   setShowDetail,
   assignSelectionToSprint,
+  lastDraggedUserStoryId
 }: Props) {
   const allSelected =
     column.userStoryIds.length > 0 &&
@@ -70,6 +72,7 @@ export default function SprintCardColumn({
       key={column.sprint.id}
     >
       <UserStoryCardColumn
+        lastDraggedUserStoryId={lastDraggedUserStoryId}
         dndId={column.sprint.id}
         userStories={
           column.userStoryIds

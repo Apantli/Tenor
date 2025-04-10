@@ -20,6 +20,7 @@ interface Props<T extends { id: string; scrumId: number }> {
   isLoading?: boolean;
 
   dndId: string;
+  lastDraggedUserStoryId: string | null;
 }
 
 export default function CardColumn<T extends { id: string; scrumId: number }>({
@@ -33,6 +34,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
   header,
   className,
   dndId,
+  lastDraggedUserStoryId
 }: Props<T>) {
   const shiftClick = useShiftKey();
   const lastSelectedCard = useRef<number>();
@@ -72,6 +74,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
       <div className="flex h-full flex-1 flex-col gap-2 overflow-y-scroll p-6 pt-2">
         {cards.map((cardInfo) => (
           <SelectableCard
+          lastDraggedUserStoryId={lastDraggedUserStoryId}
             key={cardInfo.id}
             dndId={cardInfo.id}
             showCheckbox={selection.size > 0}

@@ -17,6 +17,7 @@ interface Props {
   header?: React.ReactNode;
   className?: ClassNameValue;
   dndId: string;
+  lastDraggedUserStoryId: string | null;
 }
 
 export default function UserStoryCardColumn({
@@ -29,9 +30,11 @@ export default function UserStoryCardColumn({
   header,
   className,
   dndId,
+  lastDraggedUserStoryId,
 }: Props) {
   return (
     <CardColumn
+    lastDraggedUserStoryId={lastDraggedUserStoryId}
       dndId={dndId}
       cards={userStories}
       selection={selection}
