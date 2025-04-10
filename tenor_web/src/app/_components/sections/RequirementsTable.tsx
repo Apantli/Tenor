@@ -360,7 +360,7 @@ export default function RequirementsTable() {
       {renderSmallPopup && (
         <Popup
           show={showSmallPopup}
-          reduceTopPadding
+          reduceTopPadding={requirementEdited === null}
           size="small"
           className="h-[700px] w-[600px]"
           setEditMode={
