@@ -22,6 +22,7 @@ export default function SelectableCard({
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
   const { ref: setNodeRef, isDragging } = useDraggable({
     id: dndId,
+    disabled: selected || showCheckbox, // Don't allow dragging if selection in progress
   });
 
   return (
@@ -30,6 +31,7 @@ export default function SelectableCard({
         "group relative flex w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-2 shadow-xl transition duration-100",
         {
           "ring-2 ring-app-secondary": selected,
+          "opacity-60": isDragging,
         },
       )}
       {...props}

@@ -21,7 +21,6 @@ import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
-import { set } from "node_modules/cypress/types/lodash";
 import CardRender from "~/app/_components/cards/CardRender";
 
 export type UserStories = inferRouterOutputs<
@@ -41,13 +40,10 @@ export default function ProjectSprints() {
     new Set(),
   );
 
-  const {
-    data: defaultSprintDuration,
-    isLoading: isLoadingSprintDuration,
-    error,
-  } = api.projects.fetchDefaultSprintDuration.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: defaultSprintDuration, isLoading: isLoadingSprintDuration } =
+    api.projects.fetchDefaultSprintDuration.useQuery({
+      projectId: projectId as string,
+    });
 
   let defaultSprintInitialDate: Date | null = null;
   let defaultSprintEndDate: Date | null = null;

@@ -42,13 +42,16 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
     lastSelectedCard.current = undefined;
   });
 
-  const { ref: refDnd } = useDroppable({ id: dndId });
+  const { ref: refDnd, isDropTarget } = useDroppable({ id: dndId });
 
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-gray-200",
+        "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-gray-200 transition-colors",
         className,
+        {
+          "bg-gray-300": isDropTarget,
+        },
       )}
       // Merging refs to avoid a new div
       ref={(el) => {
