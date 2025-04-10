@@ -21,6 +21,7 @@ import { set } from "node_modules/cypress/types/lodash";
 import TagComponent from "../TagComponent";
 import { Label } from "recharts";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
+import TagComponent from "../TagComponent";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
