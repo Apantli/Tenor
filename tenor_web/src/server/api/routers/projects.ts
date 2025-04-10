@@ -35,15 +35,15 @@ const emptySettings: Settings = {
   // roles: [],
 };
 
-export const emptyRequeriment = (): Requirement  => ({
-    name: "",
-    description: "",
-    priorityId: "",
-    requirementTypeId: "",
-    requirementFocusId: "",
-    size: "M",
-    scrumId: 0,
-    deleted: false,
+export const emptyRequeriment = (): Requirement => ({
+  name: "",
+  description: "",
+  priorityId: "",
+  requirementTypeId: "",
+  requirementFocusId: "",
+  size: "M",
+  scrumId: 0,
+  deleted: false,
 });
 
 export const createEmptyProject = (): Project => {
@@ -270,6 +270,22 @@ export const projectsRouter = createTRPCRouter({
         await priorityTypesCollection.add({
           name: "P0",
           color: "#FF0000",
+          deleted: false,
+        });
+
+        const requirementTypesCollection = newProjectRef
+          .collection("settings")
+          .doc("settings")
+          .collection("requirementTypes");
+
+        await requirementTypesCollection.add({
+          name: "Functional",
+          color: "#24A5BC",
+          deleted: false,
+        });
+        await requirementTypesCollection.add({
+          name: "Non Functional",
+          color: "#CD4EC0",
           deleted: false,
         });
 
