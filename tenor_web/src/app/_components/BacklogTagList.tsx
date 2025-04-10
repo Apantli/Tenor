@@ -12,21 +12,32 @@ interface Props {
   onChange: (tags: Tag[]) => void;
 }
 
+export const acceptableTagColors = [
+  "#d9543d",
+  "#bf5513",
+  "#998e17",
+  "#6a8714",
+  "#2d7513",
+  "#3b8f58",
+  "#4b8073",
+  "#197574",
+  "#66b3b1",
+  "#4599ba",
+  "#4572ba",
+  "#4551ba",
+  "#826fd9",
+  "#a76fd9",
+  "#d34de8",
+  "#e84dd1",
+  "#a12362",
+  "#e31b7f",
+  "#e31b36",
+  "#524849",
+] as const;
+
 function generateRandomColor(): string {
-  const red = Math.floor(Math.random() * 256);
-  const green = Math.floor(Math.random() * 256);
-  const blue = Math.floor(Math.random() * 256);
-
-  const toHex = (c: number): string => {
-    const hex = c.toString(16);
-    return hex.length === 1 ? "0" + hex : hex;
-  };
-
-  const redHex = toHex(red);
-  const greenHex = toHex(green);
-  const blueHex = toHex(blue);
-
-  return `#${redHex}${greenHex}${blueHex}`;
+  const randomIndex = Math.floor(Math.random() * acceptableTagColors.length);
+  return acceptableTagColors[randomIndex] ?? "#d9543d";
 }
 
 export default function BacklogTagList({ tags, onChange }: Props) {

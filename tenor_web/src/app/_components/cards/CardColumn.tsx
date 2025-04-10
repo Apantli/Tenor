@@ -4,6 +4,7 @@ import SelectableCard from "./SelectableCard";
 import useShiftKey from "~/app/_hooks/useShiftKey";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import type { ClassNameValue } from "tailwind-merge";
+import { cn } from "~/lib/utils";
 
 interface Props<T extends { id: string; scrumId: number }> {
   selection: Set<string>;
@@ -27,6 +28,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
   renderCard,
   isLoading,
   header,
+  className,
 }: Props<T>) {
   const shiftClick = useShiftKey();
   const lastSelectedCard = useRef<number>();
@@ -38,7 +40,10 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
 
   return (
     <div
-      className="flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-gray-200"
+      className={cn(
+        "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-gray-200",
+        className,
+      )}
       ref={ref}
     >
       {isLoading && (

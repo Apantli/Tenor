@@ -27,6 +27,7 @@ import TagComponent from "~/app/_components/TagComponent";
 import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
 import type { Option } from "~/app/_components/EditableBox/EditableBox";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import { acceptableTagColors } from "~/app/_components/BacklogTagList";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -343,6 +344,12 @@ function TagShowcase() {
     },
   ];
 
+  const coloredTags = acceptableTagColors.map((color) => ({
+    name: "Tag",
+    color,
+    deleted: false,
+  }));
+
   return (
     <div>
       <hr />
@@ -351,6 +358,19 @@ function TagShowcase() {
         {tags.map((tag) => (
           <TagComponent
             key={tag.name}
+            color={tag.color}
+            reducedPadding
+            className="min-w-8"
+          >
+            {tag.name}
+          </TagComponent>
+        ))}
+      </div>
+      <br />
+      <div className="flex justify-start gap-2">
+        {coloredTags.map((tag, i) => (
+          <TagComponent
+            key={i}
             color={tag.color}
             reducedPadding
             className="min-w-8"
