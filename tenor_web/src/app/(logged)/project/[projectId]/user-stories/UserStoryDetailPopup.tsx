@@ -437,7 +437,7 @@ export default function UserStoryDetailPopup({
         </div>
       )}
 
-      {true && (
+      {renderCreateTaskPopup && (
         <SidebarPopup
           show={showCreateTaskPopup}
           dismiss={() => setShowCreateTaskPopup(false)}
