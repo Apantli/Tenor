@@ -7,10 +7,7 @@ import PrimaryButton from "../buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
-import { UserRecord } from "node_modules/firebase-admin/lib/auth/user-record";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
-import PillComponent from "../PillComponent";
-import { Tag } from "~/lib/types/firebaseSchemas";
 import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
 

@@ -173,7 +173,6 @@ export default function ProjectSprints() {
     setNewSprintEndDate(defaultSprintEndDate);
 
     setShowSmallPopup(false);
-    console.log(response);
   };
 
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
