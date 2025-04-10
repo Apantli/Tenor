@@ -208,7 +208,12 @@ interface SidebarPopupProps {
   show: boolean;
   dismiss: () => void;
   disablePassiveDismiss?: boolean;
-  showEdit?: boolean;
+  title?: React.ReactNode;
+  footer?: React.ReactNode;
+  editMode?: boolean;
+  setEditMode?: (edit: boolean) => void;
+  saving?: boolean;
+  saveText?: string;
 }
 
 export function SidebarPopup({
@@ -216,7 +221,12 @@ export function SidebarPopup({
   show,
   dismiss,
   disablePassiveDismiss,
-  showEdit,
+  title,
+  footer,
+  editMode,
+  setEditMode,
+  saving,
+  saveText = "Save",
 }: SidebarPopupProps & PropsWithChildren) {
   const [slideIn, setSlideIn] = useState(false);
   const [fullyVisible, setFullyVisible] = useState(false);
@@ -269,18 +279,39 @@ export function SidebarPopup({
             )}
             ref={containerRef}
           >
-            <div className="flex h-full grow justify-between">
-              <div className="h-full flex-1 overflow-y-scroll p-2">
-                {children}
-              </div>
-              {showEdit && (
-                <div className="flex shrink-0 flex-col gap-2">
-                  <button className="text-3xl text-gray-600">
-                    <EditIcon fontSize="inherit" />
-                  </button>
+            <div className="flex flex-1 shrink grow justify-between overflow-y-hidden">
+              <div className="flex flex-1 flex-col overflow-hidden p-2">
+                <div className="flex justify-between gap-2">
+                  {title !== undefined && title}
+                  {title === undefined && <div></div>}
+                  {editMode === false && (
+                    <div className="flex shrink-0 flex-col gap-2">
+                      <button
+                        className="text-3xl text-gray-600"
+                        onClick={() => setEditMode?.(true)}
+                      >
+                        <EditIcon fontSize="inherit" />
+                      </button>
+                    </div>
+                  )}
+                  {editMode === true && (
+                    <div className="flex shrink-0 flex-col gap-2">
+                      <PrimaryButton
+                        onClick={() => setEditMode?.(false)}
+                        loading={saving}
+                      >
+                        {saveText}
+                      </PrimaryButton>
+                    </div>
+                  )}
                 </div>
-              )}
+                <div className="flex-1 overflow-y-scroll">{children}</div>
+              </div>
             </div>
+
+            {footer !== undefined && (
+              <div className="ml-auto mt-3 shrink-0 grow-0">{footer}</div>
+            )}
             <button
               onClick={dismiss}
               className="absolute right-5 top-3 text-3xl text-gray-600"

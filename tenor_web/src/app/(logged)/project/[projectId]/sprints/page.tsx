@@ -159,6 +159,7 @@ export default function ProjectSprints() {
       description: newSprintDescription,
       startDate: Timestamp.fromDate(newSprintStartDate),
       endDate: Timestamp.fromDate(newSprintEndDate),
+      // updatedData.dueDate ? Timestamp.fromDate(updatedData.dueDate) : null,
       userStoryIds: [],
       genericItemIds: [],
       issueIds: [],
