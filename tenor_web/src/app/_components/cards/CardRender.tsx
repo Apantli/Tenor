@@ -13,7 +13,7 @@ interface Props {
   showBackground?: boolean;
 }
 
-export default function CardRender({
+export default function UserStoryCardRender({
   userStory,
   showBackground = false,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {

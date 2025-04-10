@@ -3,7 +3,7 @@ import React from "react";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CardColumn from "./CardColumn";
 import type { ClassNameValue } from "tailwind-merge";
-import CardRender from "./CardRender";
+import UserStoryCardRender from "./CardRender";
 
 interface Props {
   userStories: inferRouterOutputs<
@@ -44,7 +44,7 @@ export default function UserStoryCardColumn({
       isLoading={isLoading}
       header={header}
       className={className}
-      renderCard={(userStory) => <CardRender userStory={userStory} />}
+      renderCard={(userStory) => <UserStoryCardRender userStory={userStory} />}
     />
   );
 }
