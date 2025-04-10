@@ -18,7 +18,6 @@ import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 import SearchBar from "../SearchBar";
 import EditIcon from "@mui/icons-material/Edit";
 import { set } from "node_modules/cypress/types/lodash";
-import TagComponent from "../TagComponent";
 import { Label } from "recharts";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
 import TagComponent from "../TagComponent";
