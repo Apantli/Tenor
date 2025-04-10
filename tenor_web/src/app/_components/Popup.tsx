@@ -116,7 +116,11 @@ export default function Popup({
                 })}
               >
                 <div className="flex flex-1 shrink grow justify-between overflow-y-hidden">
-                  <div className="flex flex-1 flex-col overflow-hidden p-2">
+                  <div
+                    className={cn("flex flex-1 flex-col overflow-hidden p-2", {
+                      "pr-0": !sidebar,
+                    })}
+                  >
                     <div className="flex justify-between gap-2">
                       {title !== undefined && title}
                       {title === undefined && <div></div>}
@@ -244,32 +248,32 @@ export function SidebarPopup({
             e.stopPropagation();
           }}
         ></div>
-        <div className="absolute right-0 top-0 h-full w-full rounded-2xl overflow-hidden">
-        <div
-          className={cn(
-            "absolute right-0 top-0 z-[65] h-full w-1/2 translate-x-full bg-white p-5 pt-12 shadow-md transition duration-200",
-            {
-              "translate-x-0": show && slideIn,
-            },
-          )}
-        >
-          <div className="flex grow justify-between overflow-y-hidden">
-            <div className="flex-1 overflow-y-scroll p-2">{children}</div>
-            {showEdit && (
-              <div className="flex shrink-0 flex-col gap-2">
-                <button className="text-3xl text-gray-600">
-                  <EditIcon fontSize="inherit" />
-                </button>
-              </div>
+        <div className="absolute right-0 top-0 h-full w-full overflow-hidden rounded-2xl">
+          <div
+            className={cn(
+              "absolute right-0 top-0 z-[65] h-full w-1/2 translate-x-full bg-white p-5 pt-12 shadow-md transition duration-200",
+              {
+                "translate-x-0": show && slideIn,
+              },
             )}
-          </div>
-          <button
-            onClick={dismiss}
-            className="absolute right-5 top-3 text-3xl text-gray-600"
           >
-            <CloseIcon fontSize="inherit" />
-          </button>
-        </div>
+            <div className="flex grow justify-between overflow-y-hidden">
+              <div className="flex-1 overflow-y-scroll p-2">{children}</div>
+              {showEdit && (
+                <div className="flex shrink-0 flex-col gap-2">
+                  <button className="text-3xl text-gray-600">
+                    <EditIcon fontSize="inherit" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={dismiss}
+              className="absolute right-5 top-3 text-3xl text-gray-600"
+            >
+              <CloseIcon fontSize="inherit" />
+            </button>
+          </div>
         </div>
       </>
     )

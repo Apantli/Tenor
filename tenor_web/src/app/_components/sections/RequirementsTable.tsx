@@ -22,6 +22,7 @@ import { Label } from "recharts";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
 import TagComponent from "../TagComponent";
 import DeleteButton from "../buttons/DeleteButton";
+import Markdown from "react-markdown";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -472,7 +473,7 @@ export default function RequirementsTable() {
                 />
                 {requirementEdited === null && (
                   <div className="flex gap-2 pt-4">
-                    <div className="w-full space-y-2">
+                    <div className="w-36 space-y-2">
                       <label className="text-sm font-semibold">Priority</label>
                       <PriorityPicker
                         priority={newRequirement.priorityId}
@@ -484,7 +485,7 @@ export default function RequirementsTable() {
                         }}
                       />
                     </div>
-                    <div className="w-full space-y-2">
+                    <div className="w-36 space-y-2">
                       <label className="text-sm font-semibold">Type</label>
                       <RequirementTypePicker
                         type={newRequirement.requirementTypeId}
@@ -496,7 +497,7 @@ export default function RequirementsTable() {
                         }}
                       />
                     </div>
-                    <div className="w-full space-y-2">
+                    <div className="w-36 space-y-2">
                       <label className="text-sm font-semibold">Focus</label>
                       <RequirementFocusPicker
                         focus={newRequirement.requirementFocusId}
@@ -513,10 +514,12 @@ export default function RequirementsTable() {
               </div>
             ) : (
               <div>
-                <p className="text-lg">{requirementEdited.description}</p>
+                <div className="mt-4 text-lg">
+                  <Markdown>{requirementEdited.description}</Markdown>
+                </div>
                 <br />
                 <div className="flex gap-2 pt-4">
-                  <div className="w-full space-y-2">
+                  <div className="w-36 space-y-2">
                     <label className="text-sm font-semibold">Priority</label>
                     <PriorityPicker
                       priority={
@@ -543,7 +546,7 @@ export default function RequirementsTable() {
                       }}
                     />
                   </div>
-                  <div className="w-[160px] space-y-2">
+                  <div className="w-36 space-y-2">
                     <label className="text-sm font-semibold">Type</label>
                     <RequirementTypePicker
                       type={
@@ -570,7 +573,7 @@ export default function RequirementsTable() {
                       }}
                     />
                   </div>
-                  <div className="w-full space-y-2">
+                  <div className="w-36 space-y-2">
                     <label className="text-sm font-semibold">Focus</label>
                     <RequirementFocusPicker
                       focus={
