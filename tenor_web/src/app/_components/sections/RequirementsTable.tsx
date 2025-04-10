@@ -366,10 +366,14 @@ export default function RequirementsTable() {
           className="min-h-[400px] min-w-[500px]"
           // FIXME Actually save the value
           setEditMode={
-            requirementEdited
+            requirementEdited !== null
               ? async () => {
-                  await handleEditRequirement(requirementEdited);
-                  setEditingRequirement(false);
+                  if (editingRequirement) {
+                    await handleEditRequirement(requirementEdited);
+                    setEditingRequirement(false);
+                  } else {
+                    setEditingRequirement(true);
+                  }
                 }
               : () => {}
           }
