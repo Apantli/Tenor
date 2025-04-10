@@ -119,9 +119,16 @@ export default function RequirementsTable() {
 
   useEffect(() => {
     if (requirements) {
-      setRequirementsData(requirements.fixedData);
+      const filtered = requirements.fixedData.filter((req) => {
+        const query = searchValue.toLowerCase();
+        return (
+          (req.name?.toLowerCase() ?? "").includes(query) ||
+          req.description.toLowerCase().includes(query)
+        );
+      });
+      setRequirementsData(filtered);
     }
-  }, [requirements]);
+  }, [requirements, searchValue]);
 
   const getTable = () => {
     if (requirements == undefined || isLoadingRequirements) {
