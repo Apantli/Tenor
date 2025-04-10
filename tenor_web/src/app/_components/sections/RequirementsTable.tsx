@@ -369,7 +369,7 @@ export default function RequirementsTable() {
             requirementEdited
               ? async () => {
                   await handleEditRequirement(requirementEdited);
-                  setShowSmallPopup(false);
+                  setEditingRequirement(false);
                 }
               : () => {}
           }
