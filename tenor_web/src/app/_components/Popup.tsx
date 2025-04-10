@@ -219,11 +219,19 @@ export function SidebarPopup({
   showEdit,
 }: SidebarPopupProps & PropsWithChildren) {
   const [slideIn, setSlideIn] = useState(false);
+  const [fullyVisible, setFullyVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (show) {
-      setSlideIn(true);
+      const timeoutSlideIn = setTimeout(() => setSlideIn(true), 1);
+      const timeoutFullyVisible = setTimeout(() => setFullyVisible(true), 200);
+      return () => {
+        clearTimeout(timeoutSlideIn);
+        clearTimeout(timeoutFullyVisible);
+      };
     } else {
+      setFullyVisible(false);
       const timeout = setTimeout(() => setSlideIn(false), 150);
       return () => clearTimeout(timeout);
     }
@@ -231,47 +239,57 @@ export function SidebarPopup({
 
   return (
     (show || slideIn) && (
-      <>
+      <PopupContext.Provider value={containerRef}>
         <div
           className={cn(
-            "absolute left-0 top-0 z-[61] h-full w-full bg-black opacity-0 transition duration-200",
+            "fixed left-1/2 top-1/2 z-[61] flex h-[700px] max-h-[calc(100vh-40px)] w-[956px] max-w-[calc(100vw-40px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl",
             {
-              "opacity-30": show && slideIn,
-            },
-          )}
-          onClick={(e) => {
-            if (!disablePassiveDismiss) dismiss();
-            e.stopPropagation();
-          }}
-        ></div>
-        <div className="absolute right-0 top-0 h-full w-full rounded-2xl overflow-hidden">
-        <div
-          className={cn(
-            "absolute right-0 top-0 z-[65] h-full w-1/2 translate-x-full bg-white p-5 pt-12 shadow-md transition duration-200",
-            {
-              "translate-x-0": show && slideIn,
+              "overflow-visible": fullyVisible,
             },
           )}
         >
-          <div className="flex grow justify-between overflow-y-hidden">
-            <div className="flex-1 overflow-y-scroll p-2">{children}</div>
-            {showEdit && (
-              <div className="flex shrink-0 flex-col gap-2">
-                <button className="text-3xl text-gray-600">
-                  <EditIcon fontSize="inherit" />
-                </button>
-              </div>
+          <div
+            className={cn(
+              "fixed left-0 top-0 z-[62] h-full w-full rounded-2xl bg-black opacity-0 transition duration-200",
+              {
+                "opacity-30": show && slideIn,
+              },
             )}
-          </div>
-          <button
-            onClick={dismiss}
-            className="absolute right-5 top-3 text-3xl text-gray-600"
+            onClick={(e) => {
+              if (!disablePassiveDismiss) dismiss();
+              e.stopPropagation();
+            }}
+          ></div>
+          <div
+            className={cn(
+              "fixed right-0 top-0 z-[63] h-full w-[478px] translate-x-full rounded-r-2xl bg-white p-5 pt-12 transition duration-200",
+              {
+                "translate-x-0": show && slideIn,
+              },
+            )}
+            ref={containerRef}
           >
-            <CloseIcon fontSize="inherit" />
-          </button>
+            <div className="flex h-full grow justify-between">
+              <div className="h-full flex-1 overflow-y-scroll p-2">
+                {children}
+              </div>
+              {showEdit && (
+                <div className="flex shrink-0 flex-col gap-2">
+                  <button className="text-3xl text-gray-600">
+                    <EditIcon fontSize="inherit" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={dismiss}
+              className="absolute right-5 top-3 text-3xl text-gray-600"
+            >
+              <CloseIcon fontSize="inherit" />
+            </button>
+          </div>
         </div>
-        </div>
-      </>
+      </PopupContext.Provider>
     )
   );
 }
