@@ -76,12 +76,12 @@ const getTasksFromItem = async (
 
 const getStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
-  taskId: string,
+  statusId: string,
 ) => {
-  if (taskId === undefined) {
+  if (statusId === undefined || statusId === "") {
     return undefined;
   }
-  const tag = await settingsRef.collection("statusTypes").doc(taskId).get();
+  const tag = await settingsRef.collection("statusTypes").doc(statusId).get();
   if (!tag.exists) {
     return undefined;
   }
@@ -124,7 +124,6 @@ export const tasksRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId, itemId } = input;
       const rawUs = await getTasksFromItem(ctx.firestore, projectId, itemId);
-
       // Transforming into table format
       const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
 
