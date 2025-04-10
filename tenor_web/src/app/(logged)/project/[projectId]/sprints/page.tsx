@@ -429,14 +429,6 @@ export default function ProjectSprints() {
   return (
     <>
       <DragDropProvider
-        onDragStart={(event) => {
-          const { operation } = event;
-          const { source } = operation;
-          if (!source) {
-            return;
-          }
-          console.log(`Started dragging ${source.id}`);
-        }}
         onDragEnd={async (event) => {
           const { operation, canceled } = event;
           const { source, target } = operation;
