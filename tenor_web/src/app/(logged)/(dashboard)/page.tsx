@@ -52,11 +52,11 @@ function ProjectList() {
    * * This would be something provisional while we are in the development phase.
    */
   const router = useRouter();
-  
+
   const handleOpenProject = (projectId: string) => {
     router.push(`/project/${projectId}`);
   };
-  
+
   useEffect(() => {
     if (projects) {
       setFilteredProjects(projects);
@@ -76,7 +76,7 @@ function ProjectList() {
       setFilteredProjects(projects ?? []);
     } else {
       setFilteredProjects(
-        projects?.filter((p) => filterList.includes(p.name)) ?? []
+        projects?.filter((p) => filterList.includes(p.name)) ?? [],
       );
     }
   };
@@ -99,9 +99,9 @@ function ProjectList() {
               key={project.id}
               onClick={() => handleOpenProject(project.id)}
             >
-              <div className="m-[10px] flex h-24 max-h-[66px] w-24 max-w-[66px] items-center justify-center rounded-md bg-blue-500">
+              <div className="m-[10px] flex h-[80px] w-[80px] items-center justify-center overflow-hidden rounded-md bg-white">
                 <img
-                  className="object-scale-down p-[4px]"
+                  className="h-full w-full rounded-md object-contain p-[4px]"
                   src={project.logo}
                   alt={project.name}
                 />
@@ -125,8 +125,7 @@ function ProjectList() {
               </p>
             </div>
           </li>
-        )
-        }
+        )}
       </ul>
     </div>
   );
