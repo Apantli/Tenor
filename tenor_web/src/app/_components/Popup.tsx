@@ -279,7 +279,7 @@ export function SidebarPopup({
             )}
             ref={containerRef}
           >
-            <div className="flex grow flex-col justify-between pt-8">
+            <div className="flex h-full grow flex-col justify-between pt-8">
               <div className="flex flex-1 shrink grow justify-between overflow-y-hidden">
                 <div className="flex flex-1 flex-col overflow-hidden p-2">
                   <div className="flex justify-between gap-2">

@@ -471,6 +471,7 @@ function PopupShowcase() {
         <SidebarPopup
           show={showSidebarPopup}
           dismiss={() => setShowSidebarPopup(false)}
+          footer={<DeleteButton>Delete task</DeleteButton>}
         >
           <h1 className="mb-5 text-2xl">
             <strong>US03:</strong> Validate user login credentials
