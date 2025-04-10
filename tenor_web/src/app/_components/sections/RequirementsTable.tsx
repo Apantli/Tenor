@@ -17,6 +17,7 @@ import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
 import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 import SearchBar from "../SearchBar";
 import{ UseFormatForAssignReqTypeScrumId }from "~/app/_hooks/requirementHook";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -53,6 +54,8 @@ export default function RequirementsTable() {
       [name]: value,
     }));
   };
+
+  const confirm = useConfirmation();
 
   const { alert } = useAlert();
   const { mutateAsync: createRequirement, isPending } =
@@ -122,11 +125,23 @@ export default function RequirementsTable() {
 
   useEffect(() => {
     if (requirements) {
+      const query = searchValue.toLowerCase();
+
       const filtered = requirements.fixedData.filter((req) => {
-        const query = searchValue.toLowerCase();
+        const name = req.name?.toLowerCase() ?? "";
+        const description = req.description.toLowerCase();
+    
+        // Asegúrate de que este hook devuelve un string consistente
+        const formattedScrumText =
+          UseFormatForAssignReqTypeScrumId(
+            req.requirementTypeId.name,
+            req.scrumId,
+          ).toLowerCase();
+    
         return (
-          (req.name?.toLowerCase() ?? "").includes(query) ||
-          req.description.toLowerCase().includes(query)
+          name.includes(query) ||
+          description.includes(query) ||
+          formattedScrumText.includes(query)
         );
       });
       setRequirementsData(filtered);
@@ -187,19 +202,17 @@ export default function RequirementsTable() {
         },
         render(row) {
           return (
-            <span className="flex w-32 justify-start">
-              <PriorityPicker
-                priority={row.priorityId}
-                // FIXME: Change value in DB
-                onChange={(tag: Tag) => {
-                  setRequirementsData((prevData) =>
-                    prevData.map((item) =>
-                      item.id === row.id ? { ...item, priorityId: tag } : item,
-                    ),
-                  );
-                }}
-              />
-            </span>
+            <PriorityPicker
+              priority={row.priorityId}
+              // FIXME: Change value in DB
+              onChange={(tag: Tag) => {
+                setRequirementsData((prevData) =>
+                  prevData.map((item) =>
+                    item.id === row.id ? { ...item,priorityId: tag } : item,
+                  ),
+                );
+              }}
+            />
           );
         },
       },
@@ -221,21 +234,19 @@ export default function RequirementsTable() {
         },
         render(row) {
           return (
-            <span className="flex w-full justify-start">
-              <RequirementTypePicker
-                type={row.requirementTypeId}
-                // FIXME: Change value in DB
-                onChange={(requirementTypeId) => {
-                  setRequirementsData((prevData) =>
-                    prevData.map((item) =>
-                      item.id === row.id
-                        ? { ...item, requirementTypeId: requirementTypeId }
-                        : item,
-                    ),
-                  );
-                }}
-              />
-            </span>
+            <RequirementTypePicker
+              type={row.requirementTypeId}
+              // FIXME: Change value in DB
+              onChange={(requirementTypeId) => {
+                setRequirementsData((prevData) =>
+                  prevData.map((item) =>
+                    item.id === row.id
+                      ? { ...item, requirementTypeId:requirementTypeId }
+                      : item,
+                  ),
+                );
+              }}
+            />
           );
         },
       },
@@ -257,21 +268,19 @@ export default function RequirementsTable() {
         },
         render(row) {
           return (
-            <span className="flex w-full justify-start">
-              <RequirementFocusPicker
-                focus={row.requirementFocusId}
-                // FIXME: Change value in DB
-                onChange={(requirementFocusId) => {
-                  setRequirementsData((prevData) =>
-                    prevData.map((item) =>
-                      item.id === row.id
-                        ? { ...item, requirementFocusId: requirementFocusId }
-                        : item,
-                    ),
-                  );
-                }}
-              />
-            </span>
+            <RequirementFocusPicker
+              focus={row.requirementFocusId}
+              // FIXME: Change value in DB
+              onChange={(requirementFocusId) => {
+                setRequirementsData((prevData) =>
+                  prevData.map((item) =>
+                    item.id === row.id
+                      ? { ...item, requirementFocusId:requirementFocusId }
+                      : item,
+                  ),
+                );
+              }}
+            />
           );
         },
       },
@@ -284,7 +293,9 @@ export default function RequirementsTable() {
       const confirmMessage = ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
       if (
         !(await confirm(
-          `Are you sure you want to ${confirmMessage}?\nThis action cannot be undone.\nThis action is not reversible.`,
+          `Are you sure you want to ${confirmMessage}`,
+          'This action cannot be undone',
+          'Delete',
         ))
       ) {
         callback(false);
@@ -338,7 +349,7 @@ export default function RequirementsTable() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex w-full justify-between">
-        <h2 className="text-3xl font-semibold">Requirements</h2>
+        <h2 className="text-3xl font-semibold content-center">Requirements</h2>
         <div className="flex w-3/4 items-center justify-end gap-2">
           <div className="w-1/3 p-2"> 
             <SearchBar
