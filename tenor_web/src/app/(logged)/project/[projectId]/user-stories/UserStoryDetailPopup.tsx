@@ -28,6 +28,7 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
+import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
 
 interface Props {
   userStoryId: string;
@@ -88,6 +89,12 @@ export default function UserStoryDetailPopup({
   const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
+  const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
+    usePopupVisibilityState();
+
+  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
+    undefined,
+  );
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { predefinedAlerts } = useAlert();
@@ -428,6 +435,8 @@ export default function UserStoryDetailPopup({
             itemType="US"
             onTaskStatusChange={handleTaskStatusChange}
             setShowAddTaskPopup={setShowCreateTaskPopup}
+            setSelectedTaskId={setSelectedTaskId}
+            setShowTaskDetail={setShowTaskDetail}
           />
         </div>
       )}
@@ -448,6 +457,14 @@ export default function UserStoryDetailPopup({
             onTaskAdded={() => setShowCreateTaskPopup(false)}
           />
         </SidebarPopup>
+      )}
+      {renderTaskDetailPopup && selectedTaskId && (
+        <TaskDetailPopup
+          taskId={selectedTaskId}
+          userStoryId={userStoryId}
+          showDetail={showTaskDetail}
+          setShowDetail={setShowTaskDetail}
+        />
       )}
     </Popup>
   );

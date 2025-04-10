@@ -7,11 +7,16 @@ import ProfilePicture from "../ProfilePicture";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
+import { SidebarPopup } from "../Popup";
+import { CreateTaskForm } from "../tasks/CreateTaskPopup";
+import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import { type Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import { TaskCol } from "~/server/api/routers/tasks";
+import { usePopupVisibilityState } from "../Popup";
 
 interface Props {
   tasks: TaskPreview[];
@@ -19,16 +24,20 @@ interface Props {
   itemType: "US" | "IS" | "IT";
   onTaskStatusChange: (taskId: string, statusId: Tag) => void;
   setShowAddTaskPopup: (show: boolean) => void;
+  setSelectedTaskId: (taskId: string) => void;
+  setShowTaskDetail: (show: boolean) => void;
 }
 
 export default function TasksTable({
   tasks,
+  setSelectedTaskId,
+  setShowTaskDetail,
   itemId,
-  itemType,
   setShowAddTaskPopup,
   onTaskStatusChange,
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
+  // Estado para el TaskDetailPopup
 
   const { projectId } = useParams();
   const confirm = useConfirmation();
@@ -57,12 +66,35 @@ export default function TasksTable({
       label: "Id",
       width: 100,
       render(row) {
-        return formatTaskScrumId(row.scrumId);
+        return (
+          <button
+            className="text-left underline-offset-4 hover:text-app-primary hover:underline"
+            onClick={() => {
+              setSelectedTaskId(row.id);
+              setShowTaskDetail(true);
+            }}
+          >
+            {formatTaskScrumId(row.scrumId)}
+          </button>
+        );
       },
     },
     name: {
       label: "Title",
       width: 200,
+      render(row) {
+        return (
+          <button
+            className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+            onClick={() => {
+              setSelectedTaskId(row.id);
+              setShowTaskDetail(true);
+            }}
+          >
+            {row.name}
+          </button>
+        );
+      },
     },
     status: {
       label: "Status",

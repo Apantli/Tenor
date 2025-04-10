@@ -42,8 +42,8 @@ export const userRouter = createTRPCRouter({
         
         usersList.push({
           id: firebaseUser.uid,
-          // No available name happens if the user doesn't have a github name registered
-          name: firebaseUser.displayName ?? "No available name",
+          // Email happens if the user doesn't have a github name registered
+          name: firebaseUser.displayName ?? firebaseUser.email ?? "No available name",
           // Repeating stuff but needed only for the EditableBox 
           user: {
             uid: firebaseUser.uid,

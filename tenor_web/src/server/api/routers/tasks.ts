@@ -9,6 +9,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import type { TaskDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
+import { timestampToDate } from "./sprints";
 
 
 export interface TaskCol {
@@ -75,12 +76,12 @@ const getTasksFromItem = async (
 
 const getStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
-  taskId: string,
+  statusId: string,
 ) => {
-  if (taskId === undefined) {
+  if (statusId === undefined || statusId === "") {
     return undefined;
   }
-  const tag = await settingsRef.collection("statusTypes").doc(taskId).get();
+  const tag = await settingsRef.collection("statusTypes").doc(statusId).get();
   if (!tag.exists) {
     return undefined;
   }
@@ -92,7 +93,7 @@ export const tasksRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
-        taskData: TaskSchema.omit({ scrumId: true , finishedDate: true}),
+        taskData: TaskSchema.omit({ scrumId: true}),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -123,7 +124,6 @@ export const tasksRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId, itemId } = input;
       const rawUs = await getTasksFromItem(ctx.firestore, projectId, itemId);
-
       // Transforming into table format
       const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
 
@@ -154,7 +154,7 @@ export const tasksRouter = createTRPCRouter({
   getTaskDetail: protectedProcedure
     .input(z.object({projectId: z.string(), taskId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Get the necessary information to construct the UserStoryDetail
+      // Get the necessary information to construct the Task Detail
 
       const { projectId, taskId } = input;
       const taskRef = ctx.firestore
@@ -168,7 +168,7 @@ export const tasksRouter = createTRPCRouter({
       }
 
       const taskData = TaskSchema.parse(task.data());
-      // Fetch all the task information for the user story in parallel
+      // Fetch all the task information for the task in parallel
 
       const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
 
@@ -181,7 +181,7 @@ export const tasksRouter = createTRPCRouter({
       }
 
       let assignee = undefined;
-      if(taskData.assigneeId !== undefined) {
+      if(taskData.assigneeId !== undefined && taskData.assigneeId !== "") {
         const userRef = await ctx.firebaseAdmin.auth().getUser(taskData.assigneeId);
         assignee = {
           uid: userRef.uid,
@@ -197,7 +197,7 @@ export const tasksRouter = createTRPCRouter({
         status: statusTag,
         size: taskData.size,
         assignee: assignee,
-        dueDate: taskData.dueDate?.toDate(),
+        dueDate: taskData.dueDate ? timestampToDate(taskData.dueDate) : undefined,
       } as TaskDetail;
     }),
 
@@ -206,7 +206,7 @@ export const tasksRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         taskId: z.string(),
-        taskData: TaskSchema.omit({ scrumId: true, deleted: true }),
+        taskData: TaskSchema.omit({ scrumId: true, deleted: true, itemType: true, itemId: true}),
       }),
     )
     .mutation(async ({ ctx, input }) => {

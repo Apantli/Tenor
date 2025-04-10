@@ -111,7 +111,8 @@ export const TaskSchema = BasicInfoSchema.extend({
   statusId: z.string(),
   assigneeId: z.string(),
   dueDate: TimestampType.nullable(),
-  finishedDate: TimestampType.nullable(),
+  // FIXME: Finished date should be added to show on calendar
+  // finishedDate: TimestampType.nullable(),
   itemId: z.string(),
   itemType: z.enum(["US", "IS", "IT"]),
   size: SizeSchema.optional(),
