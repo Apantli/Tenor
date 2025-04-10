@@ -256,17 +256,20 @@ export const userStoriesRouter = createTRPCRouter({
         }),
       );
 
-      let sprintNumber = undefined;
+      let sprint = undefined;
       if (userStoryData.sprintId !== "") {
-        const sprint = await ctx.firestore
+        const sprintDoc = await ctx.firestore
           .collection("projects")
           .doc(projectId)
           .collection("sprints")
           .doc(userStoryData.sprintId)
           .get();
-        if (sprint.exists) {
-          const sprintData = SprintSchema.parse(sprint.data());
-          sprintNumber = sprintData.number;
+        if (sprintDoc.exists) {
+          const sprintData = SprintSchema.parse(sprintDoc.data());
+          sprint = {
+            id: sprintDoc.id,
+            number: sprintData.number,
+          };
         }
       }
 
@@ -284,7 +287,7 @@ export const userStoriesRouter = createTRPCRouter({
         dependencies: dependencies,
         requiredBy: requiredBy,
         tasks: filteredTasks,
-        sprintNumber,
+        sprint,
       } as UserStoryDetail;
     }),
 

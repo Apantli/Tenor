@@ -180,6 +180,10 @@ export default function UserStoryList() {
             });
 
             await refetchUS();
+            await utils.userStories.getUserStoryDetail.invalidate({
+              projectId: projectId as string,
+              userStoryId: row.id,
+            });
           };
 
           return (
@@ -241,6 +245,13 @@ export default function UserStoryList() {
             });
 
             await refetchUS();
+            await utils.userStories.getUserStoryDetail.invalidate({
+              projectId: projectId as string,
+              userStoryId: row.id,
+            });
+            await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+              projectId: projectId as string,
+            });
           };
 
           return (

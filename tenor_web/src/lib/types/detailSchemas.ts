@@ -1,7 +1,7 @@
 // Data types for returning detailed or preview information from the backend
 
 import type { Size, Tag, WithId } from "./firebaseSchemas";
-import type { ExistingEpicSchema } from "./zodFirebaseSchema";
+import type { ExistingEpicSchema, SprintSchema } from "./zodFirebaseSchema";
 import type z from "zod";
 
 export type ExistingEpic = WithId<z.infer<typeof ExistingEpicSchema>>;
@@ -26,6 +26,11 @@ export type TaskPreview = {
   assignee?: UserPreview;
 };
 
+export type SprintPreview = {
+  id: string;
+  number: number;
+};
+
 export type UserStoryDetail = {
   id: string;
   scrumId: number;
@@ -39,7 +44,7 @@ export type UserStoryDetail = {
   dependencies: UserStoryPreview[];
   requiredBy: UserStoryPreview[];
   tasks: TaskPreview[];
-  sprintNumber?: number;
+  sprint?: SprintPreview;
 };
 
 export type TaskDetail = {
