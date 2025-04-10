@@ -41,7 +41,7 @@ export default function InputFileField({
 
       <div
         className={cn(
-          "flex h-full w-full items-center rounded-md border border-gray-300 px-4 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
+          "flex h-full w-full cursor-pointer items-center rounded-md border border-gray-300 px-4 shadow-sm transition hover:bg-app-hover-border focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500",
           className,
         )}
       >

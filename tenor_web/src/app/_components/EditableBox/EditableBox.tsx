@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { cn } from "~/lib/utils";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
@@ -120,10 +120,16 @@ export function EditableBox({
     );
   };
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   // Perhaps apply cn in renderDropdownLabel instead of here to make it cleaner
   return (
     <div className={cn("w-full", className)}>
-      <Dropdown label={renderDropdownLabel()}>
+      <Dropdown
+        label={renderDropdownLabel()}
+        onOpen={() => inputRef.current?.focus()}
+        menuClassName="w-56"
+      >
         <DropdownItem className="flex w-full flex-col">
           <span className="mb-2 text-sm text-gray-500">Select a person</span>
           <input
@@ -132,7 +138,7 @@ export function EditableBox({
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            autoFocus
+            ref={inputRef}
           />
         </DropdownItem>
         <div className="w-full whitespace-nowrap text-left">

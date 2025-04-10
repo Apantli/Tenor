@@ -471,6 +471,7 @@ function PopupShowcase() {
         <SidebarPopup
           show={showSidebarPopup}
           dismiss={() => setShowSidebarPopup(false)}
+          footer={<DeleteButton>Delete task</DeleteButton>}
         >
           <h1 className="mb-5 text-2xl">
             <strong>US03:</strong> Validate user login credentials
@@ -684,11 +685,11 @@ function EditableBoxShowCase() {
     uid: user?.uid ?? "",
     displayName: user?.displayName ?? "",
     photoURL: user?.photoURL ?? "",
-  }
+  };
 
   // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
   const people: Option[] = [
-    { id: user?.uid ?? "", name: user?.displayName ?? "", user: mockUser},
+    { id: user?.uid ?? "", name: user?.displayName ?? "", user: mockUser },
     { id: "2", name: "Ana García" },
     { id: "3", name: "Carlos Pérez" },
   ];
