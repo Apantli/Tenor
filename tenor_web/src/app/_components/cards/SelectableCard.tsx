@@ -25,11 +25,15 @@ export default function SelectableCard({
     disabled: selected || showCheckbox, // Don't allow dragging if selection in progress
   });
   const [highlightDropped, setHighlightDropped] = React.useState(false);
+  const [isDropping, setIsDropping] = React.useState(true);
 
   const cardRef = useRef<HTMLDivElement>(null);
 
   // Effect to scroll the card into view when it's the last dragged item
   useEffect(() => {
+    setTimeout(() => {
+      setIsDropping(false);
+    }, 200); // This should be the same as the drop animation
     if (lastDraggedUserStoryId === dndId && cardRef.current) {
       // Focus the element
       cardRef.current.focus();
@@ -41,11 +45,12 @@ export default function SelectableCard({
       });
 
       setTimeout(() => {
+        setIsDropping(false);
         setHighlightDropped(true);
-      }, 400);
+      }, 200);
       setTimeout(() => {
         setHighlightDropped(false);
-      }, 700);
+      }, 500);
     }
   }, [lastDraggedUserStoryId, dndId]);
 
@@ -56,7 +61,8 @@ export default function SelectableCard({
         {
           "ring-2 ring-app-secondary": selected,
           "opacity-60": isDragging,
-          "bg-slate-200": highlightDropped, // Highlight when last dragged
+          "bg-slate-200": highlightDropped, // Highlight when last dragged,
+          "opacity-0": isDropping,
         },
       )}
       tabIndex={0} // Make the div focusable
@@ -73,7 +79,8 @@ export default function SelectableCard({
         className={cn(
           "shrink-0 grow basis-0 overflow-hidden py-2 opacity-0 transition-all group-hover:basis-6 group-hover:opacity-100",
           {
-            "basis-6 opacity-100": (selected || showCheckbox) && !isDragging,
+            "basis-6 opacity-100":
+              (selected || showCheckbox) && !isDragging && !isDropping,
           },
         )}
       >

@@ -34,7 +34,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
   header,
   className,
   dndId,
-  lastDraggedUserStoryId
+  lastDraggedUserStoryId,
 }: Props<T>) {
   const shiftClick = useShiftKey();
   const lastSelectedCard = useRef<number>();
@@ -49,7 +49,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-sprint-column-background transition-colors",
+        "bg-sprint-column-background flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg transition-colors",
         className,
         {
           "bg-sprint-column-background-hovered": isDropTarget,
@@ -74,7 +74,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
       <div className="flex h-full flex-1 flex-col gap-2 overflow-y-scroll p-6 pt-2">
         {cards.map((cardInfo) => (
           <SelectableCard
-          lastDraggedUserStoryId={lastDraggedUserStoryId}
+            lastDraggedUserStoryId={lastDraggedUserStoryId}
             key={cardInfo.id}
             dndId={cardInfo.id}
             showCheckbox={selection.size > 0}

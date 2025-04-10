@@ -22,7 +22,7 @@ export default function CardRender({
   return (
     <div
       className={cn({
-        "group relative flex w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-4 shadow-xl transition duration-100":
+        "group relative flex w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-4 shadow-xl transition duration-100 pl-4":
           showBackground,
       })}
     >

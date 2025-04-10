@@ -29,7 +29,7 @@ export default function SprintCardColumn({
   setDetailUserStoryId,
   setShowDetail,
   assignSelectionToSprint,
-  lastDraggedUserStoryId
+  lastDraggedUserStoryId,
 }: Props) {
   const allSelected =
     column.userStoryIds.length > 0 &&

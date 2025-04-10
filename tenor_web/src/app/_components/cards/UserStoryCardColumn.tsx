@@ -34,7 +34,7 @@ export default function UserStoryCardColumn({
 }: Props) {
   return (
     <CardColumn
-    lastDraggedUserStoryId={lastDraggedUserStoryId}
+      lastDraggedUserStoryId={lastDraggedUserStoryId}
       dndId={dndId}
       cards={userStories}
       selection={selection}
