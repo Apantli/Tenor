@@ -9,6 +9,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import type { TaskDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
+import { timestampToDate } from "./sprints";
 
 
 export interface TaskCol {
@@ -92,7 +93,7 @@ export const tasksRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
-        taskData: TaskSchema.omit({ scrumId: true , finishedDate: true}),
+        taskData: TaskSchema.omit({ scrumId: true, deleted: true}),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -154,7 +155,7 @@ export const tasksRouter = createTRPCRouter({
   getTaskDetail: protectedProcedure
     .input(z.object({projectId: z.string(), taskId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Get the necessary information to construct the UserStoryDetail
+      // Get the necessary information to construct the Task Detail
 
       const { projectId, taskId } = input;
       const taskRef = ctx.firestore
@@ -168,7 +169,7 @@ export const tasksRouter = createTRPCRouter({
       }
 
       const taskData = TaskSchema.parse(task.data());
-      // Fetch all the task information for the user story in parallel
+      // Fetch all the task information for the task in parallel
 
       const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
 
@@ -197,7 +198,7 @@ export const tasksRouter = createTRPCRouter({
         status: statusTag,
         size: taskData.size,
         assignee: assignee,
-        dueDate: taskData.dueDate?.toDate(),
+        dueDate: taskData.dueDate ? timestampToDate(taskData.dueDate) : undefined,
       } as TaskDetail;
     }),
 
@@ -206,7 +207,7 @@ export const tasksRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         taskId: z.string(),
-        taskData: TaskSchema.omit({ scrumId: true, deleted: true }),
+        taskData: TaskSchema.omit({ scrumId: true, deleted: true, itemType: true, itemId: true}),
       }),
     )
     .mutation(async ({ ctx, input }) => {
