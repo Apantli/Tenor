@@ -238,10 +238,11 @@ export default function TaskDetailPopup({
       )}
       {!editMode && !isLoading && taskDetail && (
         <div className="flex flex-col gap-2">
-          <div className="mb-2">
+          <div className="mb-2 w-full">
+            <label className="mb-1 block text-sm font-medium">Notes</label>
             <Markdown>{taskDetail.description}</Markdown>
           </div>
-          <div className="mb-2 flex gap-3">
+          <div className="mb-2 flex w-full gap-3">
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium">Status</label>
               <StatusPicker
@@ -267,12 +268,16 @@ export default function TaskDetailPopup({
             </label>
             <EditableBox
               options={people}
-              selectedOption={{
-                id: taskDetail.assignee?.uid ?? "",
-                name: taskDetail.assignee?.displayName ?? "",
-                image: taskDetail.assignee?.photoURL,
-                user: taskDetail.assignee,
-              }}
+              selectedOption={
+                taskDetail.assignee
+                  ? {
+                      id: taskDetail.assignee?.uid ?? "",
+                      name: taskDetail.assignee?.displayName ?? "",
+                      image: taskDetail.assignee?.photoURL,
+                      user: taskDetail.assignee,
+                    }
+                  : undefined
+              }
               onChange={async (assignee) => {
                 await handleSave({
                   ...taskDetail,

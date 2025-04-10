@@ -182,7 +182,7 @@ export const tasksRouter = createTRPCRouter({
       }
 
       let assignee = undefined;
-      if(taskData.assigneeId !== undefined) {
+      if(taskData.assigneeId !== undefined && taskData.assigneeId !== "") {
         const userRef = await ctx.firebaseAdmin.auth().getUser(taskData.assigneeId);
         assignee = {
           uid: userRef.uid,
