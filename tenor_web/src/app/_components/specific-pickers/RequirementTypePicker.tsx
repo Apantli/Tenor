@@ -18,12 +18,23 @@ export default function RequirementTypePicker({ type, onChange }: Props) {
     projectId: projectId as string,
   });
 
+  const { mutateAsync: createRequirementTypeTag } =
+    api.settings.createRequirementType.useMutation();
+
   return (
     <PillComponent
       currentTag={type}
       allTags={typeTags ?? []}
       callBack={onChange}
       labelClassName="w-full"
+      addTag={async (tag) => {
+        const newTag = await createRequirementTypeTag({
+          projectId: projectId as string,
+          tag: tag,
+        });
+        typeTags?.push(newTag);
+        return newTag;
+      }}
     />
   );
 }

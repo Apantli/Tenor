@@ -16,6 +16,7 @@ interface Props {
   callBack: (tag: Tag) => void;
   labelClassName: string;
   hideSearch?: boolean;
+  addTag?: (tag: Tag) => Promise<Tag>;
 }
 
 export default function PillComponent({
@@ -25,6 +26,7 @@ export default function PillComponent({
   labelClassName,
   hideSearch,
   className,
+  addTag,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -132,6 +134,27 @@ export default function PillComponent({
           )}
         </div>
       </div>
+      {addTag && filteredTags?.length === 0 && searchValue !== "" && (
+        <DropdownButton
+          onClick={async () => {
+            // FIXME Pick nice colors
+            const randomHexColor =
+              "#" + Math.floor(Math.random() * 16777215).toString(16);
+
+            const newTag = await addTag({
+              name: searchValue,
+              color: randomHexColor,
+              deleted: false,
+            });
+
+            callBack(newTag);
+            setSearchValue("");
+          }}
+          className="max-w-52 truncate"
+        >
+          Create Type &quot;{searchValue}&quot;
+        </DropdownButton>
+      )}
     </Dropdown>
   );
 }

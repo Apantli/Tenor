@@ -19,12 +19,23 @@ export default function RequirementFocusPicker({ focus, onChange }: Props) {
     },
   );
 
+  const { mutateAsync: createRequirementTypeTag } =
+    api.settings.createRequirementFocus.useMutation();
+
   return (
     <PillComponent
       currentTag={focus}
       allTags={focusTags ?? []}
       callBack={onChange}
       labelClassName="w-full"
+      addTag={async (tag) => {
+        const newTag = await createRequirementTypeTag({
+          projectId: projectId as string,
+          tag: tag,
+        });
+        focusTags?.push(newTag);
+        return newTag;
+      }}
     />
   );
 }
