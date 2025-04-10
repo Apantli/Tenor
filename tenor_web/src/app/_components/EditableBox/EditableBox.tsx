@@ -6,8 +6,6 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
 import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
-import { type User } from "firebase/auth";
-import { type UserRecord } from "node_modules/firebase-admin/lib/auth/user-record";
 
 export interface Option {
   id: string | number | null;
@@ -54,7 +52,7 @@ export function EditableBox({
 
   const renderDropdownLabel = () => {
     return (
-      <div className="relative flex h-12 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
+      <div className="relative flex h-10 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
         {selectedOption ? (
           <>
             <div className="flex flex-grow items-center gap-2">

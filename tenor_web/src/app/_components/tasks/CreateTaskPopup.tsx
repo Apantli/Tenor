@@ -12,12 +12,10 @@ import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import PillComponent from "~/app/_components/PillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { type Size, type Tag } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
-import { WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;

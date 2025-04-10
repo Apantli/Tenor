@@ -2,11 +2,8 @@ import type { inferRouterOutputs } from "@trpc/server";
 import React from "react";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CardColumn from "./CardColumn";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
-import TagComponent from "../TagComponent";
-import { sizeToColor } from "../specific-pickers/SizePillComponent";
 import type { ClassNameValue } from "tailwind-merge";
-import { cn } from "~/lib/utils";
+import UserStoryCardRender from "./CardRender";
 
 interface Props {
   userStories: inferRouterOutputs<
@@ -19,6 +16,8 @@ interface Props {
   isLoading?: boolean;
   header?: React.ReactNode;
   className?: ClassNameValue;
+  dndId: string;
+  lastDraggedUserStoryId: string | null;
 }
 
 export default function UserStoryCardColumn({
@@ -30,11 +29,13 @@ export default function UserStoryCardColumn({
   isLoading,
   header,
   className,
+  dndId,
+  lastDraggedUserStoryId,
 }: Props) {
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-
   return (
     <CardColumn
+      lastDraggedUserStoryId={lastDraggedUserStoryId}
+      dndId={dndId}
       cards={userStories}
       selection={selection}
       setSelection={setSelection}
@@ -43,50 +44,7 @@ export default function UserStoryCardColumn({
       isLoading={isLoading}
       header={header}
       className={className}
-      renderCard={(userStory) => (
-        <div className={cn("flex w-full flex-col items-start gap-2")}>
-          <div>
-            <span className="font-semibold">
-              {formatUserStoryScrumId(userStory.scrumId)}:{" "}
-            </span>
-            {userStory.name}
-          </div>
-          {(userStory.size !== undefined || userStory.tags.length > 0) && (
-            <div className="flex gap-2">
-              {userStory.size && (
-                <TagComponent
-                  reducedPadding
-                  color={sizeToColor[userStory.size]}
-                >
-                  {userStory.size}
-                </TagComponent>
-              )}
-              {userStory.tags.slice(0, 2).map((tag) => (
-                <TagComponent
-                  key={tag.id}
-                  reducedPadding
-                  color={tag.color}
-                  className="max-w-20 truncate"
-                >
-                  {tag.name}
-                </TagComponent>
-              ))}
-              {userStory.tags.length > 2 && (
-                <TagComponent
-                  reducedPadding
-                  data-tooltip-id="tooltip"
-                  data-tooltip-html={userStory.tags
-                    .slice(2)
-                    .map((tag) => tag.name)
-                    .join("<br>")}
-                >
-                  +{userStory.tags.length - 2}
-                </TagComponent>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+      renderCard={(userStory) => <UserStoryCardRender userStory={userStory} />}
     />
   );
 }
