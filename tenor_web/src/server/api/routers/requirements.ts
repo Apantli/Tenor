@@ -1,6 +1,5 @@
 import type {
   Requirement,
-  Size,
   Tag,
   WithId,
 } from "~/lib/types/firebaseSchemas";

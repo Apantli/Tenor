@@ -4,19 +4,14 @@ import React, { useState } from "react";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
-import PillComponent from "../PillComponent";
-import type { User } from "firebase/auth";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
-import { SidebarPopup } from "../Popup";
-import { CreateTaskForm } from "../tasks/CreateTaskPopup";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import { type Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import { TaskCol } from "~/server/api/routers/tasks";
 
 interface Props {
   tasks: TaskPreview[];
