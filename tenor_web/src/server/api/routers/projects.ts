@@ -76,7 +76,6 @@ const fetchProjectData = async (
   dbAdmin: FirebaseFirestore.Firestore,
 ): Promise<Project | null> => {
   try {
-    console.log("Fetching project data for", projectRef.path);
     const projectSnapshot = await dbAdmin.doc(projectRef.path).get(); // Use adminDb.doc
 
     if (projectSnapshot.exists) {
@@ -129,12 +128,6 @@ const fetchUserProjects = async (
       (project): project is WithId<Project> =>
         project !== null && project.deleted === false,
     );
-
-    if (projects.length === 0) {
-      console.log("No projects found for user", uid);
-    } else {
-      console.log("Projects found for user", uid, projects);
-    }
 
     return projects;
   } catch (error) {
