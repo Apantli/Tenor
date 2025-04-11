@@ -418,7 +418,6 @@ export default function RequirementsTable() {
                 <PrimaryButton
                   onClick={async () => {
                     await handleCreateRequirement();
-                    setShowSmallPopup(false);
                   }}
                   loading={isPending}
                 >
