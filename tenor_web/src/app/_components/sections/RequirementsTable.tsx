@@ -142,7 +142,7 @@ export default function RequirementsTable() {
         return;
       }
       if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
-        alert("Oops...", "All Properties must have a value.", {
+        alert("Oops...", "All properties must have a value.", {
           type: "error",
           duration: 5000, // time in ms (5 seconds)
         });
@@ -294,7 +294,6 @@ export default function RequirementsTable() {
           return (
             <PriorityPicker
               priority={row.priorityId}
-              // FIXME: Change value in DB
               onChange={async (tag: Tag) => {
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
@@ -330,7 +329,6 @@ export default function RequirementsTable() {
           return (
             <RequirementTypePicker
               type={row.requirementTypeId}
-              // FIXME: Change value in DB
               onChange={async (requirementTypeId) => {
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
@@ -368,7 +366,6 @@ export default function RequirementsTable() {
           return (
             <RequirementFocusPicker
               focus={row.requirementFocusId}
-              // FIXME: Change value in DB
               onChange={async (requirementFocusId) => {
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
