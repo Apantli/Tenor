@@ -39,6 +39,10 @@ export default function ProjectSprints() {
   const [selectedUserStories, setSelectedUserStories] = useState<Set<string>>(
     new Set(),
   );
+  // Drag and drop state
+  const [lastDraggedUserStoryId, setLastDraggedUserStoryId] = useState<
+    string | null
+  >(null);
 
   const { data: defaultSprintDuration, isLoading: isLoadingSprintDuration } =
     api.projects.fetchDefaultSprintDuration.useQuery({
@@ -199,6 +203,7 @@ export default function ProjectSprints() {
   };
 
   const assignSelectionToSprint = async (sprintId: string) => {
+    setLastDraggedUserStoryId(null);
     const userStoryIds = Array.from(selectedUserStories);
     const userStories = userStoriesBySprint?.userStories;
     if (!userStories) return;
@@ -309,9 +314,6 @@ export default function ProjectSprints() {
 
   //// Drag and drop operations
   let dndOperationsInProgress = 0;
-  const [lastDraggedUserStoryId, setLastDraggedUserStoryId] = useState<
-    string | null
-  >(null);
 
   // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (userStoryId: string, sprintId: string) => {

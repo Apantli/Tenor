@@ -25,7 +25,7 @@ export default function SelectableCard({
     disabled: selected || showCheckbox, // Don't allow dragging if selection in progress
   });
   const [highlightDropped, setHighlightDropped] = React.useState(false);
-  const [isDropping, setIsDropping] = React.useState(true);
+  const [isDropping, setIsDropping] = React.useState(lastDraggedUserStoryId === null ? false : true);
 
   const cardRef = useRef<HTMLDivElement>(null);
 
