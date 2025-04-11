@@ -248,7 +248,27 @@ export const requirementsRouter = createTRPCRouter({
         allRequirementFocusTags,
       };
     }),
-  createRequirement: protectedProcedure
+  getRequirement: protectedProcedure
+    .input(z.object({ projectId: z.string(), requirementId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const requirement = (
+        await ctx.firestore
+          .collection("projects")
+          .doc(input.projectId)
+          .collection("requirements")
+          .doc(input.requirementId)
+          .get()
+      ).data();
+      if (!requirement) {
+        throw new Error("Requirement not found");
+      }
+      return {
+        id: input.requirementId,
+        ...RequirementSchema.parse(requirement),
+      };
+    }),
+
+  createOrModifyRequirement: protectedProcedure
     .input(RequirementSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const projectCount = (

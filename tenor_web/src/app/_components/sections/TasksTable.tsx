@@ -38,12 +38,10 @@ export default function TasksTable({
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   // Estado para el TaskDetailPopup
-
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
-
   const filteredTasks = tasks.filter((task) => {
     if (
       taskSearchText !== "" &&
@@ -55,7 +53,6 @@ export default function TasksTable({
   });
 
   const formatTaskScrumId = useFormatTaskScrumId();
-
   const completedTasks = tasks.filter(
     (task) => task.status?.name === "Done",
   ).length;

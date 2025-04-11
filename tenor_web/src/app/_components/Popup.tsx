@@ -116,7 +116,11 @@ export default function Popup({
                 })}
               >
                 <div className="flex flex-1 shrink grow justify-between overflow-y-hidden">
-                  <div className="flex flex-1 flex-col overflow-hidden p-2">
+                  <div
+                    className={cn("flex flex-1 flex-col overflow-hidden p-2", {
+                      "pr-0": !sidebar,
+                    })}
+                  >
                     <div className="flex justify-between gap-2">
                       {title !== undefined && title}
                       {title === undefined && <div></div>}

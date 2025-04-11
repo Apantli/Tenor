@@ -1,14 +1,12 @@
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Size, Tag } from "~/lib/types/firebaseSchemas";
-import { RequirementCol } from "~/server/api/routers/requirements";
+import { useEffect, useMemo, useState } from "react";
+import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { RequirementCol } from "~/server/api/routers/requirements";
 import { api } from "~/trpc/react";
-import Table, { TableColumns } from "../table/Table";
-import PillComponent from "../PillComponent";
+import Table, { type TableColumns } from "../table/Table";
 import { cn } from "~/lib/utils";
 import Popup, { usePopupVisibilityState } from "../Popup";
 import PrimaryButton from "../buttons/PrimaryButton";
-import PillPickerComponent from "../PillPickerComponent";
 import InputTextField from "../inputs/InputTextField";
 import InputTextAreaField from "../inputs/InputTextAreaField";
 import { useAlert } from "~/app/_hooks/useAlert";
@@ -17,6 +15,8 @@ import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
 import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 import SearchBar from "../SearchBar";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
+import DeleteButton from "../buttons/DeleteButton";
+import Markdown from "react-markdown";
 import LoadingSpinner from "../LoadingSpinner";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
@@ -27,6 +27,23 @@ export default function RequirementsTable() {
   const utils = api.useUtils();
   const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
     usePopupVisibilityState();
+  const [requirementEdited, setRequirementEdited] =
+    useState<RequirementCol | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+  });
+  const [editingRequirement, setEditingRequirement] = useState(false);
+
+  useEffect(() => {
+    if (requirementEdited) {
+      setEditForm({
+        name: requirementEdited.name ?? "",
+        description: requirementEdited.description,
+      });
+      console.log("HERE");
+    }
+  }, [requirementEdited]);
 
   //Hooks
   const params = useParams();
@@ -56,8 +73,8 @@ export default function RequirementsTable() {
   };
 
   const { alert } = useAlert();
-  const { mutateAsync: createRequirement, isPending } =
-    api.requirements.createRequirement.useMutation();
+  const { mutateAsync: createOrModifyRequirement, isPending } =
+    api.requirements.createOrModifyRequirement.useMutation();
   const handleCreateRequirement = async () => {
     const {
       priorityId,
@@ -88,7 +105,7 @@ export default function RequirementsTable() {
     const unwrappedRequirementTypeId = requirementTypeId.id;
     const unwrappedRequirementFocusId = requirementFocusId.id;
 
-    const response = await createRequirement({
+    const response = await createOrModifyRequirement({
       projectId: projectId as string,
       name,
       description,
@@ -109,6 +126,54 @@ export default function RequirementsTable() {
     console.log(response);
   };
 
+  const handleEditRequirement = async (requirement: RequirementCol) => {
+    const { name, description } = editForm;
+    const { priorityId, requirementTypeId, requirementFocusId, scrumId } =
+      requirement;
+    if (!name) {
+      alert("Oops...", "Requirement Name must have a value.", {
+        type: "error",
+        duration: 5000, // time in ms (5 seconds)
+      });
+      return;
+    }
+    if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
+      alert("Oops...", "All Properties must have a value.", {
+        type: "error",
+        duration: 5000, // time in ms (5 seconds)
+      });
+      return;
+    }
+    // Unwrap values
+    const unwrappedPriorityId = priorityId.id;
+    const unwrappedRequirementTypeId = requirementTypeId.id;
+    const unwrappedRequirementFocusId = requirementFocusId.id;
+
+    const newRequirement = {
+      projectId: projectId as string,
+      name,
+      description,
+      priorityId: unwrappedPriorityId,
+      requirementTypeId: unwrappedRequirementTypeId,
+      requirementFocusId: unwrappedRequirementFocusId,
+      scrumId,
+      deleted: false,
+    };
+
+    await utils.requirements.getRequirement.cancel({
+      projectId: projectId as string,
+      requirementId: requirement.id,
+    });
+
+    const response = await createOrModifyRequirement(newRequirement);
+
+    await utils.requirements.getRequirementsTableFriendly.invalidate({
+      projectId: projectId as string,
+    });
+
+    console.log(response);
+  };
+
   // TRPC
   const {
     data: requirements,
@@ -124,7 +189,7 @@ export default function RequirementsTable() {
     }
   }, [requirements]);
 
-  const getTable = () => {
+  const table = useMemo(() => {
     if (requirements == undefined || isLoadingRequirements) {
       return (
         <div className="flex h-full w-full flex-1 items-start justify-center p-10">
@@ -141,7 +206,14 @@ export default function RequirementsTable() {
         sortable: false,
         render(row) {
           return (
-            <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
+            <button
+              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              onClick={() => {
+                setEditingRequirement(false);
+                setRequirementEdited(row);
+                setShowSmallPopup(true);
+              }}
+            >
               {UseFormatForAssignReqTypeScrumId(
                 row.requirementTypeId.name,
                 row.scrumId,
@@ -156,7 +228,14 @@ export default function RequirementsTable() {
         sortable: false,
         render(row) {
           return (
-            <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
+            <button
+              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              onClick={() => {
+                setEditingRequirement(false);
+                setRequirementEdited(row);
+                setShowSmallPopup(true);
+              }}
+            >
               {row.name}
             </button>
           );
@@ -174,12 +253,16 @@ export default function RequirementsTable() {
               <PriorityPicker
                 priority={row.priorityId}
                 // FIXME: Change value in DB
-                onChange={(tag: Tag) => {
+                onChange={async (tag: Tag) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
                       item.id === row.id ? { ...item, priorityId: tag } : item,
                     ),
                   );
+                  await handleEditRequirement({
+                    ...row,
+                    priorityId: tag,
+                  });
                 }}
               />
             </span>
@@ -195,7 +278,7 @@ export default function RequirementsTable() {
               <RequirementTypePicker
                 type={row.requirementTypeId}
                 // FIXME: Change value in DB
-                onChange={(requirementTypeId) => {
+                onChange={async (requirementTypeId) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
                       item.id === row.id
@@ -203,6 +286,10 @@ export default function RequirementsTable() {
                         : item,
                     ),
                   );
+                  await handleEditRequirement({
+                    ...row,
+                    requirementTypeId: requirementTypeId,
+                  });
                 }}
               />
             </span>
@@ -218,7 +305,7 @@ export default function RequirementsTable() {
               <RequirementFocusPicker
                 focus={row.requirementFocusId}
                 // FIXME: Change value in DB
-                onChange={(requirementFocusId) => {
+                onChange={async (requirementFocusId) => {
                   setRequirementsData((prevData) =>
                     prevData.map((item) =>
                       item.id === row.id
@@ -226,6 +313,10 @@ export default function RequirementsTable() {
                         : item,
                     ),
                   );
+                  await handleEditRequirement({
+                    ...row,
+                    requirementFocusId: requirementFocusId,
+                  });
                 }}
               />
             </span>
@@ -245,7 +336,7 @@ export default function RequirementsTable() {
         onDelete={(ids) => console.log("Deleted", ids)}
       />
     );
-  };
+  }, [requirementsData, isLoadingRequirements]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -261,6 +352,9 @@ export default function RequirementsTable() {
           </div>
           <PrimaryButton
             onClick={() => {
+              setEditingRequirement(false);
+              setRequirementEdited(null);
+              setNewRequirement(defaultRequirement);
               setShowSmallPopup(true);
             }}
           >
@@ -268,88 +362,249 @@ export default function RequirementsTable() {
           </PrimaryButton>
         </div>
       </div>
-      {getTable()}
+      {table}
       {renderSmallPopup && (
         <Popup
           show={showSmallPopup}
-          reduceTopPadding
-          size="large"
-          className="min-h-[400px] min-w-[500px]"
-          dismiss={() => setShowSmallPopup(false)}
+          reduceTopPadding={requirementEdited === null}
+          size="small"
+          className="h-[700px] w-[600px]"
+          setEditMode={
+            requirementEdited !== null
+              ? async () => {
+                  if (editingRequirement) {
+                    setEditingRequirement(false);
+                    await handleEditRequirement(requirementEdited);
+                  } else {
+                    setEditingRequirement(true);
+                  }
+                }
+              : () => {}
+          }
+          editMode={requirementEdited ? editingRequirement : undefined}
+          dismiss={() => {
+            setShowSmallPopup(false);
+          }}
+          title={
+            <h1 className="text-2xl">
+              <strong>
+                {requirementEdited ? (
+                  <h1 className="font-semibold">
+                    {UseFormatForAssignReqTypeScrumId(
+                      requirementEdited.requirementTypeId.name,
+                      requirementEdited.scrumId,
+                    )}
+                    :{" "}
+                    <span className="font-normal">
+                      {requirementEdited.name}
+                    </span>
+                  </h1>
+                ) : (
+                  <h1>New Requirement</h1>
+                )}
+              </strong>{" "}
+            </h1>
+          }
           footer={
             <div className="flex gap-2">
-              <PrimaryButton
-                onClick={async () => {
-                  await handleCreateRequirement();
-                }}
-                loading={isPending}
-              >
-                Create Requirement
-              </PrimaryButton>
-            </div>
-          }
-          sidebar={
-            <div className="w-[200px] space-y-2 text-xs font-bold">
-              <div className="w-full space-y-2">
-                <label>Priority</label>
-                <PriorityPicker
-                  priority={newRequirement.priorityId}
-                  onChange={(priority) => {
-                    setNewRequirement((prev) => ({
-                      ...prev,
-                      priorityId: priority,
-                    }));
+              {requirementEdited ? (
+                // FIXME add delete functionality (NEW PR)
+                <DeleteButton
+                  onClick={async () => {
+                    console.log("Deleting");
                   }}
-                />
-              </div>
-              <div className="w-full space-y-2">
-                <label>Type</label>
-                <RequirementTypePicker
-                  type={newRequirement.requirementTypeId}
-                  onChange={(priority) => {
-                    setNewRequirement((prev) => ({
-                      ...prev,
-                      requirementTypeId: priority,
-                    }));
+                >
+                  Delete
+                </DeleteButton>
+              ) : (
+                <PrimaryButton
+                  onClick={async () => {
+                    await handleCreateRequirement();
                   }}
-                />
-              </div>
-              <div className="w-full space-y-2">
-                <label>Focus</label>
-                <RequirementFocusPicker
-                  focus={newRequirement.requirementFocusId}
-                  onChange={(priority) => {
-                    setNewRequirement((prev) => ({
-                      ...prev,
-                      requirementFocusId: priority,
-                    }));
-                  }}
-                />
-              </div>
+                  loading={isPending}
+                >
+                  Create Requirement
+                </PrimaryButton>
+              )}
             </div>
           }
         >
           {" "}
           <div className="flex flex-col gap-4">
-            <h1 className="text-2xl">
-              <strong>New Requirement</strong>{" "}
-            </h1>
-            <InputTextField
-              label="Title"
-              className="h-12"
-              value={newRequirement.name}
-              onChange={handleChange}
-              name="name"
-              placeholder="Requirement title"
-            />
-            <InputTextAreaField
-              label="Description"
-              html-rows="4"
-              className="min-h-[400px] w-full"
-              value={newRequirement.description}
-              onChange={handleChange}
-              name="description"
-            />
+            {!requirementEdited || editingRequirement ? (
+              <div>
+                <InputTextField
+                  label="Title"
+                  className="mb-4 h-12"
+                  value={
+                    requirementEdited ? editForm.name : newRequirement.name
+                  }
+                  onChange={(e) => {
+                    if (requirementEdited) {
+                      setEditForm((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }));
+                    } else {
+                      handleChange(e);
+                    }
+                  }}
+                  name="name"
+                  placeholder="Requirement title"
+                />
+                <InputTextAreaField
+                  label="Description"
+                  html-rows="4"
+                  className="min-h-[120px] w-full resize-none"
+                  value={
+                    requirementEdited
+                      ? editForm.description
+                      : newRequirement.description
+                  }
+                  onChange={
+                    requirementEdited
+                      ? (e) => {
+                          setEditForm((prev) => ({
+                            ...prev,
+                            description: e.target.value,
+                          }));
+                        }
+                      : handleChange
+                  }
+                  name="description"
+                />
+                {requirementEdited === null && (
+                  <div className="flex gap-2 pt-4">
+                    <div className="w-36 space-y-2">
+                      <label className="text-sm font-semibold">Priority</label>
+                      <PriorityPicker
+                        priority={newRequirement.priorityId}
+                        onChange={async (priority) => {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            priorityId: priority,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className="w-36 space-y-2">
+                      <label className="text-sm font-semibold">Type</label>
+                      <RequirementTypePicker
+                        type={newRequirement.requirementTypeId}
+                        onChange={async (type) => {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            requirementTypeId: type,
+                          }));
+                        }}
+                      />
+                    </div>
+                    <div className="w-36 space-y-2">
+                      <label className="text-sm font-semibold">Focus</label>
+                      <RequirementFocusPicker
+                        focus={newRequirement.requirementFocusId}
+                        onChange={async (focus) => {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            requirementFocusId: focus,
+                          }));
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <div className="mt-4 text-lg">
+                  <Markdown>{requirementEdited.description}</Markdown>
+                </div>
+                <br />
+                <div className="flex gap-2 pt-4">
+                  <div className="w-36 space-y-2">
+                    <label className="text-sm font-semibold">Priority</label>
+                    <PriorityPicker
+                      priority={
+                        requirementEdited
+                          ? requirementEdited.priorityId
+                          : newRequirement.priorityId
+                      }
+                      onChange={async (priority) => {
+                        if (!requirementEdited) {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            priorityId: priority,
+                          }));
+                        } else {
+                          setRequirementEdited((prev) => ({
+                            ...prev!,
+                            priorityId: priority,
+                          }));
+                          await handleEditRequirement({
+                            ...requirementEdited,
+                            priorityId: priority,
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="w-36 space-y-2">
+                    <label className="text-sm font-semibold">Type</label>
+                    <RequirementTypePicker
+                      type={
+                        requirementEdited
+                          ? requirementEdited.requirementTypeId
+                          : newRequirement.requirementTypeId
+                      }
+                      onChange={async (type) => {
+                        if (!requirementEdited) {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            requirementTypeId: type,
+                          }));
+                        } else {
+                          setRequirementEdited((prev) => ({
+                            ...prev!,
+                            requirementTypeId: type,
+                          }));
+                          await handleEditRequirement({
+                            ...requirementEdited,
+                            requirementTypeId: type,
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                  <div className="w-36 space-y-2">
+                    <label className="text-sm font-semibold">Focus</label>
+                    <RequirementFocusPicker
+                      focus={
+                        requirementEdited
+                          ? requirementEdited.requirementFocusId
+                          : newRequirement.requirementFocusId
+                      }
+                      onChange={async (focus) => {
+                        if (!requirementEdited) {
+                          setNewRequirement((prev) => ({
+                            ...prev,
+                            requirementFocusId: focus,
+                          }));
+                        } else {
+                          setRequirementEdited((prev) => ({
+                            ...prev!,
+                            requirementFocusId: focus,
+                          }));
+                          await handleEditRequirement({
+                            ...requirementEdited,
+                            requirementFocusId: focus,
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </Popup>
       )}

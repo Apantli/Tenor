@@ -1,7 +1,7 @@
 // Data types for returning detailed or preview information from the backend
 
 import type { Size, Tag, WithId } from "./firebaseSchemas";
-import type { ExistingEpicSchema } from "./zodFirebaseSchema";
+import type { ExistingEpicSchema, SprintSchema } from "./zodFirebaseSchema";
 import type z from "zod";
 
 export type ExistingEpic = WithId<z.infer<typeof ExistingEpicSchema>>;
