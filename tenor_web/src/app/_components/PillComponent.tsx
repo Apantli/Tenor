@@ -79,7 +79,7 @@ export default function PillComponent({
             color: tag.color,
           }}
         ></span>
-        <span>{tag.name}</span>
+        <span className="truncate">{tag.name}</span>
       </DropdownButton>
     );
   };
@@ -125,7 +125,7 @@ export default function PillComponent({
           />
         </DropdownItem>
       )}
-      <div className="w-full whitespace-nowrap text-left">
+      <div className="w-52 whitespace-nowrap text-left">
         <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}
           {addTag === null && filteredTags.length == 0 && (
