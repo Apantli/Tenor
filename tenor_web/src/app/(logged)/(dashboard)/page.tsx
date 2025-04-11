@@ -83,22 +83,26 @@ function ProjectList() {
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
-              className="flex max-w-full flex-row justify-start border-b-2 py-[16px] hover:cursor-pointer"
+              className="flex flex-row justify-start border-b-2 py-[16px] pr-8 hover:cursor-pointer"
               key={project.id}
               onClick={() => handleOpenProject(project.id)}
             >
-              <div className="m-[10px] h-[80px] w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
+              <div className="h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
                 <img
                   className="h-full w-full rounded-md object-contain p-[4px]"
-                  src={project.logo}
+                  src={
+                    project.logo.startsWith("/")
+                      ? project.logo
+                      : `/api/image_proxy/?url=${encodeURIComponent(project.logo)}`
+                  }
                   alt={project.name}
                 />
               </div>
-              <div className="ml-2 flex flex-col justify-start">
-                <h3 className="my-[7px] max-w-[700px] truncate text-lg font-semibold">
+              <div className="flex flex-col justify-start pl-4 pr-4">
+                <h3 className="my-[7px] max-w-[35vw] truncate text-lg font-semibold">
                   {project.name}
                 </h3>
-                <p className="line-clamp-2 max-w-[700px] text-base">
+                <p className="line-clamp-2 max-w-[35vw] text-base">
                   {project.description}
                 </p>
               </div>

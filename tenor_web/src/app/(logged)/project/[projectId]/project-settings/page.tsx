@@ -127,7 +127,9 @@ export default function ProjectGeneralSettings() {
                   ? undefined
                   : icon
                     ? URL.createObjectURL(icon)
-                    : editForm.icon
+                    : editForm.icon.startsWith("/")
+                      ? editForm.icon
+                      : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
               }
               alt="Project logo"
               className="h-20 w-20"
