@@ -107,7 +107,7 @@ export default function Dropdown({
     const dropdownWidth = dropdownRect.width * multiplier;
     const dropdownHeight = dropdownRect.height * multiplier;
 
-    let top = triggerRect.bottom - (popupRect?.top ?? 0);
+    let top = triggerRect.bottom - (popupRect?.top ?? 0); // Align to the bottom of the trigger
     const realTop = triggerRect.bottom;
     let left = triggerRect.right - dropdownWidth - (popupRect?.left ?? 0); // Align to the right of the trigger
     const realLeft = triggerRect.right - dropdownWidth;
@@ -143,7 +143,10 @@ export default function Dropdown({
 
   return (
     <div
-      className={cn("relative flex items-center justify-center", className)}
+      className={cn(
+        "relative flex items-center justify-center overflow-visible",
+        className,
+      )}
       ref={ref}
     >
       <button onClick={toggleOpen} className="w-full">

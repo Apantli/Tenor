@@ -8,7 +8,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 
-const timestampToDate = (timestamp: {
+export const timestampToDate = (timestamp: {
   seconds: number;
   nanoseconds: number;
 }) => {

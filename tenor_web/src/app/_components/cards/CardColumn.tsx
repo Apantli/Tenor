@@ -5,6 +5,7 @@ import useShiftKey from "~/app/_hooks/useShiftKey";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
+import { useDroppable } from "@dnd-kit/react";
 
 interface Props<T extends { id: string; scrumId: number }> {
   selection: Set<string>;
@@ -17,6 +18,9 @@ interface Props<T extends { id: string; scrumId: number }> {
   cards: T[];
   renderCard: (item: T) => React.ReactNode;
   isLoading?: boolean;
+
+  dndId: string;
+  lastDraggedUserStoryId: string | null;
 }
 
 export default function CardColumn<T extends { id: string; scrumId: number }>({
@@ -29,6 +33,8 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
   isLoading,
   header,
   className,
+  dndId,
+  lastDraggedUserStoryId,
 }: Props<T>) {
   const shiftClick = useShiftKey();
   const lastSelectedCard = useRef<number>();
@@ -38,13 +44,24 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
     lastSelectedCard.current = undefined;
   });
 
+  const { ref: refDnd, isDropTarget } = useDroppable({ id: dndId });
+
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-gray-200",
+        "bg-sprint-column-background flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg transition-colors",
         className,
+        {
+          "bg-sprint-column-background-hovered": isDropTarget,
+        },
       )}
-      ref={ref}
+      // Merging refs to avoid a new div
+      ref={(el) => {
+        if (ref.current !== el) {
+          (ref as React.MutableRefObject<HTMLDivElement | null>).current = el;
+        }
+        refDnd(el);
+      }}
     >
       {isLoading && (
         <div className="flex h-full w-full items-center justify-center">
@@ -57,7 +74,9 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
       <div className="flex h-full flex-1 flex-col gap-2 overflow-y-scroll p-6 pt-2">
         {cards.map((cardInfo) => (
           <SelectableCard
+            lastDraggedUserStoryId={lastDraggedUserStoryId}
             key={cardInfo.id}
+            dndId={cardInfo.id}
             showCheckbox={selection.size > 0}
             selected={selection.has(cardInfo.id)}
             onChange={(selected) => {

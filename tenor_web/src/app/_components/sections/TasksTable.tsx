@@ -4,39 +4,44 @@ import React, { useState } from "react";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
-import PillComponent from "../PillComponent";
-import type { User } from "firebase/auth";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { SidebarPopup } from "../Popup";
 import { CreateTaskForm } from "../tasks/CreateTaskPopup";
+import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import { type Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { TaskCol } from "~/server/api/routers/tasks";
+import { usePopupVisibilityState } from "../Popup";
 
 interface Props {
   tasks: TaskPreview[];
   itemId: string;
   itemType: "US" | "IS" | "IT";
-  onTaskStatusChange: (
-    taskId: string,
-    statusId: Tag,
-  ) => void;
+  onTaskStatusChange: (taskId: string, statusId: Tag) => void;
+  setShowAddTaskPopup: (show: boolean) => void;
+  setSelectedTaskId: (taskId: string) => void;
+  setShowTaskDetail: (show: boolean) => void;
 }
 
-export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange }: Props) {
+export default function TasksTable({
+  tasks,
+  setSelectedTaskId,
+  setShowTaskDetail,
+  itemId,
+  setShowAddTaskPopup,
+  onTaskStatusChange,
+}: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
-  const [showAddTaskPopup, setShowAddTaskPopup] = useState(false);
-  
+  // Estado para el TaskDetailPopup
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
-  
   const filteredTasks = tasks.filter((task) => {
     if (
       taskSearchText !== "" &&
@@ -46,42 +51,61 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
     }
     return true;
   });
-  
+
   const formatTaskScrumId = useFormatTaskScrumId();
-  
-  const completedTasks = tasks.filter(task =>
-    task.status?.name === "Done"
+  const completedTasks = tasks.filter(
+    (task) => task.status?.name === "Done",
   ).length;
-  
+
   const taskColumns: TableColumns<TaskPreview> = {
     id: { visible: false },
     scrumId: {
       label: "Id",
       width: 100,
       render(row) {
-        return formatTaskScrumId(row.scrumId);
+        return (
+          <button
+            className="text-left underline-offset-4 hover:text-app-primary hover:underline"
+            onClick={() => {
+              setSelectedTaskId(row.id);
+              setShowTaskDetail(true);
+            }}
+          >
+            {formatTaskScrumId(row.scrumId)}
+          </button>
+        );
       },
     },
     name: {
       label: "Title",
       width: 200,
+      render(row) {
+        return (
+          <button
+            className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+            onClick={() => {
+              setSelectedTaskId(row.id);
+              setShowTaskDetail(true);
+            }}
+          >
+            {row.name}
+          </button>
+        );
+      },
     },
     status: {
       label: "Status",
       width: 150,
       render(row) {
-        return(
+        return (
           <StatusPicker
             status={row.status}
             onChange={async (status) => {
-              onTaskStatusChange(
-                row.id,
-                status
-              )
+              onTaskStatusChange(row.id, status);
             }}
             className="w-32"
           />
-        )
+        );
       },
     },
     assignee: {
@@ -92,19 +116,16 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
           return <div></div>;
         }
         return (
-          <div>
-            {row.assignee && (
-              <ProfilePicture
-                user={row.assignee}
-              />
-            )}
-          </div>
+          <div>{row.assignee && <ProfilePicture user={row.assignee} />}</div>
         );
       },
     },
   };
 
-  const handleTaskDelete = async (ids: string[], callback: (del: boolean) => void) => {
+  const handleTaskDelete = async (
+    ids: string[],
+    callback: (del: boolean) => void,
+  ) => {
     const confirmMessage = ids.length > 1 ? "tasks" : "task";
     if (
       !(await confirm(
@@ -119,21 +140,19 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
     callback(true);
 
     // Optimistic update - filter out deleted tasks
-    const newTasks = tasks.filter(
-      (task) => !ids.includes(task.id)
-    );
+    const newTasks = tasks.filter((task) => !ids.includes(task.id));
 
     await utils.tasks.getTasksTableFriendly.cancel({
       projectId: projectId as string,
       itemId: itemId,
     });
 
-    const transformedTasks = newTasks.map(task => ({
+    const transformedTasks = newTasks.map((task) => ({
       id: task.id,
       scrumId: task.scrumId,
       title: task.name, // name to title
       status: task.status,
-      assignee: task.assignee
+      assignee: task.assignee,
     }));
 
     utils.tasks.getTasksTableFriendly.setData(
@@ -176,7 +195,7 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
           </PrimaryButton>
         </div>
       </div>
-      
+
       <div className="mt-4 w-full max-w-full">
         <Table
           data={filteredTasks}
@@ -188,18 +207,6 @@ export default function TasksTable({ tasks, itemId, itemType, onTaskStatusChange
           emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
         />
       </div>
-      
-      <SidebarPopup
-        show={showAddTaskPopup}
-        dismiss={() => setShowAddTaskPopup(false)}
-      >
-        <CreateTaskForm
-          itemId={itemId}
-          itemType={itemType}
-          onTaskAdded={() => setShowAddTaskPopup(false)}
-        />
-      </SidebarPopup>
     </>
   );
 }
-

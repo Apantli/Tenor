@@ -88,6 +88,32 @@ const settingsRouter = createTRPCRouter({
       const added = await projectRef.collection("backlogTags").add(tag);
       return { ...tag, id: added.id };
     }),
+  createRequirementType: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        tag: TagSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tag } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const added = await projectRef.collection("requirementTypes").add(tag);
+      return { ...tag, id: added.id };
+    }),
+  createRequirementFocus: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        tag: TagSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tag } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const added = await projectRef.collection("requirementFocus").add(tag);
+      return { ...tag, id: added.id };
+    }),
 });
 
 export default settingsRouter;

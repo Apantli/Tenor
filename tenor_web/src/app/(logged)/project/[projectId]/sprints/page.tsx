@@ -20,10 +20,14 @@ import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
+import UserStoryCardRender from "~/app/_components/cards/CardRender";
 
 export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
 >["getUserStoryPreviewsBySprint"]["userStories"];
+
+const noSprintId = "noSprintId";
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
@@ -35,14 +39,15 @@ export default function ProjectSprints() {
   const [selectedUserStories, setSelectedUserStories] = useState<Set<string>>(
     new Set(),
   );
+  // Drag and drop state
+  const [lastDraggedUserStoryId, setLastDraggedUserStoryId] = useState<
+    string | null
+  >(null);
 
-  const {
-    data: defaultSprintDuration,
-    isLoading: isLoadingSprintDuration,
-    error,
-  } = api.projects.fetchDefaultSprintDuration.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: defaultSprintDuration, isLoading: isLoadingSprintDuration } =
+    api.projects.fetchDefaultSprintDuration.useQuery({
+      projectId: projectId as string,
+    });
 
   let defaultSprintInitialDate: Date | null = null;
   let defaultSprintEndDate: Date | null = null;
@@ -159,6 +164,7 @@ export default function ProjectSprints() {
       description: newSprintDescription,
       startDate: Timestamp.fromDate(newSprintStartDate),
       endDate: Timestamp.fromDate(newSprintEndDate),
+      // updatedData.dueDate ? Timestamp.fromDate(updatedData.dueDate) : null,
       userStoryIds: [],
       genericItemIds: [],
       issueIds: [],
@@ -172,7 +178,6 @@ export default function ProjectSprints() {
     setNewSprintEndDate(defaultSprintEndDate);
 
     setShowSmallPopup(false);
-    console.log(response);
   };
 
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
@@ -198,6 +203,7 @@ export default function ProjectSprints() {
   };
 
   const assignSelectionToSprint = async (sprintId: string) => {
+    setLastDraggedUserStoryId(null);
     const userStoryIds = Array.from(selectedUserStories);
     const userStories = userStoriesBySprint?.userStories;
     if (!userStories) return;
@@ -306,105 +312,256 @@ export default function ProjectSprints() {
         userStoriesBySprint?.userStories[selectedUserStoryId]?.sprintId !== "",
     );
 
+  //// Drag and drop operations
+  let dndOperationsInProgress = 0;
+
+  // Similar but not equal to assignSelectionToSprint
+  const handleDragEnd = async (userStoryId: string, sprintId: string) => {
+    if (sprintId == noSprintId) {
+      sprintId = "";
+    }
+    const userStories = userStoriesBySprint?.userStories;
+    if (!userStories || userStories[userStoryId]?.sprintId === sprintId) return;
+
+    dndOperationsInProgress += 1;
+    // Cancel previous fetches for the sprint data
+    await cancelUserStoryPreviewQuery();
+
+    setLastDraggedUserStoryId(userStoryId);
+    const userStoryIds = [userStoryId];
+
+    utils.sprints.getUserStoryPreviewsBySprint.setData(
+      {
+        projectId: projectId as string,
+      },
+      (oldData) => {
+        if (!oldData) return undefined;
+
+        const sortByScrumId = (a: string, b: string) => {
+          const storyA = userStories[a];
+          const storyB = userStories[b];
+          return (storyA?.scrumId ?? 0) - (storyB?.scrumId ?? 0);
+        };
+
+        const sprints = oldData.sprints.map((sprint) => {
+          if (sprint.sprint.id === sprintId) {
+            const sortedUserStoryIds = [
+              ...sprint.userStoryIds,
+              userStoryId,
+            ].sort(sortByScrumId);
+            return {
+              ...sprint,
+              userStoryIds: sortedUserStoryIds,
+            };
+          } else {
+            return {
+              ...sprint,
+              userStoryIds: sprint.userStoryIds.filter(
+                (oldUserStoryId) => oldUserStoryId !== userStoryId,
+              ),
+            };
+          }
+        });
+
+        let newUnassignedUserStoryIds = [];
+        if (sprintId === "") {
+          newUnassignedUserStoryIds = [
+            ...oldData.unassignedUserStoryIds,
+            ...userStoryIds,
+          ].sort(sortByScrumId);
+        } else {
+          newUnassignedUserStoryIds = oldData.unassignedUserStoryIds.filter(
+            (userStoryId) => !userStoryIds.includes(userStoryId),
+          );
+        }
+
+        const updatedUserStories = Object.fromEntries(
+          Object.entries(oldData.userStories).map(([id, userStory]) => {
+            if (userStoryIds.includes(id)) {
+              return [
+                id,
+                {
+                  ...userStory,
+                  sprintId: sprintId,
+                },
+              ];
+            }
+            return [id, userStory];
+          }),
+        );
+
+        return {
+          sprints,
+          unassignedUserStoryIds: newUnassignedUserStoryIds,
+          userStories: updatedUserStories,
+        };
+      },
+    );
+    setSelectedUserStories(new Set());
+
+    await assignUserStoriesToSprint({
+      projectId: projectId as string,
+      sprintId,
+      userStoryIds,
+    });
+
+    // Cancel previous fetches for the sprint data
+    await cancelUserStoryPreviewQuery();
+
+    // Only fetch again if this is the last operation
+    if (dndOperationsInProgress == 1) {
+      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+        projectId: projectId as string,
+      });
+      await utils.userStories.getUserStoriesTableFriendly.invalidate({
+        projectId: projectId as string,
+      });
+      await Promise.all(
+        userStoryIds.map(async (userStoryId) => {
+          await utils.userStories.getUserStoryDetail.invalidate({
+            projectId: projectId as string,
+            userStoryId,
+          });
+        }),
+      );
+    }
+
+    // Mark operation as finished
+    dndOperationsInProgress -= 1;
+  };
+
   return (
     <>
-      <div className="flex h-full overflow-hidden">
-        <div className="relative flex h-full w-[420px] min-w-[420px] flex-col overflow-hidden border-r-2 pr-5">
-          <div className="flex w-full justify-between pb-4">
-            <h1 className="text-3xl font-semibold">Product Backlog</h1>
-            <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
-          </div>
+      <DragDropProvider
+        onDragEnd={async (event) => {
+          const { operation, canceled } = event;
+          const { source, target } = operation;
 
-          <div className="flex w-full items-center gap-3 pb-4">
-            <SearchBar
-              searchValue={searchValue}
-              handleUpdateSearch={(e) => setSearchValue(e.target.value)}
-              placeholder="Search by title or tag..."
-            ></SearchBar>
-          </div>
+          if (!source || canceled || !target) {
+            return;
+          }
 
-          <UserStoryCardColumn
-            userStories={
-              filteredUnassignedStories
-                .map(
-                  (userStoryId) =>
-                    userStoriesBySprint?.userStories[userStoryId],
-                )
-                .filter((val) => val !== undefined) ?? []
-            }
-            isLoading={isLoading}
-            selection={selectedUserStories}
-            setSelection={setSelectedUserStories}
-            setDetailId={setDetailUserStoryId}
-            setShowDetail={setShowDetail}
-            header={
-              <div className="flex items-center justify-between pb-2 pr-1">
-                <span>Unassigned items</span>
-                <button
-                  className={cn("rounded-lg px-1 text-app-text transition", {
-                    "text-app-secondary":
-                      filteredUnassignedStories.length > 0 &&
-                      allUnassignedSelected,
-                  })}
-                  onClick={toggleSelectAllUnassigned}
-                >
-                  {allUnassignedSelected ? (
-                    <CheckNone fontSize="small" />
-                  ) : (
-                    <CheckAll fontSize="small" />
-                  )}
-                </button>
-              </div>
-            }
-          />
-          <div
-            className={cn(
-              "pointer-events-none absolute bottom-0 left-0 flex w-full p-3 opacity-0 transition",
-              {
-                "pointer-events-auto opacity-100": availableToBeAssignedTo,
-              },
-            )}
-          >
-            <PrimaryButton
-              className="mr-5 flex-1"
-              onClick={() => assignSelectionToSprint("")}
+          await handleDragEnd(source.id as string, target.id as string);
+        }}
+      >
+        <div className="flex h-full overflow-hidden">
+          <div className="relative flex h-full w-[407px] min-w-[407px] flex-col overflow-hidden border-r-2 pr-5">
+            <div className="flex w-full justify-between pb-4">
+              <h1 className="text-3xl font-semibold">Product Backlog</h1>
+              <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
+            </div>
+
+            <div className="flex w-full items-center gap-3 pb-4">
+              <SearchBar
+                searchValue={searchValue}
+                handleUpdateSearch={(e) => setSearchValue(e.target.value)}
+                placeholder="Search by title or tag..."
+              ></SearchBar>
+            </div>
+
+            <UserStoryCardColumn
+              lastDraggedUserStoryId={lastDraggedUserStoryId}
+              dndId={noSprintId}
+              userStories={
+                filteredUnassignedStories
+                  .map(
+                    (userStoryId) =>
+                      userStoriesBySprint?.userStories[userStoryId],
+                  )
+                  .filter((val) => val !== undefined) ?? []
+              }
+              isLoading={isLoading}
+              selection={selectedUserStories}
+              setSelection={setSelectedUserStories}
+              setDetailId={setDetailUserStoryId}
+              setShowDetail={setShowDetail}
+              header={
+                <div className="flex items-center justify-between pb-2 pr-1">
+                  <span className="text-xl font-medium">Unassigned items</span>
+                  <button
+                    className={cn("rounded-lg px-1 text-app-text transition", {
+                      "text-app-secondary":
+                        filteredUnassignedStories.length > 0 &&
+                        allUnassignedSelected,
+                    })}
+                    onClick={toggleSelectAllUnassigned}
+                  >
+                    {allUnassignedSelected ? (
+                      <CheckNone fontSize="small" />
+                    ) : (
+                      <CheckAll fontSize="small" />
+                    )}
+                  </button>
+                </div>
+              }
+            />
+            <div
+              className={cn(
+                "pointer-events-none absolute bottom-0 left-0 flex w-full p-3 opacity-0 transition",
+                {
+                  "pointer-events-auto opacity-100": availableToBeAssignedTo,
+                },
+              )}
             >
-              Unassign selection
-            </PrimaryButton>
+              <PrimaryButton
+                className="mr-5 flex-1"
+                onClick={() => assignSelectionToSprint("")}
+              >
+                Unassign selection
+              </PrimaryButton>
+            </div>
+          </div>
+          <div className="ml-5 flex h-full grow flex-col overflow-x-hidden">
+            <div className="flex w-full justify-between gap-5 pb-4">
+              <h1 className="text-3xl font-semibold">Sprints</h1>
+              <PrimaryButton
+                onClick={() => {
+                  setShowSmallPopup(true);
+                }}
+              >
+                + Add Sprint
+              </PrimaryButton>
+            </div>
+            <div className="flex w-full flex-1 gap-4 overflow-x-scroll">
+              {isLoading && (
+                <div className="flex h-full w-full items-center justify-center">
+                  <LoadingSpinner color="primary" />
+                </div>
+              )}
+              {userStoriesBySprint?.sprints.map((column) => (
+                <SprintCardColumn
+                  lastDraggedUserStoryId={lastDraggedUserStoryId}
+                  assignSelectionToSprint={assignSelectionToSprint}
+                  column={column}
+                  userStories={userStoriesBySprint.userStories}
+                  key={column.sprint.id}
+                  selectedUserStories={selectedUserStories}
+                  setSelectedUserStories={setSelectedUserStories}
+                  setDetailUserStoryId={setDetailUserStoryId}
+                  setShowDetail={setShowDetail}
+                />
+              ))}
+            </div>
           </div>
         </div>
-        <div className="ml-5 flex h-full grow flex-col overflow-x-hidden">
-          <div className="flex w-full justify-between gap-5 pb-4">
-            <h1 className="text-3xl font-semibold">Sprints</h1>
-            <PrimaryButton
-              onClick={() => {
-                setShowSmallPopup(true);
-              }}
-            >
-              + Add Sprint
-            </PrimaryButton>
-          </div>
-          <div className="flex w-full flex-1 gap-4 overflow-x-scroll">
-            {isLoading && (
-              <div className="flex h-full w-full items-center justify-center">
-                <LoadingSpinner color="primary" />
-              </div>
-            )}
-            {userStoriesBySprint?.sprints.map((column) => (
-              <SprintCardColumn
-                assignSelectionToSprint={assignSelectionToSprint}
-                column={column}
-                userStories={userStoriesBySprint.userStories}
-                key={column.sprint.id}
-                selectedUserStories={selectedUserStories}
-                setSelectedUserStories={setSelectedUserStories}
-                setDetailUserStoryId={setDetailUserStoryId}
-                setShowDetail={setShowDetail}
+
+        <DragOverlay>
+          {(source) => {
+            const userStoryId = source.id as string;
+            if (!userStoryId) return null;
+            const draggingUserStory =
+              userStoriesBySprint?.userStories[userStoryId];
+            if (!draggingUserStory) return null;
+            return (
+              <UserStoryCardRender
+                userStory={draggingUserStory}
+                showBackground={true}
               />
-            ))}
-          </div>
-        </div>
-      </div>
+            );
+          }}
+        </DragOverlay>
+      </DragDropProvider>
+
       {renderDetail && (
         <UserStoryDetailPopup
           setShowDetail={setShowDetail}

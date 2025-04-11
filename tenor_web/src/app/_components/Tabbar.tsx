@@ -21,15 +21,15 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
 
   // TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
   const tabs = [
-    { title: mainPageName ?? "Overview", link: "/" },
-    { title: "Requirements", link: "/requirements" },
-    { title: "User Stories", link: "/user-stories" },
-    { title: "Issues", link: "/issues" },
-    { title: "Sprints", link: "/sprints" },
-    { title: "Kanban", link: "/kanban" },
-    { title: "Calendar", link: "/calendar" },
-    { title: "Performance", link: "/performance" },
-    { title: "Project Settings", link: "/project-settings" },
+    { title: mainPageName ?? "Overview", link: "/", enabled: true },
+    { title: "Requirements", link: "/requirements", enabled: true },
+    { title: "User Stories", link: "/user-stories", enabled: true },
+    { title: "Issues", link: "/issues", enabled: false },
+    { title: "Sprints", link: "/sprints", enabled: true },
+    { title: "Kanban", link: "/kanban", enabled: false },
+    { title: "Calendar", link: "/calendar", enabled: false },
+    { title: "Performance", link: "/performance", enabled: false },
+    { title: "Project Settings", link: "/project-settings", enabled: true },
   ];
 
   const handleClick: MouseEventHandler = (e) => {
@@ -41,15 +41,15 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
 
   return (
     <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-scroll whitespace-nowrap bg-app-primary px-8">
-      {tabs.map(({ title, link }, i) => (
+      {tabs.map(({ title, link, enabled }, i) => (
         <Link
           key={i}
           className={cn(
             "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
             {
               "bg-white text-app-primary": link === cutPathname,
-              "pointer-events-none text-gray-300":
-                disabled && link !== cutPathname,
+              "pointer-events-none opacity-50":
+                !enabled || (disabled && link !== cutPathname),
             },
           )}
           href={projectPath + link}

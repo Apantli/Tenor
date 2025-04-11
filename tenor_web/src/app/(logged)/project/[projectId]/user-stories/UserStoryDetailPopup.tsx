@@ -2,7 +2,10 @@
 
 import React, { useEffect, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
-import Popup from "~/app/_components/Popup";
+import Popup, {
+  SidebarPopup,
+  usePopupVisibilityState,
+} from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
@@ -22,8 +25,10 @@ import {
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
-import type { TaskPreview, UserPreview } from "~/lib/types/detailSchemas";
+import type { TaskPreview } from "~/lib/types/detailSchemas";
 import type { Tag } from "~/lib/types/firebaseSchemas";
+import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
+import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
 
 interface Props {
   userStoryId: string;
@@ -82,6 +87,14 @@ export default function UserStoryDetailPopup({
     acceptanceCriteria: "",
   });
   const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
+  const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
+    usePopupVisibilityState();
+  const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
+    usePopupVisibilityState();
+
+  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
+    undefined,
+  );
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { predefinedAlerts } = useAlert();
@@ -421,6 +434,9 @@ export default function UserStoryDetailPopup({
             itemId={userStoryId}
             itemType="US"
             onTaskStatusChange={handleTaskStatusChange}
+            setShowAddTaskPopup={setShowCreateTaskPopup}
+            setSelectedTaskId={setSelectedTaskId}
+            setShowTaskDetail={setShowTaskDetail}
           />
         </div>
       )}
@@ -428,6 +444,27 @@ export default function UserStoryDetailPopup({
         <div className="flex h-full w-full items-center justify-center">
           <LoadingSpinner color="primary" />
         </div>
+      )}
+
+      {renderCreateTaskPopup && (
+        <SidebarPopup
+          show={showCreateTaskPopup}
+          dismiss={() => setShowCreateTaskPopup(false)}
+        >
+          <CreateTaskForm
+            itemId={userStoryId}
+            itemType="US"
+            onTaskAdded={() => setShowCreateTaskPopup(false)}
+          />
+        </SidebarPopup>
+      )}
+      {renderTaskDetailPopup && selectedTaskId && (
+        <TaskDetailPopup
+          taskId={selectedTaskId}
+          userStoryId={userStoryId}
+          showDetail={showTaskDetail}
+          setShowDetail={setShowTaskDetail}
+        />
       )}
     </Popup>
   );

@@ -4,17 +4,18 @@ import React, { useState } from "react";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
-import { type Option, EditableBox } from "~/app/_components/EditableBox/EditableBox";
+import {
+  type Option,
+  EditableBox,
+} from "~/app/_components/EditableBox/EditableBox";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import PillComponent from "~/app/_components/PillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { type Size, type Tag } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
-import { WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -22,17 +23,16 @@ interface Props {
   itemId: string;
 }
 
-export function CreateTaskForm({
-  onTaskAdded,
-  itemType,
-  itemId,
-}: Props) {
+export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
   const { projectId } = useParams();
   const projectIdString = projectId as string;
 
-  const { data: users, isLoading } = api.users.getUserListEdiBox.useQuery({projectId : projectIdString});
+  const { data: users, isLoading } = api.users.getUserListEdiBox.useQuery({
+    projectId: projectIdString,
+  });
 
-  const { mutateAsync: createTask, isPending } = api.tasks.createTask.useMutation();
+  const { mutateAsync: createTask, isPending } =
+    api.tasks.createTask.useMutation();
 
   const utils = api.useUtils();
   const { alert } = useAlert();
@@ -53,7 +53,9 @@ export function CreateTaskForm({
     dueDate: undefined,
   });
 
-  const [selectedAssignee, setSelectedAssignee] = useState<Option | undefined>();
+  const [selectedAssignee, setSelectedAssignee] = useState<
+    Option | undefined
+  >();
   const people: Option[] = users ?? [];
 
   const handleCreateTask = async () => {
@@ -92,14 +94,16 @@ export function CreateTaskForm({
   };
 
   return (
-    <div className="p-2 max-w-2xl">
-      <h2 className="text-2xl font-semibold mb-4">Add New Task</h2>
+    <div className="max-w-2xl p-2 pt-0">
+      <h2 className="mb-4 text-2xl font-semibold">Add New Task</h2>
       <div className="flex flex-col gap-2">
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Task Name</label>
           <InputTextField
             value={createForm.name}
-            onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+            onChange={(e) =>
+              setCreateForm({ ...createForm, name: e.target.value })
+            }
             placeholder="Enter task name..."
             required
             className="w-full"
@@ -110,13 +114,15 @@ export function CreateTaskForm({
           <label className="mb-1 block text-sm font-medium">Notes</label>
           <InputTextAreaField
             value={createForm.description}
-            onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
+            onChange={(e) =>
+              setCreateForm({ ...createForm, description: e.target.value })
+            }
             placeholder="Task description"
             className="h-24 min-h-24 w-full"
           />
         </div>
 
-        <div className="flex gap-3 mb-2">
+        <div className="mb-2 flex gap-3">
           <div className="flex-1">
             <label className="mb-1 block text-sm font-medium">Status</label>
             <StatusPicker
@@ -142,7 +148,10 @@ export function CreateTaskForm({
             selectedOption={selectedAssignee}
             onChange={(person) => {
               setSelectedAssignee(person ?? undefined);
-              setCreateForm({ ...createForm, assignee: person?.id?.toString() ?? undefined });
+              setCreateForm({
+                ...createForm,
+                assignee: person?.id?.toString() ?? undefined,
+              });
             }}
             placeholder="Select a person"
             className="w-full"
@@ -154,7 +163,7 @@ export function CreateTaskForm({
           <DatePicker
             selectedDate={createForm.dueDate}
             onChange={(date) => {
-              setCreateForm({ ...createForm, dueDate: date ?? undefined});
+              setCreateForm({ ...createForm, dueDate: date ?? undefined });
             }}
             placeholder="Select a due date"
             className="w-full"
@@ -174,4 +183,3 @@ export function CreateTaskForm({
     </div>
   );
 }
-
