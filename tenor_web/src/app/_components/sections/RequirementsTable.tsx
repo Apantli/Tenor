@@ -129,23 +129,30 @@ export default function RequirementsTable() {
     console.log(response);
   };
 
-  const handleEditRequirement = async (requirement: RequirementCol) => {
-    const { name, description } = editForm;
+  const handleEditRequirement = async (requirement: RequirementCol, checkValues = true) => {
+    let { name, description } = editForm;
     const { priorityId, requirementTypeId, requirementFocusId, scrumId } =
       requirement;
-    if (!name) {
-      alert("Oops...", "Requirement Name must have a value.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
-      return;
+    if (checkValues) {
+      if (!name) {
+        alert("Oops...", "Requirement Name must have a value.", {
+          type: "error",
+          duration: 5000, // time in ms (5 seconds)
+        });
+        return;
+      }
+      if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
+        alert("Oops...", "All Properties must have a value.", {
+          type: "error",
+          duration: 5000, // time in ms (5 seconds)
+        });
+        return;
+      }
     }
-    if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
-      alert("Oops...", "All Properties must have a value.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
-      return;
+
+    if (!name || !description) {
+      name = requirement.name ?? "";
+      description = requirement.description;
     }
     // Unwrap values
     const unwrappedPriorityId = priorityId.id;
@@ -156,9 +163,9 @@ export default function RequirementsTable() {
       projectId: projectId as string,
       name,
       description,
-      priorityId: unwrappedPriorityId,
-      requirementTypeId: unwrappedRequirementTypeId,
-      requirementFocusId: unwrappedRequirementFocusId,
+      priorityId: unwrappedPriorityId ?? "",
+      requirementTypeId: unwrappedRequirementTypeId ?? "",
+      requirementFocusId: unwrappedRequirementFocusId ?? "",
       scrumId,
       deleted: false,
     };
@@ -297,7 +304,7 @@ export default function RequirementsTable() {
                   await handleEditRequirement({
                     ...row,
                     priorityId: tag,
-                  });
+                  }, false);
               }}
             />
           );
@@ -335,7 +342,7 @@ export default function RequirementsTable() {
                   await handleEditRequirement({
                     ...row,
                     requirementTypeId: requirementTypeId,
-                  });
+                  }, false);
               }}
             />
           );
@@ -373,7 +380,7 @@ export default function RequirementsTable() {
                   await handleEditRequirement({
                     ...row,
                     requirementFocusId: requirementFocusId,
-                  });
+                  }, false);
               }}
             />
           );
