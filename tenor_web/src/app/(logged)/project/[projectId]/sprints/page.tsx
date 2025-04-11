@@ -39,6 +39,10 @@ export default function ProjectSprints() {
   const [selectedUserStories, setSelectedUserStories] = useState<Set<string>>(
     new Set(),
   );
+  // Drag and drop state
+  const [lastDraggedUserStoryId, setLastDraggedUserStoryId] = useState<
+    string | null
+  >(null);
 
   const { data: defaultSprintDuration, isLoading: isLoadingSprintDuration } =
     api.projects.fetchDefaultSprintDuration.useQuery({
@@ -199,6 +203,7 @@ export default function ProjectSprints() {
   };
 
   const assignSelectionToSprint = async (sprintId: string) => {
+    setLastDraggedUserStoryId(null);
     const userStoryIds = Array.from(selectedUserStories);
     const userStories = userStoriesBySprint?.userStories;
     if (!userStories) return;
@@ -309,9 +314,6 @@ export default function ProjectSprints() {
 
   //// Drag and drop operations
   let dndOperationsInProgress = 0;
-  const [lastDraggedUserStoryId, setLastDraggedUserStoryId] = useState<
-    string | null
-  >(null);
 
   // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (userStoryId: string, sprintId: string) => {
@@ -443,7 +445,7 @@ export default function ProjectSprints() {
         }}
       >
         <div className="flex h-full overflow-hidden">
-          <div className="relative flex h-full w-[420px] min-w-[420px] flex-col overflow-hidden border-r-2 pr-5">
+          <div className="relative flex h-full w-[407px] min-w-[407px] flex-col overflow-hidden border-r-2 pr-5">
             <div className="flex w-full justify-between pb-4">
               <h1 className="text-3xl font-semibold">Product Backlog</h1>
               <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
@@ -551,7 +553,10 @@ export default function ProjectSprints() {
               userStoriesBySprint?.userStories[userStoryId];
             if (!draggingUserStory) return null;
             return (
-              <UserStoryCardRender userStory={draggingUserStory} showBackground={true} />
+              <UserStoryCardRender
+                userStory={draggingUserStory}
+                showBackground={true}
+              />
             );
           }}
         </DragOverlay>
