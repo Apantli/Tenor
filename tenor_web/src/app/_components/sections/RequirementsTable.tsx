@@ -16,7 +16,8 @@ import PriorityPicker from "../specific-pickers/PriorityPicker";
 import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
 import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 import SearchBar from "../SearchBar";
-import{ UseFormatForAssignReqTypeScrumId }from "~/app/_hooks/requirementHook";
+import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
+import LoadingSpinner from "../LoadingSpinner";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -125,11 +126,11 @@ export default function RequirementsTable() {
 
   const getTable = () => {
     if (requirements == undefined || isLoadingRequirements) {
-      return <div>Loading...</div>;
-    }
-
-    if (requirementsData?.length == 0) {
-      return <div>No Requirements found</div>;
+      return (
+        <div className="flex h-full w-full flex-1 items-start justify-center p-10">
+          <LoadingSpinner color="primary" />
+        </div>
+      );
     }
 
     const tableColumns: TableColumns<RequirementCol> = {
@@ -141,7 +142,10 @@ export default function RequirementsTable() {
         render(row) {
           return (
             <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
-              {UseFormatForAssignReqTypeScrumId(row.requirementTypeId.name, row.scrumId)}
+              {UseFormatForAssignReqTypeScrumId(
+                row.requirementTypeId.name,
+                row.scrumId,
+              )}
             </button>
           );
         },
@@ -235,6 +239,7 @@ export default function RequirementsTable() {
         className={cn("w-full", heightOfContent)}
         data={requirementsData}
         columns={tableColumns}
+        emptyMessage="No requirements found"
         multiselect
         deletable
         onDelete={(ids) => console.log("Deleted", ids)}
@@ -247,13 +252,13 @@ export default function RequirementsTable() {
       <div className="flex w-full justify-between">
         <h2 className="text-3xl font-semibold">Requirements</h2>
         <div className="flex w-3/4 items-center justify-end gap-2">
-          <div className="w-1/3 p-2"> 
+          <div className="w-1/3 p-2">
             <SearchBar
               placeholder="Search..."
               searchValue={searchValue}
               handleUpdateSearch={(e) => setSearchValue(e.target.value)}
-              />
-        </div>
+            />
+          </div>
           <PrimaryButton
             onClick={() => {
               setShowSmallPopup(true);
