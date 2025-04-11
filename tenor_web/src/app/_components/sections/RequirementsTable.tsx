@@ -18,6 +18,7 @@ import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
 import DeleteButton from "../buttons/DeleteButton";
 import Markdown from "react-markdown";
 import LoadingSpinner from "../LoadingSpinner";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -71,6 +72,8 @@ export default function RequirementsTable() {
       [name]: value,
     }));
   };
+
+  const confirm = useConfirmation();
 
   const { alert } = useAlert();
   const { mutateAsync: createOrModifyRequirement, isPending } =
@@ -126,23 +129,30 @@ export default function RequirementsTable() {
     console.log(response);
   };
 
-  const handleEditRequirement = async (requirement: RequirementCol) => {
-    const { name, description } = editForm;
+  const handleEditRequirement = async (requirement: RequirementCol, checkValues = true) => {
+    let { name, description } = editForm;
     const { priorityId, requirementTypeId, requirementFocusId, scrumId } =
       requirement;
-    if (!name) {
-      alert("Oops...", "Requirement Name must have a value.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
-      return;
+    if (checkValues) {
+      if (!name) {
+        alert("Oops...", "Requirement Name must have a value.", {
+          type: "error",
+          duration: 5000, // time in ms (5 seconds)
+        });
+        return;
+      }
+      if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
+        alert("Oops...", "All properties must have a value.", {
+          type: "error",
+          duration: 5000, // time in ms (5 seconds)
+        });
+        return;
+      }
     }
-    if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
-      alert("Oops...", "All Properties must have a value.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
-      return;
+
+    if (!name || !description) {
+      name = requirement.name ?? "";
+      description = requirement.description;
     }
     // Unwrap values
     const unwrappedPriorityId = priorityId.id;
@@ -153,9 +163,9 @@ export default function RequirementsTable() {
       projectId: projectId as string,
       name,
       description,
-      priorityId: unwrappedPriorityId,
-      requirementTypeId: unwrappedRequirementTypeId,
-      requirementFocusId: unwrappedRequirementFocusId,
+      priorityId: unwrappedPriorityId ?? "",
+      requirementTypeId: unwrappedRequirementTypeId ?? "",
+      requirementFocusId: unwrappedRequirementFocusId ?? "",
       scrumId,
       deleted: false,
     };
@@ -183,11 +193,33 @@ export default function RequirementsTable() {
     projectId: params.projectId as string,
   });
 
+  const { mutateAsync: deleteRequirement } =
+    api.requirements.deleteRequirement.useMutation();
+
   useEffect(() => {
     if (requirements) {
-      setRequirementsData(requirements.fixedData);
+      const query = searchValue.toLowerCase();
+
+      const filtered = requirements.fixedData.filter((req) => {
+        const name = req.name?.toLowerCase() ?? "";
+        const description = req.description.toLowerCase();
+    
+        // Asegúrate de que este hook devuelve un string consistente
+        const formattedScrumText =
+          UseFormatForAssignReqTypeScrumId(
+            req.requirementTypeId.name,
+            req.scrumId,
+          ).toLowerCase();
+    
+        return (
+          name.includes(query) ||
+          description.includes(query) ||
+          formattedScrumText.includes(query)
+        );
+      });
+      setRequirementsData(filtered);
     }
-  }, [requirements]);
+  }, [requirements, searchValue]);
 
   const table = useMemo(() => {
     if (requirements == undefined || isLoadingRequirements) {
@@ -203,7 +235,7 @@ export default function RequirementsTable() {
       scrumId: {
         label: "Id",
         width: 80,
-        sortable: false,
+        sortable: true,
         render(row) {
           return (
             <button
@@ -225,7 +257,7 @@ export default function RequirementsTable() {
       name: {
         label: "Title",
         width: 450,
-        sortable: false,
+        sortable: true,
         render(row) {
           return (
             <button
@@ -247,82 +279,158 @@ export default function RequirementsTable() {
       priorityId: {
         label: "Priority",
         width: 120,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.priorityId?.name ?? "";
+        },
+        sorter(a, b) {
+          if (!a.priorityId && !b.priorityId) return 0;
+          if (!a.priorityId) return -1;
+          if (!b.priorityId) return 1;
+          return a.priorityId?.name.localeCompare(b.priorityId?.name);
+        },
         render(row) {
           return (
-            <span className="flex w-32 justify-start">
-              <PriorityPicker
-                priority={row.priorityId}
-                // FIXME: Change value in DB
-                onChange={async (tag: Tag) => {
-                  setRequirementsData((prevData) =>
-                    prevData.map((item) =>
-                      item.id === row.id ? { ...item, priorityId: tag } : item,
-                    ),
-                  );
+            <PriorityPicker
+              priority={row.priorityId}
+              onChange={async (tag: Tag) => {
+                setRequirementsData((prevData) =>
+                  prevData.map((item) =>
+                    item.id === row.id ? { ...item,priorityId: tag } : item,
+                  ),
+                );
                   await handleEditRequirement({
                     ...row,
                     priorityId: tag,
-                  });
-                }}
-              />
-            </span>
+                  }, false);
+              }}
+            />
           );
         },
       },
       requirementTypeId: {
         label: "Req. Type",
         width: 220,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.requirementTypeId?.name ?? "";
+        },
+        sorter(a, b) {
+          if (!a.requirementTypeId && !b.requirementTypeId) return 0;
+          if (!a.requirementTypeId) return -1;
+          if (!b.requirementTypeId) return 1;
+          return a.requirementTypeId?.name.localeCompare(
+            b.requirementTypeId?.name,
+          );
+        },
         render(row) {
           return (
-            <span className="flex w-full justify-start">
-              <RequirementTypePicker
-                type={row.requirementTypeId}
-                // FIXME: Change value in DB
-                onChange={async (requirementTypeId) => {
-                  setRequirementsData((prevData) =>
-                    prevData.map((item) =>
-                      item.id === row.id
-                        ? { ...item, requirementTypeId: requirementTypeId }
-                        : item,
-                    ),
-                  );
+            <RequirementTypePicker
+              type={row.requirementTypeId}
+              onChange={async (requirementTypeId) => {
+                setRequirementsData((prevData) =>
+                  prevData.map((item) =>
+                    item.id === row.id
+                      ? { ...item, requirementTypeId:requirementTypeId }
+                      : item,
+                  ),
+                );
                   await handleEditRequirement({
                     ...row,
                     requirementTypeId: requirementTypeId,
-                  });
-                }}
-              />
-            </span>
+                  }, false);
+              }}
+            />
           );
         },
       },
       requirementFocusId: {
         label: "Req. Focus",
         width: 250,
+        sortable: true,
+        filterable: "list",
+        filterValue(row) {
+          return row.requirementFocusId?.name ?? "";
+        },
+        sorter(a, b) {
+          if (!a.requirementFocusId && !b.requirementFocusId) return 0;
+          if (!a.requirementFocusId) return -1;
+          if (!b.requirementFocusId) return 1;
+          return a.requirementFocusId?.name.localeCompare(
+            b.requirementFocusId?.name,
+          );
+        },
         render(row) {
           return (
-            <span className="flex w-full justify-start">
-              <RequirementFocusPicker
-                focus={row.requirementFocusId}
-                // FIXME: Change value in DB
-                onChange={async (requirementFocusId) => {
-                  setRequirementsData((prevData) =>
-                    prevData.map((item) =>
-                      item.id === row.id
-                        ? { ...item, requirementFocusId: requirementFocusId }
-                        : item,
-                    ),
-                  );
+            <RequirementFocusPicker
+              focus={row.requirementFocusId}
+              onChange={async (requirementFocusId) => {
+                setRequirementsData((prevData) =>
+                  prevData.map((item) =>
+                    item.id === row.id
+                      ? { ...item, requirementFocusId:requirementFocusId }
+                      : item,
+                  ),
+                );
                   await handleEditRequirement({
                     ...row,
                     requirementFocusId: requirementFocusId,
-                  });
-                }}
-              />
-            </span>
+                  }, false);
+              }}
+            />
           );
         },
       },
+    };
+
+    const handleDelete = async (
+      ids: string[],
+      callback: (del: boolean) => void,
+    ) => {
+      const confirmMessage = ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
+      if (
+        !(await confirm(
+          `Are you sure you want to ${confirmMessage}`,
+          'This action cannot be undone',
+          'Delete',
+        ))
+      ) {
+        callback(false);
+        return;
+      }
+      callback(true); // call the callback as soon as posible
+
+      const newData = requirementsData.filter(
+        (item) => !ids.includes(item.id),
+      );
+
+      await utils.requirements.getRequirementsTableFriendly.cancel({
+        projectId: params.projectId as string,
+      });
+      utils.requirements.getRequirementsTableFriendly.setData(
+        { projectId: params.projectId as string },
+        (prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            fixedData: newData,
+          };
+        },
+      )
+
+      //Deletes in database
+      await Promise.all(
+        ids.map((id) =>
+          deleteRequirement({
+            projectId: params.projectId as string,
+            requirementId: id,
+          }),
+        ),
+      );
+      await refetchRequirements();
+      return true;
     };
 
     return (
@@ -330,10 +438,10 @@ export default function RequirementsTable() {
         className={cn("w-full", heightOfContent)}
         data={requirementsData}
         columns={tableColumns}
+        onDelete={handleDelete}
         emptyMessage="No requirements found"
         multiselect
         deletable
-        onDelete={(ids) => console.log("Deleted", ids)}
       />
     );
   }, [requirementsData, isLoadingRequirements]);
@@ -341,7 +449,7 @@ export default function RequirementsTable() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex w-full justify-between">
-        <h2 className="text-3xl font-semibold">Requirements</h2>
+        <h2 className="text-3xl font-semibold content-center">Requirements</h2>
         <div className="flex w-3/4 items-center justify-end gap-2">
           <div className="w-1/3 p-2">
             <SearchBar

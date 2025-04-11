@@ -34,8 +34,10 @@ const getRequirementsFromProject = async (
 
   const requirements: WithId<Requirement>[] = [];
   requirementsSnapshot.forEach((doc) => {
-    const requirement = { id: doc.id, ...(doc.data() as Requirement) };
-    requirements.push(requirement);
+    const data = doc.data() as Requirement;
+    if (data.deleted !== true) {
+      requirements.push({ id: doc.id, ...data });
+    }
   });
   return requirements;
 };
@@ -308,5 +310,29 @@ export const requirementsRouter = createTRPCRouter({
         await requirementsRef.add(input);
         return "Requirement created successfully";
       }
+    }),
+  
+  deleteRequirement: protectedProcedure
+  
+    .input(
+      z.object({ 
+        projectId: z.string(), 
+        requirementId: z.string() 
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const requirementsRef = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("requirements")
+        .doc(input.requirementId);
+
+      const requirementDoc = await requirementsRef.get();
+      if (!requirementDoc.exists) {
+        throw new Error("Requirement not found");
+      }
+
+      await requirementsRef.update({ deleted: true});
+      return { success: true };
     }),
 });
