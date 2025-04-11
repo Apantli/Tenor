@@ -35,15 +35,15 @@ const emptySettings: Settings = {
   // roles: [],
 };
 
-export const emptyRequeriment = (): Requirement  => ({
-    name: "",
-    description: "",
-    priorityId: "",
-    requirementTypeId: "",
-    requirementFocusId: "",
-    size: "M",
-    scrumId: 0,
-    deleted: false,
+export const emptyRequeriment = (): Requirement => ({
+  name: "",
+  description: "",
+  priorityId: "",
+  requirementTypeId: "",
+  requirementFocusId: "",
+  size: "M",
+  scrumId: 0,
+  deleted: false,
 });
 
 export const createEmptyProject = (): Project => {
@@ -104,21 +104,16 @@ const fetchUserProjects = async (
     }
 
     const userData = querySnapshot.docs[0]?.data() as User;
-    console.log("User data from Firestore:", userData);
 
     if (!userData.projectIds || userData.projectIds.length === 0) {
       console.log("No projects assigned for user", uid);
       return [];
     }
 
-    console.log("Project references (string) for user:", userData.projectIds);
-
     // Transform the string to a DocumentReference
     const assignProjectRefs = userData.projectIds.map(
       (projectPath) => dbAdmin.doc(`projects/${projectPath}`), // Use dbAdmin.doc
     );
-
-    console.log("Converted project references:", assignProjectRefs);
 
     const projectResults = await Promise.all(
       assignProjectRefs.map(async (projectRef) => {
@@ -131,7 +126,8 @@ const fetchUserProjects = async (
     );
 
     const projects: WithId<Project>[] = projectResults.filter(
-      (project): project is WithId<Project> => project !== null,
+      (project): project is WithId<Project> =>
+        project !== null && project.deleted === false,
     );
 
     if (projects.length === 0) {

@@ -184,6 +184,7 @@ export default function ProjectGeneralSettings() {
                     await deleteProject({
                       projectId: projectId as string,
                     });
+                    await utils.projects.listProjects.invalidate();
                     router.push("/");
                   }
                 }}

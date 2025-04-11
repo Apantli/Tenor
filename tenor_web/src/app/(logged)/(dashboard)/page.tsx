@@ -10,11 +10,11 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 export default function ProjectPage() {
   return (
     <div className="flex h-full w-full flex-row">
-      <div className="w-1/2">
+      <div className="min-w-[350px] basis-1/2">
         <h1 className="mb-3 text-3xl font-semibold">Projects</h1>
         <ProjectList />
       </div>
-      <div className="w-full"></div>
+      <div className="flex-1"></div>
     </div>
   );
 }
@@ -79,26 +79,26 @@ function ProjectList() {
         />
         <CreateNewProject />
       </div>
-      <ul>
+      <ul className="h-[calc(100vh-250px)] overflow-y-scroll">
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
-              className="flex h-full flex-row justify-start border-b-2 py-[16px] hover:cursor-pointer"
+              className="flex max-w-full flex-row justify-start border-b-2 py-[16px] hover:cursor-pointer"
               key={project.id}
               onClick={() => handleOpenProject(project.id)}
             >
-              <div className="m-[10px] flex h-[80px] w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
+              <div className="m-[10px] h-[80px] w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
                 <img
                   className="h-full w-full rounded-md object-contain p-[4px]"
                   src={project.logo}
                   alt={project.name}
                 />
               </div>
-              <div className="ml-2 flex max-h-full w-full flex-col justify-start">
-                <h3 className="my-[7px] w-60 truncate text-lg font-semibold">
+              <div className="ml-2 flex flex-col justify-start">
+                <h3 className="my-[7px] max-w-[700px] truncate text-lg font-semibold">
                   {project.name}
                 </h3>
-                <p className="max-w-full truncate text-base">
+                <p className="line-clamp-2 max-w-[700px] text-base">
                   {project.description}
                 </p>
               </div>
