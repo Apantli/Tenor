@@ -1,14 +1,12 @@
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { Size, Tag } from "~/lib/types/firebaseSchemas";
-import { RequirementCol } from "~/server/api/routers/requirements";
+import { useEffect, useMemo, useState } from "react";
+import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { RequirementCol } from "~/server/api/routers/requirements";
 import { api } from "~/trpc/react";
-import Table, { TableColumns } from "../table/Table";
-import PillComponent from "../PillComponent";
+import Table, { type TableColumns } from "../table/Table";
 import { cn } from "~/lib/utils";
 import Popup, { usePopupVisibilityState } from "../Popup";
 import PrimaryButton from "../buttons/PrimaryButton";
-import PillPickerComponent from "../PillPickerComponent";
 import InputTextField from "../inputs/InputTextField";
 import InputTextAreaField from "../inputs/InputTextAreaField";
 import { useAlert } from "~/app/_hooks/useAlert";
@@ -16,11 +14,7 @@ import PriorityPicker from "../specific-pickers/PriorityPicker";
 import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
 import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 import SearchBar from "../SearchBar";
-import EditIcon from "@mui/icons-material/Edit";
-import { set } from "node_modules/cypress/types/lodash";
-import { Label } from "recharts";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
-import TagComponent from "../TagComponent";
 import DeleteButton from "../buttons/DeleteButton";
 import Markdown from "react-markdown";
 
@@ -34,7 +28,21 @@ export default function RequirementsTable() {
     usePopupVisibilityState();
   const [requirementEdited, setRequirementEdited] =
     useState<RequirementCol | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: "",
+    description: "",
+  });
   const [editingRequirement, setEditingRequirement] = useState(false);
+
+  useEffect(() => {
+    if (requirementEdited) {
+      setEditForm({
+        name: requirementEdited.name ?? "",
+        description: requirementEdited.description,
+      });
+      console.log("HERE");
+    }
+  }, [requirementEdited]);
 
   //Hooks
   const params = useParams();
@@ -118,14 +126,9 @@ export default function RequirementsTable() {
   };
 
   const handleEditRequirement = async (requirement: RequirementCol) => {
-    const {
-      priorityId,
-      requirementTypeId,
-      requirementFocusId,
-      name,
-      description,
-      scrumId,
-    } = requirement;
+    const { name, description } = editForm;
+    const { priorityId, requirementTypeId, requirementFocusId, scrumId } =
+      requirement;
     if (!name) {
       alert("Oops...", "Requirement Name must have a value.", {
         type: "error",
@@ -185,7 +188,7 @@ export default function RequirementsTable() {
     }
   }, [requirements]);
 
-  const getTable = () => {
+  const table = useMemo(() => {
     if (requirements == undefined || isLoadingRequirements) {
       return <div>Loading...</div>;
     }
@@ -331,7 +334,7 @@ export default function RequirementsTable() {
         onDelete={(ids) => console.log("Deleted", ids)}
       />
     );
-  };
+  }, [requirementsData, isLoadingRequirements]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -357,7 +360,7 @@ export default function RequirementsTable() {
           </PrimaryButton>
         </div>
       </div>
-      {getTable()}
+      {table}
       {renderSmallPopup && (
         <Popup
           show={showSmallPopup}
@@ -368,8 +371,8 @@ export default function RequirementsTable() {
             requirementEdited !== null
               ? async () => {
                   if (editingRequirement) {
-                    await handleEditRequirement(requirementEdited);
                     setEditingRequirement(false);
+                    await handleEditRequirement(requirementEdited);
                   } else {
                     setEditingRequirement(true);
                   }
@@ -433,20 +436,18 @@ export default function RequirementsTable() {
                   label="Title"
                   className="mb-4 h-12"
                   value={
-                    requirementEdited
-                      ? requirementEdited.name
-                      : newRequirement.name
+                    requirementEdited ? editForm.name : newRequirement.name
                   }
-                  onChange={
-                    requirementEdited
-                      ? (e) => {
-                          setRequirementEdited((prev) => ({
-                            ...prev!,
-                            name: e.target.value,
-                          }));
-                        }
-                      : handleChange
-                  }
+                  onChange={(e) => {
+                    if (requirementEdited) {
+                      setEditForm((prev) => ({
+                        ...prev,
+                        name: e.target.value,
+                      }));
+                    } else {
+                      handleChange(e);
+                    }
+                  }}
                   name="name"
                   placeholder="Requirement title"
                 />
@@ -456,14 +457,14 @@ export default function RequirementsTable() {
                   className="min-h-[120px] w-full resize-none"
                   value={
                     requirementEdited
-                      ? requirementEdited.description
+                      ? editForm.description
                       : newRequirement.description
                   }
                   onChange={
                     requirementEdited
                       ? (e) => {
-                          setRequirementEdited((prev) => ({
-                            ...prev!,
+                          setEditForm((prev) => ({
+                            ...prev,
                             description: e.target.value,
                           }));
                         }
