@@ -335,7 +335,7 @@ export default function UserStoryList() {
     return (
       <Table
         emptyMessage="No user stories found"
-        className={cn("w-full", heightOfContent)}
+        className={cn("w-[calc(100vw-500px)] overflow-scroll", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}
         onDelete={handleDelete}
@@ -354,7 +354,7 @@ export default function UserStoryList() {
 
   return (
     <>
-      <div className="flex w-[calc(100%-300px)] flex-col items-start gap-3">
+      <div className="flex flex-1 flex-col items-start gap-3">
         <h1 className="text-3xl font-semibold">User Stories</h1>
 
         <div className="flex w-full items-center gap-3 pb-2">

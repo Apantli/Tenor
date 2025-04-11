@@ -3,13 +3,10 @@ import type { WithId, Tag } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { Task } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
-import {
-  TagSchema,
-  TaskSchema,
-} from "~/lib/types/zodFirebaseSchema";
+import { TagSchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import type { TaskDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
-
+import { timestampToDate } from "./sprints";
 
 export interface TaskCol {
   id: string;
@@ -48,39 +45,39 @@ export interface TaskCol {
 // };
 
 const getTasksFromItem = async (
-    dbAdmin: FirebaseFirestore.Firestore,
-    projectId: string,
-    itemId: string,
-  ) => {
-    const taskCollectionRef = dbAdmin
-      .collection(`projects/${projectId}/tasks`)
-      .where("deleted", "==", false)
-      .where("itemId", "==", itemId)
-      .orderBy("scrumId");
-    const snap = await taskCollectionRef.get();
-  
-    const docs = snap.docs.map((doc) => {
-      return {
-        id: doc.id,
-        ...doc.data(),
-      };
-    });
-  
-    const tasks: WithId<Task>[] = docs.filter(
-      (task): task is WithId<Task> => task !== null,
-    );
-  
-    return tasks;
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+  itemId: string,
+) => {
+  const taskCollectionRef = dbAdmin
+    .collection(`projects/${projectId}/tasks`)
+    .where("deleted", "==", false)
+    .where("itemId", "==", itemId)
+    .orderBy("scrumId");
+  const snap = await taskCollectionRef.get();
+
+  const docs = snap.docs.map((doc) => {
+    return {
+      id: doc.id,
+      ...doc.data(),
+    };
+  });
+
+  const tasks: WithId<Task>[] = docs.filter(
+    (task): task is WithId<Task> => task !== null,
+  );
+
+  return tasks;
 };
 
 const getStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
-  taskId: string,
+  statusId: string,
 ) => {
-  if (taskId === undefined) {
+  if (statusId === undefined || statusId === "") {
     return undefined;
   }
-  const tag = await settingsRef.collection("statusTypes").doc(taskId).get();
+  const tag = await settingsRef.collection("statusTypes").doc(statusId).get();
   if (!tag.exists) {
     return undefined;
   }
@@ -92,7 +89,7 @@ export const tasksRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
-        taskData: TaskSchema.omit({ scrumId: true , finishedDate: true}),
+        taskData: TaskSchema.omit({ scrumId: true }),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -123,7 +120,6 @@ export const tasksRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId, itemId } = input;
       const rawUs = await getTasksFromItem(ctx.firestore, projectId, itemId);
-
       // Transforming into table format
       const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
 
@@ -131,12 +127,14 @@ export const tasksRouter = createTRPCRouter({
         rawUs.map(async (task) => {
           let assignee = undefined;
           if (task.assigneeId !== undefined && task.assigneeId !== "") {
-            const assigneeData = await ctx.firebaseAdmin.auth().getUser(task.assigneeId);
+            const assigneeData = await ctx.firebaseAdmin
+              .auth()
+              .getUser(task.assigneeId);
             assignee = {
               uid: assigneeData.uid,
               displayName: assigneeData.displayName,
               photoURL: assigneeData.photoURL,
-            }
+            };
           }
           return {
             id: task.id,
@@ -152,9 +150,9 @@ export const tasksRouter = createTRPCRouter({
     }),
 
   getTaskDetail: protectedProcedure
-    .input(z.object({projectId: z.string(), taskId: z.string() }))
+    .input(z.object({ projectId: z.string(), taskId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Get the necessary information to construct the UserStoryDetail
+      // Get the necessary information to construct the Task Detail
 
       const { projectId, taskId } = input;
       const taskRef = ctx.firestore
@@ -168,27 +166,27 @@ export const tasksRouter = createTRPCRouter({
       }
 
       const taskData = TaskSchema.parse(task.data());
-      // Fetch all the task information for the user story in parallel
+      // Fetch all the task information for the task in parallel
 
       const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
 
       let statusTag = undefined;
       if (taskData.statusId !== undefined) {
-        statusTag = await getStatusTag(
-          settingsRef,
-          taskData.statusId,
-        );
+        statusTag = await getStatusTag(settingsRef, taskData.statusId);
       }
 
       let assignee = undefined;
-      if(taskData.assigneeId !== undefined) {
-        const userRef = await ctx.firebaseAdmin.auth().getUser(taskData.assigneeId);
+      if (taskData.assigneeId !== undefined && taskData.assigneeId !== "") {
+        const userRef = await ctx.firebaseAdmin
+          .auth()
+          .getUser(taskData.assigneeId);
         assignee = {
           uid: userRef.uid,
           displayName: userRef.displayName,
-          photoURL: userRef.photoURL,}
+          photoURL: userRef.photoURL,
+        };
       }
- 
+
       return {
         id: taskId,
         scrumId: taskData.scrumId,
@@ -197,7 +195,9 @@ export const tasksRouter = createTRPCRouter({
         status: statusTag,
         size: taskData.size,
         assignee: assignee,
-        dueDate: taskData.dueDate?.toDate(),
+        dueDate: taskData.dueDate
+          ? timestampToDate(taskData.dueDate)
+          : undefined,
       } as TaskDetail;
     }),
 
@@ -206,7 +206,12 @@ export const tasksRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         taskId: z.string(),
-        taskData: TaskSchema.omit({ scrumId: true, deleted: true }),
+        taskData: TaskSchema.omit({
+          scrumId: true,
+          deleted: true,
+          itemType: true,
+          itemId: true,
+        }),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -235,11 +240,11 @@ export const tasksRouter = createTRPCRouter({
         .doc(projectId)
         .collection("tasks")
         .doc(taskId);
-      await taskRef.update({statusId});
+      await taskRef.update({ statusId });
       return { success: true };
     }),
 
-    // deleted task 
+  // deleted task
   deleteTask: protectedProcedure
     .input(
       z.object({

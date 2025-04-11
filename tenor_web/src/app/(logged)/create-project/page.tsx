@@ -157,7 +157,7 @@ export default function ProjectCreator() {
           <Link href="/" className="font-semibold">
             Projects
           </Link>
-          <span>/ ProjectName</span>
+          <span>/ New Project</span>
         </div>
       </Navbar>
       <Tabbar disabled mainPageName="Project Creator" />

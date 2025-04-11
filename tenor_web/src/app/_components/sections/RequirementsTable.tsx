@@ -17,6 +17,7 @@ import SearchBar from "../SearchBar";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
 import DeleteButton from "../buttons/DeleteButton";
 import Markdown from "react-markdown";
+import LoadingSpinner from "../LoadingSpinner";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -190,11 +191,11 @@ export default function RequirementsTable() {
 
   const table = useMemo(() => {
     if (requirements == undefined || isLoadingRequirements) {
-      return <div>Loading...</div>;
-    }
-
-    if (requirementsData?.length == 0) {
-      return <div>No Requirements found</div>;
+      return (
+        <div className="flex h-full w-full flex-1 items-start justify-center p-10">
+          <LoadingSpinner color="primary" />
+        </div>
+      );
     }
 
     const tableColumns: TableColumns<RequirementCol> = {
@@ -329,6 +330,7 @@ export default function RequirementsTable() {
         className={cn("w-full", heightOfContent)}
         data={requirementsData}
         columns={tableColumns}
+        emptyMessage="No requirements found"
         multiselect
         deletable
         onDelete={(ids) => console.log("Deleted", ids)}
