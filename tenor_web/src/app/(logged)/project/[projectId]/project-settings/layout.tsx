@@ -47,7 +47,7 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
 
   return (
     <div className="flex h-[78vh] flex-row">
-      <div className="flex h-full w-[450px] flex-col border-r-2 pr-10">
+      <div className="flex h-full w-[450px] basis-1/4 flex-col border-r-2 pr-10">
         <h1 className="mb-5 text-3xl font-semibold">Project Settings</h1>
         {pages.map(({ title, link, icon: Icon }, i) => (
           <button
@@ -87,7 +87,7 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
           </button>
         ))}
       </div>
-      <div className="ml-10">
+      <div className="ml-10 flex-1 overflow-scroll">
         <ModificationContext.Provider value={{ setIsModified, isModified }}>
           {children}
         </ModificationContext.Provider>

@@ -84,7 +84,7 @@ export default function ProjectGeneralSettings() {
   }, [computeIsModified(), isModified]);
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
         <h1 className="mb-4 text-3xl font-semibold">General</h1>
         {project && computeIsModified() && (
@@ -127,7 +127,9 @@ export default function ProjectGeneralSettings() {
                   ? undefined
                   : icon
                     ? URL.createObjectURL(icon)
-                    : editForm.icon
+                    : editForm.icon.startsWith("/")
+                      ? editForm.icon
+                      : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
               }
               alt="Project logo"
               className="h-20 w-20"
@@ -152,7 +154,7 @@ export default function ProjectGeneralSettings() {
           <InputTextAreaField
             label="Project Description"
             labelClassName="text-lg font-bold"
-            className="mt-auto h-[230px] w-full"
+            className="mt-auto h-[115px] min-h-16 w-full"
             value={editForm.description}
             name="description"
             onChange={handleChange}
@@ -184,6 +186,7 @@ export default function ProjectGeneralSettings() {
                     await deleteProject({
                       projectId: projectId as string,
                     });
+                    await utils.projects.listProjects.invalidate();
                     router.push("/");
                   }
                 }}

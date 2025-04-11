@@ -25,12 +25,19 @@ export default function ProjectCreator() {
       reader.onerror = reject;
     });
 
+  const utils = api.useUtils();
+
   const router = useRouter();
   const { mutateAsync: createProject, isPending } =
     api.projects.createProject.useMutation();
 
   const { alert } = useAlert();
   const handleCreateProject = async () => {
+    // Block project creation if there is a pending request
+    if (isPending) {
+      return;
+    }
+
     if (!form.name) {
       alert("Oops...", "Project Name must have a value.", {
         type: "error",
@@ -78,6 +85,7 @@ export default function ProjectCreator() {
 
     if (response.success) {
       router.push(`/project/${response.projectId}`);
+      await utils.projects.listProjects.invalidate();
     } else {
       alert(
         "Oops...",

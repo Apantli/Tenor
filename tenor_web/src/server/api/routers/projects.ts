@@ -76,7 +76,6 @@ const fetchProjectData = async (
   dbAdmin: FirebaseFirestore.Firestore,
 ): Promise<Project | null> => {
   try {
-    console.log("Fetching project data for", projectRef.path);
     const projectSnapshot = await dbAdmin.doc(projectRef.path).get(); // Use adminDb.doc
 
     if (projectSnapshot.exists) {
@@ -104,21 +103,16 @@ const fetchUserProjects = async (
     }
 
     const userData = querySnapshot.docs[0]?.data() as User;
-    console.log("User data from Firestore:", userData);
 
     if (!userData.projectIds || userData.projectIds.length === 0) {
       console.log("No projects assigned for user", uid);
       return [];
     }
 
-    console.log("Project references (string) for user:", userData.projectIds);
-
     // Transform the string to a DocumentReference
     const assignProjectRefs = userData.projectIds.map(
       (projectPath) => dbAdmin.doc(`projects/${projectPath}`), // Use dbAdmin.doc
     );
-
-    console.log("Converted project references:", assignProjectRefs);
 
     const projectResults = await Promise.all(
       assignProjectRefs.map(async (projectRef) => {
@@ -131,14 +125,9 @@ const fetchUserProjects = async (
     );
 
     const projects: WithId<Project>[] = projectResults.filter(
-      (project): project is WithId<Project> => project !== null,
+      (project): project is WithId<Project> =>
+        project !== null && project.deleted === false,
     );
-
-    if (projects.length === 0) {
-      console.log("No projects found for user", uid);
-    } else {
-      console.log("Projects found for user", uid, projects);
-    }
 
     return projects;
   } catch (error) {
