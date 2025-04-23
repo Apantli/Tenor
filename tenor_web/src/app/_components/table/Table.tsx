@@ -12,12 +12,13 @@ import useShiftKey from "~/app/_hooks/useShiftKey";
 export interface VisibleColumn<T> {
   label: string;
   width: number;
+  minWidth?: number;
+  maxWidth?: number;
   sortable?: boolean;
   filterable?: "list" | "search-only";
   sorter?: (a: T, b: T) => number;
   filterValue?: (row: T) => string;
-  render?: (row: T) => React.ReactNode;
-  minWidth?: number;
+  render?: (row: T, selectionIds: string[]) => React.ReactNode;
 }
 
 export type Column<T> = VisibleColumn<T> | { visible: false };
@@ -53,11 +54,9 @@ interface TableProps<I, T> {
   onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   className?: ClassNameValue;
   emptyMessage?: string;
-  tableKey: string;
+  tableKey: string; // Unique key for the table used for storing things like column widths
 }
 
-// TODO: Make columns width be resizable on runtime by user
-// TODO: Make pills work in sorting & filter (needs custom sorting function)
 export default function Table<
   I extends string | number,
   // eslint-disable-next-line
@@ -73,6 +72,13 @@ export default function Table<
   emptyMessage,
   tableKey,
 }: TableProps<I, T>) {
+  // Make sure the tableKey exists
+  if (!tableKey) {
+    throw new Error(
+      "Table key is required. Add the tableKey prop to the Table component.",
+    );
+  }
+
   const [sortColumnKey, setSortColumnKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<Record<string, string>>({});
@@ -80,6 +86,16 @@ export default function Table<
   const [resizing, setResizing] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastSelectedIdRef = useRef<I>();
+
+  const columnWidths = filterVisibleColumns(Object.entries(columns)).map(
+    ([columnKey, column]) => {
+      const storedWidth = localStorage.getItem(tableKey + ":" + columnKey);
+      if (storedWidth) {
+        return parseInt(storedWidth);
+      }
+      return column.width;
+    },
+  );
 
   const sortedData = useMemo(() => {
     if (!sortColumnKey) return data;
@@ -224,7 +240,7 @@ export default function Table<
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
-        className="flex h-full flex-col overflow-x-scroll"
+        className="flex h-full flex-col overflow-x-auto"
         ref={scrollContainerRef}
       >
         <TableHeader
@@ -244,10 +260,11 @@ export default function Table<
           extraOptions={extraOptions}
           deletable={deletable}
           onDelete={onDelete}
-          scrollContainerRef={scrollContainerRef}
-          resizing={resizing}
+          columnWidths={columnWidths}
           setResizing={setResizing}
+          resizing={resizing}
           tableKey={tableKey}
+          scrollContainerRef={scrollContainerRef}
         />
         {filteredData.map((value) => (
           <TableRow
@@ -262,6 +279,7 @@ export default function Table<
             deletable={deletable}
             onDelete={onDelete}
             scrollContainerRef={scrollContainerRef}
+            columnWidths={columnWidths}
           />
         ))}
         {filteredData.length === 0 && emptyMessage && (

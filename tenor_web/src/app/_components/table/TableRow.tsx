@@ -22,6 +22,7 @@ interface TableRowProps<I, T> {
   deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   scrollContainerRef: React.RefObject<HTMLDivElement>;
+  columnWidths: number[];
 }
 
 function TableRow<
@@ -39,6 +40,7 @@ function TableRow<
   deletable,
   onDelete,
   scrollContainerRef,
+  columnWidths,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
@@ -47,7 +49,7 @@ function TableRow<
   );
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
-    columnEntries.map(([, column]) => `${column.width}px`).join(" ") +
+    columnWidths.map((width) => `${width}px`).join(" ") +
     (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
 
   const handleDelete = async () => {
@@ -64,7 +66,10 @@ function TableRow<
     <div
       className={cn(
         "grid min-w-fit items-center gap-2 border-b border-app-border p-2 transition",
-        { "bg-gray-100": selection.has(value.id) },
+        {
+          "bg-gray-100": selection.has(value.id),
+          // "opacity-50 blur-[2px]": resizing,
+        },
       )}
       style={{ gridTemplateColumns }}
     >
@@ -76,7 +81,14 @@ function TableRow<
       )}
       {columnEntries.map(([key, column]) => (
         <div key={key} className="w-full truncate">
-          {column.render ? column.render(value) : value[key]}
+          {column.render
+            ? column.render(
+                value,
+                selection.has(value.id)
+                  ? (Array.from(selection) as string[])
+                  : [value.id as string],
+              )
+            : value[key]}
         </div>
       ))}
       {showThreeDots && (

@@ -129,7 +129,10 @@ export default function RequirementsTable() {
     console.log(response);
   };
 
-  const handleEditRequirement = async (requirement: RequirementCol, checkValues = true) => {
+  const handleEditRequirement = async (
+    requirement: RequirementCol,
+    checkValues = true,
+  ) => {
     let { name, description } = editForm;
     const { priorityId, requirementTypeId, requirementFocusId, scrumId } =
       requirement;
@@ -141,7 +144,11 @@ export default function RequirementsTable() {
         });
         return;
       }
-      if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
+      if (
+        !priorityId?.id ||
+        !requirementTypeId?.id ||
+        !requirementFocusId?.id
+      ) {
         alert("Oops...", "All properties must have a value.", {
           type: "error",
           duration: 5000, // time in ms (5 seconds)
@@ -203,14 +210,13 @@ export default function RequirementsTable() {
       const filtered = requirements.fixedData.filter((req) => {
         const name = req.name?.toLowerCase() ?? "";
         const description = req.description.toLowerCase();
-    
+
         // Asegúrate de que este hook devuelve un string consistente
-        const formattedScrumText =
-          UseFormatForAssignReqTypeScrumId(
-            req.requirementTypeId.name,
-            req.scrumId,
-          ).toLowerCase();
-    
+        const formattedScrumText = UseFormatForAssignReqTypeScrumId(
+          req.requirementTypeId.name,
+          req.scrumId,
+        ).toLowerCase();
+
         return (
           name.includes(query) ||
           description.includes(query) ||
@@ -297,13 +303,16 @@ export default function RequirementsTable() {
               onChange={async (tag: Tag) => {
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
-                    item.id === row.id ? { ...item,priorityId: tag } : item,
+                    item.id === row.id ? { ...item, priorityId: tag } : item,
                   ),
                 );
-                  await handleEditRequirement({
+                await handleEditRequirement(
+                  {
                     ...row,
                     priorityId: tag,
-                  }, false);
+                  },
+                  false,
+                );
               }}
             />
           );
@@ -333,14 +342,17 @@ export default function RequirementsTable() {
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
                     item.id === row.id
-                      ? { ...item, requirementTypeId:requirementTypeId }
+                      ? { ...item, requirementTypeId: requirementTypeId }
                       : item,
                   ),
                 );
-                  await handleEditRequirement({
+                await handleEditRequirement(
+                  {
                     ...row,
                     requirementTypeId: requirementTypeId,
-                  }, false);
+                  },
+                  false,
+                );
               }}
             />
           );
@@ -370,14 +382,17 @@ export default function RequirementsTable() {
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
                     item.id === row.id
-                      ? { ...item, requirementFocusId:requirementFocusId }
+                      ? { ...item, requirementFocusId: requirementFocusId }
                       : item,
                   ),
                 );
-                  await handleEditRequirement({
+                await handleEditRequirement(
+                  {
                     ...row,
                     requirementFocusId: requirementFocusId,
-                  }, false);
+                  },
+                  false,
+                );
               }}
             />
           );
@@ -389,12 +404,13 @@ export default function RequirementsTable() {
       ids: string[],
       callback: (del: boolean) => void,
     ) => {
-      const confirmMessage = ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
+      const confirmMessage =
+        ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
       if (
         !(await confirm(
           `Are you sure you want to ${confirmMessage}`,
-          'This action cannot be undone',
-          'Delete',
+          "This action cannot be undone",
+          "Delete",
         ))
       ) {
         callback(false);
@@ -402,9 +418,7 @@ export default function RequirementsTable() {
       }
       callback(true); // call the callback as soon as posible
 
-      const newData = requirementsData.filter(
-        (item) => !ids.includes(item.id),
-      );
+      const newData = requirementsData.filter((item) => !ids.includes(item.id));
 
       await utils.requirements.getRequirementsTableFriendly.cancel({
         projectId: params.projectId as string,
@@ -418,7 +432,7 @@ export default function RequirementsTable() {
             fixedData: newData,
           };
         },
-      )
+      );
 
       //Deletes in database
       await Promise.all(
@@ -442,6 +456,7 @@ export default function RequirementsTable() {
         emptyMessage="No requirements found"
         multiselect
         deletable
+        tableKey="requirements-table"
       />
     );
   }, [requirementsData, isLoadingRequirements]);
@@ -449,7 +464,7 @@ export default function RequirementsTable() {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex w-full justify-between">
-        <h2 className="text-3xl font-semibold content-center">Requirements</h2>
+        <h2 className="content-center text-3xl font-semibold">Requirements</h2>
         <div className="flex w-3/4 items-center justify-end gap-2">
           <div className="w-1/3 p-2">
             <SearchBar

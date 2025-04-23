@@ -522,7 +522,7 @@ export default function ProjectSprints() {
                 + Add Sprint
               </PrimaryButton>
             </div>
-            <div className="flex w-full flex-1 gap-4 overflow-x-scroll">
+            <div className="flex w-full flex-1 gap-4 overflow-x-auto">
               {isLoading && (
                 <div className="flex h-full w-full items-center justify-center">
                   <LoadingSpinner color="primary" />
