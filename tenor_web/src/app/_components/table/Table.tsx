@@ -17,6 +17,7 @@ export interface VisibleColumn<T> {
   sorter?: (a: T, b: T) => number;
   filterValue?: (row: T) => string;
   render?: (row: T) => React.ReactNode;
+  minWidth?: number;
 }
 
 export type Column<T> = VisibleColumn<T> | { visible: false };
@@ -52,6 +53,7 @@ interface TableProps<I, T> {
   onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   className?: ClassNameValue;
   emptyMessage?: string;
+  tableKey: string;
 }
 
 // TODO: Make columns width be resizable on runtime by user
@@ -69,11 +71,13 @@ export default function Table<
   onDelete,
   className,
   emptyMessage,
+  tableKey,
 }: TableProps<I, T>) {
   const [sortColumnKey, setSortColumnKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selection, setSelection] = useState<Set<I>>(new Set());
+  const [resizing, setResizing] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastSelectedIdRef = useRef<I>();
 
@@ -240,6 +244,10 @@ export default function Table<
           extraOptions={extraOptions}
           deletable={deletable}
           onDelete={onDelete}
+          scrollContainerRef={scrollContainerRef}
+          resizing={resizing}
+          setResizing={setResizing}
+          tableKey={tableKey}
         />
         {filteredData.map((value) => (
           <TableRow
