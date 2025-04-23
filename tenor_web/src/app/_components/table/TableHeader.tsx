@@ -172,7 +172,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   };
 
   const setFullWidth = (index: number) => {
-    const newColumnWidths = [...columnWidths];
+    const newColumnWidths = [...temporaryColumnWidths.current];
     if (shiftClick) {
       columnEntries.forEach(([key, column], i) => {
         newColumnWidths[i] = column.width;
