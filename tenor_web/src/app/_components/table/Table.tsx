@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
+
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 
@@ -8,17 +10,25 @@ import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import useShiftKey from "~/app/_hooks/useShiftKey";
+import GhostTableRow from "./GhostTableRow";
+import LoadingGhostTableRow from "./LoadingGhostTableRow";
+import LoadingGhostTableRows from "./LoadingGhostTableRows";
 
 export interface VisibleColumn<T> {
   label: string;
   width: number;
+  hiddenOnGhost?: boolean;
   minWidth?: number;
   maxWidth?: number;
   sortable?: boolean;
   filterable?: "list" | "search-only";
   sorter?: (a: T, b: T) => number;
   filterValue?: (row: T) => string;
-  render?: (row: T, selectionIds: string[]) => React.ReactNode;
+  render?: (
+    row: T,
+    selectionIds: string[],
+    isGhost: boolean,
+  ) => React.ReactNode;
 }
 
 export type Column<T> = VisibleColumn<T> | { visible: false };
@@ -47,6 +57,10 @@ export interface DeleteOptions {
 
 interface TableProps<I, T> {
   data: T[];
+  ghostData?: T[];
+  ghostRows?: number;
+  ghostLoadingEstimation?: number; // in ms
+  onAcceptGhosts?: (ids: I[]) => void;
   columns: TableColumns<T>;
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
@@ -57,12 +71,16 @@ interface TableProps<I, T> {
   tableKey: string; // Unique key for the table used for storing things like column widths
 }
 
-export default function Table<
+function TableImpl<
   I extends string | number,
   // eslint-disable-next-line
   T extends Record<string, any> & { id: I },
 >({
   data,
+  ghostData,
+  ghostRows,
+  ghostLoadingEstimation,
+  onAcceptGhosts,
   columns,
   multiselect,
   extraOptions,
@@ -84,8 +102,19 @@ export default function Table<
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selection, setSelection] = useState<Set<I>>(new Set());
   const [resizing, setResizing] = useState(false);
+  const [loadedGhosts, setLoadedGhosts] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const ghostDivRef = useRef<HTMLDivElement>(null);
   const lastSelectedIdRef = useRef<I>();
+
+  const showingGhosts = useRef(false);
+  const [ghostDataCopy, setGhostDataCopy] = useState<T[] | undefined>(
+    ghostData,
+  );
+
+  useEffect(() => {
+    setGhostDataCopy(ghostData);
+  }, [ghostData]);
 
   const columnWidths = filterVisibleColumns(Object.entries(columns)).map(
     ([columnKey, column]) => {
@@ -237,6 +266,84 @@ export default function Table<
     lastSelectedIdRef.current = undefined;
   });
 
+  const showGhostRows =
+    (ghostDataCopy !== undefined && ghostDataCopy.length > 0) ||
+    (ghostRows ?? 0) > 0;
+
+  useEffect(() => {
+    // Triggers when ghost rows are shown
+    if ((showGhostRows || ghostDataCopy) && ghostDivRef.current) {
+      const height = ghostDivRef.current?.getBoundingClientRect().height;
+      ghostDivRef.current.style.height = "0px";
+
+      // Wait for the next frame to set the height
+      requestAnimationFrame(() => {
+        if (!ghostDivRef.current) return;
+        ghostDivRef.current.style.height = `${height}px`;
+        ghostDivRef.current.style.opacity = "1";
+      });
+
+      const onTransitionEnd = () => {
+        if (!ghostDivRef.current) return;
+        ghostDivRef.current.style.height = "auto";
+      };
+
+      ghostDivRef.current.addEventListener("transitionend", onTransitionEnd);
+      return () =>
+        ghostDivRef.current?.removeEventListener(
+          "transitionend",
+          onTransitionEnd,
+        );
+    } else {
+      showingGhosts.current = false;
+    }
+  }, [showGhostRows]);
+
+  useEffect(() => {
+    if (ghostDataCopy && ghostDataCopy.length > 0) {
+      const timeout = setTimeout(() => {
+        setLoadedGhosts(true);
+      }, 700);
+      return () => clearTimeout(timeout);
+    }
+  }, [ghostDataCopy]);
+
+  const acceptAllGhosts = () => {
+    if (onAcceptGhosts && ghostDataCopy) {
+      onAcceptGhosts(ghostDataCopy.map((row) => row.id));
+    }
+    setGhostDataCopy(undefined);
+    setLoadedGhosts(false);
+  };
+
+  const rejectAllGhosts = () => {
+    setGhostDataCopy(undefined);
+    setLoadedGhosts(false);
+  };
+
+  const acceptGhost = (id: I) => {
+    if (onAcceptGhosts && ghostDataCopy) {
+      onAcceptGhosts([id]);
+    }
+    const newGhostData = ghostDataCopy?.filter((row) => row.id !== id);
+    if (newGhostData?.length === 0) {
+      setGhostDataCopy(undefined);
+      setLoadedGhosts(false);
+    } else {
+      setGhostDataCopy(newGhostData);
+    }
+  };
+
+  const rejectGhost = (id: I) => {
+    const newGhostData = ghostDataCopy?.filter((row) => row.id !== id);
+    if (newGhostData?.length === 0) {
+      setGhostDataCopy(undefined);
+      setLoadedGhosts(false);
+    } else {
+      setGhostDataCopy(newGhostData);
+    }
+  };
+
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
@@ -265,7 +372,43 @@ export default function Table<
           resizing={resizing}
           tableKey={tableKey}
           scrollContainerRef={scrollContainerRef}
+          ghostRowContainerRef={ghostDivRef}
+          showGhostActions={
+            ghostDataCopy !== undefined && ghostDataCopy.length > 0
+          }
+          acceptAllGhosts={acceptAllGhosts}
+          rejectAllGhosts={rejectAllGhosts}
         />
+        <div
+          className="relative min-w-fit shrink-0 overflow-hidden opacity-0 transition-[height,opacity] duration-500"
+          ref={ghostDivRef}
+        >
+          {!loadedGhosts && (ghostRows ?? 0) > 0 && (
+            <LoadingGhostTableRows
+              columnWidths={columnWidths}
+              columns={columns}
+              finishedLoading={ghostDataCopy !== undefined}
+              ghostRows={ghostRows ?? 0}
+              deletable={deletable}
+              extraOptions={extraOptions}
+              multiselect={multiselect}
+              timeEstimate={ghostLoadingEstimation}
+            />
+          )}
+          {ghostDataCopy?.map((value) => (
+            <GhostTableRow
+              key={value.id}
+              value={value}
+              columns={columns}
+              multiselect={multiselect}
+              extraOptions={extraOptions}
+              deletable={deletable}
+              columnWidths={columnWidths}
+              onAccept={() => acceptGhost(value.id)}
+              onReject={() => rejectGhost(value.id)}
+            />
+          ))}
+        </div>
         {filteredData.map((value) => (
           <TableRow
             key={value.id}
@@ -291,3 +434,9 @@ export default function Table<
     </div>
   );
 }
+
+const Table = dynamic(() => Promise.resolve(TableImpl), {
+  ssr: false,
+}) as typeof TableImpl;
+
+export default Table;

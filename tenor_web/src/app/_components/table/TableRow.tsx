@@ -87,6 +87,7 @@ function TableRow<
                 selection.has(value.id)
                   ? (Array.from(selection) as string[])
                   : [value.id as string],
+                false,
               )
             : value[key]}
         </div>

@@ -167,12 +167,16 @@ function AlertShowcase() {
 }
 
 function TableShowcase() {
+  const [loadingAI, setLoadingAI] = useState(false);
+  const [showAI, setShowAI] = useState(false);
+
   // This showcases how to use the Table component, which is supposed to display rows of information that can be filtered and sorted by columns
 
   // Firstly, you should create a data type for your table, this should include all the columns you want to display in the table
   // Important: this data type must contain an id which can be a number or a string and is used for identifying the rows when performing actions
   interface ExampleUser {
     id: number;
+    number: number;
     degree: string;
     name: string;
     age: number;
@@ -181,23 +185,36 @@ function TableShowcase() {
   // Secondly, you should create an array with your data, this might come from the API.
   // If you need to rearrange the data provided by the API to conform to your data type, use the map function.
   const data: ExampleUser[] = [
-    { id: 1, degree: "ITC", name: "Luis", age: 21 },
-    { id: 2, degree: "ITC", name: "Sergio", age: 20 },
-    { id: 3, degree: "ITC", name: "Alonso", age: 19 },
-    { id: 4, degree: "ITC", name: "Oscar", age: 21 },
-    { id: 5, degree: "ITC", name: "Luis", age: 21 },
-    { id: 6, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 7, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 8, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 9, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 10, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 11, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 12, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 13, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 14, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 15, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 16, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 17, degree: "ITC", name: "Nicolas", age: 21 },
+    { id: 1, number: 5, degree: "ITC", name: "Luis", age: 21 },
+    // { id: 2, number: 5, degree: "ITC", name: "Sergio", age: 20 },
+    // { id: 3, number: 5, degree: "ITC", name: "Alonso", age: 19 },
+    // { id: 4, number: 5, degree: "ITC", name: "Oscar", age: 21 },
+    // { id: 5, number: 5, degree: "ITC", name: "Luis", age: 21 },
+    // { id: 6, number: 5, degree: "ITC", name: "Nicolas", age: 21 },
+  ];
+
+  const ghostData: ExampleUser[] = [
+    {
+      id: -1,
+      number: -1,
+      degree: "ITC",
+      name: "First person created by AI",
+      age: 21,
+    },
+    {
+      id: -2,
+      number: -1,
+      degree: "ITC",
+      name: "Second person created by AI",
+      age: 21,
+    },
+    {
+      id: -3,
+      number: -1,
+      degree: "ITC",
+      name: "Third person created by AI",
+      age: 21,
+    },
   ];
 
   // You also need to provide column definitions for the table
@@ -207,6 +224,11 @@ function TableShowcase() {
   // but if you don't want to display some information in the table, like for example an internal ID, you can choose to hide that column.
   const columns: TableColumns<ExampleUser> = {
     id: { visible: false },
+    number: {
+      label: "Number",
+      width: 80,
+      hiddenOnGhost: true,
+    },
     degree: {
       label: "Degree",
       width: 200,
@@ -245,10 +267,41 @@ function TableShowcase() {
     },
   ];
 
+  const generationTime = 3000;
+
+  const generate = async () => {
+    setShowAI(false);
+    setLoadingAI(true);
+    // Simulate ai generation waiting time
+    await new Promise((resolve) => setTimeout(resolve, generationTime));
+    setShowAI(true);
+    await new Promise((resolve) => setTimeout(resolve, 700));
+    setLoadingAI(false);
+  };
+
   return (
     <div>
       <hr />
       <h2 className="my-2 text-2xl font-medium">Tables</h2>
+      <div className="flex w-full justify-end gap-2">
+        <PrimaryButton onClick={generate}>Generate with AI</PrimaryButton>
+        <SecondaryButton
+          onClick={() => {
+            setShowAI(true);
+            setLoadingAI(false);
+          }}
+        >
+          Generate immediate
+        </SecondaryButton>
+        <SecondaryButton
+          onClick={() => {
+            setLoadingAI(true);
+            setShowAI(false);
+          }}
+        >
+          Show loading
+        </SecondaryButton>
+      </div>
       {/* Include the table component in your page, give it a maximum height, as well as the data and columns */}
       {/* Optionally include extraOptions */}
       {/* multiselect: Show the checkboxes next to each row and in the header */}
@@ -257,11 +310,15 @@ function TableShowcase() {
       <Table
         className="h-[250px]"
         data={data}
+        ghostData={showAI ? ghostData : undefined}
+        ghostRows={loadingAI ? ghostData.length : undefined}
+        ghostLoadingEstimation={generationTime}
         columns={columns}
         extraOptions={extraOptions}
         multiselect
         deletable
         onDelete={(ids) => console.log("Deleted", ids)}
+        tableKey="component-showcase-table" // Each table must have a unique key. This is used to identify the table in the local storage
       />
     </div>
   );

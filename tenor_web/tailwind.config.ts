@@ -26,6 +26,19 @@ export default {
         "sprint-column-background": "#F1F2F4",
         "sprint-column-background-hovered": "#e6e7eb",
       },
+      keyframes: {
+        flow: {
+          "0%": {
+            transform: "translateX(0)",
+          },
+          "100%": {
+            transform: "translateX(5000px)",
+          },
+        },
+      },
+      animation: {
+        flow: "flow 30s linear infinite",
+      },
     },
   },
   plugins: [],

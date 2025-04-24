@@ -40,6 +40,10 @@ interface TableHeaderProps<I, T> {
   resizing: boolean;
   tableKey: string;
   scrollContainerRef: React.RefObject<HTMLDivElement>;
+  ghostRowContainerRef: React.RefObject<HTMLDivElement>;
+  showGhostActions?: boolean;
+  acceptAllGhosts?: () => void;
+  rejectAllGhosts?: () => void;
 }
 
 // eslint-disable-next-line
@@ -65,6 +69,10 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   resizing,
   tableKey,
   scrollContainerRef,
+  ghostRowContainerRef,
+  showGhostActions,
+  acceptAllGhosts,
+  rejectAllGhosts,
 }: TableHeaderProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
@@ -97,6 +105,10 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       const element = child as HTMLElement;
       element.style.transition = "";
     });
+    ghostRowContainerRef.current?.childNodes.forEach((child) => {
+      const element = child as HTMLElement;
+      element.style.transition = "";
+    });
   };
 
   function onResizeMouseMove(e: MouseEvent) {
@@ -126,6 +138,9 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
 
     scrollContainerRef.current?.childNodes.forEach((child) => {
+      (child as HTMLElement).style.gridTemplateColumns = newTemplateColumns;
+    });
+    ghostRowContainerRef.current?.childNodes.forEach((child) => {
       (child as HTMLElement).style.gridTemplateColumns = newTemplateColumns;
     });
   }
@@ -191,6 +206,11 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
 
     scrollContainerRef.current?.childNodes.forEach((child) => {
+      const element = child as HTMLElement;
+      element.style.gridTemplateColumns = newTemplateColumns;
+      element.style.transition = "grid-template-columns 0.2s ease-in-out";
+    });
+    ghostRowContainerRef.current?.childNodes.forEach((child) => {
       const element = child as HTMLElement;
       element.style.gridTemplateColumns = newTemplateColumns;
       element.style.transition = "grid-template-columns 0.2s ease-in-out";
@@ -345,6 +365,9 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
             extraOptions={extraOptions}
             deletable={deletable}
             onDelete={onDelete}
+            showGhostActions={showGhostActions}
+            onAcceptAllGhosts={acceptAllGhosts}
+            onRejectAllGhosts={rejectAllGhosts}
           />
         </>
       )}
