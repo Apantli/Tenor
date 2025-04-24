@@ -6,13 +6,10 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
-import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import type {
-  ExistingEpic,
   ExistingUserStory,
   SprintPreview,
-  UserStoryPreview,
 } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
@@ -46,7 +43,6 @@ export default function CreateIssuePopup({
     tags: Tag[];
     priority?: Tag;
     size?: Size;
-    sprint?: SprintPreview;
     relatedUserStory?: ExistingUserStory;
   }>({
     name: "",
@@ -55,7 +51,6 @@ export default function CreateIssuePopup({
     tags: [],
     priority: undefined,
     size: undefined,
-    sprint: undefined,
     relatedUserStory: undefined,
   });
 
@@ -69,7 +64,6 @@ export default function CreateIssuePopup({
     if (createForm.tags.length > 0) return true;
     if (createForm.priority !== undefined) return true;
     if (createForm.size !== undefined) return true;
-    if (createForm.sprint !== undefined) return true;
     if (createForm.relatedUserStory !== undefined) return true;
     return false;
   };
