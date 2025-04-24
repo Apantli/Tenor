@@ -27,6 +27,8 @@ export default function ProjectIssues() {
         Edit Issue
       </PrimaryButton>
 
+      {/* FIXME Testing issue inside http://tenor.dev/project/PxeyrC2a7Ymix2Y7pzFx/issues */}
+      {/* TODO Delete once table is created */}
       {renderDetail && (
         <IssueDetailPopup
           showDetail={showDetail}
