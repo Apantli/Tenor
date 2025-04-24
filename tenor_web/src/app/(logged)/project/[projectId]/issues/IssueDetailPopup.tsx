@@ -271,7 +271,7 @@ export default function IssueDetailPopup({
           <>
             {!isLoading && issueDetail && (
               <>
-                <h3 className="text-lg font-semibold">Epic</h3>
+                <h3 className="text-lg font-semibold">User Story</h3>
                 <UserStoryPicker
                   userStory={issueDetail?.relatedUserStory}
                   onChange={async (userStory) => {
@@ -321,7 +321,7 @@ export default function IssueDetailPopup({
       }
       footer={
         !isLoading && (
-          <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
+          <DeleteButton onClick={handleDelete}>Delete issue</DeleteButton>
         )
       }
       title={
@@ -363,7 +363,7 @@ export default function IssueDetailPopup({
             className="mb-4"
           />
           <InputTextAreaField
-            label="Story description"
+            label="Issue description"
             value={editForm.description}
             onChange={(e) =>
               setEditForm({ ...editForm, description: e.target.value })
@@ -391,7 +391,7 @@ export default function IssueDetailPopup({
           {issueDetail.stepsToRecreate !== "" && (
             <>
               <div className="mt-4 flex items-center gap-4">
-                <h2 className="text-2xl font-semibold">Acceptance Criteria</h2>
+                <h2 className="text-2xl font-semibold">Steps to Recreate</h2>
                 <TertiaryButton
                   onClick={() => setShowStepsToRecreate(!showStepsToRecreate)}
                 >
