@@ -168,16 +168,16 @@ export default function IssueDetailPopup({
       issueData: updatedIssue,
     });
 
-    // Make other places refetch the data
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.userStories.getAllUserStoryPreviews.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
+    // FIXME UNTIL TABLE FOR ISSUES IS DONE
+    // await utils.userStories.getUserStoriesTableFriendly.invalidate({
+    //   projectId: projectId as string,
+    // });
+    // await utils.userStories.getAllUserStoryPreviews.invalidate({
+    //   projectId: projectId as string,
+    // });
+    // await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+    //   projectId: projectId as string,
+    // });
 
     await refetch();
   };
