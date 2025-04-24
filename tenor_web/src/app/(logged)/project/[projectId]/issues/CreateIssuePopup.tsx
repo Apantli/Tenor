@@ -7,10 +7,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
-import type {
-  ExistingUserStory,
-  SprintPreview,
-} from "~/lib/types/detailSchemas";
+import type { ExistingUserStory } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";

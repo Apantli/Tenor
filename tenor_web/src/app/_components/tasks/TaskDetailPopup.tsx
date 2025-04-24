@@ -25,14 +25,14 @@ import { UserPreview } from "~/lib/types/detailSchemas";
 
 interface Props {
   taskId: string;
-  userStoryId: string;
+  itemId: string;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
 }
 
 export default function TaskDetailPopup({
   taskId,
-  userStoryId,
+  itemId,
   showDetail,
   setShowDetail,
 }: Props) {
@@ -139,7 +139,7 @@ export default function TaskDetailPopup({
 
     await utils.tasks.getTasksTableFriendly.invalidate({
       projectId: projectId as string,
-      itemId: userStoryId,
+      itemId: itemId,
     });
 
     await refetch();
@@ -161,7 +161,7 @@ export default function TaskDetailPopup({
 
       await utils.tasks.getTasksTableFriendly.invalidate({
         projectId: projectId as string,
-        itemId: userStoryId,
+        itemId: itemId,
       });
 
       setShowDetail(false);

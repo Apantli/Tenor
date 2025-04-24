@@ -16,7 +16,12 @@ import type {
   UserStoryDetail,
   UserStoryPreview,
 } from "~/lib/types/detailSchemas";
-import { getProjectSettingsRef } from "./settings";
+import {
+  getBacklogTag,
+  getPriorityTag,
+  getProjectSettingsRef,
+  getTaskProgress,
+} from "./settings";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
 
@@ -53,42 +58,6 @@ const getUserStoriesFromProject = async (
   );
 
   return userStories;
-};
-
-const getPriorityTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  priorityId: string,
-) => {
-  if (priorityId === undefined) {
-    return undefined;
-  }
-  const tag = await settingsRef
-    .collection("priorityTypes")
-    .doc(priorityId)
-    .get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
-};
-
-const getBacklogTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  taskId: string,
-) => {
-  if (taskId === undefined) {
-    return undefined;
-  }
-  const tag = await settingsRef.collection("backlogTags").doc(taskId).get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
-};
-
-// TODO: Fetch from db
-const getTaskProgress = () => {
-  return [0, 0] as [number | undefined, number | undefined];
 };
 
 export const userStoriesRouter = createTRPCRouter({
