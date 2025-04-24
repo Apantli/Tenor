@@ -28,6 +28,7 @@ import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
 import type { Option } from "~/app/_components/EditableBox/EditableBox";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import { acceptableTagColors } from "~/app/_components/BacklogTagList";
+import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -167,9 +168,6 @@ function AlertShowcase() {
 }
 
 function TableShowcase() {
-  const [loadingAI, setLoadingAI] = useState(false);
-  const [showAI, setShowAI] = useState(false);
-
   // This showcases how to use the Table component, which is supposed to display rows of information that can be filtered and sorted by columns
 
   // Firstly, you should create a data type for your table, this should include all the columns you want to display in the table
@@ -184,16 +182,16 @@ function TableShowcase() {
 
   // Secondly, you should create an array with your data, this might come from the API.
   // If you need to rearrange the data provided by the API to conform to your data type, use the map function.
-  const data: ExampleUser[] = [
+  const [data, setData] = useState<ExampleUser[]>([
     { id: 1, number: 5, degree: "ITC", name: "Luis", age: 21 },
     // { id: 2, number: 5, degree: "ITC", name: "Sergio", age: 20 },
     // { id: 3, number: 5, degree: "ITC", name: "Alonso", age: 19 },
     // { id: 4, number: 5, degree: "ITC", name: "Oscar", age: 21 },
     // { id: 5, number: 5, degree: "ITC", name: "Luis", age: 21 },
     // { id: 6, number: 5, degree: "ITC", name: "Nicolas", age: 21 },
-  ];
+  ]);
 
-  const ghostData: ExampleUser[] = [
+  const dummyGhostData: ExampleUser[] = [
     {
       id: -1,
       number: -1,
@@ -267,16 +265,30 @@ function TableShowcase() {
     },
   ];
 
-  const generationTime = 3000;
+  const generationTime = 5000;
+
+  // Helper hook to manage the state of the ghost items
+  const [
+    onAccept,
+    onReject,
+    beginLoading,
+    finishLoading,
+    ghostData,
+    ghostRows,
+    setGhostRows,
+  ] = useGhostTableStateManager<ExampleUser, number>((ids: number[]) => {
+    // Use the callback to perform the action you want when the user accepts the ghosts
+    const newData = data.concat(
+      dummyGhostData.filter((ghost) => ids.includes(ghost.id)),
+    );
+    setData(newData);
+  });
 
   const generate = async () => {
-    setShowAI(false);
-    setLoadingAI(true);
+    beginLoading(3);
     // Simulate ai generation waiting time
     await new Promise((resolve) => setTimeout(resolve, generationTime));
-    setShowAI(true);
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    setLoadingAI(false);
+    finishLoading(dummyGhostData);
   };
 
   return (
@@ -284,19 +296,22 @@ function TableShowcase() {
       <hr />
       <h2 className="my-2 text-2xl font-medium">Tables</h2>
       <div className="flex w-full justify-end gap-2">
-        <PrimaryButton onClick={generate}>Generate with AI</PrimaryButton>
+        <PrimaryButton
+          onClick={generate}
+          disabled={ghostRows !== undefined && ghostData === undefined}
+        >
+          Generate with AI
+        </PrimaryButton>
         <SecondaryButton
           onClick={() => {
-            setShowAI(true);
-            setLoadingAI(false);
+            finishLoading(dummyGhostData);
           }}
         >
           Generate immediate
         </SecondaryButton>
         <SecondaryButton
           onClick={() => {
-            setLoadingAI(true);
-            setShowAI(false);
+            beginLoading(3);
           }}
         >
           Show loading
@@ -310,8 +325,11 @@ function TableShowcase() {
       <Table
         className="h-[250px]"
         data={data}
-        ghostData={showAI ? ghostData : undefined}
-        ghostRows={loadingAI ? ghostData.length : undefined}
+        ghostData={ghostData}
+        acceptGhosts={onAccept}
+        rejectGhosts={onReject}
+        ghostRows={ghostRows}
+        setGhostRows={setGhostRows}
         ghostLoadingEstimation={generationTime}
         columns={columns}
         extraOptions={extraOptions}

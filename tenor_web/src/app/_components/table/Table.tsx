@@ -58,9 +58,11 @@ export interface DeleteOptions {
 interface TableProps<I, T> {
   data: T[];
   ghostData?: T[];
+  acceptGhosts?: (ids: I[]) => void;
+  rejectGhosts?: (ids: I[]) => void;
   ghostRows?: number;
+  setGhostRows?: (rows: number | undefined) => void;
   ghostLoadingEstimation?: number; // in ms
-  onAcceptGhosts?: (ids: I[]) => void;
   columns: TableColumns<T>;
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
@@ -78,9 +80,11 @@ function TableImpl<
 >({
   data,
   ghostData,
+  acceptGhosts,
+  rejectGhosts,
   ghostRows,
+  setGhostRows,
   ghostLoadingEstimation,
-  onAcceptGhosts,
   columns,
   multiselect,
   extraOptions,
@@ -106,15 +110,6 @@ function TableImpl<
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const ghostDivRef = useRef<HTMLDivElement>(null);
   const lastSelectedIdRef = useRef<I>();
-
-  const showingGhosts = useRef(false);
-  const [ghostDataCopy, setGhostDataCopy] = useState<T[] | undefined>(
-    ghostData,
-  );
-
-  useEffect(() => {
-    setGhostDataCopy(ghostData);
-  }, [ghostData]);
 
   const columnWidths = filterVisibleColumns(Object.entries(columns)).map(
     ([columnKey, column]) => {
@@ -267,12 +262,14 @@ function TableImpl<
   });
 
   const showGhostRows =
-    (ghostDataCopy !== undefined && ghostDataCopy.length > 0) ||
-    (ghostRows ?? 0) > 0;
+    (ghostData !== undefined && ghostData.length > 0) || (ghostRows ?? 0) > 0;
 
   useEffect(() => {
     // Triggers when ghost rows are shown
-    if ((showGhostRows || ghostDataCopy) && ghostDivRef.current) {
+    if (
+      (showGhostRows || (ghostData !== undefined && ghostData.length > 0)) &&
+      ghostDivRef.current
+    ) {
       const height = ghostDivRef.current?.getBoundingClientRect().height;
       ghostDivRef.current.style.height = "0px";
 
@@ -294,53 +291,52 @@ function TableImpl<
           "transitionend",
           onTransitionEnd,
         );
-    } else {
-      showingGhosts.current = false;
     }
   }, [showGhostRows]);
 
   useEffect(() => {
-    if (ghostDataCopy && ghostDataCopy.length > 0) {
+    if (ghostData && ghostData.length > 0) {
       const timeout = setTimeout(() => {
         setLoadedGhosts(true);
+        setGhostRows?.(undefined);
       }, 700);
       return () => clearTimeout(timeout);
+    } else {
+      setLoadedGhosts(false);
     }
-  }, [ghostDataCopy]);
+  }, [ghostData]);
 
   const acceptAllGhosts = () => {
-    if (onAcceptGhosts && ghostDataCopy) {
-      onAcceptGhosts(ghostDataCopy.map((row) => row.id));
+    if (acceptGhosts && ghostData) {
+      acceptGhosts(ghostData.map((row) => row.id));
     }
-    setGhostDataCopy(undefined);
     setLoadedGhosts(false);
   };
 
   const rejectAllGhosts = () => {
-    setGhostDataCopy(undefined);
+    if (rejectGhosts && ghostData) {
+      rejectGhosts(ghostData.map((row) => row.id));
+    }
     setLoadedGhosts(false);
   };
 
   const acceptGhost = (id: I) => {
-    if (onAcceptGhosts && ghostDataCopy) {
-      onAcceptGhosts([id]);
+    if (acceptGhosts) {
+      acceptGhosts([id]);
     }
-    const newGhostData = ghostDataCopy?.filter((row) => row.id !== id);
+    const newGhostData = ghostData?.filter((row) => row.id !== id);
     if (newGhostData?.length === 0) {
-      setGhostDataCopy(undefined);
       setLoadedGhosts(false);
-    } else {
-      setGhostDataCopy(newGhostData);
     }
   };
 
   const rejectGhost = (id: I) => {
-    const newGhostData = ghostDataCopy?.filter((row) => row.id !== id);
+    if (rejectGhosts) {
+      rejectGhosts?.([id]);
+    }
+    const newGhostData = ghostData?.filter((row) => row.id !== id);
     if (newGhostData?.length === 0) {
-      setGhostDataCopy(undefined);
       setLoadedGhosts(false);
-    } else {
-      setGhostDataCopy(newGhostData);
     }
   };
 
@@ -373,9 +369,7 @@ function TableImpl<
           tableKey={tableKey}
           scrollContainerRef={scrollContainerRef}
           ghostRowContainerRef={ghostDivRef}
-          showGhostActions={
-            ghostDataCopy !== undefined && ghostDataCopy.length > 0
-          }
+          showGhostActions={ghostData !== undefined && ghostData.length > 0}
           acceptAllGhosts={acceptAllGhosts}
           rejectAllGhosts={rejectAllGhosts}
         />
@@ -387,7 +381,7 @@ function TableImpl<
             <LoadingGhostTableRows
               columnWidths={columnWidths}
               columns={columns}
-              finishedLoading={ghostDataCopy !== undefined}
+              finishedLoading={ghostData !== undefined && ghostData.length > 0}
               ghostRows={ghostRows ?? 0}
               deletable={deletable}
               extraOptions={extraOptions}
@@ -395,7 +389,7 @@ function TableImpl<
               timeEstimate={ghostLoadingEstimation}
             />
           )}
-          {ghostDataCopy?.map((value) => (
+          {ghostData?.map((value) => (
             <GhostTableRow
               key={value.id}
               value={value}

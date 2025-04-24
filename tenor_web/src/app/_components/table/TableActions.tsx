@@ -96,7 +96,7 @@ function TableActions<I extends string | number>({
             data-tooltip-id="tooltip"
             data-tooltip-content="Reject all"
             className="text-gray-500 transition hover:text-app-fail"
-            onClick={onAcceptAllGhosts}
+            onClick={onRejectAllGhosts}
           >
             <RejectIcon fontSize="small" />
           </button>
@@ -104,7 +104,7 @@ function TableActions<I extends string | number>({
             data-tooltip-id="tooltip"
             data-tooltip-content="Accept all"
             className="text-gray-500 transition hover:text-app-primary"
-            onClick={onRejectAllGhosts}
+            onClick={onAcceptAllGhosts}
           >
             <AcceptIcon fontSize="small" />
           </button>

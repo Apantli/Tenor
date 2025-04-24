@@ -78,10 +78,10 @@ function GhostTableRow<
       })}
       <div></div> {/* 1fr */}
       <div className="flex items-center gap-2">
-        <button className="cursor-pointer" onClick={onAccept}>
+        <button className="cursor-pointer" onClick={onReject}>
           <RejectIcon htmlColor="white" fontSize="small" />
         </button>
-        <button className="cursor-pointer" onClick={onReject}>
+        <button className="cursor-pointer" onClick={onAccept}>
           <AcceptIcon htmlColor="white" fontSize="small" />
         </button>
       </div>

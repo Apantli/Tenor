@@ -43,13 +43,13 @@ function LoadingGhostTableRow<
     const x = Math.random() * -window.innerWidth;
     const y = Math.random() * 20;
     const initialY = Math.random() * 20;
-    const speed = Math.random() * 2 + 3;
+    const speed = Math.random() * 8 + 3;
     const rotation = Math.random() * 360;
     return { x, y, initialY, speed, rotation };
   };
 
   const initialPositions = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {
     initialPositions.push(randomStarPosition());
   }
   const starPositions = useRef(initialPositions);
