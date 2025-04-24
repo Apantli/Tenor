@@ -29,5 +29,7 @@ personal/{your_username}/{main_functionality_or_change}
 3. **Open a Pull Request (PR):**  
    - Must be approved by **at least one member of the core team**.
    - The description should include **images or videos of the new functionality**, if possible.
-4. **After merge:**  
-   - Delete the remote branch to keep the repository clean.
+4. **Link related issues:**  
+   If your PR addresses a specific issue, make sure to **link it properly**.
+5. **After merge:**  
+   Delete the remote branch to keep the repository clean.
