@@ -5,15 +5,21 @@ import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   EpicSchema,
+  ExistingEpicSchema,
+  ExistingUserStorySchema,
   SprintSchema,
   TagSchema,
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
-import type { UserStoryDetail } from "~/lib/types/detailSchemas";
+import type {
+  UserStoryDetail,
+  UserStoryPreview,
+} from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
+
 export interface UserStoryCol {
   id: string;
   scrumId: number;
@@ -114,6 +120,26 @@ export const userStoriesRouter = createTRPCRouter({
         console.log("Error creating user story:", err);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
+    }),
+
+  getProjectUserStoriesOverview: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const userStoriesSnapshot = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("userStories")
+        .select("scrumId", "name")
+        .where("deleted", "==", false)
+        .orderBy("scrumId")
+        .get();
+
+      const userStories = userStoriesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...ExistingUserStorySchema.parse(doc.data()),
+      }));
+
+      return userStories;
     }),
 
   getUserStoriesTableFriendly: protectedProcedure

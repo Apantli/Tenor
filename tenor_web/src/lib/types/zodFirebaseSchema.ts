@@ -107,6 +107,13 @@ export const UserStorySchema = BacklogItemSchema.extend({
   requiredByIds: z.array(z.string()),
 });
 
+export const ExistingUserStorySchema = BasicInfoSchema.merge(
+  z.object({
+    scrumId: z.number(),
+    description: z.string().optional(),
+  }),
+);
+
 export const TaskSchema = BasicInfoSchema.extend({
   statusId: z.string(),
   assigneeId: z.string(),
