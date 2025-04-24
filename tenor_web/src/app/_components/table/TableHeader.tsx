@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Dropdown, { DropdownButton } from "../Dropdown";
 import UpArrowIcon from "@mui/icons-material/ArrowUpwardOutlined";
 import DownArrowIcon from "@mui/icons-material/ArrowDownwardOutlined";
@@ -80,7 +80,8 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     [columns],
   );
 
-  const temporaryColumnWidths = useRef<number[]>(columnWidths);
+  const [temporaryColumnWidths, setTemporaryColumnWidths] =
+    useState<number[]>(columnWidths);
 
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
@@ -98,7 +99,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     document.body.style.webkitUserSelect = "none";
     // prevXRef.current = e.clientX;
     startXRef.current = e.clientX;
-    startWidthRef.current = temporaryColumnWidths.current[index]!;
+    startWidthRef.current = temporaryColumnWidths[index]!;
     resizingIndexRef.current = index;
 
     scrollContainerRef.current?.childNodes.forEach((child) => {
@@ -124,13 +125,13 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     const delta = e.clientX - startXRef.current;
     const index = resizingIndexRef.current;
 
-    const newColumnWidths = [...temporaryColumnWidths.current];
+    const newColumnWidths = [...temporaryColumnWidths];
     let newWidth = startWidthRef.current + delta;
     if (newWidth < (columnEntries[index]![1].minWidth ?? 70)) {
       newWidth = columnEntries[index]![1].minWidth ?? 70;
     }
     newColumnWidths[index] = newWidth;
-    temporaryColumnWidths.current = newColumnWidths;
+    setTemporaryColumnWidths(newColumnWidths);
 
     const newTemplateColumns =
       (multiselect ? "20px " : "") +
@@ -145,19 +146,20 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     });
   }
 
-  const onResizeMouseUp = () => {
+  const onResizeMouseUp = (e: MouseEvent) => {
     if (
       startXRef.current === undefined ||
-      resizingIndexRef.current === undefined
+      resizingIndexRef.current === undefined ||
+      startWidthRef.current === undefined
     )
       return;
 
-    const index = resizingIndexRef.current;
+    const delta = e.clientX - startXRef.current;
 
-    updateStoredWidth(
-      columnEntries[index]![0],
-      temporaryColumnWidths.current[index]!,
-    );
+    const index = resizingIndexRef.current;
+    const newWidth = startWidthRef.current + delta;
+
+    updateStoredWidth(columnEntries[index]![0], newWidth);
     setResizing(false);
     startWidthRef.current = undefined;
     startXRef.current = undefined;
@@ -187,7 +189,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   };
 
   const setFullWidth = (index: number) => {
-    const newColumnWidths = [...temporaryColumnWidths.current];
+    const newColumnWidths = [...temporaryColumnWidths];
     if (shiftClick) {
       columnEntries.forEach(([key, column], i) => {
         newColumnWidths[i] = column.width;
@@ -198,7 +200,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       updateStoredWidth(columnEntries[index]![0], -1);
     }
 
-    temporaryColumnWidths.current = newColumnWidths;
+    setTemporaryColumnWidths(newColumnWidths);
 
     const newTemplateColumns =
       (multiselect ? "20px " : "") +
@@ -249,14 +251,14 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
           <span
             className={cn("truncate text-sm", {
               "text-app-light":
-                temporaryColumnWidths.current[index]! <= 120 &&
+                temporaryColumnWidths[index]! <= 120 &&
                 (sortColumnKey === key || filters[key] !== undefined),
             })}
             data-tooltip-id="tooltip"
             data-tooltip-html={getTooltipMessage(key)}
             data-tooltip-hidden={
               !(
-                temporaryColumnWidths.current[index]! <= 120 &&
+                temporaryColumnWidths[index]! <= 120 &&
                 (sortColumnKey === key || filters[key] !== undefined)
               )
             }
@@ -268,20 +270,20 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
               <div className="flex items-center justify-end gap-2 pl-2">
                 {sortColumnKey === key &&
                   sortDirection === "asc" &&
-                  temporaryColumnWidths.current[index]! > 120 && (
+                  temporaryColumnWidths[index]! > 120 && (
                     <button onClick={stopSorting} className="text-app-light">
                       <UpArrowIcon />
                     </button>
                   )}
                 {sortColumnKey === key &&
                   sortDirection === "desc" &&
-                  temporaryColumnWidths.current[index]! > 120 && (
+                  temporaryColumnWidths[index]! > 120 && (
                     <button onClick={stopSorting} className="text-app-light">
                       <DownArrowIcon />
                     </button>
                   )}
                 {filters[key] !== undefined &&
-                  temporaryColumnWidths.current[index]! > 120 && (
+                  temporaryColumnWidths[index]! > 120 && (
                     <button
                       onClick={() => clearFilter(key)}
                       className="text-app-light"
