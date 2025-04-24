@@ -53,6 +53,21 @@ export type UserStoryDetail = {
   sprint?: SprintPreview;
 };
 
+export type IssueDetail = {
+  id: string;
+  scrumId: number;
+  name: string;
+  description: string;
+  completed: boolean;
+  stepsToRecreate: string;
+  tags: Tag[];
+  priority?: Tag;
+  size?: Size;
+  relatedUserStory?: ExistingUserStory;
+  tasks: TaskPreview[];
+  sprint?: SprintPreview;
+};
+
 export type TaskDetail = {
   id: string;
   scrumId: number;

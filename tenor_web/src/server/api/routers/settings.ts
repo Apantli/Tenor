@@ -2,6 +2,7 @@ import { SettingsSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
+import { Tag } from "~/lib/types/firebaseSchemas";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -18,6 +19,42 @@ const getProjectSettings = async (projectId: string, firestore: Firestore) => {
   const settings = await getProjectSettingsRef(projectId, firestore).get();
 
   return SettingsSchema.parse(settings.data());
+};
+
+export const getPriorityTag = async (
+  settingsRef: FirebaseFirestore.DocumentReference,
+  priorityId: string,
+) => {
+  if (priorityId === undefined) {
+    return undefined;
+  }
+  const tag = await settingsRef
+    .collection("priorityTypes")
+    .doc(priorityId)
+    .get();
+  if (!tag.exists) {
+    return undefined;
+  }
+  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+};
+
+export const getBacklogTag = async (
+  settingsRef: FirebaseFirestore.DocumentReference,
+  taskId: string,
+) => {
+  if (taskId === undefined) {
+    return undefined;
+  }
+  const tag = await settingsRef.collection("backlogTags").doc(taskId).get();
+  if (!tag.exists) {
+    return undefined;
+  }
+  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+};
+
+// TODO: Fetch from db
+export const getTaskProgress = () => {
+  return [0, 0] as [number | undefined, number | undefined];
 };
 
 const settingsRouter = createTRPCRouter({
