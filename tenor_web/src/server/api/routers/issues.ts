@@ -94,17 +94,6 @@ export const issuesRouter = createTRPCRouter({
         }),
       );
 
-      //   let epicData = undefined;
-      //   if (userStoryData.epicId !== "") {
-      //     const epic = await ctx.firestore
-      //       .collection("projects")
-      //       .doc(projectId)
-      //       .collection("epics")
-      //       .doc(userStoryData.epicId)
-      //       .get();
-      //     epicData = { ...EpicSchema.parse(epic.data()), id: epic.id };
-      //   }
-
       const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
 
       let priorityTag = undefined;
@@ -117,40 +106,6 @@ export const issuesRouter = createTRPCRouter({
           return await getBacklogTag(settingsRef, tagId);
         }),
       );
-
-      //   const dependencies = await Promise.all(
-      //     issueData.dependencyIds.map(async (dependencyId) => {
-      //       const dependency = await ctx.firestore
-      //         .collection("projects")
-      //         .doc(projectId)
-      //         .collection("issues")
-      //         .doc(dependencyId)
-      //         .get();
-      //       const dependencyData = UserStorySchema.parse(dependency.data());
-      //       return {
-      //         id: dependency.id,
-      //         name: dependencyData.name,
-      //         scrumId: dependencyData.scrumId,
-      //       };
-      //     }),
-      //   );
-
-      //   const relatedUserStory = await Promise.all(
-      //     issueData.relatedUserStoryId.map(async (relatedUserStoryId) => {
-      //       const relatedUserStory = await ctx.firestore
-      //         .collection("projects")
-      //         .doc(projectId)
-      //         .collection("userStories")
-      //         .doc(relatedUserStory)
-      //         .get();
-      //       const requiredByData = UserStorySchema.parse(relatedUserStory.data());
-      //       return {
-      //         id: requiredBy.id,
-      //         name: requiredByData.name,
-      //         scrumId: requiredByData.scrumId,
-      //       };
-      //     }),
-      //   );
 
       let relatedUserStory = undefined;
       if (issueData.relatedUserStoryId !== "") {
