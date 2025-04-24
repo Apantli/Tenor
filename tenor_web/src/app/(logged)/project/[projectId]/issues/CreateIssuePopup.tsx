@@ -8,12 +8,18 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
-import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
+import type {
+  ExistingEpic,
+  ExistingUserStory,
+  SprintPreview,
+  UserStoryPreview,
+} from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
+import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
 
 interface Props {
   showPopup: boolean;
@@ -21,7 +27,7 @@ interface Props {
   onIssueAdded: (issueId: string) => void;
 }
 
-export default function CreateUserStoryPopup({
+export default function CreateIssuePopup({
   showPopup,
   setShowPopup,
   onIssueAdded,
@@ -36,23 +42,21 @@ export default function CreateUserStoryPopup({
   const [createForm, setCreateForm] = useState<{
     name: string;
     description: string;
-    acceptanceCriteria: string;
+    stepsToRecreate: string;
     tags: Tag[];
     priority?: Tag;
     size?: Size;
-    epic?: ExistingEpic;
-    dependencies: UserStoryPreview[];
-    requiredBy: UserStoryPreview[];
+    sprint?: SprintPreview;
+    relatedUserStory?: ExistingUserStory;
   }>({
     name: "",
     description: "",
-    acceptanceCriteria: "",
+    stepsToRecreate: "",
     tags: [],
     priority: undefined,
     size: undefined,
-    epic: undefined,
-    dependencies: [],
-    requiredBy: [],
+    sprint: undefined,
+    relatedUserStory: undefined,
   });
 
   const confirm = useConfirmation();
@@ -61,12 +65,12 @@ export default function CreateUserStoryPopup({
   const isModified = () => {
     if (createForm.name !== "") return true;
     if (createForm.description !== "") return true;
-    if (createForm.acceptanceCriteria !== "") return true;
-    if (createForm.size !== undefined) return true;
-    if (createForm.epic !== undefined) return true;
-    if (createForm.dependencies.length > 0) return true;
-    if (createForm.requiredBy.length > 0) return true;
+    if (createForm.stepsToRecreate !== "") return true;
     if (createForm.tags.length > 0) return true;
+    if (createForm.priority !== undefined) return true;
+    if (createForm.size !== undefined) return true;
+    if (createForm.sprint !== undefined) return true;
+    if (createForm.relatedUserStory !== undefined) return true;
     return false;
   };
 
@@ -84,14 +88,13 @@ export default function CreateUserStoryPopup({
       issueData: {
         name: createForm.name,
         description: createForm.description,
-        // acceptanceCriteria: createForm.acceptanceCriteria,
         tagIds: createForm.tags
           .map((tag) => tag.id)
           .filter((val) => val !== undefined),
         priorityId: createForm.priority?.id,
         size: createForm.size,
-        relatedUserStoryId: "", // FIXME
-        stepsToRecreate: "", // FIXME
+        relatedUserStoryId: createForm.relatedUserStory?.id ?? "", // FIXME
+        stepsToRecreate: createForm.stepsToRecreate, // FIXME
       },
     });
     onIssueAdded(issueId);
@@ -105,7 +108,7 @@ export default function CreateUserStoryPopup({
   return (
     <Popup
       show={showPopup}
-      saveText="Create story"
+      saveText="Create Issue"
       saving={isPending}
       dismiss={async () => {
         if (isModified()) {
@@ -123,11 +126,12 @@ export default function CreateUserStoryPopup({
       sidebarClassName="basis-[210px]"
       sidebar={
         <>
-          <h3 className="text-lg font-semibold">Epic</h3>
-          <EpicPicker
-            epic={createForm.epic}
-            onChange={(epic) => {
-              setCreateForm({ ...createForm, epic });
+          <h3 className="text-lg font-semibold">User Story</h3>
+          {/* FIMXE User Story Picker */}
+          <UserStoryPicker
+            userStory={createForm.relatedUserStory}
+            onChange={(userStory) => {
+              setCreateForm({ ...createForm, relatedUserStory: userStory });
             }}
           />
 
@@ -158,38 +162,38 @@ export default function CreateUserStoryPopup({
       }
       title={
         <h1 className="mb-4 text-3xl">
-          <span className="font-bold">Create a user story</span>
+          <span className="font-bold">Create an issue</span>
         </h1>
       }
       editMode={true}
       setEditMode={async (editMode) => {
-        if (!editMode) await handleCreateUserStory();
+        if (!editMode) await handleCreateIssue();
       }}
       disablePassiveDismiss={isModified()}
     >
       <InputTextField
-        label="Story name"
+        label="Issue name"
         value={createForm.name}
         onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-        placeholder="Short summary of the story..."
+        placeholder="Short summary of the issue..."
         className="mb-4"
       />
       <InputTextAreaField
-        label="Story description"
+        label="Issue description"
         value={createForm.description}
         onChange={(e) =>
           setCreateForm({ ...createForm, description: e.target.value })
         }
-        placeholder="Explain the story in detail..."
+        placeholder="Explain the issue in detail..."
         className="mb-4 h-36 min-h-36"
       />
       <InputTextAreaField
-        label="Acceptance Criteria"
-        value={createForm.acceptanceCriteria}
+        label="Steps To Recreate"
+        value={createForm.stepsToRecreate}
         onChange={(e) =>
-          setCreateForm({ ...createForm, acceptanceCriteria: e.target.value })
+          setCreateForm({ ...createForm, stepsToRecreate: e.target.value })
         }
-        placeholder="Describe the work that needs to be done..."
+        placeholder="Describe the steps to recreate the issue..."
         className="h-36 min-h-36"
       />
     </Popup>
