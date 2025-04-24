@@ -82,6 +82,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
 
   const [temporaryColumnWidths, setTemporaryColumnWidths] =
     useState<number[]>(columnWidths);
+  const columnWidthsRef = useRef<number[]>(columnWidths);
 
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
@@ -125,13 +126,14 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     const delta = e.clientX - startXRef.current;
     const index = resizingIndexRef.current;
 
-    const newColumnWidths = [...temporaryColumnWidths];
+    const newColumnWidths = [...columnWidthsRef.current];
     let newWidth = startWidthRef.current + delta;
     if (newWidth < (columnEntries[index]![1].minWidth ?? 70)) {
       newWidth = columnEntries[index]![1].minWidth ?? 70;
     }
     newColumnWidths[index] = newWidth;
     setTemporaryColumnWidths(newColumnWidths);
+    columnWidthsRef.current = newColumnWidths;
 
     const newTemplateColumns =
       (multiselect ? "20px " : "") +
@@ -149,17 +151,16 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   const onResizeMouseUp = (e: MouseEvent) => {
     if (
       startXRef.current === undefined ||
-      resizingIndexRef.current === undefined ||
-      startWidthRef.current === undefined
+      resizingIndexRef.current === undefined
     )
       return;
 
-    const delta = e.clientX - startXRef.current;
-
     const index = resizingIndexRef.current;
-    const newWidth = startWidthRef.current + delta;
 
-    updateStoredWidth(columnEntries[index]![0], newWidth);
+    updateStoredWidth(
+      columnEntries[index]![0],
+      columnWidthsRef.current[index]!,
+    );
     setResizing(false);
     startWidthRef.current = undefined;
     startXRef.current = undefined;
@@ -201,6 +202,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     }
 
     setTemporaryColumnWidths(newColumnWidths);
+    columnWidthsRef.current = newColumnWidths;
 
     const newTemplateColumns =
       (multiselect ? "20px " : "") +
