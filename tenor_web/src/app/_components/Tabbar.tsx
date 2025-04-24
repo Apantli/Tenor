@@ -24,7 +24,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     { title: mainPageName ?? "Overview", link: "/", enabled: true },
     { title: "Requirements", link: "/requirements", enabled: true },
     { title: "User Stories", link: "/user-stories", enabled: true },
-    { title: "Issues", link: "/issues", enabled: false },
+    { title: "Issues", link: "/issues", enabled: true },
     { title: "Sprints", link: "/sprints", enabled: true },
     { title: "Kanban", link: "/kanban", enabled: false },
     { title: "Calendar", link: "/calendar", enabled: false },

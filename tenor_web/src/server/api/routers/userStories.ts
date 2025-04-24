@@ -14,6 +14,7 @@ import type { UserStoryDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
+
 export interface UserStoryCol {
   id: string;
   scrumId: number;
