@@ -195,8 +195,7 @@ export default function RequirementsTable() {
 
   const { mutateAsync: deleteRequirement } =
     api.requirements.deleteRequirement.useMutation();
-
-  useEffect(() => {
+    useEffect(() => {
     if (requirements) {
       const query = searchValue.toLowerCase();
 

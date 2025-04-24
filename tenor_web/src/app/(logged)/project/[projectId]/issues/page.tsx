@@ -3,6 +3,7 @@
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CreateIssuePopup from "./CreateIssuePopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
+import IssuesTable from "~/app/_components/sections/IssuesTable";
 
 export default function ProjectIssues() {
   const [renderNewStory, showNewStory, setShowNewStory] =
@@ -27,6 +28,9 @@ export default function ProjectIssues() {
           setShowPopup={setShowNewStory}
         />
       )}
+      <div>
+        <IssuesTable />
+      </div>
     </div>
   );
 }
