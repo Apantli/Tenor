@@ -6,7 +6,6 @@ import type {
   User,
   Settings,
   Requirement,
-  Tag,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
@@ -16,11 +15,7 @@ import {
   getLogoPath,
   deleteStartsWith,
 } from "~/utils/firebaseBucket";
-import {
-  ProjectSchema,
-  ProjectSchemaCreator,
-  SettingsSchema,
-} from "~/lib/types/zodFirebaseSchema";
+import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/base64";
 
@@ -71,6 +66,8 @@ export const createEmptyProject = (): Project => {
     // sprints: [],
     // sprintSnapshots: [],
     currentSprintId: "",
+
+    activities: [],
   };
 };
 
@@ -161,7 +158,7 @@ export const projectsRouter = createTRPCRouter({
     return projects;
   }),
   createProject: protectedProcedure
-    .input(ProjectSchemaCreator.extend({ settings: SettingsSchema }))
+    .input(ProjectSchema.extend({ settings: SettingsSchema }))
     .mutation(async ({ ctx, input }) => {
       const newProjectRef = ctx.firestore.collection("projects").doc();
 
@@ -179,7 +176,7 @@ export const projectsRouter = createTRPCRouter({
       // Remove duplicated users (preserve first occurrence)
       const seen = new Map<
         string,
-        z.infer<typeof ProjectSchemaCreator>["users"][number]
+        z.infer<typeof ProjectSchema>["users"][number]
       >();
 
       for (const user of input.users) {
@@ -222,7 +219,7 @@ export const projectsRouter = createTRPCRouter({
       }
 
       try {
-        const { settings, users, ...projectData } = input;
+        const { settings, ...projectData } = input;
 
         await newProjectRef.set(projectData);
 
@@ -243,45 +240,6 @@ export const projectsRouter = createTRPCRouter({
           .collection("settings")
           .doc("settings")
           .set(settings);
-
-        const userTypesCollection = newProjectRef
-          .collection("settings")
-          .doc("settings")
-          .collection("userTypes");
-
-        const adminRole = await userTypesCollection.add({
-          label: "Admin",
-          color: "#FF0000",
-          deleted: false,
-        });
-
-        const viewerRole = await userTypesCollection.add({
-          label: "Viewer",
-          color: "#00FF00",
-          deleted: false,
-        });
-
-        const developerRole = await userTypesCollection.add({
-          label: "Developer",
-          color: "#0000FF",
-          deleted: false,
-        });
-
-        users.forEach((user) => {
-          if (user.roleId === "admin") {
-            user.roleId = adminRole.id;
-          } else if (user.roleId === "developer") {
-            user.roleId = developerRole.id;
-          } else {
-            user.roleId = viewerRole.id;
-          }
-        });
-
-        const usersCollection = newProjectRef.collection("users");
-
-        await Promise.all(
-          users.map((user) => usersCollection.doc(user.userId).set(user)),
-        );
 
         const priorityTypesCollection = newProjectRef
           .collection("settings")
@@ -434,27 +392,5 @@ export const projectsRouter = createTRPCRouter({
         .get();
       const projectData = ProjectSchema.parse(project.data());
       return { projectName: projectData.name };
-    }),
-
-  getUserTypes: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      const statusTypes = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("settings")
-        .doc("settings")
-        .collection("userTypes")
-        .select("label")
-        .where("deleted", "==", false)
-        .get();
-
-      const statusTypesData = statusTypes.docs.map((doc) => ({
-        id: doc.id,
-        label: doc.data().label as string,
-      }));
-
-      return statusTypesData;
     }),
 });

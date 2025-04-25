@@ -1,5 +1,5 @@
 "user client";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import Table, { type TableColumns } from "../table/Table";
@@ -12,14 +12,13 @@ import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
 
 interface Props {
-  label?: string;
+  label: string;
   teamMembers: TeamMember[];
   handleMemberAdd: (user: TeamMember) => void;
   handleMemberRemove: (id: (string | number)[]) => void;
   handleEditMemberRole: (id: string, role: string) => void;
   className?: ClassNameValue;
   roleList: { id: string; label: string }[];
-  isSearchable?: boolean;
 }
 
 export interface TeamMember {
@@ -38,21 +37,9 @@ export default function MemberTable({
   handleEditMemberRole,
   className,
   roleList,
-  isSearchable = false,
 }: Props) {
   const { data: users, isLoading } = api.users.getUserList.useQuery();
   const [searchValue, setSearchValue] = useState("");
-  const [tableSearchValue, setTableSearchValue] = useState("");
-
-  const filteredTeamMembers = useMemo(() => {
-    const search = tableSearchValue.toLowerCase();
-    return teamMembers.filter((member) => {
-      return (
-        member.displayName?.toLowerCase().includes(search) ||
-        member.email?.toLowerCase().includes(search)
-      );
-    });
-  }, [teamMembers, tableSearchValue]);
 
   const columns: TableColumns<TeamMember> = {
     id: { visible: false },
@@ -100,24 +87,13 @@ export default function MemberTable({
   return (
     <div className={cn("w-full text-sm", className)}>
       {/* FIMXE: Add seach bar */}
-      <div className="flex items-center justify-between gap-x-4 py-4">
-        {label && (
-          <label
-            htmlFor="project-description"
-            className="justify flex text-sm font-semibold"
-          >
-            {label}
-          </label>
-        )}
-        {isSearchable && (
-          <SearchBar
-            searchValue={tableSearchValue}
-            placeholder="Find a member..."
-            handleUpdateSearch={(e) => {
-              setTableSearchValue(e.target.value);
-            }}
-          />
-        )}
+      <div className="flex items-center justify-between py-4">
+        <label
+          htmlFor="project-description"
+          className="justify flex text-sm font-semibold"
+        >
+          {label}
+        </label>
         <Dropdown
           label={
             <PrimaryButton className="flex items-center text-sm" asSpan>
@@ -171,7 +147,7 @@ export default function MemberTable({
 
       <Table
         className="h-[200px] text-sm"
-        data={filteredTeamMembers} // filter tableSearchValue by name or email
+        data={teamMembers}
         columns={columns}
         multiselect
         deletable={{

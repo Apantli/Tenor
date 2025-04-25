@@ -74,6 +74,16 @@ export interface Project {
   // sprintSnapshots: SprintSnapshot[];
 
   currentSprintId: string;
+
+  activities: {
+    // TODO: Make configuration to delete these after X amount of time
+    title: string;
+    activityId: string;
+    type: "US" | "TS" | "IS" | "ITEM";
+    newStatusId: string;
+    userId: string; // who changed it
+    date: Date;
+  }[];
 }
 
 export interface Settings {
