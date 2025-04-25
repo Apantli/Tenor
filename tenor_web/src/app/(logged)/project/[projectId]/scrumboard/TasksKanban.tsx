@@ -33,10 +33,12 @@ export type UserStories = inferRouterOutputs<
 >["getUserStoryPreviewsBySprint"]["userStories"];
 
 export default function TasksKanban() {
+  // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
   const formatTaskScrumId = useFormatTaskScrumId();
 
+  // TRPC
   const { data: itemsAndColumnsData, isLoading } =
     api.kanban.getTasksForKanban.useQuery({
       projectId: projectId as string,
@@ -51,19 +53,23 @@ export default function TasksKanban() {
     });
   };
 
+  // REACT
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  // Drag and drop state
   const [lastDraggedItemId, setLastDraggedItemId] = useState<string | null>(
     null,
   );
 
-  // const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  // Detail item and parent
   const [detaiItemId, setDetaiItemId] = useState("");
-
-  //// Drag and drop operations
+  const detailItem = itemsAndColumnsData?.items[detaiItemId]
+  const detailUserStoryId = detailItem?.itemType == 'US' ? detailItem.itemId : null;
+  // TODO: Do same for issue
+  // TODO: Do same for generic item
+  
+  // UTILITY
   let updateOperationsInProgress = 0;
 
-  // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (itemId: string, columnId: string) => {
     setLastDraggedItemId(null);
     if (itemsAndColumnsData == undefined) return;
@@ -150,6 +156,7 @@ export default function TasksKanban() {
         projectId: projectId as string,
       });
       // TODO: Invalidate queries for items
+
       // await utils.userStories.getUserStoriesTableFriendly.invalidate({
       //   projectId: projectId as string,
       // });
@@ -226,9 +233,7 @@ export default function TasksKanban() {
                   selectedItems={selectedItems}
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetaiItemId}
-                  setShowDetail={() => {
-                    console.log("Show detail");
-                  }}
+                  setShowDetail={setShowDetail}
                   renderCard={(item) => (
                     <ItemCardRender
                       item={item}
@@ -286,13 +291,13 @@ export default function TasksKanban() {
         </DragOverlay>
       </DragDropProvider>
 
-      {/* {renderDetail && (
+      {renderDetail && detailUserStoryId && (
         <UserStoryDetailPopup
           setShowDetail={setShowDetail}
           showDetail={showDetail}
           userStoryId={detailUserStoryId}
         />
-      )} */}
+      )}
     </>
   );
 }
