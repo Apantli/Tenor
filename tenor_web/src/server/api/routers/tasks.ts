@@ -20,29 +20,29 @@ export interface TaskCol {
   };
 }
 
-// const getTasksFromProject = async (
-//   dbAdmin: FirebaseFirestore.Firestore,
-//   projectId: string,
-// ) => {
-//   const taskCollectionRef = dbAdmin
-//     .collection(`projects/${projectId}/tasks`)
-//     .where("deleted", "==", false)
-//     .orderBy("scrumId");
-//   const snap = await taskCollectionRef.get();
+export const getTasksFromProject = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+) => {
+  const taskCollectionRef = dbAdmin
+    .collection(`projects/${projectId}/tasks`)
+    .where("deleted", "==", false)
+    .orderBy("scrumId");
+  const snap = await taskCollectionRef.get();
 
-//   const docs = snap.docs.map((doc) => {
-//     return {
-//       id: doc.id,
-//       ...doc.data(),
-//     };
-//   });
+  const docs = snap.docs.map((doc) => {
+    return {
+      id: doc.id,
+      ...doc.data(),
+    };
+  });
 
-//   const tasks: WithId<Task>[] = docs.filter(
-//     (task): task is WithId<Task> => task !== null,
-//   );
+  const tasks: WithId<Task>[] = docs.filter(
+    (task): task is WithId<Task> => task !== null,
+  );
 
-//   return tasks;
-// };
+  return tasks;
+};
 
 const getTasksFromItem = async (
   dbAdmin: FirebaseFirestore.Firestore,

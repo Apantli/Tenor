@@ -3,7 +3,8 @@ import React from "react";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CardColumn from "./CardColumn";
 import type { ClassNameValue } from "tailwind-merge";
-import UserStoryCardRender from "./CardRender";
+import ItemCardRender from "./ItemCardRender";
+import type { CardItem } from "~/server/api/routers/kanban";
 
 interface Props {
   userStories: inferRouterOutputs<
@@ -30,13 +31,22 @@ export default function UserStoryCardColumn({
   header,
   className,
   dndId,
-  lastDraggedUserStoryId,
+  lastDraggedUserStoryId: lastDraggedUserStoryId,
 }: Props) {
+  const cards: CardItem[] = userStories.map((userStory) => ({
+    id: userStory.id,
+    scrumId: userStory.scrumId,
+    name: userStory.name,
+    size: userStory.size,
+    tags: userStory.tags,
+    columnId: userStory.sprintId,
+  }));
+
   return (
     <CardColumn
-      lastDraggedUserStoryId={lastDraggedUserStoryId}
+      lastDraggedItemId={lastDraggedUserStoryId}
       dndId={dndId}
-      cards={userStories}
+      cards={cards}
       selection={selection}
       setSelection={setSelection}
       setDetailId={setDetailId}
@@ -44,7 +54,7 @@ export default function UserStoryCardColumn({
       isLoading={isLoading}
       header={header}
       className={className}
-      renderCard={(userStory) => <UserStoryCardRender userStory={userStory} />}
+      renderCard={(userStory) => <ItemCardRender item={userStory} />}
     />
   );
 }

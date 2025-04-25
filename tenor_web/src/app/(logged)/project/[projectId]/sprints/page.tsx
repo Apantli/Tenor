@@ -21,7 +21,7 @@ import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
-import UserStoryCardRender from "~/app/_components/cards/CardRender";
+import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 
 export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
@@ -552,12 +552,11 @@ export default function ProjectSprints() {
             const draggingUserStory =
               userStoriesBySprint?.userStories[userStoryId];
             if (!draggingUserStory) return null;
-            return (
-              <UserStoryCardRender
-                userStory={draggingUserStory}
-                showBackground={true}
-              />
-            );
+            const item = {
+              ...draggingUserStory,
+              columnId: draggingUserStory.sprintId,
+            };
+            return <ItemCardRender item={item} showBackground={true} />;
           }}
         </DragOverlay>
       </DragDropProvider>

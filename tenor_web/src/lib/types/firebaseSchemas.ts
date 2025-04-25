@@ -103,7 +103,7 @@ export interface Settings {
   // requirementTypeTags: Tag[];
   // backlogTags: Tag[];
   // priorityTypes: Tag[];
-  // statusTabs: Tag[];
+  // statusTypes: Tag[];
 
   // roles: Role[];
 }
@@ -163,6 +163,7 @@ export interface BacklogItem extends BasicInfo {
   tagIds: string[];
   size: Size;
   priorityId: string;
+  statusId: string;
 }
 
 export type Epic = BasicInfo;
