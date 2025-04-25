@@ -95,7 +95,7 @@ function TableFilter<T extends Record<string, any>>({
                 value={searchValue}
                 onChange={handleUpdateSearch}
               />
-              <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg border border-t-0 border-app-border">
+              <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg border border-t-0 border-app-border">
                 {uniqueData.map((item, i) => (
                   <DropdownButton
                     key={i}

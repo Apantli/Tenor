@@ -87,7 +87,7 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
           </button>
         ))}
       </div>
-      <div className="ml-10 flex-1 overflow-scroll">
+      <div className="ml-10 flex-1 overflow-auto">
         <ModificationContext.Provider value={{ setIsModified, isModified }}>
           {children}
         </ModificationContext.Provider>

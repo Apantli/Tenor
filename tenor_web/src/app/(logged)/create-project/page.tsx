@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { defaultRoleList } from "~/lib/defaultTags";
 
 export default function ProjectCreator() {
   const toBase64 = (file: File) =>
@@ -297,11 +298,7 @@ export default function ProjectCreator() {
                 handleMemberAdd={handleAddTeamMember}
                 handleMemberRemove={handleRemoveTeamMember}
                 handleEditMemberRole={handleEditMemberRole}
-                roleList={[
-                  { id: "admin_role_id", label: "Admin" },
-                  { id: "developer_role_id", label: "Developer" },
-                  { id: "viewer_role_id", label: "Viewer" },
-                ]}
+                roleList={defaultRoleList}
               />
             </div>
           </div>

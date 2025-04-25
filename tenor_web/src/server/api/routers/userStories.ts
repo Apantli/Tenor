@@ -16,7 +16,12 @@ import type {
   UserStoryDetail,
   UserStoryPreview,
 } from "~/lib/types/detailSchemas";
-import { getProjectSettingsRef } from "./settings";
+import {
+  getBacklogTag,
+  getPriorityTag,
+  getProjectSettingsRef,
+  getTaskProgress,
+} from "./settings";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
 
