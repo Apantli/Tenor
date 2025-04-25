@@ -99,15 +99,17 @@ export default function UserStoryDetailPopup({
   const { predefinedAlerts } = useAlert();
   const formatSprintNumber = useFormatSprintNumber();
 
-  // Copy the editable data from the user story
   useEffect(() => {
     if (!userStoryDetail) return;
-    setEditForm({
-      name: userStoryDetail.name,
-      description: userStoryDetail.description,
-      acceptanceCriteria: userStoryDetail.acceptanceCriteria,
-    });
-  }, [userStoryDetail]);
+    if (!editMode) {
+      // Only update the form when we're not in edit mode
+      setEditForm({
+        name: userStoryDetail.name,
+        description: userStoryDetail.description,
+        acceptanceCriteria: userStoryDetail.acceptanceCriteria,
+      });
+    }
+  }, [userStoryDetail, editMode]);
 
   const confirm = useConfirmation();
 
@@ -131,15 +133,17 @@ export default function UserStoryDetailPopup({
 
   const handleSave = async (
     updatedData: NonNullable<typeof userStoryDetail>,
+    saveEditForm = false,
   ) => {
-    const finalData = editMode
-      ? {
-          ...updatedData,
-          name: editForm.name,
-          description: editForm.description,
-          acceptanceCriteria: editForm.acceptanceCriteria,
-        }
-      : updatedData;
+    const finalData =
+      saveEditForm && editMode
+        ? {
+            ...updatedData,
+            name: editForm.name,
+            description: editForm.description,
+            acceptanceCriteria: editForm.acceptanceCriteria,
+          }
+        : updatedData;
 
     const updatedUserStory = {
       name: finalData.name,
@@ -195,7 +199,9 @@ export default function UserStoryDetailPopup({
       projectId: projectId as string,
     });
 
-    await refetch();
+    if (!editMode || saveEditForm) {
+      await refetch();
+    }
   };
 
   const handleTaskStatusChange = async (taskId: string, status: Tag) => {
@@ -234,6 +240,10 @@ export default function UserStoryDetailPopup({
     await utils.tasks.getTasksTableFriendly.invalidate({
       projectId: projectId as string,
       itemId: userStoryId,
+    });
+
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId as string,
     });
   };
 
@@ -377,7 +387,7 @@ export default function UserStoryDetailPopup({
             description: editForm.description,
             acceptanceCriteria: editForm.acceptanceCriteria,
           };
-          await handleSave(updatedData);
+          await handleSave(updatedData, true); // Pass true to save the edit form
         }
       }}
       disablePassiveDismiss={editMode}
