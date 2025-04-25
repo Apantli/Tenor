@@ -20,6 +20,7 @@ interface Props {
   className?: ClassNameValue;
   roleList: { id: string; label: string }[];
   isSearchable?: boolean;
+  height: number;
 }
 
 export interface TeamMember {
@@ -39,6 +40,7 @@ export default function MemberTable({
   className,
   roleList,
   isSearchable = false,
+  height = 200,
 }: Props) {
   const { data: users, isLoading } = api.users.getUserList.useQuery();
   const [searchValue, setSearchValue] = useState("");
@@ -170,7 +172,7 @@ export default function MemberTable({
       </div>
 
       <Table
-        className="h-[200px] text-sm"
+        className={`h-[${height}px] text-sm`}
         data={filteredTeamMembers} // filter tableSearchValue by name or email
         columns={columns}
         multiselect

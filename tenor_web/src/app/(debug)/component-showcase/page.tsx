@@ -708,6 +708,7 @@ function InputComponents() {
           { id: "developer", label: "Developer" },
           { id: "viewer", label: "Viewer" },
         ]}
+        height={600}
       />
     </div>
   );

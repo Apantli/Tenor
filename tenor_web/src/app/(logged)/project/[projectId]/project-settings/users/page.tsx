@@ -15,7 +15,7 @@ export default function ProjectUsers() {
   });
 
   return (
-    <div className="flex h-full max-w-[600px] flex-col">
+    <div className="flex h-full max-w-[800px] flex-col">
       <div className="flex flex-row justify-between">
         <h1 className="mb-4 text-3xl font-semibold">Users & Permissions</h1>
       </div>
@@ -34,6 +34,7 @@ export default function ProjectUsers() {
           }}
           roleList={userTypes}
           isSearchable={true}
+          height={600}
         />
       ) : (
         <div className="mt-5 flex flex-row gap-x-3">
