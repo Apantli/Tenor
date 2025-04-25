@@ -112,7 +112,7 @@ export default function MemberTable({
           </DropdownItem>
 
           <div className="whitespace-nowraptext-left w-full text-sm">
-            <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg text-sm">
+            <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg text-sm">
               {session.user &&
                 users?.map((user) => {
                   if (user.id === session.user?.uid) return null;
@@ -154,6 +154,7 @@ export default function MemberTable({
           deleteText: "Remove",
         }}
         onDelete={(ids) => handleMemberRemove(ids)}
+        tableKey="team-member-table"
       />
     </div>
   );

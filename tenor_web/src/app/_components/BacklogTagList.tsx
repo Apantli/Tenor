@@ -35,7 +35,6 @@ export const acceptableTagColors = [
   "#524849",
 ] as const;
 
-
 export function generateRandomColor(): string {
   const randomIndex = Math.floor(Math.random() * acceptableTagColors.length);
   return acceptableTagColors[randomIndex] ?? "#d9543d";
@@ -123,7 +122,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
             />
           </DropdownItem>
           <div className="w-full whitespace-nowrap text-left">
-            <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
+            <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg">
               {filteredTags?.map((tag) => (
                 <DropdownButton
                   onClick={() => handleTagClick(tag)}
@@ -165,7 +164,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
           </div>
         </Dropdown>
       </div>
-      <div className="no-scrollbar flex gap-2 overflow-x-scroll">
+      <div className="no-scrollbar flex gap-2 overflow-x-auto">
         {tags.map((tag) => (
           <TagComponent
             color={tag.color}

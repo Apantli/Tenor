@@ -7,7 +7,9 @@ export const useFormatUserStoryScrumId = () => {
 
 export const useFormatEpicScrumId = () => {
   return (scrumId: number | undefined) =>
-    (scrumId == undefined || scrumId == 0) ? "No Epic" : `EP${String(scrumId).padStart(2, "0")}`;
+    scrumId == undefined || scrumId == 0
+      ? "No Epic"
+      : `EP${String(scrumId).padStart(2, "0")}`;
 };
 
 export const useFormatSprintNumber = () => {
@@ -24,3 +26,6 @@ export const useFormatTaskScrumId = () => {
 export const useFormatIssueScrumId = () => {
   return (scrumId: number) => `IS${String(scrumId).padStart(3, "0")}`;
 }
+export const useFormatTaskIssueId = () => {
+  return (issueId: number) => `IS${String(issueId).padStart(3, "0")}`;
+};

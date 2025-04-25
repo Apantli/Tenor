@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type {Issue, WithId, Tag, Size } from "~/lib/types/firebaseSchemas";
+import type {Issue, WithId, Tag, Size, Sprint } from "~/lib/types/firebaseSchemas";
 import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
@@ -10,11 +10,11 @@ import {
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
-import type { ExistingUserStory, UserStoryDetail } from "~/lib/types/detailSchemas";
+import type { ExistingUserStory, IssueDetail, UserStoryDetail } from "~/lib/types/detailSchemas";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { getProjectSettingsRef } from "./settings";
+import { getProjectSettingsRef, getBacklogTag, getPriorityTag } from "./settings";
 import { FieldPath } from "firebase-admin/firestore";
 import { TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { all, is } from "node_modules/cypress/types/bluebird";
@@ -26,8 +26,11 @@ export interface IssueCol {
   name: string;
   description: string;
   priority: Tag;
-  relatedUserStory: ExistingUserStory;
+  relatedUserStory?: ExistingUserStory;
+  tags: Tag[];
+  stepsToRecreate?: string;
   size: Size;
+  sprint?: Sprint
 }
 
 // Get the issues from a designated project and sprint
@@ -55,38 +58,6 @@ const getIssuesFromProject = async (
   return issues;
 };
 
-const getPriorityTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  priorityId: string,
-) => {
-  if (priorityId === undefined) {
-    return undefined;
-  }
-  const tag = await settingsRef
-    .collection("priorityTypes")
-    .doc(priorityId)
-    .get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
-}
-
-const getBacklogTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  taskId: string,
-) => {
-  if (taskId === undefined) {
-    return undefined;
-  }
-
-  const tag = await settingsRef.collection("backlogTags").doc(taskId).get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
-}
-
 const getUserStory = async (
   settingsRef: FirebaseFirestore.DocumentReference,
   userStoryId: string,
@@ -104,85 +75,9 @@ const getUserStory = async (
   return { id: userStory.id, ...ExistingUserStorySchema.parse(userStory.data()) } as ExistingUserStory;
 }
 
-// const createIssueTableData = async (
-//   data: WithId<Issue>[],
-//   projectId: string,
-//   adAdmin: FirebaseFirestore.Firestore,
-// ) => {
-//   if (data.length === 0) {
-//     return {
-//       allTags: [],
-//       fixedData: [],
-//       allStepsToRecreate: [],
-//       relatedUserStories: [],
-//     }
-//   }
-
-//   // Get all the tasksId, sprintId, tags, userStories priorityIds from the issue
-//   const uniquePriorityIds: string[] = Array.from(
-//     new Set(data.map((issue) => issue.priorityId).filter(Boolean)
-//     ),
-//   );
-
-//   //Get the project settings reference
-//   const settingsRef = getProjectSettingsRef(projectId, adAdmin);
-
-//   //Get all the tags from the collection "priorityTypes"
-//   const allTagsSnapshot = await settingsRef.collection("priorityTypes").get();
-//   const allTags: Tag[] = allTagsSnapshot.docs.map((doc) => ({
-//     id: doc.id,
-//     ...(doc.data() as Tag),
-//   }));
-
-//   //Get only the tags assign to the issue
-//   const tagsData = await Promise.all(
-//     uniquePriorityIds.map(async (tagId) => {
-//       const tagSnap = await settingsRef
-//         .collection("priorityTypes")
-//         .doc(tagId)
-//         .get();
-//       if (!tagSnap.exists) return null;
-//       return { id: tagId, ...TagSchema.parse(tagSnap.data()) };
-//     })
-//   );
-
-//   // Map the tags to their ids
-//   const tagMap = new Map(
-//     tagsData.filter((tag): tag is Tag & { id:string} => tag !== null).map((tag) => [tag.id, tag]),
-//   );
-
-//   const fixedData = data.map((issue) => ({
-//     id: issue.id,
-//     name: issue.name,
-//     scrumId: issue.scrumId,
-//     description: issue.description,
-//     priority: tagMap.get(issue.priorityId ?? "") ?? {
-//       id: "unknown",
-//       name: "Unknown",
-//       color: "#000000",
-//       deleted: false,
-//     },
-//     size: Array.isArray(issue.size) ? issue.size[0] : issue.size,
-//     relatedUserStoryId: Array.isArray(issue.relatedUserStoryId) ? issue.relatedUserStoryId[0] : issue.relatedUserStoryId,
-//     tags: issue.tagIds.map((tagId) => tagMap.get(tagId) ?? {
-//       id: "unknown",
-//       name: "Unknown",
-//       color: "#000000",
-//       deleted: false,
-//     }),
-//   })) as IssueCol[];
-
-//   return {
-//     allTags,
-//     fixedData,
-//     allStepsToRecreate: [],
-//   relatedUserStories: [], 
-//   };
-// };
-
 export const issuesRouter = createTRPCRouter({
   getIssuesTableFriendly: protectedProcedure
-  .input(z.object({ projectId: z.string() }))
+  .input(z.object({ projectId: z.string(), issueId: z.string().optional() }))
   .query(async ({ ctx, input }) => {
       const rawIssues = await getIssuesFromProject(
         ctx.firestore,
@@ -262,29 +157,11 @@ export const issuesRouter = createTRPCRouter({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
-  modifyIssue: protectedProcedure
-    .input(IssueSchema.extend({ projectId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const issueRef = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("issues");
-      
-      const issueDocs = await issueRef
-        .where("scrumId", "==", input.scrumId)
-        .get();
-      if (issueDocs.empty) {
-        throw new Error("Issue not found");
-      }
-      const issueDoc = issueDocs.docs[0];
-      await issueDoc?.ref.update(input);
-      return "Issue updated successfully";
-    }),
 
   getIssueDetail: protectedProcedure
-    .input(z.object({ projectId: z.string(), issueId: z.string() }))
+    .input(z.object({ issueId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Get the necesary information to construct the issue detail
+      // Get the necessary information to construct the IssueDetail
 
       const { projectId, issueId } = input;
       const issueRef = ctx.firestore
@@ -292,13 +169,14 @@ export const issuesRouter = createTRPCRouter({
         .doc(projectId)
         .collection("issues")
         .doc(issueId);
-      const issueDoc = await issueRef.get();
-      if (!issueDoc.exists) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Issue not found" });
+      const issue = await issueRef.get();
+      if (!issue.exists) {
+        throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      const issueData = IssueSchema.parse(issueDoc.data());
-      // Fetch all the tasks information from the issues in parallel
+      const issueData = IssueSchema.parse(issue.data());
+
+      // Fetch all the task information for the issue in parallel
       const tasks = await Promise.all(
         issueData.taskIds.map(async (taskId) => {
           const taskRef = ctx.firestore
@@ -306,60 +184,126 @@ export const issuesRouter = createTRPCRouter({
             .doc(projectId)
             .collection("tasks")
             .doc(taskId);
-          const taskDoc = await taskRef.get();
-          if (!taskDoc.exists) {
-            throw new TRPCError({ code: "NOT_FOUND", message: "Task not found" });
+          const task = await taskRef.get();
+          if (!task.exists) {
+            throw new TRPCError({ code: "NOT_FOUND" });
           }
-          const taskData = TaskSchema.parse(taskDoc.data());
+          const taskData = TaskSchema.parse(task.data());
 
-          const statusTag = TagSchema.parse(
-            {name: "Done",
+          // FIXME: Get tag information from database
+          const statusTag = TagSchema.parse({
+            name: "Done",
             color: "#00FF00",
-            deleted: false,}
-          );
+            deleted: false,
+          });
 
           return { ...taskData, id: taskId, status: statusTag };
         }),
       );
 
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      
+      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+
       let priorityTag = undefined;
       if (issueData.priorityId !== undefined) {
-        priorityTag = await getPriorityTag(
-          settingsRef,
-          issueData.priorityId,
-        );
+        priorityTag = await getPriorityTag(settingsRef, issueData.priorityId);
       }
 
       const tags = await Promise.all(
         issueData.tagIds.map(async (tagId) => {
           return await getBacklogTag(settingsRef, tagId);
         }),
-      )
+      );
 
-      let relatedUserStoryId = undefined;
-      if (issueData.relatedUserStoryId !== undefined) {
-        relatedUserStoryId = await getUserStory(
-          settingsRef,
-          issueData.relatedUserStoryId,
-        );
+      let relatedUserStory = undefined;
+      if (issueData.relatedUserStoryId !== "") {
+        const relatedUserStoryDoc = await ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("userStories")
+          .doc(issueData.relatedUserStoryId)
+          .get();
+        if (relatedUserStoryDoc.exists) {
+          const relatedUserStoryData = UserStorySchema.parse(
+            relatedUserStoryDoc.data(),
+          );
+          relatedUserStory = {
+            id: issueData.relatedUserStoryId,
+            name: relatedUserStoryData.name,
+            scrumId: relatedUserStoryData.scrumId,
+          };
+        }
       }
 
-      const filteredTasks = tasks.filter((task) => task.deleted !== true);
+      let sprint = undefined;
+      if (issueData.sprintId !== "") {
+        const sprintDoc = await ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("sprints")
+          .doc(issueData.sprintId)
+          .get();
+        if (sprintDoc.exists) {
+          const sprintData = SprintSchema.parse(sprintDoc.data());
+          sprint = {
+            id: sprintDoc.id,
+            number: sprintData.number,
+          };
+        }
+      }
+
+      const filteredTasks = tasks.filter((task) => task.deleted === false);
       return {
         id: issueId,
         scrumId: issueData.scrumId,
         name: issueData.name,
         description: issueData.description,
         stepsToRecreate: issueData.stepsToRecreate,
+        completed: issueData.complete,
         size: issueData.size,
+        tags: tags,
         priority: priorityTag,
-        relatedUserStory: relatedUserStoryId,
-        tags: tags
-      } as IssueCol
-    }
-  ),
+        tasks: filteredTasks,
+        sprint: sprint,
+        relatedUserStory: relatedUserStory,
+      } as IssueDetail;
+    }),
+
+  modifyIssue: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        issueId: z.string(),
+        issueData: IssueSchema.omit({ scrumId: true, deleted: true }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, issueId, issueData } = input;
+      const issueRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("issues")
+        .doc(issueId);
+      await issueRef.update(issueData);
+      return { success: true };
+    }),
+
+  deleteIssue: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        issueId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, issueId } = input;
+      const issueRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("issues")
+        .doc(issueId);
+      await issueRef.update({ deleted: true });
+      return { success: true };
+    }),
 
   modifyIssuesTags: protectedProcedure
     .input(z.object({

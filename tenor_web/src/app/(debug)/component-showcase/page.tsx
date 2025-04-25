@@ -28,6 +28,7 @@ import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
 import type { Option } from "~/app/_components/EditableBox/EditableBox";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import { acceptableTagColors } from "~/app/_components/BacklogTagList";
+import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -173,6 +174,7 @@ function TableShowcase() {
   // Important: this data type must contain an id which can be a number or a string and is used for identifying the rows when performing actions
   interface ExampleUser {
     id: number;
+    number: number;
     degree: string;
     name: string;
     age: number;
@@ -180,24 +182,37 @@ function TableShowcase() {
 
   // Secondly, you should create an array with your data, this might come from the API.
   // If you need to rearrange the data provided by the API to conform to your data type, use the map function.
-  const data: ExampleUser[] = [
-    { id: 1, degree: "ITC", name: "Luis", age: 21 },
-    { id: 2, degree: "ITC", name: "Sergio", age: 20 },
-    { id: 3, degree: "ITC", name: "Alonso", age: 19 },
-    { id: 4, degree: "ITC", name: "Oscar", age: 21 },
-    { id: 5, degree: "ITC", name: "Luis", age: 21 },
-    { id: 6, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 7, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 8, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 9, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 10, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 11, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 12, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 13, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 14, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 15, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 16, degree: "ITC", name: "Nicolas", age: 21 },
-    { id: 17, degree: "ITC", name: "Nicolas", age: 21 },
+  const [data, setData] = useState<ExampleUser[]>([
+    { id: 1, number: 5, degree: "ITC", name: "Luis", age: 21 },
+    // { id: 2, number: 5, degree: "ITC", name: "Sergio", age: 20 },
+    // { id: 3, number: 5, degree: "ITC", name: "Alonso", age: 19 },
+    // { id: 4, number: 5, degree: "ITC", name: "Oscar", age: 21 },
+    // { id: 5, number: 5, degree: "ITC", name: "Luis", age: 21 },
+    // { id: 6, number: 5, degree: "ITC", name: "Nicolas", age: 21 },
+  ]);
+
+  const dummyGhostData: ExampleUser[] = [
+    {
+      id: -1,
+      number: -1,
+      degree: "ITC",
+      name: "First person created by AI",
+      age: 21,
+    },
+    {
+      id: -2,
+      number: -1,
+      degree: "ITC",
+      name: "Second person created by AI",
+      age: 21,
+    },
+    {
+      id: -3,
+      number: -1,
+      degree: "ITC",
+      name: "Third person created by AI",
+      age: 21,
+    },
   ];
 
   // You also need to provide column definitions for the table
@@ -207,6 +222,11 @@ function TableShowcase() {
   // but if you don't want to display some information in the table, like for example an internal ID, you can choose to hide that column.
   const columns: TableColumns<ExampleUser> = {
     id: { visible: false },
+    number: {
+      label: "Number",
+      width: 80,
+      hiddenOnGhost: true,
+    },
     degree: {
       label: "Degree",
       width: 200,
@@ -245,10 +265,58 @@ function TableShowcase() {
     },
   ];
 
+  const generationTime = 5000;
+
+  // Helper hook to manage the state of the ghost items
+  const [
+    onAccept,
+    onReject,
+    beginLoading,
+    finishLoading,
+    ghostData,
+    ghostRows,
+    setGhostRows,
+  ] = useGhostTableStateManager<ExampleUser, number>((ids: number[]) => {
+    // Use the callback to perform the action you want when the user accepts the ghosts
+    const newData = data.concat(
+      dummyGhostData.filter((ghost) => ids.includes(ghost.id)),
+    );
+    setData(newData);
+  });
+
+  const generate = async () => {
+    beginLoading(3);
+    // Simulate ai generation waiting time
+    await new Promise((resolve) => setTimeout(resolve, generationTime));
+    finishLoading(dummyGhostData);
+  };
+
   return (
     <div>
       <hr />
       <h2 className="my-2 text-2xl font-medium">Tables</h2>
+      <div className="flex w-full justify-end gap-2">
+        <PrimaryButton
+          onClick={generate}
+          disabled={ghostRows !== undefined && ghostData === undefined}
+        >
+          Generate with AI
+        </PrimaryButton>
+        <SecondaryButton
+          onClick={() => {
+            finishLoading(dummyGhostData);
+          }}
+        >
+          Create manually
+        </SecondaryButton>
+        <SecondaryButton
+          onClick={() => {
+            beginLoading(3);
+          }}
+        >
+          Show loading
+        </SecondaryButton>
+      </div>
       {/* Include the table component in your page, give it a maximum height, as well as the data and columns */}
       {/* Optionally include extraOptions */}
       {/* multiselect: Show the checkboxes next to each row and in the header */}
@@ -257,11 +325,18 @@ function TableShowcase() {
       <Table
         className="h-[250px]"
         data={data}
+        ghostData={ghostData}
+        acceptGhosts={onAccept}
+        rejectGhosts={onReject}
+        ghostRows={ghostRows}
+        setGhostRows={setGhostRows}
+        ghostLoadingEstimation={generationTime}
         columns={columns}
         extraOptions={extraOptions}
         multiselect
         deletable
         onDelete={(ids) => console.log("Deleted", ids)}
+        tableKey="component-showcase-table" // Each table must have a unique key. This is used to identify the table in the local storage
       />
     </div>
   );

@@ -20,12 +20,18 @@ export const heightOfContent = "h-[calc(100vh-285px)]";
 export default function IssuesTable() {
   const { projectId } = useParams();
 
+  const { issueId } = useParams();
+
   const utils = api.useUtils();
 
   const [searchValue, setSearchValue] = useState("");
-  const [renderSmallPopup, showSamllPopup, setShowSmallPopup] = usePopupVisibilityState();
-  const [issueEdited, setIssueEdited] = useState<IssueCol | null>(null);
-  const [editForm, setEditForm] = useState({name: "", description: "",})
+
+  const { mutateAsync: updateIssue } = api.issues.modifyIssue.useMutation();
+  const { mutateAsync: updateIssueTags } = api.issues.modifyIssuesTags.useMutation();
+
+  const { mutateAsync: updateAssignUserStorie } =
+    api.issues.modifyIssuesRelatedUserStory.useMutation();
+
 
   // Hooks
   const params = useParams();
@@ -37,6 +43,7 @@ export default function IssuesTable() {
     refetch: refetchIssues,
   } = api.issues.getIssuesTableFriendly.useQuery({
     projectId: params.projectId as string,
+    issueId: issueId as string,
   });
 
   const filteredData = (issues ?? []).filter((issue) => {
@@ -46,16 +53,49 @@ export default function IssuesTable() {
       issue.description.toLowerCase().includes(lowerSearchValue)
     );
   });
-
+    
   const issueData = filteredData.sort((a, b) => 
     a.scrumId < b.scrumId ? -1 : 1
   )
 
-  const { alert } = useAlert();
-  const { mutateAsync: updateIssueTags } = api.issues.modifyIssuesTags.useMutation();
+  const handleSave = async (updatedData: IssueCol) => {
+    const updatedIssue = {
+      name: updatedData.name,
+      description: updatedData.description,
+      priorityId: updatedData?.priority?.id,
+      size: updatedData?.size,
+      relatedUserStoryId: updatedData?.relatedUserStory?.id ?? "",
+      tagIds:
+        updatedData?.tags
+          .map((tag) => tag.id)
+          .filter((tag) => tag !== undefined) ?? [],
+      stepsToRecreate: updatedData?.stepsToRecreate ?? "",
+      sprintId: updatedData?.sprint?.id ?? "",
+    };
 
-  const { mutateAsync: updateAssignUserStorie } = api.issues.modifyIssuesRelatedUserStory.useMutation();
+    // Optimistically update the query data
+    utils.issues.getIssuesTableFriendly.setData(
+      {
+        projectId: projectId as string,
+        issueId: issueId as string,
+      },
+      (oldData) => {
+        if (!oldData) return undefined;
+        return {
+          ...oldData,
+          ...updatedData,
+        };
+      },
+    );
 
+    await updateIssue({
+      projectId: projectId as string,
+      issueId: issueId as string,
+      issueData: updatedIssue,
+    });
+
+    await refetchIssues();
+  }
   const table = useMemo(() => {
 
     if (issues === undefined || isLoadingIssues) {
@@ -68,6 +108,9 @@ export default function IssuesTable() {
 
     const tableColumns: TableColumns<IssueCol> = {
       id: { visible: false },
+      stepsToRecreate: { visible: false },
+      tags: { visible: false },
+      sprint: { visible: false },
       scrumId: {
         label: "Id",
         width: 80,
@@ -164,53 +207,36 @@ export default function IssuesTable() {
         sortable: true,
         filterable: "list",
         render(row) {
-          console.log("row", row);
-          const handleUserStoryChange = async (userStory?: ExistingUserStory) => {
-            if (!userStory) return;
-
-            const rowIndex = issueData.indexOf(row);
-            if (!issueData[rowIndex] || issueData[rowIndex].relatedUserStory?.id === userStory.id) {
-              return; // No update needed
+          const handleUserStoryChange = async (row: IssueCol, userStory?: ExistingUserStory) => {
+            if (!projectId || !row?.id) return;
+          
+            try {
+              await updateAssignUserStorie({
+                projectId: projectId as string,
+                issueId: row.id,
+                relatedUserStoryId: userStory?.id ?? "", // puede venir vacío si se remueve
+              });
+          
+              // Refetch o invalidate para reflejar los cambios
+              await refetchIssues();
+              await utils.issues.getIssueDetail.invalidate({
+                projectId: projectId as string,
+                issueId: row.id,
+              });
+          
+              console.log("User story updated");
+            } catch (error) {
+              console.log("Failed to update user story");
+              console.error("Error updating user story:", error);
             }
-            const [issueRow] = issueData.splice(rowIndex, 1);
-            if (!issueRow) {
-              return; // Typescript _needs_ this, but it should never happen
-            }
-            issueRow.relatedUserStory = userStory;
-
-            const newData = [...issueData, issueRow];
-
-            // Uses optimistic update to update the related user story of the issue
-            await utils.issues.getIssuesTableFriendly.cancel({
-              projectId: projectId as string,
-            });
-            utils.issues.getIssuesTableFriendly.setData(
-              { projectId: projectId as string },
-              newData,
-            );
-
-            // Update the related user story in the database
-            await updateAssignUserStorie({
-              projectId: projectId as string,
-              issueId: row.id,
-              relatedUserStoryId: userStory.id,
-            });
-
-            await refetchIssues();
-            await utils.issues.getIssueDetail.invalidate({
-              projectId: projectId as string,
-              issueId: row.id,
-            });
           };
-
-          console.log(handleUserStoryChange);
+          console.log("row", row);
           return (
             <UserStoryPicker 
               userStory={row.relatedUserStory}
               onChange={(userStory) => {
-                handleUserStoryChange(userStory);
-              }
-              }
+                handleUserStoryChange(row, userStory);
+              }}
             />
           );
         },
@@ -289,6 +315,7 @@ export default function IssuesTable() {
         emptyMessage="No issues found"
         multiselect
         deletable
+        tableKey="issues-table"
       />
     );
   }, [issueData, isLoadingIssues]);

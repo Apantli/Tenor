@@ -79,7 +79,7 @@ function ProjectList() {
         />
         <CreateNewProject />
       </div>
-      <ul className="h-[calc(100vh-250px)] overflow-y-scroll">
+      <ul className="h-[calc(100vh-250px)] overflow-y-auto">
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li

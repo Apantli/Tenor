@@ -49,7 +49,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
   return (
     <div
       className={cn(
-        "bg-sprint-column-background flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg transition-colors",
+        "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-sprint-column-background transition-colors",
         className,
         {
           "bg-sprint-column-background-hovered": isDropTarget,
@@ -71,7 +71,7 @@ export default function CardColumn<T extends { id: string; scrumId: number }>({
       {!isLoading && header !== undefined && (
         <div className="px-6 pt-6">{header}</div>
       )}
-      <div className="flex h-full flex-1 flex-col gap-2 overflow-y-scroll p-6 pt-2">
+      <div className="flex h-full flex-1 flex-col gap-2 overflow-y-auto p-6 pt-2">
         {cards.map((cardInfo) => (
           <SelectableCard
             lastDraggedUserStoryId={lastDraggedUserStoryId}

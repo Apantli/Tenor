@@ -142,7 +142,7 @@ export function EditableBox({
           />
         </DropdownItem>
         <div className="w-full whitespace-nowrap text-left">
-          <div className="flex max-h-40 flex-col overflow-y-scroll rounded-b-lg">
+          <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => createOption(option))
             ) : (
