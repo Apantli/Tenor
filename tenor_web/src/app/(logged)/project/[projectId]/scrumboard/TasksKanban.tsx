@@ -191,7 +191,7 @@ export default function TasksKanban() {
         }}
       >
         <div className="flex h-full grow flex-col overflow-x-hidden">
-          <div className="flex h-full w-full flex-1 gap-4 overflow-x-scroll">
+          <div className="flex h-full w-full flex-1 gap-4 overflow-x-auto">
             {isLoading && (
               <div className="flex h-full w-full items-center justify-center">
                 <LoadingSpinner color="primary" />
