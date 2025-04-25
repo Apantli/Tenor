@@ -10,7 +10,9 @@ import { userRouter } from "./routers/users";
 import settingsRouter from "./routers/settings";
 import { sprintsRouter } from "./routers/sprints";
 import { tasksRouter } from "./routers/tasks";
+import { issuesRouter } from "./routers/issues";
 import { requirementsRouter } from "./routers/requirements";
+import { is } from "node_modules/cypress/types/bluebird";
 import { kanbanRouter } from "./routers/kanban";
 
 /**
@@ -31,6 +33,7 @@ export const appRouter = createTRPCRouter({
   settings: settingsRouter,
   sprints: sprintsRouter,
   tasks: tasksRouter,
+  issues: issuesRouter,
   kanban: kanbanRouter,
 });
 

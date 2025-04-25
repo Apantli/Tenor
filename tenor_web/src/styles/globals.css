@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  .animate-shimmer{
+    background: repeating-linear-gradient(
+              90deg,
+              #ffffff70 0%,
+              #ffffffff 33.3%,
+              #ffffff70 66.7%,
+              #ffffffff 100%);
+    background-size: 300% 100%;
+    background-position: 0 0;
+  
+    /* Show gradient only inside glyphs */
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  
+    animation: shimmer 1.5s linear infinite;
+  }
+  
+  /* 2.  Motion: just slide the X‑position */
+  @keyframes shimmer{
+    0%   { background-position: 100%   0; }
+    100% { background-position: 0% 0; }
+  }
+}
+
 @layer utilities {
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {

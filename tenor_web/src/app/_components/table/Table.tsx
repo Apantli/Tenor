@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
+
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 
@@ -8,15 +10,25 @@ import TableHeader from "./TableHeader";
 import TableRow from "./TableRow";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import useShiftKey from "~/app/_hooks/useShiftKey";
+import GhostTableRow from "./GhostTableRow";
+import LoadingGhostTableRow from "./LoadingGhostTableRow";
+import LoadingGhostTableRows from "./LoadingGhostTableRows";
 
 export interface VisibleColumn<T> {
   label: string;
   width: number;
+  hiddenOnGhost?: boolean;
+  minWidth?: number;
+  maxWidth?: number;
   sortable?: boolean;
   filterable?: "list" | "search-only";
   sorter?: (a: T, b: T) => number;
   filterValue?: (row: T) => string;
-  render?: (row: T) => React.ReactNode;
+  render?: (
+    row: T,
+    selectionIds: string[],
+    isGhost: boolean,
+  ) => React.ReactNode;
 }
 
 export type Column<T> = VisibleColumn<T> | { visible: false };
@@ -45,6 +57,12 @@ export interface DeleteOptions {
 
 interface TableProps<I, T> {
   data: T[];
+  ghostData?: T[];
+  acceptGhosts?: (ids: I[]) => void;
+  rejectGhosts?: (ids: I[]) => void;
+  ghostRows?: number;
+  setGhostRows?: (rows: number | undefined) => void;
+  ghostLoadingEstimation?: number; // in ms
   columns: TableColumns<T>;
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
@@ -52,16 +70,21 @@ interface TableProps<I, T> {
   onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   className?: ClassNameValue;
   emptyMessage?: string;
+  tableKey: string; // Unique key for the table used for storing things like column widths
 }
 
-// TODO: Make columns width be resizable on runtime by user
-// TODO: Make pills work in sorting & filter (needs custom sorting function)
-export default function Table<
+function TableInternal<
   I extends string | number,
   // eslint-disable-next-line
   T extends Record<string, any> & { id: I },
 >({
   data,
+  ghostData,
+  acceptGhosts,
+  rejectGhosts,
+  ghostRows,
+  setGhostRows,
+  ghostLoadingEstimation,
   columns,
   multiselect,
   extraOptions,
@@ -69,13 +92,34 @@ export default function Table<
   onDelete,
   className,
   emptyMessage,
+  tableKey,
 }: TableProps<I, T>) {
+  // Make sure the tableKey exists
+  if (!tableKey) {
+    throw new Error(
+      "Table key is required. Add the tableKey prop to the Table component.",
+    );
+  }
+
   const [sortColumnKey, setSortColumnKey] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [selection, setSelection] = useState<Set<I>>(new Set());
+  const [resizing, setResizing] = useState(false);
+  const [loadedGhosts, setLoadedGhosts] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const ghostDivRef = useRef<HTMLDivElement>(null);
   const lastSelectedIdRef = useRef<I>();
+
+  const columnWidths = filterVisibleColumns(Object.entries(columns)).map(
+    ([columnKey, column]) => {
+      const storedWidth = localStorage.getItem(tableKey + ":" + columnKey);
+      if (storedWidth) {
+        return parseInt(storedWidth);
+      }
+      return column.width;
+    },
+  );
 
   const sortedData = useMemo(() => {
     if (!sortColumnKey) return data;
@@ -217,10 +261,89 @@ export default function Table<
     lastSelectedIdRef.current = undefined;
   });
 
+  const showGhostRows =
+    (ghostData !== undefined && ghostData.length > 0) || (ghostRows ?? 0) > 0;
+
+  useEffect(() => {
+    // Triggers when ghost rows are shown
+    if (
+      (showGhostRows || (ghostData !== undefined && ghostData.length > 0)) &&
+      ghostDivRef.current
+    ) {
+      const height = ghostDivRef.current?.getBoundingClientRect().height;
+      ghostDivRef.current.style.height = "0px";
+
+      // Wait for the next frame to set the height
+      requestAnimationFrame(() => {
+        if (!ghostDivRef.current) return;
+        ghostDivRef.current.style.height = `${height}px`;
+        ghostDivRef.current.style.opacity = "1";
+      });
+
+      const onTransitionEnd = () => {
+        if (!ghostDivRef.current) return;
+        ghostDivRef.current.style.height = "auto";
+      };
+
+      ghostDivRef.current.addEventListener("transitionend", onTransitionEnd);
+      return () =>
+        ghostDivRef.current?.removeEventListener(
+          "transitionend",
+          onTransitionEnd,
+        );
+    }
+  }, [showGhostRows]);
+
+  useEffect(() => {
+    if (ghostData && ghostData.length > 0) {
+      const timeout = setTimeout(() => {
+        setLoadedGhosts(true);
+        setGhostRows?.(undefined);
+      }, 700);
+      return () => clearTimeout(timeout);
+    } else {
+      setLoadedGhosts(false);
+    }
+  }, [ghostData]);
+
+  const acceptAllGhosts = () => {
+    if (acceptGhosts && ghostData) {
+      acceptGhosts(ghostData.map((row) => row.id));
+    }
+    setLoadedGhosts(false);
+  };
+
+  const rejectAllGhosts = () => {
+    if (rejectGhosts && ghostData) {
+      rejectGhosts(ghostData.map((row) => row.id));
+    }
+    setLoadedGhosts(false);
+  };
+
+  const acceptGhost = (id: I) => {
+    if (acceptGhosts) {
+      acceptGhosts([id]);
+    }
+    const newGhostData = ghostData?.filter((row) => row.id !== id);
+    if (newGhostData?.length === 0) {
+      setLoadedGhosts(false);
+    }
+  };
+
+  const rejectGhost = (id: I) => {
+    if (rejectGhosts) {
+      rejectGhosts?.([id]);
+    }
+    const newGhostData = ghostData?.filter((row) => row.id !== id);
+    if (newGhostData?.length === 0) {
+      setLoadedGhosts(false);
+    }
+  };
+
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
-        className="flex h-full flex-col overflow-x-scroll"
+        className="flex h-full flex-col overflow-x-auto"
         ref={scrollContainerRef}
       >
         <TableHeader
@@ -240,7 +363,46 @@ export default function Table<
           extraOptions={extraOptions}
           deletable={deletable}
           onDelete={onDelete}
+          columnWidths={columnWidths}
+          setResizing={setResizing}
+          resizing={resizing}
+          tableKey={tableKey}
+          scrollContainerRef={scrollContainerRef}
+          ghostRowContainerRef={ghostDivRef}
+          showGhostActions={ghostData !== undefined && ghostData.length > 0}
+          acceptAllGhosts={acceptAllGhosts}
+          rejectAllGhosts={rejectAllGhosts}
         />
+        <div
+          className="relative min-w-fit shrink-0 overflow-hidden opacity-0 transition-[height,opacity] duration-500"
+          ref={ghostDivRef}
+        >
+          {!loadedGhosts && (ghostRows ?? 0) > 0 && (
+            <LoadingGhostTableRows
+              columnWidths={columnWidths}
+              columns={columns}
+              finishedLoading={ghostData !== undefined && ghostData.length > 0}
+              ghostRows={ghostRows ?? 0}
+              deletable={deletable}
+              extraOptions={extraOptions}
+              multiselect={multiselect}
+              timeEstimate={ghostLoadingEstimation}
+            />
+          )}
+          {ghostData?.map((value) => (
+            <GhostTableRow
+              key={value.id}
+              value={value}
+              columns={columns}
+              multiselect={multiselect}
+              extraOptions={extraOptions}
+              deletable={deletable}
+              columnWidths={columnWidths}
+              onAccept={() => acceptGhost(value.id)}
+              onReject={() => rejectGhost(value.id)}
+            />
+          ))}
+        </div>
         {filteredData.map((value) => (
           <TableRow
             key={value.id}
@@ -254,6 +416,7 @@ export default function Table<
             deletable={deletable}
             onDelete={onDelete}
             scrollContainerRef={scrollContainerRef}
+            columnWidths={columnWidths}
           />
         ))}
         {filteredData.length === 0 && emptyMessage && (
@@ -265,3 +428,10 @@ export default function Table<
     </div>
   );
 }
+
+// This is a workaround to prevent server-side rendering issues (because we access localstorage in the component)
+const Table = dynamic(() => Promise.resolve(TableInternal), {
+  ssr: false,
+}) as typeof TableInternal;
+
+export default Table;

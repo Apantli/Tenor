@@ -107,6 +107,13 @@ export const UserStorySchema = BacklogItemSchema.extend({
   requiredByIds: z.array(z.string()),
 });
 
+export const ExistingUserStorySchema = BasicInfoSchema.merge(
+  z.object({
+    scrumId: z.number(),
+    description: z.string().optional(),
+  }),
+);
+
 export const TaskSchema = BasicInfoSchema.extend({
   statusId: z.string(),
   assigneeId: z.string(),
@@ -157,6 +164,39 @@ export const SettingsSchema = z.object({
 });
 
 export const ProjectSchema = z.object({
+  name: z.string(),
+  description: z.string(),
+  logo: z.string(),
+  deleted: z.boolean().default(false),
+
+  // Will users also be in their subcollection?
+  // FIXME: Same as the normal schemas, I think these need to be removed and be their own subcollections instead
+  // requirements: z.array(RequirementSchema).default([]),
+  // userStories: z.array(UserStorySchema).default([]),
+  // issues: z.array(IssueSchema).default([]),
+  // epics: z.array(EpicSchema).default([]),
+  // genericItems: z.array(BacklogItemSchema).default([]),
+  // sprints: z.array(SprintSchema).default([]),
+  // sprintSnapshots: z.array(SprintSnapshotSchema).default([]),
+  // FIXME: This should be a subcollection
+  // settings: SettingsSchema.optional(),
+
+  currentSprintId: z.string().default("1"),
+  activities: z
+    .array(
+      z.object({
+        title: z.string(),
+        activityId: z.string(),
+        type: z.enum(["US", "TS", "IS", "ITEM"]),
+        newStatusId: z.string(),
+        userId: z.string(),
+        date: z.date(),
+      }),
+    )
+    .default([]),
+});
+
+export const ProjectSchemaCreator = z.object({
   name: z.string(),
   description: z.string(),
   logo: z.string(),

@@ -14,50 +14,49 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import DependencyList from "./DependencyList";
 import TasksTable from "~/app/_components/sections/TasksTable";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
-  useFormatUserStoryScrumId,
+  useFormatTaskIssueId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
+import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
 
 interface Props {
-  userStoryId: string;
+  issueId: string;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
 }
 
-export default function UserStoryDetailPopup({
-  userStoryId,
+export default function IssueDetailPopup({
+  issueId,
   showDetail,
   setShowDetail,
 }: Props) {
   const { projectId } = useParams();
 
   const {
-    data: userStoryDetail,
+    data: issueDetail,
     isLoading,
     refetch,
     error,
-  } = api.userStories.getUserStoryDetail.useQuery({
+  } = api.issues.getIssueDetail.useQuery({
     projectId: projectId as string,
-    userStoryId,
+    issueId,
   });
 
   const { data: tasksTableData, isLoading: isLoadingTasks } =
     api.tasks.getTasksTableFriendly.useQuery(
       {
         projectId: projectId as string,
-        itemId: userStoryId,
+        itemId: issueId,
       },
       {
         enabled: showDetail,
@@ -74,19 +73,17 @@ export default function UserStoryDetailPopup({
     }),
   );
 
-  const { mutateAsync: updateUserStory } =
-    api.userStories.modifyUserStory.useMutation();
-  const { mutateAsync: deleteUserStory } =
-    api.userStories.deleteUserStory.useMutation();
+  const { mutateAsync: updateIssue } = api.issues.modifyIssue.useMutation();
+  const { mutateAsync: deleteIssue } = api.issues.deleteIssue.useMutation();
   const utils = api.useUtils();
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
-    acceptanceCriteria: "",
+    stepsToRecreate: "",
   });
-  const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
+  const [showStepsToRecreate, setShowStepsToRecreate] = useState(false);
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
   const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
@@ -96,19 +93,19 @@ export default function UserStoryDetailPopup({
     undefined,
   );
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatIssueScrumId = useFormatTaskIssueId();
   const { predefinedAlerts } = useAlert();
   const formatSprintNumber = useFormatSprintNumber();
 
-  // Copy the editable data from the user story
+  // Copy the editable data from the issue
   useEffect(() => {
-    if (!userStoryDetail) return;
+    if (!issueDetail) return;
     setEditForm({
-      name: userStoryDetail.name,
-      description: userStoryDetail.description,
-      acceptanceCriteria: userStoryDetail.acceptanceCriteria,
+      name: issueDetail.name,
+      description: issueDetail.description,
+      stepsToRecreate: issueDetail.stepsToRecreate,
     });
-  }, [userStoryDetail]);
+  }, [issueDetail]);
 
   const confirm = useConfirmation();
 
@@ -123,43 +120,38 @@ export default function UserStoryDetailPopup({
     api.tasks.changeTaskStatus.useMutation();
 
   const isModified = () => {
-    if (editForm.name !== userStoryDetail?.name) return true;
-    if (editForm.description !== userStoryDetail?.description) return true;
-    if (editForm.acceptanceCriteria !== userStoryDetail?.acceptanceCriteria)
-      return true;
+    if (editForm.name !== issueDetail?.name) return true;
+    if (editForm.description !== issueDetail?.description) return true;
+    if (editForm.stepsToRecreate !== issueDetail?.stepsToRecreate) return true;
     return false;
   };
 
-  const handleSave = async (
-    updatedData: NonNullable<typeof userStoryDetail>,
-  ) => {
-    const updatedUserStory = {
+  const handleSave = async (updatedData: NonNullable<typeof issueDetail>) => {
+    const updatedIssue = {
       name: updatedData.name,
       description: updatedData.description,
-      acceptanceCriteria: updatedData.acceptanceCriteria,
+      stepsToRecreate: updatedData.stepsToRecreate,
       tagIds:
         updatedData?.tags
           .map((tag) => tag.id)
           .filter((tag) => tag !== undefined) ?? [],
       priorityId: updatedData?.priority?.id,
       size: updatedData?.size,
-      epicId: updatedData?.epic?.id ?? "",
+      relatedUserStoryId: updatedData?.relatedUserStory?.id ?? "",
       sprintId: updatedData?.sprint?.id ?? "",
-      dependencyIds: updatedData?.dependencies.map((us) => us.id) ?? [],
-      requiredByIds: updatedData?.requiredBy.map((us) => us.id) ?? [],
     };
 
     // Cancel ongoing queries for this user story data
-    await utils.userStories.getUserStoryDetail.cancel({
+    await utils.issues.getIssueDetail.cancel({
       projectId: projectId as string,
-      userStoryId,
+      issueId,
     });
 
     // Optimistically update the query data
-    utils.userStories.getUserStoryDetail.setData(
+    utils.issues.getIssueDetail.setData(
       {
         projectId: projectId as string,
-        userStoryId,
+        issueId,
       },
       (oldData) => {
         if (!oldData) return undefined;
@@ -170,22 +162,22 @@ export default function UserStoryDetailPopup({
       },
     );
 
-    await updateUserStory({
+    await updateIssue({
       projectId: projectId as string,
-      userStoryId: userStoryId,
-      userStoryData: updatedUserStory,
+      issueId: issueId,
+      issueData: updatedIssue,
     });
 
-    // Make other places refetch the data
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.userStories.getAllUserStoryPreviews.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
+    // FIXME UNTIL TABLE FOR ISSUES IS DONE
+    // await utils.userStories.getUserStoriesTableFriendly.invalidate({
+    //   projectId: projectId as string,
+    // });
+    // await utils.userStories.getAllUserStoryPreviews.invalidate({
+    //   projectId: projectId as string,
+    // });
+    // await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+    //   projectId: projectId as string,
+    // });
 
     await refetch();
   };
@@ -203,13 +195,13 @@ export default function UserStoryDetailPopup({
 
     await utils.tasks.getTasksTableFriendly.cancel({
       projectId: projectId as string,
-      itemId: userStoryId,
+      itemId: issueId,
     });
 
     utils.tasks.getTasksTableFriendly.setData(
       {
         projectId: projectId as string,
-        itemId: userStoryId,
+        itemId: issueId,
       },
       (oldData) => {
         if (!oldData) return undefined;
@@ -225,7 +217,7 @@ export default function UserStoryDetailPopup({
 
     await utils.tasks.getTasksTableFriendly.invalidate({
       projectId: projectId as string,
-      itemId: userStoryId,
+      itemId: issueId,
     });
   };
 
@@ -238,19 +230,21 @@ export default function UserStoryDetailPopup({
         "Cancel",
       )
     ) {
-      await deleteUserStory({
+      await deleteIssue({
         projectId: projectId as string,
-        userStoryId: userStoryId,
+        issueId: issueId,
       });
-      await utils.userStories.getUserStoriesTableFriendly.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.userStories.getAllUserStoryPreviews.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-        projectId: projectId as string,
-      });
+
+      // FIXME UNTIL TABLE FOR ISSUES IS DONE
+      // await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      //   projectId: projectId as string,
+      // });
+      // await utils.userStories.getAllUserStoryPreviews.invalidate({
+      //   projectId: projectId as string,
+      // });
+      // await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      //   projectId: projectId as string,
+      // });
       setShowDetail(false);
     }
   };
@@ -275,13 +269,16 @@ export default function UserStoryDetailPopup({
       sidebar={
         isLoading ? undefined : (
           <>
-            {!isLoading && userStoryDetail && (
+            {!isLoading && issueDetail && (
               <>
-                <h3 className="text-lg font-semibold">Epic</h3>
-                <EpicPicker
-                  epic={userStoryDetail?.epic}
-                  onChange={async (epic) => {
-                    await handleSave({ ...userStoryDetail, epic });
+                <h3 className="text-lg font-semibold">User Story</h3>
+                <UserStoryPicker
+                  userStory={issueDetail?.relatedUserStory}
+                  onChange={async (userStory) => {
+                    await handleSave({
+                      ...issueDetail,
+                      relatedUserStory: userStory,
+                    });
                   }}
                 />
 
@@ -289,52 +286,34 @@ export default function UserStoryDetailPopup({
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Priority</h3>
                     <PriorityPicker
-                      priority={userStoryDetail.priority}
+                      priority={issueDetail.priority}
                       onChange={async (priority) => {
-                        await handleSave({ ...userStoryDetail, priority });
+                        await handleSave({ ...issueDetail, priority });
                       }}
                     />
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePillComponent
-                      currentSize={userStoryDetail.size}
+                      currentSize={issueDetail.size}
                       callback={async (size) => {
-                        await handleSave({ ...userStoryDetail, size });
+                        await handleSave({ ...issueDetail, size });
                       }}
                     />
                   </div>
                 </div>
 
                 <BacklogTagList
-                  tags={userStoryDetail.tags}
+                  tags={issueDetail.tags}
                   onChange={async (tags) => {
-                    await handleSave({ ...userStoryDetail, tags });
+                    await handleSave({ ...issueDetail, tags });
                   }}
                 />
 
                 <h3 className="mt-4 text-lg">
                   <span className="font-semibold">Sprint: </span>
-                  {formatSprintNumber(userStoryDetail.sprint?.number)}
+                  {formatSprintNumber(issueDetail.sprint?.number)}
                 </h3>
-
-                <DependencyList
-                  label="Dependencies"
-                  userStoryId={userStoryDetail.id}
-                  userStories={userStoryDetail.dependencies}
-                  onChange={async (dependencies) => {
-                    await handleSave({ ...userStoryDetail, dependencies });
-                  }}
-                />
-
-                <DependencyList
-                  label="Required by"
-                  userStoryId={userStoryDetail.id}
-                  userStories={userStoryDetail.requiredBy}
-                  onChange={async (requiredBy) => {
-                    await handleSave({ ...userStoryDetail, requiredBy });
-                  }}
-                />
               </>
             )}
           </>
@@ -342,17 +321,17 @@ export default function UserStoryDetailPopup({
       }
       footer={
         !isLoading && (
-          <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
+          <DeleteButton onClick={handleDelete}>Delete issue</DeleteButton>
         )
       }
       title={
         <>
-          {!isLoading && userStoryDetail && (
+          {!isLoading && issueDetail && (
             <h1 className="mb-4 text-3xl">
               <span className="font-bold">
-                {formatUserStoryScrumId(userStoryDetail.scrumId)}:{" "}
+                {formatIssueScrumId(issueDetail.scrumId)}:{" "}
               </span>
-              <span>{userStoryDetail.name}</span>
+              <span>{issueDetail.name}</span>
             </h1>
           )}
         </>
@@ -361,13 +340,13 @@ export default function UserStoryDetailPopup({
       setEditMode={async (isEditing) => {
         setEditMode(isEditing);
 
-        if (!userStoryDetail) return;
+        if (!issueDetail) return;
         if (!isEditing) {
           const updatedData = {
-            ...userStoryDetail,
+            ...issueDetail,
             name: editForm.name,
             description: editForm.description,
-            acceptanceCriteria: editForm.acceptanceCriteria,
+            stepsToRecreate: editForm.stepsToRecreate,
           };
           await handleSave(updatedData);
         }
@@ -377,53 +356,51 @@ export default function UserStoryDetailPopup({
       {editMode && (
         <>
           <InputTextField
-            label="Story name"
+            label="Issue name"
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-            placeholder="Short summary of the story..."
+            placeholder="Short summary of the issue..."
             className="mb-4"
           />
           <InputTextAreaField
-            label="Story description"
+            label="Issue description"
             value={editForm.description}
             onChange={(e) =>
               setEditForm({ ...editForm, description: e.target.value })
             }
-            placeholder="Explain the story in detail..."
+            placeholder="Explain the issue in detail..."
             className="mb-4 h-36 min-h-36"
           />
           <InputTextAreaField
-            label="Acceptance Criteria"
-            value={editForm.acceptanceCriteria}
+            label="Steps To Recreate"
+            value={editForm.stepsToRecreate}
             onChange={(e) =>
-              setEditForm({ ...editForm, acceptanceCriteria: e.target.value })
+              setEditForm({ ...editForm, stepsToRecreate: e.target.value })
             }
-            placeholder="Describe the work that needs to be done..."
+            placeholder="Describe the steps to recreate the issue..."
             className="h-36 min-h-36"
           />
         </>
       )}
-      {!editMode && !isLoading && userStoryDetail && (
+      {!editMode && !isLoading && issueDetail && (
         <div className="overflow-hidden">
           <div className="markdown-content overflow-hidden text-lg">
-            <Markdown>{userStoryDetail.description}</Markdown>
+            <Markdown>{issueDetail.description}</Markdown>
           </div>
 
-          {userStoryDetail.acceptanceCriteria !== "" && (
+          {issueDetail.stepsToRecreate !== "" && (
             <>
               <div className="mt-4 flex items-center gap-4">
-                <h2 className="text-2xl font-semibold">Acceptance Criteria</h2>
+                <h2 className="text-2xl font-semibold">Steps to Recreate</h2>
                 <TertiaryButton
-                  onClick={() =>
-                    setShowAcceptanceCriteria(!showAcceptanceCriteria)
-                  }
+                  onClick={() => setShowStepsToRecreate(!showStepsToRecreate)}
                 >
-                  {showAcceptanceCriteria ? "Hide" : "Show"}
+                  {showStepsToRecreate ? "Hide" : "Show"}
                 </TertiaryButton>
               </div>
-              {showAcceptanceCriteria && (
+              {showStepsToRecreate && (
                 <div className="markdown-content overflow-hidden text-lg">
-                  <Markdown>{userStoryDetail.acceptanceCriteria}</Markdown>
+                  <Markdown>{issueDetail.stepsToRecreate}</Markdown>
                 </div>
               )}
             </>
@@ -431,7 +408,7 @@ export default function UserStoryDetailPopup({
 
           <TasksTable
             tasks={transformedTasks ?? []}
-            itemId={userStoryId}
+            itemId={issueId}
             itemType="US"
             onTaskStatusChange={handleTaskStatusChange}
             setShowAddTaskPopup={setShowCreateTaskPopup}
@@ -452,7 +429,7 @@ export default function UserStoryDetailPopup({
           dismiss={() => setShowCreateTaskPopup(false)}
         >
           <CreateTaskForm
-            itemId={userStoryId}
+            itemId={issueId}
             itemType="US"
             onTaskAdded={() => setShowCreateTaskPopup(false)}
           />
@@ -461,7 +438,7 @@ export default function UserStoryDetailPopup({
       {renderTaskDetailPopup && selectedTaskId && (
         <TaskDetailPopup
           taskId={selectedTaskId}
-          itemId={userStoryId}
+          itemId={issueId}
           showDetail={showTaskDetail}
           setShowDetail={setShowTaskDetail}
         />

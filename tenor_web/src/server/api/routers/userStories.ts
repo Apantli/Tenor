@@ -5,15 +5,26 @@ import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   EpicSchema,
+  ExistingEpicSchema,
+  ExistingUserStorySchema,
   SprintSchema,
   TagSchema,
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
-import type { UserStoryDetail } from "~/lib/types/detailSchemas";
-import { getProjectSettingsRef } from "./settings";
+import type {
+  UserStoryDetail,
+  UserStoryPreview,
+} from "~/lib/types/detailSchemas";
+import {
+  getBacklogTag,
+  getPriorityTag,
+  getProjectSettingsRef,
+  getTaskProgress,
+} from "./settings";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
+
 export interface UserStoryCol {
   id: string;
   scrumId: number;
@@ -49,42 +60,6 @@ const getUserStoriesFromProject = async (
   return userStories;
 };
 
-const getPriorityTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  priorityId: string,
-) => {
-  if (priorityId === undefined) {
-    return undefined;
-  }
-  const tag = await settingsRef
-    .collection("priorityTypes")
-    .doc(priorityId)
-    .get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
-};
-
-const getBacklogTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  taskId: string,
-) => {
-  if (taskId === undefined) {
-    return undefined;
-  }
-  const tag = await settingsRef.collection("backlogTags").doc(taskId).get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
-};
-
-// TODO: Fetch from db
-const getTaskProgress = () => {
-  return [0, 0] as [number | undefined, number | undefined];
-};
-
 export const userStoriesRouter = createTRPCRouter({
   createUserStory: protectedProcedure
     .input(
@@ -114,6 +89,26 @@ export const userStoriesRouter = createTRPCRouter({
         console.log("Error creating user story:", err);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
+    }),
+
+  getProjectUserStoriesOverview: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const userStoriesSnapshot = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("userStories")
+        .select("scrumId", "name")
+        .where("deleted", "==", false)
+        .orderBy("scrumId")
+        .get();
+
+      const userStories = userStoriesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...ExistingUserStorySchema.parse(doc.data()),
+      }));
+
+      return userStories;
     }),
 
   getUserStoriesTableFriendly: protectedProcedure

@@ -103,7 +103,7 @@ export default function TasksTable({
             onChange={async (status) => {
               onTaskStatusChange(row.id, status);
             }}
-            className="w-32"
+            className="w-full"
           />
         );
       },
@@ -205,6 +205,7 @@ export default function TasksTable({
           deletable
           onDelete={handleTaskDelete}
           emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
+          tableKey="tasks-table"
         />
       </div>
     </>
