@@ -125,7 +125,7 @@ export default function ProjectCreator() {
     );
   };
 
-  const logoSizeLimit = 3 * 1024 * 1024; // 5MB in bytes
+  const logoSizeLimit = 3 * 1024 * 1024; // 3MB in bytes
   const logoMaxDimensions = 1024; // Maximum width/height in pixels
   const [icon, setImage] = useState<File | null>(null);
   const [isValidatingImage, setIsValidatingImage] = useState(false);
