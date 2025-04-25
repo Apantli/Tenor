@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
 import { getTasksFromProject } from "./tasks";
-import { Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 
 export interface CardItem {
   id: string;

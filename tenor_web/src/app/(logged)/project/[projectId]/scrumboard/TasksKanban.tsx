@@ -42,6 +42,9 @@ export default function TasksKanban() {
       projectId: projectId as string,
     });
 
+  const { mutateAsync: changeStatus } =
+    api.tasks.changeTaskStatus.useMutation();
+
   const cancelGetTasksForKanbanQuery = async () => {
     await utils.kanban.getTasksForKanban.cancel({
       projectId: projectId as string,
@@ -57,18 +60,16 @@ export default function TasksKanban() {
   // const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   const [detaiItemId, setDetaiItemId] = useState("");
 
-  const assignSelectionToColumn = async (columnId: string) => {
-    // Assign here
-  };
-
   //// Drag and drop operations
   let updateOperationsInProgress = 0;
 
   // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (itemId: string, columnId: string) => {
+    setLastDraggedItemId(null);
     if (itemsAndColumnsData == undefined) return;
     if (columnId === itemsAndColumnsData.items[itemId]?.columnId) return;
-    console.log("Drag end", itemId, columnId, updateOperationsInProgress);
+
+    setLastDraggedItemId(itemId);
     await moveItemsToColumn([itemId], columnId);
   };
 
@@ -134,8 +135,15 @@ export default function TasksKanban() {
 
     setSelectedItems(new Set());
 
-    // TODO: Assign in backend
-    // await assignSelectionToColumn(columnId);
+    await Promise.all(
+      itemIds.map(async (itemId) => {
+        await changeStatus({
+          projectId: projectId as string,
+          taskId: itemId,
+          statusId: columnId,
+        });
+      }),
+    );
 
     if (updateOperationsInProgress == 1) {
       await utils.kanban.getTasksForKanban.invalidate({
@@ -156,6 +164,16 @@ export default function TasksKanban() {
     }
 
     updateOperationsInProgress--;
+  };
+
+  const assignSelectionToColumn = async (columnId: string) => {
+    setLastDraggedItemId(null);
+    if (itemsAndColumnsData == undefined) return;
+
+    const itemIds = Array.from(selectedItems);
+    if (itemIds.length === 0) return;
+
+    await moveItemsToColumn(itemIds, columnId);
   };
 
   return (
