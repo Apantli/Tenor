@@ -342,22 +342,23 @@ export default function IssuesTable() {
 
   return (
     <div className="flex flex-1 flex-col items-start gap-3">
-      <h1 className="text-3xl font-semibold">Issues</h1>
-
-      <div className="flex w-full items-center gap-3 pb-2">
-        <SearchBar
-          searchValue={searchValue}
-          handleUpdateSearch={handleUpdateSearch}
-          placeholder="Find a user story by title or Id..."
-        ></SearchBar>
-        <PrimaryButton onClick={() => setShowNewStory(true)}>
-          + New Story
-        </PrimaryButton>
+      <div className="flex w-full justify-between">
+        <h1 className="text-3xl font-semibold">Issues</h1>
+        <div className="flex w-3/4 items-center justify-end gap-2">
+          <div className="w-1/3 p-2">
+            <SearchBar
+              placeholder="Find a issue by title or id..."
+              searchValue={searchValue}
+              handleUpdateSearch={(e) => setSearchValue(e.target.value)}
+            />
+          </div>
+          <PrimaryButton onClick={() => setShowNewStory(true)}>
+            + New Story
+          </PrimaryButton>
+        </div>
       </div>
 
       {table}
-
-     
 
       <PrimaryButton onClick={() => setShowDetail(true)}>
         Edit Issue
