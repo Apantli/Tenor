@@ -91,14 +91,12 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
 
   const startXRef = useRef<number>();
   const startWidthRef = useRef<number>();
-  // const prevXRef = useRef<number>();
   const resizingIndexRef = useRef<number>();
 
   const onResizeMouseDown = (index: number, e: MouseEvent) => {
     document.body.style.cursor = "col-resize";
     document.body.style.userSelect = "none";
     document.body.style.webkitUserSelect = "none";
-    // prevXRef.current = e.clientX;
     startXRef.current = e.clientX;
     startWidthRef.current = temporaryColumnWidths[index]!;
     resizingIndexRef.current = index;

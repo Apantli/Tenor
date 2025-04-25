@@ -73,7 +73,7 @@ interface TableProps<I, T> {
   tableKey: string; // Unique key for the table used for storing things like column widths
 }
 
-function TableImpl<
+function TableInternal<
   I extends string | number,
   // eslint-disable-next-line
   T extends Record<string, any> & { id: I },
@@ -429,8 +429,9 @@ function TableImpl<
   );
 }
 
-const Table = dynamic(() => Promise.resolve(TableImpl), {
+// This is a workaround to prevent server-side rendering issues (because we access localstorage in the component)
+const Table = dynamic(() => Promise.resolve(TableInternal), {
   ssr: false,
-}) as typeof TableImpl;
+}) as typeof TableInternal;
 
 export default Table;

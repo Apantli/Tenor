@@ -307,7 +307,7 @@ function TableShowcase() {
             finishLoading(dummyGhostData);
           }}
         >
-          Generate immediate
+          Create manually
         </SecondaryButton>
         <SecondaryButton
           onClick={() => {

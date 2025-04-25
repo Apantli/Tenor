@@ -68,7 +68,6 @@ function TableRow<
         "grid min-w-fit items-center gap-2 border-b border-app-border p-2 transition",
         {
           "bg-gray-100": selection.has(value.id),
-          // "opacity-50 blur-[2px]": resizing,
         },
       )}
       style={{ gridTemplateColumns }}
