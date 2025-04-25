@@ -29,8 +29,11 @@ export type UserStories = inferRouterOutputs<
 
 const noSprintId = "noSprintId";
 
+// FIXME: Use the general AssignableCardColumn instead of specific columns
+
 export default function ProjectSprints() {
   const { projectId } = useParams();
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
   const { data: userStoriesBySprint, isLoading } =
     api.sprints.getUserStoryPreviewsBySprint.useQuery({
@@ -86,7 +89,6 @@ export default function ProjectSprints() {
   }, [isLoadingSprintDuration, defaultSprintDuration, userStoriesBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
   const filteredUnassignedStories =
     userStoriesBySprint?.unassignedUserStoryIds.filter((userStoryId) => {
@@ -556,7 +558,13 @@ export default function ProjectSprints() {
               ...draggingUserStory,
               columnId: draggingUserStory.sprintId,
             };
-            return <ItemCardRender item={item} showBackground={true} />;
+            return (
+              <ItemCardRender
+                item={item}
+                showBackground={true}
+                scrumIdFormatter={formatUserStoryScrumId}
+              />
+            );
           }}
         </DragOverlay>
       </DragDropProvider>

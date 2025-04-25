@@ -5,6 +5,7 @@ import CardColumn from "./CardColumn";
 import type { ClassNameValue } from "tailwind-merge";
 import ItemCardRender from "./ItemCardRender";
 import type { CardItem } from "~/server/api/routers/kanban";
+import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 
 interface Props {
   userStories: inferRouterOutputs<
@@ -42,6 +43,8 @@ export default function UserStoryCardColumn({
     columnId: userStory.sprintId,
   }));
 
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+
   return (
     <CardColumn
       lastDraggedItemId={lastDraggedUserStoryId}
@@ -54,7 +57,12 @@ export default function UserStoryCardColumn({
       isLoading={isLoading}
       header={header}
       className={className}
-      renderCard={(userStory) => <ItemCardRender item={userStory} />}
+      renderCard={(userStory) => (
+        <ItemCardRender
+          item={userStory}
+          scrumIdFormatter={formatUserStoryScrumId}
+        />
+      )}
     />
   );
 }

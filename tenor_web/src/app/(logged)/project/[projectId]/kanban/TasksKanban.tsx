@@ -16,13 +16,17 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { Timestamp } from "firebase/firestore";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
+import {
+  useFormatTaskScrumId,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scrumIdHooks";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
+import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 
 export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
@@ -30,6 +34,7 @@ export type UserStories = inferRouterOutputs<
 
 export default function TasksKanban() {
   const { projectId } = useParams();
+  const formatTaskScrumId = useFormatTaskScrumId();
 
   const { data: itemsAndColumnsData, isLoading } =
     api.kanban.getTasksForKanban.useQuery({
@@ -81,23 +86,77 @@ export default function TasksKanban() {
                   <LoadingSpinner color="primary" />
                 </div>
               )}
-              {itemsAndColumnsData?.columns.map((column) => (
-                <AssignableCardColumn
-                  lastDraggedItemId={lastDraggedItemId}
-                  assignSelectionToColumn={assignSelectionToColumn}
-                  column={column}
-                  items={itemsAndColumnsData.items}
-                  key={column.id}
-                  selectedItems={selectedItems}
-                  setSelectedItems={setSelectedItems}
-                  setDetailItemId={setDetaiItemId}
-                  setShowDetail={() => {
-                    console.log("Show detail");
-                  }}
-                  renderCard={(item) => <ItemCardRender item={item} />}
-                  header={<h2>Header</h2>}
-                />
-              ))}
+              {itemsAndColumnsData?.columns.map((column) => {
+                const allSelected =
+                  column.itemIds.length > 0 &&
+                  column.itemIds.every((itemId) => selectedItems.has(itemId));
+
+                const toggleSelectAll = () => {
+                  const newSelection = new Set(selectedItems);
+                  if (allSelected) {
+                    column.itemIds.forEach((userStoryId) => {
+                      newSelection.delete(userStoryId);
+                    });
+                  } else {
+                    column.itemIds.forEach((userStoryId) => {
+                      newSelection.add(userStoryId);
+                    });
+                  }
+                  setSelectedItems(newSelection);
+                };
+
+                return (
+                  <AssignableCardColumn
+                    lastDraggedItemId={lastDraggedItemId}
+                    assignSelectionToColumn={assignSelectionToColumn}
+                    column={column}
+                    items={itemsAndColumnsData.items}
+                    key={column.id}
+                    selectedItems={selectedItems}
+                    setSelectedItems={setSelectedItems}
+                    setDetailItemId={setDetaiItemId}
+                    setShowDetail={() => {
+                      console.log("Show detail");
+                    }}
+                    renderCard={(item) => (
+                      <ItemCardRender
+                        item={item}
+                        scrumIdFormatter={formatTaskScrumId}
+                      />
+                    )}
+                    header={
+                      <div className="flex flex-col items-start pr-1">
+                        <div className="flex w-full justify-between">
+                          <h1 className="text-2xl font-medium">
+                            {column.name}
+                          </h1>
+                          <div className="flex gap-2">
+                            <button
+                              className={cn(
+                                "rounded-lg px-1 text-app-text transition",
+                                {
+                                  "text-app-secondary": allSelected,
+                                },
+                              )}
+                              onClick={toggleSelectAll}
+                            >
+                              {allSelected ? (
+                                <CheckNone fontSize="small" />
+                              ) : (
+                                <CheckAll fontSize="small" />
+                              )}
+                            </button>
+                            <Dropdown label={"• • •"}>
+                              <DropdownButton>Edit status</DropdownButton>
+                            </Dropdown>
+                          </div>
+                        </div>
+                        <hr className="my-2 w-full border border-app-border" />
+                      </div>
+                    }
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
@@ -108,7 +167,13 @@ export default function TasksKanban() {
             if (!itemId) return null;
             const draggingItem = itemsAndColumnsData?.items[itemId];
             if (!draggingItem) return null;
-            return <ItemCardRender item={draggingItem} showBackground={true} />;
+            return (
+              <ItemCardRender
+                item={draggingItem}
+                showBackground={true}
+                scrumIdFormatter={formatTaskScrumId}
+              />
+            );
           }}
         </DragOverlay>
       </DragDropProvider>

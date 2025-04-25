@@ -8,14 +8,14 @@ import type { CardItem } from "~/server/api/routers/kanban";
 interface Props {
   item: CardItem;
   showBackground?: boolean;
+  scrumIdFormatter?: (scrumId: number) => string;
 }
 
 export default function ItemCardRender({
   item,
   showBackground = false,
+  scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-
   return (
     <div
       className={cn({
@@ -26,7 +26,8 @@ export default function ItemCardRender({
       <div className={cn("flex w-full flex-col items-start gap-2")}>
         <div>
           <span className="font-semibold">
-            {formatUserStoryScrumId(item.scrumId)}:{" "}
+            {scrumIdFormatter ? scrumIdFormatter(item.scrumId) : item.scrumId}
+            :{" "}
           </span>
           {item.name}
         </div>
