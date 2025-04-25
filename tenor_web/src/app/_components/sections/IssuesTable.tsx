@@ -1,7 +1,7 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { usePopupVisibilityState } from "../Popup";
-import { useEffect, useMemo, useState} from "react";
+import { ChangeEventHandler, useEffect, useMemo, useState} from "react";
 import Table, { type TableColumns } from "../table/Table";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
@@ -14,10 +14,24 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import UserStoryPicker from "../specific-pickers/UserStoryPicker";
 import { ExistingUserStory } from "~/lib/types/detailSchemas";
+import PrimaryButton from "../buttons/PrimaryButton";
+import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
+import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
+import SearchBar from "../SearchBar";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function IssuesTable() {
+  const [renderNewStory, showNewStory, setShowNewStory] =
+    usePopupVisibilityState();
+  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+
+  const onIssueAdded = async (userStoryId: string) => {
+    // await refetchUS();
+    setShowNewStory(false);
+    // setSelectedUS(userStoryId);
+    // setShowDetail(true);
+  };
   const { projectId } = useParams();
 
   const { issueId } = useParams();
@@ -28,6 +42,8 @@ export default function IssuesTable() {
 
   const { mutateAsync: updateIssue } = api.issues.modifyIssue.useMutation();
   const { mutateAsync: updateIssueTags } = api.issues.modifyIssuesTags.useMutation();
+
+  const formattedScrumId = useFormatIssueScrumId();
 
   const { mutateAsync: updateAssignUserStorie } =
     api.issues.modifyIssuesRelatedUserStory.useMutation();
@@ -42,15 +58,19 @@ export default function IssuesTable() {
     isLoading: isLoadingIssues,
     refetch: refetchIssues,
   } = api.issues.getIssuesTableFriendly.useQuery({
-    projectId: params.projectId as string,
-    issueId: issueId as string,
+    projectId: params.projectId as string
   });
+
+  // Handles
+  const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setSearchValue(e.target.value);
+  }
 
   const filteredData = (issues ?? []).filter((issue) => {
     const lowerSearchValue = searchValue.toLowerCase();
     return (
       issue.name.toLowerCase().includes(lowerSearchValue) ||
-      issue.description.toLowerCase().includes(lowerSearchValue)
+      formattedScrumId(issue.scrumId).toLowerCase().includes(lowerSearchValue)
     );
   });
     
@@ -77,7 +97,6 @@ export default function IssuesTable() {
     utils.issues.getIssuesTableFriendly.setData(
       {
         projectId: projectId as string,
-        issueId: issueId as string,
       },
       (oldData) => {
         if (!oldData) return undefined;
@@ -116,7 +135,6 @@ export default function IssuesTable() {
         width: 80,
         sortable: true,
         render(row) {
-          const formattedScrumId = useFormatIssueScrumId();
           return (
           <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
             {formattedScrumId(Number(row.scrumId))}
@@ -235,7 +253,9 @@ export default function IssuesTable() {
             <UserStoryPicker 
               userStory={row.relatedUserStory}
               onChange={(userStory) => {
-                handleUserStoryChange(row, userStory);
+                handleUserStoryChange(row, userStory).catch((err) => {
+                  console.error("Failed to update user story:", err);
+                });
               }}
             />
           );
@@ -321,8 +341,45 @@ export default function IssuesTable() {
   }, [issueData, isLoadingIssues]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-1 flex-col items-start gap-3">
+      <h1 className="text-3xl font-semibold">Issues</h1>
+
+      <div className="flex w-full items-center gap-3 pb-2">
+        <SearchBar
+          searchValue={searchValue}
+          handleUpdateSearch={handleUpdateSearch}
+          placeholder="Find a user story by title or Id..."
+        ></SearchBar>
+        <PrimaryButton onClick={() => setShowNewStory(true)}>
+          + New Story
+        </PrimaryButton>
+      </div>
+
       {table}
+
+     
+
+      <PrimaryButton onClick={() => setShowDetail(true)}>
+        Edit Issue
+      </PrimaryButton>
+
+      {/* FIXME Testing issue inside http://tenor.dev/project/PxeyrC2a7Ymix2Y7pzFx/issues */}
+      {/* TODO Delete once table is created */}
+      {renderDetail && (
+        <IssueDetailPopup
+          showDetail={showDetail}
+          setShowDetail={setShowDetail}
+          issueId={"o9oghXMHVueESQNv9jnN"}
+        />
+      )}
+
+      {renderNewStory && (
+        <CreateIssuePopup
+          onIssueAdded={onIssueAdded}
+          showPopup={showNewStory}
+          setShowPopup={setShowNewStory}
+        />
+      )}
     </div>
   )
 }

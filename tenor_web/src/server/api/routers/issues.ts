@@ -62,7 +62,7 @@ const getUserStory = async (
   settingsRef: FirebaseFirestore.DocumentReference,
   userStoryId: string,
 ) => {
-  if (userStoryId === undefined) {
+  if (!userStoryId || typeof userStoryId !== "string" || userStoryId.trim() === "") {
     return undefined;
   }
   const userStory = await settingsRef
@@ -77,8 +77,9 @@ const getUserStory = async (
 
 export const issuesRouter = createTRPCRouter({
   getIssuesTableFriendly: protectedProcedure
-  .input(z.object({ projectId: z.string(), issueId: z.string().optional() }))
+  .input(z.object({ projectId: z.string() }))
   .query(async ({ ctx, input }) => {
+    try {
       const rawIssues = await getIssuesFromProject(
         ctx.firestore,
         input.projectId,
@@ -97,16 +98,22 @@ export const issuesRouter = createTRPCRouter({
               settingsRef,
               issue.priorityId,
             ),
-            relatedUserStory: await getUserStory(
-              settingsRef,
-              issue.relatedUserStoryId,
-            ),
+            relatedUserStory: issue.relatedUserStoryId
+            ? await getUserStory(settingsRef, issue.relatedUserStoryId)
+            : undefined
+            ,
             size: issue.size,
           };
         }),
       );
+    
 
       return fixedData as IssueCol[];
+    } 
+    catch (err) {
+      console.log("Error getting issues:", err);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
     }),
 
   getIssues: protectedProcedure.input(z.object({ projectId: z.string(), issueId: z.string() })).query(async ({ ctx, input }) => {
