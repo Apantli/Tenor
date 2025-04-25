@@ -18,6 +18,7 @@ import PrimaryButton from "../buttons/PrimaryButton";
 import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
 import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
 import SearchBar from "../SearchBar";
+import AssignUsersList from "../specific-pickers/AssignUsersList";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -322,6 +323,19 @@ export default function IssuesTable() {
             <SizePillComponent
               currentSize={row.size}
               callback={handleSizeChange}
+            />
+          );
+        },
+      },
+      assignUsers: { 
+        label: "Assignees",
+        width: 120,
+        render(row) {
+          return (
+            <AssignUsersList 
+              users={row.assignUsers}
+              onChange={() => {}}
+              allUsers={[]}
             />
           );
         },

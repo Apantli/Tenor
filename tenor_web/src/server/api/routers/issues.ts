@@ -31,6 +31,11 @@ export interface IssueCol {
   stepsToRecreate?: string;
   size: Size;
   sprint?: Sprint
+  assignUsers: {
+    uid: string;
+    displayName?: string;
+    photoURL?: string;
+  }[];
 }
 
 // Get the issues from a designated project and sprint
@@ -75,6 +80,47 @@ const getUserStory = async (
   return { id: userStory.id, ...ExistingUserStorySchema.parse(userStory.data()) } as ExistingUserStory;
 }
 
+const getTasksAssignUsers = async (
+  firestore: FirebaseFirestore.Firestore,
+  projectId: string,
+  tasksIds: string[],
+) => {
+  if (!tasksIds || tasksIds.length === 0) {
+    return [];
+  }
+
+  const users = await Promise.all(
+    tasksIds.map(async (taskId) => {
+      const taskDoc = await firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("tasks")
+        .doc(taskId)
+        .get();
+
+      const taskData = taskDoc.data();
+      const userId = taskData?.assigneeId;
+
+      if (!userId) {
+        return undefined;
+      }
+
+      const userDoc = await firestore.collection("users").doc(userId).get();
+      return userDoc.exists? { id: userDoc.id, ...userDoc.data() } : undefined;
+
+    })
+  );
+
+  const filteredUsers = users.filter(Boolean) as { id: string; [key: string]: any }[];
+
+  // Filtra usuarios únicos por ID
+  const uniqueUsers = Array.from(
+    new Map(filteredUsers.map((u) => [u.id, u])).values()
+  );
+
+  return uniqueUsers;
+}
+
 export const issuesRouter = createTRPCRouter({
   getIssuesTableFriendly: protectedProcedure
   .input(z.object({ projectId: z.string() }))
@@ -89,6 +135,20 @@ export const issuesRouter = createTRPCRouter({
 
       const fixedData = await Promise.all(
         rawIssues.map(async (issue) => {
+          const rawUsers = await getTasksAssignUsers(
+            ctx.firestore,
+            input.projectId,
+            issue.taskIds
+          );
+      
+          const assignUsers = rawUsers
+            .filter(Boolean)
+            .map((user) => ({
+              uid: user.id,
+              displayName: user.displayName,
+              photoURL: user.photoURL,
+          }));
+    
           return {
             id: issue.id,
             scrumId: issue.scrumId,
@@ -102,7 +162,8 @@ export const issuesRouter = createTRPCRouter({
             ? await getUserStory(settingsRef, issue.relatedUserStoryId)
             : undefined
             ,
-            size: issue.size,
+            assignUsers,
+            size: issue.size
           };
         }),
       );
@@ -324,7 +385,6 @@ export const issuesRouter = createTRPCRouter({
       if (priorityId === undefined && size === undefined) {
         return;
       }
-
       const issueRef = ctx.firestore
         .collection("projects")
         .doc(projectId)
@@ -340,6 +400,8 @@ export const issuesRouter = createTRPCRouter({
         priorityId: priorityId ?? issueData.priorityId,
         size: size ?? issueData.size,
       };
+
+      console.log("updatedIssueData", updatedIssueData);
       await issueRef.update(updatedIssueData);
       return { success: true, issueId: issueId, updatedIssueData: updatedIssueData };
     }),
