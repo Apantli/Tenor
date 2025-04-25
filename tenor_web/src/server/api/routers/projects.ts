@@ -23,6 +23,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/base64";
+import { defaultRoleList } from "~/lib/defaultTags";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -249,31 +250,27 @@ export const projectsRouter = createTRPCRouter({
           .doc("settings")
           .collection("userTypes");
 
-        const adminRole = await userTypesCollection.add({
-          label: "Admin",
-          color: "#FF0000",
-          deleted: false,
-        });
+        // go over defaultRoleList and create roles
+        const userTypesMap: Record<string, string> = {};
+        for (const role of defaultRoleList) {
+          const roleDoc = await userTypesCollection.add({
+            label: role.label,
+            deleted: false,
+          });
 
-        const viewerRole = await userTypesCollection.add({
-          label: "Viewer",
-          color: "#00FF00",
-          deleted: false,
-        });
+          userTypesMap[role.id] = roleDoc.id;
+        }
 
-        const developerRole = await userTypesCollection.add({
-          label: "Developer",
-          color: "#0000FF",
-          deleted: false,
-        });
-
+        // change users roleId to the new role id
         users.forEach((user) => {
-          if (user.roleId === "admin") {
-            user.roleId = adminRole.id;
-          } else if (user.roleId === "developer") {
-            user.roleId = developerRole.id;
+          if (userTypesMap[user.roleId]) {
+            user.roleId = userTypesMap[user.roleId]!;
           } else {
-            user.roleId = viewerRole.id;
+            console.error(
+              `Role ID ${user.roleId} not found in userTypesMap`,
+              user,
+            );
+            user.roleId = "";
           }
         });
 

@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { defaultRoleList } from "~/lib/defaultTags";
 
 export default function ProjectCreator() {
   const toBase64 = (file: File) =>
@@ -224,12 +225,7 @@ export default function ProjectCreator() {
                 handleMemberAdd={handleAddTeamMember}
                 handleMemberRemove={handleRemoveTeamMember}
                 handleEditMemberRole={handleEditMemberRole}
-                // WARNING: IDs of roless are hardcoded to associate them in the backend, do not change unless told so
-                roleList={[
-                  { id: "admin", label: "Admin" },
-                  { id: "developer", label: "Developer" },
-                  { id: "viewer", label: "Viewer" },
-                ]}
+                roleList={defaultRoleList}
               />
             </div>
           </div>
