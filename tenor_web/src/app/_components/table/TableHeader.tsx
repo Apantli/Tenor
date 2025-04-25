@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Dropdown, { DropdownButton } from "../Dropdown";
 import UpArrowIcon from "@mui/icons-material/ArrowUpwardOutlined";
 import DownArrowIcon from "@mui/icons-material/ArrowDownwardOutlined";
@@ -14,6 +14,8 @@ import {
 import TableFilter from "./TableFilter";
 import TableActions from "./TableActions";
 import InputCheckbox from "../inputs/InputCheckbox";
+import { cn } from "~/lib/utils";
+import useShiftKey from "~/app/_hooks/useShiftKey";
 
 interface TableHeaderProps<I, T> {
   columns: TableColumns<T>;
@@ -33,6 +35,15 @@ interface TableHeaderProps<I, T> {
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
   onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
+  columnWidths: number[];
+  setResizing: React.Dispatch<React.SetStateAction<boolean>>;
+  resizing: boolean;
+  tableKey: string;
+  scrollContainerRef: React.RefObject<HTMLDivElement>;
+  ghostRowContainerRef: React.RefObject<HTMLDivElement>;
+  showGhostActions?: boolean;
+  acceptAllGhosts?: () => void;
+  rejectAllGhosts?: () => void;
 }
 
 // eslint-disable-next-line
@@ -53,22 +64,175 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   deletable,
   onDelete,
   setSelection,
+  columnWidths,
+  setResizing,
+  resizing,
+  tableKey,
+  scrollContainerRef,
+  ghostRowContainerRef,
+  showGhostActions,
+  acceptAllGhosts,
+  rejectAllGhosts,
 }: TableHeaderProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
     () => filterVisibleColumns(Object.entries(columns)),
     [columns],
   );
+
+  const [temporaryColumnWidths, setTemporaryColumnWidths] =
+    useState<number[]>(columnWidths);
+  const columnWidthsRef = useRef<number[]>(columnWidths);
+
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
-    columnEntries
-      .map(([, column]) => ("width" in column ? `${column.width}px` : ""))
-      .join(" ") +
+    columnWidths.map((width) => `${width}px`).join(" ") +
     (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+
+  const startXRef = useRef<number>();
+  const startWidthRef = useRef<number>();
+  const resizingIndexRef = useRef<number>();
+
+  const onResizeMouseDown = (index: number, e: MouseEvent) => {
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+    document.body.style.webkitUserSelect = "none";
+    startXRef.current = e.clientX;
+    startWidthRef.current = temporaryColumnWidths[index]!;
+    resizingIndexRef.current = index;
+
+    scrollContainerRef.current?.childNodes.forEach((child) => {
+      const element = child as HTMLElement;
+      element.style.transition = "";
+    });
+    ghostRowContainerRef.current?.childNodes.forEach((child) => {
+      const element = child as HTMLElement;
+      element.style.transition = "";
+    });
+  };
+
+  function onResizeMouseMove(e: MouseEvent) {
+    if (
+      startXRef.current === undefined ||
+      resizingIndexRef.current === undefined ||
+      startWidthRef.current === undefined
+    )
+      return;
+    setResizing(true);
+
+    document.body.style.cursor = "col-resize";
+    const delta = e.clientX - startXRef.current;
+    const index = resizingIndexRef.current;
+
+    const newColumnWidths = [...columnWidthsRef.current];
+    let newWidth = startWidthRef.current + delta;
+    if (newWidth < (columnEntries[index]![1].minWidth ?? 70)) {
+      newWidth = columnEntries[index]![1].minWidth ?? 70;
+    }
+    newColumnWidths[index] = newWidth;
+    setTemporaryColumnWidths(newColumnWidths);
+    columnWidthsRef.current = newColumnWidths;
+
+    const newTemplateColumns =
+      (multiselect ? "20px " : "") +
+      newColumnWidths.map((width) => `${width}px`).join(" ") +
+      (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+
+    scrollContainerRef.current?.childNodes.forEach((child) => {
+      (child as HTMLElement).style.gridTemplateColumns = newTemplateColumns;
+    });
+    ghostRowContainerRef.current?.childNodes.forEach((child) => {
+      (child as HTMLElement).style.gridTemplateColumns = newTemplateColumns;
+    });
+  }
+
+  const onResizeMouseUp = (e: MouseEvent) => {
+    if (
+      startXRef.current === undefined ||
+      resizingIndexRef.current === undefined
+    )
+      return;
+
+    const index = resizingIndexRef.current;
+
+    updateStoredWidth(
+      columnEntries[index]![0],
+      columnWidthsRef.current[index]!,
+    );
+    setResizing(false);
+    startWidthRef.current = undefined;
+    startXRef.current = undefined;
+    resizingIndexRef.current = undefined;
+    document.body.style.cursor = "";
+    document.body.style.userSelect = "";
+    document.body.style.webkitUserSelect = "";
+  };
+
+  useEffect(() => {
+    window.addEventListener("mouseup", onResizeMouseUp);
+    window.addEventListener("mousemove", onResizeMouseMove);
+    return () => {
+      window.removeEventListener("mouseup", onResizeMouseUp);
+      window.removeEventListener("mousemove", onResizeMouseMove);
+    };
+  }, []);
+
+  const shiftClick = useShiftKey();
+
+  const updateStoredWidth = (key: string, value: number) => {
+    if (value === -1) {
+      localStorage.removeItem(tableKey + ":" + key);
+      return;
+    }
+    localStorage.setItem(tableKey + ":" + key, value.toString());
+  };
+
+  const setFullWidth = (index: number) => {
+    const newColumnWidths = [...temporaryColumnWidths];
+    if (shiftClick) {
+      columnEntries.forEach(([key, column], i) => {
+        newColumnWidths[i] = column.width;
+        updateStoredWidth(key, -1);
+      });
+    } else {
+      newColumnWidths[index] = columnEntries[index]![1].width;
+      updateStoredWidth(columnEntries[index]![0], -1);
+    }
+
+    setTemporaryColumnWidths(newColumnWidths);
+    columnWidthsRef.current = newColumnWidths;
+
+    const newTemplateColumns =
+      (multiselect ? "20px " : "") +
+      newColumnWidths.map((width) => `${width}px`).join(" ") +
+      (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+
+    scrollContainerRef.current?.childNodes.forEach((child) => {
+      const element = child as HTMLElement;
+      element.style.gridTemplateColumns = newTemplateColumns;
+      element.style.transition = "grid-template-columns 0.2s ease-in-out";
+    });
+    ghostRowContainerRef.current?.childNodes.forEach((child) => {
+      const element = child as HTMLElement;
+      element.style.gridTemplateColumns = newTemplateColumns;
+      element.style.transition = "grid-template-columns 0.2s ease-in-out";
+    });
+  };
+
+  const getTooltipMessage = (key: string) => {
+    const messages: string[] = [];
+    if (sortColumnKey === key) {
+      messages.push("Sorting");
+    }
+    if (filters[key] !== undefined) {
+      messages.push("Filtering");
+    }
+    return messages.join("<br>");
+  };
 
   return (
     <div
-      className="sticky top-0 z-[60] grid h-8 min-w-fit items-center gap-2 border-b border-app-border bg-white px-2"
+      className="group sticky top-0 z-[60] grid h-8 min-w-fit items-center gap-2 border-b border-app-border bg-white px-2"
       style={{ gridTemplateColumns }}
     >
       {multiselect && (
@@ -79,82 +243,119 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
           onChange={toggleSelectAll}
         />
       )}
-      {columnEntries.map(([key, column]) => (
+      {columnEntries.map(([key, column], index) => (
         <div
           key={key}
-          className="flex items-center justify-between overflow-hidden pr-4 text-gray-500"
+          className="flex items-center justify-between overflow-hidden text-gray-500"
         >
-          <span className="text-sm">{column.label}</span>
-          {(!!column.sortable || column.filterable) && (
-            <div className="flex items-center justify-end gap-2 pl-2">
-              {sortColumnKey === key && sortDirection === "asc" && (
-                <button onClick={stopSorting} className="text-app-light">
-                  <UpArrowIcon />
-                </button>
-              )}
-              {sortColumnKey === key && sortDirection === "desc" && (
-                <button onClick={stopSorting} className="text-app-light">
-                  <DownArrowIcon />
-                </button>
-              )}
-              {filters[key] !== undefined && (
-                <button
-                  onClick={() => clearFilter(key)}
-                  className="text-app-light"
-                >
-                  <CrossFilterIcon />
-                </button>
-              )}
-              <Dropdown
-                label={
-                  <span className="text-nowrap font-bold text-app-light">
-                    • • •
-                  </span>
-                }
-              >
-                {column.sortable && (
-                  <DropdownButton
-                    className="flex justify-between gap-8"
-                    dontCloseOnClick
-                    onClick={() => handleToggleSorting(key, "asc")}
-                  >
-                    <span>Sort ascending</span>
-                    {sortColumnKey === key && sortDirection === "asc" && (
-                      <CrossIcon />
-                    )}
-                    {(sortColumnKey !== key || sortDirection !== "asc") && (
+          <span
+            className={cn("truncate text-sm", {
+              "text-app-light":
+                temporaryColumnWidths[index]! <= 120 &&
+                (sortColumnKey === key || filters[key] !== undefined),
+            })}
+            data-tooltip-id="tooltip"
+            data-tooltip-html={getTooltipMessage(key)}
+            data-tooltip-hidden={
+              !(
+                temporaryColumnWidths[index]! <= 120 &&
+                (sortColumnKey === key || filters[key] !== undefined)
+              )
+            }
+          >
+            {column.label}
+          </span>
+          <div className="flex items-center">
+            {(!!column.sortable || column.filterable) && (
+              <div className="flex items-center justify-end gap-2 pl-2">
+                {sortColumnKey === key &&
+                  sortDirection === "asc" &&
+                  temporaryColumnWidths[index]! > 120 && (
+                    <button onClick={stopSorting} className="text-app-light">
                       <UpArrowIcon />
-                    )}
-                  </DropdownButton>
-                )}
-                {column.sortable && (
-                  <DropdownButton
-                    className="flex justify-between gap-8 border-app-border"
-                    dontCloseOnClick
-                    onClick={() => handleToggleSorting(key, "desc")}
-                  >
-                    <span>Sort descending</span>
-                    {sortColumnKey === key && sortDirection === "desc" && (
-                      <CrossIcon />
-                    )}
-                    {(sortColumnKey !== key || sortDirection !== "desc") && (
+                    </button>
+                  )}
+                {sortColumnKey === key &&
+                  sortDirection === "desc" &&
+                  temporaryColumnWidths[index]! > 120 && (
+                    <button onClick={stopSorting} className="text-app-light">
                       <DownArrowIcon />
-                    )}
-                  </DropdownButton>
+                    </button>
+                  )}
+                {filters[key] !== undefined &&
+                  temporaryColumnWidths[index]! > 120 && (
+                    <button
+                      onClick={() => clearFilter(key)}
+                      className="text-app-light"
+                    >
+                      <CrossFilterIcon />
+                    </button>
+                  )}
+                <Dropdown
+                  label={
+                    <span className="text-nowrap pr-3 font-bold text-app-light">
+                      • • •
+                    </span>
+                  }
+                >
+                  {column.sortable && (
+                    <DropdownButton
+                      className="flex justify-between gap-8"
+                      dontCloseOnClick
+                      onClick={() => handleToggleSorting(key, "asc")}
+                    >
+                      <span>Sort ascending</span>
+                      {sortColumnKey === key && sortDirection === "asc" && (
+                        <CrossIcon />
+                      )}
+                      {(sortColumnKey !== key || sortDirection !== "asc") && (
+                        <UpArrowIcon />
+                      )}
+                    </DropdownButton>
+                  )}
+                  {column.sortable && (
+                    <DropdownButton
+                      className="flex justify-between gap-8 border-app-border"
+                      dontCloseOnClick
+                      onClick={() => handleToggleSorting(key, "desc")}
+                    >
+                      <span>Sort descending</span>
+                      {sortColumnKey === key && sortDirection === "desc" && (
+                        <CrossIcon />
+                      )}
+                      {(sortColumnKey !== key || sortDirection !== "desc") && (
+                        <DownArrowIcon />
+                      )}
+                    </DropdownButton>
+                  )}
+                  {column.filterable !== undefined && (
+                    <TableFilter
+                      column={column}
+                      columnKey={key}
+                      data={filteredData}
+                      filters={filters}
+                      clearFilter={clearFilter}
+                      setFilter={setFilter}
+                    />
+                  )}
+                </Dropdown>
+              </div>
+            )}
+            <div
+              className="flex h-[25px] cursor-col-resize items-center justify-center pl-1"
+              onMouseDown={(e) => onResizeMouseDown(index, e.nativeEvent)}
+              onDoubleClick={() => setFullWidth(index)}
+            >
+              <div
+                className={cn(
+                  "h-full w-[1px] bg-app-border opacity-0 transition group-hover:opacity-100",
+                  {
+                    "opacity-100": resizing,
+                  },
                 )}
-                {column.filterable !== undefined && (
-                  <TableFilter
-                    column={column}
-                    columnKey={key}
-                    data={filteredData}
-                    filters={filters}
-                    clearFilter={clearFilter}
-                    setFilter={setFilter}
-                  />
-                )}
-              </Dropdown>
+              ></div>
             </div>
-          )}
+          </div>
         </div>
       ))}
       {showThreeDots && (
@@ -166,6 +367,9 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
             extraOptions={extraOptions}
             deletable={deletable}
             onDelete={onDelete}
+            showGhostActions={showGhostActions}
+            onAcceptAllGhosts={acceptAllGhosts}
+            onRejectAllGhosts={rejectAllGhosts}
           />
         </>
       )}

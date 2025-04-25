@@ -103,7 +103,7 @@ export default function PillPickerComponent({
       )}
       {filteredItems.length > 0 && (
         <div className="whitespate-nowrap w-52 text-left">
-          <div className="flex max-h-40 w-full flex-col overflow-y-scroll rounded-b-lg">
+          <div className="flex max-h-40 w-full flex-col overflow-y-auto rounded-b-lg">
             {filteredItems.map((item) => (
               <DropdownButton
                 onClick={() => onChange(item)}

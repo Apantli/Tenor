@@ -455,6 +455,7 @@ export default function RequirementsTable() {
         emptyMessage="No requirements found"
         multiselect
         deletable
+        tableKey="requirements-table"
       />
     );
   }, [requirementsData, isLoadingRequirements]);

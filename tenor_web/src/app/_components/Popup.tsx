@@ -145,7 +145,7 @@ export default function Popup({
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 overflow-y-scroll">{children}</div>
+                    <div className="flex-1 overflow-y-auto">{children}</div>
                   </div>
                 </div>
 
@@ -156,7 +156,7 @@ export default function Popup({
               {sidebar !== undefined && (
                 <div
                   className={cn(
-                    "ml-3 h-full shrink-0 overflow-y-scroll border-l border-app-border px-3 pb-3 pl-5 pt-12",
+                    "ml-3 h-full shrink-0 overflow-y-auto border-l border-app-border px-3 pb-3 pl-5 pt-12",
                     sidebarClassName,
                   )}
                 >
@@ -310,7 +310,7 @@ export function SidebarPopup({
                       </div>
                     )}
                   </div>
-                  <div className="flex-1 overflow-y-scroll">{children}</div>
+                  <div className="flex-1 overflow-y-auto">{children}</div>
                 </div>
               </div>
 

@@ -335,12 +335,13 @@ export default function UserStoryList() {
     return (
       <Table
         emptyMessage="No user stories found"
-        className={cn("w-[calc(100vw-500px)] overflow-scroll", heightOfContent)}
+        className={cn("w-[calc(100vw-500px)] overflow-auto", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}
         onDelete={handleDelete}
         multiselect
         deletable
+        tableKey="user-stories-table"
       />
     );
   };
