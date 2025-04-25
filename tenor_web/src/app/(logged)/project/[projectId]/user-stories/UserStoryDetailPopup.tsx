@@ -53,16 +53,15 @@ export default function UserStoryDetailPopup({
     userStoryId,
   });
 
-  const { data: tasksTableData, isLoading: isLoadingTasks } =
-    api.tasks.getTasksTableFriendly.useQuery(
-      {
-        projectId: projectId as string,
-        itemId: userStoryId,
-      },
-      {
-        enabled: showDetail,
-      },
-    );
+  const { data: tasksTableData } = api.tasks.getTasksTableFriendly.useQuery(
+    {
+      projectId: projectId as string,
+      itemId: userStoryId,
+    },
+    {
+      enabled: showDetail,
+    },
+  );
 
   const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
     (task) => ({
@@ -133,20 +132,29 @@ export default function UserStoryDetailPopup({
   const handleSave = async (
     updatedData: NonNullable<typeof userStoryDetail>,
   ) => {
+    const finalData = editMode
+      ? {
+          ...updatedData,
+          name: editForm.name,
+          description: editForm.description,
+          acceptanceCriteria: editForm.acceptanceCriteria,
+        }
+      : updatedData;
+
     const updatedUserStory = {
-      name: updatedData.name,
-      description: updatedData.description,
-      acceptanceCriteria: updatedData.acceptanceCriteria,
+      name: finalData.name,
+      description: finalData.description,
+      acceptanceCriteria: finalData.acceptanceCriteria,
       tagIds:
-        updatedData?.tags
+        finalData?.tags
           .map((tag) => tag.id)
           .filter((tag) => tag !== undefined) ?? [],
-      priorityId: updatedData?.priority?.id,
-      size: updatedData?.size,
-      epicId: updatedData?.epic?.id ?? "",
-      sprintId: updatedData?.sprint?.id ?? "",
-      dependencyIds: updatedData?.dependencies.map((us) => us.id) ?? [],
-      requiredByIds: updatedData?.requiredBy.map((us) => us.id) ?? [],
+      priorityId: finalData?.priority?.id,
+      size: finalData?.size,
+      epicId: finalData?.epic?.id ?? "",
+      sprintId: finalData?.sprint?.id ?? "",
+      dependencyIds: finalData?.dependencies.map((us) => us.id) ?? [],
+      requiredByIds: finalData?.requiredBy.map((us) => us.id) ?? [],
     };
 
     // Cancel ongoing queries for this user story data
@@ -165,7 +173,7 @@ export default function UserStoryDetailPopup({
         if (!oldData) return undefined;
         return {
           ...oldData,
-          ...updatedData,
+          ...finalData,
         };
       },
     );
