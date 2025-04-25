@@ -102,7 +102,7 @@ export const EpicOverviewSchema = EpicSchema.omit({
 
 export const UserStorySchema = BacklogItemSchema.extend({
   epicId: z.string(),
-  acceptanceCriteria: z.string(),
+  acceptanceCriteria: z.string().describe("Can use valid markdown"),
   dependencyIds: z.array(z.string()),
   requiredByIds: z.array(z.string()),
 });

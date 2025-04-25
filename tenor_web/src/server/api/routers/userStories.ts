@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type { WithId, Tag, Size } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { UserStory } from "~/lib/types/firebaseSchemas";
@@ -58,7 +59,6 @@ const getUserStoriesFromProject = async (
 
   return userStories;
 };
-
 const getStatusName = async (
   dbAdmin: FirebaseFirestore.Firestore,
   projectId: string,
@@ -68,10 +68,7 @@ const getStatusName = async (
     return undefined;
   }
   const settingsRef = getProjectSettingsRef(projectId, dbAdmin);
-  const tag = await settingsRef
-    .collection("statusTypes")
-    .doc(statusId)
-    .get();
+  const tag = await settingsRef.collection("statusTypes").doc(statusId).get();
   if (!tag.exists) {
     return undefined;
   }
@@ -87,25 +84,103 @@ const getTaskProgress = async (
     .collection("projects")
     .doc(projectId)
     .collection("tasks");
-    
+
   const tasksSnapshot = await tasksRef
     .where("deleted", "==", false)
     .where("itemId", "==", itemId)
     .get();
-    
+
   const totalTasks = tasksSnapshot.size;
-  
-  const completedTasks = await Promise.all(tasksSnapshot.docs.map(async (taskDoc) => {
-    const taskData = TaskSchema.parse(taskDoc.data());
-    
-    if (!taskData.statusId) return false;
-    
-    const statusTag = await getStatusName(dbAdmin, projectId, taskData.statusId);
-    return statusTag?.name === "Done";
-  })).then(results => results.filter(Boolean).length);
-  
+
+  const completedTasks = await Promise.all(
+    tasksSnapshot.docs.map(async (taskDoc) => {
+      const taskData = TaskSchema.parse(taskDoc.data());
+
+      if (!taskData.statusId) return false;
+
+      const statusTag = await getStatusName(
+        dbAdmin,
+        projectId,
+        taskData.statusId,
+      );
+      return statusTag?.name === "Done";
+    }),
+  ).then((results) => results.filter(Boolean).length);
+
   return [completedTasks, totalTasks];
 };
+
+async function askAiToGenerate<T extends z.ZodType<any>>(
+  prompt: string,
+  returnSchema: T,
+  attempts = 0,
+) {
+  if (attempts > 3) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "AI generation failed after multiple attempts",
+    });
+  }
+
+  const schemaJson = JSON.stringify(zodToJsonSchema(returnSchema), null, 2);
+
+  const fullPrompt = `${prompt}
+
+Please generate a JSON object that strictly conforms to the following schema:
+
+${schemaJson}
+
+⚠️ Important instructions:
+- ✅ Only return valid JSON that exactly matches the schema.
+- ❌ Do NOT include markdown, code blocks, comments, or any explanation.
+- ❌ Do NOT include any line breaks or formatting — return a single-line JSON string only.
+- ⚠️ All required fields must be present.
+- ✅ Use realistic sample data for each field (don't use placeholders like "string" or "123").
+- ❌ Do NOT include any additional fields or properties that are not in the schema.
+- ❌ Do NOT add any top level keys or metadata such as a type, version or items array.
+
+Return only the JSON on one line.`;
+
+  const preparedPrompt = fullPrompt.replaceAll("{", "{{").replaceAll("}", "}}");
+
+  const response = await fetch(
+    "https://stk-formador-25.azurewebsites.net/epics/generate-from-prompt",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt: preparedPrompt,
+        data: {},
+      }),
+    },
+  );
+  const responseData = await response.json();
+
+  if (!responseData.success) {
+    console.error("Error from AI:", responseData);
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "AI generation failed",
+    });
+  }
+
+  // Remove ```json from start and ``` from end
+  const jsonString = responseData.data
+    .replace(/```json/g, "")
+    .replace(/```/g, "");
+  const generatedJson = JSON.parse(jsonString);
+
+  console.log("Generated JSON:", generatedJson);
+
+  try {
+    const parsedData = returnSchema.parse(generatedJson);
+    return parsedData as z.infer<T>;
+  } catch (error) {
+    return askAiToGenerate(prompt, returnSchema, attempts + 1);
+  }
+}
 
 export const userStoriesRouter = createTRPCRouter({
   createUserStory: protectedProcedure
@@ -180,9 +255,9 @@ export const userStoriesRouter = createTRPCRouter({
             userStory.epicId,
           );
           const taskProgress = await getTaskProgress(
-            ctx.firestore, 
-            projectId, 
-            userStory.id
+            ctx.firestore,
+            projectId,
+            userStory.id,
           );
           return {
             id: userStory.id,
@@ -431,5 +506,26 @@ export const userStoriesRouter = createTRPCRouter({
         .doc(userStoryId);
       await userStoryRef.update({ deleted: true });
       return { success: true };
+    }),
+
+  generateUserStories: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        amount: z.number(),
+        prompt: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, amount, prompt } = input;
+
+      const completePrompt = `Generate ${amount} user stories about an application for food markets. Do NOT include any identifier in the name like User Story 1, just use a normal title.\n\n`;
+
+      // return JSON.stringify(zodToJsonSchema(UserStorySchema));
+      const data = await askAiToGenerate(
+        completePrompt,
+        z.array(UserStorySchema.omit({ scrumId: true, deleted: true })),
+      );
+      return data;
     }),
 });

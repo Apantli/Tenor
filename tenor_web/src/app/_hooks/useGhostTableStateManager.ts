@@ -29,7 +29,7 @@ export default function useGhostTableStateManager<
     setGhostData(data);
   };
 
-  return [
+  return {
     onAccept,
     onReject,
     beginLoading,
@@ -37,5 +37,6 @@ export default function useGhostTableStateManager<
     ghostData,
     ghostRows,
     setGhostRows,
-  ] as const;
+    generating: ghostRows !== undefined && ghostData === undefined,
+  };
 }

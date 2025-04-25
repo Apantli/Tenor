@@ -23,6 +23,7 @@ interface TableRowProps<I, T> {
   onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   scrollContainerRef: React.RefObject<HTMLDivElement>;
   columnWidths: number[];
+  className?: string;
 }
 
 function TableRow<
@@ -41,6 +42,7 @@ function TableRow<
   onDelete,
   scrollContainerRef,
   columnWidths,
+  className,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
@@ -50,7 +52,7 @@ function TableRow<
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+    (showThreeDots ? ` 1fr 80px` : "");
 
   const handleDelete = async () => {
     onDelete?.([value.id], (del) => {
@@ -69,6 +71,7 @@ function TableRow<
         {
           "bg-gray-100": selection.has(value.id),
         },
+        className,
       )}
       style={{ gridTemplateColumns }}
     >

@@ -21,6 +21,7 @@ export default {
 
         "app-hover-border": "#e8e8e8",
         "app-hover-primary": "#07585e",
+        "app-hover-secondary": "#1b6963",
         "app-hover-fail": "#ab1530",
 
         "sprint-column-background": "#F1F2F4",

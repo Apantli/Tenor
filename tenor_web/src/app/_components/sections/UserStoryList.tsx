@@ -2,7 +2,7 @@
 
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
-import { useState, type ChangeEventHandler } from "react";
+import { useRef, useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -21,6 +21,12 @@ import {
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import LoadingSpinner from "../LoadingSpinner";
+import AiButton from "../buttons/AiButton";
+import Dropdown, { DropdownItem } from "../Dropdown";
+import PillPickerComponent from "../PillPickerComponent";
+import FloatingLabelInput from "../FloatingLabelInput";
+import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
+import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -70,6 +76,23 @@ export default function UserStoryList() {
     a.scrumId < b.scrumId ? -1 : 1,
   );
 
+  const {
+    onAccept,
+    onReject,
+    beginLoading,
+    finishLoading,
+    ghostData,
+    ghostRows,
+    setGhostRows,
+    generating,
+  } = useGhostTableStateManager<UserStoryCol, string>((ids: string[]) => {
+    // Use the callback to perform the action you want when the user accepts the ghosts
+    // const newData = data.concat(
+    //   dummyGhostData.filter((ghost) => ids.includes(ghost.id)),
+    // );
+    // setData(newData);
+  });
+
   // Function to get the US table or message instead
   const getTable = () => {
     if (userStories == undefined || isLoadingUS) {
@@ -100,6 +123,7 @@ export default function UserStoryList() {
             </button>
           );
         },
+        hiddenOnGhost: true,
       },
       title: {
         label: "Title",
@@ -342,6 +366,13 @@ export default function UserStoryList() {
         multiselect
         deletable
         tableKey="user-stories-table"
+        ghostData={ghostData}
+        ghostRows={ghostRows}
+        setGhostRows={setGhostRows}
+        acceptGhosts={onAccept}
+        rejectGhosts={onReject}
+        ghostLoadingEstimation={30000}
+        rowClassName="h-12"
       />
     );
   };
@@ -353,12 +384,38 @@ export default function UserStoryList() {
     setShowDetail(true);
   };
 
+  const { mutateAsync: generateStories } =
+    api.userStories.generateUserStories.useMutation();
+
+  const generateUserStories = async (amount: number, prompt: string) => {
+    beginLoading(amount);
+
+    const generatedData = await generateStories({
+      amount,
+      prompt,
+      projectId: projectId as string,
+    });
+
+    const tableData = generatedData.map((data, i) => ({
+      id: i.toString(),
+      scrumId: -1,
+      title: data.name,
+      epicScrumId: 0,
+      priority: undefined,
+      size: data.size ?? "M",
+      sprintNumber: 0,
+      taskProgress: [0, 0] as [number, number],
+    }));
+
+    finishLoading(tableData);
+  };
+
   return (
     <>
       <div className="flex flex-1 flex-col items-start gap-3">
         <h1 className="text-3xl font-semibold">User Stories</h1>
 
-        <div className="flex w-full items-center gap-3 pb-2">
+        <div className="flex w-full items-center gap-1 pb-2">
           <SearchBar
             searchValue={searchValue}
             handleUpdateSearch={handleUpdateSearch}
@@ -367,6 +424,12 @@ export default function UserStoryList() {
           <PrimaryButton onClick={() => setShowNewStory(true)}>
             + New Story
           </PrimaryButton>
+          <AiGeneratorDropdown
+            singularLabel="story"
+            pluralLabel="stories"
+            onGenerate={generateUserStories}
+            disabled={generating}
+          />
         </div>
 
         {getTable()}
