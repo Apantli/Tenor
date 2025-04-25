@@ -53,16 +53,15 @@ export default function UserStoryDetailPopup({
     userStoryId,
   });
 
-  const { data: tasksTableData, isLoading: isLoadingTasks } =
-    api.tasks.getTasksTableFriendly.useQuery(
-      {
-        projectId: projectId as string,
-        itemId: userStoryId,
-      },
-      {
-        enabled: showDetail,
-      },
-    );
+  const { data: tasksTableData } = api.tasks.getTasksTableFriendly.useQuery(
+    {
+      projectId: projectId as string,
+      itemId: userStoryId,
+    },
+    {
+      enabled: showDetail,
+    },
+  );
 
   const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
     (task) => ({
@@ -100,15 +99,17 @@ export default function UserStoryDetailPopup({
   const { predefinedAlerts } = useAlert();
   const formatSprintNumber = useFormatSprintNumber();
 
-  // Copy the editable data from the user story
   useEffect(() => {
     if (!userStoryDetail) return;
-    setEditForm({
-      name: userStoryDetail.name,
-      description: userStoryDetail.description,
-      acceptanceCriteria: userStoryDetail.acceptanceCriteria,
-    });
-  }, [userStoryDetail]);
+    if (!editMode) {
+      // Only update the form when we're not in edit mode
+      setEditForm({
+        name: userStoryDetail.name,
+        description: userStoryDetail.description,
+        acceptanceCriteria: userStoryDetail.acceptanceCriteria,
+      });
+    }
+  }, [userStoryDetail, editMode]);
 
   const confirm = useConfirmation();
 
@@ -132,21 +133,32 @@ export default function UserStoryDetailPopup({
 
   const handleSave = async (
     updatedData: NonNullable<typeof userStoryDetail>,
+    saveEditForm = false,
   ) => {
+    const finalData =
+      saveEditForm && editMode
+        ? {
+            ...updatedData,
+            name: editForm.name,
+            description: editForm.description,
+            acceptanceCriteria: editForm.acceptanceCriteria,
+          }
+        : updatedData;
+
     const updatedUserStory = {
-      name: updatedData.name,
-      description: updatedData.description,
-      acceptanceCriteria: updatedData.acceptanceCriteria,
+      name: finalData.name,
+      description: finalData.description,
+      acceptanceCriteria: finalData.acceptanceCriteria,
       tagIds:
-        updatedData?.tags
+        finalData?.tags
           .map((tag) => tag.id)
           .filter((tag) => tag !== undefined) ?? [],
-      priorityId: updatedData?.priority?.id,
-      size: updatedData?.size,
-      epicId: updatedData?.epic?.id ?? "",
-      sprintId: updatedData?.sprint?.id ?? "",
-      dependencyIds: updatedData?.dependencies.map((us) => us.id) ?? [],
-      requiredByIds: updatedData?.requiredBy.map((us) => us.id) ?? [],
+      priorityId: finalData?.priority?.id,
+      size: finalData?.size,
+      epicId: finalData?.epic?.id ?? "",
+      sprintId: finalData?.sprint?.id ?? "",
+      dependencyIds: finalData?.dependencies.map((us) => us.id) ?? [],
+      requiredByIds: finalData?.requiredBy.map((us) => us.id) ?? [],
     };
 
     // Cancel ongoing queries for this user story data
@@ -165,7 +177,7 @@ export default function UserStoryDetailPopup({
         if (!oldData) return undefined;
         return {
           ...oldData,
-          ...updatedData,
+          ...finalData,
         };
       },
     );
@@ -187,7 +199,9 @@ export default function UserStoryDetailPopup({
       projectId: projectId as string,
     });
 
-    await refetch();
+    if (!editMode || saveEditForm) {
+      await refetch();
+    }
   };
 
   const handleTaskStatusChange = async (taskId: string, status: Tag) => {
@@ -226,6 +240,10 @@ export default function UserStoryDetailPopup({
     await utils.tasks.getTasksTableFriendly.invalidate({
       projectId: projectId as string,
       itemId: userStoryId,
+    });
+
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId as string,
     });
   };
 
@@ -369,7 +387,7 @@ export default function UserStoryDetailPopup({
             description: editForm.description,
             acceptanceCriteria: editForm.acceptanceCriteria,
           };
-          await handleSave(updatedData);
+          await handleSave(updatedData, true); // Pass true to save the edit form
         }
       }}
       disablePassiveDismiss={editMode}

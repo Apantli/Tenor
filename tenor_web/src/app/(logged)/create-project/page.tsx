@@ -126,10 +126,59 @@ export default function ProjectCreator() {
     );
   };
 
-  // Icon File
+  const logoSizeLimit = 3 * 1024 * 1024; // 3MB in bytes
+  const logoMaxDimensions = 1024; // Maximum width/height in pixels
   const [icon, setImage] = useState<File | null>(null);
+  const [isValidatingImage, setIsValidatingImage] = useState(false);
+
   function handleImageChange(file: File) {
-    setImage(file);
+    if (isValidatingImage) return;
+    setIsValidatingImage(true);
+
+    // Check file size
+    if (file.size > logoSizeLimit) {
+      alert("File too large", "Logo image must be smaller than 3MB", {
+        type: "error",
+        duration: 5000,
+      });
+      setIsValidatingImage(false);
+      return;
+    }
+
+    // Check image dimensions
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      if (img.width > logoMaxDimensions || img.height > logoMaxDimensions) {
+        alert(
+          "Image too large",
+          `Logo dimensions must be 1024x1024 pixels or smaller. This image is ${img.width}x${img.height}.`,
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+        setIsValidatingImage(false);
+      } else {
+        // If all validations pass, set the image
+        setImage(file);
+        setIsValidatingImage(false);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      alert("Invalid image", "Please upload a valid image file", {
+        type: "error",
+        duration: 5000,
+      });
+      setIsValidatingImage(false);
+    };
+
+    img.src = objectUrl;
   }
 
   // Context Files
@@ -149,13 +198,37 @@ export default function ProjectCreator() {
     setLinks((prev) => prev.filter((l) => l !== link));
   }
 
+  const maxProjectNameLength = 100;
+  const [nameWarningShown, setNameWarningShown] = useState(false);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
+
+    if (
+      name === "name" &&
+      value.length > maxProjectNameLength &&
+      !nameWarningShown
+    ) {
+      alert(
+        "Limit exceeded",
+        `The project name can't be longer than ${maxProjectNameLength} characbeters.`,
+        {
+          type: "warning",
+          duration: 3000,
+        },
+      );
+      setNameWarningShown(true);
+    }
+
+    if (name === "name" && value.length <= maxProjectNameLength) {
+      setNameWarningShown(false);
+    }
+
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: value.slice(0, maxProjectNameLength),
     }));
   };
 
@@ -184,7 +257,7 @@ export default function ProjectCreator() {
               {/* Project Name */}
               <div className="min-w-[300px] flex-1">
                 <InputTextField
-                  label="Project Name"
+                  label={`Project Name (${form.name.length}/${maxProjectNameLength})`}
                   className="h-12"
                   value={form.name}
                   onChange={handleChange}
@@ -196,7 +269,7 @@ export default function ProjectCreator() {
               {/* Project Icon */}
               <div className="flex-1">
                 <InputFileField
-                  label="Icon"
+                  label="Icon (max: 3MB)"
                   accept="image/*"
                   className="h-12"
                   image={icon}
@@ -239,7 +312,7 @@ export default function ProjectCreator() {
               placeholder="Tell us about your project..."
             />
 
-            {/* Contexr Files */}
+            {/* Context Files */}
             <div>
               <FileList
                 label="Context Files"
