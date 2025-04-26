@@ -94,6 +94,7 @@ const getUserStory = async (
   if (!userStory.exists) {
     return undefined;
   }
+
   return {
     id: userStory.id,
     ...ExistingUserStorySchema.parse(userStory.data()),
@@ -126,7 +127,7 @@ export const issuesRouter = createTRPCRouter({
               description: issue.description,
               priority: await getPriorityTag(settingsRef, issue.priorityId),
               relatedUserStory: issue.relatedUserStoryId
-                ? await getUserStory(settingsRef, issue.relatedUserStoryId)
+                ? await getUserStory(projectRef, issue.relatedUserStoryId)
                 : undefined,
               size: issue.size,
             };

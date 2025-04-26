@@ -237,8 +237,6 @@ export default function IssuesTable() {
       relatedUserStory: {
         label: "Assigned user story",
         width: 200,
-        sortable: true,
-        filterable: "list",
         render(row) {
           const handleUserStoryChange = async (
             row: IssueCol,
