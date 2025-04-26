@@ -14,7 +14,7 @@ We welcome contributions! To keep things organized and maintain a clean history,
 All branches must follow this format:
 
 ```
-personal/{your_username}/{main_functionality_or_change}
+personal/{yourUsername}/{mainFunctionalityOrChange}
 ```
 
 - Use your GitHub username or identifier.
