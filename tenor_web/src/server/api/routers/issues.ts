@@ -1,5 +1,11 @@
 import { z } from "zod";
-import type {Issue, WithId, Tag, Size, Sprint } from "~/lib/types/firebaseSchemas";
+import type {
+  Issue,
+  WithId,
+  Tag,
+  Size,
+  Sprint,
+} from "~/lib/types/firebaseSchemas";
 import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
@@ -10,11 +16,20 @@ import {
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
-import type { ExistingUserStory, IssueDetail, UserStoryDetail } from "~/lib/types/detailSchemas";
+import type {
+  ExistingUserStory,
+  IssueDetail,
+  UserStoryDetail,
+} from "~/lib/types/detailSchemas";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import { getProjectSettingsRef, getBacklogTag, getPriorityTag } from "./settings";
+import {
+  getProjectSettingsRef,
+  getBacklogTag,
+  getPriorityTag,
+  getProjectRef,
+} from "./settings";
 import { FieldPath } from "firebase-admin/firestore";
 import { TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { all, is } from "node_modules/cypress/types/bluebird";
@@ -30,7 +45,7 @@ export interface IssueCol {
   tags: Tag[];
   stepsToRecreate?: string;
   size: Size;
-  sprint?: Sprint
+  sprint?: Sprint;
 }
 
 // Get the issues from a designated project and sprint
@@ -45,78 +60,89 @@ const getIssuesFromProject = async (
   const issueSnapshot = await issueRef.get();
 
   console.log("issueSnapshot", issueSnapshot.docs);
-  console.log("issue docs", issueSnapshot.docs.map(doc => doc.data()));
+  console.log(
+    "issue docs",
+    issueSnapshot.docs.map((doc) => doc.data()),
+  );
 
   const issues: WithId<Issue>[] = [];
   issueSnapshot.forEach((doc) => {
     const data = doc.data() as Issue;
     if (data.deleted !== true) {
-      issues.push({ id: doc.id, ...data,});
+      issues.push({ id: doc.id, ...data });
     }
-  })
+  });
 
   return issues;
 };
 
 const getUserStory = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
+  projectRef: FirebaseFirestore.DocumentReference,
   userStoryId: string,
 ) => {
-  if (!userStoryId || typeof userStoryId !== "string" || userStoryId.trim() === "") {
+  if (
+    !userStoryId ||
+    typeof userStoryId !== "string" ||
+    userStoryId.trim() === ""
+  ) {
     return undefined;
   }
-  const userStory = await settingsRef
+  const userStory = await projectRef
     .collection("userStories")
     .doc(userStoryId)
     .get();
   if (!userStory.exists) {
     return undefined;
   }
-  return { id: userStory.id, ...ExistingUserStorySchema.parse(userStory.data()) } as ExistingUserStory;
-}
+  return {
+    id: userStory.id,
+    ...ExistingUserStorySchema.parse(userStory.data()),
+  } as ExistingUserStory;
+};
 
 export const issuesRouter = createTRPCRouter({
   getIssuesTableFriendly: protectedProcedure
-  .input(z.object({ projectId: z.string() }))
-  .query(async ({ ctx, input }) => {
-    try {
-      const rawIssues = await getIssuesFromProject(
-        ctx.firestore,
-        input.projectId,
-      );
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const rawIssues = await getIssuesFromProject(
+          ctx.firestore,
+          input.projectId,
+        );
 
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+        const settingsRef = getProjectSettingsRef(
+          input.projectId,
+          ctx.firestore,
+        );
 
-      const fixedData = await Promise.all(
-        rawIssues.map(async (issue) => {
-          return {
-            id: issue.id,
-            scrumId: issue.scrumId,
-            name: issue.name,
-            description: issue.description,
-            priority: await getPriorityTag(
-              settingsRef,
-              issue.priorityId,
-            ),
-            relatedUserStory: issue.relatedUserStoryId
-            ? await getUserStory(settingsRef, issue.relatedUserStoryId)
-            : undefined
-            ,
-            size: issue.size,
-          };
-        }),
-      );
-    
+        const projectRef = getProjectRef(input.projectId, ctx.firestore);
 
-      return fixedData as IssueCol[];
-    } 
-    catch (err) {
-      console.log("Error getting issues:", err);
-      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-    }
+        const fixedData = await Promise.all(
+          rawIssues.map(async (issue) => {
+            return {
+              id: issue.id,
+              scrumId: issue.scrumId,
+              name: issue.name,
+              description: issue.description,
+              priority: await getPriorityTag(settingsRef, issue.priorityId),
+              relatedUserStory: issue.relatedUserStoryId
+                ? await getUserStory(settingsRef, issue.relatedUserStoryId)
+                : undefined,
+              size: issue.size,
+            };
+          }),
+        );
+
+        return fixedData as IssueCol[];
+      } catch (err) {
+        console.log("Error getting issues:", err);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
     }),
 
-  getIssues: protectedProcedure.input(z.object({ projectId: z.string(), issueId: z.string() })).query(async ({ ctx, input }) => {
+  getIssues: protectedProcedure
+    .input(z.object({ projectId: z.string(), issueId: z.string() }))
+    .query(async ({ ctx, input }) => {
       const issue = (
         await ctx.firestore
           .collection("projects")
@@ -124,8 +150,8 @@ export const issuesRouter = createTRPCRouter({
           .collection("issues")
           .doc(input.issueId)
           .get()
-        ).data();
-      
+      ).data();
+
       if (!issue) {
         throw new Error("Issue not found");
       }
@@ -133,7 +159,7 @@ export const issuesRouter = createTRPCRouter({
       return {
         id: input.issueId,
         ...issue,
-      }
+      };
     }),
   createIssue: protectedProcedure
     .input(
@@ -313,12 +339,14 @@ export const issuesRouter = createTRPCRouter({
     }),
 
   modifyIssuesTags: protectedProcedure
-    .input(z.object({
-      projectId: z.string(),
-      issueId: z.string(),
-      size: z.string().optional(),
-      priorityId: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        projectId: z.string(),
+        issueId: z.string(),
+        size: z.string().optional(),
+        priorityId: z.string().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId, size, priorityId } = input;
       if (priorityId === undefined && size === undefined) {
@@ -341,11 +369,21 @@ export const issuesRouter = createTRPCRouter({
         size: size ?? issueData.size,
       };
       await issueRef.update(updatedIssueData);
-      return { success: true, issueId: issueId, updatedIssueData: updatedIssueData };
+      return {
+        success: true,
+        issueId: issueId,
+        updatedIssueData: updatedIssueData,
+      };
     }),
 
   modifyIssuesRelatedUserStory: protectedProcedure
-    .input(z.object({ projectId: z.string(), issueId: z.string(), relatedUserStoryId: z.string().optional() }))
+    .input(
+      z.object({
+        projectId: z.string(),
+        issueId: z.string(),
+        relatedUserStoryId: z.string().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId, relatedUserStoryId } = input;
       if (relatedUserStoryId === undefined) {
@@ -366,7 +404,10 @@ export const issuesRouter = createTRPCRouter({
         relatedUserStoryId: relatedUserStoryId ?? issueData.relatedUserStoryId,
       };
       await issueRef.update(updatedIssueData);
-      return { success: true, issueId: issueId, updatedIssueData: updatedIssueData };
+      return {
+        success: true,
+        issueId: issueId,
+        updatedIssueData: updatedIssueData,
+      };
     }),
-  }
-);
+});

@@ -371,7 +371,7 @@ export default function IssuesTable() {
             />
           </div>
           <PrimaryButton onClick={() => setShowNewStory(true)}>
-            + New Story
+            + New Issue
           </PrimaryButton>
         </div>
       </div>
