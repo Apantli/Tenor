@@ -23,6 +23,7 @@ interface TableRowProps<I, T> {
   onDelete?: (ids: I[], callback: (del: boolean) => void) => void;
   scrollContainerRef: React.RefObject<HTMLDivElement>;
   columnWidths: number[];
+  className?: string;
 }
 
 function TableRow<
@@ -41,6 +42,7 @@ function TableRow<
   onDelete,
   scrollContainerRef,
   columnWidths,
+  className,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
@@ -50,7 +52,7 @@ function TableRow<
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+    (showThreeDots ? ` 1fr 110px` : "");
 
   const handleDelete = async () => {
     onDelete?.([value.id], (del) => {
@@ -65,10 +67,11 @@ function TableRow<
   return (
     <div
       className={cn(
-        "grid min-w-fit items-center gap-2 border-b border-app-border p-2 transition",
+        "grid min-w-fit items-center gap-3 border-b border-app-border p-2 transition",
         {
           "bg-gray-100": selection.has(value.id),
         },
+        className,
       )}
       style={{ gridTemplateColumns }}
     >
@@ -95,8 +98,12 @@ function TableRow<
         <>
           <div></div>
           <Dropdown
-            label={<span className="font-bold text-app-light">• • •</span>}
-            className="flex h-full w-full items-center justify-start text-sm font-semibold transition"
+            label={
+              <span className="flex w-full items-center justify-end pr-3 font-bold text-app-light">
+                • • •
+              </span>
+            }
+            className="flex h-full w-full items-center justify-end text-sm font-semibold transition"
             menuClassName="font-normal whitespace-nowrap"
             scrollContainer={scrollContainerRef}
           >

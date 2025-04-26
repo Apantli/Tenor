@@ -21,6 +21,21 @@ interface Props {
   menuClassName?: ClassNameValue;
   scrollContainer?: React.RefObject<HTMLDivElement>;
   onOpen?: () => void;
+  disabled?: boolean;
+  close?: boolean;
+}
+
+export function useCloseDropdown() {
+  const [close, setClose] = useState(false);
+
+  const closeDropdown = () => {
+    setClose(true);
+    setTimeout(() => {
+      setClose(false);
+    }, 10);
+  };
+
+  return [close, closeDropdown] as const;
 }
 
 export default function Dropdown({
@@ -30,6 +45,8 @@ export default function Dropdown({
   menuClassName,
   scrollContainer,
   onOpen,
+  disabled,
+  close,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDirection, setOpenDirection] = useState<
@@ -44,6 +61,12 @@ export default function Dropdown({
   const childrenArray = Array.isArray(children)
     ? children.filter((c) => !!c)
     : [children];
+
+  useEffect(() => {
+    if (close) {
+      setIsOpen(false);
+    }
+  }, [close]);
 
   // Used to close the menu when the user clicks outside of it
   useClickOutside(ref, () => {
@@ -149,7 +172,7 @@ export default function Dropdown({
       )}
       ref={ref}
     >
-      <button onClick={toggleOpen} className="w-full">
+      <button onClick={toggleOpen} className="w-full" disabled={!!disabled}>
         {label}
       </button>
       <div

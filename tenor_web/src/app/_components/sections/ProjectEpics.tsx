@@ -10,9 +10,10 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
-import CollapsableSearchBar from "../CollapsableSearchBar";
 import Markdown from "react-markdown";
 import SecondaryButton from "../buttons/SecondaryButton";
+import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
+import SearchBar from "../SearchBar";
 
 export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   const { mutateAsync: createEpic, isPending: creatingEpic } =
@@ -118,12 +119,13 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   };
   return (
     <>
-      <div className="flex flex-row justify-between gap-2 border-b-2 pb-2">
-        <h1 className="text-3xl font-semibold">Epics</h1>
-        <CollapsableSearchBar
-          searchText={searchText}
-          setSearchText={setSearchText}
-        ></CollapsableSearchBar>
+      <h1 className="text-3xl font-semibold">Epics</h1>
+      <div className="mt-2 flex flex-row justify-between gap-1 border-b-2 pb-2">
+        <SearchBar
+          searchValue={searchText}
+          handleUpdateSearch={(e) => setSearchText(e.target.value)}
+          placeholder="Search epics"
+        ></SearchBar>
         <PrimaryButton
           className={
             "h-full w-full max-w-[120px] self-center hover:cursor-pointer"

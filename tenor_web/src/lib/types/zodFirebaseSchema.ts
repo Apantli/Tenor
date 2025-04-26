@@ -80,9 +80,12 @@ export const BacklogItemSchema = BasicInfoSchema.extend({
   sprintId: z.string().default(""),
   taskIds: z.array(z.string()).default([]),
   complete: z.boolean().default(false),
-  tagIds: z.array(z.string()),
+  tagIds: z.array(z.string()).describe("List of backlog tag ids"),
   size: SizeSchema.optional(),
-  priorityId: z.string().optional(),
+  priorityId: z
+    .string()
+    .optional()
+    .describe("Use a valid, existing priority id"),
 });
 
 export const EpicSchema = BasicInfoSchema;
@@ -101,10 +104,31 @@ export const EpicOverviewSchema = EpicSchema.omit({
 });
 
 export const UserStorySchema = BacklogItemSchema.extend({
-  epicId: z.string(),
-  acceptanceCriteria: z.string(),
-  dependencyIds: z.array(z.string()),
-  requiredByIds: z.array(z.string()),
+  epicId: z
+    .string()
+    .describe(
+      "Use a valid, existing epic id. May be empty if no related epic exists. Only include if this user story is directly related to an epic, as in it's part of the same functionality.\n Example if the epic is 'User login', only include user stories such as 'User can login with email and password' or 'User can login with Google'",
+    ),
+  acceptanceCriteria: z.string().describe("Can use valid markdown"),
+  // Redundant fields, but useful for describing their purposes to the AI
+  name: z
+    .string()
+    .describe("Small (5 word maximum) description of the user story"),
+  description: z
+    .string()
+    .describe(
+      "You can use valid markdown. Use the following format: As a [role], I want [goal] so that [reason].",
+    ),
+  dependencyIds: z
+    .array(z.string())
+    .describe(
+      "List of user story ids. May be empty, only include them if this user story depends on them.",
+    ),
+  requiredByIds: z
+    .array(z.string())
+    .describe(
+      "List of user story ids. May be empty, only include them if this user story is required by them.",
+    ),
 });
 
 export const ExistingUserStorySchema = BasicInfoSchema.merge(

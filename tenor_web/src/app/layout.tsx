@@ -8,6 +8,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import { AlertProvider } from "./_hooks/useAlert";
 import TooltipClientWrapper from "./_components/TooltipClientWrapper";
 import { ConfirmationProvider } from "./_hooks/useConfirmation";
+import { NavigationGuardProvider } from "./_hooks/useNavigationGuard";
 
 export const metadata: Metadata = {
   title: "Tenor",
@@ -21,11 +22,13 @@ export default async function RootLayout({
     <html lang="en" className={`${GeistSans.variable}`}>
       <body>
         <TRPCReactProvider>
-          <TooltipClientWrapper>
-            <AlertProvider>
-              <ConfirmationProvider>{children}</ConfirmationProvider>
-            </AlertProvider>
-          </TooltipClientWrapper>
+          <NavigationGuardProvider>
+            <TooltipClientWrapper>
+              <AlertProvider>
+                <ConfirmationProvider>{children}</ConfirmationProvider>
+              </AlertProvider>
+            </TooltipClientWrapper>
+          </NavigationGuardProvider>
         </TRPCReactProvider>
       </body>
     </html>

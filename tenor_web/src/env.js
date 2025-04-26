@@ -20,6 +20,8 @@ export const env = createEnv({
     SUPABASE_URL: z.string(),
     SUPABASE_PROJECT_ID: z.string(),
     SUPABASE_API_KEY: z.string(),
+    GENERATIVE_AI: z.enum(["softtek", "gemini"]).default("softtek"),
+    GEMINI_API_KEY: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -61,6 +63,8 @@ export const env = createEnv({
     SUPABASE_URL: process.env.SUPABASE_URL,
     SUPABASE_PROJECT_ID: process.env.SUPABASE_PROJECT_ID,
     SUPABASE_API_KEY: process.env.SUPABASE_API_KEY,
+    GENERATIVE_AI: process.env.GENERATIVE_AI,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     NODE_ENV: process.env.NODE_ENV,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
