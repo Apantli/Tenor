@@ -25,30 +25,30 @@ import SearchBar from "../SearchBar";
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function IssuesTable() {
+  const { projectId } = useParams();
+  const [searchValue, setSearchValue] = useState("");
+
+  const [selectedIS, setSelectedIS] = useState<string>("");
   const [renderNewStory, showNewStory, setShowNewStory] =
     usePopupVisibilityState();
-  const [selectedIS, setSelectedIS] = useState<string>("");
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
 
+  const formattedScrumId = useFormatTaskIssueId();
+
   const onIssueAdded = async (userStoryId: string) => {
-    // await refetchUS();
+    await refetchIssues();
     setShowNewStory(false);
-    // setSelectedUS(userStoryId);
-    // setShowDetail(true);
+    setSelectedIS(userStoryId);
+    setShowDetail(true);
   };
-  const { projectId } = useParams();
 
   const { issueId } = useParams();
 
   const utils = api.useUtils();
 
-  const [searchValue, setSearchValue] = useState("");
-
   const { mutateAsync: updateIssue } = api.issues.modifyIssue.useMutation();
   const { mutateAsync: updateIssueTags } =
     api.issues.modifyIssuesTags.useMutation();
-
-  const formattedScrumId = useFormatTaskIssueId();
 
   const { mutateAsync: updateAssignUserStorie } =
     api.issues.modifyIssuesRelatedUserStory.useMutation();
