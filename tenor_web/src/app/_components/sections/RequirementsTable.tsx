@@ -462,7 +462,7 @@ export default function RequirementsTable() {
   }, [requirementsData, isLoadingRequirements]);
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
       <div className="flex w-full flex-col justify-between">
         <h2 className="content-center text-3xl font-semibold">Requirements</h2>
         <div className="mt-3 flex flex-1 grow items-center justify-end gap-1">

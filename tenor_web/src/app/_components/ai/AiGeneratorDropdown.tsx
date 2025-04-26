@@ -39,7 +39,13 @@ export default function AiGeneratorDropdown({
 
   return (
     <Dropdown
-      label={<AiButton asSpan disabled={disabled} />}
+      label={
+        <AiButton
+          asSpan
+          disabled={disabled}
+          tooltip={`Generate ${pluralLabel} with AI`}
+        />
+      }
       onOpen={() => {
         promptRef.current?.focus();
       }}
