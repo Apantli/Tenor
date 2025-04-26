@@ -125,7 +125,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
           + New Epic
         </PrimaryButton>
       </h1>
-      <div className="flex flex-row justify-between gap-1 border-b-2 pb-2">
+      <div className="mb-3 flex flex-row justify-between gap-1 border-b-2 pb-3">
         <SearchBar
           searchValue={searchText}
           handleUpdateSearch={(e) => setSearchText(e.target.value)}
@@ -140,7 +140,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
               setShowEditPopup(true);
             }}
             key={epic.scrumId}
-            className="border-b-2 py-3 hover:cursor-pointer"
+            className="border-b-2 pb-3 hover:cursor-pointer"
           >
             <div className="flex flex-col gap-y-2">
               <h3 className="text-xl font-semibold">

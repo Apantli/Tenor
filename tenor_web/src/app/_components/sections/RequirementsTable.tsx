@@ -486,6 +486,7 @@ export default function RequirementsTable() {
           <AiGeneratorDropdown
             singularLabel="requirement"
             pluralLabel="requirements"
+            className="w-[350px]"
           />
         </div>
       </div>
