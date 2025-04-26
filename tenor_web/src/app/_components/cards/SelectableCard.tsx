@@ -8,7 +8,7 @@ interface Props {
   onChange?: (selected: boolean) => void;
   showCheckbox?: boolean;
   dndId: string;
-  lastDraggedUserStoryId: string | null;
+  lastDraggedItemId: string | null;
 }
 
 export default function SelectableCard({
@@ -17,7 +17,7 @@ export default function SelectableCard({
   onChange,
   showCheckbox,
   dndId,
-  lastDraggedUserStoryId,
+  lastDraggedItemId: lastDraggedItemId,
   ...props
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
   const { ref: setNodeRef, isDragging } = useDraggable({
@@ -25,7 +25,9 @@ export default function SelectableCard({
     disabled: selected || showCheckbox, // Don't allow dragging if selection in progress
   });
   const [highlightDropped, setHighlightDropped] = React.useState(false);
-  const [isDropping, setIsDropping] = React.useState(lastDraggedUserStoryId === null ? false : true);
+  const [isDropping, setIsDropping] = React.useState(
+    lastDraggedItemId === null ? false : true,
+  );
 
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -34,7 +36,7 @@ export default function SelectableCard({
     setTimeout(() => {
       setIsDropping(false);
     }, 200); // This should be the same as the drop animation
-    if (lastDraggedUserStoryId === dndId && cardRef.current) {
+    if (lastDraggedItemId === dndId && cardRef.current) {
       // Focus the element
       cardRef.current.focus();
 
@@ -52,7 +54,7 @@ export default function SelectableCard({
         setHighlightDropped(false);
       }, 500);
     }
-  }, [lastDraggedUserStoryId, dndId]);
+  }, [lastDraggedItemId, dndId]);
 
   return (
     <div

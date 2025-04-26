@@ -21,7 +21,7 @@ import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
-import UserStoryCardRender from "~/app/_components/cards/CardRender";
+import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 
 export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
@@ -29,8 +29,11 @@ export type UserStories = inferRouterOutputs<
 
 const noSprintId = "noSprintId";
 
+// FIXME: Use the general AssignableCardColumn instead of specific columns
+
 export default function ProjectSprints() {
   const { projectId } = useParams();
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
   const { data: userStoriesBySprint, isLoading } =
     api.sprints.getUserStoryPreviewsBySprint.useQuery({
@@ -86,7 +89,6 @@ export default function ProjectSprints() {
   }, [isLoadingSprintDuration, defaultSprintDuration, userStoriesBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
   const filteredUnassignedStories =
     userStoriesBySprint?.unassignedUserStoryIds.filter((userStoryId) => {
@@ -552,10 +554,15 @@ export default function ProjectSprints() {
             const draggingUserStory =
               userStoriesBySprint?.userStories[userStoryId];
             if (!draggingUserStory) return null;
+            const item = {
+              ...draggingUserStory,
+              columnId: draggingUserStory.sprintId,
+            };
             return (
-              <UserStoryCardRender
-                userStory={draggingUserStory}
+              <ItemCardRender
+                item={item}
                 showBackground={true}
+                scrumIdFormatter={formatUserStoryScrumId}
               />
             );
           }}
