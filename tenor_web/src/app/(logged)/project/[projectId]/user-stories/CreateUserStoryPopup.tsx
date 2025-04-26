@@ -15,6 +15,7 @@ import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   showPopup: boolean;
@@ -28,6 +29,7 @@ export default function CreateUserStoryPopup({
   onUserStoryAdded,
 }: Props) {
   const { projectId } = useParams();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
   const { mutateAsync: createUserStory, isPending } =
     api.userStories.createUserStory.useMutation();
@@ -98,9 +100,7 @@ export default function CreateUserStoryPopup({
     });
     onUserStoryAdded(userStoryId);
 
-    await utils.userStories.getUserStoriesTableFriendly.invalidate();
-    await utils.userStories.getAllUserStoryPreviews.invalidate();
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate();
+    await invalidateQueriesAllUserStories(projectId as string);
   };
 
   return (

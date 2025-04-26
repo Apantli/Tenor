@@ -1,0 +1,48 @@
+// Use this hooks to invalidate the queries related to a specific item, task, project, etc.
+
+import { api } from "~/trpc/react";
+
+export const useInvalidateQueriesAllTasks = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.tasks.getTasksTableFriendly.invalidate({
+      projectId: projectId,
+    });
+
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId,
+    });
+  };
+};
+
+export const useInvalidateQueriesAllUserStories = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId,
+    });
+    await utils.userStories.getAllUserStoryPreviews.invalidate({
+      projectId: projectId,
+    });
+    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      projectId: projectId,
+    });
+  };
+};
+
+// Some queries fetch all always, so we need to invalidate them all
+export const useInvalidateQuerieUserStoriesDetails = () => {
+  const utils = api.useUtils();
+  return async (projectId: string, userStoryIds: string[]) => {
+    await Promise.all(
+      userStoryIds.map(async (userStoryId) => {
+        await utils.userStories.getUserStoryDetail.invalidate({
+          projectId: projectId,
+          userStoryId,
+        });
+      }),
+    );
+  };
+};
+
+// TODO: Add one for all other stuff and use it in code...

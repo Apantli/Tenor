@@ -22,6 +22,7 @@ import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
+import { useInvalidateQueriesAllUserStories, useInvalidateQuerieUserStoriesDetails } from "~/app/_hooks/invalidateHooks";
 
 export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
@@ -34,6 +35,8 @@ const noSprintId = "noSprintId";
 export default function ProjectSprints() {
   const { projectId } = useParams();
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQuerieUserStoriesDetails = useInvalidateQuerieUserStoriesDetails();
 
   const { data: userStoriesBySprint, isLoading } =
     api.sprints.getUserStoryPreviewsBySprint.useQuery({
@@ -290,21 +293,8 @@ export default function ProjectSprints() {
 
     // Cancel previous fetches for the sprint data
     await cancelUserStoryPreviewQuery();
-
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
-    await Promise.all(
-      userStoryIds.map(async (userStoryId) => {
-        await utils.userStories.getUserStoryDetail.invalidate({
-          projectId: projectId as string,
-          userStoryId,
-        });
-      }),
-    );
+    await invalidateQueriesAllUserStories(projectId as string);
+    await invalidateQuerieUserStoriesDetails(projectId as string, userStoryIds);
   };
 
   const availableToBeAssignedTo =
@@ -412,20 +402,8 @@ export default function ProjectSprints() {
 
     // Only fetch again if this is the last operation
     if (dndOperationsInProgress == 1) {
-      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.userStories.getUserStoriesTableFriendly.invalidate({
-        projectId: projectId as string,
-      });
-      await Promise.all(
-        userStoryIds.map(async (userStoryId) => {
-          await utils.userStories.getUserStoryDetail.invalidate({
-            projectId: projectId as string,
-            userStoryId,
-          });
-        }),
-      );
+      await invalidateQueriesAllUserStories(projectId as string);
+      await invalidateQuerieUserStoriesDetails(projectId as string, userStoryIds);
     }
 
     // Mark operation as finished

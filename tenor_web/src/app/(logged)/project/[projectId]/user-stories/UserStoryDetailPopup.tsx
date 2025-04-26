@@ -29,19 +29,26 @@ import type { TaskPreview } from "~/lib/types/detailSchemas";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
+import { useInvalidateQueriesAllTasks, useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   userStoryId: string;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
+  taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
 }
 
 export default function UserStoryDetailPopup({
   userStoryId,
   showDetail,
   setShowDetail,
+  taskIdToOpenImmediately,
 }: Props) {
   const { projectId } = useParams();
+  const confirm = useConfirmation();
+  const utils = api.useUtils();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
   const {
     data: userStoryDetail,
@@ -78,7 +85,8 @@ export default function UserStoryDetailPopup({
     api.userStories.modifyUserStory.useMutation();
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
-  const utils = api.useUtils();
+  const { mutateAsync: changeStatus } =
+    api.tasks.changeTaskStatus.useMutation();
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -89,9 +97,9 @@ export default function UserStoryDetailPopup({
   const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
+
   const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
     usePopupVisibilityState();
-
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
     undefined,
   );
@@ -110,7 +118,13 @@ export default function UserStoryDetailPopup({
     });
   }, [userStoryDetail]);
 
-  const confirm = useConfirmation();
+  // Show task detail if taskIdToOpenImmediately is provided
+  useEffect(() => {
+    if (!taskIdToOpenImmediately) return;
+    if (!transformedTasks.some((task) => task.id === taskIdToOpenImmediately)) return;
+    setSelectedTaskId(taskIdToOpenImmediately);
+    setShowTaskDetail(true);
+  }, [taskIdToOpenImmediately, tasksTableData]);
 
   useEffect(() => {
     if (error) {
@@ -118,9 +132,6 @@ export default function UserStoryDetailPopup({
       predefinedAlerts.unexpectedError();
     }
   }, [error]);
-
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
 
   const isModified = () => {
     if (editForm.name !== userStoryDetail?.name) return true;
@@ -177,15 +188,7 @@ export default function UserStoryDetailPopup({
     });
 
     // Make other places refetch the data
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.userStories.getAllUserStoryPreviews.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllUserStories(projectId as string);
 
     await refetch();
   };
@@ -223,10 +226,7 @@ export default function UserStoryDetailPopup({
       statusId: status.id ?? "",
     });
 
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId as string,
-      itemId: userStoryId,
-    });
+    await invalidateQueriesAllTasks(projectId as string);
   };
 
   const handleDelete = async () => {
@@ -242,15 +242,7 @@ export default function UserStoryDetailPopup({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
-      await utils.userStories.getUserStoriesTableFriendly.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.userStories.getAllUserStoryPreviews.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-        projectId: projectId as string,
-      });
+      await invalidateQueriesAllUserStories(projectId as string);
       setShowDetail(false);
     }
   };

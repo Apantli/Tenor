@@ -21,6 +21,10 @@ import {
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import LoadingSpinner from "../LoadingSpinner";
+import {
+  useInvalidateQueriesAllUserStories,
+  useInvalidateQuerieUserStoriesDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -39,15 +43,16 @@ export default function UserStoryList() {
   const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
 
+  const invalidateQuerieUserStoriesDetails =
+    useInvalidateQuerieUserStoriesDetails();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+
   // TRPC
   const utils = api.useUtils();
-  const {
-    data: userStories,
-    isLoading: isLoadingUS,
-    refetch: refetchUS,
-  } = api.userStories.getUserStoriesTableFriendly.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: userStories, isLoading: isLoadingUS } =
+    api.userStories.getUserStoriesTableFriendly.useQuery({
+      projectId: projectId as string,
+    });
   const { mutateAsync: updateUserStoryTags } =
     api.userStories.modifyUserStoryTags.useMutation();
   const { mutateAsync: deleteUserStory } =
@@ -179,11 +184,10 @@ export default function UserStoryList() {
               priorityId: tag.id,
             });
 
-            await refetchUS();
-            await utils.userStories.getUserStoryDetail.invalidate({
-              projectId: projectId as string,
-              userStoryId: row.id,
-            });
+            await invalidateQueriesAllUserStories(projectId as string);
+            await invalidateQuerieUserStoriesDetails(projectId as string, [
+              row.id,
+            ]);
           };
 
           return (
@@ -244,14 +248,10 @@ export default function UserStoryList() {
               size: size,
             });
 
-            await refetchUS();
-            await utils.userStories.getUserStoryDetail.invalidate({
-              projectId: projectId as string,
-              userStoryId: row.id,
-            });
-            await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-              projectId: projectId as string,
-            });
+            await invalidateQueriesAllUserStories(projectId as string);
+            await invalidateQuerieUserStoriesDetails(projectId as string, [
+              row.id,
+            ]);
           };
 
           return (
@@ -328,7 +328,7 @@ export default function UserStoryList() {
           }),
         ),
       );
-      await refetchUS();
+      await invalidateQueriesAllUserStories(projectId as string);
       return true;
     };
 
@@ -347,7 +347,7 @@ export default function UserStoryList() {
   };
 
   const onUserStoryAdded = async (userStoryId: string) => {
-    await refetchUS();
+    await invalidateQueriesAllUserStories(projectId as string);
     setShowNewStory(false);
     setSelectedUS(userStoryId);
     setShowDetail(true);

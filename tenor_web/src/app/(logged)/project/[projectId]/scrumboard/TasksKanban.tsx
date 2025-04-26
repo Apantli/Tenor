@@ -27,16 +27,18 @@ import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
-
-export type UserStories = inferRouterOutputs<
-  typeof sprintsRouter
->["getUserStoryPreviewsBySprint"]["userStories"];
+import {
+  useInvalidateQueriesAllTasks,
+  useInvalidateQueriesAllUserStories,
+} from "~/app/_hooks/invalidateHooks";
 
 export default function TasksKanban() {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
   const formatTaskScrumId = useFormatTaskScrumId();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
   // TRPC
   const { data: itemsAndColumnsData, isLoading } =
@@ -61,12 +63,13 @@ export default function TasksKanban() {
 
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   // Detail item and parent
-  const [detaiItemId, setDetaiItemId] = useState("");
-  const detailItem = itemsAndColumnsData?.items[detaiItemId]
-  const detailUserStoryId = detailItem?.itemType == 'US' ? detailItem.itemId : null;
+  const [detailItemId, setDetaiItemId] = useState("");
+  const detailItem = itemsAndColumnsData?.items[detailItemId];
+  const detailUserStoryId =
+    detailItem?.itemType == "US" ? detailItem.itemId : null;
   // TODO: Do same for issue
   // TODO: Do same for generic item
-  
+
   // UTILITY
   let updateOperationsInProgress = 0;
 
@@ -152,22 +155,9 @@ export default function TasksKanban() {
     );
 
     if (updateOperationsInProgress == 1) {
-      await utils.kanban.getTasksForKanban.invalidate({
-        projectId: projectId as string,
-      });
-      // TODO: Invalidate queries for items
-
-      // await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      //   projectId: projectId as string,
-      // });
-      // await Promise.all(
-      //   userStoryIds.map(async (userStoryId) => {
-      //     await utils.userStories.getUserStoryDetail.invalidate({
-      //       projectId: projectId as string,
-      //       userStoryId,
-      //     });
-      //   }),
-      // );
+      await invalidateQueriesAllTasks(projectId as string);
+      await invalidateQueriesAllUserStories(projectId as string);
+      // TODO: Invalidate queries for issues and generic items
     }
 
     updateOperationsInProgress--;
@@ -296,6 +286,7 @@ export default function TasksKanban() {
           setShowDetail={setShowDetail}
           showDetail={showDetail}
           userStoryId={detailUserStoryId}
+          taskIdToOpenImmediately={detailItemId}
         />
       )}
     </>

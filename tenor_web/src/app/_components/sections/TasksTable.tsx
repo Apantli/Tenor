@@ -17,6 +17,7 @@ import { type Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { TaskCol } from "~/server/api/routers/tasks";
 import { usePopupVisibilityState } from "../Popup";
+import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   tasks: TaskPreview[];
@@ -41,6 +42,8 @@ export default function TasksTable({
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
   const filteredTasks = tasks.filter((task) => {
     if (
@@ -169,10 +172,7 @@ export default function TasksTable({
       ),
     );
 
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId as string,
-      itemId: itemId,
-    });
+    await invalidateQueriesAllTasks(projectId as string);
 
     return true;
   };
