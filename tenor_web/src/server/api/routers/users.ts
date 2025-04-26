@@ -3,6 +3,7 @@ import { type TeamMember } from "~/app/_components/inputs/MemberTable";
 import { z } from "zod";
 import { remove } from "node_modules/cypress/types/lodash";
 import admin from "firebase-admin";
+import { emptyRole } from "~/lib/defaultTags";
 
 export const userRouter = createTRPCRouter({
   getUserList: protectedProcedure.query(async ({ ctx }) => {
@@ -117,10 +118,10 @@ export const userRouter = createTRPCRouter({
         .collection("projects")
         .doc(projectId)
         .collection("users")
-        .doc(userId); // this is likely a teamMember ID, not the real userId
+        .doc(userId);
 
       // Mark the team member as inactive
-      await teamMemberRef.update({ active: false });
+      await teamMemberRef.update({ active: false, roleId: emptyRole.id });
 
       // Get the actual userId from the teamMember document
       const teamMemberSnap = await teamMemberRef.get();
@@ -138,18 +139,51 @@ export const userRouter = createTRPCRouter({
         throw new Error("No userId found in team member document");
       }
     }),
+
   addUser: protectedProcedure
     .input(z.object({ projectId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { projectId, userId } = input;
 
-      const userRef = ctx.firestore
+      // search if it exists
+      const userList = await ctx.firestore
         .collection("projects")
         .doc(projectId)
         .collection("users")
-        .doc(userId);
+        .where("userId", "==", userId)
+        .get();
 
-      await userRef.set({ active: true, roleId: "viewer_role_id" });
+      if (userList.empty) {
+        // add user to project
+        const userRef = ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("users")
+          .doc(userId);
+
+        await userRef.set({
+          userId,
+          roleId: emptyRole.id, // default role
+          active: true,
+        });
+      } else {
+        // udpate user to project to active
+        const userRef = ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("users")
+          .doc(userId);
+        await userRef.update({
+          active: true,
+          roleId: emptyRole.id,
+        });
+      }
+
+      // add project to user
+      const userDoc = ctx.firestore.collection("users").doc(userId);
+      await userDoc.update({
+        projects: ctx.firebaseAdmin.firestore.FieldValue.arrayUnion(projectId),
+      });
     }),
   updateUserRole: protectedProcedure
     .input(
