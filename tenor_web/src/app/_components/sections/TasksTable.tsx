@@ -342,6 +342,9 @@ export default function TasksTable({
       }
 
       await refetchTasks();
+      await utils.kanban.getTasksForKanban.invalidate({
+        projectId: projectId as string,
+      });
       if (itemType === "US") {
         await utils.userStories.getUserStoriesTableFriendly.invalidate({
           projectId: projectId as string,
