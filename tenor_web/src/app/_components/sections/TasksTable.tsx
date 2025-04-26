@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
@@ -13,66 +13,149 @@ import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
-import { type Tag } from "~/lib/types/firebaseSchemas";
+import { WithId, type Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import { TaskCol } from "~/server/api/routers/tasks";
+import { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
 import { usePopupVisibilityState } from "../Popup";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
+import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
+import { inferRouterOutputs } from "@trpc/server";
 
 interface Props {
-  tasks: TaskPreview[];
   itemId: string;
   itemType: "US" | "IS" | "IT";
-  onTaskStatusChange: (taskId: string, statusId: Tag) => void;
   setShowAddTaskPopup: (show: boolean) => void;
   setSelectedTaskId: (taskId: string) => void;
   setShowTaskDetail: (show: boolean) => void;
 }
 
 export default function TasksTable({
-  tasks,
   setSelectedTaskId,
   setShowTaskDetail,
   itemId,
+  itemType,
   setShowAddTaskPopup,
-  onTaskStatusChange,
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
-  // Estado para el TaskDetailPopup
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
-  const filteredTasks = tasks.filter((task) => {
-    if (
-      taskSearchText !== "" &&
-      !task.name.toLowerCase().includes(taskSearchText.toLowerCase())
-    ) {
-      return false;
-    }
-    return true;
-  });
+
+  const { data: tasksTableData, refetch: refetchTasks } =
+    api.tasks.getTasksTableFriendly.useQuery({
+      projectId: projectId as string,
+      itemId,
+    });
+  const { mutateAsync: changeStatus } =
+    api.tasks.changeTaskStatus.useMutation();
+  const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
+  const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
+
+  const generatedTasks =
+    useRef<
+      WithId<inferRouterOutputs<typeof tasksRouter>["generateTasks"][number]>[]
+    >();
+
+  const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
+    (task) => ({
+      id: task.id,
+      scrumId: task.scrumId,
+      name: task.title,
+      status: task.status,
+      assignee: task.assignee,
+    }),
+  );
+
+  const filteredTasks = transformedTasks
+    .filter((task) => {
+      if (
+        taskSearchText !== "" &&
+        !task.name.toLowerCase().includes(taskSearchText.toLowerCase())
+      ) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
+      if (a.scrumId === undefined && b.scrumId === undefined) return 0;
+      if (a.scrumId === undefined) return -1;
+      if (b.scrumId === undefined) return 1;
+
+      return a.scrumId < b.scrumId ? 1 : -1;
+    });
 
   const formatTaskScrumId = useFormatTaskScrumId();
-  const completedTasks = tasks.filter(
+  const completedTasks = transformedTasks.filter(
     (task) => task.status?.name === "Done",
   ).length;
+
+  const onTaskStatusChange = async (taskId: string, status: Tag) => {
+    const updatedTasks = tasksTableData?.map((task) => {
+      if (task.id === taskId) {
+        return {
+          ...task,
+          status: status,
+        };
+      }
+      return task;
+    });
+
+    await utils.tasks.getTasksTableFriendly.cancel({
+      projectId: projectId as string,
+      itemId,
+    });
+
+    utils.tasks.getTasksTableFriendly.setData(
+      {
+        projectId: projectId as string,
+        itemId,
+      },
+      (oldData) => {
+        if (!oldData) return undefined;
+        return updatedTasks ?? [];
+      },
+    );
+
+    await changeStatus({
+      taskId,
+      projectId: projectId as string,
+      statusId: status.id ?? "",
+    });
+
+    await utils.tasks.getTasksTableFriendly.invalidate({
+      projectId: projectId as string,
+      itemId,
+    });
+
+    if (itemType === "US") {
+      await utils.userStories.getUserStoriesTableFriendly.invalidate({
+        projectId: projectId as string,
+      });
+    }
+  };
 
   const taskColumns: TableColumns<TaskPreview> = {
     id: { visible: false },
     scrumId: {
       label: "Id",
       width: 100,
+      hiddenOnGhost: true,
       render(row) {
         return (
           <button
-            className="text-left underline-offset-4 hover:text-app-primary hover:underline"
+            className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
             onClick={() => {
               setSelectedTaskId(row.id);
               setShowTaskDetail(true);
             }}
           >
-            {formatTaskScrumId(row.scrumId)}
+            {row.scrumId ? (
+              formatTaskScrumId(row.scrumId)
+            ) : (
+              <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
+            )}
           </button>
         );
       },
@@ -141,16 +224,16 @@ export default function TasksTable({
     callback(true);
 
     // Optimistic update - filter out deleted tasks
-    const newTasks = tasks.filter((task) => !ids.includes(task.id));
+    const newTasks = transformedTasks.filter((task) => !ids.includes(task.id));
 
     await utils.tasks.getTasksTableFriendly.cancel({
       projectId: projectId as string,
       itemId: itemId,
     });
 
-    const transformedTasks = newTasks.map((task) => ({
+    const newTransformedTasks = newTasks.map((task) => ({
       id: task.id,
-      scrumId: task.scrumId,
+      scrumId: task.scrumId!,
       title: task.name, // name to title
       status: task.status,
       assignee: task.assignee,
@@ -158,7 +241,7 @@ export default function TasksTable({
 
     utils.tasks.getTasksTableFriendly.setData(
       { projectId: projectId as string, itemId: itemId },
-      transformedTasks,
+      newTransformedTasks,
     );
 
     await Promise.all(
@@ -178,14 +261,110 @@ export default function TasksTable({
     return true;
   };
 
+  const {
+    beginLoading,
+    finishLoading,
+    ghostData,
+    ghostRows,
+    setGhostRows,
+    updateGhostRow,
+    generating,
+    onAccept,
+    onReject,
+    onAcceptAll,
+    onRejectAll,
+  } = useGhostTableStateManager<TaskPreview, string>(
+    async (acceptedIds) => {
+      const accepted =
+        generatedTasks.current?.filter((task) =>
+          acceptedIds.includes(task.id),
+        ) ?? [];
+      const acceptedRows = ghostData?.filter((task) =>
+        acceptedIds.includes(task.id),
+      );
+
+      await utils.tasks.getTasksTableFriendly.cancel({
+        projectId: projectId as string,
+        itemId: itemId,
+      });
+
+      const generatedTasksPreviews = accepted?.map((task) => ({
+        id: task.id,
+        scrumId: undefined,
+        title: task.name,
+        status: task.status,
+        assignee: undefined,
+      }));
+
+      utils.tasks.getTasksTableFriendly.setData(
+        { projectId: projectId as string, itemId: itemId },
+        tasksTableData?.concat(generatedTasksPreviews ?? []),
+      );
+
+      // Add the tasks to the database
+      for (const task of accepted.reverse()) {
+        await createTask({
+          projectId: projectId as string,
+          taskData: {
+            name: task.name,
+            description: task.description,
+            itemId: itemId,
+            itemType: itemType,
+            size: task.size,
+            statusId: task.status.id ?? "",
+            assigneeId: "",
+            dueDate: null,
+          },
+        });
+      }
+
+      await refetchTasks();
+      if (itemType === "US") {
+        await utils.userStories.getUserStoriesTableFriendly.invalidate({
+          projectId: projectId as string,
+        });
+      }
+    },
+    (removedIds) => {
+      const newGeneratedTasks = generatedTasks.current?.filter(
+        (task) => !removedIds.includes(task.id),
+      );
+      generatedTasks.current = newGeneratedTasks;
+    },
+  );
+
+  const handleGenerateTasks = async (amount: number, prompt: string) => {
+    beginLoading(amount);
+    const generatedData = await generateTasks({
+      projectId: projectId as string,
+      itemId,
+      itemType,
+      amount,
+      prompt,
+    });
+    generatedTasks.current = generatedData.map((task, i) => ({
+      ...task,
+      id: i.toString(),
+    }));
+
+    const newGhostData = generatedData.map((task, i) => ({
+      id: i.toString(),
+      scrumId: undefined,
+      name: task.name,
+      status: task.status,
+      assignee: undefined,
+    }));
+    finishLoading(newGhostData);
+  };
+
   return (
     <>
       <div className="mt-4 flex items-center justify-between">
         <h2 className="text-2xl font-semibold">
-          Tasks ({completedTasks} / {tasks.length})
+          Tasks ({completedTasks} / {transformedTasks.length})
         </h2>
         <div className="flex items-center gap-3">
-          {tasks.length > 0 && (
+          {transformedTasks.length > 0 && (
             <CollapsableSearchBar
               searchText={taskSearchText}
               setSearchText={setTaskSearchText}
@@ -195,7 +374,15 @@ export default function TasksTable({
             <PrimaryButton onClick={() => setShowAddTaskPopup(true)}>
               + Add task
             </PrimaryButton>
-            <AiGeneratorDropdown singularLabel="task" pluralLabel="tasks" />
+            <AiGeneratorDropdown
+              singularLabel="task"
+              pluralLabel="tasks"
+              disabled={generating}
+              onGenerate={handleGenerateTasks}
+              alreadyGenerated={(ghostData?.length ?? 0) > 0}
+              onAcceptAll={onAcceptAll}
+              onRejectAll={onRejectAll}
+            />
           </div>
         </div>
       </div>
@@ -209,7 +396,16 @@ export default function TasksTable({
           multiselect
           deletable
           onDelete={handleTaskDelete}
-          emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
+          emptyMessage={
+            transformedTasks.length > 0 ? "No tasks found" : "No tasks yet"
+          }
+          ghostData={ghostData}
+          ghostRows={ghostRows}
+          setGhostRows={setGhostRows}
+          acceptGhosts={onAccept}
+          rejectGhosts={onReject}
+          ghostLoadingEstimation={5000}
+          rowClassName="h-12"
         />
       </div>
     </>

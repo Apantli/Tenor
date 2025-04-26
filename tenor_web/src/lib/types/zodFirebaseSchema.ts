@@ -146,6 +146,12 @@ export const TaskSchema = BasicInfoSchema.extend({
   // finishedDate: TimestampType.nullable(),
   itemId: z.string(),
   itemType: z.enum(["US", "IS", "IT"]),
+  name: z.string().describe("Small (5 word maximum) description of the task"),
+  description: z
+    .string()
+    .describe(
+      "You can use valid markdown. Describe what needs to be done to complete the task in detail.",
+    ),
   size: SizeSchema.optional(),
   // reviewerId: z.string(), // Scope creep. Ignore for now
 });

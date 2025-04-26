@@ -53,26 +53,6 @@ export default function UserStoryDetailPopup({
     userStoryId,
   });
 
-  const { data: tasksTableData } = api.tasks.getTasksTableFriendly.useQuery(
-    {
-      projectId: projectId as string,
-      itemId: userStoryId,
-    },
-    {
-      enabled: showDetail,
-    },
-  );
-
-  const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
-    (task) => ({
-      id: task.id,
-      scrumId: task.scrumId,
-      name: task.title,
-      status: task.status,
-      assignee: task.assignee,
-    }),
-  );
-
   const { mutateAsync: updateUserStory } =
     api.userStories.modifyUserStory.useMutation();
   const { mutateAsync: deleteUserStory } =
@@ -119,9 +99,6 @@ export default function UserStoryDetailPopup({
       predefinedAlerts.unexpectedError();
     }
   }, [error]);
-
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
 
   const isModified = () => {
     if (editForm.name !== userStoryDetail?.name) return true;
@@ -202,49 +179,6 @@ export default function UserStoryDetailPopup({
     if (!editMode || saveEditForm) {
       await refetch();
     }
-  };
-
-  const handleTaskStatusChange = async (taskId: string, status: Tag) => {
-    const updatedTasks = tasksTableData?.map((task) => {
-      if (task.id === taskId) {
-        return {
-          ...task,
-          status: status,
-        };
-      }
-      return task;
-    });
-
-    await utils.tasks.getTasksTableFriendly.cancel({
-      projectId: projectId as string,
-      itemId: userStoryId,
-    });
-
-    utils.tasks.getTasksTableFriendly.setData(
-      {
-        projectId: projectId as string,
-        itemId: userStoryId,
-      },
-      (oldData) => {
-        if (!oldData) return undefined;
-        return updatedTasks ?? [];
-      },
-    );
-
-    await changeStatus({
-      taskId,
-      projectId: projectId as string,
-      statusId: status.id ?? "",
-    });
-
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId as string,
-      itemId: userStoryId,
-    });
-
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
   };
 
   const handleDelete = async () => {
@@ -448,10 +382,8 @@ export default function UserStoryDetailPopup({
           )}
 
           <TasksTable
-            tasks={transformedTasks ?? []}
             itemId={userStoryId}
             itemType="US"
-            onTaskStatusChange={handleTaskStatusChange}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}

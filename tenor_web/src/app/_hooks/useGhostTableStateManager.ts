@@ -18,6 +18,12 @@ export default function useGhostTableStateManager<
     }
   };
 
+  const onAcceptAll = () => {
+    if (!ghostData) return;
+    const ids = ghostData.map((ghost) => ghost.id);
+    onAccept(ids);
+  };
+
   const onReject = (ids: I[]) => {
     const newGhostData = ghostData?.filter((ghost) => !ids.includes(ghost.id));
     setGhostData(newGhostData);
@@ -25,6 +31,12 @@ export default function useGhostTableStateManager<
     if (removeRowsCallback) {
       removeRowsCallback(ids);
     }
+  };
+
+  const onRejectAll = () => {
+    if (!ghostData) return;
+    const ids = ghostData.map((ghost) => ghost.id);
+    onReject(ids);
   };
 
   const beginLoading = (rows: number) => {
@@ -49,7 +61,9 @@ export default function useGhostTableStateManager<
 
   return {
     onAccept,
+    onAcceptAll,
     onReject,
+    onRejectAll,
     beginLoading,
     finishLoading,
     ghostData,
