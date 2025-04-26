@@ -280,6 +280,12 @@ export default function TasksTable({
       projectId: projectId as string,
       itemId: itemId,
     });
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId as string,
+    });
 
     return true;
   };
