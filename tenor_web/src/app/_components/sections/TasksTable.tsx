@@ -28,7 +28,7 @@ interface Props {
   setShowAddTaskPopup: (show: boolean) => void;
   setSelectedTaskId: (taskId: string) => void;
   setShowTaskDetail: (show: boolean) => void;
-  unsavedTasks?: React.MutableRefObject<boolean>;
+  setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export default function TasksTable({
@@ -37,7 +37,7 @@ export default function TasksTable({
   itemId,
   itemType,
   setShowAddTaskPopup,
-  unsavedTasks,
+  setUnsavedTasks,
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const { projectId } = useParams();
@@ -362,8 +362,8 @@ export default function TasksTable({
         (task) => !removedIds.includes(task.id),
       );
       generatedTasks.current = newGeneratedTasks;
-      if ((newGeneratedTasks?.length ?? 0) === 0 && unsavedTasks)
-        unsavedTasks.current = false;
+      if ((newGeneratedTasks?.length ?? 0) === 0 && setUnsavedTasks)
+        setUnsavedTasks(false);
     },
   );
 
@@ -380,7 +380,7 @@ export default function TasksTable({
       ...task,
       id: i.toString(),
     }));
-    if (unsavedTasks) unsavedTasks.current = true;
+    if (setUnsavedTasks) setUnsavedTasks(true);
 
     const newGhostData = generatedData.map((task, i) => ({
       id: i.toString(),

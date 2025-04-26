@@ -42,7 +42,7 @@ export default function UserStoryDetailPopup({
   setShowDetail,
 }: Props) {
   const { projectId } = useParams();
-  const unsavedTasks = useRef(false);
+  const [unsavedTasks, setUnsavedTasks] = useState(false);
 
   const {
     data: userStoryDetail,
@@ -221,7 +221,7 @@ export default function UserStoryDetailPopup({
           );
           if (!confirmation) return;
         }
-        if (unsavedTasks.current) {
+        if (unsavedTasks) {
           const confirmation = await confirm(
             "Are you sure?",
             "You have unsaved AI generated tasks. To save them, please accept them first.",
@@ -321,7 +321,7 @@ export default function UserStoryDetailPopup({
       }
       editMode={isLoading ? undefined : editMode}
       setEditMode={async (isEditing) => {
-        if (unsavedTasks.current) {
+        if (unsavedTasks) {
           const confirmation = await confirm(
             "Are you sure?",
             "You have unsaved AI generated tasks. To save them, please accept them first.",
@@ -343,7 +343,7 @@ export default function UserStoryDetailPopup({
           await handleSave(updatedData, true); // Pass true to save the edit form
         }
       }}
-      disablePassiveDismiss={editMode || unsavedTasks.current}
+      disablePassiveDismiss={editMode || unsavedTasks}
     >
       {editMode && (
         <>
@@ -406,7 +406,7 @@ export default function UserStoryDetailPopup({
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}
-            unsavedTasks={unsavedTasks}
+            setUnsavedTasks={setUnsavedTasks}
           />
         </div>
       )}
