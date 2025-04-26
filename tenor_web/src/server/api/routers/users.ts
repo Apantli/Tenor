@@ -167,7 +167,7 @@ export const userRouter = createTRPCRouter({
           active: true,
         });
       } else {
-        // udpate user to project to active
+        // update user to project to active
         const userRef = ctx.firestore
           .collection("projects")
           .doc(projectId)
