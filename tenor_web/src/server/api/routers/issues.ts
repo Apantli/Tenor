@@ -138,7 +138,7 @@ export const issuesRouter = createTRPCRouter({
           const rawUsers = await getTasksAssignUsers(
             ctx.firestore,
             input.projectId,
-            issue.taskIds
+            issue.taskIds ?? []
           );
       
           const assignUsers = rawUsers

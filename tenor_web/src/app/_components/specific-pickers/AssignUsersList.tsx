@@ -26,6 +26,8 @@ export default function AssignUsersList({
     }
   }, [users]);
 
+  console.log("Usuarios recibidos:", selectedUsers);
+
   return (
     <div className="flex gap-2">
       {selectedUsers.map((user) => (

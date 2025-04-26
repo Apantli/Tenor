@@ -34,6 +34,7 @@ export default function CreateUserStoryPopup({
 
   const utils = api.useUtils();
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [createForm, setCreateForm] = useState<{
     name: string;
     description: string;
@@ -80,34 +81,53 @@ export default function CreateUserStoryPopup({
       return;
     }
 
-    const { userStoryId } = await createUserStory({
-      projectId: projectId as string,
-      userStoryData: {
-        name: createForm.name,
-        description: createForm.description,
-        acceptanceCriteria: createForm.acceptanceCriteria,
-        tagIds: createForm.tags
-          .map((tag) => tag.id)
-          .filter((val) => val !== undefined),
-        priorityId: createForm.priority?.id,
-        size: createForm.size,
-        epicId: createForm.epic?.id ?? "",
-        requiredByIds: createForm.requiredBy.map((us) => us.id),
-        dependencyIds: createForm.dependencies.map((us) => us.id),
-      },
-    });
-    onUserStoryAdded(userStoryId);
+    // Prevent multiple submissions
+    if (isSubmitting || isPending) return;
 
-    await utils.userStories.getUserStoriesTableFriendly.invalidate();
-    await utils.userStories.getAllUserStoryPreviews.invalidate();
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate();
+    try {
+      setIsSubmitting(true);
+
+      const { userStoryId } = await createUserStory({
+        projectId: projectId as string,
+        userStoryData: {
+          name: createForm.name,
+          description: createForm.description,
+          acceptanceCriteria: createForm.acceptanceCriteria,
+          tagIds: createForm.tags
+            .map((tag) => tag.id)
+            .filter((val) => val !== undefined),
+          priorityId: createForm.priority?.id,
+          size: createForm.size,
+          epicId: createForm.epic?.id ?? "",
+          requiredByIds: createForm.requiredBy.map((us) => us.id),
+          dependencyIds: createForm.dependencies.map((us) => us.id),
+        },
+      });
+
+      onUserStoryAdded(userStoryId);
+
+      await utils.userStories.getUserStoriesTableFriendly.invalidate();
+      await utils.userStories.getAllUserStoryPreviews.invalidate();
+      await utils.sprints.getUserStoryPreviewsBySprint.invalidate();
+
+      // Close the popup
+      setShowPopup(false);
+    } catch (error) {
+      alert("Error", "Failed to create user story. Please try again.", {
+        type: "error",
+        duration: 5000,
+      });
+      console.error("Error creating user story:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Popup
       show={showPopup}
       saveText="Create story"
-      saving={isPending}
+      saving={isPending || isSubmitting}
       dismiss={async () => {
         if (isModified()) {
           const confirmation = await confirm(
@@ -179,7 +199,8 @@ export default function CreateUserStoryPopup({
       }
       editMode={true}
       setEditMode={async (editMode) => {
-        if (!editMode) await handleCreateUserStory();
+        if (!editMode && !isPending && !isSubmitting)
+          await handleCreateUserStory();
       }}
       disablePassiveDismiss={isModified()}
     >

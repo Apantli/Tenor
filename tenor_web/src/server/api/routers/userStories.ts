@@ -16,7 +16,11 @@ import type {
   UserStoryDetail,
   UserStoryPreview,
 } from "~/lib/types/detailSchemas";
-import { getProjectSettingsRef } from "./settings";
+import {
+  getBacklogTag,
+  getPriorityTag,
+  getProjectSettingsRef,
+} from "./settings";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
 
@@ -55,16 +59,18 @@ const getUserStoriesFromProject = async (
   return userStories;
 };
 
-const getPriorityTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  priorityId: string,
+const getStatusName = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+  statusId: string,
 ) => {
-  if (priorityId === undefined) {
+  if (!statusId) {
     return undefined;
   }
+  const settingsRef = getProjectSettingsRef(projectId, dbAdmin);
   const tag = await settingsRef
-    .collection("priorityTypes")
-    .doc(priorityId)
+    .collection("statusTypes")
+    .doc(statusId)
     .get();
   if (!tag.exists) {
     return undefined;
@@ -72,23 +78,33 @@ const getPriorityTag = async (
   return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
 };
 
-const getBacklogTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  taskId: string,
+const getTaskProgress = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+  itemId: string,
 ) => {
-  if (taskId === undefined) {
-    return undefined;
-  }
-  const tag = await settingsRef.collection("backlogTags").doc(taskId).get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
-};
-
-// TODO: Fetch from db
-const getTaskProgress = () => {
-  return [0, 0] as [number | undefined, number | undefined];
+  const tasksRef = dbAdmin
+    .collection("projects")
+    .doc(projectId)
+    .collection("tasks");
+    
+  const tasksSnapshot = await tasksRef
+    .where("deleted", "==", false)
+    .where("itemId", "==", itemId)
+    .get();
+    
+  const totalTasks = tasksSnapshot.size;
+  
+  const completedTasks = await Promise.all(tasksSnapshot.docs.map(async (taskDoc) => {
+    const taskData = TaskSchema.parse(taskDoc.data());
+    
+    if (!taskData.statusId) return false;
+    
+    const statusTag = await getStatusName(dbAdmin, projectId, taskData.statusId);
+    return statusTag?.name === "Done";
+  })).then(results => results.filter(Boolean).length);
+  
+  return [completedTasks, totalTasks];
 };
 
 export const userStoriesRouter = createTRPCRouter({
@@ -163,6 +179,11 @@ export const userStoriesRouter = createTRPCRouter({
             projectId,
             userStory.epicId,
           );
+          const taskProgress = await getTaskProgress(
+            ctx.firestore, 
+            projectId, 
+            userStory.id
+          );
           return {
             id: userStory.id,
             scrumId: userStory.scrumId,
@@ -171,7 +192,7 @@ export const userStoriesRouter = createTRPCRouter({
             priority: await getPriorityTag(settingsRef, userStory.priorityId),
             size: userStory.size,
             sprintNumber: sprint?.number,
-            taskProgress: getTaskProgress(),
+            taskProgress: taskProgress,
           };
         }),
       );

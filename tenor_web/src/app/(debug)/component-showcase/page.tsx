@@ -29,6 +29,7 @@ import type { Option } from "~/app/_components/EditableBox/EditableBox";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import { acceptableTagColors } from "~/app/_components/BacklogTagList";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
+import { defaultRoleList } from "~/lib/defaultTags";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -702,11 +703,7 @@ function InputComponents() {
         handleEditMemberRole={() => {
           console.log("File added");
         }}
-        roleList={[
-          { id: "admin_role_id", label: "Admin" },
-          { id: "developer_role_id", label: "Developer" },
-          { id: "viewer_role_id", label: "Viewer" },
-        ]}
+        roleList={defaultRoleList}
       />
     </div>
   );

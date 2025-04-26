@@ -128,7 +128,7 @@ export default function TaskDetailPopup({
       taskData: {
         name: updatedData.name,
         description: updatedData.description,
-        statusId: updatedData.status.id ?? "",
+        statusId: updatedData.status?.id ?? "",
         size: updatedData.size,
         assigneeId: updatedData.assignee?.uid ?? "",
         dueDate: updatedData.dueDate
