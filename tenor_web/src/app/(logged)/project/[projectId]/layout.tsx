@@ -18,14 +18,17 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <Navbar>
-        <div className="flex gap-1">
-          <Link href="/" className="font-semibold">
+        <div className="flex w-full grow gap-1">
+          <Link href="/" className="flex-shrink-0 font-semibold">
             Projects
           </Link>
           <span
-            className={cn("opacity-0 transition", {
-              "opacity-100": !!projectNameData,
-            })}
+            className={cn(
+              "inline-block max-w-[40vw] truncate opacity-0 transition",
+              {
+                "opacity-100": !!projectNameData,
+              },
+            )}
           >
             / {projectNameData?.projectName ?? ""}
           </span>
