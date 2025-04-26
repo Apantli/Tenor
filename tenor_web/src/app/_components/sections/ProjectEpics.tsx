@@ -119,21 +119,18 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   };
   return (
     <>
-      <h1 className="text-3xl font-semibold">Epics</h1>
-      <div className="mt-2 flex flex-row justify-between gap-1 border-b-2 pb-2">
+      <h1 className="flex justify-between pb-2">
+        <span className="text-3xl font-semibold">Epics</span>
+        <PrimaryButton onClick={() => setShowSmallPopup(true)}>
+          + New Epic
+        </PrimaryButton>
+      </h1>
+      <div className="flex flex-row justify-between gap-1 border-b-2 pb-2">
         <SearchBar
           searchValue={searchText}
           handleUpdateSearch={(e) => setSearchText(e.target.value)}
           placeholder="Search epics"
         ></SearchBar>
-        <PrimaryButton
-          className={
-            "h-full w-full max-w-[120px] self-center hover:cursor-pointer"
-          }
-          onClick={() => setShowSmallPopup(true)}
-        >
-          + New Epic
-        </PrimaryButton>
       </div>
       <div className="flex h-[calc(100vh-230px)] flex-col gap-4 overflow-y-auto">
         {filteredEpics?.map((epic) => (

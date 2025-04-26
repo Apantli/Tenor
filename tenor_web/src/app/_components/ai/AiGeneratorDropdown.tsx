@@ -46,7 +46,7 @@ export default function AiGeneratorDropdown({
       <DropdownItem>
         {!alreadyGenerated && (
           <>
-            <div className="mt-2 flex w-80 items-center gap-2">
+            <div className="mt-2 flex w-[350px] items-center gap-2">
               <FloatingLabelInput
                 className="w-24"
                 type="number"

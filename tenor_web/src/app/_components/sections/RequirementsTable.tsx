@@ -19,6 +19,7 @@ import DeleteButton from "../buttons/DeleteButton";
 import Markdown from "react-markdown";
 import LoadingSpinner from "../LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -462,10 +463,10 @@ export default function RequirementsTable() {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex w-full justify-between">
+      <div className="flex w-full flex-col justify-between">
         <h2 className="content-center text-3xl font-semibold">Requirements</h2>
-        <div className="flex w-3/4 items-center justify-end gap-2">
-          <div className="w-1/3 p-2">
+        <div className="mt-3 flex flex-1 grow items-center justify-end gap-1">
+          <div className="flex-1">
             <SearchBar
               placeholder="Find a requirement by title or id..."
               searchValue={searchValue}
@@ -482,6 +483,10 @@ export default function RequirementsTable() {
           >
             + Add Requirement
           </PrimaryButton>
+          <AiGeneratorDropdown
+            singularLabel="requirement"
+            pluralLabel="requirements"
+          />
         </div>
       </div>
       {table}

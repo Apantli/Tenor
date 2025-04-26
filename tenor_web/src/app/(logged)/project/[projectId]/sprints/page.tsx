@@ -425,8 +425,8 @@ export default function ProjectSprints() {
         }}
       >
         <div className="flex h-full overflow-hidden">
-          <div className="relative flex h-full w-[407px] min-w-[407px] flex-col overflow-hidden border-r-2 pr-5">
-            <div className="flex w-full justify-between pb-4">
+          <div className="relative flex h-full w-[407px] min-w-[407px] flex-col gap-0 overflow-hidden border-r-2 pr-5">
+            <div className="flex w-full justify-between pb-2">
               <h1 className="text-3xl font-semibold">Product Backlog</h1>
               <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
             </div>
