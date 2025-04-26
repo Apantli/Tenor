@@ -158,9 +158,9 @@ export default function UserStoryList() {
 
       await refetchUS();
     },
-    (rejectedIds) => {
+    (removedIds) => {
       const newGeneratedUserStories = generatedUserStories.current?.filter(
-        (story) => !rejectedIds.includes(story.id),
+        (story) => !removedIds.includes(story.id),
       );
       generatedUserStories.current = newGeneratedUserStories;
     },

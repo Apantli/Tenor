@@ -17,6 +17,7 @@ import { type Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { TaskCol } from "~/server/api/routers/tasks";
 import { usePopupVisibilityState } from "../Popup";
+import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 
 interface Props {
   tasks: TaskPreview[];
@@ -190,22 +191,25 @@ export default function TasksTable({
               setSearchText={setTaskSearchText}
             />
           )}
-          <PrimaryButton onClick={() => setShowAddTaskPopup(true)}>
-            + Add task
-          </PrimaryButton>
+          <div className="flex items-center gap-1">
+            <PrimaryButton onClick={() => setShowAddTaskPopup(true)}>
+              + Add task
+            </PrimaryButton>
+            <AiGeneratorDropdown singularLabel="task" pluralLabel="tasks" />
+          </div>
         </div>
       </div>
 
-      <div className="mt-4 w-full max-w-full">
+      <div className="mt-4 w-full max-w-full overflow-hidden">
         <Table
+          tableKey="tasks"
           data={filteredTasks}
           columns={taskColumns}
-          className="font-sm w-full table-fixed overflow-visible"
+          className="font-sm max-w-[min(678px,100vw-320px)] overflow-hidden"
           multiselect
           deletable
           onDelete={handleTaskDelete}
           emptyMessage={tasks.length > 0 ? "No tasks found" : "No tasks yet"}
-          tableKey="tasks-table"
         />
       </div>
     </>

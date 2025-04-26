@@ -202,6 +202,7 @@ ${schemaJson}
 - ✅ Use realistic sample data for each field (don't use placeholders like "string" or "123").
 - ❌ Do NOT include any additional fields or properties that are not in the schema.
 - ❌ Do NOT add any top level keys or metadata such as a type, version or items array.
+- ⚠️ IF the schema has an array as the root type, make sure to always return an array, do NOT return an object.
 
 Return only the JSON on one line.`;
 
@@ -211,6 +212,7 @@ Return only the JSON on one line.`;
     const parsedData = returnSchema.parse(generatedJson);
     return parsedData as z.infer<T>;
   } catch (error) {
+    console.log("Retrying AI generation due to schema mismatch:", error);
     return askAiToGenerate(prompt, returnSchema, attempts + 1);
   }
 }
