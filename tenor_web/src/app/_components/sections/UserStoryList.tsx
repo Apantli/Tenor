@@ -515,59 +515,6 @@ export default function UserStoryList() {
       id: i.toString(),
     }));
 
-    // Mock data for testing
-    // await new Promise((resolve) => setTimeout(resolve, 5000));
-    // const generatedData = [
-    //   {
-    //     name: "Browse Products by Category",
-    //     description:
-    //       "As a customer, I want to be able to browse products by category so that I can easily find the items I am looking for.",
-    //     sprintId: "",
-    //     taskIds: [],
-    //     complete: false,
-    //     tagIds: ["UI", "product-discovery"],
-    //     size: "M",
-    //     priorityId: "high",
-    //     epicId: "product-discovery",
-    //     acceptanceCriteria:
-    //       "* Given I am on the product listing page\n* When I select a category (e.g., Fruits, Vegetables, Dairy)\n* Then I should see only products belonging to that category.",
-    //     dependencyIds: [],
-    //     requiredByIds: [],
-    //   },
-    //   {
-    //     name: "Search for Specific Products",
-    //     description:
-    //       "As a customer, I want to be able to search for specific products by name so that I can quickly find the exact item I need.",
-    //     sprintId: "",
-    //     taskIds: [],
-    //     complete: false,
-    //     tagIds: ["search", "product-discovery"],
-    //     size: "S",
-    //     priorityId: "high",
-    //     epicId: "product-discovery",
-    //     acceptanceCriteria:
-    //       "* Given I am on any page of the application\n* When I enter a product name in the search bar and press enter\n* Then I should see a list of products that match my search query.",
-    //     dependencyIds: [],
-    //     requiredByIds: [],
-    //   },
-    //   {
-    //     name: "View Product Details",
-    //     description:
-    //       "As a customer, I want to be able to view detailed information about a product so that I can make informed purchasing decisions.",
-    //     sprintId: "",
-    //     taskIds: [],
-    //     complete: false,
-    //     tagIds: ["UI", "product-details"],
-    //     size: "M",
-    //     priorityId: "medium",
-    //     epicId: "product-details",
-    //     acceptanceCriteria:
-    //       "* Given I am viewing a product listing\n* When I click on a specific product\n* Then I should see a detailed view of the product, including: Name, Price, Description, Available Quantity, Images.",
-    //     dependencyIds: [],
-    //     requiredByIds: [],
-    //   },
-    // ];
-
     const tableData = generatedData.map((data, i) => ({
       id: i.toString(),
       scrumId: undefined,
