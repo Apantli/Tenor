@@ -157,6 +157,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
         show={showSmallPopup}
         size="small"
         className="min-h-[400px] min-w-[500px]"
+        reduceTopPadding={true}
         dismiss={async () => {
           if (isNewEpicModified()) {
             const confirmation = await confirm(
@@ -309,9 +310,8 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       >
         <div className="grow pt-3">
           {epicLoading && (
-            <div className="flex flex-col items-center gap-y-7">
-              <h3 className="text-2xl font-bold">Loading...</h3>
-              <LoadingSpinner color="dark" />
+            <div className="flex h-full w-full flex-col items-center justify-center">
+              <LoadingSpinner color="primary" />
             </div>
           )}
 
