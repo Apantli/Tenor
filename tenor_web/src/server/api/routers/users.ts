@@ -1,6 +1,9 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type TeamMember } from "~/app/_components/inputs/MemberTable";
 import { z } from "zod";
+import { remove } from "node_modules/cypress/types/lodash";
+import admin from "firebase-admin";
+import { emptyRole } from "~/lib/defaultTags";
 
 export const userRouter = createTRPCRouter({
   getUserList: protectedProcedure.query(async ({ ctx }) => {
@@ -104,5 +107,101 @@ export const userRouter = createTRPCRouter({
       }
 
       return users;
+    }),
+
+  removeUser: protectedProcedure
+    .input(z.object({ projectId: z.string(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userId } = input;
+
+      const teamMemberRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("users")
+        .doc(userId);
+
+      // Mark the team member as inactive
+      await teamMemberRef.update({ active: false, roleId: emptyRole.id });
+
+      // Get the actual userId from the teamMember document
+      const teamMemberSnap = await teamMemberRef.get();
+      const realUserId = teamMemberSnap.data()?.userId as string;
+
+      if (realUserId) {
+        const userRef = ctx.firestore.collection("users").doc(realUserId);
+
+        // Remove the project from their list of projects
+        await userRef.update({
+          projects:
+            ctx.firebaseAdmin.firestore.FieldValue.arrayRemove(projectId),
+        });
+      } else {
+        throw new Error("No userId found in team member document");
+      }
+    }),
+
+  addUser: protectedProcedure
+    .input(z.object({ projectId: z.string(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userId } = input;
+
+      // search if it exists
+      const userList = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("users")
+        .where("userId", "==", userId)
+        .get();
+
+      if (userList.empty) {
+        // add user to project
+        const userRef = ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("users")
+          .doc(userId);
+
+        await userRef.set({
+          userId,
+          roleId: emptyRole.id, // default role
+          active: true,
+        });
+      } else {
+        // update user to project to active
+        const userRef = ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("users")
+          .doc(userId);
+        await userRef.update({
+          active: true,
+          roleId: emptyRole.id,
+        });
+      }
+
+      // add project to user
+      const userDoc = ctx.firestore.collection("users").doc(userId);
+      await userDoc.update({
+        projects: ctx.firebaseAdmin.firestore.FieldValue.arrayUnion(projectId),
+      });
+    }),
+  updateUserRole: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        userId: z.string(),
+        roleId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userId, roleId } = input;
+
+      const userRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("users")
+        .doc(userId);
+
+      await userRef.update({ roleId });
     }),
 });
