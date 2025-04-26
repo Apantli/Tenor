@@ -67,6 +67,11 @@ export default function ProjectCreator() {
       });
     }
 
+    const finalLinks: { link: string; content: string | null }[] = [];
+    for (const link of links) {
+      finalLinks.push({ link, content: null });
+    }
+
     const response = await createProject({
       name: form.name,
       description: form.description,
@@ -79,7 +84,7 @@ export default function ProjectCreator() {
         aiContext: {
           text: form.context,
           files: filesBase64Encoded,
-          links: links,
+          links: finalLinks,
         },
       },
     });

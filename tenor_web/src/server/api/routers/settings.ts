@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import type { Tag } from "~/lib/types/firebaseSchemas";
+import { link } from "fs";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -151,6 +152,48 @@ const settingsRouter = createTRPCRouter({
       const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
+    }),
+  getContextLinks: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const links: string[] = settingsData.aiContext.links.map(
+        (link) => link.link,
+      );
+      return links;
+    }),
+  getContextFiles: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const files: { name: string; type: string }[] =
+        settingsData.aiContext.files.map((file) => ({
+          name: file.name,
+          type: file.type,
+        }));
+      return files;
+    }),
+  getContextDialog: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const text: string = settingsData.aiContext.text;
+      return text;
     }),
 });
 
