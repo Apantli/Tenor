@@ -24,10 +24,11 @@ import {
 } from "./settings";
 import { getEpic } from "./epics";
 import { getSprint } from "./sprints";
+import { env } from "~/env";
 
 export interface UserStoryCol {
   id: string;
-  scrumId: number;
+  scrumId?: number;
   title: string;
   epicScrumId?: number;
   priority?: Tag;
@@ -43,7 +44,7 @@ const getUserStoriesFromProject = async (
   const userStoryCollectionRef = dbAdmin
     .collection(`projects/${projectId}/userStories`)
     .where("deleted", "==", false)
-    .orderBy("scrumId");
+    .orderBy("scrumId", "desc");
   const snap = await userStoryCollectionRef.get();
 
   const docs = snap.docs.map((doc) => {
@@ -110,6 +111,69 @@ const getTaskProgress = async (
   return [completedTasks, totalTasks];
 };
 
+async function promptAi(prompt: string) {
+  if (env.GENERATIVE_AI === "softtek") {
+    const preparedPrompt = prompt.replaceAll("{", "{{").replaceAll("}", "}}");
+
+    const response = await fetch(
+      "https://stk-formador-25.azurewebsites.net/epics/generate-from-prompt",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          prompt: preparedPrompt,
+          data: {},
+        }),
+      },
+    );
+    const responseData = await response.json();
+
+    if (!responseData.success) {
+      console.error("Error from AI:", responseData);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "AI generation failed",
+      });
+    }
+
+    // Remove ```json from start and ``` from end// Remove ```json from start and ``` from end
+    const jsonString = responseData.data
+      .replace(/```json/g, "")
+      .replace(/```/g, "");
+    const generatedJson = JSON.parse(jsonString);
+
+    return generatedJson;
+  } else if (env.GENERATIVE_AI === "gemini") {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
+      },
+    );
+    const responseData = await response.json();
+
+    // Remove ```json from start and ``` from end// Remove ```json from start and ``` from end
+    const jsonString = responseData.candidates[0].content.parts[0].text
+      .replace(/```json/g, "")
+      .replace(/```/g, "");
+    const generatedJson = JSON.parse(jsonString);
+
+    return generatedJson;
+  }
+}
+
 async function askAiToGenerate<T extends z.ZodType<any>>(
   prompt: string,
   returnSchema: T,
@@ -141,38 +205,7 @@ ${schemaJson}
 
 Return only the JSON on one line.`;
 
-  const preparedPrompt = fullPrompt.replaceAll("{", "{{").replaceAll("}", "}}");
-
-  const response = await fetch(
-    "https://stk-formador-25.azurewebsites.net/epics/generate-from-prompt",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt: preparedPrompt,
-        data: {},
-      }),
-    },
-  );
-  const responseData = await response.json();
-
-  if (!responseData.success) {
-    console.error("Error from AI:", responseData);
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "AI generation failed",
-    });
-  }
-
-  // Remove ```json from start and ``` from end
-  const jsonString = responseData.data
-    .replace(/```json/g, "")
-    .replace(/```/g, "");
-  const generatedJson = JSON.parse(jsonString);
-
-  console.log("Generated JSON:", generatedJson);
+  const generatedJson = await promptAi(fullPrompt);
 
   try {
     const parsedData = returnSchema.parse(generatedJson);
@@ -519,13 +552,116 @@ export const userStoriesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, amount, prompt } = input;
 
-      const completePrompt = `Generate ${amount} user stories about an application for food markets. Do NOT include any identifier in the name like User Story 1, just use a normal title.\n\n`;
+      // Get the epics from the database
+      const epics = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("epics")
+        .where("deleted", "==", false)
+        .get();
 
-      // return JSON.stringify(zodToJsonSchema(UserStorySchema));
+      let epicContext = "# EXISTING EPICS\n\n";
+      epics.forEach((epic) => {
+        const epicData = EpicSchema.parse(epic.data());
+        epicContext += `- id: ${epic.id}\n- name: ${epicData.name}\n- description: ${epicData.description}\n\n`;
+      });
+
+      // Get the current user stories from the database (to avoid duplicates and provide context)
+      const userStories = await getUserStoriesFromProject(
+        ctx.firestore,
+        projectId,
+      );
+
+      let userStoryContext = "# EXISTING USER STORIES\n\n";
+      userStories.forEach((userStory) => {
+        const userStoryData = UserStorySchema.parse(userStory);
+        userStoryContext += `- id: ${userStory.id}\n- name: ${userStoryData.name}\n- description: ${userStoryData.description}\n- priorityId: ${userStoryData.priorityId}\n- tagIds: [${userStoryData.tagIds.join(" , ")}]\n- dependencies: [${userStoryData.dependencyIds.join(" , ")}]\n- requiredBy: [${userStoryData.requiredByIds.join(" , ")}]\n\n`;
+      });
+
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const priorityTags = await settingsRef
+        .collection("priorityTypes")
+        .where("deleted", "==", false)
+        .get();
+
+      let priorityContext = "# PRIORITY TAGS\n\n";
+      priorityTags.forEach((tag) => {
+        const tagData = TagSchema.parse(tag.data());
+        priorityContext += `- id: ${tag.id}\n- name: ${tagData.name}\n\n`;
+      });
+
+      let tagContext = "# BACKLOG TAGS\n\n";
+      const backlogTags = await settingsRef
+        .collection("backlogTags")
+        .where("deleted", "==", false)
+        .get();
+      backlogTags.forEach((tag) => {
+        const tagData = TagSchema.parse(tag.data());
+        tagContext += `- id: ${tag.id}\n- name: ${tagData.name}\n\n`;
+      });
+
+      // FIXME: Missing project context (currently the fruit market is hardcoded)
+
+      const passedInPrompt =
+        prompt != ""
+          ? `Consider that the user wants the user stories for the following: ${prompt}`
+          : "";
+
+      const completePrompt = `
+Given the following context, follow the instructions below to the best of your ability.
+
+${epicContext}
+${userStoryContext}
+${priorityContext}
+${tagContext}
+
+Generate ${amount} user stories about an application for food markets. Do NOT include any identifier in the name like "User Story 1", just use a normal title.\n\n
+
+${passedInPrompt}
+
+`;
+
       const data = await askAiToGenerate(
         completePrompt,
         z.array(UserStorySchema.omit({ scrumId: true, deleted: true })),
       );
-      return data;
+
+      const parsedData = await Promise.all(
+        data.map(async (userStory) => {
+          let priority = undefined;
+          if (
+            userStory.priorityId !== undefined &&
+            userStory.priorityId !== ""
+          ) {
+            const priorityTag = await getPriorityTag(
+              settingsRef,
+              userStory.priorityId,
+            );
+            priority = priorityTag;
+          }
+
+          let epic = undefined;
+          if (userStory.epicId !== undefined && userStory.epicId !== "") {
+            const epicTag = await ctx.firestore
+              .collection("projects")
+              .doc(projectId)
+              .collection("epics")
+              .doc(userStory.epicId)
+              .get();
+            if (epicTag.exists) {
+              const epicData = EpicSchema.parse(epicTag.data());
+              epic = { id: epicTag.id, ...epicData };
+            }
+          }
+
+          return {
+            ...userStory,
+            priority,
+            epic,
+          };
+        }),
+      );
+
+      return parsedData;
     }),
 });

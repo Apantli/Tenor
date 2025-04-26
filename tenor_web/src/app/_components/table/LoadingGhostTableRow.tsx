@@ -90,7 +90,7 @@ function LoadingGhostTableRow<
   return (
     <div
       className={cn(
-        "relative grid min-w-fit origin-top items-center gap-2 overflow-hidden rounded-lg border-b border-white bg-app-secondary p-2 transition-all",
+        "relative grid min-w-fit origin-top items-center gap-3 overflow-hidden rounded-lg border-b border-white bg-app-secondary p-2 transition-all",
         className,
       )}
       style={{ gridTemplateColumns }}

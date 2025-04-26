@@ -91,7 +91,7 @@ function TableActions<I extends string | number>({
           </button>
         )}
       {showGhostActions && (
-        <>
+        <div className="flex items-center gap-4">
           <button
             data-tooltip-id="tooltip"
             data-tooltip-content="Reject all"
@@ -108,7 +108,7 @@ function TableActions<I extends string | number>({
           >
             <AcceptIcon fontSize="small" />
           </button>
-        </>
+        </div>
       )}
     </div>
   );

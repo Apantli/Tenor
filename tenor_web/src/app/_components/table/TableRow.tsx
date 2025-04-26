@@ -52,7 +52,7 @@ function TableRow<
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr 80px` : "");
+    (showThreeDots ? ` 1fr 110px` : "");
 
   const handleDelete = async () => {
     onDelete?.([value.id], (del) => {
@@ -67,7 +67,7 @@ function TableRow<
   return (
     <div
       className={cn(
-        "grid min-w-fit items-center gap-2 border-b border-app-border p-2 transition",
+        "grid min-w-fit items-center gap-3 border-b border-app-border p-2 transition",
         {
           "bg-gray-100": selection.has(value.id),
         },
@@ -98,8 +98,12 @@ function TableRow<
         <>
           <div></div>
           <Dropdown
-            label={<span className="font-bold text-app-light">• • •</span>}
-            className="flex h-full w-full items-center justify-start text-sm font-semibold transition"
+            label={
+              <span className="flex w-full items-center justify-end pr-3 font-bold text-app-light">
+                • • •
+              </span>
+            }
+            className="flex h-full w-full items-center justify-end text-sm font-semibold transition"
             menuClassName="font-normal whitespace-nowrap"
             scrollContainer={scrollContainerRef}
           >

@@ -1,13 +1,16 @@
 "use client";
 
 import Table, { type TableColumns } from "~/app/_components/table/Table";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { useRef, useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
-import type { UserStoryCol } from "~/server/api/routers/userStories";
+import type {
+  userStoriesRouter,
+  UserStoryCol,
+} from "~/server/api/routers/userStories";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../Popup";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
@@ -27,6 +30,8 @@ import PillPickerComponent from "../PillPickerComponent";
 import FloatingLabelInput from "../FloatingLabelInput";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
+import { inferRouterOutputs } from "@trpc/server";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -58,6 +63,8 @@ export default function UserStoryList() {
     api.userStories.modifyUserStoryTags.useMutation();
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
+  const { mutateAsync: createUserStory } =
+    api.userStories.createUserStory.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -68,13 +75,40 @@ export default function UserStoryList() {
     const lowerSearchValue = searchValue.toLowerCase();
     return (
       userStory.title.toLowerCase().includes(lowerSearchValue) ||
-      formatUserStoryScrumId(userStory.scrumId).includes(lowerSearchValue)
+      formatUserStoryScrumId(userStory.scrumId!).includes(lowerSearchValue)
     );
   });
 
-  const userStoryData = filteredData.sort((a, b) =>
-    a.scrumId < b.scrumId ? -1 : 1,
-  );
+  const userStoryData = filteredData.sort((a, b) => {
+    // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
+    if (a.scrumId === undefined && b.scrumId === undefined) return 0;
+    if (a.scrumId === undefined) return -1;
+    if (b.scrumId === undefined) return 1;
+
+    return a.scrumId < b.scrumId ? 1 : -1;
+  });
+
+  const generatedUserStories =
+    useRef<
+      WithId<
+        inferRouterOutputs<
+          typeof userStoriesRouter
+        >["generateUserStories"][number]
+      >[]
+    >();
+
+  useNavigationGuard(async () => {
+    console.log("Checking for unsaved changes");
+    if ((generatedUserStories?.current?.length ?? 0) > 0) {
+      return !(await confirm(
+        "Are you sure?",
+        "You have unsaved AI generated user stories. To save them, please accept them first.",
+        "Discard",
+        "Keep editing",
+      ));
+    }
+    return false;
+  });
 
   const {
     onAccept,
@@ -85,13 +119,53 @@ export default function UserStoryList() {
     ghostRows,
     setGhostRows,
     generating,
-  } = useGhostTableStateManager<UserStoryCol, string>((ids: string[]) => {
-    // Use the callback to perform the action you want when the user accepts the ghosts
-    // const newData = data.concat(
-    //   dummyGhostData.filter((ghost) => ids.includes(ghost.id)),
-    // );
-    // setData(newData);
-  });
+    updateGhostRow,
+  } = useGhostTableStateManager<UserStoryCol, string>(
+    async (ids) => {
+      const accepted =
+        generatedUserStories.current?.filter((story) =>
+          ids.includes(story.id),
+        ) ?? [];
+      const acceptedRows = ghostData?.filter((ghost) => ids.includes(ghost.id));
+      // Use optimistic update to update the user stories table
+      await utils.userStories.getUserStoriesTableFriendly.cancel({
+        projectId: projectId as string,
+      });
+      utils.userStories.getUserStoriesTableFriendly.setData(
+        { projectId: projectId as string },
+        userStoryData.concat(acceptedRows ?? []),
+      );
+
+      // Add the user stories to the database
+      for (const userStory of accepted.reverse()) {
+        await createUserStory({
+          projectId: projectId as string,
+          userStoryData: {
+            name: userStory.name,
+            description: userStory.description,
+            sprintId: "",
+            taskIds: [],
+            complete: false,
+            tagIds: userStory.tagIds,
+            size: userStory.size,
+            priorityId: userStory.priority?.id ?? "",
+            epicId: userStory.epicId,
+            acceptanceCriteria: userStory.acceptanceCriteria,
+            dependencyIds: userStory.dependencyIds,
+            requiredByIds: userStory.requiredByIds,
+          },
+        });
+      }
+
+      await refetchUS();
+    },
+    (rejectedIds) => {
+      const newGeneratedUserStories = generatedUserStories.current?.filter(
+        (story) => !rejectedIds.includes(story.id),
+      );
+      generatedUserStories.current = newGeneratedUserStories;
+    },
+  );
 
   // Function to get the US table or message instead
   const getTable = () => {
@@ -113,13 +187,17 @@ export default function UserStoryList() {
         render(row) {
           return (
             <button
-              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
                 setSelectedUS(row.id);
                 setShowDetail(true);
               }}
             >
-              {formatUserStoryScrumId(row.scrumId)}
+              {row.scrumId ? (
+                formatUserStoryScrumId(row.scrumId)
+              ) : (
+                <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
+              )}
             </button>
           );
         },
@@ -169,7 +247,7 @@ export default function UserStoryList() {
           if (!b.priority) return -1;
           return a.priority?.name.localeCompare(b.priority?.name) ? -1 : 1;
         },
-        render(row) {
+        render(row, _, isGhost) {
           const handlePriorityChange = async (tag: Tag) => {
             const rowIndex = userStoryData.indexOf(row);
             if (
@@ -210,10 +288,30 @@ export default function UserStoryList() {
             });
           };
 
+          const handleGhostPriorityChange = (tag: Tag) => {
+            updateGhostRow(row.id, (oldData) => ({
+              ...oldData,
+              priority: tag,
+            }));
+            generatedUserStories.current = generatedUserStories.current?.map(
+              (story) => {
+                if (story.id === row.id) {
+                  return {
+                    ...story,
+                    priority: tag,
+                  };
+                }
+                return story;
+              },
+            );
+          };
+
           return (
             <PriorityPicker
               priority={row.priority}
-              onChange={handlePriorityChange}
+              onChange={
+                isGhost ? handleGhostPriorityChange : handlePriorityChange
+              }
             />
           );
         },
@@ -238,7 +336,7 @@ export default function UserStoryList() {
 
           return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
         },
-        render(row) {
+        render(row, _, isGhost) {
           const handleSizeChange = async (size: Size) => {
             const rowIndex = userStoryData.indexOf(row);
             if (!userStoryData[rowIndex]) {
@@ -278,10 +376,28 @@ export default function UserStoryList() {
             });
           };
 
+          const handleGhostSizeChange = (size: Size) => {
+            updateGhostRow(row.id, (oldData) => ({
+              ...oldData,
+              size: size,
+            }));
+            generatedUserStories.current = generatedUserStories.current?.map(
+              (story) => {
+                if (story.id === row.id) {
+                  return {
+                    ...story,
+                    size,
+                  };
+                }
+                return story;
+              },
+            );
+          };
+
           return (
             <SizePillComponent
               currentSize={row.size}
-              callback={handleSizeChange}
+              callback={isGhost ? handleGhostSizeChange : handleSizeChange}
             />
           );
         },
@@ -371,7 +487,7 @@ export default function UserStoryList() {
         setGhostRows={setGhostRows}
         acceptGhosts={onAccept}
         rejectGhosts={onReject}
-        ghostLoadingEstimation={30000}
+        ghostLoadingEstimation={5000}
         rowClassName="h-12"
       />
     );
@@ -395,15 +511,72 @@ export default function UserStoryList() {
       prompt,
       projectId: projectId as string,
     });
+    generatedUserStories.current = generatedData.map((story, i) => ({
+      ...story,
+      id: i.toString(),
+    }));
+
+    // Mock data for testing
+    // await new Promise((resolve) => setTimeout(resolve, 5000));
+    // const generatedData = [
+    //   {
+    //     name: "Browse Products by Category",
+    //     description:
+    //       "As a customer, I want to be able to browse products by category so that I can easily find the items I am looking for.",
+    //     sprintId: "",
+    //     taskIds: [],
+    //     complete: false,
+    //     tagIds: ["UI", "product-discovery"],
+    //     size: "M",
+    //     priorityId: "high",
+    //     epicId: "product-discovery",
+    //     acceptanceCriteria:
+    //       "* Given I am on the product listing page\n* When I select a category (e.g., Fruits, Vegetables, Dairy)\n* Then I should see only products belonging to that category.",
+    //     dependencyIds: [],
+    //     requiredByIds: [],
+    //   },
+    //   {
+    //     name: "Search for Specific Products",
+    //     description:
+    //       "As a customer, I want to be able to search for specific products by name so that I can quickly find the exact item I need.",
+    //     sprintId: "",
+    //     taskIds: [],
+    //     complete: false,
+    //     tagIds: ["search", "product-discovery"],
+    //     size: "S",
+    //     priorityId: "high",
+    //     epicId: "product-discovery",
+    //     acceptanceCriteria:
+    //       "* Given I am on any page of the application\n* When I enter a product name in the search bar and press enter\n* Then I should see a list of products that match my search query.",
+    //     dependencyIds: [],
+    //     requiredByIds: [],
+    //   },
+    //   {
+    //     name: "View Product Details",
+    //     description:
+    //       "As a customer, I want to be able to view detailed information about a product so that I can make informed purchasing decisions.",
+    //     sprintId: "",
+    //     taskIds: [],
+    //     complete: false,
+    //     tagIds: ["UI", "product-details"],
+    //     size: "M",
+    //     priorityId: "medium",
+    //     epicId: "product-details",
+    //     acceptanceCriteria:
+    //       "* Given I am viewing a product listing\n* When I click on a specific product\n* Then I should see a detailed view of the product, including: Name, Price, Description, Available Quantity, Images.",
+    //     dependencyIds: [],
+    //     requiredByIds: [],
+    //   },
+    // ];
 
     const tableData = generatedData.map((data, i) => ({
       id: i.toString(),
-      scrumId: -1,
+      scrumId: undefined,
       title: data.name,
-      epicScrumId: 0,
-      priority: undefined,
-      size: data.size ?? "M",
-      sprintNumber: 0,
+      epicScrumId: data.epic?.scrumId,
+      priority: data.priority,
+      size: (data.size as Size) ?? "M",
+      sprintNumber: undefined,
       taskProgress: [0, 0] as [number, number],
     }));
 
@@ -429,6 +602,7 @@ export default function UserStoryList() {
             pluralLabel="stories"
             onGenerate={generateUserStories}
             disabled={generating}
+            alreadyGenerated={(ghostData?.length ?? 0) > 0}
           />
         </div>
 

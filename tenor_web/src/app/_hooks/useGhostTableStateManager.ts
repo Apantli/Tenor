@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 export default function useGhostTableStateManager<
   // eslint-disable-next-line
   T extends Record<string, any> & { id: I },
   I extends string | number,
->(acceptCallback: (ids: I[]) => void) {
+>(acceptCallback: (ids: I[]) => void, rejectCallback?: (ids: I[]) => void) {
   const [ghostData, setGhostData] = useState<T[] | undefined>();
   const [ghostRows, setGhostRows] = useState<number | undefined>();
 
@@ -18,6 +18,10 @@ export default function useGhostTableStateManager<
   const onReject = (ids: I[]) => {
     const newGhostData = ghostData?.filter((ghost) => !ids.includes(ghost.id));
     setGhostData(newGhostData);
+
+    if (rejectCallback) {
+      rejectCallback(ids);
+    }
   };
 
   const beginLoading = (rows: number) => {
@@ -29,6 +33,17 @@ export default function useGhostTableStateManager<
     setGhostData(data);
   };
 
+  const updateGhostRow = (id: I, updater: (oldData: T) => T) => {
+    if (!ghostData) return;
+    const newGhostData = ghostData.map((ghost) => {
+      if (ghost.id === id) {
+        return updater(ghost);
+      }
+      return ghost;
+    });
+    setGhostData(newGhostData);
+  };
+
   return {
     onAccept,
     onReject,
@@ -37,6 +52,7 @@ export default function useGhostTableStateManager<
     ghostData,
     ghostRows,
     setGhostRows,
+    updateGhostRow,
     generating: ghostRows !== undefined && ghostData === undefined,
   };
 }

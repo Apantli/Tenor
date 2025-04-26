@@ -268,10 +268,7 @@ function TableInternal<
 
   useEffect(() => {
     // Triggers when ghost rows are shown
-    if (
-      (showGhostRows || (ghostData !== undefined && ghostData.length > 0)) &&
-      ghostDivRef.current
-    ) {
+    if (showGhostRows && ghostDivRef.current) {
       const height = ghostDivRef.current?.getBoundingClientRect().height;
       ghostDivRef.current.style.height = "0px";
 
