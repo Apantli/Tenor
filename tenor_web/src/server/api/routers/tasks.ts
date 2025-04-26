@@ -474,7 +474,7 @@ ${await getBacklogTagsContext(issueData.tagIds)}\n\n`;
 
       return generatedTasks.map((task) => ({
         ...task,
-        status: todoTag,
+        status: todoTag as Tag,
       }));
     }),
 });

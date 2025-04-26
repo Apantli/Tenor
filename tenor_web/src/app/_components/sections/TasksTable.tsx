@@ -20,6 +20,7 @@ import { usePopupVisibilityState } from "../Popup";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
+import LoadingSpinner from "../LoadingSpinner";
 
 interface Props {
   itemId: string;
@@ -27,6 +28,7 @@ interface Props {
   setShowAddTaskPopup: (show: boolean) => void;
   setSelectedTaskId: (taskId: string) => void;
   setShowTaskDetail: (show: boolean) => void;
+  unsavedTasks?: React.MutableRefObject<boolean>;
 }
 
 export default function TasksTable({
@@ -35,6 +37,7 @@ export default function TasksTable({
   itemId,
   itemType,
   setShowAddTaskPopup,
+  unsavedTasks,
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const { projectId } = useParams();
@@ -42,11 +45,14 @@ export default function TasksTable({
   const utils = api.useUtils();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
-  const { data: tasksTableData, refetch: refetchTasks } =
-    api.tasks.getTasksTableFriendly.useQuery({
-      projectId: projectId as string,
-      itemId,
-    });
+  const {
+    data: tasksTableData,
+    refetch: refetchTasks,
+    isLoading,
+  } = api.tasks.getTasksTableFriendly.useQuery({
+    projectId: projectId as string,
+    itemId,
+  });
   const { mutateAsync: changeStatus } =
     api.tasks.changeTaskStatus.useMutation();
   const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
@@ -180,12 +186,29 @@ export default function TasksTable({
     status: {
       label: "Status",
       width: 150,
-      render(row) {
+      render(row, _, isGhost) {
+        const onGhostTaskStatusChange = (status: Tag) => {
+          updateGhostRow(row.id, (oldData) => ({
+            ...oldData,
+            status: status,
+          }));
+          generatedTasks.current = generatedTasks.current?.map((task) => {
+            if (task.id === row.id) {
+              return {
+                ...task,
+                status: status,
+              };
+            }
+            return task;
+          });
+        };
         return (
           <StatusPicker
             status={row.status}
             onChange={async (status) => {
-              onTaskStatusChange(row.id, status);
+              isGhost
+                ? onGhostTaskStatusChange(status)
+                : onTaskStatusChange(row.id, status);
             }}
             className="w-full"
           />
@@ -330,6 +353,8 @@ export default function TasksTable({
         (task) => !removedIds.includes(task.id),
       );
       generatedTasks.current = newGeneratedTasks;
+      if ((newGeneratedTasks?.length ?? 0) === 0 && unsavedTasks)
+        unsavedTasks.current = false;
     },
   );
 
@@ -346,6 +371,7 @@ export default function TasksTable({
       ...task,
       id: i.toString(),
     }));
+    if (unsavedTasks) unsavedTasks.current = true;
 
     const newGhostData = generatedData.map((task, i) => ({
       id: i.toString(),
@@ -388,25 +414,31 @@ export default function TasksTable({
       </div>
 
       <div className="mt-4 w-full max-w-full overflow-hidden">
-        <Table
-          tableKey="tasks"
-          data={filteredTasks}
-          columns={taskColumns}
-          className="font-sm max-w-[min(678px,100vw-320px)] overflow-hidden"
-          multiselect
-          deletable
-          onDelete={handleTaskDelete}
-          emptyMessage={
-            transformedTasks.length > 0 ? "No tasks found" : "No tasks yet"
-          }
-          ghostData={ghostData}
-          ghostRows={ghostRows}
-          setGhostRows={setGhostRows}
-          acceptGhosts={onAccept}
-          rejectGhosts={onReject}
-          ghostLoadingEstimation={5000}
-          rowClassName="h-12"
-        />
+        {tasksTableData === undefined || isLoading ? (
+          <div className="mt-8 flex h-full w-full items-center justify-center">
+            <LoadingSpinner color="primary" />
+          </div>
+        ) : (
+          <Table
+            tableKey="tasks"
+            data={filteredTasks}
+            columns={taskColumns}
+            className="font-sm max-w-[min(678px,100vw-320px)] overflow-hidden"
+            multiselect
+            deletable
+            onDelete={handleTaskDelete}
+            emptyMessage={
+              transformedTasks.length > 0 ? "No tasks found" : "No tasks yet"
+            }
+            ghostData={ghostData}
+            ghostRows={ghostRows}
+            setGhostRows={setGhostRows}
+            acceptGhosts={onAccept}
+            rejectGhosts={onReject}
+            ghostLoadingEstimation={5000}
+            rowClassName="h-12"
+          />
+        )}
       </div>
     </>
   );

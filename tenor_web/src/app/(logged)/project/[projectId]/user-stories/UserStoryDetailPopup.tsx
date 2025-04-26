@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
@@ -42,6 +42,7 @@ export default function UserStoryDetailPopup({
   setShowDetail,
 }: Props) {
   const { projectId } = useParams();
+  const unsavedTasks = useRef(false);
 
   const {
     data: userStoryDetail,
@@ -220,6 +221,15 @@ export default function UserStoryDetailPopup({
           );
           if (!confirmation) return;
         }
+        if (unsavedTasks.current) {
+          const confirmation = await confirm(
+            "Are you sure?",
+            "You have unsaved AI generated tasks. To save them, please accept them first.",
+            "Discard",
+            "Keep editing",
+          );
+          if (!confirmation) return;
+        }
         setShowDetail(false);
       }}
       size="large"
@@ -311,6 +321,15 @@ export default function UserStoryDetailPopup({
       }
       editMode={isLoading ? undefined : editMode}
       setEditMode={async (isEditing) => {
+        if (unsavedTasks.current) {
+          const confirmation = await confirm(
+            "Are you sure?",
+            "You have unsaved AI generated tasks. To save them, please accept them first.",
+            "Discard",
+            "Keep editing",
+          );
+          if (!confirmation) return;
+        }
         setEditMode(isEditing);
 
         if (!userStoryDetail) return;
@@ -324,7 +343,7 @@ export default function UserStoryDetailPopup({
           await handleSave(updatedData, true); // Pass true to save the edit form
         }
       }}
-      disablePassiveDismiss={editMode}
+      disablePassiveDismiss={editMode || unsavedTasks.current}
     >
       {editMode && (
         <>
@@ -387,6 +406,7 @@ export default function UserStoryDetailPopup({
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}
+            unsavedTasks={unsavedTasks}
           />
         </div>
       )}

@@ -88,23 +88,30 @@ export default function AiGeneratorDropdown({
         )}
         {alreadyGenerated && (
           <div className="flex w-80 flex-col items-center justify-between gap-2">
-            <span className="w-full text-gray-500">
+            <span className="w-full text-lg text-app-text">
               {pluralLabel.at(0)?.toUpperCase() + pluralLabel.slice(1)} already
               generated
             </span>
-            <p className="w-full text-gray-500">
-              To generate more {pluralLabel}
+            <p className="w-full whitespace-normal text-gray-500">
+              Please sort through the generated {pluralLabel} before generating
+              more.
             </p>
             <div className="flex w-full items-center gap-2">
               <button
                 className="flex-1 rounded-md bg-red-500 p-2 text-white"
-                onClick={onRejectAll}
+                onClick={() => {
+                  onRejectAll?.();
+                  // closeDropdown();
+                }}
               >
                 Reject All
               </button>
               <button
                 className="flex-1 rounded-md bg-app-secondary p-2 text-white"
-                onClick={onAcceptAll}
+                onClick={() => {
+                  onAcceptAll?.();
+                  // closeDropdown();
+                }}
               >
                 Accept All
               </button>
