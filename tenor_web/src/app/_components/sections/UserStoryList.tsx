@@ -98,7 +98,6 @@ export default function UserStoryList() {
     >();
 
   useNavigationGuard(async () => {
-    console.log("Checking for unsaved changes");
     if ((generatedUserStories?.current?.length ?? 0) > 0) {
       return !(await confirm(
         "Are you sure?",

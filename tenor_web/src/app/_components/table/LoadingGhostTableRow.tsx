@@ -37,7 +37,7 @@ function LoadingGhostTableRow<
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+    (showThreeDots ? ` 1fr 110px` : "");
 
   const randomStarPosition = () => {
     const x = Math.random() * -window.innerWidth;
