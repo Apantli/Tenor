@@ -551,10 +551,43 @@ ${passedInPrompt}
             }
           }
 
+          // Check the related user stories exist and are valid
+          let validDependencies: string[] = [];
+          await Promise.all(
+            userStory.dependencyIds.map(async (dependencyId) => {
+              const dependency = await ctx.firestore
+                .collection("projects")
+                .doc(projectId)
+                .collection("userStories")
+                .doc(dependencyId)
+                .get();
+              if (dependency.exists) {
+                validDependencies.push(dependencyId);
+              }
+            }),
+          );
+
+          let validRequiredBy: string[] = [];
+          await Promise.all(
+            userStory.requiredByIds.map(async (requiredById) => {
+              const requiredBy = await ctx.firestore
+                .collection("projects")
+                .doc(projectId)
+                .collection("userStories")
+                .doc(requiredById)
+                .get();
+              if (requiredBy.exists) {
+                validRequiredBy.push(requiredById);
+              }
+            }),
+          );
+
           return {
             ...userStory,
             priority,
             epic,
+            dependencyIds: validDependencies,
+            requiredByIds: validRequiredBy,
           };
         }),
       );
