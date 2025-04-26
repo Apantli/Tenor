@@ -27,7 +27,7 @@ interface Props {
 export default function AssignableCardColumn({
   column,
   items,
-  selectedItems: selectedUserStories,
+  selectedItems,
   setSelectedItems,
   setDetailItemId,
   setShowDetail,
@@ -36,13 +36,13 @@ export default function AssignableCardColumn({
   renderCard,
   header,
 }: Props) {
-  // Check there's selected user stories and none of them are in this sprint
+  // Check there's selected items and none of them are in this column
   const availableToBeAssignedTo =
-    selectedUserStories.size > 0 &&
-    Array.from(selectedUserStories).every(
-      (selectedUserStoryId) =>
+    selectedItems.size > 0 &&
+    Array.from(selectedItems).every(
+      (selectedItem) =>
         !column.itemIds.some(
-          (userStoryId) => userStoryId === selectedUserStoryId,
+          (itemId) => itemId === selectedItem,
         ),
     );
 
@@ -54,10 +54,10 @@ export default function AssignableCardColumn({
       <CardColumn
         cards={
           column.itemIds
-            .map((userStoryId) => items[userStoryId])
+            .map((itemId) => items[itemId])
             .filter((val) => val !== undefined) ?? []
         }
-        selection={selectedUserStories}
+        selection={selectedItems}
         setSelection={setSelectedItems}
         setDetailId={setDetailItemId}
         setShowDetail={setShowDetail}
@@ -79,7 +79,7 @@ export default function AssignableCardColumn({
           className="w-full"
           onClick={() => assignSelectionToColumn(column.id)}
         >
-          Move to sprint
+          Move to column
         </PrimaryButton>
       </div>
     </div>

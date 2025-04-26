@@ -28,9 +28,6 @@ import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 
-export type UserStories = inferRouterOutputs<
-  typeof sprintsRouter
->["getUserStoryPreviewsBySprint"]["userStories"];
 
 export default function TasksKanban() {
   const { projectId } = useParams();
@@ -63,7 +60,6 @@ export default function TasksKanban() {
   //// Drag and drop operations
   let updateOperationsInProgress = 0;
 
-  // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (itemId: string, columnId: string) => {
     setLastDraggedItemId(null);
     if (itemsAndColumnsData == undefined) return;
@@ -105,24 +101,24 @@ export default function TasksKanban() {
             return {
               ...column,
               itemIds: column.itemIds.filter(
-                (userStoryId) => !itemIds.includes(userStoryId),
+                (itemId) => !itemIds.includes(itemId),
               ),
             };
           }
         });
 
         const updatedItems = Object.fromEntries(
-          Object.entries(oldData.items).map(([id, userStory]) => {
+          Object.entries(oldData.items).map(([id, item]) => {
             if (itemIds.includes(id)) {
               return [
                 id,
                 {
-                  ...userStory,
+                  ...item,
                   columnId: columnId,
                 },
               ];
             }
-            return [id, userStory];
+            return [id, item];
           }),
         );
 
@@ -205,12 +201,12 @@ export default function TasksKanban() {
               const toggleSelectAll = () => {
                 const newSelection = new Set(selectedItems);
                 if (allSelected) {
-                  column.itemIds.forEach((userStoryId) => {
-                    newSelection.delete(userStoryId);
+                  column.itemIds.forEach((itemId) => {
+                    newSelection.delete(itemId);
                   });
                 } else {
-                  column.itemIds.forEach((userStoryId) => {
-                    newSelection.add(userStoryId);
+                  column.itemIds.forEach((itemId) => {
+                    newSelection.add(itemId);
                   });
                 }
                 setSelectedItems(newSelection);
