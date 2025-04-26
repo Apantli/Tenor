@@ -54,7 +54,7 @@ export default function ProjectUsers() {
             const newData = teamMembers;
             newData.push(user);
 
-            // Uses optimistic update to update the size of the user story
+            // Uses optimistic update
             await utils.users.getTeamMembers.cancel({
               projectId: projectId as string,
             });
@@ -77,7 +77,7 @@ export default function ProjectUsers() {
               (userStory) => !ids.includes(userStory.id),
             );
 
-            // Uses optimistic update to update the size of the user story
+            // Uses optimistic update
             await utils.users.getTeamMembers.cancel({
               projectId: projectId as string,
             });
@@ -106,7 +106,7 @@ export default function ProjectUsers() {
               return;
             }
 
-            // Uses optimistic update to update the size of the user story
+            // Uses optimistic update
             await utils.users.getTeamMembers.cancel({
               projectId: projectId as string,
             });
@@ -115,7 +115,7 @@ export default function ProjectUsers() {
               newData,
             );
 
-            // Add to database
+            // Update role in database
             await Promise.all([
               updateTeamMemberRole({
                 projectId: projectId as string,
