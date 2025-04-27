@@ -93,7 +93,7 @@ export interface Settings {
   // requirementTypeTags: Tag[];
   // backlogTags: Tag[];
   // priorityTypes: Tag[];
-  // statusTypes: Tag[];
+  // statusTypes: StatusTag[]; // TODO: Change to not Tag, but an extension of
 
   // roles: Role[];
 }
@@ -103,6 +103,11 @@ export interface Tag {
   name: string;
   color: string;
   deleted: boolean;
+}
+
+// TODO: Add index so that they can be sorted
+export interface StatusTag extends Tag {
+  marksTaskAsDone: boolean;
 }
 
 /// User

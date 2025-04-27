@@ -1,4 +1,3 @@
-import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
@@ -57,7 +56,16 @@ export const kanbanRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const tasks = await getTasksFromProject(ctx.firestore, input.projectId);
       const items = tasks.map((task) => {
-        const { id, scrumId, name, description, size, statusId, itemType, itemId } = task;
+        const {
+          id,
+          scrumId,
+          name,
+          description,
+          size,
+          statusId,
+          itemType,
+          itemId,
+        } = task;
         return {
           id,
           scrumId,
@@ -66,7 +74,7 @@ export const kanbanRouter = createTRPCRouter({
           size,
           tags: [],
           columnId: statusId,
-          itemType, 
+          itemType,
           itemId,
         } as CardTask;
       });
@@ -89,6 +97,39 @@ export const kanbanRouter = createTRPCRouter({
       return {
         columns: columnsWithItems,
         items: Object.fromEntries(items.map((item) => [item.id, item])),
+      };
+    }),
+
+  createStatusList: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        name: z.string(),
+        color: z.string(),
+        marksTaskAsDone: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, name, color, marksTaskAsDone } = input;
+
+      const statusRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("statusTypes");
+
+      const newStatus = {
+        name,
+        color: color.toUpperCase(),
+        marksTaskAsDone,
+        deleted: false,
+      };
+
+      const docRef = await statusRef.add(newStatus);
+      return {
+        id: docRef.id,
+        ...newStatus,
       };
     }),
 });
