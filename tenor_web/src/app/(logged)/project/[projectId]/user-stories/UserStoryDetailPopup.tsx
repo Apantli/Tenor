@@ -47,7 +47,6 @@ export default function UserStoryDetailPopup({
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const [unsavedTasks, setUnsavedTasks] = useState(false);
 
