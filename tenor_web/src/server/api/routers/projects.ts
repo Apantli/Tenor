@@ -328,14 +328,14 @@ export const projectsRouter = createTRPCRouter({
           deleted: false,
           marksTaskAsDone: false,
         });
-        
+
         await statusCollection.add({
           name: "Doing",
           color: "#AD7C00",
           deleted: false,
           marksTaskAsDone: false,
         });
-        
+
         await statusCollection.add({
           name: "Done",
           color: "#009719",
