@@ -13,7 +13,6 @@ import {
 import type { TaskDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
 import { timestampToDate } from "./sprints";
-import { api } from "~/trpc/react";
 import { askAiToGenerate } from "~/utils/aiGeneration";
 
 export interface TaskCol {

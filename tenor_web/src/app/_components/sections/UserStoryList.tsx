@@ -32,7 +32,10 @@ import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
-import { useInvalidateQueriesAllTasks, useInvalidateQueriesAllUserStories, useInvalidateQueriesUserStoriesDetails } from "~/app/_hooks/invalidateHooks";
+import {
+  useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesUserStoriesDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -51,8 +54,9 @@ export default function UserStoryList() {
   const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
 
-  const invalidateUsQueriesAll = useInvalidateQueriesAllUserStories();
-  const invalidateUsQueriesDetails = useInvalidateQueriesUserStoriesDetails();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesUserStoriesDetails =
+    useInvalidateQueriesUserStoriesDetails();
 
   // TRPC
   const utils = api.useUtils();
@@ -288,8 +292,10 @@ export default function UserStoryList() {
               priorityId: tag.id,
             });
 
-            await invalidateUsQueriesAll(projectId as string);
-            await invalidateUsQueriesDetails(projectId as string, [row.id]);
+            await invalidateQueriesAllUserStories(projectId as string);
+            await invalidateQueriesUserStoriesDetails(projectId as string, [
+              row.id,
+            ]);
           };
 
           const handleGhostPriorityChange = (tag: Tag) => {
@@ -370,8 +376,10 @@ export default function UserStoryList() {
               size: size,
             });
 
-            await invalidateUsQueriesAll(projectId as string);
-            await invalidateUsQueriesDetails(projectId as string, [row.id]);
+            await invalidateQueriesAllUserStories(projectId as string);
+            await invalidateQueriesUserStoriesDetails(projectId as string, [
+              row.id,
+            ]);
           };
 
           const handleGhostSizeChange = (size: Size) => {
@@ -466,7 +474,7 @@ export default function UserStoryList() {
           }),
         ),
       );
-      await invalidateUsQueriesAll(projectId as string);
+      await invalidateQueriesAllUserStories(projectId as string);
       return true;
     };
 
@@ -492,7 +500,7 @@ export default function UserStoryList() {
   };
 
   const onUserStoryAdded = async (userStoryId: string) => {
-    await invalidateUsQueriesAll(projectId as string);
+    await invalidateQueriesAllUserStories(projectId as string);
     setShowNewStory(false);
     setSelectedUS(userStoryId);
     setShowDetail(true);
@@ -520,7 +528,7 @@ export default function UserStoryList() {
       title: data.name,
       epicScrumId: data.epic?.scrumId,
       priority: data.priority,
-      size: (data.size as Size) ?? "M",
+      size: data.size ?? "M",
       sprintNumber: undefined,
       taskProgress: [0, 0] as [number, number],
     }));

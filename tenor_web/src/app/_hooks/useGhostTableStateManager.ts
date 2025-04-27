@@ -4,24 +4,27 @@ export default function useGhostTableStateManager<
   // eslint-disable-next-line
   T extends Record<string, any> & { id: I },
   I extends string | number,
->(acceptCallback: (ids: I[]) => void, removeRowsCallback?: (ids: I[]) => void) {
+>(
+  acceptCallback: (ids: I[]) => Promise<void>,
+  removeRowsCallback?: (ids: I[]) => void,
+) {
   const [ghostData, setGhostData] = useState<T[] | undefined>();
   const [ghostRows, setGhostRows] = useState<number | undefined>();
 
-  const onAccept = (ids: I[]) => {
+  const onAccept = async (ids: I[]) => {
     const newGhostData = ghostData?.filter((ghost) => !ids.includes(ghost.id));
     setGhostData(newGhostData);
 
-    acceptCallback(ids);
+    await acceptCallback(ids);
     if (removeRowsCallback) {
       removeRowsCallback(ids);
     }
   };
 
-  const onAcceptAll = () => {
+  const onAcceptAll = async () => {
     if (!ghostData) return;
     const ids = ghostData.map((ghost) => ghost.id);
-    onAccept(ids);
+    await onAccept(ids);
   };
 
   const onReject = (ids: I[]) => {
