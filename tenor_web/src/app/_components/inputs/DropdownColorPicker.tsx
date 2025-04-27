@@ -25,14 +25,14 @@ export default function DropdownColorPicker({
   Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">) {
   return (
     <div className={cn("w-full", containerClassName)} id={id}>
-        {label && (
-          <label
-            htmlFor={id}
-            className={cn("text-sm font-semibold", labelClassName)}
-          >
-            {label}
-          </label>
-        )}
+      {label && (
+        <label
+          htmlFor={id}
+          className={cn("text-sm font-semibold", labelClassName)}
+        >
+          {label}
+        </label>
+      )}
       <Dropdown
         label={
           <>
@@ -59,7 +59,7 @@ export default function DropdownColorPicker({
               onChange={(color) => onChange(color.toUpperCase())}
               className="custom-layout"
             />
-            <style jsx global>{`
+            <style>{`
               .custom-layout .react-colorful {
                 padding: 16px;
                 border-radius: 12px;
