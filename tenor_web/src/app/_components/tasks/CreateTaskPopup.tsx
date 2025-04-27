@@ -92,7 +92,7 @@ export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
       onTaskAdded(taskId);
     }
 
-    await invalidateQueriesAllTasks(projectId as string);
+    await invalidateQueriesAllTasks(projectIdString, [itemId]);
   };
 
   return (
