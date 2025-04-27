@@ -160,7 +160,6 @@ export default function TasksKanban() {
       await invalidateQueriesAllTasks(projectId as string);
       await invalidateQueriesTaskDetails(projectId as string, itemIds);
       await invalidateQueriesAllUserStories(projectId as string);
-      console.log("invalidateHooks");
       // TODO: Invalidate queries for issues and generic items
     }
 
@@ -296,5 +295,3 @@ export default function TasksKanban() {
     </>
   );
 }
-
-// TODO: Invalidate fetch query when changing item status!!!
