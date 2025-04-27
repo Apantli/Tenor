@@ -1,7 +1,10 @@
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import type { Tag } from "~/lib/types/firebaseSchemas";
-import type { RequirementCol } from "~/server/api/routers/requirements";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type {
+  RequirementCol,
+  requirementsRouter,
+} from "~/server/api/routers/requirements";
 import { api } from "~/trpc/react";
 import Table, { type TableColumns } from "../table/Table";
 import { cn } from "~/lib/utils";
@@ -20,6 +23,9 @@ import Markdown from "react-markdown";
 import LoadingSpinner from "../LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
+import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
+import { inferRouterOutputs } from "@trpc/server";
+import { red } from "@mui/material/colors";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -51,6 +57,14 @@ export default function RequirementsTable() {
   const [requirementsData, setRequirementsData] = useState<RequirementCol[]>(
     [],
   );
+  const generatedRequirements =
+    useRef<
+      WithId<
+        inferRouterOutputs<
+          typeof requirementsRouter
+        >["generateRequirements"][number]
+      >[]
+    >();
 
   const [searchValue, setSearchValue] = useState("");
 
@@ -78,6 +92,9 @@ export default function RequirementsTable() {
   const { alert } = useAlert();
   const { mutateAsync: createOrModifyRequirement, isPending } =
     api.requirements.createOrModifyRequirement.useMutation();
+  const { mutateAsync: generateRequirements } =
+    api.requirements.generateRequirements.useMutation();
+
   const handleCreateRequirement = async () => {
     const {
       priorityId,
@@ -173,7 +190,7 @@ export default function RequirementsTable() {
       priorityId: unwrappedPriorityId ?? "",
       requirementTypeId: unwrappedRequirementTypeId ?? "",
       requirementFocusId: unwrappedRequirementFocusId ?? "",
-      scrumId,
+      scrumId: scrumId!,
       deleted: false,
     };
 
@@ -212,25 +229,96 @@ export default function RequirementsTable() {
     if (requirements) {
       const query = searchValue.toLowerCase();
 
-      const filtered = requirements.fixedData.filter((req) => {
-        const name = req.name?.toLowerCase() ?? "";
-        const description = req.description.toLowerCase();
+      const filtered = requirements.fixedData
+        .filter((req) => {
+          const name = req.name?.toLowerCase() ?? "";
+          const description = req.description.toLowerCase();
 
-        // Asegúrate de que este hook devuelve un string consistente
-        const formattedScrumText = UseFormatForAssignReqTypeScrumId(
-          req.requirementTypeId.name,
-          req.scrumId,
-        ).toLowerCase();
+          // Asegúrate de que este hook devuelve un string consistente
+          const formattedScrumText = UseFormatForAssignReqTypeScrumId(
+            req.requirementTypeId.name,
+            req.scrumId!,
+          ).toLowerCase();
 
-        return (
-          name.includes(query) ||
-          description.includes(query) ||
-          formattedScrumText.includes(query)
-        );
-      });
+          return (
+            name.includes(query) ||
+            description.includes(query) ||
+            formattedScrumText.includes(query)
+          );
+        })
+        .sort((a, b) => {
+          // Flipped to show the latest requirements first (also makes AI generated ones appear at the top after getting accepted)
+          if (a.scrumId === undefined && b.scrumId === undefined) return 0;
+          if (a.scrumId === undefined) return -1;
+          if (b.scrumId === undefined) return 1;
+
+          return a.scrumId < b.scrumId ? 1 : -1;
+        });
       setRequirementsData(filtered);
     }
   }, [requirements, searchValue]);
+
+  const {
+    beginLoading,
+    finishLoading,
+    generating,
+    ghostData,
+    ghostRows,
+    setGhostRows,
+    onAccept,
+    onAcceptAll,
+    onReject,
+    onRejectAll,
+    updateGhostRow,
+  } = useGhostTableStateManager<RequirementCol, string>(
+    async (acceptedIds) => {
+      const accepted =
+        generatedRequirements.current?.filter((req) =>
+          acceptedIds.includes(req.id),
+        ) ?? [];
+      const acceptedRows = ghostData?.filter((ghost) =>
+        acceptedIds.includes(ghost.id),
+      );
+
+      await utils.requirements.getRequirementsTableFriendly.cancel({
+        projectId: params.projectId as string,
+      });
+
+      // FIXME: I'm a little confused how the data is being stored here, might have issues with some of the tags
+      utils.requirements.getRequirementsTableFriendly.setData(
+        { projectId: params.projectId as string },
+        (oldData) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            fixedData: oldData.fixedData.concat(acceptedRows ?? []),
+          };
+        },
+      );
+
+      // Add the new requirements to the database
+      for (const req of accepted.reverse()) {
+        await createOrModifyRequirement({
+          projectId: params.projectId as string,
+          name: req.name,
+          description: req.description,
+          priorityId: req.priorityId!.id!,
+          requirementTypeId: req.requirementTypeId!.id!,
+          requirementFocusId: req.requirementFocusId!.id!,
+          scrumId: -1,
+          deleted: false,
+        });
+      }
+
+      await refetchRequirements();
+    },
+    (removedIds) => {
+      const newGeneratedRequirements = generatedRequirements.current?.filter(
+        (req) => !removedIds.includes(req.id),
+      );
+      generatedRequirements.current = newGeneratedRequirements;
+    },
+  );
 
   const table = useMemo(() => {
     if (requirements == undefined || isLoadingRequirements) {
@@ -247,19 +335,24 @@ export default function RequirementsTable() {
         label: "Id",
         width: 80,
         sortable: true,
+        hiddenOnGhost: true,
         render(row) {
           return (
             <button
-              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
                 setEditingRequirement(false);
                 setRequirementEdited(row);
                 setShowSmallPopup(true);
               }}
             >
-              {UseFormatForAssignReqTypeScrumId(
-                row.requirementTypeId.name,
-                row.scrumId,
+              {row.scrumId ? (
+                UseFormatForAssignReqTypeScrumId(
+                  row.requirementTypeId.name,
+                  row.scrumId,
+                )
+              ) : (
+                <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
               )}
             </button>
           );
@@ -301,11 +394,34 @@ export default function RequirementsTable() {
           if (!b.priorityId) return 1;
           return a.priorityId?.name.localeCompare(b.priorityId?.name);
         },
-        render(row) {
+        render(row, _, isGhost) {
+          const handleGhostPriorityChange = (tag: Tag) => {
+            updateGhostRow(row.id, (oldData) => ({
+              ...oldData,
+              priorityId: tag,
+            }));
+            generatedRequirements.current = generatedRequirements.current?.map(
+              (req) => {
+                if (req.id === row.id) {
+                  return {
+                    ...req,
+                    priorityId: tag,
+                  };
+                }
+                return req;
+              },
+            );
+          };
+
           return (
             <PriorityPicker
               priority={row.priorityId}
               onChange={async (tag: Tag) => {
+                if (isGhost) {
+                  handleGhostPriorityChange(tag);
+                  return;
+                }
+
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
                     item.id === row.id ? { ...item, priorityId: tag } : item,
@@ -339,11 +455,34 @@ export default function RequirementsTable() {
             b.requirementTypeId?.name,
           );
         },
-        render(row) {
+        render(row, _, isGhost) {
+          const handleGhostReqTypeChange = (tag: Tag) => {
+            updateGhostRow(row.id, (oldData) => ({
+              ...oldData,
+              requirementTypeId: tag,
+            }));
+            generatedRequirements.current = generatedRequirements.current?.map(
+              (req) => {
+                if (req.id === row.id) {
+                  return {
+                    ...req,
+                    requirementTypeId: tag,
+                  };
+                }
+                return req;
+              },
+            );
+          };
+
           return (
             <RequirementTypePicker
               type={row.requirementTypeId}
               onChange={async (requirementTypeId) => {
+                if (isGhost) {
+                  handleGhostReqTypeChange(requirementTypeId);
+                  return;
+                }
+
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
                     item.id === row.id
@@ -379,11 +518,34 @@ export default function RequirementsTable() {
             b.requirementFocusId?.name,
           );
         },
-        render(row) {
+        render(row, _, isGhost) {
+          const handleGhostFocusChange = (tag: Tag) => {
+            updateGhostRow(row.id, (oldData) => ({
+              ...oldData,
+              requirementFocusId: tag,
+            }));
+            generatedRequirements.current = generatedRequirements.current?.map(
+              (req) => {
+                if (req.id === row.id) {
+                  return {
+                    ...req,
+                    requirementFocusId: tag,
+                  };
+                }
+                return req;
+              },
+            );
+          };
+
           return (
             <RequirementFocusPicker
               focus={row.requirementFocusId}
               onChange={async (requirementFocusId) => {
+                if (isGhost) {
+                  handleGhostFocusChange(requirementFocusId);
+                  return;
+                }
+
                 setRequirementsData((prevData) =>
                   prevData.map((item) =>
                     item.id === row.id
@@ -462,9 +624,42 @@ export default function RequirementsTable() {
         multiselect
         deletable
         tableKey="requirements-table"
+        ghostData={ghostData}
+        ghostRows={ghostRows}
+        setGhostRows={setGhostRows}
+        acceptGhosts={onAccept}
+        rejectGhosts={onReject}
+        ghostLoadingEstimation={5000}
+        rowClassName="h-12"
       />
     );
-  }, [requirementsData, isLoadingRequirements]);
+  }, [requirementsData, isLoadingRequirements, ghostData, ghostRows]);
+
+  const handleGenerate = async (amount: number, prompt: string) => {
+    beginLoading(amount);
+
+    const generatedData = await generateRequirements({
+      projectId: params.projectId as string,
+      amount,
+      prompt,
+    });
+    generatedRequirements.current = generatedData.map((req, i) => ({
+      ...req,
+      id: i.toString(),
+    }));
+
+    const tableData = generatedData.map((req, i) => ({
+      id: i.toString(),
+      scrumId: undefined,
+      name: req.name,
+      description: req.description,
+      priorityId: req.priorityId!,
+      requirementTypeId: req.requirementTypeId!,
+      requirementFocusId: req.requirementFocusId!,
+    }));
+
+    finishLoading(tableData);
+  };
 
   return (
     <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
@@ -492,6 +687,11 @@ export default function RequirementsTable() {
             singularLabel="requirement"
             pluralLabel="requirements"
             className="w-[350px]"
+            onGenerate={handleGenerate}
+            alreadyGenerated={(ghostData?.length ?? 0) > 0}
+            disabled={generating}
+            onAcceptAll={onAcceptAll}
+            onRejectAll={onRejectAll}
           />
         </div>
       </div>
@@ -533,7 +733,7 @@ export default function RequirementsTable() {
                   <h1 className="font-semibold">
                     {UseFormatForAssignReqTypeScrumId(
                       requirementEdited.requirementTypeId.name,
-                      requirementEdited.scrumId,
+                      requirementEdited.scrumId!,
                     )}
                     :{" "}
                     <span className="font-normal">
