@@ -26,7 +26,7 @@ export type UserPreview = {
 
 export type TaskPreview = {
   id: string;
-  scrumId: number;
+  scrumId?: number;
   name: string;
   status: Tag;
   assignee?: UserPreview;

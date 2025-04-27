@@ -111,7 +111,9 @@ export default function UserStoryList() {
 
   const {
     onAccept,
+    onAcceptAll,
     onReject,
+    onRejectAll,
     beginLoading,
     finishLoading,
     ghostData,
@@ -120,12 +122,14 @@ export default function UserStoryList() {
     generating,
     updateGhostRow,
   } = useGhostTableStateManager<UserStoryCol, string>(
-    async (ids) => {
+    async (acceptedIds) => {
       const accepted =
         generatedUserStories.current?.filter((story) =>
-          ids.includes(story.id),
+          acceptedIds.includes(story.id),
         ) ?? [];
-      const acceptedRows = ghostData?.filter((ghost) => ids.includes(ghost.id));
+      const acceptedRows = ghostData?.filter((ghost) =>
+        acceptedIds.includes(ghost.id),
+      );
       // Use optimistic update to update the user stories table
       await utils.userStories.getUserStoriesTableFriendly.cancel({
         projectId: projectId as string,
@@ -158,9 +162,9 @@ export default function UserStoryList() {
 
       await refetchUS();
     },
-    (rejectedIds) => {
+    (removedIds) => {
       const newGeneratedUserStories = generatedUserStories.current?.filter(
-        (story) => !rejectedIds.includes(story.id),
+        (story) => !removedIds.includes(story.id),
       );
       generatedUserStories.current = newGeneratedUserStories;
     },
@@ -549,6 +553,8 @@ export default function UserStoryList() {
             onGenerate={generateUserStories}
             disabled={generating}
             alreadyGenerated={(ghostData?.length ?? 0) > 0}
+            onAcceptAll={onAcceptAll}
+            onRejectAll={onRejectAll}
           />
         </div>
 

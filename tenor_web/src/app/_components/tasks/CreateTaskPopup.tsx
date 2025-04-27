@@ -90,7 +90,13 @@ export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
       onTaskAdded(taskId);
     }
 
-    await utils.tasks.getTasksTableFriendly.invalidate();
+    await utils.tasks.getTasksTableFriendly.invalidate({
+      projectId: projectId as string,
+      itemId: itemId,
+    });
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId as string,
+    });
   };
 
   return (

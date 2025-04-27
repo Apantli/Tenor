@@ -4,7 +4,7 @@ export default function useGhostTableStateManager<
   // eslint-disable-next-line
   T extends Record<string, any> & { id: I },
   I extends string | number,
->(acceptCallback: (ids: I[]) => void, rejectCallback?: (ids: I[]) => void) {
+>(acceptCallback: (ids: I[]) => void, removeRowsCallback?: (ids: I[]) => void) {
   const [ghostData, setGhostData] = useState<T[] | undefined>();
   const [ghostRows, setGhostRows] = useState<number | undefined>();
 
@@ -13,15 +13,30 @@ export default function useGhostTableStateManager<
     setGhostData(newGhostData);
 
     acceptCallback(ids);
+    if (removeRowsCallback) {
+      removeRowsCallback(ids);
+    }
+  };
+
+  const onAcceptAll = () => {
+    if (!ghostData) return;
+    const ids = ghostData.map((ghost) => ghost.id);
+    onAccept(ids);
   };
 
   const onReject = (ids: I[]) => {
     const newGhostData = ghostData?.filter((ghost) => !ids.includes(ghost.id));
     setGhostData(newGhostData);
 
-    if (rejectCallback) {
-      rejectCallback(ids);
+    if (removeRowsCallback) {
+      removeRowsCallback(ids);
     }
+  };
+
+  const onRejectAll = () => {
+    if (!ghostData) return;
+    const ids = ghostData.map((ghost) => ghost.id);
+    onReject(ids);
   };
 
   const beginLoading = (rows: number) => {
@@ -46,7 +61,9 @@ export default function useGhostTableStateManager<
 
   return {
     onAccept,
+    onAcceptAll,
     onReject,
+    onRejectAll,
     beginLoading,
     finishLoading,
     ghostData,

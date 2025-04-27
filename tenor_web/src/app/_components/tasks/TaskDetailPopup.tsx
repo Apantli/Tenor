@@ -141,6 +141,9 @@ export default function TaskDetailPopup({
       projectId: projectId as string,
       itemId: itemId,
     });
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId as string,
+    });
 
     await refetch();
   };
@@ -162,6 +165,9 @@ export default function TaskDetailPopup({
       await utils.tasks.getTasksTableFriendly.invalidate({
         projectId: projectId as string,
         itemId: itemId,
+      });
+      await utils.kanban.getTasksForKanban.invalidate({
+        projectId: projectId as string,
       });
 
       setShowDetail(false);
