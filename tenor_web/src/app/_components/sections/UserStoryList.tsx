@@ -528,7 +528,7 @@ export default function UserStoryList() {
       title: data.name,
       epicScrumId: data.epic?.scrumId,
       priority: data.priority,
-      size: (data.size as Size) ?? "M",
+      size: data.size ?? "M",
       sprintNumber: undefined,
       taskProgress: [0, 0] as [number, number],
     }));
