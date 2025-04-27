@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
@@ -49,6 +49,7 @@ export default function UserStoryDetailPopup({
   const utils = api.useUtils();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const [unsavedTasks, setUnsavedTasks] = useState(false);
 
   const {
     data: userStoryDetail,
@@ -59,26 +60,6 @@ export default function UserStoryDetailPopup({
     projectId: projectId as string,
     userStoryId,
   });
-
-  const { data: tasksTableData } = api.tasks.getTasksTableFriendly.useQuery(
-    {
-      projectId: projectId as string,
-      itemId: userStoryId,
-    },
-    {
-      enabled: showDetail,
-    },
-  );
-
-  const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
-    (task) => ({
-      id: task.id,
-      scrumId: task.scrumId,
-      name: task.title,
-      status: task.status,
-      assignee: task.assignee,
-    }),
-  );
 
   const { mutateAsync: updateUserStory } =
     api.userStories.modifyUserStory.useMutation();
@@ -207,43 +188,6 @@ export default function UserStoryDetailPopup({
     }
   };
 
-  const handleTaskStatusChange = async (taskId: string, status: Tag) => {
-    const updatedTasks = tasksTableData?.map((task) => {
-      if (task.id === taskId) {
-        return {
-          ...task,
-          status: status,
-        };
-      }
-      return task;
-    });
-
-    await utils.tasks.getTasksTableFriendly.cancel({
-      projectId: projectId as string,
-      itemId: userStoryId,
-    });
-
-    utils.tasks.getTasksTableFriendly.setData(
-      {
-        projectId: projectId as string,
-        itemId: userStoryId,
-      },
-      (oldData) => {
-        if (!oldData) return undefined;
-        return updatedTasks ?? [];
-      },
-    );
-
-    await changeStatus({
-      taskId,
-      projectId: projectId as string,
-      statusId: status.id ?? "",
-    });
-
-    await invalidateQueriesAllTasks(projectId as string);
-    await invalidateQueriesAllUserStories(projectId as string);
-  };
-
   const handleDelete = async () => {
     if (
       await confirm(
@@ -272,6 +216,15 @@ export default function UserStoryDetailPopup({
             "Your changes will be discarded.",
             "Discard changes",
             "Keep Editing",
+          );
+          if (!confirmation) return;
+        }
+        if (unsavedTasks) {
+          const confirmation = await confirm(
+            "Are you sure?",
+            "You have unsaved AI generated tasks. To save them, please accept them first.",
+            "Discard",
+            "Keep editing",
           );
           if (!confirmation) return;
         }
@@ -366,6 +319,15 @@ export default function UserStoryDetailPopup({
       }
       editMode={isLoading ? undefined : editMode}
       setEditMode={async (isEditing) => {
+        if (unsavedTasks) {
+          const confirmation = await confirm(
+            "Are you sure?",
+            "You have unsaved AI generated tasks. To save them, please accept them first.",
+            "Discard",
+            "Keep editing",
+          );
+          if (!confirmation) return;
+        }
         setEditMode(isEditing);
 
         if (!userStoryDetail) return;
@@ -379,7 +341,7 @@ export default function UserStoryDetailPopup({
           await handleSave(updatedData, true); // Pass true to save the edit form
         }
       }}
-      disablePassiveDismiss={editMode}
+      disablePassiveDismiss={editMode || unsavedTasks}
     >
       {editMode && (
         <>
@@ -437,13 +399,12 @@ export default function UserStoryDetailPopup({
           )}
 
           <TasksTable
-            tasks={transformedTasks ?? []}
             itemId={userStoryId}
             itemType="US"
-            onTaskStatusChange={handleTaskStatusChange}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}
+            setUnsavedTasks={setUnsavedTasks}
           />
         </div>
       )}

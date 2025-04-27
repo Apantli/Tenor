@@ -4,3 +4,8 @@ export const defaultRoleList = [
   { id: "developer", label: "Developer" },
   { id: "viewer", label: "Viewer" },
 ];
+
+export const emptyRole = {
+  id: "none",
+  label: "No role",
+};

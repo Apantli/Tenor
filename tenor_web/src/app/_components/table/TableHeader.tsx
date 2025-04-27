@@ -87,7 +87,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+    (showThreeDots ? ` 1fr 110px` : "");
 
   const startXRef = useRef<number>();
   const startWidthRef = useRef<number>();
@@ -136,7 +136,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     const newTemplateColumns =
       (multiselect ? "20px " : "") +
       newColumnWidths.map((width) => `${width}px`).join(" ") +
-      (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+      (showThreeDots ? ` 1fr 110px` : "");
 
     scrollContainerRef.current?.childNodes.forEach((child) => {
       (child as HTMLElement).style.gridTemplateColumns = newTemplateColumns;
@@ -205,7 +205,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     const newTemplateColumns =
       (multiselect ? "20px " : "") +
       newColumnWidths.map((width) => `${width}px`).join(" ") +
-      (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+      (showThreeDots ? ` 1fr 110px` : "");
 
     scrollContainerRef.current?.childNodes.forEach((child) => {
       const element = child as HTMLElement;
@@ -232,7 +232,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
 
   return (
     <div
-      className="group sticky top-0 z-[60] grid h-8 min-w-fit items-center gap-2 border-b border-app-border bg-white px-2"
+      className="group sticky top-0 z-[60] grid h-8 min-w-fit items-center gap-3 border-b border-app-border bg-white pl-2"
       style={{ gridTemplateColumns }}
     >
       {multiselect && (

@@ -92,8 +92,19 @@ export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
       onTaskAdded(taskId);
     }
 
-    await invalidateQueriesAllTasks(projectId as string);
+    await invalidateQueriesAllTasks(projectId as string{
+      projectId: projectId as string,
+      itemId: itemId,
+    });
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.tasks.getTasksTableFriendly.invalidate({
+      projectId: projectId as string,
+      itemId: itemId,
+    });
   };
+  
 
   return (
     <div className="max-w-2xl p-2 pt-0">

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React, { type PropsWithChildren } from "react";
+import InterceptedLink from "~/app/_components/InterceptableLink";
 import Navbar from "~/app/_components/Navbar";
 import Tabbar from "~/app/_components/Tabbar";
 import { cn } from "~/lib/utils";
@@ -19,9 +20,9 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     <div className="flex h-screen flex-col overflow-hidden">
       <Navbar>
         <div className="flex w-full grow gap-1">
-          <Link href="/" className="flex-shrink-0 font-semibold">
+          <InterceptedLink href="/" className="flex shrink-0 font-semibold">
             Projects
-          </Link>
+          </InterceptedLink>
           <span
             className={cn(
               "inline-block max-w-[40vw] truncate opacity-0 transition",

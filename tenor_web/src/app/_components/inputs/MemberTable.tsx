@@ -10,6 +10,7 @@ import ProfilePicture from "../ProfilePicture";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
+import { emptyRole } from "~/lib/defaultTags";
 
 interface Props {
   label?: string;
@@ -69,7 +70,7 @@ export default function MemberTable({
     },
     email: {
       label: "Email",
-      width: 180,
+      width: 240,
     },
     role: {
       label: "Role",
@@ -80,10 +81,7 @@ export default function MemberTable({
             className="w-full text-sm"
             hideSearch
             selectedItem={
-              roleList.find((role) => role.id === row.role) ?? {
-                id: "viewer_role_id",
-                label: "Viewer",
-              }
+              roleList.find((role) => role.id === row.role) ?? emptyRole
             }
             allItems={roleList}
             onChange={(item) => {

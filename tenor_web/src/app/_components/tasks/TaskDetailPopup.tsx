@@ -139,6 +139,10 @@ export default function TaskDetailPopup({
       },
     });
 
+    await utils.tasks.getTasksTableFriendly.invalidate({
+      projectId: projectId as string,
+      itemId: itemId,
+    });
     await invalidateQueriesAllTasks(projectId as string);
 
     await refetch();
@@ -159,6 +163,10 @@ export default function TaskDetailPopup({
       });
 
       await invalidateQueriesAllTasks(projectId as string);
+      await utils.tasks.getTasksTableFriendly.invalidate({
+        projectId: projectId as string,
+        itemId: itemId,
+      });
 
       setShowDetail(false);
     }
