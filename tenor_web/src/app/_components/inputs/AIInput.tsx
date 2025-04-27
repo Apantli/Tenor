@@ -13,6 +13,8 @@ import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
 import PrimaryButton from "../buttons/PrimaryButton";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import SendIcon from "@mui/icons-material/Send";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import ProfilePicture from "../ProfilePicture";
 
 export default function AIInputText({
   label,
@@ -25,6 +27,7 @@ export default function AIInputText({
 }: Props & React.InputHTMLAttributes<HTMLInputElement>) {
   const [messages, setMessages] = useState<string[]>([]);
   const [currentMessage, setCurrentMessage] = useState<string>("");
+  const { user } = useFirebaseAuth();
 
   return (
     <div className={cn("w-full", containerClassName)}>
@@ -51,7 +54,7 @@ export default function AIInputText({
             className=""
           >
             <DropdownItem className="px-0">
-              <div className="flex h-72 w-[500px] flex-col gap-2">
+              <div className="flex h-80 w-[500px] flex-col gap-2">
                 <div className="border-b-2">
                   <div className="flex flex-row items-center gap-4 px-3 py-4">
                     <AIIcon className="text-gray-500" />
@@ -62,14 +65,15 @@ export default function AIInputText({
                     />
                   </div>
                 </div>
-                <div className="flex max-h-48 flex-col gap-2 overflow-y-auto px-4 py-2">
+                <div className="flex max-h-48 flex-col gap-2 overflow-y-auto px-4">
                   {messages.length > 0 ? (
                     <div className="flex flex-col gap-2">
                       {messages.map((message, index) => (
                         <div
                           key={index}
-                          className="flex flex-row items-center gap-2 border-b-2 p-2"
+                          className="flex flex-row items-center gap-2 border-b-2 p-1"
                         >
+                          <ProfilePicture user={user} hideTooltip />
                           <p className="no-scrollbar max-w-[450px] overflow-x-auto text-sm">
                             {message}
                           </p>
@@ -105,7 +109,7 @@ export default function AIInputText({
                       </div>
                     </div>
                     <div className="flex flex-row items-center gap-2">
-                      <PrimaryButton>
+                      <PrimaryButton className="">
                         {currentMessage.length > 0 ? "Generate" : "Accept"}
                       </PrimaryButton>
                       <DeleteButton>Close</DeleteButton>
