@@ -1,13 +1,16 @@
 "use client";
 
 import Table, { type TableColumns } from "~/app/_components/table/Table";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
-import { useState, type ChangeEventHandler } from "react";
+import type { Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import { useRef, useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
-import type { UserStoryCol } from "~/server/api/routers/userStories";
+import type {
+  userStoriesRouter,
+  UserStoryCol,
+} from "~/server/api/routers/userStories";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../Popup";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
@@ -21,6 +24,14 @@ import {
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import LoadingSpinner from "../LoadingSpinner";
+import AiButton from "../buttons/AiButton";
+import Dropdown, { DropdownItem } from "../Dropdown";
+import PillPickerComponent from "../PillPickerComponent";
+import FloatingLabelInput from "../FloatingLabelInput";
+import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
+import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
+import { inferRouterOutputs } from "@trpc/server";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -52,6 +63,8 @@ export default function UserStoryList() {
     api.userStories.modifyUserStoryTags.useMutation();
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
+  const { mutateAsync: createUserStory } =
+    api.userStories.createUserStory.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -62,12 +75,99 @@ export default function UserStoryList() {
     const lowerSearchValue = searchValue.toLowerCase();
     return (
       userStory.title.toLowerCase().includes(lowerSearchValue) ||
-      formatUserStoryScrumId(userStory.scrumId).includes(lowerSearchValue)
+      formatUserStoryScrumId(userStory.scrumId!).includes(lowerSearchValue)
     );
   });
 
-  const userStoryData = filteredData.sort((a, b) =>
-    a.scrumId < b.scrumId ? -1 : 1,
+  const userStoryData = filteredData.sort((a, b) => {
+    // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
+    if (a.scrumId === undefined && b.scrumId === undefined) return 0;
+    if (a.scrumId === undefined) return -1;
+    if (b.scrumId === undefined) return 1;
+
+    return a.scrumId < b.scrumId ? 1 : -1;
+  });
+
+  const generatedUserStories =
+    useRef<
+      WithId<
+        inferRouterOutputs<
+          typeof userStoriesRouter
+        >["generateUserStories"][number]
+      >[]
+    >();
+
+  useNavigationGuard(async () => {
+    if ((generatedUserStories?.current?.length ?? 0) > 0) {
+      return !(await confirm(
+        "Are you sure?",
+        "You have unsaved AI generated user stories. To save them, please accept them first.",
+        "Discard",
+        "Keep editing",
+      ));
+    }
+    return false;
+  });
+
+  const {
+    onAccept,
+    onAcceptAll,
+    onReject,
+    onRejectAll,
+    beginLoading,
+    finishLoading,
+    ghostData,
+    ghostRows,
+    setGhostRows,
+    generating,
+    updateGhostRow,
+  } = useGhostTableStateManager<UserStoryCol, string>(
+    async (acceptedIds) => {
+      const accepted =
+        generatedUserStories.current?.filter((story) =>
+          acceptedIds.includes(story.id),
+        ) ?? [];
+      const acceptedRows = ghostData?.filter((ghost) =>
+        acceptedIds.includes(ghost.id),
+      );
+      // Use optimistic update to update the user stories table
+      await utils.userStories.getUserStoriesTableFriendly.cancel({
+        projectId: projectId as string,
+      });
+      utils.userStories.getUserStoriesTableFriendly.setData(
+        { projectId: projectId as string },
+        userStoryData.concat(acceptedRows ?? []),
+      );
+
+      // Add the user stories to the database
+      for (const userStory of accepted.reverse()) {
+        await createUserStory({
+          projectId: projectId as string,
+          userStoryData: {
+            name: userStory.name,
+            description: userStory.description,
+            sprintId: "",
+            taskIds: [],
+            complete: false,
+            tagIds: userStory.tagIds,
+            size: userStory.size,
+            priorityId: userStory.priority?.id ?? "",
+            epicId: userStory.epicId,
+            acceptanceCriteria: userStory.acceptanceCriteria,
+            dependencyIds: userStory.dependencyIds,
+            requiredByIds: userStory.requiredByIds,
+          },
+        });
+      }
+
+      await refetchUS();
+    },
+    (removedIds) => {
+      const newGeneratedUserStories = generatedUserStories.current?.filter(
+        (story) => !removedIds.includes(story.id),
+      );
+      generatedUserStories.current = newGeneratedUserStories;
+    },
   );
 
   // Function to get the US table or message instead
@@ -90,16 +190,21 @@ export default function UserStoryList() {
         render(row) {
           return (
             <button
-              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
                 setSelectedUS(row.id);
                 setShowDetail(true);
               }}
             >
-              {formatUserStoryScrumId(row.scrumId)}
+              {row.scrumId ? (
+                formatUserStoryScrumId(row.scrumId)
+              ) : (
+                <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
+              )}
             </button>
           );
         },
+        hiddenOnGhost: true,
       },
       title: {
         label: "Title",
@@ -145,7 +250,7 @@ export default function UserStoryList() {
           if (!b.priority) return -1;
           return a.priority?.name.localeCompare(b.priority?.name) ? -1 : 1;
         },
-        render(row) {
+        render(row, _, isGhost) {
           const handlePriorityChange = async (tag: Tag) => {
             const rowIndex = userStoryData.indexOf(row);
             if (
@@ -186,10 +291,30 @@ export default function UserStoryList() {
             });
           };
 
+          const handleGhostPriorityChange = (tag: Tag) => {
+            updateGhostRow(row.id, (oldData) => ({
+              ...oldData,
+              priority: tag,
+            }));
+            generatedUserStories.current = generatedUserStories.current?.map(
+              (story) => {
+                if (story.id === row.id) {
+                  return {
+                    ...story,
+                    priority: tag,
+                  };
+                }
+                return story;
+              },
+            );
+          };
+
           return (
             <PriorityPicker
               priority={row.priority}
-              onChange={handlePriorityChange}
+              onChange={
+                isGhost ? handleGhostPriorityChange : handlePriorityChange
+              }
             />
           );
         },
@@ -214,7 +339,7 @@ export default function UserStoryList() {
 
           return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
         },
-        render(row) {
+        render(row, _, isGhost) {
           const handleSizeChange = async (size: Size) => {
             const rowIndex = userStoryData.indexOf(row);
             if (!userStoryData[rowIndex]) {
@@ -254,10 +379,28 @@ export default function UserStoryList() {
             });
           };
 
+          const handleGhostSizeChange = (size: Size) => {
+            updateGhostRow(row.id, (oldData) => ({
+              ...oldData,
+              size: size,
+            }));
+            generatedUserStories.current = generatedUserStories.current?.map(
+              (story) => {
+                if (story.id === row.id) {
+                  return {
+                    ...story,
+                    size,
+                  };
+                }
+                return story;
+              },
+            );
+          };
+
           return (
             <SizePillComponent
               currentSize={row.size}
-              callback={handleSizeChange}
+              callback={isGhost ? handleGhostSizeChange : handleSizeChange}
             />
           );
         },
@@ -342,6 +485,13 @@ export default function UserStoryList() {
         multiselect
         deletable
         tableKey="user-stories-table"
+        ghostData={ghostData}
+        ghostRows={ghostRows}
+        setGhostRows={setGhostRows}
+        acceptGhosts={onAccept}
+        rejectGhosts={onReject}
+        ghostLoadingEstimation={5000}
+        rowClassName="h-12"
       />
     );
   };
@@ -353,12 +503,42 @@ export default function UserStoryList() {
     setShowDetail(true);
   };
 
+  const { mutateAsync: generateStories } =
+    api.userStories.generateUserStories.useMutation();
+
+  const generateUserStories = async (amount: number, prompt: string) => {
+    beginLoading(amount);
+
+    const generatedData = await generateStories({
+      amount,
+      prompt,
+      projectId: projectId as string,
+    });
+    generatedUserStories.current = generatedData.map((story, i) => ({
+      ...story,
+      id: i.toString(),
+    }));
+
+    const tableData = generatedData.map((data, i) => ({
+      id: i.toString(),
+      scrumId: undefined,
+      title: data.name,
+      epicScrumId: data.epic?.scrumId,
+      priority: data.priority,
+      size: (data.size as Size) ?? "M",
+      sprintNumber: undefined,
+      taskProgress: [0, 0] as [number, number],
+    }));
+
+    finishLoading(tableData);
+  };
+
   return (
     <>
       <div className="flex flex-1 flex-col items-start gap-3">
         <h1 className="text-3xl font-semibold">User Stories</h1>
 
-        <div className="flex w-full items-center gap-3 pb-2">
+        <div className="flex w-full items-center gap-1 pb-2">
           <SearchBar
             searchValue={searchValue}
             handleUpdateSearch={handleUpdateSearch}
@@ -367,6 +547,15 @@ export default function UserStoryList() {
           <PrimaryButton onClick={() => setShowNewStory(true)}>
             + New Story
           </PrimaryButton>
+          <AiGeneratorDropdown
+            singularLabel="story"
+            pluralLabel="stories"
+            onGenerate={generateUserStories}
+            disabled={generating}
+            alreadyGenerated={(ghostData?.length ?? 0) > 0}
+            onAcceptAll={onAcceptAll}
+            onRejectAll={onRejectAll}
+          />
         </div>
 
         {getTable()}

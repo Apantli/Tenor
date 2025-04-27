@@ -14,6 +14,7 @@ interface Props<I, T> {
   timeEstimate?: number;
   ghostRows: number;
   finishedLoading: boolean;
+  rowClassName?: string;
 }
 
 export default function LoadingGhostTableRows<
@@ -29,6 +30,7 @@ export default function LoadingGhostTableRows<
   deletable,
   columnWidths,
   finishedLoading,
+  rowClassName,
 }: Props<I, T>) {
   const [progress, setProgress] = useState(0);
   const [hide, setHide] = useState(false);
@@ -71,6 +73,7 @@ export default function LoadingGhostTableRows<
           deletable={deletable}
           multiselect={multiselect}
           progress={progress}
+          className={rowClassName}
         />
       ))}
     </div>

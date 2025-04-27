@@ -30,7 +30,7 @@ function TableActions<I extends string | number>({
   return (
     <div
       className={cn(
-        "pointer-events-none flex items-center justify-end gap-3 opacity-0 transition",
+        "pointer-events-none flex items-center justify-end gap-2 pr-3 opacity-0 transition",
         {
           "pointer-events-auto opacity-100":
             selection.size > 0 || showGhostActions,
@@ -91,7 +91,7 @@ function TableActions<I extends string | number>({
           </button>
         )}
       {showGhostActions && (
-        <>
+        <div className="flex items-center gap-4">
           <button
             data-tooltip-id="tooltip"
             data-tooltip-content="Reject all"
@@ -108,7 +108,7 @@ function TableActions<I extends string | number>({
           >
             <AcceptIcon fontSize="small" />
           </button>
-        </>
+        </div>
       )}
     </div>
   );

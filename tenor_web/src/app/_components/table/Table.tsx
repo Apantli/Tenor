@@ -71,6 +71,7 @@ interface TableProps<I, T> {
   className?: ClassNameValue;
   emptyMessage?: string;
   tableKey: string; // Unique key for the table used for storing things like column widths
+  rowClassName?: string;
 }
 
 function TableInternal<
@@ -93,6 +94,7 @@ function TableInternal<
   className,
   emptyMessage,
   tableKey,
+  rowClassName,
 }: TableProps<I, T>) {
   // Make sure the tableKey exists
   if (!tableKey) {
@@ -266,10 +268,7 @@ function TableInternal<
 
   useEffect(() => {
     // Triggers when ghost rows are shown
-    if (
-      (showGhostRows || (ghostData !== undefined && ghostData.length > 0)) &&
-      ghostDivRef.current
-    ) {
+    if (showGhostRows && ghostDivRef.current) {
       const height = ghostDivRef.current?.getBoundingClientRect().height;
       ghostDivRef.current.style.height = "0px";
 
@@ -387,6 +386,7 @@ function TableInternal<
               extraOptions={extraOptions}
               multiselect={multiselect}
               timeEstimate={ghostLoadingEstimation}
+              rowClassName={rowClassName}
             />
           )}
           {ghostData?.map((value) => (
@@ -400,6 +400,10 @@ function TableInternal<
               columnWidths={columnWidths}
               onAccept={() => acceptGhost(value.id)}
               onReject={() => rejectGhost(value.id)}
+              className={cn(
+                rowClassName,
+                "last:border-b-2 last:border-app-secondary",
+              )}
             />
           ))}
         </div>
@@ -417,9 +421,10 @@ function TableInternal<
             onDelete={onDelete}
             scrollContainerRef={scrollContainerRef}
             columnWidths={columnWidths}
+            className={rowClassName}
           />
         ))}
-        {filteredData.length === 0 && emptyMessage && (
+        {filteredData.length === 0 && !showGhostRows && emptyMessage && (
           <div className="flex w-full items-center justify-center border-b border-app-border p-3 text-gray-500">
             <span className="text-base">{emptyMessage}</span>
           </div>

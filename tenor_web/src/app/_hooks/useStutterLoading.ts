@@ -69,15 +69,22 @@ export default function useStutterLoading({
   const phaseStartRef = useRef<number | null>(null);
 
   const hangAtValue = (hangAt ?? 90) + Math.random() * 10 - 5;
+  const hasFinished = useRef(false);
 
   useEffect(() => {
     phasesRef.current = buildPhases(duration);
     phaseIdxRef.current = 0;
     phaseStartRef.current = null;
+    hasFinished.current = false;
+    update(0);
 
     let rafId: number;
 
     const loop = (time: number): void => {
+      if (hasFinished.current) {
+        cancelAnimationFrame(rafId);
+        return;
+      }
       const phases = phasesRef.current;
       const idx = phaseIdxRef.current;
       const phase = phases[idx];
@@ -112,6 +119,7 @@ export default function useStutterLoading({
   }, []);
 
   return () => {
+    hasFinished.current = true;
     update(100);
   };
 }

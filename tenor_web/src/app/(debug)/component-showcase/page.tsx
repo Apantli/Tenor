@@ -269,7 +269,7 @@ function TableShowcase() {
   const generationTime = 5000;
 
   // Helper hook to manage the state of the ghost items
-  const [
+  const {
     onAccept,
     onReject,
     beginLoading,
@@ -277,7 +277,7 @@ function TableShowcase() {
     ghostData,
     ghostRows,
     setGhostRows,
-  ] = useGhostTableStateManager<ExampleUser, number>((ids: number[]) => {
+  } = useGhostTableStateManager<ExampleUser, number>((ids: number[]) => {
     // Use the callback to perform the action you want when the user accepts the ghosts
     const newData = data.concat(
       dummyGhostData.filter((ghost) => ids.includes(ghost.id)),
