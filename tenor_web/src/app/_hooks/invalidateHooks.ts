@@ -44,7 +44,6 @@ export const useInvalidateQueriesAllUserStories = () => {
   };
 };
 
-// Some queries fetch all always, so we need to invalidate them all
 export const useInvalidateQueriesUserStoriesDetails = () => {
   const utils = api.useUtils();
   return async (projectId: string, userStoryIds: string[]) => {
