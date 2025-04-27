@@ -2,7 +2,9 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
 import { getTasksFromProject } from "./tasks";
-import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { StatusTag, WithId } from "~/lib/types/firebaseSchemas";
+import { getProjectSettingsRef } from "./settings";
+import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
 
 export interface CardItem {
   id: string;
@@ -43,7 +45,7 @@ const getAllStatuses = async (
   });
   console.log("Raw Statuses", docs);
 
-  return docs as WithId<Tag>[];
+  return docs as WithId<StatusTag>[];
 };
 
 export const kanbanRouter = createTRPCRouter({
@@ -84,15 +86,18 @@ export const kanbanRouter = createTRPCRouter({
         (column) => column.deleted === false,
       );
 
-      const columnsWithItems = activeColumns.map((column) => ({
-        id: column.id,
-        name: column.name,
-        color: column.color,
+      const columnsWithItems = activeColumns
+        .map((column) => ({
+          id: column.id,
+          name: column.name,
+          color: column.color,
+          orderIndex: column.orderIndex,
 
-        itemIds: items
-          .filter((item) => item.columnId === column.id)
-          .map((item) => item.id),
-      }));
+          itemIds: items
+            .filter((item) => item.columnId === column.id)
+            .map((item) => item.id),
+        }))
+        .sort((a, b) => (a.orderIndex < b.orderIndex ? -1 : 1));
 
       return {
         columns: columnsWithItems,
@@ -112,21 +117,33 @@ export const kanbanRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, name, color, marksTaskAsDone } = input;
 
-      const statusRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("settings")
-        .doc("settings")
-        .collection("statusTypes");
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+
+      const statusCollectionRef = projectSettingsRef.collection("statusTypes");
+
+      const statusTypes = await statusCollectionRef.get();
+
+      const statusTypesData = statusTypes.docs.map((doc) => ({
+        id: doc.id,
+        ...StatusTagSchema.parse(doc.data()),
+      }));
+      const biggestOrderIndex = Math.max(
+        ...statusTypesData.map((status) => status.orderIndex),
+        0,
+      );
 
       const newStatus = {
         name,
         color: color.toUpperCase(),
         marksTaskAsDone,
         deleted: false,
+        orderIndex: biggestOrderIndex + 1,
       };
 
-      const docRef = await statusRef.add(newStatus);
+      const docRef = await statusCollectionRef.add(newStatus);
       return {
         id: docRef.id,
         ...newStatus,

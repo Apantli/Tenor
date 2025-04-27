@@ -42,7 +42,7 @@ export default function CreateKanbanListPopup({
     marksTaskAsDone: boolean;
   }>({
     name: "",
-    color: generateRandomColor(), // TODO: Test this
+    color: generateRandomColor(),
     marksTaskAsDone: false,
   });
 
