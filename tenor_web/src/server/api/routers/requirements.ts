@@ -352,6 +352,7 @@ export const requirementsRouter = createTRPCRouter({
         .collection("projects")
         .doc(projectId)
         .collection("requirements")
+        .where("deleted", "==", false)
         .get();
       const requirementsData = requirements.docs.map((doc) => ({
         id: doc.id,
@@ -364,6 +365,7 @@ export const requirementsRouter = createTRPCRouter({
         ctx.firestore,
       )
         .collection("requirementFocus")
+        .where("deleted", "==", false)
         .get();
       const allRequirementFocusTagsData: Tag[] =
         allRequirementFocusTags.docs.map((doc) => ({
@@ -419,7 +421,7 @@ ${requirementFocusContext}
 
 ${passedInPrompt}
 
-Generate ${amount} requirements for a software project about an application for food markets. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). For the requirement type, always use one of the available types.
+Generate ${amount} requirements for a software project about an application for food markets. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). Be as vague as possible with the requirement focus so that it can apply to multiple requirements, for example a good requirement focus would be 'Main functionality' or 'Added value'. For the requirement type, always use one of the available types.
       `;
 
       const generatedRequirements = await askAiToGenerate(
