@@ -658,6 +658,11 @@ export default function RequirementsTable() {
       requirementFocusId: req.requirementFocusId!,
     }));
 
+    // New requirement focus might have been created, so we need to invalidate the query
+    await utils.requirements.getRequirementFocusTags.invalidate({
+      projectId: params.projectId as string,
+    });
+
     finishLoading(tableData);
   };
 
