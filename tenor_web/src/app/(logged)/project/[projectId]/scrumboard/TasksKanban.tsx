@@ -30,6 +30,7 @@ import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
 
 export default function TasksKanban() {
@@ -38,6 +39,7 @@ export default function TasksKanban() {
   const utils = api.useUtils();
   const formatTaskScrumId = useFormatTaskScrumId();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
   // TRPC
@@ -156,7 +158,9 @@ export default function TasksKanban() {
 
     if (updateOperationsInProgress == 1) {
       await invalidateQueriesAllTasks(projectId as string);
+      await invalidateQueriesTaskDetails(projectId as string, itemIds);
       await invalidateQueriesAllUserStories(projectId as string);
+      console.log("invalidateHooks");
       // TODO: Invalidate queries for issues and generic items
     }
 

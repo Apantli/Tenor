@@ -23,7 +23,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import LoadingSpinner from "../LoadingSpinner";
 import {
   useInvalidateQueriesAllUserStories,
-  useInvalidateQuerieUserStoriesDetails,
+  useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
@@ -44,7 +44,7 @@ export default function UserStoryList() {
   const confirm = useConfirmation();
 
   const invalidateQuerieUserStoriesDetails =
-    useInvalidateQuerieUserStoriesDetails();
+    useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
   // TRPC
