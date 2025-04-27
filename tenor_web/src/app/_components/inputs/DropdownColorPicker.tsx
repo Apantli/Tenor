@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { cn } from "~/lib/utils";
-import { HexAlphaColorPicker, HexColorInput } from "react-colorful";
+import { HexColorInput, HexColorPicker } from "react-colorful";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Dropdown, { DropdownItem } from "../Dropdown";
 
@@ -54,7 +54,7 @@ export default function DropdownColorPicker({
       >
         <DropdownItem>
           <>
-            <HexAlphaColorPicker
+            <HexColorPicker
               color={value}
               onChange={(color) => onChange(color.toUpperCase())}
               className="custom-layout"
