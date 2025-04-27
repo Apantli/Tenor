@@ -57,7 +57,16 @@ export const kanbanRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const tasks = await getTasksFromProject(ctx.firestore, input.projectId);
       const items = tasks.map((task) => {
-        const { id, scrumId, name, description, size, statusId, itemType, itemId } = task;
+        const {
+          id,
+          scrumId,
+          name,
+          description,
+          size,
+          statusId,
+          itemType,
+          itemId,
+        } = task;
         return {
           id,
           scrumId,
@@ -66,7 +75,7 @@ export const kanbanRouter = createTRPCRouter({
           size,
           tags: [],
           columnId: statusId,
-          itemType, 
+          itemType,
           itemId,
         } as CardTask;
       });

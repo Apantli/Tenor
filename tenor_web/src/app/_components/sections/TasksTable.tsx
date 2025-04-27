@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
@@ -17,7 +17,6 @@ import { WithId, type Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
 import { usePopupVisibilityState } from "../Popup";
-import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
@@ -30,6 +29,7 @@ interface Props {
   setSelectedTaskId: (taskId: string) => void;
   setShowTaskDetail: (show: boolean) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
+  taskIdToOpenImmediately?: string;
 }
 
 export default function TasksTable({
@@ -39,13 +39,12 @@ export default function TasksTable({
   itemType,
   setShowAddTaskPopup,
   setUnsavedTasks,
+  taskIdToOpenImmediately,
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
-
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
   const {
@@ -75,6 +74,14 @@ export default function TasksTable({
       assignee: task.assignee,
     }),
   );
+
+  // Show task detail if taskIdToOpenImmediately is provided
+  useEffect(() => {
+    if (!taskIdToOpenImmediately) return;
+    if (!transformedTasks.some((task) => task.id === taskIdToOpenImmediately)) return;
+    setSelectedTaskId(taskIdToOpenImmediately);
+    setShowTaskDetail(true);
+  }, [taskIdToOpenImmediately, tasksTableData]);
 
   const filteredTasks = transformedTasks
     .filter((task) => {
@@ -278,8 +285,17 @@ export default function TasksTable({
         }),
       ),
     );
-    // TODO: Invalidate user stories too
-    await invalidateQueriesAllTasks(projectId as string);
+
+    await utils.tasks.getTasksTableFriendly.invalidate({
+      projectId: projectId as string,
+      itemId: itemId,
+    });
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId as string,
+    });
 
     return true;
   };

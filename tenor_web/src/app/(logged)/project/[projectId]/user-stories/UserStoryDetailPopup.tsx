@@ -100,14 +100,6 @@ export default function UserStoryDetailPopup({
     }
   }, [userStoryDetail, editMode]);
 
-  // Show task detail if taskIdToOpenImmediately is provided
-  useEffect(() => {
-    if (!taskIdToOpenImmediately) return;
-    if (!transformedTasks.some((task) => task.id === taskIdToOpenImmediately)) return;
-    setSelectedTaskId(taskIdToOpenImmediately);
-    setShowTaskDetail(true);
-  }, [taskIdToOpenImmediately, tasksTableData]);
-
   useEffect(() => {
     if (error) {
       setShowDetail(false);
@@ -405,6 +397,7 @@ export default function UserStoryDetailPopup({
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}
             setUnsavedTasks={setUnsavedTasks}
+            taskIdToOpenImmediately={taskIdToOpenImmediately}
           />
         </div>
       )}

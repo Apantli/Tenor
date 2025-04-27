@@ -4,10 +4,15 @@ import { api } from "~/trpc/react";
 
 export const useInvalidateQueriesAllTasks = () => {
   const utils = api.useUtils();
-  return async (projectId: string) => {
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId,
-    });
+  return async (projectId: string, parentItemIds: string[] = []) => {
+    await Promise.all(
+      parentItemIds.map(async (parentId) => {
+        await utils.tasks.getTasksTableFriendly.invalidate({
+          projectId: projectId,
+          itemId: parentId,
+        });
+      }),
+    );
 
     await utils.kanban.getTasksForKanban.invalidate({
       projectId: projectId,
