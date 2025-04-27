@@ -629,7 +629,7 @@ export default function RequirementsTable() {
         setGhostRows={setGhostRows}
         acceptGhosts={onAccept}
         rejectGhosts={onReject}
-        ghostLoadingEstimation={5000}
+        ghostLoadingEstimation={18000}
         rowClassName="h-12"
       />
     );
