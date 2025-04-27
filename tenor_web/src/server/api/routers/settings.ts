@@ -1,6 +1,6 @@
 import { SettingsSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import z from "zod";
+import z, { number } from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
 
@@ -150,6 +150,36 @@ const settingsRouter = createTRPCRouter({
       const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
+    }),
+  fetchDefaultSprintDuration: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSprintDuration = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .select("sprintDuration")
+        .limit(1)
+        .get();
+
+      return (
+        (projectSprintDuration.docs[0]?.data().sprintDuration as number) ?? 7
+      );
+    }),
+  updateDefaultSprintDuration: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        days: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, days } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      await settingsRef.update({
+        sprintDuration: days,
+      });
+      return { success: true };
     }),
 });
 

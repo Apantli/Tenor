@@ -117,7 +117,7 @@ export default function ProjectGeneralSettings() {
           </PrimaryButton>
         )}
       </div>
-      <p className="mb-2 text-lg font-bold">Project icon</p>
+      <p className="mb-2 text-lg font-semibold">Project icon</p>
       {project ? (
         <div className="flex h-full flex-col gap-y-8">
           <div className="flex flex-row gap-x-3">
@@ -146,14 +146,14 @@ export default function ProjectGeneralSettings() {
           <InputTextField
             label="Project Name"
             className="mt-auto w-full"
-            labelClassName="text-lg font-bold"
+            labelClassName="text-lg font-semibold"
             value={editForm.name}
             name="name"
             onChange={handleChange}
           />
           <InputTextAreaField
             label="Project Description"
-            labelClassName="text-lg font-bold"
+            labelClassName="text-lg font-semibold"
             className="mt-auto h-[115px] min-h-16 w-full"
             value={editForm.description}
             name="description"
