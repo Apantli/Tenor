@@ -206,9 +206,11 @@ export default function TasksTable({
           <StatusPicker
             status={row.status}
             onChange={async (status) => {
-              isGhost
-                ? onGhostTaskStatusChange(status)
-                : onTaskStatusChange(row.id, status);
+              if (isGhost) {
+                onGhostTaskStatusChange(status);
+              } else {
+                await onTaskStatusChange(row.id, status);
+              }
             }}
             className="w-full"
           />

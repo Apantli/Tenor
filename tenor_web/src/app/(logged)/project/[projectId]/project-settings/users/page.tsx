@@ -18,7 +18,8 @@ export default function ProjectUsers() {
   const { mutateAsync: updateTeamMemberRole } =
     api.users.updateUserRole.useMutation();
 
-  let userTypesList = useMemo(() => {
+  // FIXME: This is not used
+  const userTypesList = useMemo(() => {
     if (userTypes && !userTypes.includes(emptyRole)) {
       userTypes.push(emptyRole);
     }
@@ -51,7 +52,7 @@ export default function ProjectUsers() {
     // Add to database
     await addTeamMember({
       projectId: projectId as string,
-      userId: user.id as string,
+      userId: user.id,
     });
     await refetch();
   };
