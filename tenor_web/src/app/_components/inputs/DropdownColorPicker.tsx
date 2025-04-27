@@ -100,7 +100,6 @@ export default function DropdownColorPicker({
             onChange={(color) => onChange(color)}
             prefixed={true}
             className="block w-[200px] rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500"
-            alpha={true}
           />
         </DropdownItem>
       </Dropdown>
