@@ -32,6 +32,10 @@ import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
+import {
+  useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesUserStoriesDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -49,6 +53,10 @@ export default function UserStoryList() {
   const formatEpicScrumId = useFormatEpicScrumId();
   const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
+
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesUserStoriesDetails =
+    useInvalidateQueriesUserStoriesDetails();
 
   // TRPC
   const utils = api.useUtils();
@@ -284,11 +292,10 @@ export default function UserStoryList() {
               priorityId: tag.id,
             });
 
-            await refetchUS();
-            await utils.userStories.getUserStoryDetail.invalidate({
-              projectId: projectId as string,
-              userStoryId: row.id,
-            });
+            await invalidateQueriesAllUserStories(projectId as string);
+            await invalidateQueriesUserStoriesDetails(projectId as string, [
+              row.id,
+            ]);
           };
 
           const handleGhostPriorityChange = (tag: Tag) => {
@@ -369,14 +376,10 @@ export default function UserStoryList() {
               size: size,
             });
 
-            await refetchUS();
-            await utils.userStories.getUserStoryDetail.invalidate({
-              projectId: projectId as string,
-              userStoryId: row.id,
-            });
-            await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-              projectId: projectId as string,
-            });
+            await invalidateQueriesAllUserStories(projectId as string);
+            await invalidateQueriesUserStoriesDetails(projectId as string, [
+              row.id,
+            ]);
           };
 
           const handleGhostSizeChange = (size: Size) => {
@@ -471,7 +474,7 @@ export default function UserStoryList() {
           }),
         ),
       );
-      await refetchUS();
+      await invalidateQueriesAllUserStories(projectId as string);
       return true;
     };
 
@@ -497,7 +500,7 @@ export default function UserStoryList() {
   };
 
   const onUserStoryAdded = async (userStoryId: string) => {
-    await refetchUS();
+    await invalidateQueriesAllUserStories(projectId as string);
     setShowNewStory(false);
     setSelectedUS(userStoryId);
     setShowDetail(true);
