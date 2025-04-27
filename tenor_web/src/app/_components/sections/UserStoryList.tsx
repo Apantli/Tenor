@@ -43,7 +43,7 @@ export default function UserStoryList() {
   const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
 
-  const invalidateQuerieUserStoriesDetails =
+  const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
@@ -185,7 +185,7 @@ export default function UserStoryList() {
             });
 
             await invalidateQueriesAllUserStories(projectId as string);
-            await invalidateQuerieUserStoriesDetails(projectId as string, [
+            await invalidateQueriesUserStoriesDetails(projectId as string, [
               row.id,
             ]);
           };
@@ -249,7 +249,7 @@ export default function UserStoryList() {
             });
 
             await invalidateQueriesAllUserStories(projectId as string);
-            await invalidateQuerieUserStoriesDetails(projectId as string, [
+            await invalidateQueriesUserStoriesDetails(projectId as string, [
               row.id,
             ]);
           };
