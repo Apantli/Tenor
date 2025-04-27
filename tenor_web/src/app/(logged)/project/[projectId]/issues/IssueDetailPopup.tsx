@@ -168,16 +168,16 @@ export default function IssueDetailPopup({
       issueData: updatedIssue,
     });
 
-    // FIXME UNTIL TABLE FOR ISSUES IS DONE
-    // await utils.userStories.getUserStoriesTableFriendly.invalidate({
-    //   projectId: projectId as string,
-    // });
-    // await utils.userStories.getAllUserStoryPreviews.invalidate({
-    //   projectId: projectId as string,
-    // });
-    // await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-    //   projectId: projectId as string,
-    // });
+
+    await utils.userStories.getUserStoriesTableFriendly.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.userStories.getAllUserStoryPreviews.invalidate({
+      projectId: projectId as string,
+    });
+    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      projectId: projectId as string,
+    });
 
     await refetch();
   };
@@ -235,16 +235,15 @@ export default function IssueDetailPopup({
         issueId: issueId,
       });
 
-      // FIXME UNTIL TABLE FOR ISSUES IS DONE
-      // await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      //   projectId: projectId as string,
-      // });
-      // await utils.userStories.getAllUserStoryPreviews.invalidate({
-      //   projectId: projectId as string,
-      // });
-      // await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-      //   projectId: projectId as string,
-      // });
+      await utils.userStories.getUserStoriesTableFriendly.invalidate({
+        projectId: projectId as string,
+      });
+      await utils.userStories.getAllUserStoryPreviews.invalidate({
+        projectId: projectId as string,
+      });
+      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+        projectId: projectId as string,
+      });
       setShowDetail(false);
     }
   };
@@ -409,7 +408,7 @@ export default function IssueDetailPopup({
           <TasksTable
             tasks={transformedTasks ?? []}
             itemId={issueId}
-            itemType="US"
+            itemType="IS"
             onTaskStatusChange={handleTaskStatusChange}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
@@ -430,7 +429,7 @@ export default function IssueDetailPopup({
         >
           <CreateTaskForm
             itemId={issueId}
-            itemType="US"
+            itemType="IS"
             onTaskAdded={() => setShowCreateTaskPopup(false)}
           />
         </SidebarPopup>

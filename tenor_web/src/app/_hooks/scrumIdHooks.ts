@@ -23,9 +23,6 @@ export const useFormatTaskScrumId = () => {
   return (scrumId: number) => `TS${String(scrumId).padStart(3, "0")}`;
 };
 
-export const useFormatIssueScrumId = () => {
-  return (scrumId: number) => `IS${String(scrumId).padStart(3, "0")}`;
-}
 export const useFormatTaskIssueId = () => {
   return (issueId: number) => `IS${String(issueId).padStart(3, "0")}`;
 };

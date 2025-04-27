@@ -1,16 +1,16 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { usePopupVisibilityState } from "../Popup";
-import { ChangeEventHandler, useEffect, useMemo, useState} from "react";
+import { ChangeEventHandler, useMemo, useState } from "react";
 import Table, { type TableColumns } from "../table/Table";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
 import { IssueCol } from "~/server/api/routers/issues";
-import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
+import {
+  useFormatTaskIssueId,
+} from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
-import { duration } from "@mui/material";
-import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import UserStoryPicker from "../specific-pickers/UserStoryPicker";
 import { ExistingUserStory } from "~/lib/types/detailSchemas";
@@ -23,49 +23,46 @@ import AssignUsersList from "../specific-pickers/AssignUsersList";
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function IssuesTable() {
+  
+  // Hooks
+  const params = useParams();
+  const { projectId } = useParams();
+  const [searchValue, setSearchValue] = useState("");
+
+  const [selectedIS, setSelectedIS] = useState<string>("");
   const [renderNewStory, showNewStory, setShowNewStory] =
     usePopupVisibilityState();
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
 
+  const formattedScrumId = useFormatTaskIssueId();
+
   const onIssueAdded = async (userStoryId: string) => {
-    // await refetchUS();
+    await refetchIssues();
     setShowNewStory(false);
-    // setSelectedUS(userStoryId);
-    // setShowDetail(true);
+    setSelectedIS(userStoryId);
+    setShowDetail(true);
   };
-  const { projectId } = useParams();
 
-  const { issueId } = useParams();
-
-  const utils = api.useUtils();
-
-  const [searchValue, setSearchValue] = useState("");
-
-  const { mutateAsync: updateIssue } = api.issues.modifyIssue.useMutation();
-  const { mutateAsync: updateIssueTags } = api.issues.modifyIssuesTags.useMutation();
-
-  const formattedScrumId = useFormatIssueScrumId();
-
-  const { mutateAsync: updateAssignUserStorie } =
-    api.issues.modifyIssuesRelatedUserStory.useMutation();
-
-
-  // Hooks
-  const params = useParams();
-  
   // TRPC
+  const utils = api.useUtils();
   const {
     data: issues,
     isLoading: isLoadingIssues,
     refetch: refetchIssues,
   } = api.issues.getIssuesTableFriendly.useQuery({
-    projectId: params.projectId as string
+    projectId: params.projectId as string,
   });
+  const { mutateAsync: updateIssueTags } =
+    api.issues.modifyIssuesTags.useMutation();
+
+  const { mutateAsync: updateAssignUserStorie } =
+    api.issues.modifyIssuesRelatedUserStory.useMutation();
+
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchValue(e.target.value);
-  }
+  };
 
   const filteredData = (issues ?? []).filter((issue) => {
     const lowerSearchValue = searchValue.toLowerCase();
@@ -74,56 +71,18 @@ export default function IssuesTable() {
       formattedScrumId(issue.scrumId).toLowerCase().includes(lowerSearchValue)
     );
   });
-    
-  const issueData = filteredData.sort((a, b) => 
-    a.scrumId < b.scrumId ? -1 : 1
-  )
 
-  const handleSave = async (updatedData: IssueCol) => {
-    const updatedIssue = {
-      name: updatedData.name,
-      description: updatedData.description,
-      priorityId: updatedData?.priority?.id,
-      size: updatedData?.size,
-      relatedUserStoryId: updatedData?.relatedUserStory?.id ?? "",
-      tagIds:
-        updatedData?.tags
-          .map((tag) => tag.id)
-          .filter((tag) => tag !== undefined) ?? [],
-      stepsToRecreate: updatedData?.stepsToRecreate ?? "",
-      sprintId: updatedData?.sprint?.id ?? "",
-    };
+  const issueData = filteredData.sort((a, b) =>
+    a.scrumId < b.scrumId ? -1 : 1,
+  );
 
-    // Optimistically update the query data
-    utils.issues.getIssuesTableFriendly.setData(
-      {
-        projectId: projectId as string,
-      },
-      (oldData) => {
-        if (!oldData) return undefined;
-        return {
-          ...oldData,
-          ...updatedData,
-        };
-      },
-    );
-
-    await updateIssue({
-      projectId: projectId as string,
-      issueId: issueId as string,
-      issueData: updatedIssue,
-    });
-
-    await refetchIssues();
-  }
-  const table = useMemo(() => {
-
+  const getTable = () => {
     if (issues === undefined || isLoadingIssues) {
       return (
         <div className="flex h-full w-full flex-1 items-start justify-center p-10">
           <LoadingSpinner color="primary" />
         </div>
-      )
+      );
     }
 
     const tableColumns: TableColumns<IssueCol> = {
@@ -137,28 +96,40 @@ export default function IssuesTable() {
         sortable: true,
         render(row) {
           return (
-          <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
-            {formattedScrumId(Number(row.scrumId))}
-          </button>
+            <button
+              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              onClick={() => {
+                setSelectedIS(row.id);
+                setShowDetail(true);
+              }}
+            >
+              {formattedScrumId(row.scrumId)}
+            </button>
           );
         },
       },
       name: {
         label: "Title",
-        width: 500,
+        width: 650,
         sortable: true,
         render(row) {
           return (
-            <button className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline">
+            <button
+              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              onClick={() => {
+                setSelectedIS(row.id);
+                setShowDetail(true);
+              }}
+            >
               {row.name}
             </button>
           );
-        }
+        },
       },
       description: {
         visible: false,
       },
-      priority: { 
+      priority: {
         label: "Priority",
         width: 120,
         sortable: true,
@@ -217,32 +188,33 @@ export default function IssuesTable() {
               priority={row.priority}
               onChange={handlePriorityChange}
             />
-          )
-        }
-       },
+          );
+        },
+      },
       relatedUserStory: {
         label: "Assigned user story",
-        width: 200,
-        sortable: true,
-        filterable: "list",
+        width: 400,
         render(row) {
-          const handleUserStoryChange = async (row: IssueCol, userStory?: ExistingUserStory) => {
+          const handleUserStoryChange = async (
+            row: IssueCol,
+            userStory?: ExistingUserStory,
+          ) => {
             if (!projectId || !row?.id) return;
-          
+
             try {
               await updateAssignUserStorie({
                 projectId: projectId as string,
                 issueId: row.id,
                 relatedUserStoryId: userStory?.id ?? "", // puede venir vacío si se remueve
               });
-          
+
               // Refetch o invalidate para reflejar los cambios
               await refetchIssues();
               await utils.issues.getIssueDetail.invalidate({
                 projectId: projectId as string,
                 issueId: row.id,
               });
-          
+
               console.log("User story updated");
             } catch (error) {
               console.log("Failed to update user story");
@@ -251,7 +223,7 @@ export default function IssuesTable() {
           };
           console.log("row", row);
           return (
-            <UserStoryPicker 
+            <UserStoryPicker
               userStory={row.relatedUserStory}
               onChange={(userStory) => {
                 handleUserStoryChange(row, userStory).catch((err) => {
@@ -264,7 +236,7 @@ export default function IssuesTable() {
       },
       size: {
         label: "Size",
-        width: 120,
+        width: 100,
         sortable: true,
         filterable: "list",
         filterValue(row) {
@@ -342,7 +314,7 @@ export default function IssuesTable() {
       },
     };
     return (
-      <Table 
+      <Table
         className={cn("w-full", heightOfContent)}
         data={issueData}
         columns={tableColumns}
@@ -352,7 +324,7 @@ export default function IssuesTable() {
         tableKey="issues-table"
       />
     );
-  }, [issueData, isLoadingIssues]);
+  };
 
   return (
     <div className="flex flex-1 flex-col items-start gap-3">
@@ -363,28 +335,22 @@ export default function IssuesTable() {
             <SearchBar
               placeholder="Find a issue by title or id..."
               searchValue={searchValue}
-              handleUpdateSearch={(e) => setSearchValue(e.target.value)}
+              handleUpdateSearch={handleUpdateSearch}
             />
           </div>
           <PrimaryButton onClick={() => setShowNewStory(true)}>
-            + New Story
+            + New Issue
           </PrimaryButton>
         </div>
       </div>
 
-      {table}
+      {getTable()}
 
-      <PrimaryButton onClick={() => setShowDetail(true)}>
-        Edit Issue
-      </PrimaryButton>
-
-      {/* FIXME Testing issue inside http://tenor.dev/project/PxeyrC2a7Ymix2Y7pzFx/issues */}
-      {/* TODO Delete once table is created */}
       {renderDetail && (
         <IssueDetailPopup
           showDetail={showDetail}
           setShowDetail={setShowDetail}
-          issueId={"o9oghXMHVueESQNv9jnN"}
+          issueId={selectedIS}
         />
       )}
 
@@ -393,8 +359,9 @@ export default function IssuesTable() {
           onIssueAdded={onIssueAdded}
           showPopup={showNewStory}
           setShowPopup={setShowNewStory}
+          
         />
       )}
     </div>
-  )
+  );
 }

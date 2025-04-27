@@ -15,6 +15,10 @@ export const getProjectSettingsRef = (
     .doc("settings");
 };
 
+export const getProjectRef = (projectId: string, firestore: Firestore) => {
+  return firestore.collection("projects").doc(projectId);
+};
+
 const getProjectSettings = async (projectId: string, firestore: Firestore) => {
   const settings = await getProjectSettingsRef(projectId, firestore).get();
 
