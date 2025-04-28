@@ -28,6 +28,7 @@ import {
 import { TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { console } from "inspector";
 import * as admin from "firebase-admin";
+import { dbAdmin } from "~/utils/firebaseAdmin";
 
 // Asegúrate de inicializar el admin SDK si no lo has hecho aún
 if (!admin.apps.length) {
@@ -58,22 +59,31 @@ const getIssuesFromProject = async (
   dbAdmin: FirebaseFirestore.Firestore,
   projectId: string,
 ) => {
-  const issueRef = dbAdmin
-    .collection(`projects/${projectId}/issues`)
-    .orderBy("scrumId", "asc");
-  const issueSnapshot = await issueRef.get();
+  try {
+    const issueCollectionRef = dbAdmin
+      .collection(`projects/${projectId}/issues`)
+      .orderBy("scrumId", "desc");
 
-  const docs = issueSnapshot.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...doc.data(),
-    };
-  });
+    const issueCollectionSnapshot = await issueCollectionRef.get();
 
-  const issues: WithId<Issue>[] = docs.filter((issues): issues is WithId<Issue> => issues !== null)
-  
-  return issues;
+    const issues: WithId<Issue>[] = [];
+      issueCollectionSnapshot.forEach((doc) => {
+        const data = doc.data() as Issue;
+        if (data.deleted !== true) {
+          issues.push({ id: doc.id, ...data });
+        }
+      });
+
+    return issues;
+  } catch (err) {
+    console.error("Error fetching issues:", err);
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "Error fetching issues from the database",
+    });
+  }
 };
+
 
 const getUserStory = async (
   projectRef: FirebaseFirestore.DocumentReference,
@@ -86,16 +96,23 @@ const getUserStory = async (
   ) {
     return undefined;
   }
-  
-  const userStory = await projectRef
+
+  const userStoriesRef = projectRef
     .collection("userStories")
-    .doc(userStoryId)
-    .get();
-  if (!userStory.exists) {
+    .where("deleted", "==", false);
+
+  const userStorySnapshot = await userStoriesRef.get();
+  
+
+  const userStoryDoc = userStorySnapshot.docs.find(
+    (doc) => doc.id === userStoryId
+  );
+
+  if (!userStoryDoc) {
     return undefined;
   }
 
-  return { id: userStory.id, ...ExistingUserStorySchema.parse(userStory.data()) } as ExistingUserStory;
+  return { id: userStoryDoc.id, ...ExistingUserStorySchema.parse(userStoryDoc.data()) } as ExistingUserStory;
 };
   
 const getTasksAssignUsers = async (
@@ -128,7 +145,6 @@ const getTasksAssignUsers = async (
         return undefined;
       }
 
-      // Utilizar firebaseAdmin para obtener los detalles del usuario
       try {
         const userRecord = await admin.auth().getUser(userId);
         return {
@@ -153,11 +169,13 @@ const getTasksAssignUsers = async (
   return uniqueUsers;
 };
 
+
 export const issuesRouter = createTRPCRouter({
   getIssuesTableFriendly: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       try {
+
         const rawIssues = await getIssuesFromProject(
           ctx.firestore,
           input.projectId,
@@ -172,50 +190,45 @@ export const issuesRouter = createTRPCRouter({
 
         const fixedData = await Promise.all(
           rawIssues.map(async (issue) => {
-          const rawUsers = await getTasksAssignUsers(
-            ctx.firestore,
-            input.projectId,
-            issue.taskIds ?? []
-          );
+          try {
+
+            const rawUsers = await getTasksAssignUsers(
+              ctx.firestore,
+              input.projectId,
+              issue.taskIds ?? []
+            );
       
-          const assignUsers = rawUsers
-            .filter(Boolean)
-            .map((user) => ({
-              uid: user.id,
-              displayName: user.displayName,
-              photoURL: user.photoURL,
-          }));
+            const assignUsers = rawUsers
+              .filter(Boolean)
+              .map((user) => ({
+                uid: user.id,
+                displayName: user.displayName,
+                photoURL: user.photoURL,
+            }));
 
-            // Log para verificar el contenido de cada IssueCol
-            console.log("Processed IssueCol:", {
-              id: issue.id,
-              scrumId: issue.scrumId,
-              name: issue.name,
-              description: issue.description,
-              priority: await getPriorityTag(settingsRef, issue.  priorityId),
-              relatedUserStory: issue.relatedUserStoryId
-                ? await getUserStory(projectRef, issue. relatedUserStoryId)
-                : undefined,
-              assignUsers,
-              size: issue.size
-            });
+              const priority = await getPriorityTag(settingsRef, issue.priorityId);
+
+              const relatedUserStory = issue.relatedUserStoryId
+              ? await getUserStory(projectRef, issue.relatedUserStoryId)
+              : undefined;
     
-            return {
-              id: issue.id,
-              scrumId: issue.scrumId,
-              name: issue.name,
-              description: issue.description,
-              priority: await getPriorityTag(settingsRef, issue.priorityId),
-              relatedUserStory: issue.relatedUserStoryId
-                ? await getUserStory(projectRef, issue.relatedUserStoryId)
-                : undefined,
-            assignUsers,
-              size: issue.size
-            };
-          }),
+              return {
+                id: issue.id,
+                scrumId: issue.scrumId,
+                name: issue.name,
+                description: issue.description,
+                priority,
+                relatedUserStory,
+                assignUsers,
+                size: issue.size
+              };
+            }
+            catch (err){
+              console.error("Error processing issue:", issue.id, err);
+              throw err;  // Propagar el error hacia el bloque catch principal), 
+            }
+          })
         );
-
-        console.log("Final Issues Col:", fixedData);
 
         return fixedData as IssueCol[];
       } catch (err) {

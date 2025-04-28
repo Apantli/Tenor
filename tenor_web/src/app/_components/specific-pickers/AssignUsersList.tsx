@@ -9,14 +9,10 @@ interface User {
 
 interface Props {
   users?: User[];
-  onChange: (users: User[]) => void;
-  allUsers: User[];
 }
 
 export default function AssignUsersList({
   users,
-  onChange,
-  allUsers,
 }: Props) {
   const [selectedUsers, setSelectedUsers] = React.useState<User[]>([]);
 

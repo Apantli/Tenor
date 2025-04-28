@@ -19,6 +19,7 @@ import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDet
 import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
 import SearchBar from "../SearchBar";
 import AssignUsersList from "../specific-pickers/AssignUsersList";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -35,6 +36,8 @@ export default function IssuesTable() {
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
 
   const formattedScrumId = useFormatTaskIssueId();
+
+  const confirm = useConfirmation();
 
   const onIssueAdded = async (userStoryId: string) => {
     await refetchIssues();
@@ -58,6 +61,7 @@ export default function IssuesTable() {
   const { mutateAsync: updateAssignUserStorie } =
     api.issues.modifyIssuesRelatedUserStory.useMutation();
 
+  const { mutateAsync: deleteIssue } = api.issues.deleteIssue.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -319,18 +323,65 @@ export default function IssuesTable() {
           return (
             <AssignUsersList 
               users={row.assignUsers}
-              onChange={() => {}}
-              allUsers={[]}
             />
           );
         },
       },
     };
+
+    const handleDelete = async (ids: string[], callback: (del: boolean) => void) => {
+      const confirmMessage = ids.length > 1 ? "issues" : "issue";
+
+      if (
+        !(await confirm(
+          `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
+          "This action is not revertible.",
+          `Delete ${confirmMessage}`,
+        ))
+      ) {
+        callback(false);
+        return;
+      }
+
+      callback(true); // call the callback as soon as possible
+
+      const newData = issueData.filter((issue) => !ids.includes(issue.id));
+
+      // Uses optimistic update to update the size of the user story
+
+      await utils.issues.getIssuesTableFriendly.cancel({
+        projectId: projectId as string,
+      });
+
+      utils.issues.getIssuesTableFriendly.setData(
+        { projectId: projectId as string },
+        newData,
+      );
+
+      // Deltes in database
+      await Promise.all(
+        ids.map((id) => 
+          deleteIssue({
+            projectId: projectId as string,
+            issueId: id,
+          }),
+        ),
+      );
+
+      await refetchIssues();
+      await utils.issues.getIssueDetail.invalidate({
+        projectId: projectId as string,
+        issueId: ids[0],
+      });
+
+      return true;
+    }
     return (
       <Table
         className={cn("w-full", heightOfContent)}
         data={issueData}
         columns={tableColumns}
+        onDelete={handleDelete}
         emptyMessage="No issues found"
         multiselect
         deletable
