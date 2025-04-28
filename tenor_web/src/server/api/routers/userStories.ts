@@ -30,6 +30,7 @@ import {
   collectBacklogTagsContext,
   collectPriorityTagContext,
 } from "~/utils/aiContext";
+import { FieldValue } from "firebase-admin/firestore";
 
 export interface UserStoryCol {
   id: string;
@@ -140,6 +141,29 @@ export const userStoriesRouter = createTRPCRouter({
             ...input.userStoryData,
             scrumId: userStoryCount.data().count + 1,
           });
+
+        // Add dependency and requiredBy references
+        await Promise.all(
+          input.userStoryData.dependencyIds.map(async (dependencyId) => {
+            await ctx.firestore
+              .collection("projects")
+              .doc(input.projectId)
+              .collection("userStories")
+              .doc(dependencyId)
+              .update({ requiredByIds: FieldValue.arrayUnion(userStory.id) });
+          }),
+        );
+        await Promise.all(
+          input.userStoryData.requiredByIds.map(async (requiredById) => {
+            await ctx.firestore
+              .collection("projects")
+              .doc(input.projectId)
+              .collection("userStories")
+              .doc(requiredById)
+              .update({ dependencyIds: FieldValue.arrayUnion(userStory.id) });
+          }),
+        );
+
         return { success: true, userStoryId: userStory.id };
       } catch (err) {
         console.log("Error creating user story:", err);
@@ -387,8 +411,89 @@ export const userStoriesRouter = createTRPCRouter({
         .doc(projectId)
         .collection("userStories")
         .doc(userStoryId);
+
+      const oldUserStoryData = UserStorySchema.parse(
+        (await userStoryRef.get()).data(),
+      );
+
+      // Check the difference in dependency and requiredBy arrays
+      const addedDependencies = userStoryData.dependencyIds.filter(
+        (dep) => !oldUserStoryData.dependencyIds.includes(dep),
+      );
+      const removedDependencies = oldUserStoryData.dependencyIds.filter(
+        (dep) => !userStoryData.dependencyIds.includes(dep),
+      );
+      const addedRequiredBy = userStoryData.requiredByIds.filter(
+        (req) => !oldUserStoryData.requiredByIds.includes(req),
+      );
+      const removedRequiredBy = oldUserStoryData.requiredByIds.filter(
+        (req) => !userStoryData.requiredByIds.includes(req),
+      );
+
+      const updateDependency = (
+        userStoryId: string,
+        otherUserStoryId: string,
+        operation: "add" | "remove",
+        field: "requiredByIds" | "dependencyIds",
+      ) => {
+        const updateRef = ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("userStories")
+          .doc(userStoryId);
+        if (operation === "add") {
+          return updateRef.update({
+            [field]: FieldValue.arrayUnion(otherUserStoryId),
+          });
+        } else {
+          return updateRef.update({
+            [field]: FieldValue.arrayRemove(otherUserStoryId),
+          });
+        }
+      };
+
+      // Update the related user stories
+      await Promise.all(
+        addedDependencies.map(async (dependencyId) => {
+          updateDependency(dependencyId, userStoryId, "add", "requiredByIds");
+        }),
+      );
+      await Promise.all(
+        removedDependencies.map(async (dependencyId) => {
+          updateDependency(
+            dependencyId,
+            userStoryId,
+            "remove",
+            "requiredByIds",
+          );
+        }),
+      );
+      await Promise.all(
+        addedRequiredBy.map(async (requiredById) => {
+          updateDependency(requiredById, userStoryId, "add", "dependencyIds");
+        }),
+      );
+      await Promise.all(
+        removedRequiredBy.map(async (requiredById) => {
+          updateDependency(
+            requiredById,
+            userStoryId,
+            "remove",
+            "dependencyIds",
+          );
+        }),
+      );
+
       await userStoryRef.update(userStoryData);
-      return { success: true };
+      return {
+        success: true,
+        updatedUserStoryIds: [
+          ...addedDependencies,
+          ...removedDependencies,
+          ...addedRequiredBy,
+          ...removedRequiredBy,
+        ],
+      };
     }),
 
   modifyUserStoryTags: protectedProcedure
