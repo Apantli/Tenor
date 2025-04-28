@@ -255,5 +255,4 @@ export default function ProjectScrumPreferences() {
     </div>
   );
 }
-// TODO: Make when adding too many digits an alert
 // TODO: Points table
