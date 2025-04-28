@@ -29,7 +29,11 @@ import type { TaskPreview } from "~/lib/types/detailSchemas";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
-import { useInvalidateQueriesAllTasks, useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
+import {
+  useInvalidateQueriesAllTasks,
+  useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesUserStoriesDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   userStoryId: string;
@@ -48,6 +52,8 @@ export default function UserStoryDetailPopup({
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesUserStoriesDetails =
+    useInvalidateQueriesUserStoriesDetails();
   const [unsavedTasks, setUnsavedTasks] = useState(false);
 
   const {
@@ -165,7 +171,7 @@ export default function UserStoryDetailPopup({
       },
     );
 
-    await updateUserStory({
+    const { updatedUserStoryIds } = await updateUserStory({
       projectId: projectId as string,
       userStoryId: userStoryId,
       userStoryData: updatedUserStory,
@@ -173,6 +179,10 @@ export default function UserStoryDetailPopup({
 
     // Make other places refetch the data
     await invalidateQueriesAllUserStories(projectId as string);
+    await invalidateQueriesUserStoriesDetails(
+      projectId as string,
+      updatedUserStoryIds,
+    );
 
     if (!editMode || saveEditForm) {
       await refetch();
