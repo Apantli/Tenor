@@ -430,16 +430,12 @@ export const userStoriesRouter = createTRPCRouter({
         (req) => !userStoryData.requiredByIds.includes(req),
       );
 
-      console.log("Added dependencies:", addedDependencies);
-
       const updateDependency = (
         userStoryId: string,
         otherUserStoryId: string,
         operation: "add" | "remove",
         field: "requiredByIds" | "dependencyIds",
       ) => {
-        console.log("HEYYO", userStoryId, otherUserStoryId);
-        console.log("HEYYO", operation, field);
         const updateRef = ctx.firestore
           .collection("projects")
           .doc(projectId)
