@@ -19,18 +19,22 @@ export const fetchHTML = async (url: string): Promise<string> => {
   }
 };
 
-export const fetchMultipleHTML = async (urls: string[]): Promise<string[]> => {
-  const htmlPromises = urls.map((link) => fetchHTML(link));
-  const htmlResults = await Promise.allSettled(htmlPromises);
-  const htmlContents = htmlResults.map((result) => {
-    if (result.status === "fulfilled") {
-      return result.value;
-    } else {
-      console.error("Error fetching HTML:", result.reason);
-      return null;
-    }
-  });
+export const fetchMultipleHTML = async (
+  urls: {
+    link: string;
+    content: string | null;
+  }[],
+): Promise<{ link: string; content: string | null }[]> => {
+  const htmlPromises = urls.map((url) =>
+    fetchHTML(url.link).then(
+      (content) => ({ link: url.link, content }),
+      (error) => {
+        console.error("Error fetching HTML:", error);
+        return { link: url.link, content: null };
+      },
+    ),
+  );
 
-  // Filter out null values
-  return htmlContents.filter((content) => content !== null);
+  const htmlResults = await Promise.all(htmlPromises);
+  return htmlResults;
 };
