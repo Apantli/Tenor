@@ -15,8 +15,6 @@ interface Props {
   containerClassName?: string;
   disableAI?: boolean;
   aiTitle?: string;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
 export default function InputTextAreaField({
@@ -38,6 +36,7 @@ export default function InputTextAreaField({
   const dropdownButtonRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const dropdownInputRef = useRef<HTMLInputElement>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleKeyDown = (
     e:
@@ -89,7 +88,7 @@ export default function InputTextAreaField({
       )}
 
       {!disableAI && (
-        <div className="relative inline-block">
+        <div className="group relative inline-block">
           <textarea
             id={id}
             html-rows="4"
@@ -103,7 +102,13 @@ export default function InputTextAreaField({
             onKeyDown={handleKeyDown}
             {...props}
           />
-          <div className="absolute bottom-2 right-2">
+          <div
+            className={cn(
+              "absolute bottom-2 right-2 opacity-0 transition-opacity duration-200",
+              "group-focus-within:opacity-100",
+              { "opacity-100": isDropdownOpen },
+            )}
+          >
             <Dropdown
               label={
                 <div ref={dropdownButtonRef}>
@@ -113,17 +118,25 @@ export default function InputTextAreaField({
               className=""
               close={close}
               onOpen={() => {
+                setIsDropdownOpen(true);
                 dropdownInputRef.current?.focus();
               }}
             >
               <DropdownItem className="px-0">
-                <div className="flex h-80 w-[500px] flex-col">
+                <div
+                  className="flex h-80 w-[500px] flex-col"
+                  onClick={(e) => {
+                    // Prevent the dropdown from closing when clicking inside
+                    e.stopPropagation();
+                  }}
+                >
                   <div className="border-b-2">
                     <div className="flex flex-row items-center gap-4 px-3 py-4">
                       <AIIcon className="text-gray-500" />
                       <h3 className="text-2xl font-bold">{aiTitle ?? label}</h3>
                       <CloseIcon
                         onClick={() => {
+                          setIsDropdownOpen(false);
                           setClose();
                         }}
                         fontSize="medium"

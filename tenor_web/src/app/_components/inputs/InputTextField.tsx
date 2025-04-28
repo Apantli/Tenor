@@ -15,8 +15,6 @@ interface Props {
   containerClassName?: string;
   disableAI?: boolean;
   aiTitle?: string;
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function InputTextField({
@@ -38,6 +36,7 @@ export default function InputTextField({
   const dropdownButtonRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownInputRef = useRef<HTMLInputElement>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.ctrlKey && e.key === "k") {
@@ -86,7 +85,7 @@ export default function InputTextField({
       )}
 
       {!disableAI && (
-        <div className="relative inline-block">
+        <div className="group relative inline-block">
           <input
             id={id}
             className={cn(
@@ -99,7 +98,13 @@ export default function InputTextField({
             onKeyDown={handleKeyDown}
             {...props}
           />
-          <div className="absolute bottom-2 right-2">
+          <div
+            className={cn(
+              "absolute bottom-2 right-2 opacity-0 transition-opacity duration-200",
+              "group-focus-within:opacity-100",
+              { "opacity-100": isDropdownOpen },
+            )}
+          >
             <Dropdown
               label={
                 <div ref={dropdownButtonRef}>
@@ -109,17 +114,25 @@ export default function InputTextField({
               className=""
               close={close}
               onOpen={() => {
+                setIsDropdownOpen(true);
                 dropdownInputRef.current?.focus();
               }}
             >
               <DropdownItem className="px-0">
-                <div className="flex h-80 w-[500px] flex-col">
+                <div
+                  className="flex h-80 w-[500px] flex-col"
+                  onClick={(e) => {
+                    // Prevent the dropdown from closing when clicking inside
+                    e.stopPropagation();
+                  }}
+                >
                   <div className="border-b-2">
                     <div className="flex flex-row items-center gap-4 px-3 py-4">
                       <AIIcon className="text-gray-500" />
                       <h3 className="text-2xl font-bold">{aiTitle ?? label}</h3>
                       <CloseIcon
                         onClick={() => {
+                          setIsDropdownOpen(false);
                           setClose();
                         }}
                         fontSize="medium"
@@ -162,8 +175,6 @@ export default function InputTextField({
                         />
                         <div className="absolute bottom-2 right-2">
                           <div className="flex flex-row items-center gap-2">
-                            <p className="text-sm text-gray-500">Frida AI</p>
-
                             <SendIcon
                               className="text-gray-500 hover:cursor-pointer"
                               onClick={() => {
@@ -190,7 +201,7 @@ export default function InputTextField({
                                   ? messages[messages.length - 1]
                                   : "";
 
-                            if (valueToUse) {
+                            if (valueToUse && currentMessage.length == 0) {
                               updateInputValue(valueToUse);
                               setClose();
                               setCurrentMessage("");
