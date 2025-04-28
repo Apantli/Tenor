@@ -1,8 +1,5 @@
 "use client";
 
-import { use, util } from "chai";
-import { link } from "fs";
-import next from "next";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toBase64 } from "~/app/(logged)/create-project/page";
@@ -18,7 +15,7 @@ export default function ProjectAIConfig() {
   const [newText, setNewText] = useState("");
 
   // Fetch
-  const { data: text } = api.settings.getContextDialog.useQuery({
+  const { data: text, isLoading } = api.settings.getContextDialog.useQuery({
     projectId: projectId as string,
   });
   const { data: links } = api.settings.getContextLinks.useQuery({
@@ -189,7 +186,7 @@ export default function ProjectAIConfig() {
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
           <h1 className="text-3xl font-semibold">AI Context</h1>
-          {newText != text && (
+          {newText != text && !isLoading && (
             <PrimaryButton
               onClick={() => {
                 handleUpdateText(newText);
@@ -200,7 +197,7 @@ export default function ProjectAIConfig() {
           )}
         </div>
       </div>
-      {links && loadedFiles && text !== null ? (
+      {links && loadedFiles && !isLoading ? (
         <div>
           <InputTextAreaField
             label="Project Context"
