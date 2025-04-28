@@ -9,12 +9,19 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
 export default function ProjectPage() {
   return (
-    <div className="flex h-full w-full flex-row">
-      <div className="min-w-[350px] basis-1/2">
+    <div className="flex h-full w-full flex-row items-start">
+      <div className="flex-1 2xl:flex-[3]">
         <h1 className="mb-3 text-3xl font-semibold">Projects</h1>
         <ProjectList />
       </div>
-      <div className="flex-1"></div>
+      <div className="hidden flex-1 pt-10 xl:block 2xl:flex-[2]">
+        {/* FIXME: Remove when dashboard is ready */}
+        <img
+          src="/dashboard_mockup.png"
+          className="ml-auto h-full max-h-[700px] w-auto object-contain"
+          alt="Dashboard mockup"
+        />
+      </div>
     </div>
   );
 }
@@ -71,7 +78,7 @@ function ProjectList() {
 
   return (
     <div className="mr-10">
-      <div className="order-b-2 flex h-full w-full justify-between gap-x-3 border-b-2 pb-3">
+      <div className="flex h-full w-full justify-between gap-x-3 border-b-2 pb-3">
         <SearchBar
           searchValue={searchValue}
           handleUpdateSearch={handleUpdateSearch}
@@ -79,7 +86,7 @@ function ProjectList() {
         />
         <CreateNewProject />
       </div>
-      <ul className="h-[calc(100vh-250px)] overflow-y-auto">
+      <ul className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto">
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
@@ -98,13 +105,11 @@ function ProjectList() {
                   alt={project.name}
                 />
               </div>
-              <div className="flex flex-col justify-start pl-4 pr-4">
-                <h3 className="my-[7px] max-w-[35vw] truncate text-lg font-semibold">
+              <div className="flex flex-1 flex-col justify-start overflow-hidden pl-4 pr-4">
+                <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold">
                   {project.name}
                 </h3>
-                <p className="line-clamp-2 max-w-[35vw] text-base">
-                  {project.description}
-                </p>
+                <p className="line-clamp-2 text-base">{project.description}</p>
               </div>
             </li>
           ))

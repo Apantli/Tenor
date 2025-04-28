@@ -63,6 +63,16 @@ export const useInvalidateQueriesUserStoriesDetails = () => {
   };
 };
 
+export const useInvalidateQueriesItemStatus = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId,
+    });
+    await utils.settings.getStatusTypes.invalidate({ projectId: projectId });
+  };
+};
+
 export const useInvalidateQueriesScrumPreferences = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {

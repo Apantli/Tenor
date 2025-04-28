@@ -1,8 +1,9 @@
-import { SettingsSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
+import { SettingsSchema, StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z, { number } from "zod";
 import type { Firestore } from "firebase-admin/firestore";
-import { Tag } from "~/lib/types/firebaseSchemas";
+import type { Tag } from "~/lib/types/firebaseSchemas";
+import { link } from "fs";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
@@ -89,10 +90,11 @@ const settingsRouter = createTRPCRouter({
       );
       const statusTypes = await projectSettingsRef
         .collection("statusTypes")
+        .orderBy("orderIndex")
         .get();
       const statusTypesData = statusTypes.docs.map((doc) => ({
         id: doc.id,
-        ...TagSchema.parse(doc.data()),
+        ...StatusTagSchema.parse(doc.data()),
       }));
 
       return statusTypesData;
@@ -154,6 +156,48 @@ const settingsRouter = createTRPCRouter({
       const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
+    }),
+  getContextLinks: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const links: string[] = settingsData.aiContext.links.map(
+        (link) => link.link,
+      );
+      return links;
+    }),
+  getContextFiles: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const files: { name: string; type: string }[] =
+        settingsData.aiContext.files.map((file) => ({
+          name: file.name,
+          type: file.type,
+        }));
+      return files;
+    }),
+  getContextDialog: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const text: string = settingsData.aiContext.text;
+      return text;
     }),
   // fetchDefaultSprintDuration: protectedProcedure
   //   .input(z.object({ projectId: z.string() }))
