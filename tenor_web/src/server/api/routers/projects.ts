@@ -326,18 +326,24 @@ export const projectsRouter = createTRPCRouter({
           name: "Todo",
           color: "#0737E3",
           deleted: false,
+          marksTaskAsDone: false,
+          orderIndex: 0,
         });
 
         await statusCollection.add({
           name: "Doing",
           color: "#AD7C00",
           deleted: false,
+          marksTaskAsDone: false,
+          orderIndex: 1,
         });
 
         await statusCollection.add({
           name: "Done",
           color: "#009719",
           deleted: false,
+          marksTaskAsDone: true,
+          orderIndex: 2,
         });
 
         return { success: true, projectId: newProjectRef.id };

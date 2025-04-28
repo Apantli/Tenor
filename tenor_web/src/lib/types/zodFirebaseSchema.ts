@@ -38,6 +38,11 @@ export const TagSchema = z.object({
   deleted: z.boolean(),
 });
 
+export const StatusTagSchema = TagSchema.extend({
+  orderIndex: z.number(),
+  marksTaskAsDone: z.boolean(),
+});
+
 export const UserSchema = z.object({
   bio: z.string(),
   jobTitle: z.string(),
@@ -181,7 +186,14 @@ export const SettingsSchema = z.object({
         }),
       )
       .default([]),
-    links: z.array(z.string()).default([]),
+    links: z
+      .array(
+        z.object({
+          content: z.string().nullable(),
+          link: z.string(),
+        }),
+      )
+      .default([]),
   }),
   // Removed because they should be in subcollections
 
