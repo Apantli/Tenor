@@ -1,8 +1,10 @@
-import { SettingsSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
+import { SettingsSchema, StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
+import { fetchHTML } from "~/utils/webcontent";
+import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -85,10 +87,11 @@ const settingsRouter = createTRPCRouter({
       );
       const statusTypes = await projectSettingsRef
         .collection("statusTypes")
+        .orderBy("orderIndex")
         .get();
       const statusTypesData = statusTypes.docs.map((doc) => ({
         id: doc.id,
-        ...TagSchema.parse(doc.data()),
+        ...StatusTagSchema.parse(doc.data()),
       }));
 
       return statusTypesData;
@@ -150,6 +153,191 @@ const settingsRouter = createTRPCRouter({
       const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
+    }),
+  getContextLinks: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const links: string[] = settingsData.aiContext.links.map(
+        (link) => link.link,
+      );
+      return links;
+    }),
+  getContextFiles: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const files: { name: string; type: string }[] =
+        settingsData.aiContext.files.map((file) => ({
+          name: file.name,
+          type: file.type,
+        }));
+      return files;
+    }),
+  getContextDialog: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const text: string = settingsData.aiContext.text;
+      return text;
+    }),
+  updateTextContext: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        text: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, text } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          text,
+        },
+      });
+    }),
+  addLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newLink = await fetchHTML(link).then(
+        (content) => ({ link, content }),
+        (error) => {
+          console.error("Error fetching HTML:", error);
+          return { link, content: null };
+        },
+      );
+      const newLinks = [...settingsData.aiContext.links, newLink];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+  removeLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove link from settingsData
+      const newLinks = settingsData.aiContext.links.filter(
+        (l) => l.link !== link,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+  addFiles: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        files: z.array(
+          z.object({
+            name: z.string(),
+            type: z.string(),
+            content: z.string(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, files } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+
+      const b64Files = files.map((file) => file.content);
+      const fileText = await fetchMultipleFiles(b64Files);
+
+      const filesDecoded = files.map((file, index) => ({
+        name: file.name,
+        type: file.type,
+        content: fileText[index] ?? "",
+      }));
+
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newFiles = [...settingsData.aiContext.files, ...filesDecoded];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
+    }),
+  removeFile: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        file: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, file } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove file from settingsData
+      const newFiles = settingsData.aiContext.files.filter(
+        (f) => f.name !== file,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
     }),
 });
 

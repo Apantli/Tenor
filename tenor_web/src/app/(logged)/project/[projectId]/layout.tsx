@@ -19,7 +19,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <Navbar>
-        <div className="flex w-full grow gap-1">
+        <div className="flex gap-1">
           <InterceptedLink href="/" className="flex shrink-0 font-semibold">
             Projects
           </InterceptedLink>

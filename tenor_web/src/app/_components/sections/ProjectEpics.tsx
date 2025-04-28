@@ -119,21 +119,18 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   };
   return (
     <>
-      <h1 className="text-3xl font-semibold">Epics</h1>
-      <div className="mt-2 flex flex-row justify-between gap-1 border-b-2 pb-2">
+      <h1 className="flex justify-between pb-2">
+        <span className="text-3xl font-semibold">Epics</span>
+        <PrimaryButton onClick={() => setShowSmallPopup(true)}>
+          + New Epic
+        </PrimaryButton>
+      </h1>
+      <div className="mb-3 flex flex-row justify-between gap-1 border-b-2 pb-3">
         <SearchBar
           searchValue={searchText}
           handleUpdateSearch={(e) => setSearchText(e.target.value)}
           placeholder="Search epics"
         ></SearchBar>
-        <PrimaryButton
-          className={
-            "h-full w-full max-w-[120px] self-center hover:cursor-pointer"
-          }
-          onClick={() => setShowSmallPopup(true)}
-        >
-          + New Epic
-        </PrimaryButton>
       </div>
       <div className="flex h-[calc(100vh-230px)] flex-col gap-4 overflow-y-auto">
         {filteredEpics?.map((epic) => (
@@ -143,7 +140,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
               setShowEditPopup(true);
             }}
             key={epic.scrumId}
-            className="border-b-2 py-3 hover:cursor-pointer"
+            className="border-b-2 pb-3 hover:cursor-pointer"
           >
             <div className="flex flex-col gap-y-2">
               <h3 className="text-xl font-semibold">
@@ -160,6 +157,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
         show={showSmallPopup}
         size="small"
         className="min-h-[400px] min-w-[500px]"
+        reduceTopPadding={true}
         dismiss={async () => {
           if (isNewEpicModified()) {
             const confirmation = await confirm(
@@ -312,9 +310,8 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
       >
         <div className="grow pt-3">
           {epicLoading && (
-            <div className="flex flex-col items-center gap-y-7">
-              <h3 className="text-2xl font-bold">Loading...</h3>
-              <LoadingSpinner color="dark" />
+            <div className="flex h-full w-full flex-col items-center justify-center">
+              <LoadingSpinner color="primary" />
             </div>
           )}
 
