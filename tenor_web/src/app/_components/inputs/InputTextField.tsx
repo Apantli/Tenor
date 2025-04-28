@@ -15,6 +15,8 @@ interface Props {
   containerClassName?: string;
   disableAI?: boolean;
   aiTitle?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function InputTextField({
@@ -25,6 +27,8 @@ export default function InputTextField({
   className,
   disableAI,
   aiTitle,
+  value,
+  onChange,
   ...props
 }: Props & React.InputHTMLAttributes<HTMLInputElement>) {
   const [messages, setMessages] = useState<string[]>([]);
@@ -32,17 +36,30 @@ export default function InputTextField({
   const { user } = useFirebaseAuth();
   const [close, setClose] = useCloseDropdown();
   const dropdownButtonRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownInputRef = useRef<HTMLInputElement>(null);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Check for Ctrl+K combination
     if (e.ctrlKey && e.key === "k") {
-      e.preventDefault(); // Prevent default browser action
-      // Programmatically click the dropdown button
+      e.preventDefault();
       dropdownButtonRef.current?.click();
     }
 
-    // Call original onKeyDown handler if it exists
     props.onKeyDown?.(e);
+  };
+
+  const updateInputValue = (newValue: string) => {
+    if (inputRef.current && onChange) {
+      inputRef.current.value = newValue;
+
+      const syntheticEvent = {
+        target: inputRef.current,
+        currentTarget: inputRef.current,
+        preventDefault: () => {},
+        stopPropagation: () => {},
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      onChange(syntheticEvent);
+    }
   };
 
   return (
@@ -62,6 +79,8 @@ export default function InputTextField({
             "inline-block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500",
             className,
           )}
+          value={value}
+          onChange={onChange}
           {...props}
         />
       )}
@@ -74,6 +93,9 @@ export default function InputTextField({
               "block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500",
               className,
             )}
+            ref={inputRef}
+            value={value}
+            onChange={onChange}
             onKeyDown={handleKeyDown}
             {...props}
           />
@@ -86,6 +108,9 @@ export default function InputTextField({
               }
               className=""
               close={close}
+              onOpen={() => {
+                dropdownInputRef.current?.focus();
+              }}
             >
               <DropdownItem className="px-0">
                 <div className="flex h-80 w-[500px] flex-col">
@@ -132,6 +157,8 @@ export default function InputTextField({
                           placeholder="What is in your mind?"
                           value={currentMessage}
                           onChange={(e) => setCurrentMessage(e.target.value)}
+                          ref={dropdownInputRef}
+                          onKeyDown={handleKeyDown}
                         />
                         <div className="absolute bottom-2 right-2">
                           <SendIcon
@@ -149,7 +176,23 @@ export default function InputTextField({
                         </div>
                       </div>
                       <div className="flex flex-row items-center gap-2">
-                        <PrimaryButton className="">
+                        <PrimaryButton
+                          className=""
+                          onClick={() => {
+                            const valueToUse =
+                              currentMessage.length > 0
+                                ? currentMessage
+                                : messages.length > 0
+                                  ? messages[messages.length - 1]
+                                  : "";
+
+                            if (valueToUse) {
+                              updateInputValue(valueToUse);
+                              setClose();
+                              setCurrentMessage("");
+                            }
+                          }}
+                        >
                           {currentMessage.length > 0 ? "Generate" : "Accept"}
                         </PrimaryButton>
                         <DeleteButton
