@@ -26,22 +26,21 @@ export const heightOfContent = "h-[calc(100vh-285px)]";
 export default function IssuesTable() {
   
   // Hooks
-  const params = useParams();
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
 
   const [selectedIS, setSelectedIS] = useState<string>("");
-  const [renderNewStory, showNewStory, setShowNewStory] =
+  const [renderNewIssue, showNewIssue, setShowNewIssue] =
     usePopupVisibilityState();
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
 
-  const formattedScrumId = useFormatTaskIssueId();
+  const useFormatIssueScrumId = useFormatTaskIssueId();
 
   const confirm = useConfirmation();
 
   const onIssueAdded = async (userStoryId: string) => {
     await refetchIssues();
-    setShowNewStory(false);
+    setShowNewIssue(false);
     setSelectedIS(userStoryId);
     setShowDetail(true);
   };
@@ -53,7 +52,7 @@ export default function IssuesTable() {
     isLoading: isLoadingIssues,
     refetch: refetchIssues,
   } = api.issues.getIssuesTableFriendly.useQuery({
-    projectId: params.projectId as string,
+    projectId: projectId as string,
   });
   const { mutateAsync: updateIssueTags } =
     api.issues.modifyIssuesTags.useMutation();
@@ -72,12 +71,12 @@ export default function IssuesTable() {
     const lowerSearchValue = searchValue.toLowerCase();
     return (
       issue.name.toLowerCase().includes(lowerSearchValue) ||
-      formattedScrumId(issue.scrumId).toLowerCase().includes(lowerSearchValue)
+      useFormatIssueScrumId(issue.scrumId).toLowerCase().includes(lowerSearchValue)
     );
   });
 
   const issueData = filteredData.sort((a, b) =>
-    a.scrumId < b.scrumId ? -1 : 1,
+    a.scrumId > b.scrumId ? -1 : 1,
   );
 
   const getTable = () => {
@@ -107,7 +106,7 @@ export default function IssuesTable() {
                 setShowDetail(true);
               }}
             >
-              {formattedScrumId(row.scrumId)}
+              {useFormatIssueScrumId(row.scrumId)}
             </button>
           );
         },
@@ -208,7 +207,8 @@ export default function IssuesTable() {
             try {
               
               await utils.issues.getIssuesTableFriendly.cancel({ projectId: projectId as string });
-              utils.issues.getIssuesTableFriendly.setData({ projectId: projectId as string }, (oldData) => {
+
+              void utils.issues.getIssuesTableFriendly.setData({ projectId: projectId as string }, (oldData) => {
                 if (!oldData) return oldData;
           
                 return oldData.map((issue) => {
@@ -243,8 +243,8 @@ export default function IssuesTable() {
           return (
             <UserStoryPicker
               userStory={row.relatedUserStory}
-              onChange={(userStory) => {
-                handleUserStoryChange(row, userStory);
+              onChange={async (userStory) => {
+                await handleUserStoryChange(row, userStory);
               }}
             />
           );
@@ -402,7 +402,7 @@ export default function IssuesTable() {
               handleUpdateSearch={handleUpdateSearch}
             />
           </div>
-          <PrimaryButton onClick={() => setShowNewStory(true)}>
+          <PrimaryButton onClick={() => setShowNewIssue(true)}>
             + New Issue
           </PrimaryButton>
         </div>
@@ -418,11 +418,11 @@ export default function IssuesTable() {
         />
       )}
 
-      {renderNewStory && (
+      {renderNewIssue && (
         <CreateIssuePopup
           onIssueAdded={onIssueAdded}
-          showPopup={showNewStory}
-          setShowPopup={setShowNewStory}
+          showPopup={showNewIssue}
+          setShowPopup={setShowNewIssue}
           
         />
       )}

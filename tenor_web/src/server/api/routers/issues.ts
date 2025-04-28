@@ -1,10 +1,11 @@
-import { z } from "zod";
+import { boolean, z } from "zod";
 import type {
   Issue,
   WithId,
   Tag,
   Size,
   Sprint,
+  Task,
 } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
@@ -52,6 +53,7 @@ export interface IssueCol {
     photoURL?: string;
   }[];
 }
+
 
 // Get the issues from a designated project and sprint
 // This is used to get the issues from a project and sprint
@@ -114,55 +116,74 @@ const getUserStory = async (
 
   return { id: userStoryDoc.id, ...ExistingUserStorySchema.parse(userStoryDoc.data()) } as ExistingUserStory;
 };
-  
+
+type TaskData = {
+  assigneeId?: string;
+};
+
+type User = {
+  id: string;
+  displayName: string;
+  photoURL: string;
+};
+
+const getTasksFromItem = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+  itemId: string,
+) => {
+  const taskCollectionRef = dbAdmin
+    .collection(`projects/${projectId}/tasks`)
+    .where("deleted", "==", false)
+    .where("itemId", "==", itemId)
+    .orderBy("scrumId");
+  const snap = await taskCollectionRef.get();
+
+  const docs = snap.docs.map((doc) => {
+    return {
+      id: doc.id,
+      ...doc.data(),
+    };
+  });
+
+  const tasks: WithId<Task>[] = docs.filter(
+    (task): task is WithId<Task> => task !== null,
+  );
+
+  return tasks;
+};  
+
 const getTasksAssignUsers = async (
   firestore: FirebaseFirestore.Firestore,
   projectId: string,
-  tasksIds: string[],
-) => {
-  if (!tasksIds || tasksIds.length === 0) {
+  itemId: string,
+): Promise<User[]> => {
+  if (!itemId) {
     return [];
   }
+  
+  const tasks = await getTasksFromItem(firestore, projectId, itemId);
+
+  const userIds = tasks
+    .map((task) => task.assigneeId)
+    .filter((id): id is string => Boolean(id));
 
   const users = await Promise.all(
-    tasksIds.map(async (taskId) => {
-      const taskDoc = await firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId)
-        .get();
-
-      if (!taskDoc.exists) {
-        return undefined;
-      }
-
-      const taskData = taskDoc.data();
-
-      const userId = taskData?.assigneeId;
-
-      if (!userId) {
-        return undefined;
-      }
-
-      try {
-        const userRecord = await admin.auth().getUser(userId);
-        return {
-          id: userRecord.uid,
-          displayName: userRecord.displayName,
-          photoURL: userRecord.photoURL,
-        };
-      } catch (error) {
-        console.error(`Error fetching user data for ${userId}:`, error);
-        return undefined;
-      }
+    userIds.map(async (userId) => {
+      const userRecord = await admin
+        .auth()
+        .getUser(userId)
+      return {
+        id: userRecord.uid,
+        displayName: userRecord.displayName,
+        photoURL: userRecord.photoURL,
+      };
     })
   );
 
-  const filteredUsers = users.filter(Boolean) as { id: string; [key: string]: any }[];
+  const filteredUsers = users.filter((user): user is User => Boolean(user?.id));
 
-  // Filtrar usuarios únicos por ID
-  const uniqueUsers = Array.from(
+  const uniqueUsers: User[] = Array.from(
     new Map(filteredUsers.map((u) => [u.id, u])).values()
   );
 
@@ -195,7 +216,7 @@ export const issuesRouter = createTRPCRouter({
             const rawUsers = await getTasksAssignUsers(
               ctx.firestore,
               input.projectId,
-              issue.taskIds ?? []
+              issue.id
             );
       
             const assignUsers = rawUsers
@@ -237,7 +258,7 @@ export const issuesRouter = createTRPCRouter({
       }
     }),
 
-  getIssues: protectedProcedure
+  getIssue: protectedProcedure
     .input(z.object({ projectId: z.string(), issueId: z.string() }))
     .query(async ({ ctx, input }) => {
       const issue = (
@@ -465,7 +486,6 @@ export const issuesRouter = createTRPCRouter({
         size: size ?? issueData.size,
       };
 
-      console.log("updatedIssueData", updatedIssueData);
       await issueRef.update(updatedIssueData);
       return {
         success: true,

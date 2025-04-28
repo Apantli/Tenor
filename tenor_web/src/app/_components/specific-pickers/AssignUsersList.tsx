@@ -14,13 +14,13 @@ interface Props {
 export default function AssignUsersList({
   users,
 }: Props) {
-  const [selectedUsers, setSelectedUsers] = React.useState<User[]>([]);
-
+  const [selectedUsers = users ?? [], setSelectedUsers] = React.useState<User[]>([]);
+  
   useEffect(() => {
     if (users) {
       setSelectedUsers(users);
     }
-  }, [users]);
+  });
 
   console.log("Usuarios recibidos:", selectedUsers);
 
