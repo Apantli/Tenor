@@ -14,7 +14,7 @@ export default {
         "app-tertiary": "#15634F",
         "app-dark": "#012112",
         "app-light": "#88BB87",
-        "app-success": "#184723",
+        "app-success": "#15734F",
         "app-fail": "#EA2B4E",
         "app-text": "#1F2329",
         "app-border": "#BECAD4",

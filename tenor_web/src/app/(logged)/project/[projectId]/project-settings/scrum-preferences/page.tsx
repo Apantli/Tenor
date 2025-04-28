@@ -8,6 +8,7 @@ import TimeMultiselect, {
   type TimeFrame,
   timeframeMultiplier,
 } from "~/app/_components/inputs/TimeMultiselect";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useInvalidateQueriesScrumPreferences } from "~/app/_hooks/invalidateHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useModification } from "~/app/_hooks/useModification";
@@ -27,9 +28,10 @@ export default function ProjectScrumPreferences() {
   const utils = api.useUtils();
 
   // TRPC
-  const { data: scrumSettings } = api.settings.fetchScrumSettings.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: scrumSettings, isLoading: settingFetchLoading } =
+    api.settings.fetchScrumSettings.useQuery({
+      projectId: projectId as string,
+    });
   const sprintDuration = scrumSettings?.sprintDuration ?? defaultSprintDuration;
   const maximumSprintStoryPoints =
     scrumSettings?.maximumSprintStoryPoints ?? defaultMaximumSprintStoryPoints;
@@ -42,6 +44,14 @@ export default function ProjectScrumPreferences() {
     sprintDuration: sprintDuration,
     maximumSprintStoryPoints: maximumSprintStoryPoints,
   });
+
+  const [timeForm, setTimeForm] = useState<[number, TimeFrame]>([
+    form.sprintDuration % 7 === 0
+      ? form.sprintDuration / 7
+      : form.sprintDuration,
+    form.sprintDuration % 7 === 0 ? "Weeks" : "Days",
+  ]);
+
   const hasBeenModified = () => {
     if (!sprintDuration || !maximumSprintStoryPoints) {
       return false;
@@ -58,25 +68,45 @@ export default function ProjectScrumPreferences() {
         sprintDuration: sprintDuration,
         maximumSprintStoryPoints: maximumSprintStoryPoints,
       });
+
+      // Update timeForm when sprintDuration changes
+      setTimeForm([
+        sprintDuration % 7 === 0 ? sprintDuration / 7 : sprintDuration,
+        sprintDuration % 7 === 0 ? "Weeks" : "Days",
+      ]);
     }
-  }, [sprintDuration, maximumSprintStoryPoints]);
+  }, [scrumSettings]);
 
   useEffect(() => {
     setIsModified(hasBeenModified());
   }, [
-    form.sprintDuration,
+    timeForm,
     form.maximumSprintStoryPoints,
     sprintDuration,
     maximumSprintStoryPoints,
   ]);
 
   // HANDLES
-  const handleDaysChange = (days: number, timeframe: TimeFrame) => {
-    const multiplier = timeframeMultiplier[timeframe];
-    const newDays = days * multiplier;
+  const handleTimeNumberChange = (value: number) => {
+    const timeFrame = timeForm[1];
+    const multiplier = timeframeMultiplier[timeFrame];
+    const newDays = value * multiplier;
+
+    setTimeForm([value, timeFrame]);
     setForm((prev) => ({
       ...prev,
       sprintDuration: newDays,
+    }));
+  };
+
+  const handleTimeFrameChange = (timeFrame: TimeFrame) => {
+    const timeNumber = timeForm[0];
+    const currentTotalDays = timeNumber * timeframeMultiplier[timeFrame];
+
+    setTimeForm([timeNumber, timeFrame]);
+    setForm((prev) => ({
+      ...prev,
+      sprintDuration: currentTotalDays,
     }));
   };
 
@@ -96,7 +126,13 @@ export default function ProjectScrumPreferences() {
       });
       return;
     }
-
+    
+    await updateScrumSettings({
+      projectId: projectId as string,
+      days: form.sprintDuration,
+      points: form.maximumSprintStoryPoints,
+    });
+    
     // optimistic
     await utils.settings.fetchScrumSettings.cancel({
       projectId: projectId as string,
@@ -114,13 +150,12 @@ export default function ProjectScrumPreferences() {
       },
     );
 
-    await updateScrumSettings({
-      projectId: projectId as string,
-      days: form.sprintDuration,
-      points: form.maximumSprintStoryPoints,
-    });
-
     await invalidateQueriesScrumPreferences(projectId as string);
+
+    alert("Success", "Scrum settings updated successfully", {
+      type: "success",
+      duration: 5000,
+    });
   };
 
   return (
@@ -133,33 +168,45 @@ export default function ProjectScrumPreferences() {
           </PrimaryButton>
         )}
       </div>
-      <TimeMultiselect
-        days={form.sprintDuration}
-        setDays={handleDaysChange}
-        label="Sprint duration"
-        labelClassName="text-lg font-semibold"
-      />
+      {!settingFetchLoading && (
+        <>
+          <TimeMultiselect
+            timeNumber={timeForm[0]}
+            timeFrame={timeForm[1]}
+            onTimeNumberChange={handleTimeNumberChange}
+            onTimeFrameChange={handleTimeFrameChange}
+            label="Sprint duration"
+            labelClassName="text-lg font-semibold"
+          />
 
-      <InputTextField
-        label="Maximum sprint story points"
-        labelClassName="text-lg font-semibold"
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        value={form.maximumSprintStoryPoints}
-        onChange={(e) =>
-          setForm((prev) => ({
-            ...prev,
-            maximumSprintStoryPoints: parseInt(
-              e.target.value === "" ? "0" : e.target.value,
-              10,
-            ),
-          }))
-        }
-        // TODO: Make the dropdown start with week if sprint duration is divisible by 7
-        // TODO: Alert for correct saving
-        // TODO: Points table
-      />
+          <InputTextField
+            label="Maximum sprint story points"
+            labelClassName="text-lg font-semibold"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={form.maximumSprintStoryPoints}
+            onChange={(e) =>
+              setForm((prev) => ({
+                ...prev,
+                maximumSprintStoryPoints: parseInt(
+                  e.target.value === "" ? "0" : e.target.value,
+                  10,
+                ),
+              }))
+            }
+          />
+        </>
+      )}
+      {settingFetchLoading && (
+        <div className="mt-5 flex flex-row gap-x-3">
+          <LoadingSpinner />
+          <p className="text-lg font-medium">Loading...</p>
+        </div>
+      )}
     </div>
   );
 }
+
+// TODO: Make the dropdown start with week if sprint duration is divisible by 7
+// TODO: Points table

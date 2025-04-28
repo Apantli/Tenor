@@ -1,16 +1,8 @@
-import React, { useId, useState } from "react";
+import React, { useId } from "react";
 import { cn } from "~/lib/utils";
 import Dropdown, { DropdownButton } from "../Dropdown";
 import InputTextField from "./InputTextField";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-
-interface Props {
-  label?: string;
-  labelClassName?: string;
-  containerClassName?: string;
-  days: number;
-  setDays: (days: number, timeframe: TimeFrame) => void;
-}
 
 export type TimeFrame = "Days" | "Weeks";
 export const timeframeMultiplier = {
@@ -18,33 +10,36 @@ export const timeframeMultiplier = {
   Weeks: 7,
 } as Record<TimeFrame, number>;
 
+interface Props {
+  label?: string;
+  labelClassName?: string;
+  containerClassName?: string;
+  timeNumber: number;
+  timeFrame: TimeFrame;
+  onTimeNumberChange: (value: number) => void;
+  onTimeFrameChange: (value: TimeFrame) => void;
+}
+
 export default function TimeMultiselect({
   label,
   labelClassName,
   containerClassName,
-  days,
-  setDays,
+  timeNumber,
+  timeFrame,
+  onTimeNumberChange,
+  onTimeFrameChange,
 }: Props) {
   const id = useId();
-  const [timeframe, setTimeFrame] = useState<TimeFrame>("Days");
-  const [internalDays, setInternalDays] = useState(days);
-
   const timeframeOptions = ["Days", "Weeks"] as TimeFrame[];
 
-  const handleDaysChange = (value: string) => {
+  const handleTimeNumberChange = (value: string) => {
     if (value === "") {
       value = "0";
     }
     const parsedValue = parseInt(value, 10);
     if (!isNaN(parsedValue)) {
-      setInternalDays(parsedValue);
-      setDays(parsedValue, timeframe);
+      onTimeNumberChange(parsedValue);
     }
-  };
-
-  const handleTimeframeChange = (value: string) => {
-    setTimeFrame(value as TimeFrame);
-    setDays(internalDays, value as TimeFrame);
   };
 
   return (
@@ -59,8 +54,8 @@ export default function TimeMultiselect({
       )}
       <div id={id} className={cn("flex w-full gap-3", containerClassName)}>
         <InputTextField
-          value={internalDays}
-          onChange={(e) => handleDaysChange(e.target.value)}
+          value={timeNumber}
+          onChange={(e) => handleTimeNumberChange(e.target.value)}
           containerClassName="w-3/4"
           type="text"
           inputMode="numeric"
@@ -69,7 +64,7 @@ export default function TimeMultiselect({
         <Dropdown
           label={
             <div className="flex justify-start rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500">
-              {timeframe}
+              {timeFrame}
               <ArrowDropDownIcon className="ml-auto" />
             </div>
           }
@@ -78,7 +73,7 @@ export default function TimeMultiselect({
           {timeframeOptions.map((option, index) => (
             <DropdownButton
               key={index}
-              onClick={() => handleTimeframeChange(option)}
+              onClick={() => onTimeFrameChange(option)}
               className="w-full px-5"
             >
               {option}

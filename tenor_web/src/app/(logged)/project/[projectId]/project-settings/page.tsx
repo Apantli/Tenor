@@ -201,7 +201,7 @@ export default function ProjectGeneralSettings() {
       ) : (
         <div className="mt-5 flex flex-row gap-x-3">
           <LoadingSpinner />
-          <p className="text-lg font-bold">Loading...</p>
+          <p className="text-lg font-medium">Loading...</p>
         </div>
       )}
     </div>
