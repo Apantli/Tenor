@@ -97,7 +97,6 @@ export default function MemberTable({
 
   return (
     <div className={cn("w-full text-sm", className)}>
-      {/* FIMXE: Add seach bar */}
       <div className="flex items-center justify-between gap-x-4 py-4">
         {label && (
           <label

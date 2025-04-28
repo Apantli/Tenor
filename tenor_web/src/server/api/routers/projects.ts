@@ -254,8 +254,8 @@ export const projectsRouter = createTRPCRouter({
         const userTypesMap: Record<string, string> = {};
         for (const role of defaultRoleList) {
           const roleDoc = await userTypesCollection.add({
-            label: role.label,
-            deleted: false,
+            ...role,
+            id: undefined,
           });
 
           userTypesMap[role.id] = roleDoc.id;

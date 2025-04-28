@@ -1,22 +1,35 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import MemberTable, { TeamMember } from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { emptyRole } from "~/lib/defaultTags";
+import RoleList from "~/app/_components/sections/RoleList";
+import { SegmentedControl } from "~/app/_components/SegmentedControl";
+import { defaultRoleList, emptyRole } from "~/lib/defaultTags";
+import { Role } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export default function ProjectUsers() {
   const { projectId } = useParams();
+  const [section, setSection] = useState("Roles");
   const { data: userTypes } = api.projects.getUserTypes.useQuery({
     projectId: projectId as string,
   });
 
+  // Users
   const { mutateAsync: addTeamMember } = api.users.addUser.useMutation();
   const { mutateAsync: deleteTeamMember } = api.users.removeUser.useMutation();
   const { mutateAsync: updateTeamMemberRole } =
     api.users.updateUserRole.useMutation();
+
+  // Roles
+  const { data: roles, refetch: refetchRoles } =
+    api.settings.getDetailedRoles.useQuery({
+      projectId: projectId as string,
+    });
+  const { mutateAsync: addRole } = api.settings.addRole.useMutation();
+  const { mutateAsync: deleteRole } = api.settings.removeRole.useMutation();
 
   // FIXME: This is not used
   const userTypesList = useMemo(() => {
@@ -112,22 +125,66 @@ export default function ProjectUsers() {
     await refetch();
   };
 
+  // Role handlers
+  const handleRoleAdd = async function (label: string) {
+    // Add to database
+    await addRole({
+      projectId: projectId as string,
+      label: label,
+    });
+    await refetchRoles(); // Refetch the list after adding
+  };
+
+  const handleRoleRemove = async function (ids: (string | number)[]) {
+    // Deletes in database
+    await Promise.all(
+      ids.map((id) =>
+        deleteRole({
+          projectId: projectId as string,
+          roleId: id as string,
+        }),
+      ),
+    );
+    await refetchRoles(); // Refetch the list after removing
+  };
+
   return (
     <div className="flex h-full w-full flex-col">
       <div className="flex flex-row justify-between">
-        <h1 className="mb-4 text-3xl font-semibold">Users & Permissions</h1>
+        <div className="flex w-full items-center justify-between">
+          <h1 className="text-3xl font-semibold">Users & Permissions</h1>
+          <SegmentedControl
+            options={["Users", "Roles"]}
+            selectedOption={section}
+            onChange={setSection}
+          ></SegmentedControl>
+        </div>
       </div>
-      {teamMembers && userTypes ? (
-        <MemberTable
-          label={undefined}
-          teamMembers={teamMembers}
-          handleMemberAdd={handleAddUser}
-          handleMemberRemove={handleRemoveUser}
-          handleEditMemberRole={handleUpdateUser}
-          roleList={userTypes}
+      {section === "Users" ? (
+        teamMembers && userTypes && roles ? (
+          <MemberTable
+            label={undefined}
+            teamMembers={teamMembers}
+            handleMemberAdd={handleAddUser}
+            handleMemberRemove={handleRemoveUser}
+            handleEditMemberRole={handleUpdateUser}
+            roleList={roles}
+            isSearchable={true}
+            className="w-full"
+          />
+        ) : (
+          <div className="mt-5 flex flex-row gap-x-3">
+            <LoadingSpinner />
+            <p className="text-lg font-bold">Loading...</p>
+          </div>
+        )
+      ) : roles ? (
+        <RoleList
           isSearchable={true}
-          className="w-full"
-        />
+          roles={roles}
+          handleRoleAdd={handleRoleAdd}
+          handleRoleRemove={handleRoleRemove}
+        ></RoleList>
       ) : (
         <div className="mt-5 flex flex-row gap-x-3">
           <LoadingSpinner />

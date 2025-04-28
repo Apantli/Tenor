@@ -1,10 +1,18 @@
-import { SettingsSchema, StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
+import {
+  RoleSchema,
+  SettingsSchema,
+  StatusTagSchema,
+  TagSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
 import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
+import { emptyRole } from "~/lib/defaultTags";
+import { remove } from "node_modules/cypress/types/lodash";
+import { RoleDetail } from "~/lib/types/detailSchemas";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -15,6 +23,17 @@ export const getProjectSettingsRef = (
     .doc(projectId)
     .collection("settings")
     .doc("settings");
+};
+
+export const getProjectUserTypesRef = (
+  projectId: string,
+  firestore: Firestore,
+) => {
+  return firestore
+    .collection("projects")
+    .doc(projectId)
+    .collection("settings")
+    .doc("userTypes");
 };
 
 const getProjectSettings = async (projectId: string, firestore: Firestore) => {
@@ -338,6 +357,71 @@ const settingsRouter = createTRPCRouter({
           files: newFiles,
         },
       });
+    }),
+  getDetailedRoles: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectUserTypesRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const roles = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .orderBy("label")
+        .get();
+
+      const rolesData = roles.docs.map((doc) => {
+        const data = doc.data();
+        const role = RoleSchema.parse(data);
+        console.log("PAISDBFAJSBDFOAISJBDOFARole data:", role);
+        return {
+          id: doc.id,
+          ...role,
+          ...role.tabs,
+        } as RoleDetail;
+      });
+      console.log("Roles data:", rolesData);
+      return rolesData;
+    }),
+  addRole: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        label: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, label } = input;
+      // add the role document to the roles collection
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const roleDoc = await projectSettingsRef.collection("userTypes").add({
+        ...emptyRole,
+        label,
+        id: undefined,
+      });
+    }),
+  removeRole: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        roleId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, roleId } = input;
+      // remove the role document from the roles collection
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      await projectSettingsRef.collection("userTypes").doc(roleId).delete();
     }),
 });
 
