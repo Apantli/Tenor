@@ -5,7 +5,8 @@ import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
 import { link } from "fs";
 import { fetchHTML } from "~/utils/webcontent";
-import { add } from "node_modules/cypress/types/lodash";
+import { add, remove } from "node_modules/cypress/types/lodash";
+import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -233,7 +234,7 @@ const settingsRouter = createTRPCRouter({
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
-      const newLink = fetchHTML(link).then(
+      const newLink = await fetchHTML(link).then(
         (content) => ({ link, content }),
         (error) => {
           console.error("Error fetching HTML:", error);
@@ -248,7 +249,7 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
-  deleteLink: protectedProcedure
+  removeLink: protectedProcedure
     .input(
       z.object({
         projectId: z.string(),
@@ -274,14 +275,71 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
-  // addFile: protectedProcedure
-  // .input(
-  //   z.object({
-  //     projectId: z.string(),
-  //     file: z.object({
-  //       name: z.string(),
-  //       type: z.string(),
-  //       content: z.string(),
+  addFiles: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        files: z.array(
+          z.object({
+            name: z.string(),
+            type: z.string(),
+            content: z.string(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, files } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+
+      const b64Files = files.map((file) => file.content);
+      const fileText = await fetchMultipleFiles(b64Files);
+
+      const filesDecoded = files.map((file, index) => ({
+        name: file.name,
+        type: file.type,
+        content: fileText[index] ?? "",
+      }));
+
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newFiles = [...settingsData.aiContext.files, ...filesDecoded];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
+    }),
+  removeFile: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        file: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, file } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove file from settingsData
+      const newFiles = settingsData.aiContext.files.filter(
+        (f) => f.name !== file,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
+    }),
 });
 
 export default settingsRouter;
