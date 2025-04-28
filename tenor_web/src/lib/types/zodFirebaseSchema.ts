@@ -162,9 +162,19 @@ export const IssueSchema = BacklogItemSchema.extend({
 });
 
 export const RequirementSchema = BasicInfoSchema.extend({
-  priorityId: z.string(),
-  requirementTypeId: z.string(),
+  priorityId: z.string().describe("Use a valid, existing priority id"),
+  requirementTypeId: z
+    .string()
+    .describe("Use a valid, existing requirement type id"),
   requirementFocusId: z.string(),
+  name: z
+    .string()
+    .describe("Small (5 word maximum) description of the requirement"),
+  description: z
+    .string()
+    .describe(
+      "You can use valid markdown. Describe in detail what the requirement is, why it exists. Also include any relevant information that is needed to understand the requirement. Finally, you may include relevant implementation suggestions, only if you have sufficient knowledge about the tech stack. Otherwise, leave it to the developers to figure it out.",
+    ),
 });
 
 export const SettingsSchema = z.object({
