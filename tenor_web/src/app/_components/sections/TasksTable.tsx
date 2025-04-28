@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
@@ -21,6 +21,10 @@ import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
 import LoadingSpinner from "../LoadingSpinner";
+import {
+  useInvalidateQueriesAllTasks,
+  useInvalidateQueriesAllUserStories,
+} from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   itemId: string;
@@ -29,6 +33,7 @@ interface Props {
   setSelectedTaskId: (taskId: string) => void;
   setShowTaskDetail: (show: boolean) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
+  taskIdToOpenImmediately?: string;
 }
 
 export default function TasksTable({
@@ -38,11 +43,15 @@ export default function TasksTable({
   itemType,
   setShowAddTaskPopup,
   setUnsavedTasks,
+  taskIdToOpenImmediately,
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
   const {
@@ -72,6 +81,15 @@ export default function TasksTable({
       assignee: task.assignee,
     }),
   );
+
+  // Show task detail if taskIdToOpenImmediately is provided
+  useEffect(() => {
+    if (!taskIdToOpenImmediately) return;
+    if (!transformedTasks.some((task) => task.id === taskIdToOpenImmediately))
+      return;
+    setSelectedTaskId(taskIdToOpenImmediately);
+    setShowTaskDetail(true);
+  }, [taskIdToOpenImmediately, tasksTableData]);
 
   const filteredTasks = transformedTasks
     .filter((task) => {
@@ -130,15 +148,10 @@ export default function TasksTable({
       statusId: status.id ?? "",
     });
 
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId as string,
-      itemId,
-    });
+    await invalidateQueriesAllTasks(projectId as string, [itemId]);
 
     if (itemType === "US") {
-      await utils.userStories.getUserStoriesTableFriendly.invalidate({
-        projectId: projectId as string,
-      });
+      await invalidateQueriesAllUserStories(projectId as string);
     }
   };
 
@@ -206,9 +219,11 @@ export default function TasksTable({
           <StatusPicker
             status={row.status}
             onChange={async (status) => {
-              isGhost
-                ? onGhostTaskStatusChange(status)
-                : onTaskStatusChange(row.id, status);
+              if (isGhost) {
+                onGhostTaskStatusChange(status);
+              } else {
+                await onTaskStatusChange(row.id, status);
+              }
             }}
             className="w-full"
           />
@@ -276,16 +291,8 @@ export default function TasksTable({
       ),
     );
 
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId as string,
-      itemId: itemId,
-    });
-    await utils.kanban.getTasksForKanban.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllTasks(projectId as string, [itemId]);
+    await invalidateQueriesAllUserStories(projectId as string);
 
     return true;
   };
@@ -347,14 +354,10 @@ export default function TasksTable({
         });
       }
 
-      await refetchTasks();
-      await utils.kanban.getTasksForKanban.invalidate({
-        projectId: projectId as string,
-      });
+      await invalidateQueriesAllTasks(projectId as string, [itemId]);
+
       if (itemType === "US") {
-        await utils.userStories.getUserStoriesTableFriendly.invalidate({
-          projectId: projectId as string,
-        });
+        await invalidateQueriesAllUserStories(projectId as string);
       }
     },
     (removedIds) => {

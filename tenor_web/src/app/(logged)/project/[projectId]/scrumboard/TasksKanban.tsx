@@ -27,13 +27,22 @@ import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
-
+import {
+  useInvalidateQueriesAllTasks,
+  useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesTaskDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 export default function TasksKanban() {
+  // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
   const formatTaskScrumId = useFormatTaskScrumId();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
+  // TRPC
   const { data: itemsAndColumnsData, isLoading } =
     api.kanban.getTasksForKanban.useQuery({
       projectId: projectId as string,
@@ -48,16 +57,22 @@ export default function TasksKanban() {
     });
   };
 
+  // REACT
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  // Drag and drop state
   const [lastDraggedItemId, setLastDraggedItemId] = useState<string | null>(
     null,
   );
 
-  // const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
-  const [detaiItemId, setDetaiItemId] = useState("");
+  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  // Detail item and parent
+  const [detailItemId, setDetaiItemId] = useState("");
+  const detailItem = itemsAndColumnsData?.items[detailItemId];
+  const detailUserStoryId =
+    detailItem?.itemType == "US" ? detailItem.itemId : null;
+  // TODO: Do same for issue
+  // TODO: Do same for generic item
 
-  //// Drag and drop operations
+  // UTILITY
   let updateOperationsInProgress = 0;
 
   const handleDragEnd = async (itemId: string, columnId: string) => {
@@ -142,21 +157,10 @@ export default function TasksKanban() {
     );
 
     if (updateOperationsInProgress == 1) {
-      await utils.kanban.getTasksForKanban.invalidate({
-        projectId: projectId as string,
-      });
-      // TODO: Invalidate queries for items
-      // await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      //   projectId: projectId as string,
-      // });
-      // await Promise.all(
-      //   userStoryIds.map(async (userStoryId) => {
-      //     await utils.userStories.getUserStoryDetail.invalidate({
-      //       projectId: projectId as string,
-      //       userStoryId,
-      //     });
-      //   }),
-      // );
+      await invalidateQueriesAllTasks(projectId as string);
+      await invalidateQueriesTaskDetails(projectId as string, itemIds);
+      await invalidateQueriesAllUserStories(projectId as string);
+      // TODO: Invalidate queries for issues and generic items
     }
 
     updateOperationsInProgress--;
@@ -222,9 +226,7 @@ export default function TasksKanban() {
                   selectedItems={selectedItems}
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetaiItemId}
-                  setShowDetail={() => {
-                    console.log("Show detail");
-                  }}
+                  setShowDetail={setShowDetail}
                   renderCard={(item) => (
                     <ItemCardRender
                       item={item}
@@ -282,13 +284,14 @@ export default function TasksKanban() {
         </DragOverlay>
       </DragDropProvider>
 
-      {/* {renderDetail && (
+      {renderDetail && detailUserStoryId && (
         <UserStoryDetailPopup
           setShowDetail={setShowDetail}
           showDetail={showDetail}
           userStoryId={detailUserStoryId}
+          taskIdToOpenImmediately={detailItemId}
         />
-      )} */}
+      )}
     </>
   );
 }
