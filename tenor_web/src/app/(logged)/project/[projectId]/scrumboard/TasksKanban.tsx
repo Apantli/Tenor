@@ -32,6 +32,7 @@ import {
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
+import IssueDetailPopup from "../issues/IssueDetailPopup";
 
 export default function TasksKanban() {
   // GENERAL
@@ -67,9 +68,8 @@ export default function TasksKanban() {
   // Detail item and parent
   const [detailItemId, setDetaiItemId] = useState("");
   const detailItem = itemsAndColumnsData?.items[detailItemId];
-  const detailUserStoryId =
-    detailItem?.itemType == "US" ? detailItem.itemId : null;
-  // TODO: Do same for issue
+  const detailItemType = detailItem?.itemType;
+  const detailParentItemId = detailItem?.itemId;
   // TODO: Do same for generic item
 
   // UTILITY
@@ -284,11 +284,20 @@ export default function TasksKanban() {
         </DragOverlay>
       </DragDropProvider>
 
-      {renderDetail && detailUserStoryId && (
+      {renderDetail && detailItemType === "US" && detailParentItemId && (
         <UserStoryDetailPopup
           setShowDetail={setShowDetail}
           showDetail={showDetail}
-          userStoryId={detailUserStoryId}
+          userStoryId={detailParentItemId}
+          taskIdToOpenImmediately={detailItemId}
+        />
+      )}
+
+      {renderDetail && detailItemType === "IS" && detailParentItemId && (
+        <IssueDetailPopup
+          setShowDetail={setShowDetail}
+          showDetail={showDetail}
+          issueId={detailParentItemId}
           taskIdToOpenImmediately={detailItemId}
         />
       )}

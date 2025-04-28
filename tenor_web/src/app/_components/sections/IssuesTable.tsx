@@ -6,14 +6,14 @@ import Table, { type TableColumns } from "../table/Table";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
-import { IssueCol } from "~/server/api/routers/issues";
+import type { IssueCol } from "~/server/api/routers/issues";
 import {
   useFormatTaskIssueId,
 } from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import UserStoryPicker from "../specific-pickers/UserStoryPicker";
-import { ExistingUserStory } from "~/lib/types/detailSchemas";
+import type { ExistingUserStory } from "~/lib/types/detailSchemas";
 import PrimaryButton from "../buttons/PrimaryButton";
 import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
 import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";

@@ -33,12 +33,14 @@ interface Props {
   issueId: string;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
+  taskIdToOpenImmediately?: string;
 }
 
 export default function IssueDetailPopup({
   issueId,
   showDetail,
   setShowDetail,
+  taskIdToOpenImmediately,
 }: Props) {
   const { projectId } = useParams();
 
@@ -349,6 +351,7 @@ export default function IssueDetailPopup({
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}
+            taskIdToOpenImmediately={taskIdToOpenImmediately}
           />
         </div>
       )}
