@@ -90,7 +90,7 @@ export default function InputTextField({
           <input
             id={id}
             className={cn(
-              "block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500",
+              "block w-full rounded-md border border-gray-300 px-4 py-2 pr-10 shadow-sm outline-none focus:border-blue-500",
               className,
             )}
             ref={inputRef}
@@ -153,7 +153,7 @@ export default function InputTextField({
                       <div className="relative inline-block">
                         <input
                           type="text"
-                          className="block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500"
+                          className="block w-full rounded-md border border-gray-300 px-4 py-2 pr-28 shadow-sm outline-none focus:border-blue-500"
                           placeholder="What is in your mind?"
                           value={currentMessage}
                           onChange={(e) => setCurrentMessage(e.target.value)}
@@ -161,18 +161,22 @@ export default function InputTextField({
                           onKeyDown={handleKeyDown}
                         />
                         <div className="absolute bottom-2 right-2">
-                          <SendIcon
-                            className="text-gray-500 hover:cursor-pointer"
-                            onClick={() => {
-                              if (currentMessage.length > 0) {
-                                setMessages((prev) => [
-                                  ...prev,
-                                  currentMessage,
-                                ]);
-                                setCurrentMessage("");
-                              }
-                            }}
-                          />
+                          <div className="flex flex-row items-center gap-2">
+                            <p className="text-sm text-gray-500">Frida AI</p>
+
+                            <SendIcon
+                              className="text-gray-500 hover:cursor-pointer"
+                              onClick={() => {
+                                if (currentMessage.length > 0) {
+                                  setMessages((prev) => [
+                                    ...prev,
+                                    currentMessage,
+                                  ]);
+                                  setCurrentMessage("");
+                                }
+                              }}
+                            />
+                          </div>
                         </div>
                       </div>
                       <div className="flex flex-row items-center gap-2">
