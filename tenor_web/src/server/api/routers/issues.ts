@@ -26,7 +26,13 @@ import {
   getProjectRef,
 } from "./settings";
 import { TagSchema } from "~/lib/types/zodFirebaseSchema";
+import { console } from "inspector";
+import * as admin from "firebase-admin";
 
+// Asegúrate de inicializar el admin SDK si no lo has hecho aún
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
 
 export interface IssueCol {
   id: string;
@@ -65,7 +71,7 @@ const getIssuesFromProject = async (
   });
 
   const issues: WithId<Issue>[] = docs.filter((issues): issues is WithId<Issue> => issues !== null)
-
+  
   return issues;
 };
 
@@ -98,11 +104,8 @@ const getTasksAssignUsers = async (
   tasksIds: string[],
 ) => {
   if (!tasksIds || tasksIds.length === 0) {
-    console.log("No hay tasksIds");
     return [];
   }
-
-  console.log("Tasks Ids:", tasksIds);
 
   const users = await Promise.all(
     tasksIds.map(async (taskId) => {
@@ -114,45 +117,41 @@ const getTasksAssignUsers = async (
         .get();
 
       if (!taskDoc.exists) {
-        console.log(`No existe task: ${taskId}`);
         return undefined;
       }
 
       const taskData = taskDoc.data();
-      console.log(`Task data para ${taskId}:`, taskData);
 
       const userId = taskData?.assigneeId;
 
       if (!userId) {
-        console.log(`Task ${taskId} no tiene assigneeId`);
         return undefined;
       }
 
-      const userDoc = await firestore.collection("users").doc
-      (userId).get();
-
-      if (!userDoc.exists) {
-        console.log(`No existe usuario: ${userId}`);
+      // Utilizar firebaseAdmin para obtener los detalles del usuario
+      try {
+        const userRecord = await admin.auth().getUser(userId);
+        return {
+          id: userRecord.uid,
+          displayName: userRecord.displayName,
+          photoURL: userRecord.photoURL,
+        };
+      } catch (error) {
+        console.error(`Error fetching user data for ${userId}:`, error);
         return undefined;
       }
-
-
-      console.log(`Usuario encontrado: ${userDoc.id}`, userDoc.data());
-
-      return userDoc.exists? { id: userDoc.id, ...userDoc.data() } : undefined;
-
     })
   );
 
   const filteredUsers = users.filter(Boolean) as { id: string; [key: string]: any }[];
 
-  // Filtra usuarios únicos por ID
+  // Filtrar usuarios únicos por ID
   const uniqueUsers = Array.from(
     new Map(filteredUsers.map((u) => [u.id, u])).values()
   );
 
   return uniqueUsers;
-}
+};
 
 export const issuesRouter = createTRPCRouter({
   getIssuesTableFriendly: protectedProcedure
@@ -186,6 +185,20 @@ export const issuesRouter = createTRPCRouter({
               displayName: user.displayName,
               photoURL: user.photoURL,
           }));
+
+            // Log para verificar el contenido de cada IssueCol
+            console.log("Processed IssueCol:", {
+              id: issue.id,
+              scrumId: issue.scrumId,
+              name: issue.name,
+              description: issue.description,
+              priority: await getPriorityTag(settingsRef, issue.  priorityId),
+              relatedUserStory: issue.relatedUserStoryId
+                ? await getUserStory(projectRef, issue. relatedUserStoryId)
+                : undefined,
+              assignUsers,
+              size: issue.size
+            });
     
             return {
               id: issue.id,
@@ -201,6 +214,8 @@ export const issuesRouter = createTRPCRouter({
             };
           }),
         );
+
+        console.log("Final Issues Col:", fixedData);
 
         return fixedData as IssueCol[];
       } catch (err) {

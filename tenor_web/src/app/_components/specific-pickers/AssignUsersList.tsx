@@ -29,9 +29,9 @@ export default function AssignUsersList({
   console.log("Usuarios recibidos:", selectedUsers);
 
   return (
-    <div className="flex gap-2">
-      {selectedUsers.map((user) => (
-        <ProfilePicture key={user.uid} user={user} />
+    <div className="flex gap-2 relative marginLef" >
+      {selectedUsers.map((user, index) => (
+        <ProfilePicture key={user.uid} user={user} pictureClassName={index === 0 ? '' : '-ml-4'} />
       ))}
     </div>
   );
