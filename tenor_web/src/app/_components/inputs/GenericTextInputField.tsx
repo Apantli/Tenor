@@ -60,6 +60,13 @@ export default function InputField({
     }
   };
 
+  const handleSendMessage = () => {
+    if (currentMessage.length > 0) {
+      setMessages((prev) => [...prev, currentMessage]);
+      setCurrentMessage("");
+    }
+  };
+
   const updateInputValue = (newValue: string) => {
     if (onChange) {
       if (isTextArea && textareaRef.current) {
@@ -242,21 +249,19 @@ export default function InputField({
                           value={currentMessage}
                           onChange={(e) => setCurrentMessage(e.target.value)}
                           ref={dropdownInputRef}
-                          onKeyDown={
-                            handleKeyDown as React.KeyboardEventHandler<HTMLInputElement>
-                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleSendMessage();
+                            }
+                            handleKeyDown(e);
+                          }}
                         />
                         <div className="absolute bottom-2 right-2">
                           <SendIcon
                             className="text-gray-500 hover:cursor-pointer"
                             onClick={() => {
-                              if (currentMessage.length > 0) {
-                                setMessages((prev) => [
-                                  ...prev,
-                                  currentMessage,
-                                ]);
-                                setCurrentMessage("");
-                              }
+                              handleSendMessage();
                             }}
                           />
                         </div>
@@ -282,6 +287,7 @@ export default function InputField({
                           {currentMessage.length > 0 ? "Generate" : "Accept"}
                         </PrimaryButton>
                         <DeleteButton
+                          removeDeleteIcon
                           onClick={() => {
                             setClose();
                           }}
