@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import TimeMultiselect, {
@@ -26,6 +26,7 @@ export default function ProjectScrumPreferences() {
   const invalidateQueriesScrumPreferences =
     useInvalidateQueriesScrumPreferences();
   const utils = api.useUtils();
+  const initialLoadRef = useRef(true);
 
   // TRPC
   const { data: scrumSettings, isLoading: settingFetchLoading } =
@@ -63,17 +64,26 @@ export default function ProjectScrumPreferences() {
   };
 
   useEffect(() => {
-    if (sprintDuration && maximumSprintStoryPoints) {
+    if (scrumSettings) {
       setForm({
         sprintDuration: sprintDuration,
         maximumSprintStoryPoints: maximumSprintStoryPoints,
       });
 
-      // Update timeForm when sprintDuration changes
-      setTimeForm([
-        sprintDuration % 7 === 0 ? sprintDuration / 7 : sprintDuration,
-        sprintDuration % 7 === 0 ? "Weeks" : "Days",
-      ]);
+      // Only automatically convert to weeks on initial load
+      if (initialLoadRef.current) {
+        setTimeForm([
+          sprintDuration % 7 === 0 ? sprintDuration / 7 : sprintDuration,
+          sprintDuration % 7 === 0 ? "Weeks" : "Days",
+        ]);
+        initialLoadRef.current = false;
+      } else {
+        if (timeForm[1] === "Weeks") {
+          setTimeForm([Math.floor(sprintDuration / 7), "Weeks"]);
+        } else {
+          setTimeForm([sprintDuration, "Days"]);
+        }
+      }
     }
   }, [scrumSettings]);
 
@@ -126,14 +136,14 @@ export default function ProjectScrumPreferences() {
       });
       return;
     }
-    
+
     await updateScrumSettings({
       projectId: projectId as string,
       days: form.sprintDuration,
       points: form.maximumSprintStoryPoints,
     });
-    
-    // optimistic
+
+    // optimistic for button
     await utils.settings.fetchScrumSettings.cancel({
       projectId: projectId as string,
     });
@@ -208,5 +218,4 @@ export default function ProjectScrumPreferences() {
   );
 }
 
-// TODO: Make the dropdown start with week if sprint duration is divisible by 7
 // TODO: Points table
