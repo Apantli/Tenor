@@ -370,14 +370,12 @@ const settingsRouter = createTRPCRouter({
       const rolesData = roles.docs.map((doc) => {
         const data = doc.data();
         const role = RoleSchema.parse(data);
-        console.log("PAISDBFAJSBDFOAISJBDOFARole data:", role);
         return {
           id: doc.id,
           ...role,
           ...role.tabs,
         } as RoleDetail;
       });
-      console.log("Roles data:", rolesData);
       return rolesData;
     }),
   addRole: protectedProcedure
