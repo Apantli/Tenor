@@ -15,6 +15,7 @@ export default function ProjectPage() {
         <ProjectList />
       </div>
       <div className="hidden flex-1 pt-10 xl:block 2xl:flex-[2]">
+        {/* FIXME: Remove when dashboard is ready */}
         <img
           src="/dashboard_mockup.png"
           className="ml-auto h-full max-h-[700px] w-auto object-contain"
