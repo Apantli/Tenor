@@ -209,11 +209,12 @@ export default function UserStoryList() {
         render(row) {
           return (
             <button
-              className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 setSelectedUS(row.id);
                 setShowDetail(true);
               }}
+              disabled={row.scrumId === undefined}
             >
               {row.scrumId ? (
                 formatUserStoryScrumId(row.scrumId)
@@ -229,14 +230,15 @@ export default function UserStoryList() {
         label: "Title",
         width: 220,
         sortable: true,
-        render(row) {
+        render(row, _, isGhost) {
           return (
             <button
-              className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 setSelectedUS(row.id);
                 setShowDetail(true);
               }}
+              disabled={!isGhost && row.scrumId === undefined}
             >
               {row.title}
             </button>
@@ -492,7 +494,7 @@ export default function UserStoryList() {
     return (
       <Table
         emptyMessage="No user stories found"
-        className={cn("w-[calc(100vw-500px)] overflow-auto", heightOfContent)}
+        className={cn("w-[calc(100vw-504px)] overflow-auto", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}
         onDelete={handleDelete}

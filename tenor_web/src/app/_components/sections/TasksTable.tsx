@@ -182,14 +182,15 @@ export default function TasksTable({
     name: {
       label: "Title",
       width: 200,
-      render(row) {
+      render(row, _, isGhost) {
         return (
           <button
-            className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+            className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
             onClick={() => {
               setSelectedTaskId(row.id);
               setShowTaskDetail(true);
             }}
+            disabled={!isGhost && row.scrumId === undefined}
           >
             {row.name}
           </button>

@@ -115,7 +115,11 @@ export const UserStorySchema = BacklogItemSchema.extend({
     .describe(
       "Use a valid, existing epic id. May be empty if no related epic exists. Only include if this user story is directly related to an epic, as in it's part of the same functionality.\n Example if the epic is 'User login', only include user stories such as 'User can login with email and password' or 'User can login with Google'",
     ),
-  acceptanceCriteria: z.string().describe("Can use valid markdown"),
+  acceptanceCriteria: z
+    .string()
+    .describe(
+      "Can use valid markdown. Describe the acceptance criteria in detail and format it as a list using markdown dashes (-).",
+    ),
   // Redundant fields, but useful for describing their purposes to the AI
   name: z
     .string()

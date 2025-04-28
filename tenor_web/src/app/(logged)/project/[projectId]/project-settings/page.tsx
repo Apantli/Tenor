@@ -149,7 +149,7 @@ export default function ProjectGeneralSettings() {
                       : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
               }
               alt="Project logo"
-              className="h-20 w-20"
+              className="h-20 w-20 rounded-md border border-app-border object-contain p-1"
             />
             <InputFileField
               label=""
