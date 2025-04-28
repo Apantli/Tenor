@@ -108,7 +108,13 @@ export default function InputTextField({
             <Dropdown
               label={
                 <div ref={dropdownButtonRef}>
-                  <AIIcon className="text-gray-500 hover:text-app-primary" />
+                  <span
+                    title="Generate with AI"
+                    className="flex flex-col items-center text-gray-500 hover:text-blue-500"
+                    data-tooltip-id="tooltip"
+                  >
+                    <AIIcon className="text-gray-500 hover:text-app-primary" />
+                  </span>
                 </div>
               }
               className=""
