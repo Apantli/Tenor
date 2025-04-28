@@ -13,6 +13,7 @@ interface Props {
     | null;
   hideTooltip?: boolean;
   className?: ClassNameValue;
+  pictureClassName?: ClassNameValue;
 }
 
 function getUserGradient(uid: string, hashFuncName = "sha256") {
@@ -55,13 +56,14 @@ export default function ProfilePicture({
   user,
   className,
   hideTooltip,
+  pictureClassName,
 }: Props) {
   if (user?.photoURL) {
     return (
       <img
         src={user.photoURL}
         alt=""
-        className="h-8 w-8 rounded-full"
+        className={cn("h-8 w-8 rounded-full", pictureClassName)}
         data-tooltip-id="tooltip"
         data-tooltip-content={user?.displayName}
         data-tooltip-place="top-start"

@@ -1,9 +1,14 @@
-import { SettingsSchema, StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
+import {
+  SettingsSchema,
+  StatusTagSchema,
+  TagSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z, { number } from "zod";
 import type { Firestore } from "firebase-admin/firestore";
-import type { Tag } from "~/lib/types/firebaseSchemas";
-import { link } from "fs";
+import { Tag } from "~/lib/types/firebaseSchemas";
+import { fetchHTML } from "~/utils/webcontent";
+import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
@@ -18,6 +23,10 @@ export const getProjectSettingsRef = (
     .doc(projectId)
     .collection("settings")
     .doc("settings");
+};
+
+export const getProjectRef = (projectId: string, firestore: Firestore) => {
+  return firestore.collection("projects").doc(projectId);
 };
 
 const getProjectSettings = async (projectId: string, firestore: Firestore) => {
@@ -199,31 +208,149 @@ const settingsRouter = createTRPCRouter({
       const text: string = settingsData.aiContext.text;
       return text;
     }),
-  // fetchDefaultSprintDuration: protectedProcedure
-  //   .input(z.object({ projectId: z.string() }))
-  //   .query(async ({ ctx, input }) => {
-  //     const { projectId } = input;
-  //     const settingsDocs = await getProjectSettingsRef(
-  //       projectId,
-  //       ctx.firestore,
-  //     ).get();
-  //     const sprintDuration = settingsDocs.data()?.sprintDuration as number;
+  updateTextContext: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        text: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, text } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          text,
+        },
+      });
+    }),
+  addLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newLink = await fetchHTML(link).then(
+        (content) => ({ link, content }),
+        (error) => {
+          console.error("Error fetching HTML:", error);
+          return { link, content: null };
+        },
+      );
+      const newLinks = [...settingsData.aiContext.links, newLink];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+  removeLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove link from settingsData
+      const newLinks = settingsData.aiContext.links.filter(
+        (l) => l.link !== link,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+  addFiles: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        files: z.array(
+          z.object({
+            name: z.string(),
+            type: z.string(),
+            content: z.string(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, files } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
 
-  //     return sprintDuration ?? defaultSprintDuration;
-  //   }),
-  // fetchMaximumSprintStoryPoints: protectedProcedure
-  //   .input(z.object({ projectId: z.string() }))
-  //   .query(async ({ ctx, input }) => {
-  //     const { projectId } = input;
-  //     const settingsDocs = await getProjectSettingsRef(
-  //       projectId,
-  //       ctx.firestore,
-  //     ).get();
-  //     const maximumSprintStoryPoints = settingsDocs.data()
-  //       ?.maximumSprintStoryPoints as number;
+      const b64Files = files.map((file) => file.content);
+      const fileText = await fetchMultipleFiles(b64Files);
 
-  //     return maximumSprintStoryPoints ?? defaultMaximumSprintStoryPoints;
-  //   }),
+      const filesDecoded = files.map((file, index) => ({
+        name: file.name,
+        type: file.type,
+        content: fileText[index] ?? "",
+      }));
+
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newFiles = [...settingsData.aiContext.files, ...filesDecoded];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
+    }),
+  removeFile: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        file: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, file } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove file from settingsData
+      const newFiles = settingsData.aiContext.files.filter(
+        (f) => f.name !== file,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
+    }),
   fetchScrumSettings: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

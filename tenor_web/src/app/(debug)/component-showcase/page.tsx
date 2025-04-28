@@ -27,12 +27,9 @@ import TagComponent from "~/app/_components/TagComponent";
 import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
 import type { Option } from "~/app/_components/EditableBox/EditableBox";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
-import {
-  acceptableTagColors,
-  generateRandomColor,
-} from "~/app/_components/BacklogTagList";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
+import { acceptableTagColors } from "~/utils/colorUtils";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
