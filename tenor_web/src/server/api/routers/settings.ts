@@ -25,15 +25,8 @@ export const getProjectSettingsRef = (
     .doc("settings");
 };
 
-export const getProjectUserTypesRef = (
-  projectId: string,
-  firestore: Firestore,
-) => {
-  return firestore
-    .collection("projects")
-    .doc(projectId)
-    .collection("settings")
-    .doc("userTypes");
+export const getProjectRef = (projectId: string, firestore: Firestore) => {
+  return firestore.collection("projects").doc(projectId);
 };
 
 const getProjectSettings = async (projectId: string, firestore: Firestore) => {

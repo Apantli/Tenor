@@ -76,7 +76,7 @@ export default function ProjectAIConfig() {
       link: link,
     });
 
-    utils.settings.getContextLinks.invalidate({
+    await utils.settings.getContextLinks.invalidate({
       projectId: projectId as string,
     });
   };
@@ -97,7 +97,7 @@ export default function ProjectAIConfig() {
       link: link,
     });
 
-    utils.settings.getContextLinks.invalidate({
+    await utils.settings.getContextLinks.invalidate({
       projectId: projectId as string,
     });
   };
@@ -134,7 +134,7 @@ export default function ProjectAIConfig() {
       files: filesBase64Encoded,
     });
 
-    utils.settings.getContextFiles.invalidate({
+    await utils.settings.getContextFiles.invalidate({
       projectId: projectId as string,
     });
   };
@@ -155,7 +155,7 @@ export default function ProjectAIConfig() {
       file: file.name,
     });
 
-    utils.settings.getContextFiles.invalidate({
+    await utils.settings.getContextFiles.invalidate({
       projectId: projectId as string,
     });
   };
@@ -176,7 +176,7 @@ export default function ProjectAIConfig() {
       text: text,
     });
 
-    utils.settings.getContextDialog.invalidate({
+    await utils.settings.getContextDialog.invalidate({
       projectId: projectId as string,
     });
   };
@@ -188,8 +188,8 @@ export default function ProjectAIConfig() {
           <h1 className="text-3xl font-semibold">AI Context</h1>
           {newText != text && !isLoading && (
             <PrimaryButton
-              onClick={() => {
-                handleUpdateText(newText);
+              onClick={async () => {
+                await handleUpdateText(newText);
               }}
             >
               Save

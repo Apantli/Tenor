@@ -439,7 +439,7 @@ ${await getBacklogTagsContext(issueData.tagIds)}\n\n`;
 
       const passedInPrompt =
         prompt != ""
-          ? `Consider that the user wants the user stories for the following: ${prompt}`
+          ? `Consider that the user wants the tasks for the following: ${prompt}`
           : "";
 
       const completePrompt = `

@@ -6,6 +6,7 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import PrimaryButton from "../buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 interface Props {
   label: string;
@@ -35,6 +36,7 @@ export default function FileList({
   }
 
   const { alert } = useAlert();
+  const confirm = useConfirmation();
 
   return (
     <div className="w-full">
@@ -95,13 +97,24 @@ export default function FileList({
           <li
             key={index}
             className="h-[100px] flex-shrink-0"
-            onClick={() => handleFileRemove(file)}
+            onClick={async () => {
+              if (
+                !(await confirm(
+                  "Remove file?",
+                  `Removing "${file.name}". This action is not revertible.`,
+                  "Delete file",
+                ))
+              ) {
+                return;
+              }
+              handleFileRemove(file);
+            }}
             title={file.name}
           >
             <span
               className="flex flex-col items-center text-gray-500 hover:text-blue-500"
               data-tooltip-id="tooltip"
-              data-tooltip-content={file.name}
+              data-tooltip-content={"Click to delete"}
             >
               {/* Load Icon based on file type */}
               {file.type === "application/pdf" ? (
