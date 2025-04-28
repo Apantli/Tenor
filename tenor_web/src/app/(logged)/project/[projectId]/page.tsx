@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 
-import AIInputText from "~/app/_components/inputs/AIInput";
+import AIInputText from "~/app/_components/inputs/AiInput";
 
 export default function ProjectOverview() {
   const { projectId } = useParams();
