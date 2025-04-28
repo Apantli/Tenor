@@ -18,6 +18,8 @@ import {
 } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
 
+const maxInputNumber = 10000000000;
+
 export default function ProjectScrumPreferences() {
   // HOOKS
   const { projectId } = useParams();
@@ -52,6 +54,8 @@ export default function ProjectScrumPreferences() {
       : form.sprintDuration,
     form.sprintDuration % 7 === 0 ? "Weeks" : "Days",
   ]);
+
+  const [numberWarningShown, setNumberWarningShown] = useState(false);
 
   const hasBeenModified = () => {
     if (!sprintDuration || !maximumSprintStoryPoints) {
@@ -97,7 +101,29 @@ export default function ProjectScrumPreferences() {
   ]);
 
   // HANDLES
+  const checkLargeNumber = (value: number) => {
+    if (value < maxInputNumber) return false;
+    if (numberWarningShown) return true;
+
+    alert(
+      "Number too large",
+      `Please only input numbers less or equal than ${maxInputNumber.toLocaleString()}.`,
+      {
+        type: "warning",
+        duration: 3000,
+      },
+    );
+    return true;
+  };
+
   const handleTimeNumberChange = (value: number) => {
+    if (checkLargeNumber(value)) {
+      setTimeForm([maxInputNumber, timeForm[1]]);
+      setNumberWarningShown(true);
+      return;
+    }
+    setNumberWarningShown(false);
+
     const timeFrame = timeForm[1];
     const multiplier = timeframeMultiplier[timeFrame];
     const newDays = value * multiplier;
@@ -117,6 +143,24 @@ export default function ProjectScrumPreferences() {
     setForm((prev) => ({
       ...prev,
       sprintDuration: currentTotalDays,
+    }));
+  };
+
+  const handleStoryPointsChange = (valueString: string) => {
+    const value = parseInt(valueString === "" ? "0" : valueString, 10);
+    if (checkLargeNumber(value)) {
+      setForm((prev) => ({
+        ...prev,
+        maximumSprintStoryPoints: maxInputNumber,
+      }));
+      setNumberWarningShown(true);
+      return;
+    }
+    setNumberWarningShown(false);
+
+    setForm((prev) => ({
+      ...prev,
+      maximumSprintStoryPoints: value,
     }));
   };
 
@@ -196,15 +240,9 @@ export default function ProjectScrumPreferences() {
             inputMode="numeric"
             pattern="[0-9]*"
             value={form.maximumSprintStoryPoints}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                maximumSprintStoryPoints: parseInt(
-                  e.target.value === "" ? "0" : e.target.value,
-                  10,
-                ),
-              }))
-            }
+            onChange={(e) => {
+              handleStoryPointsChange(e.target.value);
+            }}
           />
         </>
       )}
@@ -217,5 +255,5 @@ export default function ProjectScrumPreferences() {
     </div>
   );
 }
-
+// TODO: Make when adding too many digits an alert
 // TODO: Points table

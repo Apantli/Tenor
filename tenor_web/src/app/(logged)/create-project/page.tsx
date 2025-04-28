@@ -218,7 +218,7 @@ export default function ProjectCreator() {
     ) {
       alert(
         "Limit exceeded",
-        `The project name can't be longer than ${maxProjectNameLength} characbeters.`,
+        `The project name can't be longer than ${maxProjectNameLength} characters.`,
         {
           type: "warning",
           duration: 3000,
