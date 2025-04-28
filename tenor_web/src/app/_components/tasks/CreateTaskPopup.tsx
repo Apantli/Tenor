@@ -16,6 +16,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { type Size, type Tag } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
+import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -26,6 +27,7 @@ interface Props {
 export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
   const { projectId } = useParams();
   const projectIdString = projectId as string;
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   const { data: users, isLoading } = api.users.getUserListEdiBox.useQuery({
     projectId: projectIdString,
@@ -90,7 +92,7 @@ export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
       onTaskAdded(taskId);
     }
 
-    await utils.tasks.getTasksTableFriendly.invalidate();
+    await invalidateQueriesAllTasks(projectIdString, [itemId]);
   };
 
   return (

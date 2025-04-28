@@ -52,27 +52,6 @@ export default function IssueDetailPopup({
     issueId,
   });
 
-  const { data: tasksTableData, isLoading: isLoadingTasks } =
-    api.tasks.getTasksTableFriendly.useQuery(
-      {
-        projectId: projectId as string,
-        itemId: issueId,
-      },
-      {
-        enabled: showDetail,
-      },
-    );
-
-  const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
-    (task) => ({
-      id: task.id,
-      scrumId: task.scrumId,
-      name: task.title,
-      status: task.status,
-      assignee: task.assignee,
-    }),
-  );
-
   const { mutateAsync: updateIssue } = api.issues.modifyIssue.useMutation();
   const { mutateAsync: deleteIssue } = api.issues.deleteIssue.useMutation();
   const utils = api.useUtils();
@@ -115,9 +94,6 @@ export default function IssueDetailPopup({
       predefinedAlerts.unexpectedError();
     }
   }, [error]);
-
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
 
   const isModified = () => {
     if (editForm.name !== issueDetail?.name) return true;
@@ -180,45 +156,6 @@ export default function IssueDetailPopup({
     // });
 
     await refetch();
-  };
-
-  const handleTaskStatusChange = async (taskId: string, status: Tag) => {
-    const updatedTasks = tasksTableData?.map((task) => {
-      if (task.id === taskId) {
-        return {
-          ...task,
-          status: status,
-        };
-      }
-      return task;
-    });
-
-    await utils.tasks.getTasksTableFriendly.cancel({
-      projectId: projectId as string,
-      itemId: issueId,
-    });
-
-    utils.tasks.getTasksTableFriendly.setData(
-      {
-        projectId: projectId as string,
-        itemId: issueId,
-      },
-      (oldData) => {
-        if (!oldData) return undefined;
-        return updatedTasks ?? [];
-      },
-    );
-
-    await changeStatus({
-      taskId,
-      projectId: projectId as string,
-      statusId: status.id ?? "",
-    });
-
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId as string,
-      itemId: issueId,
-    });
   };
 
   const handleDelete = async () => {
@@ -407,10 +344,8 @@ export default function IssueDetailPopup({
           )}
 
           <TasksTable
-            tasks={transformedTasks ?? []}
             itemId={issueId}
-            itemType="US"
-            onTaskStatusChange={handleTaskStatusChange}
+            itemType="IS"
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}

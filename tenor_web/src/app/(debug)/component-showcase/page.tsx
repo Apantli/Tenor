@@ -29,6 +29,7 @@ import type { Option } from "~/app/_components/EditableBox/EditableBox";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import { acceptableTagColors } from "~/app/_components/BacklogTagList";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
+import { defaultRoleList } from "~/lib/defaultTags";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -268,7 +269,7 @@ function TableShowcase() {
   const generationTime = 5000;
 
   // Helper hook to manage the state of the ghost items
-  const [
+  const {
     onAccept,
     onReject,
     beginLoading,
@@ -276,7 +277,7 @@ function TableShowcase() {
     ghostData,
     ghostRows,
     setGhostRows,
-  ] = useGhostTableStateManager<ExampleUser, number>((ids: number[]) => {
+  } = useGhostTableStateManager<ExampleUser, number>(async (ids: number[]) => {
     // Use the callback to perform the action you want when the user accepts the ghosts
     const newData = data.concat(
       dummyGhostData.filter((ghost) => ids.includes(ghost.id)),
@@ -702,11 +703,7 @@ function InputComponents() {
         handleEditMemberRole={() => {
           console.log("File added");
         }}
-        roleList={[
-          { id: "admin_role_id", label: "Admin" },
-          { id: "developer_role_id", label: "Developer" },
-          { id: "viewer_role_id", label: "Viewer" },
-        ]}
+        roleList={defaultRoleList}
       />
     </div>
   );

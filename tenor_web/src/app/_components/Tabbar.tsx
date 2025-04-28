@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import React, { type MouseEventHandler } from "react";
 import { cn } from "~/lib/utils";
+import InterceptedLink from "./InterceptableLink";
 
 interface Props {
   disabled?: boolean;
@@ -26,7 +27,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     { title: "User Stories", link: "/user-stories", enabled: true },
     { title: "Issues", link: "/issues", enabled: true },
     { title: "Sprints", link: "/sprints", enabled: true },
-    { title: "Kanban", link: "/kanban", enabled: false },
+    { title: "Scrum Board", link: "/scrumboard", enabled: true },
     { title: "Calendar", link: "/calendar", enabled: false },
     { title: "Performance", link: "/performance", enabled: false },
     { title: "Project Settings", link: "/project-settings", enabled: true },
@@ -42,7 +43,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   return (
     <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
       {tabs.map(({ title, link, enabled }, i) => (
-        <Link
+        <InterceptedLink
           key={i}
           className={cn(
             "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
@@ -62,7 +63,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
               <div className="absolute -right-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[-5px_5px_0_0_white]"></div>
             </>
           )}
-        </Link>
+        </InterceptedLink>
       ))}
     </div>
   );

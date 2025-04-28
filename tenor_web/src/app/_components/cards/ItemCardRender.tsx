@@ -1,46 +1,44 @@
 import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
-import type { inferRouterOutputs } from "@trpc/server";
-import type { sprintsRouter } from "~/server/api/routers/sprints";
 import TagComponent from "../TagComponent";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
+import type { CardItem } from "~/server/api/routers/kanban";
 
 interface Props {
-  userStory: inferRouterOutputs<
-    typeof sprintsRouter
-  >["getUserStoryPreviewsBySprint"]["userStories"][0];
+  item: CardItem;
   showBackground?: boolean;
+  scrumIdFormatter?: (scrumId: number) => string;
 }
 
-export default function UserStoryCardRender({
-  userStory,
+export default function ItemCardRender({
+  item,
   showBackground = false,
+  scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-
   return (
     <div
       className={cn({
-        "group relative flex w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-4 shadow-xl transition duration-100 pl-4":
+        "group relative flex w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-4 pl-4 shadow-xl transition duration-100":
           showBackground,
       })}
     >
       <div className={cn("flex w-full flex-col items-start gap-2")}>
         <div>
           <span className="font-semibold">
-            {formatUserStoryScrumId(userStory.scrumId)}:{" "}
+            {scrumIdFormatter ? scrumIdFormatter(item.scrumId) : item.scrumId}
+            :{" "}
           </span>
-          {userStory.name}
+          {item.name}
         </div>
-        {(userStory.size !== undefined || userStory.tags.length > 0) && (
+        {(item.size !== undefined || item.tags.length > 0) && (
           <div className="flex gap-2">
-            {userStory.size && (
-              <TagComponent reducedPadding color={sizeToColor[userStory.size]}>
-                {userStory.size}
+            {item.size && (
+              <TagComponent reducedPadding color={sizeToColor[item.size]}>
+                {item.size}
               </TagComponent>
             )}
-            {userStory.tags.slice(0, 2).map((tag) => (
+            {item.tags.slice(0, 2).map((tag) => (
               <TagComponent
                 key={tag.id}
                 reducedPadding
@@ -50,16 +48,16 @@ export default function UserStoryCardRender({
                 {tag.name}
               </TagComponent>
             ))}
-            {userStory.tags.length > 2 && (
+            {item.tags.length > 2 && (
               <TagComponent
                 reducedPadding
                 data-tooltip-id="tooltip"
-                data-tooltip-html={userStory.tags
+                data-tooltip-html={item.tags
                   .slice(2)
                   .map((tag) => tag.name)
                   .join("<br>")}
               >
-                +{userStory.tags.length - 2}
+                +{item.tags.length - 2}
               </TagComponent>
             )}
           </div>

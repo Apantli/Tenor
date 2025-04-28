@@ -3,13 +3,11 @@ import { type ClassNameValue } from "tailwind-merge";
 import Link from "next/link";
 
 interface ButtonProps {
-  children: React.ReactNode;
   className?: ClassNameValue;
   asSpan?: boolean;
 }
 
 interface LinkProps {
-  children: React.ReactNode;
   className?: ClassNameValue;
   href: string;
   asSpan?: boolean;

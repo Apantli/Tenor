@@ -10,6 +10,7 @@ import {
   type TableOptions,
   type DeleteOptions,
 } from "./Table";
+import PrimaryButton from "../buttons/PrimaryButton";
 
 interface GhostTableRowProps<I, T> {
   value: T;
@@ -20,6 +21,7 @@ interface GhostTableRowProps<I, T> {
   columnWidths: number[];
   onAccept?: () => void;
   onReject?: () => void;
+  className?: string;
 }
 
 function GhostTableRow<
@@ -35,8 +37,8 @@ function GhostTableRow<
   columnWidths,
   onAccept,
   onReject,
+  className,
 }: GhostTableRowProps<I, T>) {
-  const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
     () => filterVisibleColumns(Object.entries(columns)),
     [columns],
@@ -44,12 +46,13 @@ function GhostTableRow<
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr ${((extraOptions?.length ?? 0) + 1) * 30}px` : "");
+    ` 1fr 110px`;
 
   return (
     <div
       className={cn(
-        "z-0 grid min-w-fit origin-top items-center gap-2 rounded-lg border-b border-app-border bg-app-primary py-2 pl-2 text-white transition",
+        "z-0 grid min-w-fit origin-top items-center gap-3 border-b border-app-border bg-slate-100/80 py-2 pl-2 text-gray-800 transition",
+        className,
       )}
       style={{ gridTemplateColumns }}
     >
@@ -59,13 +62,13 @@ function GhostTableRow<
           return (
             <div
               key={key}
-              className="flex animate-pulse items-center justify-start"
+              className="flex animate-pulse items-center justify-start text-app-secondary"
             >
-              <AiIcon fontSize="small" htmlColor="white" />
+              <AiIcon fontSize="small" />
             </div>
           );
         return (
-          <div key={key} className="w-full truncate">
+          <div key={key} className="w-full truncate text-app-text">
             {column.render
               ? column.render(
                   value,
@@ -77,12 +80,18 @@ function GhostTableRow<
         );
       })}
       <div></div> {/* 1fr */}
-      <div className="flex items-center gap-2">
-        <button className="cursor-pointer" onClick={onReject}>
-          <RejectIcon htmlColor="white" fontSize="small" />
+      <div className="flex items-center justify-end gap-2 pr-3 text-app-primary">
+        <button
+          className="p-1 text-sm text-app-text underline underline-offset-4"
+          onClick={onReject}
+        >
+          Reject
         </button>
-        <button className="cursor-pointer" onClick={onAccept}>
-          <AcceptIcon htmlColor="white" fontSize="small" />
+        <button
+          className="rounded-md bg-app-secondary p-1 text-sm text-white"
+          onClick={onAccept}
+        >
+          Accept
         </button>
       </div>
     </div>

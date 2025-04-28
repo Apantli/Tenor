@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
@@ -29,19 +29,26 @@ import type { TaskPreview } from "~/lib/types/detailSchemas";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
+import { useInvalidateQueriesAllTasks, useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   userStoryId: string;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
+  taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
 }
 
 export default function UserStoryDetailPopup({
   userStoryId,
   showDetail,
   setShowDetail,
+  taskIdToOpenImmediately,
 }: Props) {
   const { projectId } = useParams();
+  const confirm = useConfirmation();
+  const utils = api.useUtils();
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const [unsavedTasks, setUnsavedTasks] = useState(false);
 
   const {
     data: userStoryDetail,
@@ -53,32 +60,12 @@ export default function UserStoryDetailPopup({
     userStoryId,
   });
 
-  const { data: tasksTableData, isLoading: isLoadingTasks } =
-    api.tasks.getTasksTableFriendly.useQuery(
-      {
-        projectId: projectId as string,
-        itemId: userStoryId,
-      },
-      {
-        enabled: showDetail,
-      },
-    );
-
-  const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
-    (task) => ({
-      id: task.id,
-      scrumId: task.scrumId,
-      name: task.title,
-      status: task.status,
-      assignee: task.assignee,
-    }),
-  );
-
   const { mutateAsync: updateUserStory } =
     api.userStories.modifyUserStory.useMutation();
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
-  const utils = api.useUtils();
+  const { mutateAsync: changeStatus } =
+    api.tasks.changeTaskStatus.useMutation();
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -89,9 +76,9 @@ export default function UserStoryDetailPopup({
   const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
+
   const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
     usePopupVisibilityState();
-
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
     undefined,
   );
@@ -100,17 +87,17 @@ export default function UserStoryDetailPopup({
   const { predefinedAlerts } = useAlert();
   const formatSprintNumber = useFormatSprintNumber();
 
-  // Copy the editable data from the user story
   useEffect(() => {
     if (!userStoryDetail) return;
-    setEditForm({
-      name: userStoryDetail.name,
-      description: userStoryDetail.description,
-      acceptanceCriteria: userStoryDetail.acceptanceCriteria,
-    });
-  }, [userStoryDetail]);
-
-  const confirm = useConfirmation();
+    if (!editMode) {
+      // Only update the form when we're not in edit mode
+      setEditForm({
+        name: userStoryDetail.name,
+        description: userStoryDetail.description,
+        acceptanceCriteria: userStoryDetail.acceptanceCriteria,
+      });
+    }
+  }, [userStoryDetail, editMode]);
 
   useEffect(() => {
     if (error) {
@@ -118,9 +105,6 @@ export default function UserStoryDetailPopup({
       predefinedAlerts.unexpectedError();
     }
   }, [error]);
-
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
 
   const isModified = () => {
     if (editForm.name !== userStoryDetail?.name) return true;
@@ -132,21 +116,32 @@ export default function UserStoryDetailPopup({
 
   const handleSave = async (
     updatedData: NonNullable<typeof userStoryDetail>,
+    saveEditForm = false,
   ) => {
+    const finalData =
+      saveEditForm && editMode
+        ? {
+            ...updatedData,
+            name: editForm.name,
+            description: editForm.description,
+            acceptanceCriteria: editForm.acceptanceCriteria,
+          }
+        : updatedData;
+
     const updatedUserStory = {
-      name: updatedData.name,
-      description: updatedData.description,
-      acceptanceCriteria: updatedData.acceptanceCriteria,
+      name: finalData.name,
+      description: finalData.description,
+      acceptanceCriteria: finalData.acceptanceCriteria,
       tagIds:
-        updatedData?.tags
+        finalData?.tags
           .map((tag) => tag.id)
           .filter((tag) => tag !== undefined) ?? [],
-      priorityId: updatedData?.priority?.id,
-      size: updatedData?.size,
-      epicId: updatedData?.epic?.id ?? "",
-      sprintId: updatedData?.sprint?.id ?? "",
-      dependencyIds: updatedData?.dependencies.map((us) => us.id) ?? [],
-      requiredByIds: updatedData?.requiredBy.map((us) => us.id) ?? [],
+      priorityId: finalData?.priority?.id,
+      size: finalData?.size,
+      epicId: finalData?.epic?.id ?? "",
+      sprintId: finalData?.sprint?.id ?? "",
+      dependencyIds: finalData?.dependencies.map((us) => us.id) ?? [],
+      requiredByIds: finalData?.requiredBy.map((us) => us.id) ?? [],
     };
 
     // Cancel ongoing queries for this user story data
@@ -165,7 +160,7 @@ export default function UserStoryDetailPopup({
         if (!oldData) return undefined;
         return {
           ...oldData,
-          ...updatedData,
+          ...finalData,
         };
       },
     );
@@ -177,56 +172,11 @@ export default function UserStoryDetailPopup({
     });
 
     // Make other places refetch the data
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.userStories.getAllUserStoryPreviews.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllUserStories(projectId as string);
 
-    await refetch();
-  };
-
-  const handleTaskStatusChange = async (taskId: string, status: Tag) => {
-    const updatedTasks = tasksTableData?.map((task) => {
-      if (task.id === taskId) {
-        return {
-          ...task,
-          status: status,
-        };
-      }
-      return task;
-    });
-
-    await utils.tasks.getTasksTableFriendly.cancel({
-      projectId: projectId as string,
-      itemId: userStoryId,
-    });
-
-    utils.tasks.getTasksTableFriendly.setData(
-      {
-        projectId: projectId as string,
-        itemId: userStoryId,
-      },
-      (oldData) => {
-        if (!oldData) return undefined;
-        return updatedTasks ?? [];
-      },
-    );
-
-    await changeStatus({
-      taskId,
-      projectId: projectId as string,
-      statusId: status.id ?? "",
-    });
-
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId as string,
-      itemId: userStoryId,
-    });
+    if (!editMode || saveEditForm) {
+      await refetch();
+    }
   };
 
   const handleDelete = async () => {
@@ -242,15 +192,7 @@ export default function UserStoryDetailPopup({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
-      await utils.userStories.getUserStoriesTableFriendly.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.userStories.getAllUserStoryPreviews.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-        projectId: projectId as string,
-      });
+      await invalidateQueriesAllUserStories(projectId as string);
       setShowDetail(false);
     }
   };
@@ -265,6 +207,15 @@ export default function UserStoryDetailPopup({
             "Your changes will be discarded.",
             "Discard changes",
             "Keep Editing",
+          );
+          if (!confirmation) return;
+        }
+        if (unsavedTasks) {
+          const confirmation = await confirm(
+            "Are you sure?",
+            "You have unsaved AI generated tasks. To save them, please accept them first.",
+            "Discard",
+            "Keep editing",
           );
           if (!confirmation) return;
         }
@@ -359,6 +310,15 @@ export default function UserStoryDetailPopup({
       }
       editMode={isLoading ? undefined : editMode}
       setEditMode={async (isEditing) => {
+        if (unsavedTasks) {
+          const confirmation = await confirm(
+            "Are you sure?",
+            "You have unsaved AI generated tasks. To save them, please accept them first.",
+            "Discard",
+            "Keep editing",
+          );
+          if (!confirmation) return;
+        }
         setEditMode(isEditing);
 
         if (!userStoryDetail) return;
@@ -369,10 +329,10 @@ export default function UserStoryDetailPopup({
             description: editForm.description,
             acceptanceCriteria: editForm.acceptanceCriteria,
           };
-          await handleSave(updatedData);
+          await handleSave(updatedData, true); // Pass true to save the edit form
         }
       }}
-      disablePassiveDismiss={editMode}
+      disablePassiveDismiss={editMode || unsavedTasks}
     >
       {editMode && (
         <>
@@ -430,13 +390,13 @@ export default function UserStoryDetailPopup({
           )}
 
           <TasksTable
-            tasks={transformedTasks ?? []}
             itemId={userStoryId}
             itemType="US"
-            onTaskStatusChange={handleTaskStatusChange}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}
+            setUnsavedTasks={setUnsavedTasks}
+            taskIdToOpenImmediately={taskIdToOpenImmediately}
           />
         </div>
       )}

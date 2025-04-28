@@ -11,7 +11,7 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
+import { useFormatTaskScrumId, useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SidebarPopup } from "../Popup";
 import { Timestamp } from "firebase/firestore";
@@ -22,6 +22,7 @@ import { Option } from "../EditableBox/EditableBox";
 import { DatePicker } from "../DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
 import { UserPreview } from "~/lib/types/detailSchemas";
+import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   taskId: string;
@@ -37,6 +38,7 @@ export default function TaskDetailPopup({
   setShowDetail,
 }: Props) {
   const { projectId } = useParams();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   const {
     data: taskDetail,
@@ -64,7 +66,7 @@ export default function TaskDetailPopup({
     description: "",
   });
 
-  const formatTaskScrumId = useFormatUserStoryScrumId();
+  const formatTaskScrumId = useFormatTaskScrumId();
 
   const { predefinedAlerts } = useAlert();
 
@@ -128,7 +130,7 @@ export default function TaskDetailPopup({
       taskData: {
         name: updatedData.name,
         description: updatedData.description,
-        statusId: updatedData.status.id ?? "",
+        statusId: updatedData.status?.id ?? "",
         size: updatedData.size,
         assigneeId: updatedData.assignee?.uid ?? "",
         dueDate: updatedData.dueDate
@@ -137,10 +139,7 @@ export default function TaskDetailPopup({
       },
     });
 
-    await utils.tasks.getTasksTableFriendly.invalidate({
-      projectId: projectId as string,
-      itemId: itemId,
-    });
+    await invalidateQueriesAllTasks(projectId as string, [itemId]);
 
     await refetch();
   };
@@ -159,10 +158,7 @@ export default function TaskDetailPopup({
         taskId: taskId,
       });
 
-      await utils.tasks.getTasksTableFriendly.invalidate({
-        projectId: projectId as string,
-        itemId: itemId,
-      });
+      await invalidateQueriesAllTasks(projectId as string, [itemId]);
 
       setShowDetail(false);
     }
