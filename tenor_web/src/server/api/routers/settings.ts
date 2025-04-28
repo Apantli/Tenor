@@ -3,9 +3,7 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
-import { link } from "fs";
 import { fetchHTML } from "~/utils/webcontent";
-import { add, remove } from "node_modules/cypress/types/lodash";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 
 export const getProjectSettingsRef = (
