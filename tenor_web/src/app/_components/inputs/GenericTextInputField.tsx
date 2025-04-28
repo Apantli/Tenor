@@ -283,8 +283,9 @@ export default function InputField({
                               setCurrentMessage("");
                             }
                           }}
+                          disabled={currentMessage.length === 0}
                         >
-                          {currentMessage.length > 0 ? "Generate" : "Accept"}
+                          Accept Changes
                         </PrimaryButton>
                         <DeleteButton
                           removeDeleteIcon
