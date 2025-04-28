@@ -5,14 +5,10 @@ import Popup from "~/app/_components/Popup";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
-import {
-  generateRandomColor,
-} from "~/app/_components/BacklogTagList";
+import { generateRandomColor } from "~/app/_components/BacklogTagList";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import {
-  useInvalidateQueriesItemStatus,
-} from "~/app/_hooks/invalidateHooks";
+import { useInvalidateQueriesItemStatus } from "~/app/_hooks/invalidateHooks";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
@@ -123,7 +119,7 @@ export default function CreateKanbanListPopup({
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
-
+        {/* FIXME: Only allow colors that have good contrast... Maybe just a picker from options is better */}
         <DropdownColorPicker
           value={form.color}
           onChange={(color) => setForm({ ...form, color })}
