@@ -1,5 +1,5 @@
 import { z } from "zod";
-// import { zodToJsonSchema } from "zod-to-json-schema";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import type { WithId, Tag, Size } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { UserStory } from "~/lib/types/firebaseSchemas";

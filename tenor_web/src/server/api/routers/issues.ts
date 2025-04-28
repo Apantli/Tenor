@@ -98,8 +98,11 @@ const getTasksAssignUsers = async (
   tasksIds: string[],
 ) => {
   if (!tasksIds || tasksIds.length === 0) {
+    console.log("No hay tasksIds");
     return [];
   }
+
+  console.log("Tasks Ids:", tasksIds);
 
   const users = await Promise.all(
     tasksIds.map(async (taskId) => {
@@ -110,14 +113,32 @@ const getTasksAssignUsers = async (
         .doc(taskId)
         .get();
 
-      const taskData = taskDoc.data();
-      const userId = taskData?.assigneeId;
-
-      if (!userId) {
+      if (!taskDoc.exists) {
+        console.log(`No existe task: ${taskId}`);
         return undefined;
       }
 
-      const userDoc = await firestore.collection("users").doc(userId).get();
+      const taskData = taskDoc.data();
+      console.log(`Task data para ${taskId}:`, taskData);
+
+      const userId = taskData?.assigneeId;
+
+      if (!userId) {
+        console.log(`Task ${taskId} no tiene assigneeId`);
+        return undefined;
+      }
+
+      const userDoc = await firestore.collection("users").doc
+      (userId).get();
+
+      if (!userDoc.exists) {
+        console.log(`No existe usuario: ${userId}`);
+        return undefined;
+      }
+
+
+      console.log(`Usuario encontrado: ${userDoc.id}`, userDoc.data());
+
       return userDoc.exists? { id: userDoc.id, ...userDoc.data() } : undefined;
 
     })

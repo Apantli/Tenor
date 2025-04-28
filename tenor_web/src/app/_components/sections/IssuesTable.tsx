@@ -202,23 +202,37 @@ export default function IssuesTable() {
             if (!projectId || !row?.id) return;
 
             try {
+              
+              await utils.issues.getIssuesTableFriendly.cancel({ projectId: projectId as string });
+              utils.issues.getIssuesTableFriendly.setData({ projectId: projectId as string }, (oldData) => {
+                if (!oldData) return oldData;
+          
+                return oldData.map((issue) => {
+                  if (issue.id === row.id) {
+                    return {
+                      ...issue,
+                      relatedUserStory: userStory,
+                    };
+                  }
+                  return issue;
+                });
+              });
+          
+            
               await updateAssignUserStorie({
                 projectId: projectId as string,
                 issueId: row.id,
-                relatedUserStoryId: userStory?.id ?? "", // puede venir vacío si se remueve
+                relatedUserStoryId: userStory?.id ?? "",
               });
+          
 
-              // Refetch o invalidate para reflejar los cambios
-              await refetchIssues();
               await utils.issues.getIssueDetail.invalidate({
                 projectId: projectId as string,
                 issueId: row.id,
               });
-
-              console.log("User story updated");
+          
             } catch (error) {
-              console.log("Failed to update user story");
-              console.error("Error updating user story:", error);
+              console.error("Failed to update user story:", error);
             }
           };
           console.log("row", row);
@@ -226,9 +240,7 @@ export default function IssuesTable() {
             <UserStoryPicker
               userStory={row.relatedUserStory}
               onChange={(userStory) => {
-                handleUserStoryChange(row, userStory).catch((err) => {
-                  console.error("Failed to update user story:", err);
-                });
+                handleUserStoryChange(row, userStory);
               }}
             />
           );
@@ -303,6 +315,7 @@ export default function IssuesTable() {
         label: "Assignees",
         width: 120,
         render(row) {
+          console.log("Assign users:", row.assignUsers);
           return (
             <AssignUsersList 
               users={row.assignUsers}

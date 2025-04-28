@@ -144,14 +144,14 @@ export default function IssueDetailPopup({
       issueData: updatedIssue,
     });
 
-
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
     await utils.userStories.getAllUserStoryPreviews.invalidate({
       projectId: projectId as string,
     });
     await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+      projectId: projectId as string,
+    });
+
+    await utils.issues.getIssuesTableFriendly.invalidate({
       projectId: projectId as string,
     });
 
@@ -172,15 +172,16 @@ export default function IssueDetailPopup({
         issueId: issueId,
       });
 
-      await utils.userStories.getUserStoriesTableFriendly.invalidate({
-        projectId: projectId as string,
-      });
       await utils.userStories.getAllUserStoryPreviews.invalidate({
         projectId: projectId as string,
       });
       await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
         projectId: projectId as string,
       });
+      await utils.issues.getIssuesTableFriendly.invalidate({
+        projectId: projectId as string,
+      });
+
       setShowDetail(false);
     }
   };
