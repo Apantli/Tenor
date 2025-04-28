@@ -27,11 +27,8 @@ import {
   getProjectRef,
 } from "./settings";
 import { TagSchema } from "~/lib/types/zodFirebaseSchema";
-import { console } from "inspector";
 import * as admin from "firebase-admin";
-import { dbAdmin } from "~/utils/firebaseAdmin";
 
-// Asegúrate de inicializar el admin SDK si no lo has hecho aún
 if (!admin.apps.length) {
   admin.initializeApp();
 }
@@ -78,7 +75,6 @@ const getIssuesFromProject = async (
 
     return issues;
   } catch (err) {
-    console.error("Error fetching issues:", err);
     throw new TRPCError({
       code: "INTERNAL_SERVER_ERROR",
       message: "Error fetching issues from the database",
@@ -245,7 +241,6 @@ export const issuesRouter = createTRPCRouter({
               };
             }
             catch (err){
-              console.error("Error processing issue:", issue.id, err);
               throw err;  // Propagar el error hacia el bloque catch principal), 
             }
           })
@@ -253,7 +248,6 @@ export const issuesRouter = createTRPCRouter({
 
         return fixedData as IssueCol[];
       } catch (err) {
-        console.log("Error getting issues:", err);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
@@ -304,7 +298,6 @@ export const issuesRouter = createTRPCRouter({
           });
         return { success: true, issueId: issue.id };
       } catch (err) {
-        console.log("Error creating issue:", err);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
