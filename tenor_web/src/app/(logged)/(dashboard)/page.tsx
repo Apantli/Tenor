@@ -18,6 +18,7 @@ export default function ProjectPage() {
         <img
           src="/dashboard_mockup.png"
           className="ml-auto h-full max-h-[700px] w-auto object-contain"
+          alt="Dashboard mockup"
         />
       </div>
     </div>
@@ -84,7 +85,7 @@ function ProjectList() {
         />
         <CreateNewProject />
       </div>
-      <ul className="h-[calc(100vh-250px)] overflow-y-auto">
+      <ul className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto">
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
@@ -103,8 +104,8 @@ function ProjectList() {
                   alt={project.name}
                 />
               </div>
-              <div className="flex flex-col justify-start pl-4 pr-4">
-                <h3 className="my-[7px] truncate text-lg font-semibold">
+              <div className="flex flex-1 flex-col justify-start overflow-hidden pl-4 pr-4">
+                <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold">
                   {project.name}
                 </h3>
                 <p className="line-clamp-2 text-base">{project.description}</p>
