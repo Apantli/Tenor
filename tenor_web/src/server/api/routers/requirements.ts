@@ -1,14 +1,21 @@
-import type {
-  Requirement,
-  Tag,
-  WithId,
-} from "~/lib/types/firebaseSchemas";
+import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { getProjectSettingsRef } from "./settings";
 import { FieldPath } from "firebase-admin/firestore";
 
+/**
+ * @interface RequirementCol
+ * @description Represents a requirement in a table-friendly format for the UI
+ * @property {string} id - The unique identifier of the requirement
+ * @property {string} [name] - The optional name of the requirement
+ * @property {string} description - The description of the requirement
+ * @property {Tag} priorityId - The priority tag of the requirement
+ * @property {Tag} requirementTypeId - The requirement type tag
+ * @property {Tag} requirementFocusId - The requirement focus tag
+ * @property {number} scrumId - The scrum ID of the requirement
+ */
 export interface RequirementCol {
   id: string;
   name?: string;
@@ -19,8 +26,13 @@ export interface RequirementCol {
   scrumId: number;
 }
 
-// Get the tags for the requirements type
-
+/**
+ * @function getRequirementsFromProject
+ * @description Retrieves all non-deleted requirements from a project, ordered by scrumId
+ * @param {FirebaseFirestore.Firestore} dbAdmin - The Firestore database instance
+ * @param {string} projectId - The ID of the project to retrieve requirements from
+ * @returns {Promise<WithId<Requirement>[]>} An array of requirement objects with their IDs
+ */
 const getRequirementsFromProject = async (
   dbAdmin: FirebaseFirestore.Firestore,
   projectId: string,
@@ -42,6 +54,15 @@ const getRequirementsFromProject = async (
   return requirements;
 };
 
+/**
+ * @function createRequirementsTableData
+ * @description Transforms requirement data into a table-friendly format with all necessary tag information
+ * @param {WithId<Requirement>[]} data - The raw requirement data
+ * @param {string} projectId - The ID of the project
+ * @param {FirebaseFirestore.Firestore} dbAdmin - The Firestore database instance
+ * @returns {Promise<{allTags: Tag[], fixedData: RequirementCol[], allRequirementTypeTags: Tag[], allRequirementFocusTags: Tag[]}>}
+ *         Object containing the processed data and all tag collections
+ */
 const createRequirementsTableData = async (
   data: WithId<Requirement>[],
   projectId: string,
@@ -197,6 +218,13 @@ const createRequirementsTableData = async (
 };
 
 export const requirementsRouter = createTRPCRouter({
+  /**
+   * @procedure getRequirementTypeTags
+   * @description Retrieves all non-deleted requirement type tags for a project
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @returns {Tag[]} An array of requirement type tags
+   */
   getRequirementTypeTags: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -212,6 +240,14 @@ export const requirementsRouter = createTRPCRouter({
       }));
       return tags;
     }),
+
+  /**
+   * @procedure getRequirementFocusTags
+   * @description Retrieves all non-deleted requirement focus tags for a project
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @returns {Tag[]} An array of requirement focus tags
+   */
   getRequirementFocusTags: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -226,6 +262,18 @@ export const requirementsRouter = createTRPCRouter({
       }));
       return tags;
     }),
+
+  /**
+   * @procedure getRequirementsTableFriendly
+   * @description Gets requirements for a project in a table-friendly format
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @returns {object} Object containing formatted requirement data and all tag collections
+   * @returns {RequirementCol[]} returns.fixedData - The requirements in a table-friendly format
+   * @returns {Tag[]} returns.allTags - All priority tags
+   * @returns {Tag[]} returns.allRequirementTypeTags - All requirement type tags
+   * @returns {Tag[]} returns.allRequirementFocusTags - All requirement focus tags
+   */
   getRequirementsTableFriendly: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -250,6 +298,16 @@ export const requirementsRouter = createTRPCRouter({
         allRequirementFocusTags,
       };
     }),
+
+  /**
+   * @procedure getRequirement
+   * @description Gets a specific requirement by ID
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string} input.requirementId - The ID of the requirement to retrieve
+   * @returns {WithId<Requirement>} The requirement with its ID
+   * @throws {Error} If the requirement is not found
+   */
   getRequirement: protectedProcedure
     .input(z.object({ projectId: z.string(), requirementId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -270,6 +328,13 @@ export const requirementsRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * @procedure createOrModifyRequirement
+   * @description Creates a new requirement or updates an existing one
+   * @input {Requirement & {projectId: string}} input - The requirement data with project ID
+   * @returns {string} Success message
+   * @throws {Error} If the project is not found or the requirement to update is not found
+   */
   createOrModifyRequirement: protectedProcedure
     .input(RequirementSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -311,14 +376,22 @@ export const requirementsRouter = createTRPCRouter({
         return "Requirement created successfully";
       }
     }),
-  
+
+  /**
+   * @procedure deleteRequirement
+   * @description Marks a requirement as deleted (soft delete)
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string} input.requirementId - The ID of the requirement to delete
+   * @returns {object} Object with success status
+   * @throws {Error} If the requirement is not found
+   */
   deleteRequirement: protectedProcedure
-  
     .input(
-      z.object({ 
-        projectId: z.string(), 
-        requirementId: z.string() 
-      })
+      z.object({
+        projectId: z.string(),
+        requirementId: z.string(),
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const requirementsRef = ctx.firestore
@@ -332,7 +405,7 @@ export const requirementsRouter = createTRPCRouter({
         throw new Error("Requirement not found");
       }
 
-      await requirementsRef.update({ deleted: true});
+      await requirementsRef.update({ deleted: true });
       return { success: true };
     }),
 });

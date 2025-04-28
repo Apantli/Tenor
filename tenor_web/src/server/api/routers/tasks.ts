@@ -15,6 +15,18 @@ import { getProjectSettingsRef } from "./settings";
 import { timestampToDate } from "./sprints";
 import { askAiToGenerate } from "~/utils/aiGeneration";
 
+/**
+ * @interface TaskCol
+ * @description Represents a task in a table-friendly format for the UI
+ * @property {string} id - The unique identifier of the task
+ * @property {number} [scrumId] - The optional scrum ID of the task
+ * @property {string} title - The title/name of the task
+ * @property {Tag} status - The status tag of the task
+ * @property {object} [assignee] - The optional user assigned to the task
+ * @property {string} assignee.uid - The user ID of the assignee
+ * @property {string} assignee.displayName - The display name of the assignee
+ * @property {string} assignee.photoURL - The photo URL of the assignee
+ */
 export interface TaskCol {
   id: string;
   scrumId?: number;
@@ -27,6 +39,13 @@ export interface TaskCol {
   };
 }
 
+/**
+ * @function getTasksFromProject
+ * @description Retrieves all non-deleted tasks from a project, ordered by scrumId
+ * @param {FirebaseFirestore.Firestore} dbAdmin - The Firestore database instance
+ * @param {string} projectId - The ID of the project to retrieve tasks from
+ * @returns {Promise<WithId<Task>[]>} An array of task objects with their IDs
+ */
 export const getTasksFromProject = async (
   dbAdmin: FirebaseFirestore.Firestore,
   projectId: string,
@@ -51,6 +70,14 @@ export const getTasksFromProject = async (
   return tasks;
 };
 
+/**
+ * @function getTasksFromItem
+ * @description Retrieves all non-deleted tasks associated with a specific item (user story, issue, etc.)
+ * @param {FirebaseFirestore.Firestore} dbAdmin - The Firestore database instance
+ * @param {string} projectId - The ID of the project to retrieve tasks from
+ * @param {string} itemId - The ID of the item (user story, issue) to retrieve tasks for
+ * @returns {Promise<WithId<Task>[]>} An array of task objects with their IDs
+ */
 const getTasksFromItem = async (
   dbAdmin: FirebaseFirestore.Firestore,
   projectId: string,
@@ -77,6 +104,13 @@ const getTasksFromItem = async (
   return tasks;
 };
 
+/**
+ * @function getStatusTag
+ * @description Retrieves a status tag from the settings collection based on its ID
+ * @param {FirebaseFirestore.DocumentReference} settingsRef - Reference to the settings document
+ * @param {string} statusId - The ID of the status tag to retrieve
+ * @returns {Promise<Tag | undefined>} The status tag object or undefined if not found
+ */
 const getStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
   statusId: string,
@@ -91,6 +125,13 @@ const getStatusTag = async (
   return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
 };
 
+/**
+ * @function getTodoStatusTag
+ * @description Retrieves the "Todo" status tag from the settings collection
+ * @param {FirebaseFirestore.DocumentReference} settingsRef - Reference to the settings document
+ * @returns {Promise<Tag>} The Todo status tag object
+ * @throws {TRPCError} If the Todo status tag is not found
+ */
 const getTodoStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
 ) => {
@@ -112,6 +153,15 @@ const getTodoStatusTag = async (
 };
 
 export const tasksRouter = createTRPCRouter({
+  /**
+   * @procedure createTask
+   * @description Creates a new task in the specified project and assigns it a scrumId
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {object} input.taskData - The task data without scrumId
+   * @returns {object} Object with success status and the created task ID
+   * @throws {TRPCError} If there's an error creating the task
+   */
   createTask: protectedProcedure
     .input(
       z.object({
@@ -142,6 +192,14 @@ export const tasksRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * @procedure getTasksTableFriendly
+   * @description Gets tasks for a specific item in a table-friendly format
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string} input.itemId - The ID of the item to get tasks for
+   * @returns {TaskCol[]} Array of tasks in a table-friendly format
+   */
   getTasksTableFriendly: protectedProcedure
     .input(z.object({ projectId: z.string(), itemId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -176,6 +234,15 @@ export const tasksRouter = createTRPCRouter({
       return fixedData as TaskCol[];
     }),
 
+  /**
+   * @procedure getTaskDetail
+   * @description Gets detailed information about a specific task
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string} input.taskId - The ID of the task
+   * @returns {TaskDetail} Detailed task information
+   * @throws {TRPCError} If the task is not found
+   */
   getTaskDetail: protectedProcedure
     .input(z.object({ projectId: z.string(), taskId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -228,6 +295,15 @@ export const tasksRouter = createTRPCRouter({
       } as TaskDetail;
     }),
 
+  /**
+   * @procedure modifyTask
+   * @description Updates a task with new data
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string} input.taskId - The ID of the task to modify
+   * @input {object} input.taskData - The new task data
+   * @returns {object} Object with success status
+   */
   modifyTask: protectedProcedure
     .input(
       z.object({
@@ -252,6 +328,15 @@ export const tasksRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  /**
+   * @procedure changeTaskStatus
+   * @description Updates the status of a task
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string} input.taskId - The ID of the task to modify
+   * @input {string} input.statusId - The ID of the new status
+   * @returns {object} Object with success status
+   */
   changeTaskStatus: protectedProcedure
     .input(
       z.object({
@@ -271,7 +356,14 @@ export const tasksRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // deleted task
+  /**
+   * @procedure deleteTask
+   * @description Marks a task as deleted (soft delete)
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string} input.taskId - The ID of the task to delete
+   * @returns {object} Object with success status
+   */
   deleteTask: protectedProcedure
     .input(
       z.object({
@@ -290,6 +382,17 @@ export const tasksRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  /**
+   * @procedure generateTasks
+   * @description Generates tasks for an item using AI
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string} input.itemId - The ID of the item to generate tasks for
+   * @input {string} input.itemType - The type of the item (US, IS, IT)
+   * @input {number} input.amount - The number of tasks to generate
+   * @input {string} input.prompt - Additional user prompt for task generation
+   * @returns {Array} Array of generated tasks with Todo status
+   */
   generateTasks: protectedProcedure
     .input(
       z.object({
