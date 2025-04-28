@@ -5,6 +5,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
 import { link } from "fs";
 import { fetchHTML } from "~/utils/webcontent";
+import { add } from "node_modules/cypress/types/lodash";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -273,6 +274,14 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
+  // addFile: protectedProcedure
+  // .input(
+  //   z.object({
+  //     projectId: z.string(),
+  //     file: z.object({
+  //       name: z.string(),
+  //       type: z.string(),
+  //       content: z.string(),
 });
 
 export default settingsRouter;
