@@ -46,6 +46,7 @@ export default function TasksTable({
   taskIdToOpenImmediately,
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
+  const [taskToOpen, setTaskToOpen] = useState(taskIdToOpenImmediately);
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
@@ -82,14 +83,14 @@ export default function TasksTable({
     }),
   );
 
-  // Show task detail if taskIdToOpenImmediately is provided
+  // Show task detail if taskToOpen is provided
   useEffect(() => {
-    if (!taskIdToOpenImmediately) return;
-    if (!transformedTasks.some((task) => task.id === taskIdToOpenImmediately))
-      return;
-    setSelectedTaskId(taskIdToOpenImmediately);
+    if (!taskToOpen) return;
+    if (!transformedTasks.some((task) => task.id === taskToOpen)) return;
+    setSelectedTaskId(taskToOpen);
     setShowTaskDetail(true);
-  }, [taskIdToOpenImmediately, tasksTableData]);
+    setTaskToOpen(undefined);
+  }, [taskToOpen, tasksTableData]);
 
   const filteredTasks = transformedTasks
     .filter((task) => {
