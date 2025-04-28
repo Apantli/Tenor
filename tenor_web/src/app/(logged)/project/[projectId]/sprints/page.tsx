@@ -580,7 +580,7 @@ export default function ProjectSprints() {
             <div className="flex w-full justify-between gap-5 pb-4">
               <h1 className="text-3xl font-semibold">Sprints</h1>
               <div className="flex flex-1 items-center justify-end gap-3">
-                <div style={{ width: "300px" }}>
+                <div style={{ width: "500px" }}>
                   <SearchBar
                     searchValue={sprintSearchValue}
                     handleUpdateSearch={(e) =>
