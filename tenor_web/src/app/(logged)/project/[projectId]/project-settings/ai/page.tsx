@@ -182,10 +182,10 @@ export default function ProjectAIConfig() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
-          <h1 className="text-3xl font-semibold">AI Context</h1>
+          <h1 className="mb-4 text-3xl font-semibold">AI Context</h1>
           {newText != text && !isLoading && (
             <PrimaryButton
               onClick={async () => {
@@ -198,13 +198,14 @@ export default function ProjectAIConfig() {
         </div>
       </div>
       {links && loadedFiles && !isLoading ? (
-        <div>
+        <div className="flex flex-col gap-4">
           <InputTextAreaField
             label="Project Context"
             value={newText}
             onChange={(e) => {
               setNewText(e.target.value);
             }}
+            className="h-[250px]"
           ></InputTextAreaField>
           <FileList
             label={"Context Files"}
@@ -221,9 +222,8 @@ export default function ProjectAIConfig() {
           ></LinkList>
         </div>
       ) : (
-        <div className="mt-5 flex flex-row gap-x-3">
-          <LoadingSpinner />
-          <p className="text-lg font-bold">Loading...</p>
+        <div className="flex h-40 w-full items-center justify-center">
+          <LoadingSpinner color="primary" />
         </div>
       )}
     </div>

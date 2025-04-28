@@ -302,9 +302,8 @@ export default function ProjectUsers() {
           handleUpdateControlSprints={handleUpdateControlSprints}
         ></RoleTable>
       ) : (
-        <div className="mt-5 flex flex-row gap-x-3">
-          <LoadingSpinner />
-          <p className="text-lg font-bold">Loading...</p>
+        <div className="flex h-40 w-full items-center justify-center">
+          <LoadingSpinner color="primary" />
         </div>
       )}
     </div>

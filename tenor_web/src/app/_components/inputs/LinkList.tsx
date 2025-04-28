@@ -64,7 +64,7 @@ export default function LinkList({
       </div>
       <ul
         className={cn(
-          "flex h-[100px] w-full list-none gap-4 overflow-x-auto rounded-md border border-gray-300 px-4 py-2 shadow-sm",
+          "flex h-[100px] w-full list-none gap-4 overflow-x-auto overflow-y-hidden rounded-md border border-gray-300 px-4 py-2 shadow-sm",
           className,
         )}
       >
