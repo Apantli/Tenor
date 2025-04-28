@@ -127,18 +127,18 @@ export default function ProjectSprints() {
 
       const formatDateRange = (startDate: Date, endDate: Date) => {
         const months = [
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
+          "January",
+          "February",
+          "March",
+          "April",
           "May",
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
         ];
 
         const startMonth = months[startDate.getMonth()];
@@ -153,7 +153,7 @@ export default function ProjectSprints() {
             ? `0${endDate.getDate()}`
             : `${endDate.getDate()}`;
 
-        return `${startMonth} ${startDay} - ${endMonth} ${endDay}`;
+        return `${startMonth} ${startDay} - ${endMonth} ${endDay}`.toLowerCase();
       };
 
       const dateRange = formatDateRange(
