@@ -5,7 +5,6 @@ import Popup from "~/app/_components/Popup";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
-import { generateRandomColor } from "~/app/_components/BacklogTagList";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesItemStatus } from "~/app/_hooks/invalidateHooks";
@@ -13,6 +12,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import HelpIcon from "@mui/icons-material/Help";
+import { generateRandomTagColor } from "~/utils/colorUtils";
 
 interface Props {
   showPopup: boolean;
@@ -38,7 +38,7 @@ export default function CreateKanbanListPopup({
     marksTaskAsDone: boolean;
   }>({
     name: "",
-    color: generateRandomColor(),
+    color: generateRandomTagColor(),
     marksTaskAsDone: false,
   });
 
