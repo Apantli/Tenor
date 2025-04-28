@@ -105,17 +105,21 @@ export default function UserStoryList() {
       >[]
     >();
 
-  useNavigationGuard(async () => {
-    if ((generatedUserStories?.current?.length ?? 0) > 0) {
-      return !(await confirm(
-        "Are you sure?",
-        "You have unsaved AI generated user stories. To save them, please accept them first.",
-        "Discard",
-        "Keep editing",
-      ));
-    }
-    return false;
-  });
+  useNavigationGuard(
+    async () => {
+      if ((generatedUserStories?.current?.length ?? 0) > 0) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved AI generated user stories. To save them, please accept them first.",
+          "Discard",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    (generatedUserStories.current?.length ?? 0) > 0,
+    "Are you sure you want to leave? You have unsaved AI generated user stories. To save them, please accept them first.",
+  );
 
   const {
     onAccept,

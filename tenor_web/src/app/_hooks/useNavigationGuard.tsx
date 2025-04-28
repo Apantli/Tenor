@@ -45,7 +45,11 @@ export function useNavigationGuardContext() {
   return context;
 }
 
-export default function useNavigationGuard(shouldBlock: GuardFunction) {
+export default function useNavigationGuard(
+  shouldBlock: GuardFunction,
+  block?: boolean,
+  refreshString?: string,
+) {
   const context = useContext(NavigationGuardContext);
   if (!context) {
     throw new Error(
@@ -55,8 +59,20 @@ export default function useNavigationGuard(shouldBlock: GuardFunction) {
 
   useEffect(() => {
     context.setShouldBlock(() => shouldBlock);
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!block) return;
+      const msg = refreshString;
+
+      (e || window.event).returnValue = msg;
+      return msg;
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
       context.setShouldBlock(() => async () => false);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, []);
+  }, [block]);
 }
