@@ -19,6 +19,7 @@ import DeleteButton from "../buttons/DeleteButton";
 import Markdown from "react-markdown";
 import LoadingSpinner from "../LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -137,7 +138,7 @@ export default function RequirementsTable() {
       requirement;
     if (checkValues) {
       if (!name) {
-        alert("Oops...", "Requirement Name must have a value.", {
+        alert("Oops...", "Requirement name must have a value.", {
           type: "error",
           duration: 5000, // time in ms (5 seconds)
         });
@@ -176,6 +177,9 @@ export default function RequirementsTable() {
       deleted: false,
     };
 
+    await utils.requirements.getRequirementsTableFriendly.cancel({
+      projectId: projectId as string,
+    });
     await utils.requirements.getRequirement.cancel({
       projectId: projectId as string,
       requirementId: requirement.id,
@@ -186,8 +190,10 @@ export default function RequirementsTable() {
     await utils.requirements.getRequirementsTableFriendly.invalidate({
       projectId: projectId as string,
     });
-
-    console.log(response);
+    await utils.requirements.getRequirement.invalidate({
+      projectId: projectId as string,
+      requirementId: requirement.id,
+    });
   };
 
   // TRPC
@@ -266,7 +272,7 @@ export default function RequirementsTable() {
         render(row) {
           return (
             <button
-              className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
                 setEditingRequirement(false);
                 setRequirementEdited(row);
@@ -461,11 +467,11 @@ export default function RequirementsTable() {
   }, [requirementsData, isLoadingRequirements]);
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex w-full justify-between">
+    <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
+      <div className="mb-3 flex w-full flex-col justify-between">
         <h2 className="content-center text-3xl font-semibold">Requirements</h2>
-        <div className="flex w-3/4 items-center justify-end gap-2">
-          <div className="w-1/3 p-2">
+        <div className="mt-3 flex flex-1 grow items-center justify-end gap-1">
+          <div className="flex-1">
             <SearchBar
               placeholder="Find a requirement by title or id..."
               searchValue={searchValue}
@@ -482,6 +488,11 @@ export default function RequirementsTable() {
           >
             + Add Requirement
           </PrimaryButton>
+          <AiGeneratorDropdown
+            singularLabel="requirement"
+            pluralLabel="requirements"
+            className="w-[350px]"
+          />
         </div>
       </div>
       {table}
@@ -496,6 +507,14 @@ export default function RequirementsTable() {
               ? async () => {
                   if (editingRequirement) {
                     setEditingRequirement(false);
+                    setRequirementEdited((prev) => {
+                      if (!prev) return null;
+                      return {
+                        ...prev,
+                        name: editForm.name,
+                        description: editForm.description,
+                      };
+                    });
                     await handleEditRequirement(requirementEdited);
                   } else {
                     setEditingRequirement(true);

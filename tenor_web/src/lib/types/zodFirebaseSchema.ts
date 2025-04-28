@@ -38,6 +38,11 @@ export const TagSchema = z.object({
   deleted: z.boolean(),
 });
 
+export const StatusTagSchema = TagSchema.extend({
+  orderIndex: z.number(),
+  marksTaskAsDone: z.boolean(),
+});
+
 export const UserSchema = z.object({
   bio: z.string(),
   jobTitle: z.string(),
@@ -122,12 +127,12 @@ export const UserStorySchema = BacklogItemSchema.extend({
   dependencyIds: z
     .array(z.string())
     .describe(
-      "List of user story ids. May be empty, only include them if this user story depends on them.",
+      "List of user story ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
   requiredByIds: z
     .array(z.string())
     .describe(
-      "List of user story ids. May be empty, only include them if this user story is required by them.",
+      "List of user story ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
 });
 

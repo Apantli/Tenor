@@ -1,4 +1,4 @@
-import { SettingsSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
+import { SettingsSchema, StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
@@ -87,10 +87,11 @@ const settingsRouter = createTRPCRouter({
       );
       const statusTypes = await projectSettingsRef
         .collection("statusTypes")
+        .orderBy("orderIndex")
         .get();
       const statusTypesData = statusTypes.docs.map((doc) => ({
         id: doc.id,
-        ...TagSchema.parse(doc.data()),
+        ...StatusTagSchema.parse(doc.data()),
       }));
 
       return statusTypesData;
