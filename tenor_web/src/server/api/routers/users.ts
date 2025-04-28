@@ -3,7 +3,7 @@ import { type TeamMember } from "~/app/_components/inputs/MemberTable";
 import { z } from "zod";
 import { remove } from "node_modules/cypress/types/lodash";
 import admin from "firebase-admin";
-import { emptyRole } from "~/lib/defaultTags";
+import { emptyRole } from "~/lib/defaultProjectValues";
 
 export const userRouter = createTRPCRouter({
   getUserList: protectedProcedure.query(async ({ ctx }) => {

@@ -32,20 +32,19 @@ export default function TimeMultiselect({
   const timeframeOptions = ["Days", "Weeks"] as TimeFrame[];
 
   const handleDaysChange = (value: string) => {
+    if (value === "") {
+      value = "0";
+    }
     const parsedValue = parseInt(value, 10);
     if (!isNaN(parsedValue)) {
       setInternalDays(parsedValue);
-      handleChange();
+      setDays(parsedValue, timeframe);
     }
   };
 
   const handleTimeframeChange = (value: string) => {
     setTimeFrame(value as TimeFrame);
-    handleChange();
-  };
-
-  const handleChange = () => {
-    setDays(internalDays, timeframe);
+    setDays(internalDays, value as TimeFrame);
   };
 
   return (
@@ -60,12 +59,12 @@ export default function TimeMultiselect({
       )}
       <div id={id} className={cn("flex w-full gap-3", containerClassName)}>
         <InputTextField
-          type="number"
           value={internalDays}
           onChange={(e) => handleDaysChange(e.target.value)}
           containerClassName="w-3/4"
-          min={0}
-          max={100}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
         />
         <Dropdown
           label={

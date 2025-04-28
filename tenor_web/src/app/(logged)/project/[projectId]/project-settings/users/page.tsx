@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import MemberTable, { TeamMember } from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { emptyRole } from "~/lib/defaultTags";
+import { emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
 
 export default function ProjectUsers() {

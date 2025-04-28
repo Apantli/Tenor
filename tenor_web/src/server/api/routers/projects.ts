@@ -23,7 +23,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/base64";
-import { defaultRoleList } from "~/lib/defaultTags";
+import { defaultRoleList } from "~/lib/defaultProjectValues";
 
 const emptySettings: Settings = {
   sprintDuration: 0,

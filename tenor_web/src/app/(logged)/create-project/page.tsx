@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { defaultRoleList } from "~/lib/defaultTags";
+import { defaultRoleList } from "~/lib/defaultProjectValues";
 
 export default function ProjectCreator() {
   const toBase64 = (file: File) =>

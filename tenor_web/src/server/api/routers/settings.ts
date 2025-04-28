@@ -3,6 +3,10 @@ import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z, { number } from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
+import {
+  defaultMaximumSprintStoryPoints,
+  defaultSprintDuration,
+} from "~/lib/defaultProjectValues";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -151,34 +155,66 @@ const settingsRouter = createTRPCRouter({
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
     }),
-  fetchDefaultSprintDuration: protectedProcedure
+  // fetchDefaultSprintDuration: protectedProcedure
+  //   .input(z.object({ projectId: z.string() }))
+  //   .query(async ({ ctx, input }) => {
+  //     const { projectId } = input;
+  //     const settingsDocs = await getProjectSettingsRef(
+  //       projectId,
+  //       ctx.firestore,
+  //     ).get();
+  //     const sprintDuration = settingsDocs.data()?.sprintDuration as number;
+
+  //     return sprintDuration ?? defaultSprintDuration;
+  //   }),
+  // fetchMaximumSprintStoryPoints: protectedProcedure
+  //   .input(z.object({ projectId: z.string() }))
+  //   .query(async ({ ctx, input }) => {
+  //     const { projectId } = input;
+  //     const settingsDocs = await getProjectSettingsRef(
+  //       projectId,
+  //       ctx.firestore,
+  //     ).get();
+  //     const maximumSprintStoryPoints = settingsDocs.data()
+  //       ?.maximumSprintStoryPoints as number;
+
+  //     return maximumSprintStoryPoints ?? defaultMaximumSprintStoryPoints;
+  //   }),
+  fetchScrumSettings: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const projectSprintDuration = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("settings")
-        .select("sprintDuration")
-        .limit(1)
-        .get();
+      const { projectId } = input;
+      const settingsDocs = await getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      ).get();
+      const data = settingsDocs.data();
+      const scrumSettings = {
+        sprintDuration: (data?.sprintDuration ??
+          defaultSprintDuration) as number,
+        maximumSprintStoryPoints: (data?.maximumSprintStoryPoints ??
+          defaultMaximumSprintStoryPoints) as number,
+      };
 
-      return (
-        (projectSprintDuration.docs[0]?.data().sprintDuration as number) ?? 7
-      );
+      return scrumSettings;
     }),
-  updateDefaultSprintDuration: protectedProcedure
+
+  updateScrumSettings: protectedProcedure
     .input(
       z.object({
         projectId: z.string(),
         days: z.number(),
+        points: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, days } = input;
+      const { projectId, days, points } = input;
       const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
       await settingsRef.update({
+        maximumSprintStoryPoints: points,
         sprintDuration: days,
       });
+
       return { success: true };
     }),
 });
