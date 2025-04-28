@@ -491,6 +491,10 @@ export default function ProjectSprints() {
     dndOperationsInProgress -= 1;
   };
 
+  useEffect(() => {
+    setLastDraggedUserStoryId(null);
+  }, [sprintSearchValue]);
+
   return (
     <>
       <DragDropProvider
