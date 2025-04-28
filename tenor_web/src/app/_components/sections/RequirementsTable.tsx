@@ -800,7 +800,7 @@ export default function RequirementsTable() {
           {" "}
           <div className="flex flex-col gap-4">
             {!requirementEdited || editingRequirement ? (
-              <div>
+              <div className="pt-4">
                 <InputTextField
                   label="Title"
                   className="h-12"
@@ -845,7 +845,7 @@ export default function RequirementsTable() {
                 {requirementEdited === null && (
                   <div className="flex gap-2 pt-4">
                     <div className="w-36 space-y-2">
-                      <label className="text-sm font-semibold">Priority</label>
+                      <label className="font-semibold">Priority</label>
                       <PriorityPicker
                         priority={newRequirement.priorityId}
                         onChange={async (priority) => {
@@ -857,7 +857,7 @@ export default function RequirementsTable() {
                       />
                     </div>
                     <div className="w-36 space-y-2">
-                      <label className="text-sm font-semibold">Type</label>
+                      <label className="font-semibold">Type</label>
                       <RequirementTypePicker
                         type={newRequirement.requirementTypeId}
                         onChange={async (type) => {
@@ -869,7 +869,7 @@ export default function RequirementsTable() {
                       />
                     </div>
                     <div className="w-36 space-y-2">
-                      <label className="text-sm font-semibold">Focus</label>
+                      <label className="font-semibold">Focus</label>
                       <RequirementFocusPicker
                         focus={newRequirement.requirementFocusId}
                         onChange={async (focus) => {
@@ -891,7 +891,7 @@ export default function RequirementsTable() {
                 <br />
                 <div className="flex gap-2 pt-4">
                   <div className="w-36 space-y-2">
-                    <label className="text-sm font-semibold">Priority</label>
+                    <label className="font-semibold">Priority</label>
                     <PriorityPicker
                       priority={
                         requirementEdited
@@ -918,7 +918,7 @@ export default function RequirementsTable() {
                     />
                   </div>
                   <div className="w-36 space-y-2">
-                    <label className="text-sm font-semibold">Type</label>
+                    <label className="font-semibold">Type</label>
                     <RequirementTypePicker
                       type={
                         requirementEdited
@@ -945,7 +945,7 @@ export default function RequirementsTable() {
                     />
                   </div>
                   <div className="w-36 space-y-2">
-                    <label className="text-sm font-semibold">Focus</label>
+                    <label className="font-semibold">Focus</label>
                     <RequirementFocusPicker
                       focus={
                         requirementEdited
