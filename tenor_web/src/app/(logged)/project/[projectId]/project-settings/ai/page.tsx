@@ -43,7 +43,7 @@ export default function ProjectAIConfig() {
       <div className="flex flex-row justify-between">
         <h1 className="mb-4 text-3xl font-semibold">AI Context</h1>
       </div>
-      {links && loadedFiles && text ? (
+      {links && loadedFiles && text !== null ? (
         <div>
           <InputTextAreaField
             label="Project Context"

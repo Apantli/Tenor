@@ -315,6 +315,9 @@ export default function ProjectCreator() {
               label="Context"
               html-rows="20"
               placeholder="Tell us about your project..."
+              value={form.context}
+              name="context"
+              onChange={handleChange}
             />
 
             {/* Context Files */}
