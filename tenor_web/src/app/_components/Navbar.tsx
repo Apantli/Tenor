@@ -29,7 +29,7 @@ export default function Navbar({ children }: PropsWithChildren) {
 
   return (
     <nav className="flex h-16 items-center justify-between bg-app-primary px-8">
-      <div className="flex items-center gap-8 text-white">
+      <div className="flex items-center gap-8 text-white flex-grow">
         <InterceptedLink className="flex items-center" href="/">
           <img
             src={"/white_logo.png"}

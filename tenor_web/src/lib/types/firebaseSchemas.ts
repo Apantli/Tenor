@@ -93,7 +93,7 @@ export interface Settings {
   // requirementTypeTags: Tag[];
   // backlogTags: Tag[];
   // priorityTypes: Tag[];
-  // statusTypes: Tag[];
+  // statusTypes: StatusTag[];
 
   // roles: Role[];
 }
@@ -103,6 +103,11 @@ export interface Tag {
   name: string;
   color: string;
   deleted: boolean;
+}
+
+export interface StatusTag extends Tag {
+  orderIndex: number;
+  marksTaskAsDone: boolean;
 }
 
 /// User

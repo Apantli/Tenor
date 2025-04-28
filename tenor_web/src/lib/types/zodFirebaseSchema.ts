@@ -38,6 +38,11 @@ export const TagSchema = z.object({
   deleted: z.boolean(),
 });
 
+export const StatusTagSchema = TagSchema.extend({
+  orderIndex: z.number(),
+  marksTaskAsDone: z.boolean(),
+});
+
 export const UserSchema = z.object({
   bio: z.string(),
   jobTitle: z.string(),
