@@ -8,7 +8,7 @@ export default function ProjectUserStories() {
   const { projectId } = useParams();
   return (
     <div className="flex w-full flex-row gap-4">
-      <div className="shrink-0 basis-[400px] border-r-2 pr-5 pt-1">
+      <div className="shrink-0 basis-[407px] border-r-2 pr-5 pt-0">
         <ProjectEpics projectId={projectId as string} />
       </div>
       <UserStoryList />

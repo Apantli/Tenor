@@ -24,7 +24,11 @@ export default function BaseButton({
   ...props
 }: BaseButtonProps & PropsWithChildren) {
   if (asSpan) {
-    return <span className={className}>{children}</span>;
+    return (
+      <span className={className} {...props}>
+        {children}
+      </span>
+    );
   }
 
   if ("href" in props) {

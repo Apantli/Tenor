@@ -2,6 +2,7 @@ import React, { useRef, useState } from "react";
 import Dropdown, { DropdownItem, useCloseDropdown } from "../Dropdown";
 import AiButton from "../buttons/AiButton";
 import FloatingLabelInput from "../FloatingLabelInput";
+import { cn } from "~/lib/utils";
 
 interface Props {
   singularLabel: string;
@@ -11,6 +12,7 @@ interface Props {
   alreadyGenerated?: boolean;
   onAcceptAll?: () => void;
   onRejectAll?: () => void;
+  className?: string;
 }
 
 export default function AiGeneratorDropdown({
@@ -21,6 +23,7 @@ export default function AiGeneratorDropdown({
   alreadyGenerated,
   onAcceptAll,
   onRejectAll,
+  className,
 }: Props) {
   const [generationAmount, setGenerationAmount] = useState<number | null>(3);
   const promptRef = useRef<HTMLTextAreaElement>(null);
@@ -36,7 +39,13 @@ export default function AiGeneratorDropdown({
 
   return (
     <Dropdown
-      label={<AiButton asSpan disabled={disabled} />}
+      label={
+        <AiButton
+          asSpan
+          disabled={disabled}
+          tooltip={`Generate ${pluralLabel} with AI`}
+        />
+      }
       onOpen={() => {
         promptRef.current?.focus();
       }}
@@ -46,7 +55,7 @@ export default function AiGeneratorDropdown({
       <DropdownItem>
         {!alreadyGenerated && (
           <>
-            <div className="mt-2 flex w-80 items-center gap-2">
+            <div className={cn("mt-2 flex w-80 items-center gap-2", className)}>
               <FloatingLabelInput
                 className="w-24"
                 type="number"

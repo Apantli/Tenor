@@ -447,7 +447,7 @@ export default function TasksTable({
             setGhostRows={setGhostRows}
             acceptGhosts={onAccept}
             rejectGhosts={onReject}
-            ghostLoadingEstimation={5000}
+            ghostLoadingEstimation={20000}
             rowClassName="h-12"
           />
         )}
