@@ -9,7 +9,7 @@ import Dropdown, { DropdownButton, DropdownItem } from "./Dropdown";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";
-import { generateRandomColor } from "./BacklogTagList";
+import { generateRandomTagColor } from "~/utils/colorUtils";
 
 interface Props {
   currentTag?: Tag;
@@ -138,7 +138,7 @@ export default function PillComponent({
       {addTag && filteredTags?.length === 0 && searchValue !== "" && (
         <DropdownButton
           onClick={async () => {
-            const randomHexColor = generateRandomColor();
+            const randomHexColor = generateRandomTagColor();
 
             const newTag = await addTag({
               name: searchValue,
