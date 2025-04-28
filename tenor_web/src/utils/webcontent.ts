@@ -27,7 +27,7 @@ export const fetchMultipleHTML = async (
 ): Promise<{ link: string; content: string | null }[]> => {
   const htmlPromises = urls.map((url) =>
     fetchHTML(url.link).then(
-      (content) => ({ link: url.link, content }),
+      (content) => ({ link: url.link, content: content.slice(0, 10_000) }),
       (error) => {
         console.error("Error fetching HTML:", error);
         return { link: url.link, content: null };
