@@ -122,7 +122,7 @@ export default function MemberTable({
         {label && (
           <label
             htmlFor="project-description"
-            className="justify flex text-sm font-semibold"
+            className="justify flex font-semibold"
           >
             {label}
           </label>
