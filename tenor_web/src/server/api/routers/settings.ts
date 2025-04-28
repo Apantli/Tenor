@@ -4,6 +4,7 @@ import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
 import { link } from "fs";
+import { fetchHTML } from "~/utils/webcontent";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -193,6 +194,84 @@ const settingsRouter = createTRPCRouter({
       const settingsData = SettingsSchema.parse(settings.data());
       const text: string = settingsData.aiContext.text;
       return text;
+    }),
+  updateTextContext: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        text: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, text } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          text,
+        },
+      });
+    }),
+  addLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newLink = fetchHTML(link).then(
+        (content) => ({ link, content }),
+        (error) => {
+          console.error("Error fetching HTML:", error);
+          return { link, content: null };
+        },
+      );
+      const newLinks = [...settingsData.aiContext.links, newLink];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+  deleteLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove link from settingsData
+      const newLinks = settingsData.aiContext.links.filter(
+        (l) => l.link !== link,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
     }),
 });
 
