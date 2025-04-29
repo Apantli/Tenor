@@ -26,6 +26,12 @@ export interface Sprint extends SprintInfo {
   genericItemIds: string[];
 }
 
+export interface AIMessage {
+  role: string;
+  content: string;
+  explanation?: string;
+}
+
 export interface SprintSnapshot extends SprintInfo {
   snapshot: {
     userStories: UserStory[];

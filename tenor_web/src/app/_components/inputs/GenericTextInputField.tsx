@@ -1,5 +1,6 @@
 import { cn } from "~/lib/utils";
-import React, { useState, useRef, ChangeEvent, KeyboardEvent } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import type { ChangeEvent, KeyboardEvent } from "react";
 import AIIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
 import Dropdown, { DropdownItem, useCloseDropdown } from "../Dropdown";
@@ -8,6 +9,9 @@ import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import SendIcon from "@mui/icons-material/Send";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import ProfilePicture from "../ProfilePicture";
+import { api } from "~/trpc/react";
+import type { AIMessage } from "~/lib/types/firebaseSchemas";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 export interface Props {
   label?: string;
@@ -41,7 +45,7 @@ export default function InputField({
     | React.InputHTMLAttributes<HTMLTextAreaElement>
     | React.InputHTMLAttributes<HTMLInputElement>
   )) {
-  const [messages, setMessages] = useState<string[]>([]);
+  const [messages, setMessages] = useState<AIMessage[]>([]);
   const [currentMessage, setCurrentMessage] = useState<string>("");
   const { user } = useFirebaseAuth();
   const [close, setClose] = useCloseDropdown();
@@ -51,19 +55,17 @@ export default function InputField({
   const dropdownInputRef = useRef<HTMLInputElement>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const originalMessageRef = useRef<string>(value ?? "");
+
+  const { mutateAsync: generateAutocompletion, status } =
+    api.ai.generateAutocompletion.useMutation();
+
   const handleKeyDown = (
     e: KeyboardEvent<HTMLTextAreaElement> | KeyboardEvent<HTMLInputElement>,
   ) => {
     if (e.ctrlKey && e.key === "k") {
       e.preventDefault();
       dropdownButtonRef.current?.click();
-    }
-  };
-
-  const handleSendMessage = () => {
-    if (currentMessage.length > 0) {
-      setMessages((prev) => [...prev, currentMessage]);
-      setCurrentMessage("");
     }
   };
 
@@ -94,6 +96,54 @@ export default function InputField({
 
         onChange(syntheticEvent);
       }
+    }
+  };
+  const { alert } = useAlert();
+
+  useEffect(() => {
+    if (isDropdownOpen && messages.length === 0) {
+      originalMessageRef.current = value ?? "";
+    }
+  }, [isDropdownOpen, value, messages.length]);
+
+  useEffect(() => {
+    const generateResponse = async () => {
+      if (
+        messages.length < 1 ||
+        messages[messages.length - 1]?.role !== "user" ||
+        status === "pending"
+      )
+        return;
+
+      const generatedData = await generateAutocompletion({
+        messages,
+        relatedContext: {
+          "value in field": value,
+          username: user?.displayName,
+          email: user?.email,
+        },
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          content: generatedData.autocompletion,
+          role: "assisstant",
+          explanation: generatedData.assistant_message,
+        },
+      ]);
+      updateInputValue(generatedData.autocompletion);
+    };
+
+    void generateResponse();
+  }, [messages, generateAutocompletion, value, user]);
+
+  const handleSendMessage = async () => {
+    if (currentMessage.length > 0) {
+      setMessages((prev) => [
+        ...prev,
+        { content: currentMessage, role: "user" },
+      ]);
+      setCurrentMessage("");
     }
   };
 
@@ -200,7 +250,6 @@ export default function InputField({
                 <div
                   className="flex h-80 w-[500px] flex-col"
                   onClick={(e) => {
-                    // Prevent the dropdown from closing when clicking inside
                     e.stopPropagation();
                   }}
                 >
@@ -226,9 +275,18 @@ export default function InputField({
                             key={index}
                             className="flex flex-row items-center gap-2 border-b-2 px-1 py-2"
                           >
-                            <ProfilePicture user={user} hideTooltip />
+                            <ProfilePicture
+                              user={
+                                message.role == "user"
+                                  ? user
+                                  : {
+                                      displayName: "Frida AI",
+                                    }
+                              }
+                              hideTooltip
+                            />
                             <p className="no-scrollbar max-w-[450px] overflow-x-auto text-sm">
-                              {message}
+                              {message.explanation ?? message.content}
                             </p>
                           </div>
                         ))}
@@ -244,15 +302,25 @@ export default function InputField({
                       <div className="relative inline-block">
                         <input
                           type="text"
-                          className="block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500"
+                          className="block w-full rounded-md border border-gray-300 px-4 py-2 pr-10 shadow-sm outline-none focus:border-blue-500"
                           placeholder="What is in your mind?"
                           value={currentMessage}
                           onChange={(e) => setCurrentMessage(e.target.value)}
                           ref={dropdownInputRef}
-                          onKeyDown={(e) => {
+                          onKeyDown={async (e) => {
                             if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleSendMessage();
+                              if (status === "pending") {
+                                alert(
+                                  "Warning",
+                                  "Please wait until the current completion finishes.",
+                                  {
+                                    type: "warning",
+                                  },
+                                );
+                              } else {
+                                e.preventDefault();
+                                await handleSendMessage();
+                              }
                             }
                             handleKeyDown(e);
                           }}
@@ -260,8 +328,18 @@ export default function InputField({
                         <div className="absolute bottom-2 right-2">
                           <SendIcon
                             className="text-gray-500 hover:cursor-pointer"
-                            onClick={() => {
-                              handleSendMessage();
+                            onClick={async () => {
+                              if (status === "pending") {
+                                alert(
+                                  "Warning",
+                                  "Please wait until the current completion finishes.",
+                                  {
+                                    type: "warning",
+                                  },
+                                );
+                              } else {
+                                await handleSendMessage();
+                              }
                             }}
                           />
                         </div>
@@ -270,30 +348,42 @@ export default function InputField({
                         <PrimaryButton
                           className=""
                           onClick={() => {
+                            const filteredMessages = messages.filter(
+                              (msg) => msg.role == "assisstant",
+                            );
                             const valueToUse =
-                              currentMessage.length > 0
-                                ? currentMessage
-                                : messages.length > 0
-                                  ? messages[messages.length - 1]
-                                  : "";
+                              filteredMessages.length > 0
+                                ? filteredMessages[filteredMessages.length - 1]
+                                : null;
 
                             if (valueToUse) {
-                              updateInputValue(valueToUse);
+                              updateInputValue(valueToUse.content);
+                              originalMessageRef.current = valueToUse.content;
+                              setMessages([]);
+                              setIsDropdownOpen(false);
                               setClose();
                               setCurrentMessage("");
                             }
                           }}
-                          disabled={currentMessage.length === 0}
+                          disabled={
+                            status === "pending" ||
+                            originalMessageRef.current !== value
+                          }
+                          loading={status === "pending"}
                         >
                           Accept Changes
                         </PrimaryButton>
                         <DeleteButton
                           removeDeleteIcon
                           onClick={() => {
+                            updateInputValue(originalMessageRef.current);
+                            setIsDropdownOpen(false);
+                            setMessages([]);
+                            setCurrentMessage("");
                             setClose();
                           }}
                         >
-                          Close
+                          Reject Changes
                         </DeleteButton>
                       </div>
                     </div>
