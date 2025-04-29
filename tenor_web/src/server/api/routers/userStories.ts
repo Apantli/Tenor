@@ -455,12 +455,12 @@ export const userStoriesRouter = createTRPCRouter({
       // Update the related user stories
       await Promise.all(
         addedDependencies.map(async (dependencyId) => {
-          updateDependency(dependencyId, userStoryId, "add", "requiredByIds");
+          await updateDependency(dependencyId, userStoryId, "add", "requiredByIds");
         }),
       );
       await Promise.all(
         removedDependencies.map(async (dependencyId) => {
-          updateDependency(
+          await updateDependency(
             dependencyId,
             userStoryId,
             "remove",
@@ -470,12 +470,12 @@ export const userStoriesRouter = createTRPCRouter({
       );
       await Promise.all(
         addedRequiredBy.map(async (requiredById) => {
-          updateDependency(requiredById, userStoryId, "add", "dependencyIds");
+          await updateDependency(requiredById, userStoryId, "add", "dependencyIds");
         }),
       );
       await Promise.all(
         removedRequiredBy.map(async (requiredById) => {
-          updateDependency(
+          await updateDependency(
             requiredById,
             userStoryId,
             "remove",

@@ -170,6 +170,7 @@ export interface UserStory extends BacklogItem {
   requiredByIds: string[]; // US ID
 }
 
+export type itemTypes = "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
@@ -177,7 +178,7 @@ export interface Task extends BasicInfo {
   finishedDate: Date | null;
   size: Size;
   itemId: string;
-  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
+  itemType: itemTypes;
 }
 
 export interface Issue extends BacklogItem {

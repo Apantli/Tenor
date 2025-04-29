@@ -7,23 +7,20 @@ import ProfilePicture from "../ProfilePicture";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
-import { SidebarPopup } from "../Popup";
-import { CreateTaskForm } from "../tasks/CreateTaskPopup";
-import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
-import { WithId, type Tag } from "~/lib/types/firebaseSchemas";
+import type { WithId, Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
-import { usePopupVisibilityState } from "../Popup";
+import type { tasksRouter } from "~/server/api/routers/tasks";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { inferRouterOutputs } from "@trpc/server";
+import type { inferRouterOutputs } from "@trpc/server";
 import LoadingSpinner from "../LoadingSpinner";
 import {
   useInvalidateQueriesAllTasks,
-  useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesBacklogItems,
+  useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
@@ -36,6 +33,7 @@ interface Props {
   taskIdToOpenImmediately?: string;
 }
 
+// TODO: Update this to invalidate for backlog items also
 export default function TasksTable({
   setSelectedTaskId,
   setShowTaskDetail,
@@ -50,8 +48,9 @@ export default function TasksTable({
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
@@ -150,10 +149,9 @@ export default function TasksTable({
     });
 
     await invalidateQueriesAllTasks(projectId as string, [itemId]);
+    await invalidateQueriesTaskDetails(projectId as string, [taskId]);
 
-    if (itemType === "US") {
-      await invalidateQueriesAllUserStories(projectId as string);
-    }
+    await invalidateQueriesBacklogItems(projectId as string, itemType);
   };
 
   const taskColumns: TableColumns<TaskPreview> = {
@@ -293,7 +291,7 @@ export default function TasksTable({
     );
 
     await invalidateQueriesAllTasks(projectId as string, [itemId]);
-    await invalidateQueriesAllUserStories(projectId as string);
+    await invalidateQueriesBacklogItems(projectId as string, itemType);
 
     return true;
   };
@@ -357,9 +355,7 @@ export default function TasksTable({
 
       await invalidateQueriesAllTasks(projectId as string, [itemId]);
 
-      if (itemType === "US") {
-        await invalidateQueriesAllUserStories(projectId as string);
-      }
+      await invalidateQueriesBacklogItems(projectId as string, itemType);
     },
     (removedIds) => {
       const newGeneratedTasks = generatedTasks.current?.filter(

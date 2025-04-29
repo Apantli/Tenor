@@ -26,6 +26,10 @@ import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
 import { red } from "@mui/material/colors";
+import {
+  useInvalidateQueriesAllRequirements,
+  useInvalidateQueriesRequirementDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -67,6 +71,8 @@ export default function RequirementsTable() {
     >();
 
   const [searchValue, setSearchValue] = useState("");
+  const invalidateAllRequirements = useInvalidateQueriesAllRequirements();
+  const invalidateRequirementDetails = useInvalidateQueriesRequirementDetails();
 
   // New requirement values
   const defaultRequirement = {
@@ -136,9 +142,7 @@ export default function RequirementsTable() {
       deleted: false,
     });
 
-    await utils.requirements.getRequirementsTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateAllRequirements(projectId as string);
 
     setNewRequirement(defaultRequirement);
 
@@ -204,13 +208,8 @@ export default function RequirementsTable() {
 
     const response = await createOrModifyRequirement(newRequirement);
 
-    await utils.requirements.getRequirementsTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.requirements.getRequirement.invalidate({
-      projectId: projectId as string,
-      requirementId: requirement.id,
-    });
+    await invalidateAllRequirements(projectId as string);
+    await invalidateRequirementDetails(projectId as string, [requirement.id]);
   };
 
   // TRPC
@@ -224,7 +223,7 @@ export default function RequirementsTable() {
 
   const { mutateAsync: deleteRequirement } =
     api.requirements.deleteRequirement.useMutation();
-    useEffect(() => {
+  useEffect(() => {
     if (requirements) {
       const query = searchValue.toLowerCase();
 

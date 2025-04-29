@@ -7,9 +7,7 @@ import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
 import type { IssueCol } from "~/server/api/routers/issues";
-import {
-  useFormatTaskIssueId,
-} from "~/app/_hooks/scrumIdHooks";
+import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import UserStoryPicker from "../specific-pickers/UserStoryPicker";
@@ -20,11 +18,14 @@ import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIs
 import SearchBar from "../SearchBar";
 import AssignUsersList from "../specific-pickers/AssignUsersList";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import {
+  useInvalidateQueriesAllIssues,
+  useInvalidateQueriesIssueDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function IssuesTable() {
-  
   // Hooks
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
@@ -34,30 +35,30 @@ export default function IssuesTable() {
     usePopupVisibilityState();
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
 
-  const useFormatIssueScrumId = useFormatTaskIssueId();
+  const formatIssueScrumId = useFormatIssueScrumId();
 
   const confirm = useConfirmation();
+  const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
+  const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
 
-  const onIssueAdded = async (userStoryId: string) => {
-    await refetchIssues();
+  const onIssueAdded = async (issueId: string) => {
+    await invalidateQueriesAllIssues(projectId as string);
+    await invalidateQueriesIssueDetails(projectId as string, [issueId]);
     setShowNewIssue(false);
-    setSelectedIS(userStoryId);
+    setSelectedIS(issueId);
     setShowDetail(true);
   };
 
   // TRPC
   const utils = api.useUtils();
-  const {
-    data: issues,
-    isLoading: isLoadingIssues,
-    refetch: refetchIssues,
-  } = api.issues.getIssuesTableFriendly.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: issues, isLoading: isLoadingIssues } =
+    api.issues.getIssuesTableFriendly.useQuery({
+      projectId: projectId as string,
+    });
   const { mutateAsync: updateIssueTags } =
     api.issues.modifyIssuesTags.useMutation();
 
-  const { mutateAsync: updateAssignUserStorie } =
+  const { mutateAsync: updateAssignUserStories } =
     api.issues.modifyIssuesRelatedUserStory.useMutation();
 
   const { mutateAsync: deleteIssue } = api.issues.deleteIssue.useMutation();
@@ -71,7 +72,7 @@ export default function IssuesTable() {
     const lowerSearchValue = searchValue.toLowerCase();
     return (
       issue.name.toLowerCase().includes(lowerSearchValue) ||
-      useFormatIssueScrumId(issue.scrumId).toLowerCase().includes(lowerSearchValue)
+      formatIssueScrumId(issue.scrumId).toLowerCase().includes(lowerSearchValue)
     );
   });
 
@@ -106,7 +107,7 @@ export default function IssuesTable() {
                 setShowDetail(true);
               }}
             >
-              {useFormatIssueScrumId(row.scrumId)}
+              {formatIssueScrumId(row.scrumId)}
             </button>
           );
         },
@@ -179,11 +180,8 @@ export default function IssuesTable() {
               priorityId: tag.id,
             });
 
-            await refetchIssues();
-            await utils.issues.getIssueDetail.invalidate({
-              projectId: projectId as string,
-              issueId: row.id,
-            });
+            await invalidateQueriesIssueDetails(projectId as string, [row.id]);
+            await invalidateQueriesAllIssues(projectId as string);
           };
 
           return (
@@ -205,36 +203,35 @@ export default function IssuesTable() {
             if (!projectId || !row?.id) return;
 
             try {
-              
-              await utils.issues.getIssuesTableFriendly.cancel({ projectId: projectId as string });
-
-              void utils.issues.getIssuesTableFriendly.setData({ projectId: projectId as string }, (oldData) => {
-                if (!oldData) return oldData;
-          
-                return oldData.map((issue) => {
-                  if (issue.id === row.id) {
-                    return {
-                      ...issue,
-                      relatedUserStory: userStory,
-                    };
-                  }
-                  return issue;
-                });
+              await utils.issues.getIssuesTableFriendly.cancel({
+                projectId: projectId as string,
               });
-          
-            
-              await updateAssignUserStorie({
+
+              utils.issues.getIssuesTableFriendly.setData(
+                { projectId: projectId as string },
+                (oldData) => {
+                  if (!oldData) return oldData;
+
+                  return oldData.map((issue) => {
+                    if (issue.id === row.id) {
+                      return {
+                        ...issue,
+                        relatedUserStory: userStory,
+                      };
+                    }
+                    return issue;
+                  });
+                },
+              );
+
+              await updateAssignUserStories({
                 projectId: projectId as string,
                 issueId: row.id,
                 relatedUserStoryId: userStory?.id ?? "",
               });
-          
 
-              await utils.issues.getIssueDetail.invalidate({
-                projectId: projectId as string,
-                issueId: row.id,
-              });
-          
+              await invalidateQueriesIssueDetails(projectId as string, [row.id]);
+              await invalidateQueriesAllIssues(projectId as string);
             } catch (error) {
               console.error("Failed to update user story:", error);
             }
@@ -300,11 +297,8 @@ export default function IssuesTable() {
               size: size,
             });
 
-            await refetchIssues();
-            await utils.issues.getIssueDetail.invalidate({
-              projectId: projectId as string,
-              issueId: row.id,
-            });
+            await invalidateQueriesIssueDetails(projectId as string, [row.id]);
+            await invalidateQueriesAllIssues(projectId as string);
           };
 
           return (
@@ -315,21 +309,20 @@ export default function IssuesTable() {
           );
         },
       },
-      assignUsers: { 
+      assignUsers: {
         label: "Assignees",
         width: 120,
         render(row) {
           console.log("Assign users:", row.assignUsers);
-          return (
-            <AssignUsersList 
-              users={row.assignUsers}
-            />
-          );
+          return <AssignUsersList users={row.assignUsers} />;
         },
       },
     };
 
-    const handleDelete = async (ids: string[], callback: (del: boolean) => void) => {
+    const handleDelete = async (
+      ids: string[],
+      callback: (del: boolean) => void,
+    ) => {
       const confirmMessage = ids.length > 1 ? "issues" : "issue";
 
       if (
@@ -360,7 +353,7 @@ export default function IssuesTable() {
 
       // Deltes in database
       await Promise.all(
-        ids.map((id) => 
+        ids.map((id) =>
           deleteIssue({
             projectId: projectId as string,
             issueId: id,
@@ -368,14 +361,11 @@ export default function IssuesTable() {
         ),
       );
 
-      await refetchIssues();
-      await utils.issues.getIssueDetail.invalidate({
-        projectId: projectId as string,
-        issueId: ids[0],
-      });
+      await invalidateQueriesIssueDetails(projectId as string, ids);
+      await invalidateQueriesAllIssues(projectId as string);
 
       return true;
-    }
+    };
     return (
       <Table
         className={cn("w-full", heightOfContent)}
@@ -423,7 +413,6 @@ export default function IssuesTable() {
           onIssueAdded={onIssueAdded}
           showPopup={showNewIssue}
           setShowPopup={setShowNewIssue}
-          
         />
       )}
     </div>

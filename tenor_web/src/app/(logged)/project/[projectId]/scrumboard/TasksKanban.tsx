@@ -44,7 +44,7 @@ export default function TasksKanban() {
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
   // TRPC
-  const { data: itemsAndColumnsData, isLoading } =
+  const { data: tasksAndColumnsData, isLoading } =
     api.kanban.getTasksForKanban.useQuery({
       projectId: projectId as string,
     });
@@ -67,7 +67,7 @@ export default function TasksKanban() {
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   // Detail item and parent
   const [detailItemId, setDetaiItemId] = useState("");
-  const detailItem = itemsAndColumnsData?.items[detailItemId];
+  const detailItem = tasksAndColumnsData?.cardTasks[detailItemId];
   const detailItemType = detailItem?.itemType;
   const detailParentItemId = detailItem?.itemId;
   // TODO: Do same for generic item
@@ -75,19 +75,19 @@ export default function TasksKanban() {
   // UTILITY
   let updateOperationsInProgress = 0;
 
-  const handleDragEnd = async (itemId: string, columnId: string) => {
+  const handleDragEnd = async (taskId: string, columnId: string) => {
     setLastDraggedItemId(null);
-    if (itemsAndColumnsData == undefined) return;
-    if (columnId === itemsAndColumnsData.items[itemId]?.columnId) return;
+    if (tasksAndColumnsData == undefined) return;
+    if (columnId === tasksAndColumnsData.cardTasks[taskId]?.columnId) return;
 
-    setLastDraggedItemId(itemId);
-    await moveItemsToColumn([itemId], columnId);
+    setLastDraggedItemId(taskId);
+    await moveItemsToColumn([taskId], columnId);
   };
 
-  const moveItemsToColumn = async (itemIds: string[], columnId: string) => {
-    if (itemsAndColumnsData == undefined) return;
+  const moveItemsToColumn = async (taskIds: string[], columnId: string) => {
+    if (tasksAndColumnsData == undefined) return;
     updateOperationsInProgress += 1;
-    const items = itemsAndColumnsData.items;
+    const cardTasks = tasksAndColumnsData.cardTasks;
     await cancelGetTasksForKanbanQuery();
 
     utils.kanban.getTasksForKanban.setData(
@@ -98,33 +98,33 @@ export default function TasksKanban() {
         if (!oldData) return undefined;
 
         const sortByScrumId = (a: string, b: string) => {
-          const itemA = items[a];
-          const itemB = items[b];
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
+          const taskA = cardTasks[a];
+          const taskB = cardTasks[b];
+          return (taskA?.scrumId ?? 0) - (taskB?.scrumId ?? 0);
         };
 
         const columns = oldData.columns.map((column) => {
           if (column.id === columnId) {
-            const sortedItemIds = [...column.itemIds, ...itemIds].sort(
+            const sortedTaskIds = [...column.taskIds, ...taskIds].sort(
               sortByScrumId,
             );
             return {
               ...column,
-              itemIds: sortedItemIds,
+              taskIds: sortedTaskIds,
             };
           } else {
             return {
               ...column,
-              itemIds: column.itemIds.filter(
-                (itemId) => !itemIds.includes(itemId),
+              taskIds: column.taskIds.filter(
+                (itemId) => !taskIds.includes(itemId),
               ),
             };
           }
         });
 
         const updatedItems = Object.fromEntries(
-          Object.entries(oldData.items).map(([id, item]) => {
-            if (itemIds.includes(id)) {
+          Object.entries(oldData.cardTasks).map(([id, item]) => {
+            if (taskIds.includes(id)) {
               return [
                 id,
                 {
@@ -139,7 +139,7 @@ export default function TasksKanban() {
 
         return {
           columns,
-          items: updatedItems,
+          cardTasks: updatedItems,
         };
       },
     );
@@ -147,7 +147,7 @@ export default function TasksKanban() {
     setSelectedItems(new Set());
 
     await Promise.all(
-      itemIds.map(async (itemId) => {
+      taskIds.map(async (itemId) => {
         await changeStatus({
           projectId: projectId as string,
           taskId: itemId,
@@ -157,10 +157,18 @@ export default function TasksKanban() {
     );
 
     if (updateOperationsInProgress == 1) {
-      await invalidateQueriesAllTasks(projectId as string);
-      await invalidateQueriesTaskDetails(projectId as string, itemIds);
+      const uniqueItemIds = taskIds.reduce<Set<string>>((acc, taskId) => {
+        const itemId = tasksAndColumnsData.cardTasks[taskId]?.itemId;
+        if (itemId) {
+          acc.add(itemId);
+        }
+        return acc;
+      }, new Set<string>());
+      const itemIds = Array.from(uniqueItemIds);
+      await invalidateQueriesAllTasks(projectId as string, itemIds);
+      await invalidateQueriesTaskDetails(projectId as string, taskIds);
       await invalidateQueriesAllUserStories(projectId as string);
-      // TODO: Invalidate queries for issues and generic items
+      // TODO: Invalidate queries for issues and generic item
     }
 
     updateOperationsInProgress--;
@@ -168,12 +176,12 @@ export default function TasksKanban() {
 
   const assignSelectionToColumn = async (columnId: string) => {
     setLastDraggedItemId(null);
-    if (itemsAndColumnsData == undefined) return;
+    if (tasksAndColumnsData == undefined) return;
 
-    const itemIds = Array.from(selectedItems);
-    if (itemIds.length === 0) return;
+    const taskIds = Array.from(selectedItems);
+    if (taskIds.length === 0) return;
 
-    await moveItemsToColumn(itemIds, columnId);
+    await moveItemsToColumn(taskIds, columnId);
   };
 
   return (
@@ -197,31 +205,36 @@ export default function TasksKanban() {
                 <LoadingSpinner color="primary" />
               </div>
             )}
-            {itemsAndColumnsData?.columns.map((column) => {
+            {tasksAndColumnsData?.columns.map((column) => {
               const allSelected =
-                column.itemIds.length > 0 &&
-                column.itemIds.every((itemId) => selectedItems.has(itemId));
+                column.taskIds.length > 0 &&
+                column.taskIds.every((itemId) => selectedItems.has(itemId));
 
               const toggleSelectAll = () => {
                 const newSelection = new Set(selectedItems);
                 if (allSelected) {
-                  column.itemIds.forEach((itemId) => {
+                  column.taskIds.forEach((itemId) => {
                     newSelection.delete(itemId);
                   });
                 } else {
-                  column.itemIds.forEach((itemId) => {
+                  column.taskIds.forEach((itemId) => {
                     newSelection.add(itemId);
                   });
                 }
                 setSelectedItems(newSelection);
               };
 
+              const renamedColumn = {
+                ...column,
+                itemIds: column.taskIds,
+              };
+
               return (
                 <AssignableCardColumn
                   lastDraggedItemId={lastDraggedItemId}
                   assignSelectionToColumn={assignSelectionToColumn}
-                  column={column}
-                  items={itemsAndColumnsData.items}
+                  column={renamedColumn}
+                  items={tasksAndColumnsData.cardTasks}
                   key={column.id}
                   selectedItems={selectedItems}
                   setSelectedItems={setSelectedItems}
@@ -271,7 +284,7 @@ export default function TasksKanban() {
           {(source) => {
             const itemId = source.id as string;
             if (!itemId) return null;
-            const draggingItem = itemsAndColumnsData?.items[itemId];
+            const draggingItem = tasksAndColumnsData?.cardTasks[itemId];
             if (!draggingItem) return null;
             return (
               <ItemCardRender
