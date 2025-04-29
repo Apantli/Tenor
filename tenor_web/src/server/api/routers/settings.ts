@@ -11,7 +11,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
 import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
-import { emptyRole } from "~/lib/defaultTags";
+import { emptyRole, ownerRole } from "~/lib/defaultTags";
 import { remove } from "node_modules/cypress/types/lodash";
 import { RoleDetail } from "~/lib/types/detailSchemas";
 
@@ -355,10 +355,6 @@ const settingsRouter = createTRPCRouter({
   getDetailedRoles: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const projectSettingsRef = getProjectUserTypesRef(
-        input.projectId,
-        ctx.firestore,
-      );
       const roles = await ctx.firestore
         .collection("projects")
         .doc(input.projectId)
@@ -426,10 +422,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, tabId, permission } = input;
-      const projectSettingsRef = getProjectUserTypesRef(
-        projectId,
-        ctx.firestore,
-      );
+
       const roleDoc = await ctx.firestore
         .collection("projects")
         .doc(input.projectId)
@@ -458,10 +451,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, newValue } = input;
-      const projectSettingsRef = getProjectUserTypesRef(
-        projectId,
-        ctx.firestore,
-      );
+
       const roleDoc = await ctx.firestore
         .collection("projects")
         .doc(input.projectId)
@@ -486,10 +476,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, newValue } = input;
-      const projectSettingsRef = getProjectUserTypesRef(
-        projectId,
-        ctx.firestore,
-      );
+
       const roleDoc = await ctx.firestore
         .collection("projects")
         .doc(input.projectId)
@@ -503,6 +490,56 @@ const settingsRouter = createTRPCRouter({
       await roleDoc.update({
         canControlSprints: newValue,
       });
+    }),
+  getMyRole: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.uid;
+
+      const userDoc = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("users")
+        .doc(userId)
+        .get();
+      if (!userDoc.exists) {
+        throw new Error("User not found");
+      }
+      const userData = userDoc.data();
+      if (!userData) {
+        throw new Error("User data not found");
+      }
+
+      if (userData.roleId == null) {
+        return emptyRole;
+      }
+
+      if (userData.roleId === "owner") {
+        return ownerRole;
+      }
+
+      // Get role
+      const roleDoc = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .doc(userData.roleId)
+        .get();
+      if (!roleDoc.exists) {
+        throw new Error("Role not found");
+      }
+      const roleData = roleDoc.data();
+      if (!roleData) {
+        throw new Error("Role data not found");
+      }
+      const role = RoleSchema.parse(roleData);
+      const roleId = roleDoc.id;
+      return {
+        id: roleId,
+        ...role,
+      };
     }),
 });
 

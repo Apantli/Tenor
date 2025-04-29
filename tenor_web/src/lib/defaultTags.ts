@@ -73,3 +73,21 @@ export const emptyRole: Role = {
     sprintReview: 0,
   },
 };
+
+export const ownerRole: Role = {
+  id: "owner",
+  label: "Owner",
+  canViewPerformance: true,
+  canControlSprints: true,
+  tabs: {
+    requirements: 2,
+    userStories: 2,
+    issues: 2,
+    sprints: 2,
+    kanban: 2,
+    calendar: 2,
+    performance: 2,
+    projectSettings: 2,
+    sprintReview: 2,
+  },
+};

@@ -11,6 +11,7 @@ import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
 import { emptyRole } from "~/lib/defaultTags";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
   label?: string;
@@ -45,6 +46,7 @@ export default function MemberTable({
   const { data: users, isLoading } = api.users.getUserList.useQuery();
   const [searchValue, setSearchValue] = useState("");
   const [tableSearchValue, setTableSearchValue] = useState("");
+  const { alert } = useAlert();
 
   const filteredTeamMembers = useMemo(() => {
     const search = tableSearchValue.toLowerCase();
@@ -99,6 +101,11 @@ export default function MemberTable({
             onChange={(item) => {
               if (!row.isOwner) {
                 handleEditMemberRole(row.id, item.id);
+              } else {
+                alert("Oops...", "You cannot edit the role of the owner.", {
+                  type: "error",
+                  duration: 5000,
+                });
               }
             }}
           />
