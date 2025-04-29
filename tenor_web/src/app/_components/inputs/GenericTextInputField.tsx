@@ -367,7 +367,7 @@ export default function InputField({
                           }}
                           disabled={
                             status === "pending" ||
-                            originalMessageRef.current !== value
+                            originalMessageRef.current === value
                           }
                           loading={status === "pending"}
                         >
