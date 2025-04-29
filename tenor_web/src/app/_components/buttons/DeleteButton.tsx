@@ -7,6 +7,7 @@ import { type PropsWithChildren } from "react";
 interface Props {
   loading?: boolean;
   floatingSpinner?: boolean;
+  removeDeleteIcon?: boolean;
 }
 
 export default function DeleteButton({
@@ -14,6 +15,7 @@ export default function DeleteButton({
   className,
   loading,
   floatingSpinner,
+  removeDeleteIcon,
   ...props
 }: BaseButtonProps & Props & PropsWithChildren) {
   return (
@@ -29,7 +31,7 @@ export default function DeleteButton({
       disabled={loading ?? ("disabled" in props && props.disabled)}
     >
       <div className="flex gap-2">
-        <DeleteIcon />
+        {!removeDeleteIcon && <DeleteIcon />}
         {children}
       </div>
 
