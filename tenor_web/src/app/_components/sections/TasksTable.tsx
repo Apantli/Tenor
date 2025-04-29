@@ -16,7 +16,7 @@ import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import type { WithId, Tag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import type { tasksRouter } from "~/server/api/routers/tasks";
+import type { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -29,6 +29,8 @@ import {
 import TagIcon from "@mui/icons-material/Tag";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { Timestamp } from "firebase/firestore";
+import { usePopupVisibilityState } from "../Popup";
+import TaskDetailPopup from "../tasks/TaskDetailPopup";
 
 interface Props {
   itemId: string;
@@ -537,7 +539,7 @@ export default function TasksTable({
 
   useNavigationGuard(
     async () => {
-      if ((generatedTasks?.current?.length ?? 0) > 0) {
+      if ((generatedTasks?.length ?? 0) > 0) {
         return !(await confirm(
           "Are you sure?",
           "You have unsaved AI generated tasks. To save them, please accept them first.",
@@ -554,7 +556,7 @@ export default function TasksTable({
       }
       return false;
     },
-    generating || (generatedTasks.current?.length ?? 0) > 0,
+    generating || (generatedTasks?.length ?? 0) > 0,
     "Are you sure you want to leave? You have unsaved AI generated tasks. To save them, please accept them first.",
   );
 

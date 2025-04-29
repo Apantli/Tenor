@@ -61,6 +61,7 @@ export default function UserStoryDetailPopup({
   userStoryId,
   showDetail,
   setShowDetail,
+  setUserStoryId,
   taskIdToOpenImmediately,
   userStoryData,
   setUserStoryData,

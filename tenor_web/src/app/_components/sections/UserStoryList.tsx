@@ -103,14 +103,7 @@ export default function UserStoryList() {
     return a.scrumId < b.scrumId ? 1 : -1;
   });
 
-  const generatedUserStories =
-    useRef<
-      WithId<
-        inferRouterOutputs<
-          typeof userStoriesRouter
-        >["generateUserStories"][number]
-      >[]
-    >();
+  const generatedUserStories = useRef<UserStoryDetailWithTasks[]>();
 
   useNavigationGuard(async () => {
     if ((generatedUserStories?.current?.length ?? 0) > 0) {
