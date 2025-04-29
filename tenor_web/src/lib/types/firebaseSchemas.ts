@@ -40,6 +40,24 @@ export interface SprintSnapshot extends SprintInfo {
   };
 }
 
+export interface Sizes {
+  XS: number;
+  S: number;
+  M: number;
+  L: number;
+  XL: number;
+  XXL: number;
+}
+
+export interface sizeToColor {
+  XS: string;
+  S: string;
+  M: string;
+  L: string;
+  XL: string;
+  XXL: string;
+}
+
 export interface Project {
   name: string;
   description: string;

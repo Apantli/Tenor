@@ -27,6 +27,21 @@ const getProjectSettings = async (projectId: string, firestore: Firestore) => {
   return SettingsSchema.parse(settings.data());
 };
 
+const getProjectTypeSize = async (projectId: string, firestore: Firestore) => {
+  const settings = await getProjectSettingsRef(projectId, firestore).get();
+
+  // Get the Size of the sizeType from the Size doc
+  const sizeType = await settings.ref
+    .collection("sizeTypes")
+    .doc(settings.data()?.sizeTypeId)
+    .get();
+  if (!sizeType.exists) {
+    throw new Error("SizeType not found");
+  }
+  
+  return sizeType;
+}
+
 export const getPriorityTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
   priorityId: string,
