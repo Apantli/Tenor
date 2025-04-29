@@ -76,7 +76,7 @@ export default function CreateItemTagPopup({ showPopup, setShowPopup }: Props) {
     <Popup
       show={showPopup}
       size="small"
-      className="min-h-[400px] min-w-[500px]"
+      className="max-h-[400px] min-w-[500px]"
       dismiss={async () => {
         if (isModified()) {
           const confirmation = await confirm(

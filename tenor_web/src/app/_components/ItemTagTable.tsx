@@ -14,6 +14,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Table from "./table/Table";
 import { type TableColumns } from "./table/Table";
 import TagComponent from "./TagComponent";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export default function ItemTagTable() {
   const { projectId } = useParams();
@@ -23,9 +24,7 @@ export default function ItemTagTable() {
   const [renderDetailTag, showDetailTag, setShowDetailTag] =
     usePopupVisibilityState();
   const [selectedTagId, setSelectedTagId] = useState("");
-
-  const router = useRouter();
-  const { alert } = useAlert();
+  const confirm = useConfirmation();
 
   const {
     data: tags,
@@ -46,22 +45,31 @@ export default function ItemTagTable() {
   };
 
   const handleDeleteTag = async function (tagId: string) {
-    await utils.settings.getBacklogTags.cancel({
-      projectId: projectId as string,
-    });
-    utils.settings.getBacklogTags.setData(
-      { projectId: projectId as string },
-      (oldData) => {
-        if (!oldData) return [];
-        return oldData.filter((tag) => tag.id !== tagId);
-      },
-    );
+    if (
+      await confirm(
+        "Are you sure?",
+        "This action will delete the tag.",
+        "Delete",
+        "Cancel",
+      )
+    ) {
+      await utils.settings.getBacklogTags.cancel({
+        projectId: projectId as string,
+      });
+      utils.settings.getBacklogTags.setData(
+        { projectId: projectId as string },
+        (oldData) => {
+          if (!oldData) return [];
+          return oldData.filter((tag) => tag.id !== tagId);
+        },
+      );
 
-    await deleteTag({
-      projectId: projectId as string,
-      tagId: tagId,
-    });
-    await refetch();
+      await deleteTag({
+        projectId: projectId as string,
+        tagId: tagId,
+      });
+      await refetch();
+    }
   };
 
   const filteredTags = tags?.filter((tag) => {
@@ -142,9 +150,9 @@ export default function ItemTagTable() {
 
   return (
     <div>
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <div className="w-2/6">
+      <div className="flex flex-col gap-4">
+        <div className="flex max-w-[620px] items-center justify-between gap-4">
+          <div className="w-[500px]">
             <SearchBar
               placeholder="Find a tag..."
               searchValue={searchValue}
@@ -159,43 +167,45 @@ export default function ItemTagTable() {
           </PrimaryButton>
         </div>
 
-        {renderNewTag && (
-          <CreateItemTagPopup
-            showPopup={showNewTag}
-            onTagAdded={onTagAdded}
-            setShowPopup={setShowNewTag}
-          />
-        )}
-
-        {renderDetailTag && (
-          <ItemTagDetailPopup
-            showPopup={showDetailTag}
-            setShowPopup={setShowDetailTag}
-            tagId={selectedTagId}
-          />
-        )}
+        <div className="max-w-[620px]">
+          {isLoadingTags ? (
+            <div className="py-4 text-center">Loading tags...</div>
+          ) : (
+            <Table
+              className={`w-full ${
+                tableData.length > 5 ? "max-h-[230px] overflow-auto" : ""
+              }`}
+              data={tableData}
+              columns={columns}
+              extraOptions={extraOptions}
+              deletable={true}
+              onDelete={(ids, callback) => {
+                if (ids[0]) {
+                  void handleDeleteTag(ids[0]);
+                }
+                callback(true);
+              }}
+              multiselect={false}
+              emptyMessage="No tags found"
+              tableKey="item-tag-table"
+            />
+          )}
+        </div>
       </div>
 
-      {isLoadingTags ? (
-        <div className="mt-4 py-4 text-center">Loading tags...</div>
-      ) : (
-        <Table
-          className={`mt-4 w-5/12 ${
-            tableData.length > 5 ? "max-h-[240px] overflow-auto" : ""
-          }`}
-          data={tableData}
-          columns={columns}
-          extraOptions={extraOptions}
-          deletable={true}
-          onDelete={(ids, callback) => {
-            if (ids[0]) {
-              void handleDeleteTag(ids[0]);
-            }
-            callback(true);
-          }}
-          multiselect={false}
-          emptyMessage="No tags found"
-          tableKey="item-tag-table"
+      {renderNewTag && (
+        <CreateItemTagPopup
+          showPopup={showNewTag}
+          onTagAdded={onTagAdded}
+          setShowPopup={setShowNewTag}
+        />
+      )}
+
+      {renderDetailTag && (
+        <ItemTagDetailPopup
+          showPopup={showDetailTag}
+          setShowPopup={setShowDetailTag}
+          tagId={selectedTagId}
         />
       )}
     </div>

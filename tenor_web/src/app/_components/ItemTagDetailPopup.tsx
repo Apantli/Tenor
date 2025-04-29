@@ -31,7 +31,6 @@ export default function ItemTagDetailPopup({
 
   // REACT
   const { projectId } = useParams();
-  const { alert } = useAlert();
 
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState<{
@@ -163,7 +162,7 @@ export default function ItemTagDetailPopup({
     <Popup
       show={showPopup}
       size="small"
-      className="min-h-[400px] min-w-[500px]"
+      className="max-h-[400px] min-w-[500px]"
       dismiss={async () => {
         if (editMode && isModified()) {
           const confirmation = await confirm(
@@ -183,9 +182,15 @@ export default function ItemTagDetailPopup({
       }
       title={
         <>
-          {!isLoading && tagDetail && (
+          {!isLoading && tagDetail && !editMode && (
             <h1 className="mb-4 text-3xl">
-              <span className="font-bold">{tagDetail.name}</span>
+              <span className="font-bold">Tag: </span>
+              <span className="font-normal">{tagDetail.name}</span>
+            </h1>
+          )}
+          {editMode && (
+            <h1 className="mb-4 text-3xl">
+              <span className="font-bold">Edit Tag</span>
             </h1>
           )}
         </>
@@ -206,8 +211,8 @@ export default function ItemTagDetailPopup({
       disablePassiveDismiss={editMode && isModified()}
     >
       {editMode && (
-        <div className="flex flex-col justify-start gap-4">
-          <div className="mb-1">
+        <div className="flex flex-col gap-2">
+          <div>
             <span className="text-sm font-semibold">Tag name</span>
           </div>
           <InputTextField
@@ -216,7 +221,7 @@ export default function ItemTagDetailPopup({
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
-          <div className="mt-2">
+          <div className="mt-4">
             <span className="text-sm font-semibold">Tag color</span>
             <DropdownColorPicker
               value={form.color}
@@ -228,10 +233,6 @@ export default function ItemTagDetailPopup({
       )}
       {!editMode && !isLoading && tagDetail && (
         <div className="flex flex-col justify-start gap-4">
-          <div>
-            <span className="text-sm font-semibold">Tag name</span>
-            <div className="mt-2 text-base">{tagDetail.name}</div>
-          </div>
           <div className="mt-2">
             <span className="text-sm font-semibold">Tag color</span>
             <div className="mt-2">
@@ -239,6 +240,7 @@ export default function ItemTagDetailPopup({
                 value={form.color}
                 onChange={(color) => handleColorChange(color)}
                 label=""
+                disabled={!editMode}
               />
             </div>
           </div>

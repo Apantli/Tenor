@@ -10,6 +10,7 @@ export default function ProjectTags() {
       <div>
         <h2 className="mb-4 text-xl font-medium">Backlog item tags</h2>
         <ItemTagTable></ItemTagTable>
+        <h2 className="mb-4 mt-8 text-xl font-medium">Kanban status</h2>
       </div>
     </div>
   );
