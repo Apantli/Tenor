@@ -6,12 +6,14 @@ import MemberTable, { TeamMember } from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import RoleList from "~/app/_components/sections/RoleList";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
+import { useAlert } from "~/app/_hooks/useAlert";
 import { defaultRoleList, emptyRole } from "~/lib/defaultTags";
 import { Permission, Role } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export default function ProjectUsers() {
   const { projectId } = useParams();
+  const { alert } = useAlert();
   const [section, setSection] = useState("Users");
   const { data: userTypes } = api.projects.getUserTypes.useQuery({
     projectId: projectId as string,
@@ -134,27 +136,25 @@ export default function ProjectUsers() {
   };
 
   const handleRoleRemove = async function (ids: (string | number)[]) {
-    if (!roles) return;
-    const newData = roles.filter((role) => !ids.includes(role.id));
-
-    // Uses optimistic update
-    await utils.settings.getDetailedRoles.cancel({
-      projectId: projectId as string,
-    });
-    utils.settings.getDetailedRoles.setData(
-      { projectId: projectId as string },
-      newData,
-    );
-
-    // Deletes in database
-    await Promise.all(
-      ids.map((id) =>
-        deleteRole({
+    for (const id of ids) {
+      try {
+        await deleteRole({
           projectId: projectId as string,
           roleId: id as string,
-        }),
-      ),
-    );
+        });
+      } catch (error) {
+        alert(
+          "Oops...",
+          `You cannot delete the ${roles?.find((role) => role.id === id)?.label} role because it is assigned to a user.`,
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+        return;
+      }
+    }
+
     await refetchRoles(); // Refetch the list after removing
   };
 

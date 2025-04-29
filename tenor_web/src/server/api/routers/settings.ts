@@ -409,7 +409,21 @@ const settingsRouter = createTRPCRouter({
         projectId,
         ctx.firestore,
       );
+
+      // Check if any user has this role
+      const usersWithRole = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("users")
+        .where("roleId", "==", roleId)
+        .get();
+
+      if (!usersWithRole.empty) {
+        return false;
+      }
+
       await projectSettingsRef.collection("userTypes").doc(roleId).delete();
+      return true;
     }),
   updateRoleTabPermissions: protectedProcedure
     .input(
