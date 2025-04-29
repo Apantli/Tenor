@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import MemberTable, { TeamMember } from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import RoleList from "~/app/_components/sections/RoleList";
+import RoleTable from "~/app/_components/sections/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { defaultRoleList, emptyRole } from "~/lib/defaultTags";
@@ -21,13 +21,28 @@ export default function ProjectUsers() {
 
   // Users
   const { mutateAsync: addTeamMember } = api.users.addUser.useMutation();
-  const { mutateAsync: deleteTeamMember } = api.users.removeUser.useMutation();
+  const { mutateAsync: removeTeamMember } = api.users.removeUser.useMutation();
   const { mutateAsync: updateTeamMemberRole } =
     api.users.updateUserRole.useMutation();
 
   // Roles
   const { mutateAsync: addRole } = api.settings.addRole.useMutation();
-  const { mutateAsync: deleteRole } = api.settings.removeRole.useMutation();
+  const { mutateAsync: removeRole } = api.settings.removeRole.useMutation({
+    onError(error, variables, context) {
+      // look for role with roleId
+      const role =
+        roles?.find((role) => role.id === variables.roleId)?.label ??
+        "NOT FOUND";
+      alert(
+        "Oops...",
+        `You cannot delete the ${role} role because it is assigned to a user.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+    },
+  });
   const { mutateAsync: updateRoleTabPermissions } =
     api.settings.updateRoleTabPermissions.useMutation();
   const { mutateAsync: updateViewPerformance } =
@@ -86,7 +101,7 @@ export default function ProjectUsers() {
     // Deletes in database
     await Promise.all(
       ids.map((id) =>
-        deleteTeamMember({
+        removeTeamMember({
           projectId: projectId as string,
           userId: id as string,
         }),
@@ -136,24 +151,14 @@ export default function ProjectUsers() {
   };
 
   const handleRoleRemove = async function (ids: (string | number)[]) {
-    for (const id of ids) {
-      try {
-        await deleteRole({
+    await Promise.all(
+      ids.map((id) =>
+        removeRole({
           projectId: projectId as string,
           roleId: id as string,
-        });
-      } catch (error) {
-        alert(
-          "Oops...",
-          `You cannot delete the ${roles?.find((role) => role.id === id)?.label} role because it is assigned to a user.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
-        return;
-      }
-    }
+        }),
+      ),
+    );
 
     await refetchRoles(); // Refetch the list after removing
   };
@@ -287,7 +292,7 @@ export default function ProjectUsers() {
           </div>
         )
       ) : roles ? (
-        <RoleList
+        <RoleTable
           isSearchable={true}
           roles={roles}
           handleRoleAdd={handleRoleAdd}
@@ -295,7 +300,7 @@ export default function ProjectUsers() {
           handleEditTabPermission={handleEditTabPermission}
           handleUpdateViewPerformance={handleUpdateViewPerformance}
           handleUpdateControlSprints={handleUpdateControlSprints}
-        ></RoleList>
+        ></RoleTable>
       ) : (
         <div className="mt-5 flex flex-row gap-x-3">
           <LoadingSpinner />

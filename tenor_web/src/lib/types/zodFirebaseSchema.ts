@@ -50,7 +50,7 @@ export const UserSchema = z.object({
   isManager: z.boolean(),
 });
 
-// Each number refers to 1 permission: "can't view" | "view" | "view-details" | "modify" | "create" | "delete"
+// Each number refers to 1 permission: "none" | "read" | "write"
 export type Permission = 0 | 1 | 2;
 
 export const PermissionSchema = z.number().min(0).max(2);

@@ -14,6 +14,7 @@ import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 import { emptyRole, ownerRole } from "~/lib/defaultTags";
 import { remove } from "node_modules/cypress/types/lodash";
 import { RoleDetail } from "~/lib/types/detailSchemas";
+import { TRPCError } from "@trpc/server";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -419,11 +420,10 @@ const settingsRouter = createTRPCRouter({
         .get();
 
       if (!usersWithRole.empty) {
-        return false;
+        throw new TRPCError({ code: "BAD_REQUEST" });
       }
 
       await projectSettingsRef.collection("userTypes").doc(roleId).delete();
-      return true;
     }),
   updateRoleTabPermissions: protectedProcedure
     .input(

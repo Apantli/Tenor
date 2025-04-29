@@ -34,7 +34,7 @@ interface Props {
   isSearchable?: boolean;
 }
 
-export default function RoleList({
+export default function RoleTable({
   label,
   roles,
   className,
