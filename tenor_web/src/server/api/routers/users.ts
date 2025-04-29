@@ -93,7 +93,7 @@ export const userRouter = createTRPCRouter({
 
           users.push({
             id: doc.id,
-            isOwner: ctx.session.uid === userData.userId,
+            isOwner: "owner" === userData.roleId,
             photoURL: firebaseUser.photoURL,
             displayName: firebaseUser.displayName ?? "No available name",
             email: firebaseUser.email ?? "No available email",

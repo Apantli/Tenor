@@ -4,6 +4,8 @@ import { useParams, usePathname } from "next/navigation";
 import React, { type MouseEventHandler } from "react";
 import { cn } from "~/lib/utils";
 import InterceptedLink from "./InterceptableLink";
+import { api } from "~/trpc/react";
+import { permissionMapping } from "../(logged)/project/[projectId]/layout";
 
 interface Props {
   disabled?: boolean;
@@ -11,8 +13,8 @@ interface Props {
 }
 export default function Tabbar({ disabled, mainPageName }: Props) {
   const pathname = usePathname();
-  const params = useParams();
-  const projectPath = `/project/${params.projectId as string}`;
+  const { projectId } = useParams();
+  const projectPath = `/project/${projectId as string}`;
   let cutPathname = pathname.slice(projectPath.length) || "/";
 
   // Consider the immediate parent directory, ignoring nested directories
@@ -40,31 +42,55 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     });
   };
 
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+
   return (
     <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
-      {tabs.map(({ title, link, enabled }, i) => (
-        <InterceptedLink
-          key={i}
-          className={cn(
-            "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
-            {
-              "bg-white text-app-primary": link === cutPathname,
-              "pointer-events-none opacity-50":
-                !enabled || (disabled && link !== cutPathname),
-            },
-          )}
-          href={projectPath + link}
-          onClick={handleClick}
-        >
-          {title}
-          {link === cutPathname && (
-            <>
-              <div className="absolute -left-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[5px_5px_0_0_white]"></div>
-              <div className="absolute -right-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[-5px_5px_0_0_white]"></div>
-            </>
-          )}
-        </InterceptedLink>
-      ))}
+      {tabs.map(({ title, link, enabled }, i) => {
+        // Show only allowed tabs
+        const tab = link.slice(1);
+        if (tab) {
+          const permissionKey =
+            permissionMapping[tab as keyof typeof permissionMapping];
+          if (!permissionKey) {
+            return null;
+          }
+          const permission =
+            role?.tabs[permissionKey as keyof typeof role.tabs];
+          if (!permission || permission <= 0) {
+            return null;
+          }
+          // Overview
+        } else if (!role?.canViewPerformance) {
+          return null;
+        }
+
+        return (
+          <InterceptedLink
+            key={i}
+            className={cn(
+              "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
+              {
+                "bg-white text-app-primary": link === cutPathname,
+                "pointer-events-none opacity-50":
+                  !enabled || (disabled && link !== cutPathname),
+              },
+            )}
+            href={projectPath + link}
+            onClick={handleClick}
+          >
+            {title}
+            {link === cutPathname && (
+              <>
+                <div className="absolute -left-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[5px_5px_0_0_white]"></div>
+                <div className="absolute -right-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[-5px_5px_0_0_white]"></div>
+              </>
+            )}
+          </InterceptedLink>
+        );
+      })}
     </div>
   );
 }
