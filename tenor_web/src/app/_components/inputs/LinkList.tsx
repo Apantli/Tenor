@@ -5,6 +5,8 @@ import InsertLinkIcon from "@mui/icons-material/InsertLink";
 import PrimaryButton from "../buttons/PrimaryButton";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import InputTextField from "./InputTextField";
+import { useAlert } from "~/app/_hooks/useAlert";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 interface Props {
   label: string;
@@ -22,7 +24,7 @@ export default function LinkList({
   links,
 }: Props) {
   const [link, setLink] = React.useState("");
-
+  const confirm = useConfirmation();
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
@@ -71,7 +73,16 @@ export default function LinkList({
             key={index}
             className="h-[100px] flex-shrink-0"
             title={link}
-            onClick={() => {
+            onClick={async () => {
+              if (
+                !(await confirm(
+                  "Delete link?",
+                  `Removing "${link}". This action is not revertible.`,
+                  "Delete link",
+                ))
+              ) {
+                return;
+              }
               handleLinkRemove(link);
             }}
           >
@@ -79,7 +90,7 @@ export default function LinkList({
               title={link}
               className="flex flex-col items-center text-gray-500 hover:text-blue-500"
               data-tooltip-id="tooltip"
-              data-tooltip-content={link}
+              data-tooltip-content={"Click to delete"}
             >
               <InsertLinkIcon style={{ fontSize: "4rem" }} />
               <span className="mt-1 max-w-[80px] truncate text-center text-xs">
