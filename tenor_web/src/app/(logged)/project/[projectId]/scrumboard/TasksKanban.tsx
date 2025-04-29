@@ -59,8 +59,8 @@ export default function TasksKanban() {
   };
 
   // REACT
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [lastDraggedItemId, setLastDraggedItemId] = useState<string | null>(
+  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
+  const [lastDraggedTaskId, setLastDraggedTaskId] = useState<string | null>(
     null,
   );
 
@@ -70,21 +70,20 @@ export default function TasksKanban() {
   const detailItem = tasksAndColumnsData?.cardTasks[detailItemId];
   const detailItemType = detailItem?.itemType;
   const detailParentItemId = detailItem?.itemId;
-  // TODO: Do same for generic item
 
   // UTILITY
   let updateOperationsInProgress = 0;
 
   const handleDragEnd = async (taskId: string, columnId: string) => {
-    setLastDraggedItemId(null);
+    setLastDraggedTaskId(null);
     if (tasksAndColumnsData == undefined) return;
     if (columnId === tasksAndColumnsData.cardTasks[taskId]?.columnId) return;
 
-    setLastDraggedItemId(taskId);
-    await moveItemsToColumn([taskId], columnId);
+    setLastDraggedTaskId(taskId);
+    await moveTasksToColumn([taskId], columnId);
   };
 
-  const moveItemsToColumn = async (taskIds: string[], columnId: string) => {
+  const moveTasksToColumn = async (taskIds: string[], columnId: string) => {
     if (tasksAndColumnsData == undefined) return;
     updateOperationsInProgress += 1;
     const cardTasks = tasksAndColumnsData.cardTasks;
@@ -116,41 +115,41 @@ export default function TasksKanban() {
             return {
               ...column,
               taskIds: column.taskIds.filter(
-                (itemId) => !taskIds.includes(itemId),
+                (taskId) => !taskIds.includes(taskId),
               ),
             };
           }
         });
 
-        const updatedItems = Object.fromEntries(
-          Object.entries(oldData.cardTasks).map(([id, item]) => {
+        const updatedTasks = Object.fromEntries(
+          Object.entries(oldData.cardTasks).map(([id, task]) => {
             if (taskIds.includes(id)) {
               return [
                 id,
                 {
-                  ...item,
+                  ...task,
                   columnId: columnId,
                 },
               ];
             }
-            return [id, item];
+            return [id, task];
           }),
         );
 
         return {
           columns,
-          cardTasks: updatedItems,
+          cardTasks: updatedTasks,
         };
       },
     );
 
-    setSelectedItems(new Set());
+    setSelectedTasks(new Set());
 
     await Promise.all(
-      taskIds.map(async (itemId) => {
+      taskIds.map(async (taskId) => {
         await changeStatus({
           projectId: projectId as string,
-          taskId: itemId,
+          taskId: taskId,
           statusId: columnId,
         });
       }),
@@ -175,13 +174,13 @@ export default function TasksKanban() {
   };
 
   const assignSelectionToColumn = async (columnId: string) => {
-    setLastDraggedItemId(null);
+    setLastDraggedTaskId(null);
     if (tasksAndColumnsData == undefined) return;
 
-    const taskIds = Array.from(selectedItems);
+    const taskIds = Array.from(selectedTasks);
     if (taskIds.length === 0) return;
 
-    await moveItemsToColumn(taskIds, columnId);
+    await moveTasksToColumn(taskIds, columnId);
   };
 
   return (
@@ -208,20 +207,20 @@ export default function TasksKanban() {
             {tasksAndColumnsData?.columns.map((column) => {
               const allSelected =
                 column.taskIds.length > 0 &&
-                column.taskIds.every((itemId) => selectedItems.has(itemId));
+                column.taskIds.every((taskId) => selectedTasks.has(taskId));
 
               const toggleSelectAll = () => {
-                const newSelection = new Set(selectedItems);
+                const newSelection = new Set(selectedTasks);
                 if (allSelected) {
-                  column.taskIds.forEach((itemId) => {
-                    newSelection.delete(itemId);
+                  column.taskIds.forEach((taskId) => {
+                    newSelection.delete(taskId);
                   });
                 } else {
-                  column.taskIds.forEach((itemId) => {
-                    newSelection.add(itemId);
+                  column.taskIds.forEach((taskId) => {
+                    newSelection.add(taskId);
                   });
                 }
-                setSelectedItems(newSelection);
+                setSelectedTasks(newSelection);
               };
 
               const renamedColumn = {
@@ -231,13 +230,13 @@ export default function TasksKanban() {
 
               return (
                 <AssignableCardColumn
-                  lastDraggedItemId={lastDraggedItemId}
+                  lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}
                   column={renamedColumn}
                   items={tasksAndColumnsData.cardTasks}
                   key={column.id}
-                  selectedItems={selectedItems}
-                  setSelectedItems={setSelectedItems}
+                  selectedItems={selectedTasks}
+                  setSelectedItems={setSelectedTasks}
                   setDetailItemId={setDetaiItemId}
                   setShowDetail={setShowDetail}
                   renderCard={(item) => (
@@ -282,13 +281,13 @@ export default function TasksKanban() {
 
         <DragOverlay>
           {(source) => {
-            const itemId = source.id as string;
-            if (!itemId) return null;
-            const draggingItem = tasksAndColumnsData?.cardTasks[itemId];
-            if (!draggingItem) return null;
+            const taskId = source.id as string;
+            if (!taskId) return null;
+            const draggingTask = tasksAndColumnsData?.cardTasks[taskId];
+            if (!draggingTask) return null;
             return (
               <ItemCardRender
-                item={draggingItem}
+                item={draggingTask}
                 showBackground={true}
                 scrumIdFormatter={formatTaskScrumId}
               />
