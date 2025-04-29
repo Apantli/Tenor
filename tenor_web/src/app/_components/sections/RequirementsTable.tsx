@@ -667,7 +667,7 @@ export default function RequirementsTable() {
   return (
     <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
       <div className="mb-3 flex w-full flex-col justify-between">
-        <h2 className="content-center text-3xl font-semibold">Requirements</h2>
+        <h1 className="content-center text-3xl font-semibold">Requirements</h1>
         <div className="mt-3 flex flex-1 grow items-center justify-end gap-1">
           <div className="flex-1">
             <SearchBar

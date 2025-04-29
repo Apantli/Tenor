@@ -114,7 +114,7 @@ export default function IssuesTable() {
       },
       name: {
         label: "Title",
-        width: 650,
+        width: 450,
         sortable: true,
         render(row) {
           return (
@@ -194,7 +194,7 @@ export default function IssuesTable() {
       },
       relatedUserStory: {
         label: "Assigned user story",
-        width: 400,
+        width: 350,
         render(row) {
           const handleUserStoryChange = async (
             row: IssueCol,
@@ -230,7 +230,9 @@ export default function IssuesTable() {
                 relatedUserStoryId: userStory?.id ?? "",
               });
 
-              await invalidateQueriesIssueDetails(projectId as string, [row.id]);
+              await invalidateQueriesIssueDetails(projectId as string, [
+                row.id,
+              ]);
               await invalidateQueriesAllIssues(projectId as string);
             } catch (error) {
               console.error("Failed to update user story:", error);
@@ -381,11 +383,11 @@ export default function IssuesTable() {
   };
 
   return (
-    <div className="flex flex-1 flex-col items-start gap-3">
-      <div className="flex w-full justify-between">
-        <h1 className="text-3xl font-semibold">Issues</h1>
-        <div className="flex w-3/4 items-center justify-end gap-2">
-          <div className="w-1/3 p-2">
+    <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
+      <div className="mb-3 flex w-full flex-col justify-between">
+        <h1 className="content-center text-3xl font-semibold">Issues</h1>
+        <div className="mt-3 flex flex-1 grow items-center justify-end gap-1">
+          <div className="flex-1">
             <SearchBar
               placeholder="Find a issue by title or id..."
               searchValue={searchValue}
