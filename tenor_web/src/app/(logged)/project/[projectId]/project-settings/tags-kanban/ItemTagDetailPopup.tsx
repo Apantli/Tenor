@@ -10,7 +10,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import DeleteButton from "./buttons/DeleteButton";
+import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import Markdown from "react-markdown";
 

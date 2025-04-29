@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import ItemTagTable from "~/app/_components/ItemTagTable";
+import ItemTagTable from "./ItemTagTable";
 
 export default function ProjectTags() {
   return (

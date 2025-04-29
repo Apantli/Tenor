@@ -5,15 +5,14 @@ import { api } from "~/trpc/react";
 import { useState } from "react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useEffect } from "react";
-import SearchBar from "./SearchBar";
+import SearchBar from "~/app/_components/SearchBar";
 import CreateItemTagPopup from "./CreateItemTagPopup";
-import { usePopupVisibilityState } from "./Popup";
-import PrimaryButton from "./buttons/PrimaryButton";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import ItemTagDetailPopup from "./ItemTagDetailPopup";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import Table from "./table/Table";
-import { type TableColumns } from "./table/Table";
-import TagComponent from "./TagComponent";
+import Table, { type TableColumns } from "~/app/_components/table/Table";
+import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export default function ItemTagTable() {
@@ -95,7 +94,7 @@ export default function ItemTagTable() {
     id: { visible: false },
     name: {
       label: "Tag Name",
-      width: 300,
+      width: 220,
       filterable: "search-only",
       sortable: true,
       sorter: (a, b) => a.name.localeCompare(b.name),
