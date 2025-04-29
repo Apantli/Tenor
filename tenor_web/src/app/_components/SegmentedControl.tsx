@@ -55,8 +55,9 @@ export function SegmentedControl({
     onChange(option);
   };
   
+  // TODO: Make this be the same size as a button
   return (
-    <div ref={containerRef} className={cn('relative flex rounded-lg bg-gray-100 p-1', className)}>
+    <div ref={containerRef} className={cn('relative flex rounded-lg bg-sprint-column-background p-1', className)}>
       {/* Animated selector background */}
       <div 
         className="absolute bg-app-primary rounded-md transition-all duration-300 ease-in-out"

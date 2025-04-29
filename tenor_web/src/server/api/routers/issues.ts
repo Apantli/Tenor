@@ -456,11 +456,12 @@ export const issuesRouter = createTRPCRouter({
         issueId: z.string(),
         size: z.string().optional(),
         priorityId: z.string().optional(),
+        statusId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, issueId, size, priorityId } = input;
-      if (priorityId === undefined && size === undefined) {
+      const { projectId, issueId, size, priorityId, statusId } = input;
+      if (priorityId === undefined && size === undefined && statusId === undefined) {
         return;
       }
       const issueRef = ctx.firestore
@@ -477,6 +478,7 @@ export const issuesRouter = createTRPCRouter({
         ...issueData,
         priorityId: priorityId ?? issueData.priorityId,
         size: size ?? issueData.size,
+        statusId: statusId ?? issueData.statusId,
       };
 
       await issueRef.update(updatedIssueData);

@@ -2,7 +2,12 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
 import { getTasksFromProject } from "./tasks";
-import type { StatusTag, WithId } from "~/lib/types/firebaseSchemas";
+import type {
+  Issue,
+  StatusTag,
+  UserStory,
+  WithId,
+} from "~/lib/types/firebaseSchemas";
 import { getProjectSettingsRef } from "./settings";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
 
@@ -102,6 +107,86 @@ export const kanbanRouter = createTRPCRouter({
       return {
         columns: columnsWithTasks,
         cardTasks: Object.fromEntries(cardTasks.map((item) => [item.id, item])),
+      };
+    }),
+
+  getBacklogItemsForKanban: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // Fetch user stories
+      const userStoriesRef = ctx.firestore
+        .collection(`projects/${input.projectId}/userStories`)
+        .where("deleted", "==", false);
+      const userStoriesSnapshot = await userStoriesRef.get();
+
+      const userStories = userStoriesSnapshot.docs.map((doc) => {
+        const data = doc.data() as UserStory;
+        return {
+          id: doc.id,
+          scrumId: data.scrumId,
+          name: data.name,
+          description: data.description,
+          size: data.size,
+          tags: [], // Tags will be populated if needed
+          columnId: data.statusId,
+          itemType: "US" as const,
+          itemId: doc.id,
+        } as CardTask;
+      });
+
+      // Fetch issues
+      const issuesRef = ctx.firestore
+        .collection(`projects/${input.projectId}/issues`)
+        .where("deleted", "==", false);
+      const issuesSnapshot = await issuesRef.get();
+
+      const issues = issuesSnapshot.docs.map((doc) => {
+        const data = doc.data() as Issue;
+        return {
+          id: doc.id,
+          scrumId: data.scrumId,
+          name: data.name,
+          description: data.description,
+          size: data.size,
+          tags: [], // Tags will be populated if needed
+          columnId: data.statusId,
+          itemType: "IS" as const,
+          itemId: doc.id,
+        } as CardTask;
+      });
+
+      // Combine both types of backlog items
+      const backlogItems = [...userStories, ...issues];
+
+      // Get all statuses
+      const columns = await getAllStatuses(ctx.firestore, input.projectId);
+      const activeColumns = columns.filter(
+        (column) => column.deleted === false,
+      );
+
+      // Group items by status
+      const columnsWithItems = activeColumns
+        .map((column) => ({
+          id: column.id,
+          name: column.name,
+          color: column.color,
+          orderIndex: column.orderIndex,
+
+          taskIds: backlogItems
+            .filter((item) => item.columnId === column.id)
+            .map((item) => item.id),
+        }))
+        .sort((a, b) => (a.orderIndex < b.orderIndex ? -1 : 1));
+
+      return {
+        columns: columnsWithItems,
+        cardTasks: Object.fromEntries(
+          backlogItems.map((item) => [item.id, item]),
+        ),
       };
     }),
 
