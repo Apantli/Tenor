@@ -39,7 +39,7 @@ export type SprintPreview = {
 
 export type UserStoryDetail = {
   id: string;
-  scrumId: number;
+  scrumId?: number;
   name: string;
   description: string;
   acceptanceCriteria: string;
@@ -49,9 +49,12 @@ export type UserStoryDetail = {
   priority?: Tag;
   dependencies: UserStoryPreview[];
   requiredBy: UserStoryPreview[];
-  tasks: TaskPreview[];
   sprint?: SprintPreview;
 };
+
+export interface UserStoryDetailWithTasks extends UserStoryDetail {
+  tasks: TaskDetail[];
+}
 
 export type IssueDetail = {
   id: string;
@@ -70,7 +73,7 @@ export type IssueDetail = {
 
 export type TaskDetail = {
   id: string;
-  scrumId: number;
+  scrumId?: number;
   name: string;
   description: string;
   status: Tag;

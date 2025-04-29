@@ -25,7 +25,11 @@ import {
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
-import type { TaskPreview } from "~/lib/types/detailSchemas";
+import type {
+  TaskPreview,
+  UserStoryDetail,
+  UserStoryDetailWithTasks,
+} from "~/lib/types/detailSchemas";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
@@ -34,6 +38,10 @@ import {
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
+import AiIcon from "@mui/icons-material/AutoAwesome";
+import AiButton from "~/app/_components/buttons/AiButton";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 
 interface Props {
   userStoryId: string;
@@ -41,6 +49,8 @@ interface Props {
   setShowDetail: (show: boolean) => void;
   setUserStoryId?: (userStoryId: string) => void;
   taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
+  userStoryData?: UserStoryDetailWithTasks;
+  setUserStoryData?: (data: UserStoryDetailWithTasks | undefined) => void;
 }
 
 export default function UserStoryDetailPopup({
@@ -48,7 +58,8 @@ export default function UserStoryDetailPopup({
   showDetail,
   setShowDetail,
   taskIdToOpenImmediately,
-  setUserStoryId,
+  userStoryData,
+  setUserStoryData,
 }: Props) {
   const { projectId } = useParams();
   const confirm = useConfirmation();
@@ -59,14 +70,21 @@ export default function UserStoryDetailPopup({
   const [unsavedTasks, setUnsavedTasks] = useState(false);
 
   const {
-    data: userStoryDetail,
+    data: fetchedUserStory,
     isLoading,
     refetch,
     error,
-  } = api.userStories.getUserStoryDetail.useQuery({
-    projectId: projectId as string,
-    userStoryId,
-  });
+  } = api.userStories.getUserStoryDetail.useQuery(
+    {
+      projectId: projectId as string,
+      userStoryId,
+    },
+    {
+      enabled: !userStoryData,
+    },
+  );
+
+  const userStoryDetail = userStoryData ?? fetchedUserStory;
 
   const { mutateAsync: updateUserStory } =
     api.userStories.modifyUserStory.useMutation();
@@ -143,6 +161,12 @@ export default function UserStoryDetailPopup({
             acceptanceCriteria: editForm.acceptanceCriteria,
           }
         : updatedData;
+
+    // This means we're editing a ghost user story, so it should be treated differently
+    if (userStoryData !== undefined) {
+      setUserStoryData?.({ ...finalData, tasks: userStoryData.tasks });
+      return;
+    }
 
     const updatedUserStory = {
       name: finalData.name,
@@ -314,18 +338,39 @@ export default function UserStoryDetailPopup({
         )
       }
       footer={
-        !isLoading && (
+        !isLoading &&
+        (userStoryDetail?.scrumId !== undefined ? (
           <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
-        )
+        ) : (
+          <div className="flex items-center gap-2">
+            <TertiaryButton>Reject</TertiaryButton>
+            <PrimaryButton className="hover:bg-app-hover-secondary bg-app-secondary">
+              Accept
+            </PrimaryButton>
+          </div>
+        ))
       }
       title={
         <>
           {!isLoading && userStoryDetail && (
-            <h1 className="mb-4 text-3xl">
+            <h1 className="mb-4 flex items-center text-3xl">
               <span className="font-bold">
-                {formatUserStoryScrumId(userStoryDetail.scrumId)}:{" "}
+                {userStoryDetail.scrumId ? (
+                  <span className="pr-2">
+                    {formatUserStoryScrumId(userStoryDetail.scrumId)}:
+                  </span>
+                ) : (
+                  <span
+                    className="mr-5 flex animate-pulse items-center text-app-secondary"
+                    data-tooltip-id="tooltip"
+                    data-tooltip-content="This is a generated user story. It will not be saved until you accept it."
+                    data-tooltip-place="top-start"
+                  >
+                    <AiIcon />
+                  </span>
+                )}
               </span>
-              <span>{userStoryDetail.name}</span>
+              <span className="">{userStoryDetail.name}</span>
             </h1>
           )}
         </>
@@ -420,6 +465,28 @@ export default function UserStoryDetailPopup({
             setShowTaskDetail={setShowTaskDetail}
             setUnsavedTasks={setUnsavedTasks}
             taskIdToOpenImmediately={taskIdToOpenImmediately}
+            userStoryData={userStoryData}
+            setTaskData={(tasks) => {
+              if (!userStoryData) return;
+              setUserStoryData?.({
+                ...userStoryData,
+                tasks: tasks ?? [],
+              });
+            }}
+            updateTaskData={(taskId, updater) => {
+              if (!userStoryData) return;
+              const taskIndex = userStoryData.tasks.findIndex(
+                (task) => task.id === taskId,
+              );
+              if (taskIndex === -1) return;
+              const updatedTask = updater(userStoryData.tasks[taskIndex]!);
+              const updatedTasks = [...userStoryData.tasks];
+              updatedTasks[taskIndex] = updatedTask;
+              setUserStoryData?.({
+                ...userStoryData,
+                tasks: updatedTasks,
+              });
+            }}
           />
         </div>
       )}
@@ -438,6 +505,17 @@ export default function UserStoryDetailPopup({
             itemId={userStoryId}
             itemType="US"
             onTaskAdded={() => setShowCreateTaskPopup(false)}
+            addTaskToGhost={
+              userStoryData !== undefined
+                ? (task) => {
+                    console.log(task);
+                    setUserStoryData?.({
+                      ...userStoryData,
+                      tasks: [...userStoryData.tasks, task],
+                    });
+                  }
+                : undefined
+            }
           />
         </SidebarPopup>
       )}

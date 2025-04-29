@@ -205,6 +205,7 @@ export default function ProjectAIConfig() {
             onChange={(e) => {
               setNewText(e.target.value);
             }}
+            placeholder="Tell us about your project..."
             className="h-[250px]"
           ></InputTextAreaField>
           <FileList

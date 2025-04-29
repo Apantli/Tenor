@@ -293,16 +293,42 @@ export const tasksRouter = createTRPCRouter({
 
   generateTasks: protectedProcedure
     .input(
-      z.object({
-        projectId: z.string(),
-        itemId: z.string(),
-        itemType: z.enum(["US", "IS", "IT"]),
-        amount: z.number(),
-        prompt: z.string(),
-      }),
+      z
+        .object({
+          projectId: z.string(),
+          itemId: z.string(),
+          itemType: z.enum(["US", "IS", "IT"]),
+          amount: z.number(),
+          prompt: z.string(),
+        })
+        .or(
+          z.object({
+            projectId: z.string(),
+            amount: z.number(),
+            prompt: z.string(),
+            userStoryDetail: UserStorySchema.omit({
+              scrumId: true,
+              deleted: true,
+              complete: true,
+              dependencyIds: true,
+              requiredByIds: true,
+            }).extend({
+              tasks: z.array(
+                TaskSchema.omit({
+                  scrumId: true,
+                  deleted: true,
+                  itemType: true,
+                  itemId: true,
+                  assigneeId: true,
+                  dueDate: true,
+                }),
+              ),
+            }),
+          }),
+        ),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, itemId, amount, prompt } = input;
+      const { projectId, amount, prompt } = input;
 
       const getGenericBacklogItemContext = async (
         name: string,
@@ -352,35 +378,112 @@ export const tasksRouter = createTRPCRouter({
         );
       };
 
-      // Get the item data
-      let itemContext = "";
-      let itemTypeName = "";
-      if (input.itemType === "US") {
-        itemTypeName = "user story";
-        const userStory = await ctx.firestore
-          .collection("projects")
-          .doc(projectId)
-          .collection("userStories")
-          .doc(itemId)
-          .get();
-        const userStoryData = {
-          id: userStory.id,
-          ...UserStorySchema.parse(userStory.data()),
-        };
-
+      const getEpicContext = async (epicId: string) => {
         let epicContext = "";
-        if (userStoryData.epicId) {
+        if (epicId && epicId !== "") {
           const epic = await ctx.firestore
             .collection("projects")
             .doc(projectId)
             .collection("epics")
-            .doc(userStoryData.epicId)
+            .doc(epicId)
             .get();
           if (epic.exists) {
-            const epicData = { id: epic.id, ...EpicSchema.parse(epic.data()) };
+            const epicData = {
+              id: epic.id,
+              ...EpicSchema.parse(epic.data()),
+            };
             epicContext = `# RELATED EPIC\n\n- name: ${epicData.name}\n- description: ${epicData.description}\n\n`;
           }
         }
+        return epicContext;
+      };
+
+      // Get the item data
+      let itemContext = "";
+      let itemTypeName = "";
+      let tasksContext = "";
+
+      if ("itemId" in input) {
+        const { itemId, itemType } = input;
+
+        if (input.itemType === "US") {
+          itemTypeName = "user story";
+          const userStory = await ctx.firestore
+            .collection("projects")
+            .doc(projectId)
+            .collection("userStories")
+            .doc(itemId)
+            .get();
+          const userStoryData = {
+            id: userStory.id,
+            ...UserStorySchema.parse(userStory.data()),
+          };
+
+          const epicContext = await getEpicContext(userStoryData.epicId ?? "");
+
+          itemContext = `# USER STORY DETAILS\n
+${await getGenericBacklogItemContext(userStoryData.name, userStoryData.description, userStoryData.priorityId ?? "", userStoryData.size)}
+- acceptance criteria: ${userStoryData.acceptanceCriteria}
+
+${epicContext}
+
+${await getBacklogTagsContext(userStoryData.tagIds)}\n\n`;
+        } else if (input.itemType === "IS") {
+          itemTypeName = "issue";
+          const issue = await ctx.firestore
+            .collection("projects")
+            .doc(projectId)
+            .collection("issues")
+            .doc(itemId)
+            .get();
+          const issueData = {
+            id: issue.id,
+            ...IssueSchema.parse(issue.data()),
+          };
+
+          let userStoryContext = "";
+          if (issueData.relatedUserStoryId) {
+            const userStory = await ctx.firestore
+              .collection("projects")
+              .doc(projectId)
+              .collection("userStories")
+              .doc(issueData.relatedUserStoryId)
+              .get();
+            if (userStory.exists) {
+              const userStoryData = {
+                id: userStory.id,
+                ...UserStorySchema.parse(userStory.data()),
+              };
+              userStoryContext = `# RELATED USER STORY\n\n- name: ${userStoryData.name}\n- description: ${userStoryData.description}\n- acceptance criteria: ${userStoryData.acceptanceCriteria}\n\n`;
+            }
+          }
+
+          itemContext = `# ISSUE DETAILS\n
+${await getGenericBacklogItemContext(issueData.name, issueData.description, issueData.priorityId ?? "", issueData.size)}
+- steps to reproduce: ${issueData.stepsToRecreate}
+
+${userStoryContext}
+
+${await getBacklogTagsContext(issueData.tagIds)}\n\n`;
+        }
+        // FIXME: Also deal with generic items (IT)
+
+        const tasks = await getTasksFromItem(ctx.firestore, projectId, itemId);
+        tasksContext =
+          tasks.length > 0
+            ? "# EXISTING TASKS\n\n" +
+              tasks
+                .map((task) => {
+                  return `- name: ${task.name}\n- description: ${task.description}\n`;
+                })
+                .join("\n")
+            : "";
+      } else {
+        itemTypeName = "user story";
+
+        const userStoryData = input.userStoryDetail;
+
+        const epicContext = await getEpicContext(userStoryData.epicId ?? "");
 
         itemContext = `# USER STORY DETAILS\n
 ${await getGenericBacklogItemContext(userStoryData.name, userStoryData.description, userStoryData.priorityId ?? "", userStoryData.size)}
@@ -389,54 +492,17 @@ ${await getGenericBacklogItemContext(userStoryData.name, userStoryData.descripti
 ${epicContext}
 
 ${await getBacklogTagsContext(userStoryData.tagIds)}\n\n`;
-      } else if (input.itemType === "IS") {
-        itemTypeName = "issue";
-        const issue = await ctx.firestore
-          .collection("projects")
-          .doc(projectId)
-          .collection("issues")
-          .doc(itemId)
-          .get();
-        const issueData = {
-          id: issue.id,
-          ...IssueSchema.parse(issue.data()),
-        };
 
-        let userStoryContext = "";
-        if (issueData.relatedUserStoryId) {
-          const userStory = await ctx.firestore
-            .collection("projects")
-            .doc(projectId)
-            .collection("userStories")
-            .doc(issueData.relatedUserStoryId)
-            .get();
-          if (userStory.exists) {
-            const userStoryData = {
-              id: userStory.id,
-              ...UserStorySchema.parse(userStory.data()),
-            };
-            userStoryContext = `# RELATED USER STORY\n\n- name: ${userStoryData.name}\n- description: ${userStoryData.description}\n- acceptance criteria: ${userStoryData.acceptanceCriteria}\n\n`;
-          }
-        }
-
-        itemContext = `# ISSUE DETAILS\n
-${await getGenericBacklogItemContext(issueData.name, issueData.description, issueData.priorityId ?? "", issueData.size)}
-- steps to reproduce: ${issueData.stepsToRecreate}
-
-${userStoryContext}
-
-${await getBacklogTagsContext(issueData.tagIds)}\n\n`;
+        tasksContext =
+          userStoryData.tasks.length > 0
+            ? "# EXISTING TASKS\n\n" +
+              userStoryData.tasks
+                .map((task) => {
+                  return `- name: ${task.name}\n- description: ${task.description}\n`;
+                })
+                .join("\n")
+            : "";
       }
-      // FIXME: Also deal with generic items (IT)
-
-      const tasks = await getTasksFromItem(ctx.firestore, projectId, itemId);
-      const tasksContext =
-        "# EXISTING TASKS\n\n" +
-        tasks
-          .map((task) => {
-            return `- name: ${task.name}\n- description: ${task.description}\n`;
-          })
-          .join("\n");
 
       const passedInPrompt =
         prompt != ""
@@ -449,7 +515,7 @@ ${await getProjectContextHeader(projectId, ctx.firestore)}
 Given the following context, follow the instructions below to the best of your ability.
 
 ${itemContext}
-${tasks.length > 0 ? tasksContext : ""}
+${tasksContext}
 
 Generate ${amount} tasks about the detailed ${itemTypeName}. You can also see the tasks that already exist, DO NOT repeat tasks. Do NOT include any identifier in the name like "Task 1", just use a normal title. Always include a size.\n\n
 

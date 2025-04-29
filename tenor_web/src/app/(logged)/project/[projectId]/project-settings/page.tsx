@@ -170,6 +170,7 @@ export default function ProjectGeneralSettings() {
             value={editForm.name}
             name="name"
             onChange={handleChange}
+            placeholder="What is your project called?"
           />
           <InputTextAreaField
             label="Project Description"
@@ -179,6 +180,7 @@ export default function ProjectGeneralSettings() {
             value={editForm.description}
             name="description"
             onChange={handleChange}
+            placeholder="What is this project about?"
           />
           <div className="mt-auto flex flex-col">
             <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">

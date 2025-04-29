@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import type { TaskPreview } from "~/lib/types/detailSchemas";
+import type {
+  TaskDetail,
+  TaskPreview,
+  UserStoryDetailWithTasks,
+} from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
 import PrimaryButton from "../buttons/PrimaryButton";
@@ -22,6 +26,7 @@ import {
   useInvalidateQueriesBacklogItems,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
+import TagIcon from "@mui/icons-material/Tag";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 interface Props {
@@ -32,6 +37,12 @@ interface Props {
   setShowTaskDetail: (show: boolean) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
   taskIdToOpenImmediately?: string;
+  userStoryData?: UserStoryDetailWithTasks;
+  updateTaskData?: (
+    taskId: string,
+    updater: (oldData: TaskDetail) => TaskDetail,
+  ) => void;
+  setTaskData?: (data: TaskDetail[] | undefined) => void;
 }
 
 // TODO: Update this to invalidate for backlog items also
@@ -43,6 +54,9 @@ export default function TasksTable({
   setShowAddTaskPopup,
   setUnsavedTasks,
   taskIdToOpenImmediately,
+  userStoryData,
+  updateTaskData,
+  setTaskData,
 }: Props) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const [taskToOpen, setTaskToOpen] = useState(taskIdToOpenImmediately);
@@ -55,18 +69,36 @@ export default function TasksTable({
 
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
+  const tasksData = userStoryData?.tasks;
+
   const {
-    data: tasksTableData,
+    data: fetchedTasksTable,
     refetch: refetchTasks,
     isLoading,
-  } = api.tasks.getTasksTableFriendly.useQuery({
-    projectId: projectId as string,
-    itemId,
-  });
+  } = api.tasks.getTasksTableFriendly.useQuery(
+    {
+      projectId: projectId as string,
+      itemId,
+    },
+    {
+      enabled: tasksData === undefined,
+    },
+  );
   const { mutateAsync: changeStatus } =
     api.tasks.changeTaskStatus.useMutation();
   const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
   const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
+
+  const taskDetailToTaskCol = (detail: TaskDetail): TaskCol => ({
+    id: detail.id,
+    title: detail.name,
+    scrumId: detail.scrumId,
+    status: detail.status,
+    assignee: detail.assignee,
+  });
+
+  const tasksTableData =
+    tasksData?.map(taskDetailToTaskCol) ?? fetchedTasksTable;
 
   const generatedTasks =
     useRef<
@@ -117,6 +149,15 @@ export default function TasksTable({
   ).length;
 
   const onTaskStatusChange = async (taskId: string, status: Tag) => {
+    // This is if it's inside a ghost
+    if (tasksData !== undefined) {
+      updateTaskData?.(taskId, (oldData) => ({
+        ...oldData,
+        status,
+      }));
+      return;
+    }
+
     const updatedTasks = tasksTableData?.map((task) => {
       if (task.id === taskId) {
         return {
@@ -161,21 +202,31 @@ export default function TasksTable({
       label: "Id",
       width: 100,
       hiddenOnGhost: true,
-      render(row) {
+      render(row, _, isGhost) {
         return (
-          <button
-            className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
-            onClick={() => {
-              setSelectedTaskId(row.id);
-              setShowTaskDetail(true);
-            }}
-          >
-            {row.scrumId ? (
-              formatTaskScrumId(row.scrumId)
+          <>
+            {!isGhost && !row.scrumId ? (
+              <TagIcon
+                className="text-app-text"
+                data-tooltip-id="tooltip"
+                data-tooltip-html="<b>Why no id?</b><br>This task will be created when the user story gets accepted"
+              />
             ) : (
-              <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
+              <button
+                className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+                onClick={() => {
+                  setSelectedTaskId(row.id);
+                  setShowTaskDetail(true);
+                }}
+              >
+                {row.scrumId ? (
+                  formatTaskScrumId(row.scrumId)
+                ) : (
+                  <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
+                )}
+              </button>
             )}
-          </button>
+          </>
         );
       },
     },
@@ -184,16 +235,18 @@ export default function TasksTable({
       width: 200,
       render(row, _, isGhost) {
         return (
-          <button
-            className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
-            onClick={() => {
-              setSelectedTaskId(row.id);
-              setShowTaskDetail(true);
-            }}
-            disabled={!isGhost && row.scrumId === undefined}
-          >
-            {row.name}
-          </button>
+          <>
+            <button
+              className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
+              onClick={() => {
+                setSelectedTaskId(row.id);
+                setShowTaskDetail(true);
+              }}
+              disabled={!tasksData && !isGhost && row.scrumId === undefined}
+            >
+              {row.name}
+            </button>
+          </>
         );
       },
     },
@@ -262,6 +315,13 @@ export default function TasksTable({
     }
     callback(true);
 
+    // This is if it's inside a ghost
+    if (tasksData !== undefined) {
+      const newData = tasksData?.filter((task) => !ids.includes(task.id));
+      setTaskData?.(newData);
+      return;
+    }
+
     // Optimistic update - filter out deleted tasks
     const newTasks = transformedTasks.filter((task) => !ids.includes(task.id));
 
@@ -320,6 +380,27 @@ export default function TasksTable({
         acceptedIds.includes(task.id),
       );
 
+      // Ghost user story, so the tasks don't get saved yet
+      if (tasksData !== undefined) {
+        setTaskData?.([
+          ...tasksData,
+          ...accepted?.map(
+            (task) =>
+              ({
+                id: crypto.randomUUID(),
+                scrumId: undefined,
+                name: task.name,
+                description: task.description,
+                status: task.status,
+                size: task.size,
+                assignee: undefined,
+                dueDate: undefined,
+              }) as TaskDetail,
+          ),
+        ]);
+        return;
+      }
+
       await utils.tasks.getTasksTableFriendly.cancel({
         projectId: projectId as string,
         itemId: itemId,
@@ -371,13 +452,46 @@ export default function TasksTable({
 
   const handleGenerateTasks = async (amount: number, prompt: string) => {
     beginLoading(amount);
-    const generatedData = await generateTasks({
-      projectId: projectId as string,
-      itemId,
-      itemType,
-      amount,
-      prompt,
-    });
+
+    let generatedData = undefined;
+    if (tasksData === undefined) {
+      generatedData = await generateTasks({
+        projectId: projectId as string,
+        itemId,
+        itemType,
+        amount,
+        prompt,
+      });
+    } else {
+      const tasks =
+        userStoryData?.tasks.map((task) => ({
+          id: task.id,
+          name: task.name,
+          description: task.description,
+          statusId: task.status.id ?? "",
+          size: task.size,
+        })) ?? [];
+
+      generatedData = await generateTasks({
+        projectId: projectId as string,
+        amount,
+        prompt,
+        userStoryDetail: {
+          name: userStoryData?.name ?? "",
+          description: userStoryData?.description ?? "",
+          acceptanceCriteria: userStoryData?.acceptanceCriteria ?? "",
+          epicId: userStoryData?.epic?.id ?? "",
+          size: userStoryData?.size,
+          tagIds:
+            userStoryData?.tags
+              .map((tag) => tag.id)
+              .filter((tag) => tag != undefined) ?? [],
+          priorityId: userStoryData?.priority?.id ?? "",
+          tasks,
+        },
+      });
+    }
+
     generatedTasks.current = generatedData.map((task, i) => ({
       ...task,
       id: i.toString(),

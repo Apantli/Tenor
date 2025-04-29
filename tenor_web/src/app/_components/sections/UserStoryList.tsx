@@ -36,6 +36,10 @@ import {
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
+import {
+  TaskDetail,
+  UserStoryDetailWithTasks,
+} from "~/lib/types/detailSchemas";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -45,6 +49,7 @@ export default function UserStoryList() {
   const [searchValue, setSearchValue] = useState("");
 
   const [selectedUS, setSelectedUS] = useState<string>("");
+  const [selectedGhostUS, setSelectedGhostUS] = useState("");
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   const [renderNewStory, showNewStory, setShowNewStory] =
     usePopupVisibilityState();
@@ -105,6 +110,18 @@ export default function UserStoryList() {
       >[]
     >();
 
+  useNavigationGuard(async () => {
+    if ((generatedUserStories?.current?.length ?? 0) > 0) {
+      return !(await confirm(
+        "Are you sure?",
+        "You have unsaved AI generated user stories. To save them, please accept them first.",
+        "Discard",
+        "Keep editing",
+      ));
+    }
+    return false;
+  });
+
   const {
     onAccept,
     onAcceptAll,
@@ -145,13 +162,15 @@ export default function UserStoryList() {
             sprintId: "",
             taskIds: [],
             complete: false,
-            tagIds: userStory.tagIds,
+            tagIds: userStory.tags
+              .map((tag) => tag.id)
+              .filter((id) => id !== undefined),
             size: userStory.size,
             priorityId: userStory.priority?.id ?? "",
-            epicId: userStory.epicId,
+            epicId: userStory.epic?.id ?? "",
             acceptanceCriteria: userStory.acceptanceCriteria,
-            dependencyIds: userStory.dependencyIds,
-            requiredByIds: userStory.requiredByIds,
+            dependencyIds: userStory.dependencies.map((dep) => dep.id),
+            requiredByIds: userStory.requiredBy.map((dep) => dep.id),
           },
         });
       }
@@ -211,6 +230,7 @@ export default function UserStoryList() {
             <button
               className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
+                setSelectedGhostUS("");
                 setSelectedUS(row.id);
                 setShowDetail(true);
               }}
@@ -235,7 +255,13 @@ export default function UserStoryList() {
             <button
               className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
-                setSelectedUS(row.id);
+                if (isGhost) {
+                  setSelectedGhostUS(row.id);
+                  setSelectedUS("");
+                } else {
+                  setSelectedGhostUS("");
+                  setSelectedUS(row.id);
+                }
                 setShowDetail(true);
               }}
               disabled={!isGhost && row.scrumId === undefined}
@@ -515,6 +541,7 @@ export default function UserStoryList() {
   const onUserStoryAdded = async (userStoryId: string) => {
     await invalidateQueriesAllUserStories(projectId as string);
     setShowNewStory(false);
+    setSelectedGhostUS("");
     setSelectedUS(userStoryId);
     setShowDetail(true);
   };
@@ -533,6 +560,7 @@ export default function UserStoryList() {
     generatedUserStories.current = generatedData.map((story, i) => ({
       ...story,
       id: i.toString(),
+      tasks: [],
     }));
 
     const tableData = generatedData.map((data, i) => ({
@@ -581,7 +609,32 @@ export default function UserStoryList() {
             showDetail={showDetail}
             setShowDetail={setShowDetail}
             userStoryId={selectedUS}
-            setUserStoryId={setSelectedUS}
+            userStoryData={
+              selectedGhostUS !== undefined
+                ? generatedUserStories.current?.find(
+                    (it) => it.id === selectedGhostUS,
+                  )
+                : undefined
+            }
+            setUserStoryData={(updatedDetail) => {
+              if (!selectedGhostUS) return;
+              updateGhostRow(selectedGhostUS, (oldData) => ({
+                ...oldData,
+                title: updatedDetail.name,
+                description: updatedDetail.description,
+                epicScrumId: updatedDetail.epic?.scrumId,
+                priority: updatedDetail.priority,
+                size: updatedDetail.size ?? "M",
+              }));
+              generatedUserStories.current = generatedUserStories.current?.map(
+                (story) => {
+                  if (story.id === selectedGhostUS) {
+                    return updatedDetail;
+                  }
+                  return story;
+                },
+              );
+            }}
           />
         )}
 
