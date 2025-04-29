@@ -210,7 +210,7 @@ export default function TaskDetailPopup({
       footer={
         !isLoading &&
         (!isGhost ? (
-          <DeleteButton onClick={handleDelete}>Delete Task</DeleteButton>
+          <DeleteButton onClick={handleDelete}>Delete task</DeleteButton>
         ) : (
           <div className="flex items-center gap-2">
             <AiIcon
@@ -221,7 +221,7 @@ export default function TaskDetailPopup({
             <TertiaryButton onClick={onReject}>Reject</TertiaryButton>
             <PrimaryButton
               onClick={onAccept}
-              className="hover:bg-app-hover-secondary bg-app-secondary"
+              className="bg-app-secondary hover:bg-app-hover-secondary"
             >
               Accept
             </PrimaryButton>

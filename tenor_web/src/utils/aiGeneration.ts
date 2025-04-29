@@ -8,18 +8,29 @@ interface SofttekResponse {
   data: string;
 }
 
-interface GeminiResponse {
-  candidates: {
-    content: {
-      parts: {
-        text: string;
+type GeminiResponse =
+  | {
+      candidates: {
+        content: {
+          parts: {
+            text: string;
+          }[];
+        };
       }[];
+    }
+  | {
+      error: {
+        code: number;
+        message: string;
+        status: string;
+      };
     };
-  }[];
-}
 
-async function promptAi(prompt: string) {
-  if (env.GENERATIVE_AI === "softtek") {
+async function promptAi(prompt: string, forceModel?: "softtek" | "gemini") {
+  if (
+    (env.GENERATIVE_AI === "softtek" || forceModel === "softtek") &&
+    forceModel !== "gemini"
+  ) {
     const preparedPrompt = prompt.replaceAll("{", "{{").replaceAll("}", "}}");
 
     const response = await fetch(
@@ -54,7 +65,7 @@ async function promptAi(prompt: string) {
     const generatedJson: any = JSON.parse(jsonString);
     // eslint-disable-next-line
     return generatedJson;
-  } else if (env.GENERATIVE_AI === "gemini") {
+  } else if (env.GENERATIVE_AI === "gemini" || forceModel === "gemini") {
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${env.GEMINI_API_KEY}`,
       {
@@ -72,6 +83,12 @@ async function promptAi(prompt: string) {
       },
     );
     const responseData = (await response.json()) as GeminiResponse;
+
+    if ("error" in responseData) {
+      console.log("Gemini is unavailable, using softtek as backup");
+      // eslint-disable-next-line
+      return await promptAi(prompt, "softtek");
+    }
 
     if (!responseData?.candidates?.[0]?.content?.parts?.[0]?.text) {
       console.error("Error from AI:", responseData);
@@ -124,7 +141,7 @@ ${schemaJson}
 - ❌ Do NOT add any top level keys or metadata such as a type, version or items array.
 - ⚠️ IF the schema has an array as the root type, make sure to always return an array, do NOT return an object.
 
-Return only the JSON on one line.`;
+Return only the JSON on one line. Pay very close attention to make sure the JSON is valid and matches the schema exactly. If the schema doesn't match exactly, you WILL GET PUNISHED`;
 
   // eslint-disable-next-line
   const generatedJson = await promptAi(fullPrompt);

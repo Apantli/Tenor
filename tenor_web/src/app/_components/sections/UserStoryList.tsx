@@ -170,27 +170,22 @@ export default function UserStoryList() {
         });
 
         if (userStory.tasks.length > 0) {
-          await Promise.all(
-            userStory.tasks.map(
-              async (task) =>
-                await createTask({
-                  projectId: projectId as string,
-                  taskData: {
-                    name: task.name,
-                    description: task.description,
-                    itemId: userStoryId,
-                    assigneeId: task.assignee?.uid ?? "",
-                    dueDate: task.dueDate
-                      ? Timestamp.fromDate(task.dueDate)
-                      : null,
-                    itemType: "US",
-                    statusId: task.status.id ?? "",
-                    deleted: false,
-                    size: task.size,
-                  },
-                }),
-            ),
-          );
+          for (const task of userStory.tasks) {
+            await createTask({
+              projectId: projectId as string,
+              taskData: {
+                name: task.name,
+                description: task.description,
+                itemId: userStoryId,
+                assigneeId: task.assignee?.uid ?? "",
+                dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : null,
+                itemType: "US",
+                statusId: task.status.id ?? "",
+                deleted: false,
+                size: task.size,
+              },
+            });
+          }
         }
       }
 
@@ -655,10 +650,10 @@ export default function UserStoryList() {
                 },
               );
             }}
-            onAccept={() => {
-              onAccept([selectedGhostUS]);
+            onAccept={async () => {
               setShowDetail(false);
               setTimeout(() => setSelectedGhostUS(""), 300);
+              await onAccept([selectedGhostUS]);
             }}
             onReject={() => {
               onReject([selectedGhostUS]);

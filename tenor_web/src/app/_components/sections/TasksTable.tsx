@@ -398,9 +398,6 @@ export default function TasksTable({
     async (acceptedIds) => {
       const accepted =
         generatedTasks?.filter((task) => acceptedIds.includes(task.id)) ?? [];
-      const acceptedRows = ghostData?.filter((task) =>
-        acceptedIds.includes(task.id),
-      );
 
       // Ghost user story, so the tasks don't get saved yet
       if (tasksData !== undefined) {
@@ -618,66 +615,67 @@ export default function TasksTable({
         )}
       </div>
 
-      {renderTaskDetailPopup && (selectedTaskId ?? selectedGhostTaskId) && (
-        <TaskDetailPopup
-          taskId={selectedTaskId ?? selectedGhostTaskId ?? ""}
-          itemId={itemId}
-          showDetail={showTaskDetail}
-          setShowDetail={setShowTaskDetail}
-          isGhost={selectedGhostTaskId !== ""}
-          taskData={
-            selectedGhostTask ??
-            userStoryData?.tasks.find((task) => task.id === selectedTaskId)
-          }
-          updateTaskData={(task) => {
-            if (selectedGhostTaskId && selectedGhostTaskId !== "") {
-              setGeneratedTasks((prev) =>
-                prev?.map((t) => {
-                  if (t.id === selectedGhostTaskId) {
-                    return {
-                      ...task,
-                      id: selectedGhostTaskId,
-                    };
-                  }
-                  return t;
-                }),
-              );
-              updateGhostRow(selectedGhostTaskId, (_) => ({
-                id: selectedGhostTaskId,
-                name: task.name,
-                status: task.status,
-                scrumId: task.scrumId,
-                assignee: task.assignee,
-              }));
-            } else if (userStoryData) {
-              const taskIndex = userStoryData?.tasks.findIndex(
-                (t) => t.id === task.id,
-              );
-              if (taskIndex === undefined || taskIndex === -1) return;
-              const updatedTasks = [...(userStoryData?.tasks ?? [])];
-              updatedTasks[taskIndex] = task;
-              setUserStoryData?.({
-                ...userStoryData,
-                tasks: updatedTasks,
-              });
+      {renderTaskDetailPopup &&
+        (selectedTaskId !== undefined || selectedGhostTaskId !== undefined) && (
+          <TaskDetailPopup
+            taskId={selectedTaskId ?? selectedGhostTaskId ?? ""}
+            itemId={itemId}
+            showDetail={showTaskDetail}
+            setShowDetail={setShowTaskDetail}
+            isGhost={selectedGhostTaskId !== ""}
+            taskData={
+              selectedGhostTask ??
+              userStoryData?.tasks.find((task) => task.id === selectedTaskId)
             }
-          }}
-          onAccept={async () => {
-            if (selectedGhostTaskId && selectedGhostTaskId !== "") {
-              setShowTaskDetail(false);
-              setTimeout(() => setSelectedGhostTask(""), 300);
-              await onAccept([selectedGhostTaskId]);
-            }
-          }}
-          onReject={() => {
-            if (selectedGhostTaskId && selectedGhostTaskId !== "") {
-              onReject([selectedGhostTaskId]);
-              setShowTaskDetail(false);
-              setTimeout(() => setSelectedGhostTask(""), 300);
-            }
-          }}
-        />
-      )}
+            updateTaskData={(task) => {
+              if (selectedGhostTaskId && selectedGhostTaskId !== "") {
+                setGeneratedTasks((prev) =>
+                  prev?.map((t) => {
+                    if (t.id === selectedGhostTaskId) {
+                      return {
+                        ...task,
+                        id: selectedGhostTaskId,
+                      };
+                    }
+                    return t;
+                  }),
+                );
+                updateGhostRow(selectedGhostTaskId, (_) => ({
+                  id: selectedGhostTaskId,
+                  name: task.name,
+                  status: task.status,
+                  scrumId: task.scrumId,
+                  assignee: task.assignee,
+                }));
+              } else if (userStoryData) {
+                const taskIndex = userStoryData?.tasks.findIndex(
+                  (t) => t.id === task.id,
+                );
+                if (taskIndex === undefined || taskIndex === -1) return;
+                const updatedTasks = [...(userStoryData?.tasks ?? [])];
+                updatedTasks[taskIndex] = task;
+                setUserStoryData?.({
+                  ...userStoryData,
+                  tasks: updatedTasks,
+                });
+              }
+            }}
+            onAccept={async () => {
+              if (selectedGhostTaskId && selectedGhostTaskId !== "") {
+                setShowTaskDetail(false);
+                setTimeout(() => setSelectedGhostTask(""), 300);
+                await onAccept([selectedGhostTaskId]);
+              }
+            }}
+            onReject={() => {
+              if (selectedGhostTaskId && selectedGhostTaskId !== "") {
+                onReject([selectedGhostTaskId]);
+                setShowTaskDetail(false);
+                setTimeout(() => setSelectedGhostTask(""), 300);
+              }
+            }}
+          />
+        )}
     </>
   );
 }
