@@ -34,8 +34,6 @@ export const aiRouter = createTRPCRouter({
       ${input.messages.map((message) => `"${message.role}": <content>"${message.content}"</content>\n<explanation>${message.explanation ?? "None"}</explanation>`).join(", ")}
       `;
 
-      console.log("Prompt: ", prompt);
-
       const aiMessage = await askAiToGenerate(
         prompt,
         z.object({
