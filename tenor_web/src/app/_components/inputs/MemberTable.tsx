@@ -25,6 +25,7 @@ interface Props {
 
 export interface TeamMember {
   id: string;
+  isOwner: boolean;
   photoURL?: string;
   displayName: string;
   email: string;
@@ -57,6 +58,7 @@ export default function MemberTable({
 
   const columns: TableColumns<TeamMember> = {
     id: { visible: false },
+    isOwner: { visible: false },
     photoURL: {
       label: "",
       width: 50,
@@ -81,11 +83,23 @@ export default function MemberTable({
             className="w-full text-sm"
             hideSearch
             selectedItem={
-              roleList.find((role) => role.id === row.role) ?? emptyRole
+              row.isOwner
+                ? {
+                    id: "owner",
+                    label: "Owner",
+                  }
+                : {
+                    id: row.role,
+                    label:
+                      roleList.find((role) => role.id === row.role)?.label ||
+                      emptyRole.label,
+                  }
             }
             allItems={roleList}
             onChange={(item) => {
-              handleEditMemberRole(row.id, item.id);
+              if (!row.isOwner) {
+                handleEditMemberRole(row.id, item.id);
+              }
             }}
           />
         );

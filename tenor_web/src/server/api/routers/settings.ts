@@ -1,4 +1,5 @@
 import {
+  PermissionSchema,
   RoleSchema,
   SettingsSchema,
   StatusTagSchema,
@@ -413,6 +414,95 @@ const settingsRouter = createTRPCRouter({
         ctx.firestore,
       );
       await projectSettingsRef.collection("userTypes").doc(roleId).delete();
+    }),
+  updateRoleTabPermissions: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        roleId: z.string(),
+        tabId: z.string(),
+        permission: PermissionSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, roleId, tabId, permission } = input;
+      const projectSettingsRef = getProjectUserTypesRef(
+        projectId,
+        ctx.firestore,
+      );
+      const roleDoc = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .doc(roleId);
+
+      const roleData = await roleDoc.get();
+      const role = RoleSchema.parse(roleData.data());
+      const updatedTabs = {
+        ...role.tabs,
+        [tabId]: permission,
+      };
+      await roleDoc.update({
+        tabs: updatedTabs,
+      });
+    }),
+  updateViewPerformance: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        roleId: z.string(),
+        newValue: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, roleId, newValue } = input;
+      const projectSettingsRef = getProjectUserTypesRef(
+        projectId,
+        ctx.firestore,
+      );
+      const roleDoc = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .doc(roleId);
+
+      const roleData = await roleDoc.get();
+      const role = RoleSchema.parse(roleData.data());
+      await roleDoc.update({
+        canViewPerformance: newValue,
+      });
+    }),
+  updateControlSprints: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        roleId: z.string(),
+        newValue: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, roleId, newValue } = input;
+      const projectSettingsRef = getProjectUserTypesRef(
+        projectId,
+        ctx.firestore,
+      );
+      const roleDoc = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .doc(roleId);
+
+      const roleData = await roleDoc.get();
+      const role = RoleSchema.parse(roleData.data());
+      await roleDoc.update({
+        canControlSprints: newValue,
+      });
     }),
 });
 

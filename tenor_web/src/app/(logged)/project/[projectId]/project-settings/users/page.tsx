@@ -7,12 +7,12 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import RoleList from "~/app/_components/sections/RoleList";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { defaultRoleList, emptyRole } from "~/lib/defaultTags";
-import { Role } from "~/lib/types/firebaseSchemas";
+import { Permission, Role } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export default function ProjectUsers() {
   const { projectId } = useParams();
-  const [section, setSection] = useState("Roles");
+  const [section, setSection] = useState("Users");
   const { data: userTypes } = api.projects.getUserTypes.useQuery({
     projectId: projectId as string,
   });
@@ -24,20 +24,14 @@ export default function ProjectUsers() {
     api.users.updateUserRole.useMutation();
 
   // Roles
-  const { data: roles, refetch: refetchRoles } =
-    api.settings.getDetailedRoles.useQuery({
-      projectId: projectId as string,
-    });
   const { mutateAsync: addRole } = api.settings.addRole.useMutation();
   const { mutateAsync: deleteRole } = api.settings.removeRole.useMutation();
-
-  // FIXME: This is not used
-  const userTypesList = useMemo(() => {
-    if (userTypes && !userTypes.includes(emptyRole)) {
-      userTypes.push(emptyRole);
-    }
-    return [];
-  }, [userTypes]);
+  const { mutateAsync: updateRoleTabPermissions } =
+    api.settings.updateRoleTabPermissions.useMutation();
+  const { mutateAsync: updateViewPerformance } =
+    api.settings.updateViewPerformance.useMutation();
+  const { mutateAsync: updateControlSprints } =
+    api.settings.updateControlSprints.useMutation();
 
   const utils = api.useUtils();
   const {
@@ -47,6 +41,10 @@ export default function ProjectUsers() {
   } = api.users.getTeamMembers.useQuery({
     projectId: projectId as string,
   });
+  const { data: roles, refetch: refetchRoles } =
+    api.settings.getDetailedRoles.useQuery({
+      projectId: projectId as string,
+    });
 
   const handleAddUser = async function (user: TeamMember) {
     if (!teamMembers) return;
@@ -136,6 +134,18 @@ export default function ProjectUsers() {
   };
 
   const handleRoleRemove = async function (ids: (string | number)[]) {
+    if (!roles) return;
+    const newData = roles.filter((role) => !ids.includes(role.id));
+
+    // Uses optimistic update
+    await utils.settings.getDetailedRoles.cancel({
+      projectId: projectId as string,
+    });
+    utils.settings.getDetailedRoles.setData(
+      { projectId: projectId as string },
+      newData,
+    );
+
     // Deletes in database
     await Promise.all(
       ids.map((id) =>
@@ -146,6 +156,104 @@ export default function ProjectUsers() {
       ),
     );
     await refetchRoles(); // Refetch the list after removing
+  };
+
+  const handleEditTabPermission = async function (
+    roleId: string,
+    tabId: string,
+    permission: Permission,
+  ) {
+    if (!roles) return;
+    const newData = roles.map((role) =>
+      role.id === roleId
+        ? {
+            ...role,
+            [tabId]: permission,
+          }
+        : role,
+    );
+
+    // Uses optimistic update
+    await utils.settings.getDetailedRoles.cancel({
+      projectId: projectId as string,
+    });
+    utils.settings.getDetailedRoles.setData(
+      { projectId: projectId as string },
+      newData,
+    );
+
+    // Update in database
+    await updateRoleTabPermissions({
+      projectId: projectId as string,
+      roleId,
+      tabId,
+      permission,
+    });
+    await refetchRoles();
+  };
+
+  const handleUpdateViewPerformance = async function (
+    roleId: string,
+    newValue: boolean,
+  ) {
+    if (!roles) return;
+    const newData = roles.map((role) =>
+      role.id === roleId
+        ? {
+            ...role,
+            canViewPerformance: newValue,
+          }
+        : role,
+    );
+
+    // Uses optimistic update
+    await utils.settings.getDetailedRoles.cancel({
+      projectId: projectId as string,
+    });
+    utils.settings.getDetailedRoles.setData(
+      { projectId: projectId as string },
+      newData,
+    );
+
+    // Update in database
+    await updateViewPerformance({
+      projectId: projectId as string,
+      roleId,
+      newValue,
+    });
+    await refetchRoles();
+  };
+
+  const handleUpdateControlSprints = async function (
+    roleId: string,
+    newValue: boolean,
+  ) {
+    if (!roles) return;
+    const newData = roles.map((role) =>
+      role.id === roleId
+        ? {
+            ...role,
+            canControlSprints: newValue,
+          }
+        : role,
+    );
+
+    // Uses optimistic update
+    await utils.settings.getDetailedRoles.cancel({
+      projectId: projectId as string,
+    });
+    utils.settings.getDetailedRoles.setData(
+      { projectId: projectId as string },
+      newData,
+    );
+
+    // Update in database
+    await updateControlSprints({
+      projectId: projectId as string,
+      roleId,
+      newValue,
+    });
+    await refetchRoles();
   };
 
   return (
@@ -184,6 +292,9 @@ export default function ProjectUsers() {
           roles={roles}
           handleRoleAdd={handleRoleAdd}
           handleRoleRemove={handleRoleRemove}
+          handleEditTabPermission={handleEditTabPermission}
+          handleUpdateViewPerformance={handleUpdateViewPerformance}
+          handleUpdateControlSprints={handleUpdateControlSprints}
         ></RoleList>
       ) : (
         <div className="mt-5 flex flex-row gap-x-3">

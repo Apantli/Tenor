@@ -16,13 +16,20 @@ import {
   Role,
 } from "~/lib/types/firebaseSchemas";
 import { RoleDetail } from "~/lib/types/detailSchemas";
+import { Permission } from "~/lib/types/zodFirebaseSchema";
 
 interface Props {
   label?: string;
   roles: RoleDetail[];
   handleRoleAdd: (label: string) => void;
   handleRoleRemove: (id: (string | number)[]) => void;
-  // handleEditMemberRole: (id: string, role: string) => void;
+  handleEditTabPermission: (
+    roleId: string,
+    tabId: string,
+    permission: Permission,
+  ) => void;
+  handleUpdateViewPerformance: (id: string, newValue: boolean) => void;
+  handleUpdateControlSprints: (id: string, newValue: boolean) => void;
   className?: ClassNameValue;
   isSearchable?: boolean;
 }
@@ -33,6 +40,9 @@ export default function RoleList({
   className,
   handleRoleAdd,
   handleRoleRemove,
+  handleEditTabPermission,
+  handleUpdateViewPerformance,
+  handleUpdateControlSprints,
   isSearchable = false,
 }: Props) {
   const [tableSearchValue, setTableSearchValue] = useState("");
@@ -49,14 +59,28 @@ export default function RoleList({
       label: "Can View Performance",
       width: defaultWidth,
       render: (row) => {
-        return <Checkbox checked={row.canViewPerformance} />;
+        return (
+          <Checkbox
+            checked={row.canViewPerformance}
+            onChange={(e) => {
+              handleUpdateViewPerformance(row.id, e.target.checked);
+            }}
+          />
+        );
       },
     },
     canControlSprints: {
       label: "Can Control Sprints",
       width: defaultWidth,
       render: (row) => {
-        return <Checkbox checked={row.canControlSprints} />;
+        return (
+          <Checkbox
+            checked={row.canControlSprints}
+            onChange={(e) => {
+              handleUpdateControlSprints(row.id, e.target.checked);
+            }}
+          />
+        );
       },
     },
     requirements: {
@@ -73,7 +97,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "requirements",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
@@ -93,7 +121,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "userStories",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
@@ -113,7 +145,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "issues",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
@@ -133,7 +169,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "sprints",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
@@ -153,7 +193,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "kanban",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
@@ -173,7 +217,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "calendar",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
@@ -193,7 +241,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "performance",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
@@ -213,7 +265,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "projectSettings",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
@@ -233,7 +289,11 @@ export default function RoleList({
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
-              console.log("Selected item:", item);
+              handleEditTabPermission(
+                row.id,
+                "sprintReview",
+                parseInt(item.id) as Permission,
+              );
             }}
           />
         );
