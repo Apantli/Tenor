@@ -22,6 +22,7 @@ import {
   useInvalidateQueriesBacklogItems,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 interface Props {
   itemId: string;
@@ -392,6 +393,29 @@ export default function TasksTable({
     finishLoading(newGhostData);
   };
 
+  useNavigationGuard(
+    async () => {
+      if ((generatedTasks?.current?.length ?? 0) > 0) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved AI generated tasks. To save them, please accept them first.",
+          "Discard",
+          "Keep editing",
+        ));
+      } else if (generating) {
+        return !(await confirm(
+          "Are you sure?",
+          "You are currently generating tasks. If you leave now, the generation will be cancelled.",
+          "Discard",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    generating || (generatedTasks.current?.length ?? 0) > 0,
+    "Are you sure you want to leave? You have unsaved AI generated tasks. To save them, please accept them first.",
+  );
+
   return (
     <>
       <div className="mt-4 flex items-center justify-between">
@@ -444,7 +468,7 @@ export default function TasksTable({
             setGhostRows={setGhostRows}
             acceptGhosts={onAccept}
             rejectGhosts={onReject}
-            ghostLoadingEstimation={20000}
+            ghostLoadingEstimation={5000}
             rowClassName="h-12"
           />
         )}
