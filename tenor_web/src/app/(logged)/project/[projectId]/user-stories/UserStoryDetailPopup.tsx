@@ -105,11 +105,6 @@ export default function UserStoryDetailPopup({
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
 
-  const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
-    usePopupVisibilityState();
-  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
-    undefined,
-  );
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
@@ -243,12 +238,6 @@ export default function UserStoryDetailPopup({
       setShowDetail(false);
     }
   };
-
-  const generatedTasks = useRef<WithId<TaskDetail>[]>();
-
-  const selectedGhostTask = generatedTasks.current?.find(
-    (task) => task.id === selectedGhostTaskId,
-  );
 
   return (
     <Popup
@@ -467,10 +456,9 @@ export default function UserStoryDetailPopup({
             itemId={userStoryId}
             itemType="US"
             setSelectedGhostTask={setSelectedGhostTaskId}
-            generatedTasks={generatedTasks}
             setShowAddTaskPopup={setShowCreateTaskPopup}
-            setSelectedTaskId={setSelectedTaskId}
-            setShowTaskDetail={setShowTaskDetail}
+            selectedGhostTaskId={selectedGhostTaskId}
+            setUserStoryData={setUserStoryData}
             setUnsavedTasks={setUnsavedTasks}
             taskIdToOpenImmediately={taskIdToOpenImmediately}
             userStoryData={userStoryData}
@@ -526,42 +514,6 @@ export default function UserStoryDetailPopup({
             }
           />
         </SidebarPopup>
-      )}
-      {renderTaskDetailPopup && (selectedTaskId || selectedGhostTaskId) && (
-        <TaskDetailPopup
-          taskId={selectedTaskId ?? selectedGhostTaskId ?? ""}
-          itemId={userStoryId}
-          showDetail={showTaskDetail}
-          setShowDetail={setShowTaskDetail}
-          isGhost={selectedGhostTaskId !== ""}
-          taskData={
-            selectedGhostTask === undefined
-              ? userStoryData?.tasks.find((task) => task.id === selectedTaskId)
-              : { ...selectedGhostTask, size: selectedGhostTask.size ?? "M" }
-          }
-          updateTaskData={(task) => {
-            if (userStoryData) {
-              const taskIndex = userStoryData?.tasks.findIndex(
-                (t) => t.id === task.id,
-              );
-              if (taskIndex === undefined || taskIndex === -1) return;
-              const updatedTasks = [...(userStoryData?.tasks ?? [])];
-              updatedTasks[taskIndex] = task;
-              setUserStoryData?.({
-                ...userStoryData,
-                tasks: updatedTasks,
-              });
-            } else if (selectedGhostTaskId !== "") {
-              const taskIndex = generatedTasks.current?.findIndex(
-                (t) => t.id === task.id,
-              );
-              if (taskIndex === undefined || taskIndex === -1) return;
-              const updatedTasks = [...(generatedTasks.current ?? [])];
-              updatedTasks[taskIndex] = task;
-              generatedTasks.current = updatedTasks;
-            }
-          }}
-        />
       )}
     </Popup>
   );
