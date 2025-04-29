@@ -20,7 +20,7 @@ import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
-  useFormatTaskIssueId,
+  useFormatIssueScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
@@ -28,24 +28,29 @@ import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
 import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
+import {
+  useInvalidateQueriesAllIssues,
+  useInvalidateQueriesIssueDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   issueId: string;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
+  taskIdToOpenImmediately?: string;
 }
 
 export default function IssueDetailPopup({
   issueId,
   showDetail,
   setShowDetail,
+  taskIdToOpenImmediately,
 }: Props) {
   const { projectId } = useParams();
 
   const {
     data: issueDetail,
     isLoading,
-    refetch,
     error,
   } = api.issues.getIssueDetail.useQuery({
     projectId: projectId as string,
@@ -72,9 +77,11 @@ export default function IssueDetailPopup({
     undefined,
   );
 
-  const formatIssueScrumId = useFormatTaskIssueId();
   const { predefinedAlerts } = useAlert();
+  const formatIssueScrumId = useFormatIssueScrumId();
   const formatSprintNumber = useFormatSprintNumber();
+  const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
+  const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
 
   // Copy the editable data from the issue
   useEffect(() => {
@@ -144,18 +151,8 @@ export default function IssueDetailPopup({
       issueData: updatedIssue,
     });
 
-    await utils.userStories.getAllUserStoryPreviews.invalidate({
-      projectId: projectId as string,
-    });
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
-
-    await utils.issues.getIssuesTableFriendly.invalidate({
-      projectId: projectId as string,
-    });
-
-    await refetch();
+    await invalidateQueriesIssueDetails(projectId as string, [issueId]);
+    await invalidateQueriesAllIssues(projectId as string);
   };
 
   const handleDelete = async () => {
@@ -172,15 +169,8 @@ export default function IssueDetailPopup({
         issueId: issueId,
       });
 
-      await utils.userStories.getAllUserStoryPreviews.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
-        projectId: projectId as string,
-      });
-      await utils.issues.getIssuesTableFriendly.invalidate({
-        projectId: projectId as string,
-      });
+      await invalidateQueriesIssueDetails(projectId as string, [issueId]);
+      await invalidateQueriesAllIssues(projectId as string);
 
       setShowDetail(false);
     }
@@ -349,6 +339,7 @@ export default function IssueDetailPopup({
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}
+            taskIdToOpenImmediately={taskIdToOpenImmediately}
           />
         </div>
       )}
