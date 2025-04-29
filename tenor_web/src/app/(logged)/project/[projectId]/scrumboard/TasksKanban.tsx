@@ -167,7 +167,6 @@ export default function TasksKanban() {
       await invalidateQueriesAllTasks(projectId as string, itemIds);
       await invalidateQueriesTaskDetails(projectId as string, taskIds);
       await invalidateQueriesAllUserStories(projectId as string);
-      // TODO: Invalidate queries for issues and generic item
     }
 
     updateOperationsInProgress--;
