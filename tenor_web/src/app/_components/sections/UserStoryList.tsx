@@ -617,7 +617,7 @@ export default function UserStoryList() {
                 : undefined
             }
             setUserStoryData={(updatedDetail) => {
-              if (!selectedGhostUS) return;
+              if (!selectedGhostUS || !updatedDetail) return;
               updateGhostRow(selectedGhostUS, (oldData) => ({
                 ...oldData,
                 title: updatedDetail.name,

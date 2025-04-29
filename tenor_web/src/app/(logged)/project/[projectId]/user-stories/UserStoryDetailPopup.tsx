@@ -26,11 +26,10 @@ import {
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import type {
-  TaskPreview,
-  UserStoryDetail,
+  TaskDetail,
   UserStoryDetailWithTasks,
 } from "~/lib/types/detailSchemas";
-import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
 import {
@@ -42,6 +41,9 @@ import AiIcon from "@mui/icons-material/AutoAwesome";
 import AiButton from "~/app/_components/buttons/AiButton";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
+import { inferRouterOutputs } from "@trpc/server";
+import { tasksRouter } from "~/server/api/routers/tasks";
+import { constructCategoryColors } from "~/lib/chartUtils";
 
 interface Props {
   userStoryId: string;
@@ -108,6 +110,7 @@ export default function UserStoryDetailPopup({
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
     undefined,
   );
+  const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { predefinedAlerts } = useAlert();
@@ -241,6 +244,12 @@ export default function UserStoryDetailPopup({
     }
   };
 
+  const generatedTasks = useRef<WithId<TaskDetail>[]>();
+
+  const selectedGhostTask = generatedTasks.current?.find(
+    (task) => task.id === selectedGhostTaskId,
+  );
+
   return (
     <Popup
       show={showDetail}
@@ -343,6 +352,11 @@ export default function UserStoryDetailPopup({
           <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
         ) : (
           <div className="flex items-center gap-2">
+            <AiIcon
+              className="animate-pulse text-app-secondary"
+              data-tooltip-id="tooltip"
+              data-tooltip-content="This is a generated task. It will not get saved until you accept it."
+            />
             <TertiaryButton>Reject</TertiaryButton>
             <PrimaryButton className="hover:bg-app-hover-secondary bg-app-secondary">
               Accept
@@ -353,20 +367,11 @@ export default function UserStoryDetailPopup({
       title={
         <>
           {!isLoading && userStoryDetail && (
-            <h1 className="mb-4 flex items-center text-3xl">
+            <h1 className="mb-4 items-center text-3xl">
               <span className="font-bold">
-                {userStoryDetail.scrumId ? (
+                {userStoryDetail.scrumId && (
                   <span className="pr-2">
                     {formatUserStoryScrumId(userStoryDetail.scrumId)}:
-                  </span>
-                ) : (
-                  <span
-                    className="mr-5 flex animate-pulse items-center text-app-secondary"
-                    data-tooltip-id="tooltip"
-                    data-tooltip-content="This is a generated user story. It will not be saved until you accept it."
-                    data-tooltip-place="top-start"
-                  >
-                    <AiIcon />
                   </span>
                 )}
               </span>
@@ -385,6 +390,7 @@ export default function UserStoryDetailPopup({
             "Keep editing",
           );
           if (!confirmation) return;
+          setUnsavedTasks(false);
         }
         setEditMode(isEditing);
 
@@ -460,6 +466,8 @@ export default function UserStoryDetailPopup({
           <TasksTable
             itemId={userStoryId}
             itemType="US"
+            setSelectedGhostTask={setSelectedGhostTaskId}
+            generatedTasks={generatedTasks}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             setSelectedTaskId={setSelectedTaskId}
             setShowTaskDetail={setShowTaskDetail}
@@ -519,12 +527,40 @@ export default function UserStoryDetailPopup({
           />
         </SidebarPopup>
       )}
-      {renderTaskDetailPopup && selectedTaskId && (
+      {renderTaskDetailPopup && (selectedTaskId || selectedGhostTaskId) && (
         <TaskDetailPopup
-          taskId={selectedTaskId}
+          taskId={selectedTaskId ?? selectedGhostTaskId ?? ""}
           itemId={userStoryId}
           showDetail={showTaskDetail}
           setShowDetail={setShowTaskDetail}
+          isGhost={selectedGhostTaskId !== ""}
+          taskData={
+            selectedGhostTask === undefined
+              ? userStoryData?.tasks.find((task) => task.id === selectedTaskId)
+              : { ...selectedGhostTask, size: selectedGhostTask.size ?? "M" }
+          }
+          updateTaskData={(task) => {
+            if (userStoryData) {
+              const taskIndex = userStoryData?.tasks.findIndex(
+                (t) => t.id === task.id,
+              );
+              if (taskIndex === undefined || taskIndex === -1) return;
+              const updatedTasks = [...(userStoryData?.tasks ?? [])];
+              updatedTasks[taskIndex] = task;
+              setUserStoryData?.({
+                ...userStoryData,
+                tasks: updatedTasks,
+              });
+            } else if (selectedGhostTaskId !== "") {
+              const taskIndex = generatedTasks.current?.findIndex(
+                (t) => t.id === task.id,
+              );
+              if (taskIndex === undefined || taskIndex === -1) return;
+              const updatedTasks = [...(generatedTasks.current ?? [])];
+              updatedTasks[taskIndex] = task;
+              generatedTasks.current = updatedTasks;
+            }
+          }}
         />
       )}
     </Popup>

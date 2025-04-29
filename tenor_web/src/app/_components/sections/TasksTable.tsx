@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 import type {
   TaskDetail,
   TaskPreview,
@@ -32,8 +32,10 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 interface Props {
   itemId: string;
   itemType: "US" | "IS" | "IT";
+  generatedTasks: MutableRefObject<WithId<TaskDetail>[] | undefined>;
   setShowAddTaskPopup: (show: boolean) => void;
   setSelectedTaskId: (taskId: string) => void;
+  setSelectedGhostTask: (taskId: string) => void;
   setShowTaskDetail: (show: boolean) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
   taskIdToOpenImmediately?: string;
@@ -48,7 +50,9 @@ interface Props {
 // TODO: Update this to invalidate for backlog items also
 export default function TasksTable({
   setSelectedTaskId,
+  setSelectedGhostTask,
   setShowTaskDetail,
+  generatedTasks,
   itemId,
   itemType,
   setShowAddTaskPopup,
@@ -100,11 +104,6 @@ export default function TasksTable({
   const tasksTableData =
     tasksData?.map(taskDetailToTaskCol) ?? fetchedTasksTable;
 
-  const generatedTasks =
-    useRef<
-      WithId<inferRouterOutputs<typeof tasksRouter>["generateTasks"][number]>[]
-    >();
-
   const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
     (task) => ({
       id: task.id,
@@ -117,9 +116,11 @@ export default function TasksTable({
 
   // Show task detail if taskToOpen is provided
   useEffect(() => {
-    if (!taskToOpen) return;
-    if (!transformedTasks.some((task) => task.id === taskToOpen)) return;
-    setSelectedTaskId(taskToOpen);
+    if (!taskIdToOpenImmediately) return;
+    if (!transformedTasks.some((task) => task.id === taskIdToOpenImmediately))
+      return;
+    setSelectedTaskId(taskIdToOpenImmediately);
+    setSelectedGhostTask("");
     setShowTaskDetail(true);
     setTaskToOpen(undefined);
   }, [taskToOpen, tasksTableData]);
@@ -205,7 +206,7 @@ export default function TasksTable({
       render(row, _, isGhost) {
         return (
           <>
-            {!isGhost && !row.scrumId ? (
+            {tasksData !== undefined && !row.scrumId ? (
               <TagIcon
                 className="text-app-text"
                 data-tooltip-id="tooltip"
@@ -215,7 +216,13 @@ export default function TasksTable({
               <button
                 className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
                 onClick={() => {
-                  setSelectedTaskId(row.id);
+                  if (isGhost) {
+                    setSelectedGhostTask(row.id);
+                    setSelectedTaskId("");
+                  } else {
+                    setSelectedTaskId(row.id);
+                    setSelectedGhostTask("");
+                  }
                   setShowTaskDetail(true);
                 }}
               >
@@ -239,7 +246,13 @@ export default function TasksTable({
             <button
               className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
-                setSelectedTaskId(row.id);
+                if (isGhost) {
+                  setSelectedGhostTask(row.id);
+                  setSelectedTaskId("");
+                } else {
+                  setSelectedTaskId(row.id);
+                  setSelectedGhostTask("");
+                }
                 setShowTaskDetail(true);
               }}
               disabled={!tasksData && !isGhost && row.scrumId === undefined}
@@ -441,7 +454,8 @@ export default function TasksTable({
       await invalidateQueriesBacklogItems(projectId as string, itemType);
     },
     (removedIds) => {
-      const newGeneratedTasks = generatedTasks.current?.filter(
+      if (!generatedTasks) return;
+      const newGeneratedTasks = generatedTasks?.current?.filter(
         (task) => !removedIds.includes(task.id),
       );
       generatedTasks.current = newGeneratedTasks;

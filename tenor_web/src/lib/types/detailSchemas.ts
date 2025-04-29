@@ -77,7 +77,7 @@ export type TaskDetail = {
   name: string;
   description: string;
   status: Tag;
-  size: Size;
+  size?: Size;
   assignee?: UserPreview;
   dueDate?: Date;
 };
