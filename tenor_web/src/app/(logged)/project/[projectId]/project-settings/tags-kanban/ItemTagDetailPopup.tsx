@@ -41,7 +41,6 @@ export default function ItemTagDetailPopup({
     color: generateRandomColor(),
   });
 
-  // Track color change when is not in edit mode
   const [colorChanged, setColorChanged] = useState(false);
 
   // TRPC

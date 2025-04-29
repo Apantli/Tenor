@@ -4,6 +4,7 @@ import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import { link } from "fs";
+import { get } from "node_modules/cypress/types/lodash";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -94,6 +95,102 @@ const settingsRouter = createTRPCRouter({
       }));
 
       return statusTypesData;
+    }),
+
+  getStatusTypeById: protectedProcedure
+    .input(z.object({ projectId: z.string(), statusId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, statusId } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const statusType = await projectSettingsRef
+        .collection("statusTypes")
+        .doc(statusId)
+        .get();
+      if (!statusType.exists) {
+        throw new Error("Status not found");
+      }
+      const statusTypeData = StatusTagSchema.parse(statusType.data());
+      return { id: statusType.id, ...statusTypeData };
+    }),
+  
+  createStatusType: protectedProcedure
+      .input(
+        z.object({
+          projectId: z.string(),
+          name: z.string(),
+          color: z.string(),
+          marksTaskAsDone: z.boolean(),
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { projectId, name, color, marksTaskAsDone } = input;
+  
+        const projectSettingsRef = getProjectSettingsRef(
+          input.projectId,
+          ctx.firestore,
+        );
+  
+        const statusCollectionRef = projectSettingsRef.collection("statusTypes");
+  
+        const statusTypes = await statusCollectionRef.get();
+  
+        const statusTypesData = statusTypes.docs.map((doc) => ({
+          id: doc.id,
+          ...StatusTagSchema.parse(doc.data()),
+        }));
+        const biggestOrderIndex = Math.max(
+          ...statusTypesData.map((status) => status.orderIndex),
+          0,
+        );
+  
+        const newStatus = {
+          name,
+          color: color.toUpperCase(),
+          marksTaskAsDone,
+          deleted: false,
+          orderIndex: biggestOrderIndex + 1,
+        };
+  
+        const docRef = await statusCollectionRef.add(newStatus);
+        return {
+          id: docRef.id,
+          ...newStatus,
+        };
+      }),
+
+    modifyStatusType: protectedProcedure
+      .input(
+        z.object({
+          projectId: z.string(),
+          statusId: z.string(),
+          status: StatusTagSchema
+        }),
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { projectId, statusId, status } = input;
+        const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+        const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
+        await statusTypeRef.update(status);
+        const updatedStatus = await statusTypeRef.get();
+        return { ...status, id: updatedStatus.id };
+      }),
+
+  deleteStatusType: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        statusId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, statusId } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
+      await statusTypeRef.update({ deleted: true });
+      return { id: statusId };
     }),
 
   getBacklogTags: protectedProcedure
