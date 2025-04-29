@@ -114,6 +114,24 @@ const settingsRouter = createTRPCRouter({
 
       return backlogTagsData;
     }),
+  getBacklogTagById: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, tagId } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const backlogTag = await projectSettingsRef
+        .collection("backlogTags")
+        .doc(tagId)
+        .get();
+      if (!backlogTag.exists) {
+        throw new Error("Tag not found");
+      }
+      const backlogTagData = TagSchema.parse(backlogTag.data());
+      return { id: backlogTag.id, ...backlogTagData };
+    }),
   createBacklogTag: protectedProcedure
     .input(
       z.object({
@@ -127,6 +145,39 @@ const settingsRouter = createTRPCRouter({
       const added = await projectRef.collection("backlogTags").add(tag);
       return { ...tag, id: added.id };
     }),
+
+  modifyBacklogTag: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        tagId: z.string(),
+        tag: TagSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId, tag } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const backlogTagRef = projectRef.collection("backlogTags").doc(tagId);
+      await backlogTagRef.update(tag);
+      const updatedTag = await backlogTagRef.get();
+      return { ...tag, id: updatedTag.id };
+    }),
+
+  deleteBacklogTag: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        tagId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const backlogTagRef = projectRef.collection("backlogTags").doc(tagId);
+      await backlogTagRef.update({ deleted: true });
+      return { id: tagId };
+    }),
+
   createRequirementType: protectedProcedure
     .input(
       z.object({

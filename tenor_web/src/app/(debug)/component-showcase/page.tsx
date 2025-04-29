@@ -33,6 +33,7 @@ import {
 } from "~/app/_components/BacklogTagList";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultTags";
+import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -54,6 +55,7 @@ export default function ComponentShowcasePage() {
         <DatePickerShowcase />
         <EditableBoxShowCase />
         <SegmentedControlShowcase />
+        <DropdownColorPickerShowcase />
       </div>
     </main>
   );
@@ -779,6 +781,22 @@ function EditableBoxShowCase() {
         onChange={setSelectedPerson}
         placeholder="Select a person"
         className="h-4 w-48"
+      />
+    </div>
+  );
+}
+
+function DropdownColorPickerShowcase() {
+  const [color, setColor] = useState("#009719");
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Dropdown Color Picker</h2>
+      <DropdownColorPicker
+        label="Select a color"
+        value={color}
+        onChange={setColor}
+        className="w-48"
       />
     </div>
   );
