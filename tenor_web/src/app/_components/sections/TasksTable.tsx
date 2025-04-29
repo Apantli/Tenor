@@ -661,6 +661,20 @@ export default function TasksTable({
               });
             }
           }}
+          onAccept={() => {
+            if (selectedGhostTaskId && selectedGhostTaskId !== "") {
+              onAccept([selectedGhostTaskId]);
+              setShowTaskDetail(false);
+              setTimeout(() => setSelectedGhostTask(""), 300);
+            }
+          }}
+          onReject={() => {
+            if (selectedGhostTaskId && selectedGhostTaskId !== "") {
+              onReject([selectedGhostTaskId]);
+              setShowTaskDetail(false);
+              setTimeout(() => setSelectedGhostTask(""), 300);
+            }
+          }}
         />
       )}
     </>

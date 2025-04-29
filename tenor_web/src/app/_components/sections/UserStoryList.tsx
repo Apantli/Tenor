@@ -40,6 +40,7 @@ import {
   TaskDetail,
   UserStoryDetailWithTasks,
 } from "~/lib/types/detailSchemas";
+import { Timestamp } from "firebase/firestore";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -78,6 +79,7 @@ export default function UserStoryList() {
     api.userStories.deleteUserStory.useMutation();
   const { mutateAsync: createUserStory } =
     api.userStories.createUserStory.useMutation();
+  const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -154,7 +156,7 @@ export default function UserStoryList() {
 
       // Add the user stories to the database
       for (const userStory of accepted.reverse()) {
-        await createUserStory({
+        const { userStoryId } = await createUserStory({
           projectId: projectId as string,
           userStoryData: {
             name: userStory.name,
@@ -173,6 +175,30 @@ export default function UserStoryList() {
             requiredByIds: userStory.requiredBy.map((dep) => dep.id),
           },
         });
+
+        if (userStory.tasks.length > 0) {
+          await Promise.all(
+            userStory.tasks.map(
+              async (task) =>
+                await createTask({
+                  projectId: projectId as string,
+                  taskData: {
+                    name: task.name,
+                    description: task.description,
+                    itemId: userStoryId,
+                    assigneeId: task.assignee?.uid ?? "",
+                    dueDate: task.dueDate
+                      ? Timestamp.fromDate(task.dueDate)
+                      : null,
+                    itemType: "US",
+                    statusId: task.status.id ?? "",
+                    deleted: false,
+                    size: task.size,
+                  },
+                }),
+            ),
+          );
+        }
       }
 
       await refetchUS();
@@ -625,6 +651,7 @@ export default function UserStoryList() {
                 epicScrumId: updatedDetail.epic?.scrumId,
                 priority: updatedDetail.priority,
                 size: updatedDetail.size ?? "M",
+                taskProgress: [0, updatedDetail.tasks.length],
               }));
               generatedUserStories.current = generatedUserStories.current?.map(
                 (story) => {
@@ -634,6 +661,16 @@ export default function UserStoryList() {
                   return story;
                 },
               );
+            }}
+            onAccept={() => {
+              onAccept([selectedGhostUS]);
+              setShowDetail(false);
+              setTimeout(() => setSelectedGhostUS(""), 300);
+            }}
+            onReject={() => {
+              onReject([selectedGhostUS]);
+              setSelectedGhostUS("");
+              setTimeout(() => setSelectedGhostUS(""), 300);
             }}
           />
         )}

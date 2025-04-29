@@ -37,6 +37,8 @@ interface Props {
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
   isGhost?: boolean;
+  onAccept?: () => void;
+  onReject?: () => void;
 }
 
 export default function TaskDetailPopup({
@@ -47,6 +49,8 @@ export default function TaskDetailPopup({
   setShowDetail,
   updateTaskData,
   isGhost,
+  onAccept,
+  onReject,
 }: Props) {
   const { projectId } = useParams();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
@@ -214,8 +218,11 @@ export default function TaskDetailPopup({
               data-tooltip-id="tooltip"
               data-tooltip-content="This is a generated task. It will not get saved until you accept it."
             />
-            <TertiaryButton>Reject</TertiaryButton>
-            <PrimaryButton className="hover:bg-app-hover-secondary bg-app-secondary">
+            <TertiaryButton onClick={onReject}>Reject</TertiaryButton>
+            <PrimaryButton
+              onClick={onAccept}
+              className="hover:bg-app-hover-secondary bg-app-secondary"
+            >
               Accept
             </PrimaryButton>
           </div>

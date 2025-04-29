@@ -53,6 +53,8 @@ interface Props {
   taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
   userStoryData?: UserStoryDetailWithTasks;
   setUserStoryData?: (data: UserStoryDetailWithTasks | undefined) => void;
+  onAccept?: () => void;
+  onReject?: () => void;
 }
 
 export default function UserStoryDetailPopup({
@@ -62,6 +64,8 @@ export default function UserStoryDetailPopup({
   taskIdToOpenImmediately,
   userStoryData,
   setUserStoryData,
+  onAccept,
+  onReject,
 }: Props) {
   const { projectId } = useParams();
   const confirm = useConfirmation();
@@ -346,8 +350,11 @@ export default function UserStoryDetailPopup({
               data-tooltip-id="tooltip"
               data-tooltip-content="This is a generated task. It will not get saved until you accept it."
             />
-            <TertiaryButton>Reject</TertiaryButton>
-            <PrimaryButton className="hover:bg-app-hover-secondary bg-app-secondary">
+            <TertiaryButton onClick={onReject}>Reject</TertiaryButton>
+            <PrimaryButton
+              className="hover:bg-app-hover-secondary bg-app-secondary"
+              onClick={onAccept}
+            >
               Accept
             </PrimaryButton>
           </div>
