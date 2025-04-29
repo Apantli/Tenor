@@ -31,8 +31,6 @@ export default function CreateIssuePopup({
   const { mutateAsync: createIssue, isPending } =
     api.issues.createIssue.useMutation();
 
-  const utils = api.useUtils();
-
   const [createForm, setCreateForm] = useState<{
     name: string;
     description: string;
@@ -90,10 +88,7 @@ export default function CreateIssuePopup({
     });
     onIssueAdded(issueId);
 
-    // FIXME
-    // await utils.userStories.getUserStoriesTableFriendly.invalidate();
-    // await utils.userStories.getAllUserStoryPreviews.invalidate();
-    // await utils.sprints.getUserStoryPreviewsBySprint.invalidate();
+    // Invalidation is done on the parent component
   };
 
   return (

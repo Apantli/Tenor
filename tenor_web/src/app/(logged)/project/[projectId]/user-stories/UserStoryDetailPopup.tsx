@@ -39,6 +39,7 @@ interface Props {
   userStoryId: string;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
+  setUserStoryId?: (userStoryId: string) => void;
   taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
 }
 
@@ -47,6 +48,7 @@ export default function UserStoryDetailPopup({
   showDetail,
   setShowDetail,
   taskIdToOpenImmediately,
+  setUserStoryId,
 }: Props) {
   const { projectId } = useParams();
   const confirm = useConfirmation();
@@ -92,6 +94,14 @@ export default function UserStoryDetailPopup({
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { predefinedAlerts } = useAlert();
   const formatSprintNumber = useFormatSprintNumber();
+
+  const changeVisibleUserStory = async (userStoryId: string) => {
+    setShowDetail(false);
+    setTimeout(() => {
+      setUserStoryId?.(userStoryId);
+      setShowDetail(true);
+    }, 300);
+  };
 
   useEffect(() => {
     if (!userStoryDetail) return;
@@ -286,6 +296,7 @@ export default function UserStoryDetailPopup({
                   onChange={async (dependencies) => {
                     await handleSave({ ...userStoryDetail, dependencies });
                   }}
+                  onClick={changeVisibleUserStory}
                 />
 
                 <DependencyList
@@ -295,6 +306,7 @@ export default function UserStoryDetailPopup({
                   onChange={async (requiredBy) => {
                     await handleSave({ ...userStoryDetail, requiredBy });
                   }}
+                  onClick={changeVisibleUserStory}
                 />
               </>
             )}

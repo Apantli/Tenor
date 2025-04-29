@@ -7,6 +7,7 @@ import { FieldPath } from "firebase-admin/firestore";
 import {
   collectPriorityTagContext,
   collectTagContext,
+  getProjectContextHeader,
 } from "~/utils/aiContext";
 import { askAiToGenerate } from "~/utils/aiGeneration";
 import { generateRandomTagColor } from "~/utils/colorUtils";
@@ -410,8 +411,9 @@ export const requirementsRouter = createTRPCRouter({
           ? `Consider that the user wants the user stories for the following: ${prompt}`
           : "";
 
-      // FIXME: Include actual project context (Food market is just a placeholder)
       const completePrompt = `
+${await getProjectContextHeader(projectId, ctx.firestore)}
+
 Given the following context, follow the instructions below to the best of your ability.
 
 ${requirementsContext}
@@ -421,7 +423,7 @@ ${requirementFocusContext}
 
 ${passedInPrompt}
 
-Generate ${amount} requirements for a software project about an application for food markets. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). Be extremely vague with the requirement focus so that it can apply to multiple requirements. Do NOT tie the requirement focus too tightly with the functionality. For example, a good requirement focus would be 'Core functionality', 'Security', 'Performance', or it could be related to the type of application such as 'Website', 'Mobile app', etc... For the requirement type, always use one of the available types. When creating the requirement description, make sure to use statistics if possible and if appropriate, and make sure they are as realistic as possible.
+Generate ${amount} requirements for the mentioned software project. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). Be extremely vague with the requirement focus so that it can apply to multiple requirements. Do NOT tie the requirement focus too tightly with the functionality. For example, a good requirement focus would be 'Core functionality', 'Security', 'Performance', or it could be related to the type of application such as 'Website', 'Mobile app', etc... For the requirement type, always use one of the available types. When creating the requirement description, make sure to use statistics if possible and if appropriate, and make sure they are as realistic as possible.
       `;
 
       const generatedRequirements = await askAiToGenerate(

@@ -26,6 +26,12 @@ export interface Sprint extends SprintInfo {
   genericItemIds: string[];
 }
 
+export interface AIMessage {
+  role: string;
+  content: string;
+  explanation?: string;
+}
+
 export interface SprintSnapshot extends SprintInfo {
   snapshot: {
     userStories: UserStory[];
@@ -181,6 +187,7 @@ export interface UserStory extends BacklogItem {
   requiredByIds: string[]; // US ID
 }
 
+export type itemTypes = "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
@@ -188,7 +195,7 @@ export interface Task extends BasicInfo {
   finishedDate: Date | null;
   size: Size;
   itemId: string;
-  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
+  itemType: itemTypes;
 }
 
 export interface Issue extends BacklogItem {

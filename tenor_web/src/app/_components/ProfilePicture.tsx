@@ -75,7 +75,7 @@ export default function ProfilePicture({
     return (
       <div
         className={cn(
-          "flex h-8 w-8 items-center justify-center rounded-full font-bold text-white",
+          "flex h-8 w-8 min-w-8 items-center justify-center rounded-full font-bold text-white",
           className,
         )}
         style={{
