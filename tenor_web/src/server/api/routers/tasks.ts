@@ -92,7 +92,7 @@ const getStatusTag = async (
   return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
 };
 
-const getTodoStatusTag = async (
+export const getTodoStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
 ) => {
   const todoTag = await settingsRef

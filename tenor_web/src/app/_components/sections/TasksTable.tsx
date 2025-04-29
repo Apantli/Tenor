@@ -618,7 +618,7 @@ export default function TasksTable({
         )}
       </div>
 
-      {renderTaskDetailPopup && (selectedTaskId || selectedGhostTaskId) && (
+      {renderTaskDetailPopup && (selectedTaskId ?? selectedGhostTaskId) && (
         <TaskDetailPopup
           taskId={selectedTaskId ?? selectedGhostTaskId ?? ""}
           itemId={itemId}
@@ -626,9 +626,8 @@ export default function TasksTable({
           setShowDetail={setShowTaskDetail}
           isGhost={selectedGhostTaskId !== ""}
           taskData={
-            selectedGhostTask === undefined
-              ? userStoryData?.tasks.find((task) => task.id === selectedTaskId)
-              : selectedGhostTask
+            selectedGhostTask ??
+            userStoryData?.tasks.find((task) => task.id === selectedTaskId)
           }
           updateTaskData={(task) => {
             if (selectedGhostTaskId && selectedGhostTaskId !== "") {
@@ -663,11 +662,11 @@ export default function TasksTable({
               });
             }
           }}
-          onAccept={() => {
+          onAccept={async () => {
             if (selectedGhostTaskId && selectedGhostTaskId !== "") {
-              onAccept([selectedGhostTaskId]);
               setShowTaskDetail(false);
               setTimeout(() => setSelectedGhostTask(""), 300);
+              await onAccept([selectedGhostTaskId]);
             }
           }}
           onReject={() => {

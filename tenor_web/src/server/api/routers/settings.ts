@@ -19,6 +19,7 @@ import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
 } from "~/lib/defaultProjectValues";
+import { getTodoStatusTag } from "./tasks";
 
 export const getProjectSettingsRef = (
   projectId: string,
@@ -87,6 +88,7 @@ const settingsRouter = createTRPCRouter({
       );
       const priorityTypes = await projectSettingsRef
         .collection("priorityTypes")
+        .orderBy("name")
         .get();
       const priorityTypesData = priorityTypes.docs.map((doc) => ({
         id: doc.id,
@@ -560,6 +562,15 @@ const settingsRouter = createTRPCRouter({
         id: roleId,
         ...role,
       };
+    }),
+  getTodoTag: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const todoStatus = await getTodoStatusTag(
+        getProjectSettingsRef(projectId, ctx.firestore),
+      );
+      return todoStatus;
     }),
   fetchScrumSettings: protectedProcedure
     .input(z.object({ projectId: z.string() }))

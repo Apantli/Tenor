@@ -36,20 +36,22 @@ export function CreateTaskForm({
   const projectIdString = projectId as string;
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  const { data: users, isLoading } = api.users.getUserListEdiBox.useQuery({
+  const { data: users } = api.users.getUserListEdiBox.useQuery({
     projectId: projectIdString,
   });
 
   const { mutateAsync: createTask, isPending } =
     api.tasks.createTask.useMutation();
+  const { data: todoStatusTag } = api.settings.getTodoTag.useQuery({
+    projectId: projectIdString,
+  });
 
-  const utils = api.useUtils();
   const { alert } = useAlert();
 
   const [createForm, setCreateForm] = useState<{
     name: string;
     description: string;
-    status?: Tag;
+    status: Tag;
     assigneeId?: string;
     assignee?: UserPreview;
     size?: Size;
@@ -57,12 +59,25 @@ export function CreateTaskForm({
   }>({
     name: "",
     description: "",
-    status: undefined,
+    status: todoStatusTag ?? {
+      id: "temp",
+      name: "Todo",
+      color: "#0737E3",
+      deleted: false,
+    },
     assigneeId: "",
     assignee: undefined,
     size: undefined,
     dueDate: undefined,
   });
+
+  // Select a status after the todo status is fetched
+  if (todoStatusTag && createForm.status.id === "") {
+    setCreateForm((prev) => ({
+      ...prev,
+      status: todoStatusTag,
+    }));
+  }
 
   const [selectedAssignee, setSelectedAssignee] = useState<
     Option | undefined
@@ -90,13 +105,8 @@ export function CreateTaskForm({
         id: taskId,
         name: createForm.name,
         description: createForm.description,
-        status: createForm.status ?? {
-          id: "",
-          name: "",
-          color: "",
-          deleted: false,
-        },
-        size: createForm.size ?? "M",
+        status: createForm.status,
+        size: createForm.size,
         assignee: createForm.assignee,
         dueDate: createForm.dueDate,
       });
