@@ -1,6 +1,6 @@
 // Data types for returning detailed or preview information from the backend
 
-import type { Size, Tag, WithId } from "./firebaseSchemas";
+import type { Permission, Size, Tag, WithId } from "./firebaseSchemas";
 import type {
   ExistingEpicSchema,
   ExistingUserStorySchema,
@@ -77,4 +77,20 @@ export type TaskDetail = {
   size: Size;
   assignee?: UserPreview;
   dueDate?: Date;
+};
+
+export type RoleDetail = {
+  id: string;
+  label: string;
+  canViewPerformance: boolean;
+  canControlSprints: boolean;
+  requirements: Permission;
+  userStories: Permission;
+  issues: Permission;
+  sprints: Permission;
+  kanban: Permission;
+  calendar: Permission;
+  performance: Permission;
+  projectSettings: Permission;
+  sprintReview: Permission;
 };
