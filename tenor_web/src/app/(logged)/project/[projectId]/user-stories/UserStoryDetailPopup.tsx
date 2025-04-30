@@ -325,6 +325,7 @@ export default function UserStoryDetailPopup({
                     onChange={async (status) => {
                       await handleSave({ ...userStoryDetail, status });
                     }}
+                    showAutomaticStatus={true}
                   />
                 </div>
 

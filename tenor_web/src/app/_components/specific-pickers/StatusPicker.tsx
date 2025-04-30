@@ -11,9 +11,10 @@ interface Props {
   status?: Tag;
   onChange: (status: Tag) => void;
   className?: string;
+  showAutomaticStatus?: boolean;
 }
 
-export default function StatusPicker({ status, onChange, className }: Props) {
+export default function StatusPicker({ status, onChange, className, showAutomaticStatus = false }: Props) {
   const { projectId } = useParams();
   const { data: statusValues } = api.settings.getStatusTypes.useQuery({
     projectId: projectId as string,
@@ -25,7 +26,13 @@ export default function StatusPicker({ status, onChange, className }: Props) {
     color: "#000000",
     deleted: false,
   };
-  const statusValuesWithAuto = [automaticTag, ...(statusValues ?? [])];
+
+  let statusValuesWithAuto: Tag[] = [];
+  if (showAutomaticStatus) {
+    statusValuesWithAuto = [automaticTag, ...(statusValues ?? [])];
+  } else {
+    statusValuesWithAuto = statusValues ?? [];
+  }
 
   return (
     <PillComponent
