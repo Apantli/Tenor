@@ -1,9 +1,9 @@
 {
-    "entryPoints": ["../tenor_web/src/server/api/root.ts"],
+    "entryPoints": ["../tenor_web/src/server/api/routers/ai.ts", "../tenor_web/src/server/api/routers/epics.ts"],
     "plugin": ["typedoc-plugin-markdown"],
     "out": "docs/api",
     "readme": "none",
     "hideBreadcrumbs": true,
     "tsconfig": "../tenor_web/tsconfig.json",
+    "name": "Tenor API Documentation",
 }
-  

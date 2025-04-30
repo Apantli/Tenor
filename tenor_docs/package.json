@@ -12,7 +12,9 @@
     "serve": "docusaurus serve",
     "write-translations": "docusaurus write-translations",
     "write-heading-ids": "docusaurus write-heading-ids",
-    "generate:api-docs": "typedoc --options typedoc.json"
+    "generate:api-docs": "typedoc --options typedoc.json",
+    "process:api-docs": "node scripts/process-typedoc.js",
+    "docs:api": "npm run generate:api-docs && npm run process:api-docs"
   },
   "dependencies": {
     "@docusaurus/core": "3.7.0",
