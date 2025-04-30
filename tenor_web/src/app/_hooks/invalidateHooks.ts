@@ -186,4 +186,25 @@ export const useInvalidateQueriesScrumPreferences = () => {
   };
 };
 
+export const useInvalidateQueriesAllTags = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.settings.getBacklogTags.invalidate({
+      projectId: projectId,
+    });
+  };
+}
+
+export const useInvalidateQueriesAllStatuses = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.settings.getStatusTypes.invalidate({
+      projectId: projectId,
+    });
+  };
+};
+
+
+
+
 // TODO: Add one for all other stuff and use it in code

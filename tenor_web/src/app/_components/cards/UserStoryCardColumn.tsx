@@ -41,6 +41,7 @@ export default function UserStoryCardColumn({
     size: userStory.size,
     tags: userStory.tags,
     columnId: userStory.sprintId,
+    cardType: "US",
   }));
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();

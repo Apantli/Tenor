@@ -9,6 +9,7 @@ interface Props {
   labelClassName?: string;
   containerClassName?: string;
   value: string;
+  disabled?: boolean;
   onChange: (color: string) => void;
 }
 
@@ -20,6 +21,7 @@ export default function DropdownColorPicker({
   value,
   onChange,
   className,
+  disabled = false,
   ...props
 }: Props &
   Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "value">) {
@@ -33,33 +35,50 @@ export default function DropdownColorPicker({
           {label}
         </label>
       )}
-      <Dropdown
-        label={
-          <>
-            <div className="mt-1 flex items-center gap-2">
-              <div
-                className="h-6 w-6 rounded-md"
-                style={{ backgroundColor: value }}
-              />
-              <span>{value}</span>
-              <ArrowDropDownIcon className="ml-auto" />
-            </div>
-          </>
-        }
-        className={cn(
-          "block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500",
-          className,
-        )}
-        {...props}
-      >
-        <DropdownItem>
-          <>
-            <HexColorPicker
-              color={value}
-              onChange={(color) => onChange(color.toUpperCase())}
-              className="custom-layout"
+      {disabled ? (
+        <div
+          className={cn(
+            "block w-full rounded-md border border-gray-300 px-4 py-2",
+            "cursor-not-allowed bg-gray-50",
+            className,
+          )}
+        >
+          <div className="mt-1 flex items-center gap-2">
+            <div
+              className="h-6 w-6 rounded-md"
+              style={{ backgroundColor: value }}
             />
-            <style>{`
+            <span className="text-gray-500">{value}</span>
+          </div>
+        </div>
+      ) : (
+        <Dropdown
+          label={
+            <>
+              <div className="mt-1 flex items-center gap-2">
+                <div
+                  className="h-6 w-6 rounded-md"
+                  style={{ backgroundColor: value }}
+                />
+                <span>{value}</span>
+                <ArrowDropDownIcon className="ml-auto" />
+              </div>
+            </>
+          }
+          className={cn(
+            "block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500",
+            className,
+          )}
+          {...props}
+        >
+          <DropdownItem>
+            <>
+              <HexColorPicker
+                color={value}
+                onChange={(color) => onChange(color.toUpperCase())}
+                className="custom-layout"
+              />
+              <style>{`
               .custom-layout .react-colorful {
                 padding: 16px;
                 border-radius: 12px;
@@ -92,17 +111,18 @@ export default function DropdownColorPicker({
                 height: 20px;
               }
             `}</style>
-          </>
-        </DropdownItem>
-        <DropdownItem>
-          <HexColorInput
-            color={value}
-            onChange={(color) => onChange(color)}
-            prefixed={true}
-            className="block w-[200px] rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500"
-          />
-        </DropdownItem>
-      </Dropdown>
+            </>
+          </DropdownItem>
+          <DropdownItem>
+            <HexColorInput
+              color={value}
+              onChange={(color) => onChange(color)}
+              prefixed={true}
+              className="block w-[200px] rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500"
+            />
+          </DropdownItem>
+        </Dropdown>
+      )}
     </div>
   );
 }
