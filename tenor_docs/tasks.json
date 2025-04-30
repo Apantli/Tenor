@@ -1,0 +1,4795 @@
+[
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Represents a task in a table-friendly format for the UI"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "interface",
+        "description": "TaskCol",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Represents a task in a table-friendly format for the UI",
+        "lineNumber": 2
+      },
+      {
+        "title": "property",
+        "description": "The unique identifier of the task",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "id"
+      },
+      {
+        "title": "property",
+        "description": "The optional scrum ID of the task",
+        "lineNumber": 4,
+        "type": {
+          "type": "OptionalType",
+          "expression": {
+            "type": "NameExpression",
+            "name": "number"
+          }
+        },
+        "name": "scrumId"
+      },
+      {
+        "title": "property",
+        "description": "The title/name of the task",
+        "lineNumber": 5,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "title"
+      },
+      {
+        "title": "property",
+        "description": "The status tag of the task",
+        "lineNumber": 6,
+        "type": {
+          "type": "NameExpression",
+          "name": "Tag"
+        },
+        "name": "status"
+      },
+      {
+        "title": "property",
+        "description": "The optional user assigned to the task",
+        "lineNumber": 7,
+        "type": {
+          "type": "OptionalType",
+          "expression": {
+            "type": "NameExpression",
+            "name": "object"
+          }
+        },
+        "name": "assignee"
+      },
+      {
+        "title": "property",
+        "description": "The user ID of the assignee",
+        "lineNumber": 8,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "assignee.uid"
+      },
+      {
+        "title": "property",
+        "description": "The display name of the assignee",
+        "lineNumber": 9,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "assignee.displayName"
+      },
+      {
+        "title": "property",
+        "description": "The photo URL of the assignee",
+        "lineNumber": 10,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "assignee.photoURL"
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 18,
+        "column": 0,
+        "index": 607
+      },
+      "end": {
+        "line": 29,
+        "column": 3,
+        "index": 1238
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 30,
+          "column": 0,
+          "index": 1239
+        },
+        "end": {
+          "line": 40,
+          "column": 1,
+          "index": 1417
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [
+      {
+        "title": "property",
+        "name": "id",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The unique identifier of the task"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      },
+      {
+        "title": "property",
+        "name": "scrumId",
+        "lineNumber": 4,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The optional scrum ID of the task"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "OptionalType",
+          "expression": {
+            "type": "NameExpression",
+            "name": "number"
+          }
+        }
+      },
+      {
+        "title": "property",
+        "name": "title",
+        "lineNumber": 5,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The title/name of the task"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      },
+      {
+        "title": "property",
+        "name": "status",
+        "lineNumber": 6,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The status tag of the task"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "Tag"
+        }
+      },
+      {
+        "title": "property",
+        "name": "assignee",
+        "lineNumber": 7,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The optional user assigned to the task"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "OptionalType",
+          "expression": {
+            "type": "NameExpression",
+            "name": "object"
+          }
+        },
+        "properties": [
+          {
+            "title": "property",
+            "name": "assignee.uid",
+            "lineNumber": 8,
+            "description": {
+              "type": "root",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "The user ID of the assignee"
+                    }
+                  ]
+                }
+              ]
+            },
+            "type": {
+              "type": "NameExpression",
+              "name": "string"
+            }
+          },
+          {
+            "title": "property",
+            "name": "assignee.displayName",
+            "lineNumber": 9,
+            "description": {
+              "type": "root",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "The display name of the assignee"
+                    }
+                  ]
+                }
+              ]
+            },
+            "type": {
+              "type": "NameExpression",
+              "name": "string"
+            }
+          },
+          {
+            "title": "property",
+            "name": "assignee.photoURL",
+            "lineNumber": 10,
+            "description": {
+              "type": "root",
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "The photo URL of the assignee"
+                    }
+                  ]
+                }
+              ]
+            },
+            "type": {
+              "type": "NameExpression",
+              "name": "string"
+            }
+          }
+        ]
+      }
+    ],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "kind": "interface",
+    "name": "TaskCol",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "TaskCol",
+        "kind": "interface"
+      }
+    ],
+    "namespace": "TaskCol"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves all non-deleted tasks from a project, ordered by scrumId"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getTasksFromProject"
+      },
+      {
+        "title": "description",
+        "description": "Retrieves all non-deleted tasks from a project, ordered by scrumId",
+        "lineNumber": 2
+      },
+      {
+        "title": "param",
+        "description": "The Firestore database instance",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.Firestore"
+        },
+        "name": "dbAdmin"
+      },
+      {
+        "title": "param",
+        "description": "The ID of the project to retrieve tasks from",
+        "lineNumber": 4,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "projectId"
+      },
+      {
+        "title": "returns",
+        "description": "An array of task objects with their IDs",
+        "lineNumber": 5,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "TypeApplication",
+              "expression": {
+                "type": "NameExpression",
+                "name": "Array"
+              },
+              "applications": [
+                {
+                  "type": "TypeApplication",
+                  "expression": {
+                    "type": "NameExpression",
+                    "name": "WithId"
+                  },
+                  "applications": [
+                    {
+                      "type": "NameExpression",
+                      "name": "Task"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 42,
+        "column": 0,
+        "index": 1419
+      },
+      "end": {
+        "line": 48,
+        "column": 3,
+        "index": 1778
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 49,
+          "column": 0,
+          "index": 1779
+        },
+        "end": {
+          "line": 71,
+          "column": 2,
+          "index": 2306
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "dbAdmin",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The Firestore database instance"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.Firestore"
+        }
+      },
+      {
+        "title": "param",
+        "name": "projectId",
+        "lineNumber": 4,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The ID of the project to retrieve tasks from"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "An array of task objects with their IDs"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "TypeApplication",
+              "expression": {
+                "type": "NameExpression",
+                "name": "Array"
+              },
+              "applications": [
+                {
+                  "type": "TypeApplication",
+                  "expression": {
+                    "type": "NameExpression",
+                    "name": "WithId"
+                  },
+                  "applications": [
+                    {
+                      "type": "NameExpression",
+                      "name": "Task"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "kind": "function",
+    "name": "getTasksFromProject",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getTasksFromProject",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getTasksFromProject"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves all non-deleted tasks associated with a specific item (user story, issue, etc.)"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getTasksFromItem"
+      },
+      {
+        "title": "description",
+        "description": "Retrieves all non-deleted tasks associated with a specific item (user story, issue, etc.)",
+        "lineNumber": 2
+      },
+      {
+        "title": "param",
+        "description": "The Firestore database instance",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.Firestore"
+        },
+        "name": "dbAdmin"
+      },
+      {
+        "title": "param",
+        "description": "The ID of the project to retrieve tasks from",
+        "lineNumber": 4,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "projectId"
+      },
+      {
+        "title": "param",
+        "description": "The ID of the item (user story, issue) to retrieve tasks for",
+        "lineNumber": 5,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "itemId"
+      },
+      {
+        "title": "returns",
+        "description": "An array of task objects with their IDs",
+        "lineNumber": 6,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "TypeApplication",
+              "expression": {
+                "type": "NameExpression",
+                "name": "Array"
+              },
+              "applications": [
+                {
+                  "type": "TypeApplication",
+                  "expression": {
+                    "type": "NameExpression",
+                    "name": "WithId"
+                  },
+                  "applications": [
+                    {
+                      "type": "NameExpression",
+                      "name": "Task"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 73,
+        "column": 0,
+        "index": 2308
+      },
+      "end": {
+        "line": 80,
+        "column": 3,
+        "index": 2776
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 81,
+          "column": 0,
+          "index": 2777
+        },
+        "end": {
+          "line": 105,
+          "column": 2,
+          "index": 3347
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "dbAdmin",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The Firestore database instance"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.Firestore"
+        }
+      },
+      {
+        "title": "param",
+        "name": "projectId",
+        "lineNumber": 4,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The ID of the project to retrieve tasks from"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      },
+      {
+        "title": "param",
+        "name": "itemId",
+        "lineNumber": 5,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The ID of the item (user story, issue) to retrieve tasks for"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "An array of task objects with their IDs"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "TypeApplication",
+              "expression": {
+                "type": "NameExpression",
+                "name": "Array"
+              },
+              "applications": [
+                {
+                  "type": "TypeApplication",
+                  "expression": {
+                    "type": "NameExpression",
+                    "name": "WithId"
+                  },
+                  "applications": [
+                    {
+                      "type": "NameExpression",
+                      "name": "Task"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "kind": "function",
+    "name": "getTasksFromItem",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getTasksFromItem",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getTasksFromItem"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves a status tag from the settings collection based on its ID"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getStatusTag"
+      },
+      {
+        "title": "description",
+        "description": "Retrieves a status tag from the settings collection based on its ID",
+        "lineNumber": 2
+      },
+      {
+        "title": "param",
+        "description": "Reference to the settings document",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        },
+        "name": "settingsRef"
+      },
+      {
+        "title": "param",
+        "description": "The ID of the status tag to retrieve",
+        "lineNumber": 4,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "statusId"
+      },
+      {
+        "title": "returns",
+        "description": "The status tag object or undefined if not found",
+        "lineNumber": 5,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "UnionType",
+              "elements": [
+                {
+                  "type": "NameExpression",
+                  "name": "Tag"
+                },
+                {
+                  "type": "UndefinedLiteral"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 107,
+        "column": 0,
+        "index": 3349
+      },
+      "end": {
+        "line": 113,
+        "column": 3,
+        "index": 3717
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 114,
+          "column": 0,
+          "index": 3718
+        },
+        "end": {
+          "line": 126,
+          "column": 2,
+          "index": 4095
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "settingsRef",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Reference to the settings document"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        }
+      },
+      {
+        "title": "param",
+        "name": "statusId",
+        "lineNumber": 4,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The ID of the status tag to retrieve"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The status tag object or undefined if not found"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "UnionType",
+              "elements": [
+                {
+                  "type": "NameExpression",
+                  "name": "Tag"
+                },
+                {
+                  "type": "UndefinedLiteral"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "kind": "function",
+    "name": "getStatusTag",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getStatusTag",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getStatusTag"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves the \"Todo\" status tag from the settings collection"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getTodoStatusTag"
+      },
+      {
+        "title": "description",
+        "description": "Retrieves the \"Todo\" status tag from the settings collection",
+        "lineNumber": 2
+      },
+      {
+        "title": "param",
+        "description": "Reference to the settings document",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        },
+        "name": "settingsRef"
+      },
+      {
+        "title": "returns",
+        "description": "The Todo status tag object",
+        "lineNumber": 4,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "Tag"
+            }
+          ]
+        }
+      },
+      {
+        "title": "throws",
+        "description": "If the Todo status tag is not found",
+        "lineNumber": 5,
+        "type": {
+          "type": "NameExpression",
+          "name": "TRPCError"
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 128,
+        "column": 0,
+        "index": 4097
+      },
+      "end": {
+        "line": 134,
+        "column": 3,
+        "index": 4421
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 135,
+          "column": 0,
+          "index": 4422
+        },
+        "end": {
+          "line": 153,
+          "column": 2,
+          "index": 4896
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "settingsRef",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Reference to the settings document"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The Todo status tag object"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "Tag"
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "If the Todo status tag is not found"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "TRPCError"
+        }
+      }
+    ],
+    "todos": [],
+    "yields": [],
+    "kind": "function",
+    "name": "getTodoStatusTag",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getTodoStatusTag",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getTodoStatusTag"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Creates a new task in the specified project and assigns it a scrumId"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "createTask",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Creates a new task in the specified project and assigns it a scrumId",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{object} input.taskData - The task data without scrumId",
+        "lineNumber": 5
+      },
+      {
+        "title": "returns",
+        "description": "Object with success status and the created task ID",
+        "lineNumber": 6,
+        "type": {
+          "type": "NameExpression",
+          "name": "object"
+        }
+      },
+      {
+        "title": "throws",
+        "description": "If there's an error creating the task",
+        "lineNumber": 7,
+        "type": {
+          "type": "NameExpression",
+          "name": "TRPCError"
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 156,
+        "column": 2,
+        "index": 4946
+      },
+      "end": {
+        "line": 164,
+        "column": 5,
+        "index": 5381
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 165,
+          "column": 2,
+          "index": 5384
+        },
+        "end": {
+          "line": 193,
+          "column": 6,
+          "index": 6235
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Object with success status and the created task ID"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "NameExpression",
+          "name": "object"
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "If there's an error creating the task"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "TRPCError"
+        }
+      }
+    ],
+    "todos": [],
+    "yields": [],
+    "name": "createTask",
+    "memberof": "tasksRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "createTask",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".createTask"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Gets tasks for a specific item in a table-friendly format"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "getTasksTableFriendly",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Gets tasks for a specific item in a table-friendly format",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{string} input.itemId - The ID of the item to get tasks for",
+        "lineNumber": 5
+      },
+      {
+        "title": "returns",
+        "description": "Array of tasks in a table-friendly format",
+        "lineNumber": 6,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Array"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "TaskCol"
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 195,
+        "column": 2,
+        "index": 6240
+      },
+      "end": {
+        "line": 202,
+        "column": 5,
+        "index": 6610
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 203,
+          "column": 2,
+          "index": 6613
+        },
+        "end": {
+          "line": 235,
+          "column": 6,
+          "index": 7783
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Array of tasks in a table-friendly format"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Array"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "TaskCol"
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "getTasksTableFriendly",
+    "memberof": "tasksRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getTasksTableFriendly",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".getTasksTableFriendly"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Gets detailed information about a specific task"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "getTaskDetail",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Gets detailed information about a specific task",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{string} input.taskId - The ID of the task",
+        "lineNumber": 5
+      },
+      {
+        "title": "returns",
+        "description": "Detailed task information",
+        "lineNumber": 6,
+        "type": {
+          "type": "NameExpression",
+          "name": "TaskDetail"
+        }
+      },
+      {
+        "title": "throws",
+        "description": "If the task is not found",
+        "lineNumber": 7,
+        "type": {
+          "type": "NameExpression",
+          "name": "TRPCError"
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 237,
+        "column": 2,
+        "index": 7788
+      },
+      "end": {
+        "line": 245,
+        "column": 5,
+        "index": 8158
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 246,
+          "column": 2,
+          "index": 8161
+        },
+        "end": {
+          "line": 296,
+          "column": 6,
+          "index": 9770
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Detailed task information"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "NameExpression",
+          "name": "TaskDetail"
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "If the task is not found"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "TRPCError"
+        }
+      }
+    ],
+    "todos": [],
+    "yields": [],
+    "name": "getTaskDetail",
+    "memberof": "tasksRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getTaskDetail",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".getTaskDetail"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Updates a task with new data"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "modifyTask",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Updates a task with new data",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{string} input.taskId - The ID of the task to modify",
+        "lineNumber": 5
+      },
+      {
+        "title": "input",
+        "description": "{object} input.taskData - The new task data",
+        "lineNumber": 6
+      },
+      {
+        "title": "returns",
+        "description": "Object with success status",
+        "lineNumber": 7,
+        "type": {
+          "type": "NameExpression",
+          "name": "object"
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 298,
+        "column": 2,
+        "index": 9775
+      },
+      "end": {
+        "line": 306,
+        "column": 5,
+        "index": 10136
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 307,
+          "column": 2,
+          "index": 10139
+        },
+        "end": {
+          "line": 329,
+          "column": 6,
+          "index": 10736
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Object with success status"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "NameExpression",
+          "name": "object"
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "modifyTask",
+    "memberof": "tasksRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "modifyTask",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".modifyTask"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Updates the status of a task"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "changeTaskStatus",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Updates the status of a task",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{string} input.taskId - The ID of the task to modify",
+        "lineNumber": 5
+      },
+      {
+        "title": "input",
+        "description": "{string} input.statusId - The ID of the new status",
+        "lineNumber": 6
+      },
+      {
+        "title": "returns",
+        "description": "Object with success status",
+        "lineNumber": 7,
+        "type": {
+          "type": "NameExpression",
+          "name": "object"
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 331,
+        "column": 2,
+        "index": 10741
+      },
+      "end": {
+        "line": 339,
+        "column": 5,
+        "index": 11115
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 340,
+          "column": 2,
+          "index": 11118
+        },
+        "end": {
+          "line": 357,
+          "column": 6,
+          "index": 11619
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Object with success status"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "NameExpression",
+          "name": "object"
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "changeTaskStatus",
+    "memberof": "tasksRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "changeTaskStatus",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".changeTaskStatus"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Marks a task as deleted (soft delete)"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "deleteTask",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Marks a task as deleted (soft delete)",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{string} input.taskId - The ID of the task to delete",
+        "lineNumber": 5
+      },
+      {
+        "title": "returns",
+        "description": "Object with success status",
+        "lineNumber": 6,
+        "type": {
+          "type": "NameExpression",
+          "name": "object"
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 359,
+        "column": 2,
+        "index": 11624
+      },
+      "end": {
+        "line": 366,
+        "column": 5,
+        "index": 11938
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 367,
+          "column": 2,
+          "index": 11941
+        },
+        "end": {
+          "line": 383,
+          "column": 6,
+          "index": 12389
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Object with success status"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "NameExpression",
+          "name": "object"
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "deleteTask",
+    "memberof": "tasksRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "deleteTask",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".deleteTask"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Generates tasks for an item using AI"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "generateTasks",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Generates tasks for an item using AI",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{string} input.itemId - The ID of the item to generate tasks for",
+        "lineNumber": 5
+      },
+      {
+        "title": "input",
+        "description": "{string} input.itemType - The type of the item (US, IS, IT)",
+        "lineNumber": 6
+      },
+      {
+        "title": "input",
+        "description": "{number} input.amount - The number of tasks to generate",
+        "lineNumber": 7
+      },
+      {
+        "title": "input",
+        "description": "{string} input.prompt - Additional user prompt for task generation",
+        "lineNumber": 8
+      },
+      {
+        "title": "returns",
+        "description": "Array of generated tasks with Todo status",
+        "lineNumber": 9,
+        "type": {
+          "type": "NameExpression",
+          "name": "Array"
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 385,
+        "column": 2,
+        "index": 12394
+      },
+      "end": {
+        "line": 395,
+        "column": 5,
+        "index": 12955
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 396,
+          "column": 2,
+          "index": 12958
+        },
+        "end": {
+          "line": 582,
+          "column": 6,
+          "index": 19118
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/tasks.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Array of generated tasks with Todo status"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "NameExpression",
+          "name": "Array"
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "generateTasks",
+    "memberof": "tasksRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "generateTasks",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".generateTasks"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Gets a reference to the project settings document"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getProjectSettingsRef"
+      },
+      {
+        "title": "description",
+        "description": "Gets a reference to the project settings document",
+        "lineNumber": 2
+      },
+      {
+        "title": "param",
+        "description": "The ID of the project",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "projectId"
+      },
+      {
+        "title": "param",
+        "description": "The Firestore instance",
+        "lineNumber": 4,
+        "type": {
+          "type": "NameExpression",
+          "name": "Firestore"
+        },
+        "name": "firestore"
+      },
+      {
+        "title": "returns",
+        "description": "A reference to the project settings document",
+        "lineNumber": 5,
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 7,
+        "column": 0,
+        "index": 271
+      },
+      "end": {
+        "line": 13,
+        "column": 3,
+        "index": 584
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 14,
+          "column": 0,
+          "index": 585
+        },
+        "end": {
+          "line": 23,
+          "column": 2,
+          "index": 795
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "projectId",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The ID of the project"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      },
+      {
+        "title": "param",
+        "name": "firestore",
+        "lineNumber": 4,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The Firestore instance"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "Firestore"
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "A reference to the project settings document"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "kind": "function",
+    "name": "getProjectSettingsRef",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getProjectSettingsRef",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getProjectSettingsRef"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves the settings for a specific project"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getProjectSettings"
+      },
+      {
+        "title": "description",
+        "description": "Retrieves the settings for a specific project",
+        "lineNumber": 2
+      },
+      {
+        "title": "param",
+        "description": "The ID of the project",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "projectId"
+      },
+      {
+        "title": "param",
+        "description": "The Firestore instance",
+        "lineNumber": 4,
+        "type": {
+          "type": "NameExpression",
+          "name": "Firestore"
+        },
+        "name": "firestore"
+      },
+      {
+        "title": "returns",
+        "description": "The project settings validated by SettingsSchema",
+        "lineNumber": 5,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "any"
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 25,
+        "column": 0,
+        "index": 797
+      },
+      "end": {
+        "line": 31,
+        "column": 3,
+        "index": 1084
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 32,
+          "column": 0,
+          "index": 1085
+        },
+        "end": {
+          "line": 36,
+          "column": 2,
+          "index": 1292
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "projectId",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The ID of the project"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      },
+      {
+        "title": "param",
+        "name": "firestore",
+        "lineNumber": 4,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The Firestore instance"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "Firestore"
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The project settings validated by SettingsSchema"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "any"
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "kind": "function",
+    "name": "getProjectSettings",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getProjectSettings",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getProjectSettings"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves a priority tag from the priorityTypes collection based on its ID"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getPriorityTag"
+      },
+      {
+        "title": "description",
+        "description": "Retrieves a priority tag from the priorityTypes collection based on its ID",
+        "lineNumber": 2
+      },
+      {
+        "title": "param",
+        "description": "Reference to the settings document",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        },
+        "name": "settingsRef"
+      },
+      {
+        "title": "param",
+        "description": "The ID of the priority tag to retrieve",
+        "lineNumber": 4,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "priorityId"
+      },
+      {
+        "title": "returns",
+        "description": "The priority tag object or undefined if not found",
+        "lineNumber": 5,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "UnionType",
+              "elements": [
+                {
+                  "type": "NameExpression",
+                  "name": "Tag"
+                },
+                {
+                  "type": "UndefinedLiteral"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 38,
+        "column": 0,
+        "index": 1294
+      },
+      "end": {
+        "line": 44,
+        "column": 3,
+        "index": 1677
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 45,
+          "column": 0,
+          "index": 1678
+        },
+        "end": {
+          "line": 60,
+          "column": 2,
+          "index": 2068
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "settingsRef",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Reference to the settings document"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        }
+      },
+      {
+        "title": "param",
+        "name": "priorityId",
+        "lineNumber": 4,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The ID of the priority tag to retrieve"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The priority tag object or undefined if not found"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "UnionType",
+              "elements": [
+                {
+                  "type": "NameExpression",
+                  "name": "Tag"
+                },
+                {
+                  "type": "UndefinedLiteral"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "kind": "function",
+    "name": "getPriorityTag",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getPriorityTag",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getPriorityTag"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves a backlog tag from the backlogTags collection based on its ID"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getBacklogTag"
+      },
+      {
+        "title": "description",
+        "description": "Retrieves a backlog tag from the backlogTags collection based on its ID",
+        "lineNumber": 2
+      },
+      {
+        "title": "param",
+        "description": "Reference to the settings document",
+        "lineNumber": 3,
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        },
+        "name": "settingsRef"
+      },
+      {
+        "title": "param",
+        "description": "The ID of the backlog tag to retrieve",
+        "lineNumber": 4,
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        },
+        "name": "taskId"
+      },
+      {
+        "title": "returns",
+        "description": "The backlog tag object or undefined if not found",
+        "lineNumber": 5,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "UnionType",
+              "elements": [
+                {
+                  "type": "NameExpression",
+                  "name": "Tag"
+                },
+                {
+                  "type": "UndefinedLiteral"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 62,
+        "column": 0,
+        "index": 2070
+      },
+      "end": {
+        "line": 68,
+        "column": 3,
+        "index": 2443
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 69,
+          "column": 0,
+          "index": 2444
+        },
+        "end": {
+          "line": 81,
+          "column": 2,
+          "index": 2804
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "settingsRef",
+        "lineNumber": 3,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "Reference to the settings document"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "FirebaseFirestore.DocumentReference"
+        }
+      },
+      {
+        "title": "param",
+        "name": "taskId",
+        "lineNumber": 4,
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The ID of the backlog tag to retrieve"
+                }
+              ]
+            }
+          ]
+        },
+        "type": {
+          "type": "NameExpression",
+          "name": "string"
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "The backlog tag object or undefined if not found"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Promise"
+          },
+          "applications": [
+            {
+              "type": "UnionType",
+              "elements": [
+                {
+                  "type": "NameExpression",
+                  "name": "Tag"
+                },
+                {
+                  "type": "UndefinedLiteral"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "kind": "function",
+    "name": "getBacklogTag",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getBacklogTag",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getBacklogTag"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves the progress of a task (placeholder for future implementation)"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "function",
+        "description": null,
+        "lineNumber": 1,
+        "name": "getTaskProgress"
+      },
+      {
+        "title": "description",
+        "description": "Retrieves the progress of a task (placeholder for future implementation)",
+        "lineNumber": 2
+      },
+      {
+        "title": "returns",
+        "description": "A tuple containing task progress values",
+        "lineNumber": 3,
+        "type": null,
+        "errors": [
+          "unexpected token"
+        ]
+      },
+      {
+        "title": "todo",
+        "description": "Fetch from db",
+        "lineNumber": 4
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 83,
+        "column": 0,
+        "index": 2806
+      },
+      "end": {
+        "line": 88,
+        "column": 3,
+        "index": 3049
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 90,
+          "column": 0,
+          "index": 3073
+        },
+        "end": {
+          "line": 92,
+          "column": 2,
+          "index": 3175
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [
+      {
+        "type": "root",
+        "children": [
+          {
+            "type": "paragraph",
+            "children": [
+              {
+                "type": "text",
+                "value": "Fetch from db"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "yields": [],
+    "kind": "function",
+    "name": "getTaskProgress",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getTaskProgress",
+        "kind": "function"
+      }
+    ],
+    "namespace": "getTaskProgress"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves all priority types for a project"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "getPriorityTypes",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Retrieves all priority types for a project",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "returns",
+        "description": "An array of priority type tags",
+        "lineNumber": 5,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Array"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "Tag"
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 95,
+        "column": 2,
+        "index": 3221
+      },
+      "end": {
+        "line": 101,
+        "column": 5,
+        "index": 3484
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 102,
+          "column": 2,
+          "index": 3487
+        },
+        "end": {
+          "line": 118,
+          "column": 6,
+          "index": 4007
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "An array of priority type tags"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Array"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "Tag"
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "getPriorityTypes",
+    "memberof": "settingsRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getPriorityTypes",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".getPriorityTypes"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves all status types for a project"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "getStatusTypes",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Retrieves all status types for a project",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "returns",
+        "description": "An array of status type tags",
+        "lineNumber": 5,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Array"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "Tag"
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 120,
+        "column": 2,
+        "index": 4012
+      },
+      "end": {
+        "line": 126,
+        "column": 5,
+        "index": 4269
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 127,
+          "column": 2,
+          "index": 4272
+        },
+        "end": {
+          "line": 143,
+          "column": 6,
+          "index": 4780
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "An array of status type tags"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Array"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "Tag"
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "getStatusTypes",
+    "memberof": "settingsRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getStatusTypes",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".getStatusTypes"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Retrieves all non-deleted backlog tags for a project"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "getBacklogTags",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Retrieves all non-deleted backlog tags for a project",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "returns",
+        "description": "An array of backlog tags",
+        "lineNumber": 5,
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Array"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "Tag"
+            }
+          ]
+        }
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 145,
+        "column": 2,
+        "index": 4785
+      },
+      "end": {
+        "line": 151,
+        "column": 5,
+        "index": 5050
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 152,
+          "column": 2,
+          "index": 5053
+        },
+        "end": {
+          "line": 169,
+          "column": 6,
+          "index": 5600
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "text",
+                  "value": "An array of backlog tags"
+                }
+              ]
+            }
+          ]
+        },
+        "title": "returns",
+        "type": {
+          "type": "TypeApplication",
+          "expression": {
+            "type": "NameExpression",
+            "name": "Array"
+          },
+          "applications": [
+            {
+              "type": "NameExpression",
+              "name": "Tag"
+            }
+          ]
+        }
+      }
+    ],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "getBacklogTags",
+    "memberof": "settingsRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "getBacklogTags",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".getBacklogTags"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Creates a new backlog tag for a project"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "createBacklogTag",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Creates a new backlog tag for a project",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{object} input.tag - The tag data conforming to TagSchema",
+        "lineNumber": 5
+      },
+      {
+        "title": "returns",
+        "description": "The created tag with its ID",
+        "lineNumber": 6,
+        "type": null,
+        "errors": [
+          "not reach to EOF"
+        ]
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 171,
+        "column": 2,
+        "index": 5605
+      },
+      "end": {
+        "line": 178,
+        "column": 5,
+        "index": 5945
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 179,
+          "column": 2,
+          "index": 5948
+        },
+        "end": {
+          "line": 191,
+          "column": 6,
+          "index": 6359
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "createBacklogTag",
+    "memberof": "settingsRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "createBacklogTag",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".createBacklogTag"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Creates a new requirement type tag for a project"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "createRequirementType",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Creates a new requirement type tag for a project",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{object} input.tag - The tag data conforming to TagSchema",
+        "lineNumber": 5
+      },
+      {
+        "title": "returns",
+        "description": "The created requirement type tag with its ID",
+        "lineNumber": 6,
+        "type": null,
+        "errors": [
+          "not reach to EOF"
+        ]
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 193,
+        "column": 2,
+        "index": 6364
+      },
+      "end": {
+        "line": 200,
+        "column": 5,
+        "index": 6735
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 201,
+          "column": 2,
+          "index": 6738
+        },
+        "end": {
+          "line": 213,
+          "column": 6,
+          "index": 7159
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "createRequirementType",
+    "memberof": "settingsRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "createRequirementType",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".createRequirementType"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Creates a new requirement focus tag for a project"
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "procedure",
+        "description": "createRequirementFocus",
+        "lineNumber": 1
+      },
+      {
+        "title": "description",
+        "description": "Creates a new requirement focus tag for a project",
+        "lineNumber": 2
+      },
+      {
+        "title": "input",
+        "description": "{object} input - Input parameters",
+        "lineNumber": 3
+      },
+      {
+        "title": "input",
+        "description": "{string} input.projectId - The ID of the project",
+        "lineNumber": 4
+      },
+      {
+        "title": "input",
+        "description": "{object} input.tag - The tag data conforming to TagSchema",
+        "lineNumber": 5
+      },
+      {
+        "title": "returns",
+        "description": "The created requirement focus tag with its ID",
+        "lineNumber": 6,
+        "type": null,
+        "errors": [
+          "not reach to EOF"
+        ]
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 215,
+        "column": 2,
+        "index": 7164
+      },
+      "end": {
+        "line": 222,
+        "column": 5,
+        "index": 7538
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 223,
+          "column": 2,
+          "index": 7541
+        },
+        "end": {
+          "line": 235,
+          "column": 6,
+          "index": 7963
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/routers/settings.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "createRequirementFocus",
+    "memberof": "settingsRouter",
+    "scope": "static",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "createRequirementFocus",
+        "scope": "static"
+      }
+    ],
+    "namespace": ".createRequirementFocus"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:"
+            }
+          ]
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "start": 1,
+          "spread": false,
+          "children": [
+            {
+              "type": "listItem",
+              "spread": false,
+              "checked": null,
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "You want to modify request context (see Part 1)."
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "listItem",
+              "spread": false,
+              "checked": null,
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "You want to create a new middleware or type of procedure (see Part 3)."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will\nneed to use are documented accordingly near the end."
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [],
+    "loc": {
+      "start": {
+        "line": 1,
+        "column": 0,
+        "index": 0
+      },
+      "end": {
+        "line": 8,
+        "column": 3,
+        "index": 350
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 9,
+          "column": 0,
+          "index": 351
+        },
+        "end": {
+          "line": 9,
+          "column": 51,
+          "index": 402
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/trpc.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "initTRPC",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "initTRPC"
+      }
+    ],
+    "namespace": "initTRPC"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "list",
+          "ordered": true,
+          "start": 1,
+          "spread": false,
+          "children": [
+            {
+              "type": "listItem",
+              "spread": false,
+              "checked": null,
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "CONTEXT"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "This section defines the \"contexts\" that are available in the backend API."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "These allow you to access things when processing a request, like the database, the session, etc."
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "This helper generates the \"internals\" for a tRPC context. The API handler and RSC clients each\nwrap this and provides the required context."
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "see",
+        "description": "https://trpc.io/docs/server/context",
+        "lineNumber": 10
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 17,
+        "column": 0,
+        "index": 613
+      },
+      "end": {
+        "line": 28,
+        "column": 3,
+        "index": 1014
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 29,
+          "column": 0,
+          "index": 1015
+        },
+        "end": {
+          "line": 39,
+          "column": 2,
+          "index": 1222
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/trpc.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [
+      {
+        "title": "param",
+        "name": "opts",
+        "lineNumber": 29,
+        "type": {
+          "type": "RecordType",
+          "fields": [
+            {
+              "type": "FieldType",
+              "key": "headers",
+              "value": {
+                "type": "NameExpression",
+                "name": "Headers"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "properties": [],
+    "returns": [],
+    "sees": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "link",
+                  "title": null,
+                  "url": "https://trpc.io/docs/server/context",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "https://trpc.io/docs/server/context"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "title": "sees"
+      }
+    ],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "createTRPCContext",
+    "kind": "constant",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "createTRPCContext",
+        "kind": "constant"
+      }
+    ],
+    "namespace": "createTRPCContext"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "list",
+          "ordered": true,
+          "start": 2,
+          "spread": false,
+          "children": [
+            {
+              "type": "listItem",
+              "spread": false,
+              "checked": null,
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "INITIALIZATION"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "This is where the tRPC API is initialized, connecting the context and transformer. We also parse\nZodErrors so that you get typesafety on the frontend if your procedure fails due to validation\nerrors on the backend."
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [],
+    "loc": {
+      "start": {
+        "line": 41,
+        "column": 0,
+        "index": 1224
+      },
+      "end": {
+        "line": 47,
+        "column": 3,
+        "index": 1479
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 48,
+          "column": 0,
+          "index": 1480
+        },
+        "end": {
+          "line": 60,
+          "column": 3,
+          "index": 1789
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/trpc.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "t",
+    "kind": "constant",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "t",
+        "kind": "constant"
+      }
+    ],
+    "namespace": "t"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Create a server-side caller."
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "see",
+        "description": "https://trpc.io/docs/server/server-side-calls",
+        "lineNumber": 3
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 62,
+        "column": 0,
+        "index": 1791
+      },
+      "end": {
+        "line": 66,
+        "column": 3,
+        "index": 1887
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 67,
+          "column": 0,
+          "index": 1888
+        },
+        "end": {
+          "line": 67,
+          "column": 57,
+          "index": 1945
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/trpc.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "link",
+                  "title": null,
+                  "url": "https://trpc.io/docs/server/server-side-calls",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "https://trpc.io/docs/server/server-side-calls"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "title": "sees"
+      }
+    ],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "createCallerFactory",
+    "kind": "constant",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "createCallerFactory",
+        "kind": "constant"
+      }
+    ],
+    "namespace": "createCallerFactory"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "list",
+          "ordered": true,
+          "start": 3,
+          "spread": false,
+          "children": [
+            {
+              "type": "listItem",
+              "spread": false,
+              "checked": null,
+              "children": [
+                {
+                  "type": "paragraph",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "ROUTER & PROCEDURE (THE IMPORTANT BIT)"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "These are the pieces you use to build your tRPC API. You should import these a lot in the\n\"/src/server/api/routers\" directory."
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [],
+    "loc": {
+      "start": {
+        "line": 69,
+        "column": 0,
+        "index": 1947
+      },
+      "end": {
+        "line": 74,
+        "column": 3,
+        "index": 2135
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 81,
+          "column": 0,
+          "index": 2256
+        },
+        "end": {
+          "line": 81,
+          "column": 41,
+          "index": 2297
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/trpc.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "createTRPCRouter",
+    "kind": "constant",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "createTRPCRouter",
+        "kind": "constant"
+      }
+    ],
+    "namespace": "createTRPCRouter"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "This is how you create new routers and sub-routers in your tRPC API."
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "see",
+        "description": "https://trpc.io/docs/router",
+        "lineNumber": 3
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 76,
+        "column": 0,
+        "index": 2137
+      },
+      "end": {
+        "line": 80,
+        "column": 3,
+        "index": 2255
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 81,
+          "column": 0,
+          "index": 2256
+        },
+        "end": {
+          "line": 81,
+          "column": 41,
+          "index": 2297
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/trpc.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "link",
+                  "title": null,
+                  "url": "https://trpc.io/docs/router",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "https://trpc.io/docs/router"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "title": "sees"
+      }
+    ],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "createTRPCRouter",
+    "kind": "constant",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "createTRPCRouter",
+        "kind": "constant"
+      }
+    ],
+    "namespace": "createTRPCRouter"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Public (unauthenticated) procedure"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "This is the base piece you use to build new queries and mutations on your tRPC API. It does not\nguarantee that a user querying is authorized, but you can still access user session data if they\nare logged in."
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [],
+    "loc": {
+      "start": {
+        "line": 83,
+        "column": 0,
+        "index": 2299
+      },
+      "end": {
+        "line": 89,
+        "column": 3,
+        "index": 2564
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 90,
+          "column": 0,
+          "index": 2565
+        },
+        "end": {
+          "line": 90,
+          "column": 43,
+          "index": 2608
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/trpc.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "publicProcedure",
+    "kind": "constant",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "publicProcedure",
+        "kind": "constant"
+      }
+    ],
+    "namespace": "publicProcedure"
+  },
+  {
+    "description": {
+      "type": "root",
+      "children": [
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "Protected (authenticated) procedure"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "children": [
+            {
+              "type": "text",
+              "value": "If you want a query or mutation to ONLY be accessible to logged in users, use this. It verifies\nthe session is valid and guarantees "
+            },
+            {
+              "type": "inlineCode",
+              "value": "ctx.session.user"
+            },
+            {
+              "type": "text",
+              "value": " is not null."
+            }
+          ]
+        }
+      ]
+    },
+    "tags": [
+      {
+        "title": "see",
+        "description": "https://trpc.io/docs/procedures",
+        "lineNumber": 6
+      }
+    ],
+    "loc": {
+      "start": {
+        "line": 92,
+        "column": 0,
+        "index": 2610
+      },
+      "end": {
+        "line": 99,
+        "column": 3,
+        "index": 2872
+      }
+    },
+    "context": {
+      "loc": {
+        "start": {
+          "line": 100,
+          "column": 0,
+          "index": 2873
+        },
+        "end": {
+          "line": 110,
+          "column": 3,
+          "index": 3179
+        }
+      },
+      "file": "/home/oscar/Repositories/Tenor/tenor_web/src/server/api/trpc.ts"
+    },
+    "augments": [],
+    "examples": [],
+    "implements": [],
+    "params": [],
+    "properties": [],
+    "returns": [],
+    "sees": [
+      {
+        "description": {
+          "type": "root",
+          "children": [
+            {
+              "type": "paragraph",
+              "children": [
+                {
+                  "type": "link",
+                  "title": null,
+                  "url": "https://trpc.io/docs/procedures",
+                  "children": [
+                    {
+                      "type": "text",
+                      "value": "https://trpc.io/docs/procedures"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "title": "sees"
+      }
+    ],
+    "throws": [],
+    "todos": [],
+    "yields": [],
+    "name": "protectedProcedure",
+    "kind": "constant",
+    "members": {
+      "global": [],
+      "inner": [],
+      "instance": [],
+      "events": [],
+      "static": []
+    },
+    "path": [
+      {
+        "name": "protectedProcedure",
+        "kind": "constant"
+      }
+    ],
+    "namespace": "protectedProcedure"
+  }
+]

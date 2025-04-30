@@ -5,7 +5,7 @@ import React, { type MouseEventHandler } from "react";
 import { cn } from "~/lib/utils";
 import InterceptedLink from "./InterceptableLink";
 import { api } from "~/trpc/react";
-import { permissionMapping } from "../(logged)/project/[projectId]/layout";
+import { permissionMapping } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   disabled?: boolean;
