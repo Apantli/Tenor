@@ -36,6 +36,7 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 
 interface Props {
   userStoryId: string;
@@ -172,6 +173,7 @@ export default function UserStoryDetailPopup({
           .filter((tag) => tag !== undefined) ?? [],
       priorityId: finalData?.priority?.id,
       size: finalData?.size,
+      statusId: finalData?.status?.id ?? "",
       epicId: finalData?.epic?.id ?? "",
       sprintId: finalData?.sprint?.id ?? "",
       dependencyIds: finalData?.dependencies.map((us) => us.id) ?? [],
@@ -249,8 +251,8 @@ export default function UserStoryDetailPopup({
       complete: false,
       tagIds: [],
       size: userStory.size ?? "M",
+      statusId: userStory.status?.id ?? "",
       priorityId: userStory.priority?.id ?? "",
-      statusId: "",
       tasks: userStoryData?.tasks ?? [],
       extra: userStoryData?.acceptanceCriteria ?? "",
     };
@@ -314,6 +316,16 @@ export default function UserStoryDetailPopup({
                       }}
                     />
                   </div>
+                </div>
+
+                <div className="mt-4 flex-1">
+                  <h3 className="text-lg font-semibold">Status</h3>
+                  <StatusPicker
+                    status={userStoryDetail.status}
+                    onChange={async (status) => {
+                      await handleSave({ ...userStoryDetail, status });
+                    }}
+                  />
                 </div>
 
                 <BacklogTagList

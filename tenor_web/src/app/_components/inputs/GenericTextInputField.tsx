@@ -234,7 +234,7 @@ export default function InputField({
               id={id}
               placeholder={
                 placeholder +
-                (isFocused ? " Press Ctrl + K or to generate with AI." : "")
+                (isFocused ? " Press Ctrl + K or ⌘K or to generate with AI." : "")
               }
               onFocus={() => {
                 setIsFocused(true);

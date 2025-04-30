@@ -33,6 +33,7 @@ import {
   getProjectContextHeader,
 } from "~/utils/aiContext";
 import { FieldValue } from "firebase-admin/firestore";
+import { getStatusTag } from "./tasks";
 
 export interface UserStoryCol {
   id: string;
@@ -298,6 +299,11 @@ export const userStoriesRouter = createTRPCRouter({
         );
       }
 
+      let statusTag = undefined;
+      if (userStoryData.statusId !== undefined) {
+        statusTag = await getStatusTag(settingsRef, userStoryData.statusId);
+      }
+
       const tags = await Promise.all(
         userStoryData.tagIds.map(async (tagId) => {
           return await getBacklogTag(settingsRef, tagId);
@@ -365,6 +371,7 @@ export const userStoriesRouter = createTRPCRouter({
         epic: epicData,
         size: userStoryData.size,
         tags: tags,
+        status: statusTag,
         priority: priorityTag,
         dependencies: dependencies,
         requiredBy: requiredBy,

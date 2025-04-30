@@ -1,6 +1,12 @@
 // Data types for returning detailed or preview information from the backend
 
-import type { Permission, Size, Tag, WithId } from "./firebaseSchemas";
+import type {
+  Permission,
+  Size,
+  StatusTag,
+  Tag,
+  WithId,
+} from "./firebaseSchemas";
 import type {
   ExistingEpicSchema,
   ExistingUserStorySchema,
@@ -47,6 +53,7 @@ export type UserStoryDetail = {
   size?: Size;
   tags: Tag[];
   priority?: Tag;
+  status?: Tag; // It is a statusTag, but in the detail we don't need the detail info!
   dependencies: UserStoryPreview[];
   requiredBy: UserStoryPreview[];
   sprint?: SprintPreview;

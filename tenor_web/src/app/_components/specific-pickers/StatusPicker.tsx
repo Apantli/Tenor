@@ -9,7 +9,7 @@ import { cn } from "~/lib/utils";
 
 interface Props {
   status?: Tag;
-  onChange: (priority: Tag) => void;
+  onChange: (status: Tag) => void;
   className?: string;
 }
 
@@ -19,10 +19,18 @@ export default function StatusPicker({ status, onChange, className }: Props) {
     projectId: projectId as string,
   });
 
+  const automaticTag = {
+    id: "",
+    name: "Automatic",
+    color: "#000000",
+    deleted: false,
+  };
+  const statusValuesWithAuto = [automaticTag, ...(statusValues ?? [])];
+
   return (
     <PillComponent
-      currentTag={status?.id !== "" ? status : undefined}
-      allTags={statusValues ?? []}
+      currentTag={status ?? automaticTag}
+      allTags={statusValuesWithAuto ?? []}
       callBack={onChange}
       labelClassName={cn("w-full", className)}
     />

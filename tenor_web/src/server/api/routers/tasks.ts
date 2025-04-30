@@ -113,7 +113,7 @@ export const getTasksFromItem = async (
  * @param {string} statusId - The ID of the status tag to retrieve
  * @returns {Promise<Tag | undefined>} The status tag object or undefined if not found
  */
-const getStatusTag = async (
+export const getStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
   statusId: string,
 ) => {
