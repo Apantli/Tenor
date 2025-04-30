@@ -78,7 +78,6 @@ export function CreateTaskForm({
         ...prev,
         status: todoStatusTag,
       }));
-      console.log("Setting status to todoStatusTag", todoStatusTag);
     }
   }, [todoStatusTag]);
 
