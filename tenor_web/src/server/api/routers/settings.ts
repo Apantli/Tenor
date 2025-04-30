@@ -8,12 +8,12 @@ import {
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
-import { Tag } from "~/lib/types/firebaseSchemas";
+import { type Tag } from "~/lib/types/firebaseSchemas";
 import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 import { emptyRole, ownerRole } from "~/lib/defaultTags";
 import { remove } from "node_modules/cypress/types/lodash";
-import { RoleDetail } from "~/lib/types/detailSchemas";
+import { type RoleDetail } from "~/lib/types/detailSchemas";
 import { TRPCError } from "@trpc/server";
 
 export const getProjectSettingsRef = (

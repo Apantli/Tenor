@@ -5,7 +5,7 @@ import Popup from "~/app/_components/Popup";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
-import { generateRandomColor } from "~/app/_components/BacklogTagList";
+import { generateRandomTagColor } from "~/utils/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesItemStatus } from "~/app/_hooks/invalidateHooks";
@@ -34,7 +34,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
     marksTaskAsDone: boolean;
   }>({
     name: "",
-    color: generateRandomColor(),
+    color: generateRandomTagColor(),
     marksTaskAsDone: false,
   });
 
