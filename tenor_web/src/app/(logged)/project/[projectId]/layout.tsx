@@ -19,9 +19,10 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
   const { data: projectNameData } = api.projects.getProjectName.useQuery({
     projectId: projectId as string,
   });
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: role, isLoading: isLoadingRole } =
+    api.settings.getMyRole.useQuery({
+      projectId: projectId as string,
+    });
 
   const permitted = useMemo(() => {
     // Project OverView
@@ -75,11 +76,17 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
         </div>
       </Navbar>
       <Tabbar />
-      {permitted ? (
-        <main className="m-6 flex-1 overflow-hidden p-4">{children}</main>
-      ) : (
-        // FIMXE: Make this pretty
-        <h1 className="m-6 text-3xl font-semibold">Page not found</h1>
+      {/* Only show content after the role is loaded */}
+      {!isLoadingRole && (
+        <>
+          {permitted ? (
+            <main className="m-6 flex-1 overflow-hidden p-4">{children}</main>
+          ) : (
+            // FIMXE: Make this pretty
+            // FIXME: I think in this case we should redirect instead of showing a 404
+            <h1 className="m-6 text-3xl font-semibold">Page not found</h1>
+          )}
+        </>
       )}
     </div>
   );
