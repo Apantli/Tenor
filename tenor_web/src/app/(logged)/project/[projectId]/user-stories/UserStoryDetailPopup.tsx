@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
@@ -15,7 +15,9 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import DependencyList from "./DependencyList";
-import TasksTable from "~/app/_components/sections/TasksTable";
+import TasksTable, {
+  type BacklogItemWithTasks,
+} from "~/app/_components/sections/TasksTable";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
@@ -25,25 +27,15 @@ import {
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
-import type {
-  TaskDetail,
-  UserStoryDetailWithTasks,
-} from "~/lib/types/detailSchemas";
-import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
-import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
 import AiIcon from "@mui/icons-material/AutoAwesome";
-import AiButton from "~/app/_components/buttons/AiButton";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
-import { inferRouterOutputs } from "@trpc/server";
-import { tasksRouter } from "~/server/api/routers/tasks";
-import { constructCategoryColors } from "~/lib/chartUtils";
 
 interface Props {
   userStoryId: string;
@@ -72,6 +64,7 @@ export default function UserStoryDetailPopup({
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const [unsavedTasks, setUnsavedTasks] = useState(false);
@@ -97,8 +90,6 @@ export default function UserStoryDetailPopup({
     api.userStories.modifyUserStory.useMutation();
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -240,8 +231,29 @@ export default function UserStoryDetailPopup({
         userStoryId: userStoryId,
       });
       await invalidateQueriesAllUserStories(projectId as string);
+      await invalidateQueriesAllTasks(projectId as string);
       setShowDetail(false);
     }
+  };
+
+  const userStoryDataToItemData = (
+    userStory: UserStoryDetailWithTasks,
+  ): BacklogItemWithTasks => {
+    return {
+      scrumId: -1,
+      name: userStory.name,
+      description: userStory.description,
+      deleted: false,
+      sprintId: "",
+      taskIds: [],
+      complete: false,
+      tagIds: [],
+      size: userStory.size ?? "M",
+      priorityId: userStory.priority?.id ?? "",
+      statusId: "",
+      tasks: userStoryData?.tasks ?? [],
+      extra: userStoryData?.acceptanceCriteria ?? "",
+    };
   };
 
   return (
@@ -353,7 +365,7 @@ export default function UserStoryDetailPopup({
             />
             <TertiaryButton onClick={onReject}>Reject</TertiaryButton>
             <PrimaryButton
-              className="hover:bg-app-hover-secondary bg-app-secondary"
+              className="bg-app-secondary hover:bg-app-hover-secondary"
               onClick={onAccept}
             >
               Accept
@@ -466,10 +478,18 @@ export default function UserStoryDetailPopup({
             setSelectedGhostTask={setSelectedGhostTaskId}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             selectedGhostTaskId={selectedGhostTaskId}
-            setUserStoryData={setUserStoryData}
+            setItemData={(data) => {
+              if (!data || !userStoryData) return;
+              setUserStoryData?.({
+                ...userStoryData,
+                tasks: data.tasks,
+              });
+            }}
             setUnsavedTasks={setUnsavedTasks}
             taskIdToOpenImmediately={taskIdToOpenImmediately}
-            userStoryData={userStoryData}
+            itemData={
+              userStoryData ? userStoryDataToItemData(userStoryData) : undefined
+            }
             setTaskData={(tasks) => {
               if (!userStoryData) return;
               setUserStoryData?.({

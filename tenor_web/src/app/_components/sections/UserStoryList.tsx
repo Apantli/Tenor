@@ -33,6 +33,7 @@ import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
+  useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
@@ -63,6 +64,7 @@ export default function UserStoryList() {
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   // TRPC
   const utils = api.useUtils();
@@ -527,6 +529,7 @@ export default function UserStoryList() {
           }),
         ),
       );
+      await invalidateQueriesAllTasks(projectId as string);
       await invalidateQueriesAllUserStories(projectId as string);
       return true;
     };

@@ -15,10 +15,7 @@ import {
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
-import type {
-  ExistingUserStory,
-  IssueDetail,
-} from "~/lib/types/detailSchemas";
+import type { ExistingUserStory, IssueDetail } from "~/lib/types/detailSchemas";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import {
   getProjectSettingsRef,
@@ -51,7 +48,6 @@ export interface IssueCol {
   }[];
 }
 
-
 // Get the issues from a designated project and sprint
 // This is used to get the issues from a project and sprint
 const getIssuesFromProject = async (
@@ -66,12 +62,12 @@ const getIssuesFromProject = async (
     const issueCollectionSnapshot = await issueCollectionRef.get();
 
     const issues: WithId<Issue>[] = [];
-      issueCollectionSnapshot.forEach((doc) => {
-        const data = doc.data() as Issue;
-        if (data.deleted !== true) {
-          issues.push({ id: doc.id, ...data });
-        }
-      });
+    issueCollectionSnapshot.forEach((doc) => {
+      const data = doc.data() as Issue;
+      if (data.deleted !== true) {
+        issues.push({ id: doc.id, ...data });
+      }
+    });
 
     return issues;
   } catch (err) {
@@ -81,7 +77,6 @@ const getIssuesFromProject = async (
     });
   }
 };
-
 
 const getUserStory = async (
   projectRef: FirebaseFirestore.DocumentReference,
@@ -100,17 +95,19 @@ const getUserStory = async (
     .where("deleted", "==", false);
 
   const userStorySnapshot = await userStoriesRef.get();
-  
 
   const userStoryDoc = userStorySnapshot.docs.find(
-    (doc) => doc.id === userStoryId
+    (doc) => doc.id === userStoryId,
   );
 
   if (!userStoryDoc) {
     return undefined;
   }
 
-  return { id: userStoryDoc.id, ...ExistingUserStorySchema.parse(userStoryDoc.data()) } as ExistingUserStory;
+  return {
+    id: userStoryDoc.id,
+    ...ExistingUserStorySchema.parse(userStoryDoc.data()),
+  } as ExistingUserStory;
 };
 
 type TaskData = {
@@ -147,7 +144,7 @@ const getTasksFromItem = async (
   );
 
   return tasks;
-};  
+};
 
 const getTasksAssignUsers = async (
   firestore: FirebaseFirestore.Firestore,
@@ -157,7 +154,7 @@ const getTasksAssignUsers = async (
   if (!itemId) {
     return [];
   }
-  
+
   const tasks = await getTasksFromItem(firestore, projectId, itemId);
 
   const userIds = tasks
@@ -166,33 +163,29 @@ const getTasksAssignUsers = async (
 
   const users = await Promise.all(
     userIds.map(async (userId) => {
-      const userRecord = await admin
-        .auth()
-        .getUser(userId)
+      const userRecord = await admin.auth().getUser(userId);
       return {
         id: userRecord.uid,
         displayName: userRecord.displayName,
         photoURL: userRecord.photoURL,
       };
-    })
+    }),
   );
 
   const filteredUsers = users.filter((user): user is User => Boolean(user?.id));
 
   const uniqueUsers: User[] = Array.from(
-    new Map(filteredUsers.map((u) => [u.id, u])).values()
+    new Map(filteredUsers.map((u) => [u.id, u])).values(),
   );
 
   return uniqueUsers;
 };
-
 
 export const issuesRouter = createTRPCRouter({
   getIssuesTableFriendly: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       try {
-
         const rawIssues = await getIssuesFromProject(
           ctx.firestore,
           input.projectId,
@@ -207,28 +200,28 @@ export const issuesRouter = createTRPCRouter({
 
         const fixedData = await Promise.all(
           rawIssues.map(async (issue) => {
-          try {
+            try {
+              const rawUsers = await getTasksAssignUsers(
+                ctx.firestore,
+                input.projectId,
+                issue.id,
+              );
 
-            const rawUsers = await getTasksAssignUsers(
-              ctx.firestore,
-              input.projectId,
-              issue.id
-            );
-      
-            const assignUsers = rawUsers
-              .filter(Boolean)
-              .map((user) => ({
+              const assignUsers = rawUsers.filter(Boolean).map((user) => ({
                 uid: user.id,
                 displayName: user.displayName,
                 photoURL: user.photoURL,
-            }));
+              }));
 
-              const priority = await getPriorityTag(settingsRef, issue.priorityId);
+              const priority = await getPriorityTag(
+                settingsRef,
+                issue.priorityId,
+              );
 
               const relatedUserStory = issue.relatedUserStoryId
-              ? await getUserStory(projectRef, issue.relatedUserStoryId)
-              : undefined;
-    
+                ? await getUserStory(projectRef, issue.relatedUserStoryId)
+                : undefined;
+
               return {
                 id: issue.id,
                 scrumId: issue.scrumId,
@@ -237,13 +230,12 @@ export const issuesRouter = createTRPCRouter({
                 priority,
                 relatedUserStory,
                 assignUsers,
-                size: issue.size
+                size: issue.size,
               };
+            } catch (err) {
+              throw err; // Propagar el error hacia el bloque catch principal),
             }
-            catch (err){
-              throw err;  // Propagar el error hacia el bloque catch principal), 
-            }
-          })
+          }),
         );
 
         return fixedData as IssueCol[];
@@ -446,6 +438,20 @@ export const issuesRouter = createTRPCRouter({
         .collection("issues")
         .doc(issueId);
       await issueRef.update({ deleted: true });
+
+      const tasks = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("tasks")
+        .where("itemType", "==", "IS")
+        .where("itemId", "==", issueId)
+        .get();
+      const batch = ctx.firestore.batch();
+      tasks.docs.forEach((task) => {
+        batch.update(task.ref, { deleted: true });
+      });
+      await batch.commit();
+
       return { success: true };
     }),
 

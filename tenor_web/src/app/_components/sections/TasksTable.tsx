@@ -14,7 +14,7 @@ import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
-import type { WithId, Tag } from "~/lib/types/firebaseSchemas";
+import type { WithId, Tag, BacklogItem } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import type { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
@@ -32,37 +32,42 @@ import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "../Popup";
 import TaskDetailPopup from "../tasks/TaskDetailPopup";
 
-interface Props {
+export type BacklogItemWithTasks = BacklogItem & {
+  tasks: TaskDetail[];
+  extra: string;
+};
+
+interface Props<T extends BacklogItemWithTasks> {
   itemId: string;
   itemType: "US" | "IS" | "IT";
   setShowAddTaskPopup: (show: boolean) => void;
   setSelectedGhostTask: (taskId: string) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
   taskIdToOpenImmediately?: string;
-  userStoryData?: UserStoryDetailWithTasks;
+  itemData?: T;
   updateTaskData?: (
     taskId: string,
     updater: (oldData: TaskDetail) => TaskDetail,
   ) => void;
   setTaskData?: (data: TaskDetail[] | undefined) => void;
   selectedGhostTaskId?: string;
-  setUserStoryData?: (data: UserStoryDetailWithTasks | undefined) => void;
+  setItemData?: (data: T | undefined) => void;
 }
 
 // TODO: Update this to invalidate for backlog items also
-export default function TasksTable({
+export default function TasksTable<T extends BacklogItemWithTasks>({
   setSelectedGhostTask,
   itemId,
   itemType,
   setShowAddTaskPopup,
   setUnsavedTasks,
   taskIdToOpenImmediately,
-  userStoryData,
+  itemData,
   updateTaskData,
   setTaskData,
   selectedGhostTaskId,
-  setUserStoryData,
-}: Props) {
+  setItemData,
+}: Props<T>) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const [taskToOpen, setTaskToOpen] = useState(taskIdToOpenImmediately);
   const { projectId } = useParams();
@@ -80,7 +85,7 @@ export default function TasksTable({
 
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
-  const tasksData = userStoryData?.tasks;
+  const tasksData = itemData?.tasks;
 
   const {
     data: fetchedTasksTable,
@@ -484,7 +489,7 @@ export default function TasksTable({
       });
     } else {
       const tasks =
-        userStoryData?.tasks.map((task) => ({
+        itemData?.tasks.map((task) => ({
           id: task.id,
           name: task.name,
           description: task.description,
@@ -496,17 +501,14 @@ export default function TasksTable({
         projectId: projectId as string,
         amount,
         prompt,
-        userStoryDetail: {
-          name: userStoryData?.name ?? "",
-          description: userStoryData?.description ?? "",
-          acceptanceCriteria: userStoryData?.acceptanceCriteria ?? "",
-          epicId: userStoryData?.epic?.id ?? "",
-          size: userStoryData?.size,
-          tagIds:
-            userStoryData?.tags
-              .map((tag) => tag.id)
-              .filter((tag) => tag != undefined) ?? [],
-          priorityId: userStoryData?.priority?.id ?? "",
+        itemType,
+        itemDetail: {
+          name: itemData?.name ?? "",
+          description: itemData?.description ?? "",
+          extra: itemData?.extra ?? "",
+          size: itemData?.size,
+          tagIds: itemData?.tagIds ?? [],
+          priorityId: itemData?.priorityId,
           tasks,
         },
       });
@@ -625,7 +627,7 @@ export default function TasksTable({
             isGhost={selectedGhostTaskId !== ""}
             taskData={
               selectedGhostTask ??
-              userStoryData?.tasks.find((task) => task.id === selectedTaskId)
+              itemData?.tasks.find((task) => task.id === selectedTaskId)
             }
             updateTaskData={(task) => {
               if (selectedGhostTaskId && selectedGhostTaskId !== "") {
@@ -647,15 +649,15 @@ export default function TasksTable({
                   scrumId: task.scrumId,
                   assignee: task.assignee,
                 }));
-              } else if (userStoryData) {
-                const taskIndex = userStoryData?.tasks.findIndex(
+              } else if (itemData) {
+                const taskIndex = itemData?.tasks.findIndex(
                   (t) => t.id === task.id,
                 );
                 if (taskIndex === undefined || taskIndex === -1) return;
-                const updatedTasks = [...(userStoryData?.tasks ?? [])];
+                const updatedTasks = [...(itemData?.tasks ?? [])];
                 updatedTasks[taskIndex] = task;
-                setUserStoryData?.({
-                  ...userStoryData,
+                setItemData?.({
+                  ...itemData,
                   tasks: updatedTasks,
                 });
               }

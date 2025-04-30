@@ -562,6 +562,20 @@ export const userStoriesRouter = createTRPCRouter({
         .collection("userStories")
         .doc(userStoryId);
       await userStoryRef.update({ deleted: true });
+
+      const tasks = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("tasks")
+        .where("itemType", "==", "US")
+        .where("itemId", "==", userStoryId)
+        .get();
+      const batch = ctx.firestore.batch();
+      tasks.docs.forEach((task) => {
+        batch.update(task.ref, { deleted: true });
+      });
+      await batch.commit();
+
       return { success: true };
     }),
 
@@ -697,10 +711,13 @@ ${passedInPrompt}
                   .get();
                 if (dependency.exists) {
                   validDependencies.push(dependencyId);
+                  const dependencyData = UserStorySchema.parse(
+                    dependency.data(),
+                  );
                   return {
                     id: dependency.id,
-                    name: dependency.data()?.name,
-                    scrumId: dependency.data()?.scrumId,
+                    name: dependencyData.name,
+                    scrumId: dependencyData.scrumId,
                   };
                 }
                 return undefined;
@@ -720,10 +737,13 @@ ${passedInPrompt}
                   .get();
                 if (requiredBy.exists) {
                   validRequiredBy.push(requiredById);
+                  const requiredByData = UserStorySchema.parse(
+                    requiredBy.data(),
+                  );
                   return {
                     id: requiredBy.id,
-                    name: requiredBy.data()?.name,
-                    scrumId: requiredBy.data()?.scrumId,
+                    name: requiredByData.name,
+                    scrumId: requiredByData.scrumId,
                   };
                 }
                 return undefined;

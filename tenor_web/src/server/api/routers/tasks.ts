@@ -4,6 +4,7 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { Task } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
+  BacklogItemSchema,
   EpicSchema,
   IssueSchema,
   TagSchema,
@@ -306,12 +307,11 @@ export const tasksRouter = createTRPCRouter({
             projectId: z.string(),
             amount: z.number(),
             prompt: z.string(),
-            userStoryDetail: UserStorySchema.omit({
+            itemType: z.enum(["US", "IS", "IT"]),
+            itemDetail: BacklogItemSchema.omit({
               scrumId: true,
               deleted: true,
               complete: true,
-              dependencyIds: true,
-              requiredByIds: true,
             }).extend({
               tasks: z.array(
                 TaskSchema.omit({
@@ -323,6 +323,7 @@ export const tasksRouter = createTRPCRouter({
                   dueDate: true,
                 }),
               ),
+              extra: z.string(),
             }),
           }),
         ),
@@ -404,7 +405,7 @@ export const tasksRouter = createTRPCRouter({
       let tasksContext = "";
 
       if ("itemId" in input) {
-        const { itemId, itemType } = input;
+        const { itemId } = input;
 
         if (input.itemType === "US") {
           itemTypeName = "user story";
@@ -479,24 +480,28 @@ ${await getBacklogTagsContext(issueData.tagIds)}\n\n`;
                 .join("\n")
             : "";
       } else {
-        itemTypeName = "user story";
+        let extra = "";
+        const itemData = input.itemDetail;
+        if (input.itemType === "IT") {
+          itemTypeName = "backlog item";
+        } else if (input.itemType === "IS") {
+          itemTypeName = "issue";
+          extra = `- steps to recreate: ${itemData.extra}`;
+        } else {
+          itemTypeName = "user story";
+          extra = `- acceptance criteria: ${itemData.extra}`;
+        }
 
-        const userStoryData = input.userStoryDetail;
+        itemContext = `# ${itemTypeName.toUpperCase()} DETAILS\n
+${await getGenericBacklogItemContext(itemData.name, itemData.description, itemData.priorityId ?? "", itemData.size)}
+${extra}
 
-        const epicContext = await getEpicContext(userStoryData.epicId ?? "");
-
-        itemContext = `# USER STORY DETAILS\n
-${await getGenericBacklogItemContext(userStoryData.name, userStoryData.description, userStoryData.priorityId ?? "", userStoryData.size)}
-- acceptance criteria: ${userStoryData.acceptanceCriteria}
-
-${epicContext}
-
-${await getBacklogTagsContext(userStoryData.tagIds)}\n\n`;
+${await getBacklogTagsContext(itemData.tagIds)}\n\n`;
 
         tasksContext =
-          userStoryData.tasks.length > 0
+          itemData.tasks.length > 0
             ? "# EXISTING TASKS\n\n" +
-              userStoryData.tasks
+              itemData.tasks
                 .map((task) => {
                   return `- name: ${task.name}\n- description: ${task.description}\n`;
                 })
