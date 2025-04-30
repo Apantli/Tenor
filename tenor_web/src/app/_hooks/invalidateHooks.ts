@@ -177,4 +177,13 @@ export const useInvalidateQueriesBacklogItemDetails = () => {
   };
 };
 
+export const useInvalidateQueriesScrumPreferences = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.settings.fetchScrumSettings.invalidate({
+      projectId: projectId,
+    }); 
+  };
+};
+
 // TODO: Add one for all other stuff and use it in code

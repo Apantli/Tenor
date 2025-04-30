@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { defaultRoleList } from "~/lib/defaultTags";
+import { defaultRoleList } from "~/lib/defaultProjectValues";
 
 export const toBase64 = (file: File) =>
   new Promise((resolve, reject) => {
@@ -218,7 +218,7 @@ export default function ProjectCreator() {
     ) {
       alert(
         "Limit exceeded",
-        `The project name can't be longer than ${maxProjectNameLength} characbeters.`,
+        `The project name can't be longer than ${maxProjectNameLength} characters.`,
         {
           type: "warning",
           duration: 3000,

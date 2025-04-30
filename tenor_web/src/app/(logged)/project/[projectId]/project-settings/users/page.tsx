@@ -7,7 +7,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import RoleTable from "~/app/_components/sections/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { defaultRoleList, emptyRole } from "~/lib/defaultTags";
+import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
 import { Permission, Role } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 

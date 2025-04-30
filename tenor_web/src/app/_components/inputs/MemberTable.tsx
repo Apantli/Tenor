@@ -10,7 +10,7 @@ import ProfilePicture from "../ProfilePicture";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
-import { emptyRole } from "~/lib/defaultTags";
+import { emptyRole } from "~/lib/defaultProjectValues";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {

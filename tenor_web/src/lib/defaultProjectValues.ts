@@ -119,3 +119,7 @@ export const defaultStatusTags = [
     orderIndex: 2,
   },
 ];
+
+export const defaultMaximumSprintStoryPoints = 300;
+export const defaultSprintDuration = 7;
+

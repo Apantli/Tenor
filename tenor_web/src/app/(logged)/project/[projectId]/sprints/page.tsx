@@ -55,7 +55,7 @@ export default function ProjectSprints() {
   >(null);
 
   const { data: defaultSprintDuration, isLoading: isLoadingSprintDuration } =
-    api.projects.fetchDefaultSprintDuration.useQuery({
+    api.settings.fetchDefaultSprintDuration.useQuery({
       projectId: projectId as string,
     });
 
