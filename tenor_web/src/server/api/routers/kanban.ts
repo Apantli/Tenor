@@ -11,7 +11,7 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { getBacklogTag, getProjectSettingsRef } from "./settings";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
-import { doingTagName, doneTagName, todoTagName } from "~/lib/defaultTags";
+import { doingTagName, doneTagName, todoTagName } from "~/lib/defaultProjectValues";
 
 // Only information needed by the kanban board columns / selectable cards
 export interface KanbanCard {
