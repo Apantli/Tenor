@@ -33,6 +33,14 @@ const emptySettings: Settings = {
     files: [],
     links: [],
   },
+  Size: [
+    0, // XS
+    1, // S
+    2, // M
+    3, // L
+    4, // XL
+    5, // XXL
+  ],
   // requirementFocusTags: [],
   // requirementTypeTags: [],
   // backlogTags: [],
