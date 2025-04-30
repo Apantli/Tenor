@@ -171,6 +171,9 @@ export default function ItemsKanban() {
     );
 
     if (updateOperationsInProgress == 1) {
+      setTimeout(() => {
+        setLastDraggedItemId(null);
+      }, 1500);
       const userStories = itemIds.filter(
         (itemId) => itemsAndColumnsData.cardItems[itemId]?.cardType === "US",
       );
