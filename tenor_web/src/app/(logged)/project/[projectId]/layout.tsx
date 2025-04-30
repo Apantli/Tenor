@@ -86,7 +86,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
       </Navbar>
       <Tabbar />
       {permitted ? (
-        <main className="overflow- m-6 hidden flex-1 p-4">{children}</main>
+        <main className="m-6 flex-1 overflow-hidden p-4">{children}</main>
       ) : (
         // FIMXE: Make this pretty
         <h1 className="m-6 text-3xl font-semibold">Page not found</h1>
