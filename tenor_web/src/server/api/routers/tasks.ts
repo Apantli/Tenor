@@ -52,7 +52,7 @@ export const getTasksFromProject = async (
   return tasks;
 };
 
-const getTasksFromItem = async (
+export const getTasksFromItem = async (
   dbAdmin: FirebaseFirestore.Firestore,
   projectId: string,
   itemId: string,

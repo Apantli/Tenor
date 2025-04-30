@@ -92,5 +92,34 @@ export const ownerRole: Role = {
   },
 };
 
+export const todoTagName = "Todo";
+export const doingTagName = "Doing";
+export const doneTagName = "Done";
+
+export const defaultStatusTags = [
+  {
+    name: "Todo",
+    color: "#0737E3",
+    deleted: false,
+    marksTaskAsDone: false,
+    orderIndex: 0,
+  },
+  {
+    name: "Doing",
+    color: "#AD7C00",
+    deleted: false,
+    marksTaskAsDone: false,
+    orderIndex: 1,
+  },
+  {
+    name: "Done",
+    color: "#009719",
+    deleted: false,
+    marksTaskAsDone: true,
+    orderIndex: 2,
+  },
+];
+
 export const defaultMaximumSprintStoryPoints = 300;
 export const defaultSprintDuration = 7;
+

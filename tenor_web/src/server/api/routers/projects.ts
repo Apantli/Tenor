@@ -23,7 +23,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/base64";
-import { defaultRoleList } from "~/lib/defaultProjectValues";
+import { defaultRoleList, defaultStatusTags } from "~/lib/defaultProjectValues";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -309,29 +309,9 @@ export const projectsRouter = createTRPCRouter({
           .doc("settings")
           .collection("statusTypes");
 
-        await statusCollection.add({
-          name: "Todo",
-          color: "#0737E3",
-          deleted: false,
-          marksTaskAsDone: false,
-          orderIndex: 0,
-        });
-
-        await statusCollection.add({
-          name: "Doing",
-          color: "#AD7C00",
-          deleted: false,
-          marksTaskAsDone: false,
-          orderIndex: 1,
-        });
-
-        await statusCollection.add({
-          name: "Done",
-          color: "#009719",
-          deleted: false,
-          marksTaskAsDone: true,
-          orderIndex: 2,
-        });
+        await Promise.all(
+          defaultStatusTags.map((statusTag) => statusCollection.add(statusTag)),
+        );
 
         return { success: true, projectId: newProjectRef.id };
       } catch (error) {

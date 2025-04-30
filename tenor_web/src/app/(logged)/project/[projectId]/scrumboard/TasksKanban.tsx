@@ -52,12 +52,6 @@ export default function TasksKanban() {
   const { mutateAsync: changeStatus } =
     api.tasks.changeTaskStatus.useMutation();
 
-  const cancelGetTasksForKanbanQuery = async () => {
-    await utils.kanban.getTasksForKanban.cancel({
-      projectId: projectId as string,
-    });
-  };
-
   // REACT
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
   const [lastDraggedTaskId, setLastDraggedTaskId] = useState<string | null>(
@@ -87,7 +81,9 @@ export default function TasksKanban() {
     if (tasksAndColumnsData == undefined) return;
     updateOperationsInProgress += 1;
     const cardTasks = tasksAndColumnsData.cardTasks;
-    await cancelGetTasksForKanbanQuery();
+    await utils.kanban.getTasksForKanban.cancel({
+      projectId: projectId as string,
+    });
 
     utils.kanban.getTasksForKanban.setData(
       {

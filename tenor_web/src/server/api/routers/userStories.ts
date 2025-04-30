@@ -457,7 +457,12 @@ export const userStoriesRouter = createTRPCRouter({
       // Update the related user stories
       await Promise.all(
         addedDependencies.map(async (dependencyId) => {
-          await updateDependency(dependencyId, userStoryId, "add", "requiredByIds");
+          await updateDependency(
+            dependencyId,
+            userStoryId,
+            "add",
+            "requiredByIds",
+          );
         }),
       );
       await Promise.all(
@@ -472,7 +477,12 @@ export const userStoriesRouter = createTRPCRouter({
       );
       await Promise.all(
         addedRequiredBy.map(async (requiredById) => {
-          await updateDependency(requiredById, userStoryId, "add", "dependencyIds");
+          await updateDependency(
+            requiredById,
+            userStoryId,
+            "add",
+            "dependencyIds",
+          );
         }),
       );
       await Promise.all(
@@ -505,11 +515,16 @@ export const userStoriesRouter = createTRPCRouter({
         userStoryId: z.string(),
         priorityId: z.string().optional(),
         size: z.string().optional(),
+        statusId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, userStoryId, priorityId, size } = input;
-      if (priorityId === undefined && size === undefined) {
+      const { projectId, userStoryId, priorityId, size, statusId } = input;
+      if (
+        priorityId === undefined &&
+        size === undefined &&
+        statusId === undefined
+      ) {
         return;
       }
 
@@ -526,6 +541,7 @@ export const userStoriesRouter = createTRPCRouter({
       const newUserStoryData = {
         priorityId: priorityId,
         size: size,
+        statusId: statusId,
       };
       await userStoryRef.update(newUserStoryData);
       return { success: true };

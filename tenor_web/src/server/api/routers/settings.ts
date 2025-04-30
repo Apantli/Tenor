@@ -8,7 +8,7 @@ import {
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z, { number } from "zod";
 import type { Firestore } from "firebase-admin/firestore";
-import { Tag } from "~/lib/types/firebaseSchemas";
+import { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
@@ -69,7 +69,7 @@ export const getBacklogTag = async (
   if (!tag.exists) {
     return undefined;
   }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+  return { id: tag.id, ...TagSchema.parse(tag.data()) } as WithId<Tag>;
 };
 
 // TODO: Fetch from db
