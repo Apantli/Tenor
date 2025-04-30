@@ -220,13 +220,15 @@ export default function ItemTagDetailPopup({
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
-          <div className="mt-4">
+          <div>
             <span className="text-sm font-semibold">Tag color</span>
-            <DropdownColorPicker
-              value={form.color}
-              onChange={(color) => handleColorChange(color)}
-              label=""
-            />
+            <div className="mt-2">
+              <DropdownColorPicker
+                value={form.color}
+                onChange={(color) => handleColorChange(color)}
+                label=""
+              />
+            </div>
           </div>
         </div>
       )}

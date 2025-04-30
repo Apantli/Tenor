@@ -17,7 +17,7 @@ import HelpIcon from "@mui/icons-material/Help";
 interface Props {
   showPopup: boolean;
   setShowPopup: (show: boolean) => void;
-  onListAdded: (listId: string) => void;
+  onStatusAdded: (listId: string) => void;
 }
 
 export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
@@ -101,7 +101,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
               if (!creatingStatus) await handleCreateStatus();
             }}
           >
-            Create list
+            Create status
           </PrimaryButton>
         </div>
       }

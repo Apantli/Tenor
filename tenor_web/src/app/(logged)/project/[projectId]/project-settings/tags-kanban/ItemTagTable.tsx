@@ -150,8 +150,8 @@ export default function ItemTagTable() {
   return (
     <div>
       <div className="flex flex-col gap-4">
-        <div className="flex max-w-[620px] items-center justify-between gap-4">
-          <div className="w-[500px]">
+        <div className="flex max-w-[750px] items-center justify-between gap-4">
+          <div className="w-[700px]">
             <SearchBar
               placeholder="Find a tag..."
               searchValue={searchValue}
@@ -166,7 +166,7 @@ export default function ItemTagTable() {
           </PrimaryButton>
         </div>
 
-        <div className="max-w-[620px]">
+        <div className="max-w-[750px]">
           {isLoadingTags ? (
             <div className="py-4 text-center">Loading tags...</div>
           ) : (
