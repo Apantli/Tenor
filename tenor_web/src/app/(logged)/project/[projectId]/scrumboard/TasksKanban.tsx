@@ -32,6 +32,7 @@ import {
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
+import IssueDetailPopup from "../issues/IssueDetailPopup";
 
 export default function TasksKanban() {
   // GENERAL
@@ -43,7 +44,7 @@ export default function TasksKanban() {
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
 
   // TRPC
-  const { data: itemsAndColumnsData, isLoading } =
+  const { data: tasksAndColumnsData, isLoading } =
     api.kanban.getTasksForKanban.useQuery({
       projectId: projectId as string,
     });
@@ -51,44 +52,38 @@ export default function TasksKanban() {
   const { mutateAsync: changeStatus } =
     api.tasks.changeTaskStatus.useMutation();
 
-  const cancelGetTasksForKanbanQuery = async () => {
-    await utils.kanban.getTasksForKanban.cancel({
-      projectId: projectId as string,
-    });
-  };
-
   // REACT
-  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  const [lastDraggedItemId, setLastDraggedItemId] = useState<string | null>(
+  const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
+  const [lastDraggedTaskId, setLastDraggedTaskId] = useState<string | null>(
     null,
   );
 
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   // Detail item and parent
   const [detailItemId, setDetaiItemId] = useState("");
-  const detailItem = itemsAndColumnsData?.items[detailItemId];
-  const detailUserStoryId =
-    detailItem?.itemType == "US" ? detailItem.itemId : null;
-  // TODO: Do same for issue
-  // TODO: Do same for generic item
+  const detailItem = tasksAndColumnsData?.cardTasks[detailItemId];
+  const detailItemType = detailItem?.itemType;
+  const detailParentItemId = detailItem?.itemId;
 
   // UTILITY
   let updateOperationsInProgress = 0;
 
-  const handleDragEnd = async (itemId: string, columnId: string) => {
-    setLastDraggedItemId(null);
-    if (itemsAndColumnsData == undefined) return;
-    if (columnId === itemsAndColumnsData.items[itemId]?.columnId) return;
+  const handleDragEnd = async (taskId: string, columnId: string) => {
+    setLastDraggedTaskId(null);
+    if (tasksAndColumnsData == undefined) return;
+    if (columnId === tasksAndColumnsData.cardTasks[taskId]?.columnId) return;
 
-    setLastDraggedItemId(itemId);
-    await moveItemsToColumn([itemId], columnId);
+    setLastDraggedTaskId(taskId);
+    await moveTasksToColumn([taskId], columnId);
   };
 
-  const moveItemsToColumn = async (itemIds: string[], columnId: string) => {
-    if (itemsAndColumnsData == undefined) return;
+  const moveTasksToColumn = async (taskIds: string[], columnId: string) => {
+    if (tasksAndColumnsData == undefined) return;
     updateOperationsInProgress += 1;
-    const items = itemsAndColumnsData.items;
-    await cancelGetTasksForKanbanQuery();
+    const cardTasks = tasksAndColumnsData.cardTasks;
+    await utils.kanban.getTasksForKanban.cancel({
+      projectId: projectId as string,
+    });
 
     utils.kanban.getTasksForKanban.setData(
       {
@@ -98,82 +93,89 @@ export default function TasksKanban() {
         if (!oldData) return undefined;
 
         const sortByScrumId = (a: string, b: string) => {
-          const itemA = items[a];
-          const itemB = items[b];
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
+          const taskA = cardTasks[a];
+          const taskB = cardTasks[b];
+          return (taskA?.scrumId ?? 0) - (taskB?.scrumId ?? 0);
         };
 
         const columns = oldData.columns.map((column) => {
           if (column.id === columnId) {
-            const sortedItemIds = [...column.itemIds, ...itemIds].sort(
+            const sortedTaskIds = [...column.taskIds, ...taskIds].sort(
               sortByScrumId,
             );
             return {
               ...column,
-              itemIds: sortedItemIds,
+              taskIds: sortedTaskIds,
             };
           } else {
             return {
               ...column,
-              itemIds: column.itemIds.filter(
-                (itemId) => !itemIds.includes(itemId),
+              taskIds: column.taskIds.filter(
+                (taskId) => !taskIds.includes(taskId),
               ),
             };
           }
         });
 
-        const updatedItems = Object.fromEntries(
-          Object.entries(oldData.items).map(([id, item]) => {
-            if (itemIds.includes(id)) {
+        const updatedTasks = Object.fromEntries(
+          Object.entries(oldData.cardTasks).map(([id, task]) => {
+            if (taskIds.includes(id)) {
               return [
                 id,
                 {
-                  ...item,
+                  ...task,
                   columnId: columnId,
                 },
               ];
             }
-            return [id, item];
+            return [id, task];
           }),
         );
 
         return {
           columns,
-          items: updatedItems,
+          cardTasks: updatedTasks,
         };
       },
     );
 
-    setSelectedItems(new Set());
+    setSelectedTasks(new Set());
 
     await Promise.all(
-      itemIds.map(async (itemId) => {
+      taskIds.map(async (taskId) => {
         await changeStatus({
           projectId: projectId as string,
-          taskId: itemId,
+          taskId: taskId,
           statusId: columnId,
         });
       }),
     );
 
     if (updateOperationsInProgress == 1) {
-      await invalidateQueriesAllTasks(projectId as string);
-      await invalidateQueriesTaskDetails(projectId as string, itemIds);
+      const uniqueItemIds = taskIds.reduce<Set<string>>((acc, taskId) => {
+        const itemId = tasksAndColumnsData.cardTasks[taskId]?.itemId;
+        if (itemId) {
+          acc.add(itemId);
+        }
+        return acc;
+      }, new Set<string>());
+      const itemIds = Array.from(uniqueItemIds);
+      await invalidateQueriesAllTasks(projectId as string, itemIds);
+      await invalidateQueriesTaskDetails(projectId as string, taskIds);
       await invalidateQueriesAllUserStories(projectId as string);
-      // TODO: Invalidate queries for issues and generic items
     }
 
     updateOperationsInProgress--;
   };
 
   const assignSelectionToColumn = async (columnId: string) => {
-    setLastDraggedItemId(null);
-    if (itemsAndColumnsData == undefined) return;
+    setLastDraggedTaskId(null);
+    if (tasksAndColumnsData == undefined) return;
 
-    const itemIds = Array.from(selectedItems);
-    if (itemIds.length === 0) return;
+    const taskIds = Array.from(selectedTasks);
+    if (taskIds.length === 0) return;
 
-    await moveItemsToColumn(itemIds, columnId);
+    await moveTasksToColumn(taskIds, columnId);
   };
 
   return (
@@ -197,34 +199,39 @@ export default function TasksKanban() {
                 <LoadingSpinner color="primary" />
               </div>
             )}
-            {itemsAndColumnsData?.columns.map((column) => {
+            {tasksAndColumnsData?.columns.map((column) => {
               const allSelected =
-                column.itemIds.length > 0 &&
-                column.itemIds.every((itemId) => selectedItems.has(itemId));
+                column.taskIds.length > 0 &&
+                column.taskIds.every((taskId) => selectedTasks.has(taskId));
 
               const toggleSelectAll = () => {
-                const newSelection = new Set(selectedItems);
+                const newSelection = new Set(selectedTasks);
                 if (allSelected) {
-                  column.itemIds.forEach((itemId) => {
-                    newSelection.delete(itemId);
+                  column.taskIds.forEach((taskId) => {
+                    newSelection.delete(taskId);
                   });
                 } else {
-                  column.itemIds.forEach((itemId) => {
-                    newSelection.add(itemId);
+                  column.taskIds.forEach((taskId) => {
+                    newSelection.add(taskId);
                   });
                 }
-                setSelectedItems(newSelection);
+                setSelectedTasks(newSelection);
+              };
+
+              const renamedColumn = {
+                ...column,
+                itemIds: column.taskIds,
               };
 
               return (
                 <AssignableCardColumn
-                  lastDraggedItemId={lastDraggedItemId}
+                  lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}
-                  column={column}
-                  items={itemsAndColumnsData.items}
+                  column={renamedColumn}
+                  items={tasksAndColumnsData.cardTasks}
                   key={column.id}
-                  selectedItems={selectedItems}
-                  setSelectedItems={setSelectedItems}
+                  selectedItems={selectedTasks}
+                  setSelectedItems={setSelectedTasks}
                   setDetailItemId={setDetaiItemId}
                   setShowDetail={setShowDetail}
                   renderCard={(item) => (
@@ -269,13 +276,13 @@ export default function TasksKanban() {
 
         <DragOverlay>
           {(source) => {
-            const itemId = source.id as string;
-            if (!itemId) return null;
-            const draggingItem = itemsAndColumnsData?.items[itemId];
-            if (!draggingItem) return null;
+            const taskId = source.id as string;
+            if (!taskId) return null;
+            const draggingTask = tasksAndColumnsData?.cardTasks[taskId];
+            if (!draggingTask) return null;
             return (
               <ItemCardRender
-                item={draggingItem}
+                item={draggingTask}
                 showBackground={true}
                 scrumIdFormatter={formatTaskScrumId}
               />
@@ -284,11 +291,20 @@ export default function TasksKanban() {
         </DragOverlay>
       </DragDropProvider>
 
-      {renderDetail && detailUserStoryId && (
+      {renderDetail && detailItemType === "US" && detailParentItemId && (
         <UserStoryDetailPopup
           setShowDetail={setShowDetail}
           showDetail={showDetail}
-          userStoryId={detailUserStoryId}
+          userStoryId={detailParentItemId}
+          taskIdToOpenImmediately={detailItemId}
+        />
+      )}
+
+      {renderDetail && detailItemType === "IS" && detailParentItemId && (
+        <IssueDetailPopup
+          setShowDetail={setShowDetail}
+          showDetail={showDetail}
+          issueId={detailParentItemId}
           taskIdToOpenImmediately={detailItemId}
         />
       )}

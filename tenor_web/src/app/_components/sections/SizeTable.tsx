@@ -4,6 +4,8 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { Size } from "~/lib/types/firebaseSchemas";
 import PrimaryButton from "../buttons/PrimaryButton";
+import InputTextField from "../inputs/InputTextField";
+import InputField from "../inputs/GenericTextInputField";
 
 interface SizeCol {
   id: string; // id debe ser obligatorio
@@ -102,9 +104,10 @@ export default function SettingsSizeTable() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4  max-w-[220px]">
+      <label className="text-lg font-semibold">Size Settings</label>
       <Table
-        className="w-sml max-w-[220px]"
+        className="w-sml"
         data={sizeData}
         columns={tableColumns}
         tableKey="size-table"

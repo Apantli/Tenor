@@ -3,10 +3,10 @@ import { cn } from "~/lib/utils";
 import TagComponent from "../TagComponent";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
-import type { CardItem } from "~/server/api/routers/kanban";
+import type { KanbanCard } from "~/server/api/routers/kanban";
 
 interface Props {
-  item: CardItem;
+  item: KanbanCard;
   showBackground?: boolean;
   scrumIdFormatter?: (scrumId: number) => string;
 }
@@ -19,7 +19,7 @@ export default function ItemCardRender({
   return (
     <div
       className={cn({
-        "group relative flex w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-4 pl-4 shadow-xl transition duration-100":
+        "w-88 min-w-88 group relative flex min-h-8 min-w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-4 pl-4 pr-7 shadow-xl transition duration-100":
           showBackground,
       })}
     >

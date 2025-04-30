@@ -33,9 +33,15 @@ import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
+  useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
+import {
+  TaskDetail,
+  UserStoryDetailWithTasks,
+} from "~/lib/types/detailSchemas";
+import { Timestamp } from "firebase/firestore";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -45,6 +51,7 @@ export default function UserStoryList() {
   const [searchValue, setSearchValue] = useState("");
 
   const [selectedUS, setSelectedUS] = useState<string>("");
+  const [selectedGhostUS, setSelectedGhostUS] = useState("");
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   const [renderNewStory, showNewStory, setShowNewStory] =
     usePopupVisibilityState();
@@ -57,6 +64,7 @@ export default function UserStoryList() {
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   // TRPC
   const utils = api.useUtils();
@@ -73,6 +81,7 @@ export default function UserStoryList() {
     api.userStories.deleteUserStory.useMutation();
   const { mutateAsync: createUserStory } =
     api.userStories.createUserStory.useMutation();
+  const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -96,14 +105,7 @@ export default function UserStoryList() {
     return a.scrumId < b.scrumId ? 1 : -1;
   });
 
-  const generatedUserStories =
-    useRef<
-      WithId<
-        inferRouterOutputs<
-          typeof userStoriesRouter
-        >["generateUserStories"][number]
-      >[]
-    >();
+  const generatedUserStories = useRef<UserStoryDetailWithTasks[]>();
 
   useNavigationGuard(async () => {
     if ((generatedUserStories?.current?.length ?? 0) > 0) {
@@ -149,7 +151,7 @@ export default function UserStoryList() {
 
       // Add the user stories to the database
       for (const userStory of accepted.reverse()) {
-        await createUserStory({
+        const { userStoryId } = await createUserStory({
           projectId: projectId as string,
           userStoryData: {
             name: userStory.name,
@@ -157,15 +159,36 @@ export default function UserStoryList() {
             sprintId: "",
             taskIds: [],
             complete: false,
-            tagIds: userStory.tagIds,
+            tagIds: userStory.tags
+              .map((tag) => tag.id)
+              .filter((id) => id !== undefined),
             size: userStory.size,
             priorityId: userStory.priority?.id ?? "",
-            epicId: userStory.epicId,
+            epicId: userStory.epic?.id ?? "",
             acceptanceCriteria: userStory.acceptanceCriteria,
-            dependencyIds: userStory.dependencyIds,
-            requiredByIds: userStory.requiredByIds,
+            dependencyIds: userStory.dependencies.map((dep) => dep.id),
+            requiredByIds: userStory.requiredBy.map((dep) => dep.id),
           },
         });
+
+        if (userStory.tasks.length > 0) {
+          for (const task of userStory.tasks) {
+            await createTask({
+              projectId: projectId as string,
+              taskData: {
+                name: task.name,
+                description: task.description,
+                itemId: userStoryId,
+                assigneeId: task.assignee?.uid ?? "",
+                dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : null,
+                itemType: "US",
+                statusId: task.status.id ?? "",
+                deleted: false,
+                size: task.size,
+              },
+            });
+          }
+        }
       }
 
       await refetchUS();
@@ -176,6 +199,29 @@ export default function UserStoryList() {
       );
       generatedUserStories.current = newGeneratedUserStories;
     },
+  );
+
+  useNavigationGuard(
+    async () => {
+      if ((generatedUserStories?.current?.length ?? 0) > 0) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved AI generated user stories. To save them, please accept them first.",
+          "Discard",
+          "Keep editing",
+        ));
+      } else if (generating) {
+        return !(await confirm(
+          "Are you sure?",
+          "You are currently generating user stories. If you leave now, the generation will be cancelled.",
+          "Discard",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    generating || (generatedUserStories.current?.length ?? 0) > 0,
+    "Are you sure you want to leave? You have unsaved AI generated user stories. To save them, please accept them first.",
   );
 
   // Function to get the US table or message instead
@@ -198,11 +244,13 @@ export default function UserStoryList() {
         render(row) {
           return (
             <button
-              className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
+                setSelectedGhostUS("");
                 setSelectedUS(row.id);
                 setShowDetail(true);
               }}
+              disabled={row.scrumId === undefined}
             >
               {row.scrumId ? (
                 formatUserStoryScrumId(row.scrumId)
@@ -218,14 +266,21 @@ export default function UserStoryList() {
         label: "Title",
         width: 220,
         sortable: true,
-        render(row) {
+        render(row, _, isGhost) {
           return (
             <button
-              className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
-                setSelectedUS(row.id);
+                if (isGhost) {
+                  setSelectedGhostUS(row.id);
+                  setSelectedUS("");
+                } else {
+                  setSelectedGhostUS("");
+                  setSelectedUS(row.id);
+                }
                 setShowDetail(true);
               }}
+              disabled={!isGhost && row.scrumId === undefined}
             >
               {row.title}
             </button>
@@ -474,6 +529,7 @@ export default function UserStoryList() {
           }),
         ),
       );
+      await invalidateQueriesAllTasks(projectId as string);
       await invalidateQueriesAllUserStories(projectId as string);
       return true;
     };
@@ -481,7 +537,7 @@ export default function UserStoryList() {
     return (
       <Table
         emptyMessage="No user stories found"
-        className={cn("w-[calc(100vw-500px)] overflow-auto", heightOfContent)}
+        className={cn("w-[calc(100vw-504px)] overflow-auto", heightOfContent)}
         data={userStoryData}
         columns={tableColumns}
         onDelete={handleDelete}
@@ -502,6 +558,7 @@ export default function UserStoryList() {
   const onUserStoryAdded = async (userStoryId: string) => {
     await invalidateQueriesAllUserStories(projectId as string);
     setShowNewStory(false);
+    setSelectedGhostUS("");
     setSelectedUS(userStoryId);
     setShowDetail(true);
   };
@@ -520,6 +577,7 @@ export default function UserStoryList() {
     generatedUserStories.current = generatedData.map((story, i) => ({
       ...story,
       id: i.toString(),
+      tasks: [],
     }));
 
     const tableData = generatedData.map((data, i) => ({
@@ -568,6 +626,43 @@ export default function UserStoryList() {
             showDetail={showDetail}
             setShowDetail={setShowDetail}
             userStoryId={selectedUS}
+            userStoryData={
+              selectedGhostUS !== undefined
+                ? generatedUserStories.current?.find(
+                    (it) => it.id === selectedGhostUS,
+                  )
+                : undefined
+            }
+            setUserStoryData={(updatedDetail) => {
+              if (!selectedGhostUS || !updatedDetail) return;
+              updateGhostRow(selectedGhostUS, (oldData) => ({
+                ...oldData,
+                title: updatedDetail.name,
+                description: updatedDetail.description,
+                epicScrumId: updatedDetail.epic?.scrumId,
+                priority: updatedDetail.priority,
+                size: updatedDetail.size ?? "M",
+                taskProgress: [0, updatedDetail.tasks.length],
+              }));
+              generatedUserStories.current = generatedUserStories.current?.map(
+                (story) => {
+                  if (story.id === selectedGhostUS) {
+                    return updatedDetail;
+                  }
+                  return story;
+                },
+              );
+            }}
+            onAccept={async () => {
+              setShowDetail(false);
+              setTimeout(() => setSelectedGhostUS(""), 300);
+              await onAccept([selectedGhostUS]);
+            }}
+            onReject={() => {
+              onReject([selectedGhostUS]);
+              setSelectedGhostUS("");
+              setTimeout(() => setSelectedGhostUS(""), 300);
+            }}
           />
         )}
 

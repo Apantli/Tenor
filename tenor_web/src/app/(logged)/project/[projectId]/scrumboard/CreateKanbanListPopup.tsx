@@ -26,7 +26,7 @@ export default function CreateKanbanListPopup({
   setShowPopup,
 }: Props) {
   const confirm = useConfirmation();
-  const invalidateQueriesKanbanLists = useInvalidateQueriesItemStatus();
+  const invalidateQueriesItemStatus = useInvalidateQueriesItemStatus();
 
   // REACT
   const { projectId } = useParams();
@@ -74,14 +74,15 @@ export default function CreateKanbanListPopup({
     });
 
     setShowPopup(false);
-    await invalidateQueriesKanbanLists(projectId as string);
+    await invalidateQueriesItemStatus(projectId as string);
   };
 
   return (
     <Popup
       show={showPopup}
       size="small"
-      className="min-h-[400px] min-w-[500px]"
+      className="min-h-[300px] min-w-[500px]"
+      reduceTopPadding
       dismiss={async () => {
         if (isModified()) {
           const confirmation = await confirm(

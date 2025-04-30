@@ -1,5 +1,6 @@
 import type { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
+import { defaultMaximumSprintStoryPoints, defaultSprintDuration } from "../defaultProjectValues";
 
 export const TimestampType = z.custom<Timestamp>((value) => value as Timestamp);
 
@@ -50,13 +51,13 @@ export const UserSchema = z.object({
   isManager: z.boolean(),
 });
 
-// Each number refers to 1 permission: "can't view" | "view" | "view-details" | "modify" | "create" | "delete"
-export type Permission = 0 | 1 | 2 | 3 | 4 | 5;
+// Each number refers to 1 permission: "none" | "read" | "write"
+export type Permission = 0 | 1 | 2;
 
-export const PermissionSchema = z.number().min(0).max(5);
+export const PermissionSchema = z.number().min(0).max(2);
 
 export const RoleSchema = z.object({
-  name: z.string(),
+  label: z.string(),
   canViewPerformance: z.boolean(),
   canControlSprints: z.boolean(),
   tabs: z.object({
@@ -114,7 +115,11 @@ export const UserStorySchema = BacklogItemSchema.extend({
     .describe(
       "Use a valid, existing epic id. May be empty if no related epic exists. Only include if this user story is directly related to an epic, as in it's part of the same functionality.\n Example if the epic is 'User login', only include user stories such as 'User can login with email and password' or 'User can login with Google'",
     ),
-  acceptanceCriteria: z.string().describe("Can use valid markdown"),
+  acceptanceCriteria: z
+    .string()
+    .describe(
+      "Can use valid markdown. Describe the acceptance criteria in detail and format it as a list using markdown dashes (-).",
+    ),
   // Redundant fields, but useful for describing their purposes to the AI
   name: z
     .string()
@@ -183,8 +188,8 @@ export const RequirementSchema = BasicInfoSchema.extend({
 });
 
 export const SettingsSchema = z.object({
-  sprintDuration: z.number().default(7),
-  maximumSprintStoryPoints: z.number().default(10000),
+  sprintDuration: z.number().default(defaultSprintDuration),
+  maximumSprintStoryPoints: z.number().default(defaultMaximumSprintStoryPoints),
   aiContext: z.object({
     text: z.string().default(""),
     files: z

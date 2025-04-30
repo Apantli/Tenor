@@ -6,6 +6,7 @@ import TableChartIcon from "@mui/icons-material/TableChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import PrimaryButton from "../buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 interface Props {
   label: string;
@@ -35,12 +36,13 @@ export default function FileList({
   }
 
   const { alert } = useAlert();
+  const confirm = useConfirmation();
 
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <div>
-          <label className="text-sm font-semibold">{label}</label>
+          <label className="font-semibold">{label}</label>
           <span className="ml-2 text-xs text-gray-500">
             {(filesSumSize() / 1_000_000).toFixed(1)}
             MB / {(memoryLimit / 1_000_000).toFixed(1)}MB
@@ -50,7 +52,7 @@ export default function FileList({
         <div>
           <PrimaryButton
             onClick={openFilePicker}
-            className="flex max-h-[40px] items-center text-sm font-semibold"
+            className="flex max-h-[40px] items-center text-sm"
           >
             Add Context File +
           </PrimaryButton>
@@ -87,7 +89,7 @@ export default function FileList({
 
       <ul
         className={cn(
-          "flex h-[100px] w-full list-none gap-4 overflow-x-auto rounded-md border border-gray-300 px-4 py-2 shadow-sm",
+          "flex h-[100px] w-full list-none gap-4 overflow-x-auto overflow-y-hidden rounded-md border border-gray-300 px-4 py-2 shadow-sm",
           className,
         )}
       >
@@ -95,13 +97,24 @@ export default function FileList({
           <li
             key={index}
             className="h-[100px] flex-shrink-0"
-            onClick={() => handleFileRemove(file)}
+            onClick={async () => {
+              if (
+                !(await confirm(
+                  "Remove file?",
+                  `Removing "${file.name}". This action is not revertible.`,
+                  "Delete file",
+                ))
+              ) {
+                return;
+              }
+              handleFileRemove(file);
+            }}
             title={file.name}
           >
             <span
               className="flex flex-col items-center text-gray-500 hover:text-blue-500"
               data-tooltip-id="tooltip"
-              data-tooltip-content={file.name}
+              data-tooltip-content={"Click to delete"}
             >
               {/* Load Icon based on file type */}
               {file.type === "application/pdf" ? (

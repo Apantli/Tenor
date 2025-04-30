@@ -1,76 +1,120 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import type { TaskPreview } from "~/lib/types/detailSchemas";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import type {
+  TaskDetail,
+  TaskPreview,
+  UserStoryDetailWithTasks,
+} from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
 import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
-import { SidebarPopup } from "../Popup";
-import { CreateTaskForm } from "../tasks/CreateTaskPopup";
-import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
-import { WithId, type Tag } from "~/lib/types/firebaseSchemas";
+import type { WithId, Tag, BacklogItem } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
-import { usePopupVisibilityState } from "../Popup";
+import type { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { inferRouterOutputs } from "@trpc/server";
+import type { inferRouterOutputs } from "@trpc/server";
 import LoadingSpinner from "../LoadingSpinner";
 import {
   useInvalidateQueriesAllTasks,
-  useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesBacklogItems,
+  useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
+import TagIcon from "@mui/icons-material/Tag";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
+import { Timestamp } from "firebase/firestore";
+import { usePopupVisibilityState } from "../Popup";
+import TaskDetailPopup from "../tasks/TaskDetailPopup";
 
-interface Props {
+export type BacklogItemWithTasks = BacklogItem & {
+  tasks: TaskDetail[];
+  extra: string;
+};
+
+interface Props<T extends BacklogItemWithTasks> {
   itemId: string;
   itemType: "US" | "IS" | "IT";
   setShowAddTaskPopup: (show: boolean) => void;
-  setSelectedTaskId: (taskId: string) => void;
-  setShowTaskDetail: (show: boolean) => void;
+  setSelectedGhostTask: (taskId: string) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
   taskIdToOpenImmediately?: string;
+  itemData?: T;
+  updateTaskData?: (
+    taskId: string,
+    updater: (oldData: TaskDetail) => TaskDetail,
+  ) => void;
+  setTaskData?: (data: TaskDetail[] | undefined) => void;
+  selectedGhostTaskId?: string;
+  setItemData?: (data: T | undefined) => void;
 }
 
-export default function TasksTable({
-  setSelectedTaskId,
-  setShowTaskDetail,
+// TODO: Update this to invalidate for backlog items also
+export default function TasksTable<T extends BacklogItemWithTasks>({
+  setSelectedGhostTask,
   itemId,
   itemType,
   setShowAddTaskPopup,
   setUnsavedTasks,
   taskIdToOpenImmediately,
-}: Props) {
+  itemData,
+  updateTaskData,
+  setTaskData,
+  selectedGhostTaskId,
+  setItemData,
+}: Props<T>) {
   const [taskSearchText, setTaskSearchText] = useState("");
+  const [taskToOpen, setTaskToOpen] = useState(taskIdToOpenImmediately);
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
+
+  const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
+    usePopupVisibilityState();
+  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
+    undefined,
+  );
 
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
+  const tasksData = itemData?.tasks;
+
   const {
-    data: tasksTableData,
+    data: fetchedTasksTable,
     refetch: refetchTasks,
     isLoading,
-  } = api.tasks.getTasksTableFriendly.useQuery({
-    projectId: projectId as string,
-    itemId,
-  });
+  } = api.tasks.getTasksTableFriendly.useQuery(
+    {
+      projectId: projectId as string,
+      itemId,
+    },
+    {
+      enabled: tasksData === undefined,
+    },
+  );
   const { mutateAsync: changeStatus } =
     api.tasks.changeTaskStatus.useMutation();
   const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
   const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
 
-  const generatedTasks =
-    useRef<
-      WithId<inferRouterOutputs<typeof tasksRouter>["generateTasks"][number]>[]
-    >();
+  const taskDetailToTaskCol = (detail: TaskDetail): TaskCol => ({
+    id: detail.id,
+    title: detail.name,
+    scrumId: detail.scrumId,
+    status: detail.status,
+    assignee: detail.assignee,
+  });
+
+  const tasksTableData =
+    tasksData?.map(taskDetailToTaskCol) ?? fetchedTasksTable;
 
   const transformedTasks: TaskPreview[] = (tasksTableData ?? []).map(
     (task) => ({
@@ -82,14 +126,16 @@ export default function TasksTable({
     }),
   );
 
-  // Show task detail if taskIdToOpenImmediately is provided
+  // Show task detail if taskToOpen is provided
   useEffect(() => {
     if (!taskIdToOpenImmediately) return;
     if (!transformedTasks.some((task) => task.id === taskIdToOpenImmediately))
       return;
     setSelectedTaskId(taskIdToOpenImmediately);
+    setSelectedGhostTask("");
     setShowTaskDetail(true);
-  }, [taskIdToOpenImmediately, tasksTableData]);
+    setTaskToOpen(undefined);
+  }, [taskToOpen, tasksTableData]);
 
   const filteredTasks = transformedTasks
     .filter((task) => {
@@ -116,6 +162,15 @@ export default function TasksTable({
   ).length;
 
   const onTaskStatusChange = async (taskId: string, status: Tag) => {
+    // This is if it's inside a ghost
+    if (tasksData !== undefined) {
+      updateTaskData?.(taskId, (oldData) => ({
+        ...oldData,
+        status,
+      }));
+      return;
+    }
+
     const updatedTasks = tasksTableData?.map((task) => {
       if (task.id === taskId) {
         return {
@@ -149,10 +204,9 @@ export default function TasksTable({
     });
 
     await invalidateQueriesAllTasks(projectId as string, [itemId]);
+    await invalidateQueriesTaskDetails(projectId as string, [taskId]);
 
-    if (itemType === "US") {
-      await invalidateQueriesAllUserStories(projectId as string);
-    }
+    await invalidateQueriesBacklogItems(projectId as string, itemType);
   };
 
   const taskColumns: TableColumns<TaskPreview> = {
@@ -161,38 +215,63 @@ export default function TasksTable({
       label: "Id",
       width: 100,
       hiddenOnGhost: true,
-      render(row) {
+      render(row, _, isGhost) {
         return (
-          <button
-            className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
-            onClick={() => {
-              setSelectedTaskId(row.id);
-              setShowTaskDetail(true);
-            }}
-          >
-            {row.scrumId ? (
-              formatTaskScrumId(row.scrumId)
+          <>
+            {tasksData !== undefined && !row.scrumId ? (
+              <TagIcon
+                className="text-app-text"
+                data-tooltip-id="tooltip"
+                data-tooltip-html="<b>Why no id?</b><br>This task will be created when the user story gets accepted"
+              />
             ) : (
-              <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
+              <button
+                className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+                onClick={() => {
+                  if (isGhost) {
+                    setSelectedGhostTask(row.id);
+                    setSelectedTaskId("");
+                  } else {
+                    setSelectedTaskId(row.id);
+                    setSelectedGhostTask("");
+                  }
+                  setShowTaskDetail(true);
+                }}
+              >
+                {row.scrumId ? (
+                  formatTaskScrumId(row.scrumId)
+                ) : (
+                  <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
+                )}
+              </button>
             )}
-          </button>
+          </>
         );
       },
     },
     name: {
       label: "Title",
       width: 200,
-      render(row) {
+      render(row, _, isGhost) {
         return (
-          <button
-            className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
-            onClick={() => {
-              setSelectedTaskId(row.id);
-              setShowTaskDetail(true);
-            }}
-          >
-            {row.name}
-          </button>
+          <>
+            <button
+              className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
+              onClick={() => {
+                if (isGhost) {
+                  setSelectedGhostTask(row.id);
+                  setSelectedTaskId("");
+                } else {
+                  setSelectedTaskId(row.id);
+                  setSelectedGhostTask("");
+                }
+                setShowTaskDetail(true);
+              }}
+              disabled={!tasksData && !isGhost && row.scrumId === undefined}
+            >
+              {row.name}
+            </button>
+          </>
         );
       },
     },
@@ -205,15 +284,17 @@ export default function TasksTable({
             ...oldData,
             status: status,
           }));
-          generatedTasks.current = generatedTasks.current?.map((task) => {
-            if (task.id === row.id) {
-              return {
-                ...task,
-                status: status,
-              };
-            }
-            return task;
-          });
+          setGeneratedTasks((prev) =>
+            prev?.map((task) => {
+              if (task.id === row.id) {
+                return {
+                  ...task,
+                  status: status,
+                };
+              }
+              return task;
+            }),
+          );
         };
         return (
           <StatusPicker
@@ -261,6 +342,13 @@ export default function TasksTable({
     }
     callback(true);
 
+    // This is if it's inside a ghost
+    if (tasksData !== undefined) {
+      const newData = tasksData?.filter((task) => !ids.includes(task.id));
+      setTaskData?.(newData);
+      return;
+    }
+
     // Optimistic update - filter out deleted tasks
     const newTasks = transformedTasks.filter((task) => !ids.includes(task.id));
 
@@ -292,10 +380,12 @@ export default function TasksTable({
     );
 
     await invalidateQueriesAllTasks(projectId as string, [itemId]);
-    await invalidateQueriesAllUserStories(projectId as string);
+    await invalidateQueriesBacklogItems(projectId as string, itemType);
 
     return true;
   };
+
+  const [generatedTasks, setGeneratedTasks] = useState<TaskDetail[]>();
 
   const {
     beginLoading,
@@ -312,12 +402,28 @@ export default function TasksTable({
   } = useGhostTableStateManager<TaskPreview, string>(
     async (acceptedIds) => {
       const accepted =
-        generatedTasks.current?.filter((task) =>
-          acceptedIds.includes(task.id),
-        ) ?? [];
-      const acceptedRows = ghostData?.filter((task) =>
-        acceptedIds.includes(task.id),
-      );
+        generatedTasks?.filter((task) => acceptedIds.includes(task.id)) ?? [];
+
+      // Ghost user story, so the tasks don't get saved yet
+      if (tasksData !== undefined) {
+        setTaskData?.([
+          ...tasksData,
+          ...accepted?.map(
+            (task) =>
+              ({
+                id: crypto.randomUUID(),
+                scrumId: undefined,
+                name: task.name,
+                description: task.description,
+                status: task.status,
+                size: task.size,
+                assignee: task.assignee,
+                dueDate: task.dueDate,
+              }) as TaskDetail,
+          ),
+        ]);
+        return;
+      }
 
       await utils.tasks.getTasksTableFriendly.cancel({
         projectId: projectId as string,
@@ -329,7 +435,7 @@ export default function TasksTable({
         scrumId: undefined,
         title: task.name,
         status: task.status,
-        assignee: undefined,
+        assignee: task.assignee,
       }));
 
       utils.tasks.getTasksTableFriendly.setData(
@@ -348,23 +454,22 @@ export default function TasksTable({
             itemType: itemType,
             size: task.size,
             statusId: task.status.id ?? "",
-            assigneeId: "",
-            dueDate: null,
+            assigneeId: task.assignee?.uid ?? "",
+            dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : null,
           },
         });
       }
 
       await invalidateQueriesAllTasks(projectId as string, [itemId]);
 
-      if (itemType === "US") {
-        await invalidateQueriesAllUserStories(projectId as string);
-      }
+      await invalidateQueriesBacklogItems(projectId as string, itemType);
     },
     (removedIds) => {
-      const newGeneratedTasks = generatedTasks.current?.filter(
+      if (!generatedTasks) return;
+      const newGeneratedTasks = generatedTasks?.filter(
         (task) => !removedIds.includes(task.id),
       );
-      generatedTasks.current = newGeneratedTasks;
+      setGeneratedTasks(newGeneratedTasks);
       if ((newGeneratedTasks?.length ?? 0) === 0 && setUnsavedTasks)
         setUnsavedTasks(false);
     },
@@ -372,17 +477,49 @@ export default function TasksTable({
 
   const handleGenerateTasks = async (amount: number, prompt: string) => {
     beginLoading(amount);
-    const generatedData = await generateTasks({
-      projectId: projectId as string,
-      itemId,
-      itemType,
-      amount,
-      prompt,
-    });
-    generatedTasks.current = generatedData.map((task, i) => ({
-      ...task,
-      id: i.toString(),
-    }));
+
+    let generatedData = undefined;
+    if (tasksData === undefined) {
+      generatedData = await generateTasks({
+        projectId: projectId as string,
+        itemId,
+        itemType,
+        amount,
+        prompt,
+      });
+    } else {
+      const tasks =
+        itemData?.tasks.map((task) => ({
+          id: task.id,
+          name: task.name,
+          description: task.description,
+          statusId: task.status.id ?? "",
+          size: task.size,
+        })) ?? [];
+
+      generatedData = await generateTasks({
+        projectId: projectId as string,
+        amount,
+        prompt,
+        itemType,
+        itemDetail: {
+          name: itemData?.name ?? "",
+          description: itemData?.description ?? "",
+          extra: itemData?.extra ?? "",
+          size: itemData?.size,
+          tagIds: itemData?.tagIds ?? [],
+          priorityId: itemData?.priorityId,
+          tasks,
+        },
+      });
+    }
+
+    setGeneratedTasks(
+      generatedData.map((task, i) => ({
+        ...task,
+        id: i.toString(),
+      })),
+    );
     if (setUnsavedTasks) setUnsavedTasks(true);
 
     const newGhostData = generatedData.map((task, i) => ({
@@ -394,6 +531,33 @@ export default function TasksTable({
     }));
     finishLoading(newGhostData);
   };
+
+  const selectedGhostTask = generatedTasks?.find(
+    (task) => task.id === selectedGhostTaskId,
+  );
+
+  useNavigationGuard(
+    async () => {
+      if ((generatedTasks?.length ?? 0) > 0) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved AI generated tasks. To save them, please accept them first.",
+          "Discard",
+          "Keep editing",
+        ));
+      } else if (generating) {
+        return !(await confirm(
+          "Are you sure?",
+          "You are currently generating tasks. If you leave now, the generation will be cancelled.",
+          "Discard",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    generating || (generatedTasks?.length ?? 0) > 0,
+    "Are you sure you want to leave? You have unsaved AI generated tasks. To save them, please accept them first.",
+  );
 
   return (
     <>
@@ -447,11 +611,73 @@ export default function TasksTable({
             setGhostRows={setGhostRows}
             acceptGhosts={onAccept}
             rejectGhosts={onReject}
-            ghostLoadingEstimation={20000}
+            ghostLoadingEstimation={5000}
             rowClassName="h-12"
           />
         )}
       </div>
+
+      {renderTaskDetailPopup &&
+        (selectedTaskId !== undefined || selectedGhostTaskId !== undefined) && (
+          <TaskDetailPopup
+            taskId={selectedTaskId ?? selectedGhostTaskId ?? ""}
+            itemId={itemId}
+            showDetail={showTaskDetail}
+            setShowDetail={setShowTaskDetail}
+            isGhost={selectedGhostTaskId !== ""}
+            taskData={
+              selectedGhostTask ??
+              itemData?.tasks.find((task) => task.id === selectedTaskId)
+            }
+            updateTaskData={(task) => {
+              if (selectedGhostTaskId && selectedGhostTaskId !== "") {
+                setGeneratedTasks((prev) =>
+                  prev?.map((t) => {
+                    if (t.id === selectedGhostTaskId) {
+                      return {
+                        ...task,
+                        id: selectedGhostTaskId,
+                      };
+                    }
+                    return t;
+                  }),
+                );
+                updateGhostRow(selectedGhostTaskId, (_) => ({
+                  id: selectedGhostTaskId,
+                  name: task.name,
+                  status: task.status,
+                  scrumId: task.scrumId,
+                  assignee: task.assignee,
+                }));
+              } else if (itemData) {
+                const taskIndex = itemData?.tasks.findIndex(
+                  (t) => t.id === task.id,
+                );
+                if (taskIndex === undefined || taskIndex === -1) return;
+                const updatedTasks = [...(itemData?.tasks ?? [])];
+                updatedTasks[taskIndex] = task;
+                setItemData?.({
+                  ...itemData,
+                  tasks: updatedTasks,
+                });
+              }
+            }}
+            onAccept={async () => {
+              if (selectedGhostTaskId && selectedGhostTaskId !== "") {
+                setShowTaskDetail(false);
+                setTimeout(() => setSelectedGhostTask(""), 300);
+                await onAccept([selectedGhostTaskId]);
+              }
+            }}
+            onReject={() => {
+              if (selectedGhostTaskId && selectedGhostTaskId !== "") {
+                onReject([selectedGhostTaskId]);
+                setShowTaskDetail(false);
+                setTimeout(() => setSelectedGhostTask(""), 300);
+              }
+            }}
+          />
+        )}
     </>
   );
 }

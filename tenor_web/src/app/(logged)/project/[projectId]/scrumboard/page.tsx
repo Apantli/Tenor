@@ -6,6 +6,11 @@ import { usePopupVisibilityState } from "~/app/_components/Popup";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import { useParams } from "next/navigation";
 import CreateKanbanListPopup from "./CreateKanbanListPopup";
+import { useState } from "react";
+import { SegmentedControl } from "~/app/_components/SegmentedControl";
+import ItemsKanban from "./ItemsKanban";
+
+type ScrumboardSections = "Tasks" | "Backlog Items";
 
 export default function ProjectKanban() {
   const { projectId } = useParams();
@@ -14,6 +19,7 @@ export default function ProjectKanban() {
   // REACT
   const [renderNewList, showNewList, setShowNewList] =
     usePopupVisibilityState();
+  const [section, setSection] = useState<ScrumboardSections>("Tasks");
 
   // HANDLES
   const onListAdded = async () => {
@@ -22,15 +28,25 @@ export default function ProjectKanban() {
   };
 
   return (
-    <div className="flex h-full flex-col overflow-hidden">
-      {/* Here goes the main view with the segmented control */}
-      <div className="flex justify-between">
-        <h1 className="pb-4 text-3xl font-semibold">Scrum Board</h1>
+    <div className="flex h-full flex-col justify-start overflow-hidden pt-0">
+      <div className="flex items-baseline justify-between gap-3 pb-4">
+        <h1 className="grow-[1] text-3xl font-semibold">Scrum Board</h1>
+        <div className="min-w-[300px]">
+          <SegmentedControl
+            options={["Tasks", "Backlog Items"]}
+            selectedOption={section}
+            onChange={(value) => {
+              setSection(value as ScrumboardSections);
+            }}
+          />
+        </div>
         <PrimaryButton onClick={() => setShowNewList(true)}>
           + Add list
         </PrimaryButton>
       </div>
-      <TasksKanban></TasksKanban>
+
+      {section === "Tasks" && <TasksKanban></TasksKanban>}
+      {section === "Backlog Items" && <ItemsKanban></ItemsKanban>}
 
       {renderNewList && (
         <CreateKanbanListPopup

@@ -23,7 +23,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/base64";
-import { defaultRoleList } from "~/lib/defaultTags";
+import { defaultRoleList, defaultStatusTags } from "~/lib/defaultProjectValues";
 
 const emptySettings: Settings = {
   sprintDuration: 0,
@@ -149,21 +149,6 @@ const fetchUserProjects = async (
 };
 
 export const projectsRouter = createTRPCRouter({
-  fetchDefaultSprintDuration: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const projectSprintDuration = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("settings")
-        .select("sprintDuration")
-        .limit(1)
-        .get();
-
-      return (
-        (projectSprintDuration.docs[0]?.data().sprintDuration as number) ?? 7
-      );
-    }),
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     const projects = await fetchUserProjects(useruid, ctx.firestore);
@@ -181,7 +166,7 @@ export const projectsRouter = createTRPCRouter({
       // Add creator as project admin
       input.users.push({
         userId: ctx.session.uid,
-        roleId: "admin",
+        roleId: "owner",
         active: true,
       });
 
@@ -262,8 +247,8 @@ export const projectsRouter = createTRPCRouter({
         const userTypesMap: Record<string, string> = {};
         for (const role of defaultRoleList) {
           const roleDoc = await userTypesCollection.add({
-            label: role.label,
-            deleted: false,
+            ...role,
+            id: undefined,
           });
 
           userTypesMap[role.id] = roleDoc.id;
@@ -274,11 +259,13 @@ export const projectsRouter = createTRPCRouter({
           if (userTypesMap[user.roleId]) {
             user.roleId = userTypesMap[user.roleId]!;
           } else {
-            console.error(
-              `Role ID ${user.roleId} not found in userTypesMap`,
-              user,
-            );
-            user.roleId = "";
+            if (user.roleId !== "owner") {
+              console.error(
+                `Role ID ${user.roleId} not found in userTypesMap`,
+                user,
+              );
+              user.roleId = "";
+            }
           }
         });
 
@@ -330,29 +317,9 @@ export const projectsRouter = createTRPCRouter({
           .doc("settings")
           .collection("statusTypes");
 
-        await statusCollection.add({
-          name: "Todo",
-          color: "#0737E3",
-          deleted: false,
-          marksTaskAsDone: false,
-          orderIndex: 0,
-        });
-
-        await statusCollection.add({
-          name: "Doing",
-          color: "#AD7C00",
-          deleted: false,
-          marksTaskAsDone: false,
-          orderIndex: 1,
-        });
-
-        await statusCollection.add({
-          name: "Done",
-          color: "#009719",
-          deleted: false,
-          marksTaskAsDone: true,
-          orderIndex: 2,
-        });
+        await Promise.all(
+          defaultStatusTags.map((statusTag) => statusCollection.add(statusTag)),
+        );
 
         return { success: true, projectId: newProjectRef.id };
       } catch (error) {

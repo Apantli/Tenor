@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "~/lib/utils";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CardColumn from "./CardColumn";
-import type { CardItem } from "~/server/api/routers/kanban";
+import type { KanbanCard } from "~/server/api/routers/kanban";
 
 // WithId<BasicInfo> change into only needed info...
 
@@ -13,14 +13,14 @@ export interface ItemColumn {
 
 interface Props {
   column: ItemColumn; // Can extend
-  items: Record<string, CardItem>;
+  items: Record<string, KanbanCard>;
   selectedItems: Set<string>;
   setSelectedItems: (newSelection: Set<string>) => void;
   setDetailItemId: (detailId: string) => void;
   setShowDetail: (showDetail: boolean) => void;
   assignSelectionToColumn: (columnId: string) => Promise<void>;
   lastDraggedItemId: string | null;
-  renderCard: (item: CardItem) => React.ReactNode;
+  renderCard: (item: KanbanCard) => React.ReactNode;
   header: React.ReactNode;
 }
 

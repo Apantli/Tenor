@@ -26,6 +26,24 @@ export interface Sprint extends SprintInfo {
   genericItemIds: string[];
 }
 
+export interface AIMessage {
+  role: string;
+  content: string;
+  explanation?: string;
+}
+
+// link links with permissions
+export const permissionMapping = {
+  requirements: "requirements",
+  "user-stories": "userStories",
+  issues: "issues",
+  sprints: "sprints",
+  scrumboard: "kanban",
+  calendar: "calendar",
+  performance: "performance",
+  "project-settings": "projectSettings",
+};
+
 export interface SprintSnapshot extends SprintInfo {
   snapshot: {
     userStories: UserStory[];
@@ -77,7 +95,7 @@ export interface Project {
 }
 
 export interface Settings {
-  sprintDuration: number;
+  sprintDuration: number; // days
   maximumSprintStoryPoints: number;
   aiContext: {
     // embeddings maybe
@@ -121,11 +139,22 @@ export interface User {
   isManager: boolean;
 }
 
-// Each number refers to 1 permission: "can't view" | "view" | "view-details" | "modify" | "create" | "delete"
-export type Permission = 0 | 1 | 2 | 3 | 4 | 5;
+// Each number refers to 1 permission: 0 none | 1 read | 2 write
+export type Permission = 0 | 1 | 2;
+export const permissionLabels = {
+  0: "none",
+  1: "read",
+  2: "write",
+};
+export const permissionItems = [
+  { id: "0", label: permissionLabels[0] },
+  { id: "1", label: permissionLabels[1] },
+  { id: "2", label: permissionLabels[2] },
+];
 
 export interface Role {
-  name: string;
+  id: string;
+  label: string;
   canViewPerformance: boolean;
   canControlSprints: boolean;
   tabs: {
@@ -172,6 +201,7 @@ export interface UserStory extends BacklogItem {
   requiredByIds: string[]; // US ID
 }
 
+export type itemTypes = "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
@@ -179,7 +209,7 @@ export interface Task extends BasicInfo {
   finishedDate: Date | null;
   size: Size;
   itemId: string;
-  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
+  itemType: itemTypes;
 }
 
 export interface Issue extends BacklogItem {

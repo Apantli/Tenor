@@ -17,43 +17,67 @@ import { type Size, type Tag } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
+import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
   itemType: "US" | "IS" | "IT";
   itemId: string;
+  addTaskToGhost?: (task: TaskDetail) => void;
 }
 
-export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
+export function CreateTaskForm({
+  onTaskAdded,
+  itemType,
+  itemId,
+  addTaskToGhost,
+}: Props) {
   const { projectId } = useParams();
   const projectIdString = projectId as string;
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  const { data: users, isLoading } = api.users.getUserListEdiBox.useQuery({
+  const { data: users } = api.users.getUserListEditBox.useQuery({
     projectId: projectIdString,
   });
 
   const { mutateAsync: createTask, isPending } =
     api.tasks.createTask.useMutation();
+  const { data: todoStatusTag } = api.settings.getTodoTag.useQuery({
+    projectId: projectIdString,
+  });
 
-  const utils = api.useUtils();
   const { alert } = useAlert();
 
   const [createForm, setCreateForm] = useState<{
     name: string;
     description: string;
-    status?: Tag;
-    assignee?: string;
+    status: Tag;
+    assigneeId?: string;
+    assignee?: UserPreview;
     size?: Size;
     dueDate?: Date;
   }>({
     name: "",
     description: "",
-    status: undefined,
-    assignee: "",
+    status: todoStatusTag ?? {
+      id: "temp",
+      name: "Todo",
+      color: "#0737E3",
+      deleted: false,
+    },
+    assigneeId: "",
+    assignee: undefined,
     size: undefined,
     dueDate: undefined,
   });
+
+  // Select a status after the todo status is fetched
+  if (todoStatusTag && createForm.status.id === "") {
+    setCreateForm((prev) => ({
+      ...prev,
+      status: todoStatusTag,
+    }));
+  }
 
   const [selectedAssignee, setSelectedAssignee] = useState<
     Option | undefined
@@ -74,13 +98,29 @@ export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
       dueDate = Timestamp.fromDate(createForm.dueDate);
     }
 
+    // Check if the task is being added to a ghost
+    if (addTaskToGhost) {
+      const taskId = crypto.randomUUID();
+      addTaskToGhost({
+        id: taskId,
+        name: createForm.name,
+        description: createForm.description,
+        status: createForm.status,
+        size: createForm.size,
+        assignee: createForm.assignee,
+        dueDate: createForm.dueDate,
+      });
+      onTaskAdded?.(taskId);
+      return;
+    }
+
     const { taskId } = await createTask({
       projectId: projectId as string,
       taskData: {
         name: createForm.name,
         description: createForm.description,
         statusId: createForm.status?.id ?? "",
-        assigneeId: createForm.assignee ?? "",
+        assigneeId: createForm.assigneeId ?? "",
         size: createForm.size,
         dueDate: dueDate,
         itemId: itemId,
@@ -152,7 +192,12 @@ export function CreateTaskForm({ onTaskAdded, itemType, itemId }: Props) {
               setSelectedAssignee(person ?? undefined);
               setCreateForm({
                 ...createForm,
-                assignee: person?.id?.toString() ?? undefined,
+                assigneeId: person?.id?.toString() ?? undefined,
+                assignee: {
+                  uid: person?.user?.uid?.toString() ?? "",
+                  displayName: person?.user?.displayName ?? "",
+                  photoURL: person?.user?.photoURL ?? "",
+                },
               });
             }}
             placeholder="Select a person"

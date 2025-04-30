@@ -8,6 +8,7 @@ import {
   EpicSchema,
   ExistingEpicSchema,
   ExistingUserStorySchema,
+  RequirementSchema,
   SprintSchema,
   TagSchema,
   TaskSchema,
@@ -29,6 +30,7 @@ import { askAiToGenerate } from "~/utils/aiGeneration";
 import {
   collectBacklogTagsContext,
   collectPriorityTagContext,
+  getProjectContextHeader,
 } from "~/utils/aiContext";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -455,12 +457,17 @@ export const userStoriesRouter = createTRPCRouter({
       // Update the related user stories
       await Promise.all(
         addedDependencies.map(async (dependencyId) => {
-          updateDependency(dependencyId, userStoryId, "add", "requiredByIds");
+          await updateDependency(
+            dependencyId,
+            userStoryId,
+            "add",
+            "requiredByIds",
+          );
         }),
       );
       await Promise.all(
         removedDependencies.map(async (dependencyId) => {
-          updateDependency(
+          await updateDependency(
             dependencyId,
             userStoryId,
             "remove",
@@ -470,12 +477,17 @@ export const userStoriesRouter = createTRPCRouter({
       );
       await Promise.all(
         addedRequiredBy.map(async (requiredById) => {
-          updateDependency(requiredById, userStoryId, "add", "dependencyIds");
+          await updateDependency(
+            requiredById,
+            userStoryId,
+            "add",
+            "dependencyIds",
+          );
         }),
       );
       await Promise.all(
         removedRequiredBy.map(async (requiredById) => {
-          updateDependency(
+          await updateDependency(
             requiredById,
             userStoryId,
             "remove",
@@ -503,11 +515,16 @@ export const userStoriesRouter = createTRPCRouter({
         userStoryId: z.string(),
         priorityId: z.string().optional(),
         size: z.string().optional(),
+        statusId: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, userStoryId, priorityId, size } = input;
-      if (priorityId === undefined && size === undefined) {
+      const { projectId, userStoryId, priorityId, size, statusId } = input;
+      if (
+        priorityId === undefined &&
+        size === undefined &&
+        statusId === undefined
+      ) {
         return;
       }
 
@@ -524,6 +541,7 @@ export const userStoriesRouter = createTRPCRouter({
       const newUserStoryData = {
         priorityId: priorityId,
         size: size,
+        statusId: statusId,
       };
       await userStoryRef.update(newUserStoryData);
       return { success: true };
@@ -544,6 +562,20 @@ export const userStoriesRouter = createTRPCRouter({
         .collection("userStories")
         .doc(userStoryId);
       await userStoryRef.update({ deleted: true });
+
+      const tasks = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("tasks")
+        .where("itemType", "==", "US")
+        .where("itemId", "==", userStoryId)
+        .get();
+      const batch = ctx.firestore.batch();
+      tasks.docs.forEach((task) => {
+        batch.update(task.ref, { deleted: true });
+      });
+      await batch.commit();
+
       return { success: true };
     }),
 
@@ -557,6 +589,19 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, amount, prompt } = input;
+
+      const requirements = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("requirements")
+        .where("deleted", "==", false)
+        .get();
+
+      let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
+      requirements.forEach((requirement) => {
+        const requirementData = RequirementSchema.parse(requirement.data());
+        requirementsContext += `- id: ${requirement.id}\n- name: ${requirementData.name}\n- description: ${requirementData.description}\n- priorityId: ${requirementData.priorityId}\n\n`;
+      });
 
       // Get the epics from the database
       const epics = await ctx.firestore
@@ -604,14 +649,17 @@ export const userStoriesRouter = createTRPCRouter({
           : "";
 
       const completePrompt = `
+${await getProjectContextHeader(projectId, ctx.firestore)}
+
 Given the following context, follow the instructions below to the best of your ability.
 
+${requirementsContext}
 ${epicContext}
 ${userStoryContext}
 ${priorityContext}
 ${tagContext}
 
-Generate ${amount} user stories about an application for food markets. Do NOT include any identifier in the name like "User Story 1", just use a normal title.\n\n
+Generate ${amount} user stories for the mentioned software project. Do NOT include any identifier in the name like "User Story 1", just use a normal title.\n\n
 
 ${passedInPrompt}
 
@@ -645,49 +693,91 @@ ${passedInPrompt}
               .doc(userStory.epicId)
               .get();
             if (epicTag.exists) {
-              const epicData = EpicSchema.parse(epicTag.data());
+              const epicData = ExistingEpicSchema.parse(epicTag.data());
               epic = { id: epicTag.id, ...epicData };
             }
           }
 
           // Check the related user stories exist and are valid
           const validDependencies: string[] = [];
-          await Promise.all(
-            userStory.dependencyIds.map(async (dependencyId) => {
-              const dependency = await ctx.firestore
-                .collection("projects")
-                .doc(projectId)
-                .collection("userStories")
-                .doc(dependencyId)
-                .get();
-              if (dependency.exists) {
-                validDependencies.push(dependencyId);
-              }
-            }),
-          );
+          const dependencies = (
+            await Promise.all(
+              userStory.dependencyIds.map(async (dependencyId) => {
+                const dependency = await ctx.firestore
+                  .collection("projects")
+                  .doc(projectId)
+                  .collection("userStories")
+                  .doc(dependencyId)
+                  .get();
+                if (dependency.exists) {
+                  validDependencies.push(dependencyId);
+                  const dependencyData = UserStorySchema.parse(
+                    dependency.data(),
+                  );
+                  return {
+                    id: dependency.id,
+                    name: dependencyData.name,
+                    scrumId: dependencyData.scrumId,
+                  };
+                }
+                return undefined;
+              }),
+            )
+          ).filter((dep) => dep !== undefined);
 
           const validRequiredBy: string[] = [];
-          await Promise.all(
-            userStory.requiredByIds.map(async (requiredById) => {
-              const requiredBy = await ctx.firestore
-                .collection("projects")
-                .doc(projectId)
-                .collection("userStories")
-                .doc(requiredById)
-                .get();
-              if (requiredBy.exists) {
-                validRequiredBy.push(requiredById);
-              }
-            }),
-          );
+          const requiredBy = (
+            await Promise.all(
+              userStory.requiredByIds.map(async (requiredById) => {
+                const requiredBy = await ctx.firestore
+                  .collection("projects")
+                  .doc(projectId)
+                  .collection("userStories")
+                  .doc(requiredById)
+                  .get();
+                if (requiredBy.exists) {
+                  validRequiredBy.push(requiredById);
+                  const requiredByData = UserStorySchema.parse(
+                    requiredBy.data(),
+                  );
+                  return {
+                    id: requiredBy.id,
+                    name: requiredByData.name,
+                    scrumId: requiredByData.scrumId,
+                  };
+                }
+                return undefined;
+              }),
+            )
+          ).filter((req) => req !== undefined);
+
+          const tags = (
+            await Promise.all(
+              userStory.tagIds.map(async (tagId) => {
+                const tag = await settingsRef
+                  .collection("backlogTags")
+                  .doc(tagId)
+                  .get();
+                if (tag.exists) {
+                  const tagData = TagSchema.parse(tag.data());
+                  return { id: tag.id, ...tagData };
+                }
+                return undefined;
+              }),
+            )
+          ).filter((tag) => tag !== undefined);
 
           return {
-            ...userStory,
-            priority,
-            epic,
-            dependencyIds: validDependencies,
-            requiredByIds: validRequiredBy,
-          };
+            name: userStory.name,
+            description: userStory.description,
+            acceptanceCriteria: userStory.acceptanceCriteria,
+            epic: epic,
+            size: userStory.size,
+            tags: tags,
+            priority: priority,
+            dependencies: dependencies as UserStoryPreview[],
+            requiredBy: requiredBy as UserStoryPreview[],
+          } as UserStoryDetail;
         }),
       );
 
