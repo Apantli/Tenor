@@ -6,6 +6,7 @@ import { Size } from "~/lib/types/firebaseSchemas";
 import PrimaryButton from "../buttons/PrimaryButton";
 import InputTextField from "../inputs/InputTextField";
 import InputField from "../inputs/GenericTextInputField";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface SizeCol {
   id: string; // id debe ser obligatorio
@@ -26,6 +27,8 @@ const SIZE_COLORS: Record<Size, string> = {
 
 export default function SettingsSizeTable() {
   const { projectId } = useParams();
+
+  const {alert} = useAlert();
 
   const { data: projectSettings } = api.settings.getSizeTypes.useQuery({
     projectId: projectId as string,
@@ -73,6 +76,7 @@ export default function SettingsSizeTable() {
 
   const handleSave = () => {
     const newSizes = sizeData.map((s) => s.value);
+    alert("Cambios guardados", "Los cambios se han guardado correctamente", { type: "success", duration: 5000 });
     if (typeof projectId === "string") {
       changeSizeMutation.mutate({ projectId, size: newSizes });
     } else {
