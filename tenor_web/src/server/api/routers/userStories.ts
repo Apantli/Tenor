@@ -8,6 +8,7 @@ import {
   EpicSchema,
   ExistingEpicSchema,
   ExistingUserStorySchema,
+  RequirementSchema,
   SprintSchema,
   TagSchema,
   TaskSchema,
@@ -29,6 +30,7 @@ import { askAiToGenerate } from "~/utils/aiGeneration";
 import {
   collectBacklogTagsContext,
   collectPriorityTagContext,
+  getProjectContextHeader,
 } from "~/utils/aiContext";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -574,6 +576,19 @@ export const userStoriesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, amount, prompt } = input;
 
+      const requirements = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("requirements")
+        .where("deleted", "==", false)
+        .get();
+
+      let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
+      requirements.forEach((requirement) => {
+        const requirementData = RequirementSchema.parse(requirement.data());
+        requirementsContext += `- id: ${requirement.id}\n- name: ${requirementData.name}\n- description: ${requirementData.description}\n- priorityId: ${requirementData.priorityId}\n\n`;
+      });
+
       // Get the epics from the database
       const epics = await ctx.firestore
         .collection("projects")
@@ -620,14 +635,17 @@ export const userStoriesRouter = createTRPCRouter({
           : "";
 
       const completePrompt = `
+${await getProjectContextHeader(projectId, ctx.firestore)}
+
 Given the following context, follow the instructions below to the best of your ability.
 
+${requirementsContext}
 ${epicContext}
 ${userStoryContext}
 ${priorityContext}
 ${tagContext}
 
-Generate ${amount} user stories about an application for food markets. Do NOT include any identifier in the name like "User Story 1", just use a normal title.\n\n
+Generate ${amount} user stories for the mentioned software project. Do NOT include any identifier in the name like "User Story 1", just use a normal title.\n\n
 
 ${passedInPrompt}
 

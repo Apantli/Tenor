@@ -81,7 +81,8 @@ export default function CreateKanbanListPopup({
     <Popup
       show={showPopup}
       size="small"
-      className="min-h-[400px] min-w-[500px]"
+      className="min-h-[300px] min-w-[500px]"
+      reduceTopPadding
       dismiss={async () => {
         if (isModified()) {
           const confirmation = await confirm(

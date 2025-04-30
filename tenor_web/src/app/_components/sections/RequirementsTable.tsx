@@ -30,6 +30,7 @@ import {
   useInvalidateQueriesAllRequirements,
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -627,7 +628,7 @@ export default function RequirementsTable() {
         setGhostRows={setGhostRows}
         acceptGhosts={onAccept}
         rejectGhosts={onReject}
-        ghostLoadingEstimation={18000}
+        ghostLoadingEstimation={5000}
         rowClassName="h-12"
       />
     );
@@ -663,6 +664,29 @@ export default function RequirementsTable() {
 
     finishLoading(tableData);
   };
+
+  useNavigationGuard(
+    async () => {
+      if ((generatedRequirements?.current?.length ?? 0) > 0) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved AI generated requirements. To save them, please accept them first.",
+          "Discard",
+          "Keep editing",
+        ));
+      } else if (generating) {
+        return !(await confirm(
+          "Are you sure?",
+          "You are currently generating requirements. If you leave now, the generation will be cancelled.",
+          "Discard",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    generating || (generatedRequirements.current?.length ?? 0) > 0,
+    "Are you sure you want to leave? You have unsaved AI generated requirements. To save them, please accept them first.",
+  );
 
   return (
     <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
@@ -779,7 +803,8 @@ export default function RequirementsTable() {
               <div>
                 <InputTextField
                   label="Title"
-                  className="mb-4 h-12"
+                  className="h-12"
+                  containerClassName="mb-4"
                   value={
                     requirementEdited ? editForm.name : newRequirement.name
                   }

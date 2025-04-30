@@ -39,6 +39,7 @@ export default function InputField({
   value,
   isTextArea,
   onChange,
+  placeholder,
   ...props
 }: Props &
   (
@@ -54,6 +55,7 @@ export default function InputField({
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownInputRef = useRef<HTMLInputElement>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
 
   const originalMessageRef = useRef<string>(value ?? "");
 
@@ -63,9 +65,20 @@ export default function InputField({
   const handleKeyDown = (
     e: KeyboardEvent<HTMLTextAreaElement> | KeyboardEvent<HTMLInputElement>,
   ) => {
-    if (e.ctrlKey && e.key === "k") {
+    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
       e.preventDefault();
-      dropdownButtonRef.current?.click();
+      if (!isDropdownOpen) {
+        setIsDropdownOpen(true);
+        dropdownButtonRef.current?.click();
+      } else {
+        setIsDropdownOpen(false);
+        setClose();
+        if (isTextArea) {
+          textareaRef.current?.focus();
+        } else {
+          inputRef.current?.focus();
+        }
+      }
     }
   };
 
@@ -161,6 +174,7 @@ export default function InputField({
         <textarea
           id={id}
           html-rows="4"
+          placeholder={placeholder}
           className={cn(
             "block min-h-40 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none",
             className,
@@ -173,6 +187,7 @@ export default function InputField({
       {disableAI && !isTextArea && (
         <input
           id={id}
+          placeholder={placeholder}
           className={cn(
             "inline-block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500",
             className,
@@ -189,6 +204,16 @@ export default function InputField({
             <textarea
               id={id}
               html-rows="4"
+              placeholder={
+                placeholder +
+                (isFocused ? " Press Ctrl + K or ⌘K to generate with AI." : "")
+              }
+              onFocus={() => {
+                setIsFocused(true);
+              }}
+              onBlur={() => {
+                setIsFocused(false);
+              }}
               className={cn(
                 "block min-h-40 w-full rounded-md border border-gray-300 px-4 py-2 pr-9 shadow-sm focus:border-blue-500 focus:outline-none",
                 className,
@@ -207,6 +232,16 @@ export default function InputField({
           {!isTextArea && (
             <input
               id={id}
+              placeholder={
+                placeholder +
+                (isFocused ? " Press Ctrl + K or to generate with AI." : "")
+              }
+              onFocus={() => {
+                setIsFocused(true);
+              }}
+              onBlur={() => {
+                setIsFocused(false);
+              }}
               className={cn(
                 "block w-full rounded-md border border-gray-300 px-4 py-2 pr-10 shadow-sm outline-none focus:border-blue-500",
                 className,
@@ -231,8 +266,9 @@ export default function InputField({
               label={
                 <div ref={dropdownButtonRef}>
                   <span
-                    title="Generate with AI"
-                    className="flex flex-col items-center text-gray-500 hover:text-blue-500"
+                    data-tooltip-html={
+                      "<div style='display: flex; flex-direction: column; gap: 2px; align-items: center'><p><strong>Generate with AI</strong></p><p style='margin-left: auto; margin-right: auto'>Ctrl/⌘ K</p></div>"
+                    }
                     data-tooltip-id="tooltip"
                   >
                     <AIIcon className="text-gray-500 hover:text-app-primary" />
@@ -244,6 +280,9 @@ export default function InputField({
               onOpen={() => {
                 setIsDropdownOpen(true);
                 dropdownInputRef.current?.focus();
+              }}
+              onClose={() => {
+                setIsDropdownOpen(false);
               }}
             >
               <DropdownItem className="px-0">
@@ -303,7 +342,7 @@ export default function InputField({
                         <input
                           type="text"
                           className="block w-full rounded-md border border-gray-300 px-4 py-2 pr-10 shadow-sm outline-none focus:border-blue-500"
-                          placeholder="What is in your mind?"
+                          placeholder={"What is in your mind?"}
                           value={currentMessage}
                           onChange={(e) => setCurrentMessage(e.target.value)}
                           ref={dropdownInputRef}
@@ -382,6 +421,10 @@ export default function InputField({
                             setCurrentMessage("");
                             setClose();
                           }}
+                          disabled={
+                            status === "pending" ||
+                            originalMessageRef.current === value
+                          }
                         >
                           Reject Changes
                         </DeleteButton>
