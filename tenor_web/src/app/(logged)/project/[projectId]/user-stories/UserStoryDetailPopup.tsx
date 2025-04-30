@@ -318,16 +318,19 @@ export default function UserStoryDetailPopup({
                   </div>
                 </div>
 
-                <div className="mt-4 flex-1">
-                  <h3 className="text-lg font-semibold">Status</h3>
-                  <StatusPicker
-                    status={userStoryDetail.status}
-                    onChange={async (status) => {
-                      await handleSave({ ...userStoryDetail, status });
-                    }}
-                    showAutomaticStatus={true}
-                  />
-                </div>
+                {/* Only show if its not a ghost! */}
+                {userStoryData === undefined && (
+                  <div className="mt-4 flex-1">
+                    <h3 className="text-lg font-semibold">Status</h3>
+                    <StatusPicker
+                      status={userStoryDetail.status}
+                      onChange={async (status) => {
+                        await handleSave({ ...userStoryDetail, status });
+                      }}
+                      showAutomaticStatus={true}
+                    />
+                  </div>
+                )}
 
                 <BacklogTagList
                   tags={userStoryDetail.tags}

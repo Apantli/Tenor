@@ -34,9 +34,14 @@ export default function StatusPicker({ status, onChange, className, showAutomati
     statusValuesWithAuto = statusValues ?? [];
   }
 
+  let currentStatus = status;
+  if (currentStatus === undefined && showAutomaticStatus) {
+    currentStatus = automaticTag;
+  }
+
   return (
     <PillComponent
-      currentTag={status ?? automaticTag}
+      currentTag={currentStatus}
       allTags={statusValuesWithAuto ?? []}
       callBack={onChange}
       labelClassName={cn("w-full", className)}
