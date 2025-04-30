@@ -10,7 +10,7 @@ import { cn } from "~/lib/utils";
 interface Props {
   status?: Tag;
   onChange: (priority: Tag) => void;
-  className?: string
+  className?: string;
 }
 
 export default function StatusPicker({ status, onChange, className }: Props) {
@@ -21,7 +21,7 @@ export default function StatusPicker({ status, onChange, className }: Props) {
 
   return (
     <PillComponent
-      currentTag={status}
+      currentTag={status?.id !== "" ? status : undefined}
       allTags={statusValues ?? []}
       callBack={onChange}
       labelClassName={cn("w-full", className)}

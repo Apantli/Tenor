@@ -562,6 +562,20 @@ export const userStoriesRouter = createTRPCRouter({
         .collection("userStories")
         .doc(userStoryId);
       await userStoryRef.update({ deleted: true });
+
+      const tasks = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("tasks")
+        .where("itemType", "==", "US")
+        .where("itemId", "==", userStoryId)
+        .get();
+      const batch = ctx.firestore.batch();
+      tasks.docs.forEach((task) => {
+        batch.update(task.ref, { deleted: true });
+      });
+      await batch.commit();
+
       return { success: true };
     }),
 
@@ -679,49 +693,91 @@ ${passedInPrompt}
               .doc(userStory.epicId)
               .get();
             if (epicTag.exists) {
-              const epicData = EpicSchema.parse(epicTag.data());
+              const epicData = ExistingEpicSchema.parse(epicTag.data());
               epic = { id: epicTag.id, ...epicData };
             }
           }
 
           // Check the related user stories exist and are valid
           const validDependencies: string[] = [];
-          await Promise.all(
-            userStory.dependencyIds.map(async (dependencyId) => {
-              const dependency = await ctx.firestore
-                .collection("projects")
-                .doc(projectId)
-                .collection("userStories")
-                .doc(dependencyId)
-                .get();
-              if (dependency.exists) {
-                validDependencies.push(dependencyId);
-              }
-            }),
-          );
+          const dependencies = (
+            await Promise.all(
+              userStory.dependencyIds.map(async (dependencyId) => {
+                const dependency = await ctx.firestore
+                  .collection("projects")
+                  .doc(projectId)
+                  .collection("userStories")
+                  .doc(dependencyId)
+                  .get();
+                if (dependency.exists) {
+                  validDependencies.push(dependencyId);
+                  const dependencyData = UserStorySchema.parse(
+                    dependency.data(),
+                  );
+                  return {
+                    id: dependency.id,
+                    name: dependencyData.name,
+                    scrumId: dependencyData.scrumId,
+                  };
+                }
+                return undefined;
+              }),
+            )
+          ).filter((dep) => dep !== undefined);
 
           const validRequiredBy: string[] = [];
-          await Promise.all(
-            userStory.requiredByIds.map(async (requiredById) => {
-              const requiredBy = await ctx.firestore
-                .collection("projects")
-                .doc(projectId)
-                .collection("userStories")
-                .doc(requiredById)
-                .get();
-              if (requiredBy.exists) {
-                validRequiredBy.push(requiredById);
-              }
-            }),
-          );
+          const requiredBy = (
+            await Promise.all(
+              userStory.requiredByIds.map(async (requiredById) => {
+                const requiredBy = await ctx.firestore
+                  .collection("projects")
+                  .doc(projectId)
+                  .collection("userStories")
+                  .doc(requiredById)
+                  .get();
+                if (requiredBy.exists) {
+                  validRequiredBy.push(requiredById);
+                  const requiredByData = UserStorySchema.parse(
+                    requiredBy.data(),
+                  );
+                  return {
+                    id: requiredBy.id,
+                    name: requiredByData.name,
+                    scrumId: requiredByData.scrumId,
+                  };
+                }
+                return undefined;
+              }),
+            )
+          ).filter((req) => req !== undefined);
+
+          const tags = (
+            await Promise.all(
+              userStory.tagIds.map(async (tagId) => {
+                const tag = await settingsRef
+                  .collection("backlogTags")
+                  .doc(tagId)
+                  .get();
+                if (tag.exists) {
+                  const tagData = TagSchema.parse(tag.data());
+                  return { id: tag.id, ...tagData };
+                }
+                return undefined;
+              }),
+            )
+          ).filter((tag) => tag !== undefined);
 
           return {
-            ...userStory,
-            priority,
-            epic,
-            dependencyIds: validDependencies,
-            requiredByIds: validRequiredBy,
-          };
+            name: userStory.name,
+            description: userStory.description,
+            acceptanceCriteria: userStory.acceptanceCriteria,
+            epic: epic,
+            size: userStory.size,
+            tags: tags,
+            priority: priority,
+            dependencies: dependencies as UserStoryPreview[],
+            requiredBy: requiredBy as UserStoryPreview[],
+          } as UserStoryDetail;
         }),
       );
 

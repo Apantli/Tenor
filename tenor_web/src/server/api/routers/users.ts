@@ -19,7 +19,7 @@ export const userRouter = createTRPCRouter({
     return usersList;
   }),
 
-  getUserListEdiBox: protectedProcedure
+  getUserListEditBox: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;

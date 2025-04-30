@@ -25,12 +25,14 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { inferRouterOutputs } from "@trpc/server";
-import { red } from "@mui/material/colors";
+import AiIcon from "@mui/icons-material/AutoAwesome";
+
 import {
   useInvalidateQueriesAllRequirements,
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
+import TertiaryButton from "../buttons/TertiaryButton";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -41,6 +43,8 @@ export default function RequirementsTable() {
   const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
     usePopupVisibilityState();
   const [requirementEdited, setRequirementEdited] =
+    useState<RequirementCol | null>(null);
+  const [ghostRequirementEdited, setGhostRequirementEdited] =
     useState<RequirementCol | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -54,8 +58,13 @@ export default function RequirementsTable() {
         name: requirementEdited.name ?? "",
         description: requirementEdited.description,
       });
+    } else if (ghostRequirementEdited) {
+      setEditForm({
+        name: ghostRequirementEdited.name ?? "",
+        description: ghostRequirementEdited.description,
+      });
     }
-  }, [requirementEdited]);
+  }, [requirementEdited, ghostRequirementEdited]);
 
   //Hooks
   const params = useParams();
@@ -335,15 +344,23 @@ export default function RequirementsTable() {
         width: 80,
         sortable: true,
         hiddenOnGhost: true,
-        render(row) {
+        render(row, _, isGhost) {
           return (
             <button
-              className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
+                if (isGhost) {
+                  setRequirementEdited(null);
+                  setGhostRequirementEdited(row);
+                } else {
+                  setRequirementEdited(row);
+                  setGhostRequirementEdited(null);
+                }
+
                 setEditingRequirement(false);
-                setRequirementEdited(row);
                 setShowSmallPopup(true);
               }}
+              disabled={row.scrumId === undefined}
             >
               {row.scrumId ? (
                 UseFormatForAssignReqTypeScrumId(
@@ -361,15 +378,22 @@ export default function RequirementsTable() {
         label: "Title",
         width: 450,
         sortable: true,
-        render(row) {
+        render(row, _, isGhost) {
           return (
             <button
-              className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
+                if (isGhost) {
+                  setRequirementEdited(null);
+                  setGhostRequirementEdited(row);
+                } else {
+                  setRequirementEdited(row);
+                  setGhostRequirementEdited(null);
+                }
                 setEditingRequirement(false);
-                setRequirementEdited(row);
                 setShowSmallPopup(true);
               }}
+              disabled={!isGhost && row.scrumId === undefined}
             >
               {row.name}
             </button>
@@ -688,6 +712,8 @@ export default function RequirementsTable() {
     "Are you sure you want to leave? You have unsaved AI generated requirements. To save them, please accept them first.",
   );
 
+  const requirementEditedData = requirementEdited ?? ghostRequirementEdited;
+
   return (
     <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
       <div className="mb-3 flex w-full flex-col justify-between">
@@ -726,14 +752,43 @@ export default function RequirementsTable() {
       {renderSmallPopup && (
         <Popup
           show={showSmallPopup}
-          reduceTopPadding={requirementEdited === null}
+          reduceTopPadding={requirementEditedData === null}
           size="small"
           className="h-[700px] w-[600px]"
           setEditMode={
-            requirementEdited !== null
+            requirementEditedData !== null
               ? async () => {
                   if (editingRequirement) {
                     setEditingRequirement(false);
+
+                    if (ghostRequirementEdited) {
+                      updateGhostRow(ghostRequirementEdited.id, (oldData) => ({
+                        ...oldData,
+                        name: editForm.name,
+                        description: editForm.description,
+                      }));
+                      setGhostRequirementEdited((prev) => {
+                        if (!prev) return null;
+                        return {
+                          ...prev,
+                          name: editForm.name,
+                          description: editForm.description,
+                        };
+                      });
+                      generatedRequirements.current =
+                        generatedRequirements.current?.map((req) => {
+                          if (req.id === ghostRequirementEdited.id) {
+                            return {
+                              ...req,
+                              name: editForm.name,
+                              description: editForm.description,
+                            };
+                          }
+                          return req;
+                        });
+                      return;
+                    }
+
                     setRequirementEdited((prev) => {
                       if (!prev) return null;
                       return {
@@ -742,29 +797,33 @@ export default function RequirementsTable() {
                         description: editForm.description,
                       };
                     });
-                    await handleEditRequirement(requirementEdited);
+                    await handleEditRequirement(requirementEditedData);
                   } else {
                     setEditingRequirement(true);
                   }
                 }
               : () => {}
           }
-          editMode={requirementEdited ? editingRequirement : undefined}
+          editMode={requirementEditedData ? editingRequirement : undefined}
           dismiss={() => {
             setShowSmallPopup(false);
           }}
           title={
             <h1 className="text-2xl">
               <strong>
-                {requirementEdited ? (
+                {requirementEditedData ? (
                   <h1 className="font-semibold">
-                    {UseFormatForAssignReqTypeScrumId(
-                      requirementEdited.requirementTypeId.name,
-                      requirementEdited.scrumId!,
+                    {requirementEditedData.scrumId && (
+                      <span>
+                        {UseFormatForAssignReqTypeScrumId(
+                          requirementEditedData.requirementTypeId.name,
+                          requirementEditedData.scrumId,
+                        )}
+                        :{" "}
+                      </span>
                     )}
-                    :{" "}
                     <span className="font-normal">
-                      {requirementEdited.name}
+                      {requirementEditedData.name}
                     </span>
                   </h1>
                 ) : (
@@ -775,15 +834,52 @@ export default function RequirementsTable() {
           }
           footer={
             <div className="flex gap-2">
-              {requirementEdited ? (
-                // FIXME add delete functionality (NEW PR)
-                <DeleteButton
-                  onClick={async () => {
-                    console.log("Deleting");
-                  }}
-                >
-                  Delete
-                </DeleteButton>
+              {requirementEditedData ? (
+                requirementEdited ? (
+                  // FIXME add delete functionality (NEW PR)
+                  <DeleteButton
+                    onClick={async () => {
+                      console.log("Deleting");
+                    }}
+                  >
+                    Delete
+                  </DeleteButton>
+                ) : (
+                  ghostRequirementEdited && (
+                    <div className="flex items-center gap-2">
+                      <AiIcon
+                        className="animate-pulse text-app-secondary"
+                        data-tooltip-id="tooltip"
+                        data-tooltip-content="This is a generated requirement. It will not get saved until you accept it."
+                      />
+                      <TertiaryButton
+                        onClick={() => {
+                          onReject([ghostRequirementEdited.id]);
+                          setShowSmallPopup(false);
+                          setTimeout(
+                            () => setGhostRequirementEdited(null),
+                            300,
+                          );
+                        }}
+                      >
+                        Reject
+                      </TertiaryButton>
+                      <PrimaryButton
+                        className="bg-app-secondary hover:bg-app-hover-secondary"
+                        onClick={async () => {
+                          setShowSmallPopup(false);
+                          setTimeout(
+                            () => setGhostRequirementEdited(null),
+                            300,
+                          );
+                          await onAccept([ghostRequirementEdited.id]);
+                        }}
+                      >
+                        Accept
+                      </PrimaryButton>
+                    </div>
+                  )
+                )
               ) : (
                 <PrimaryButton
                   onClick={async () => {
@@ -799,17 +895,17 @@ export default function RequirementsTable() {
         >
           {" "}
           <div className="flex flex-col gap-4">
-            {!requirementEdited || editingRequirement ? (
-              <div>
+            {!requirementEditedData || editingRequirement ? (
+              <div className="pt-4">
                 <InputTextField
                   label="Title"
                   className="h-12"
                   containerClassName="mb-4"
                   value={
-                    requirementEdited ? editForm.name : newRequirement.name
+                    requirementEditedData ? editForm.name : newRequirement.name
                   }
                   onChange={(e) => {
-                    if (requirementEdited) {
+                    if (requirementEditedData) {
                       setEditForm((prev) => ({
                         ...prev,
                         name: e.target.value,
@@ -826,12 +922,12 @@ export default function RequirementsTable() {
                   html-rows="4"
                   className="min-h-[120px] w-full resize-none"
                   value={
-                    requirementEdited
+                    requirementEditedData
                       ? editForm.description
                       : newRequirement.description
                   }
                   onChange={
-                    requirementEdited
+                    requirementEditedData
                       ? (e) => {
                           setEditForm((prev) => ({
                             ...prev,
@@ -842,63 +938,95 @@ export default function RequirementsTable() {
                   }
                   name="description"
                 />
-                {requirementEdited === null && (
-                  <div className="flex gap-2 pt-4">
-                    <div className="w-36 space-y-2">
-                      <label className="text-sm font-semibold">Priority</label>
-                      <PriorityPicker
-                        priority={newRequirement.priorityId}
-                        onChange={async (priority) => {
-                          setNewRequirement((prev) => ({
-                            ...prev,
-                            priorityId: priority,
-                          }));
-                        }}
-                      />
+                {requirementEdited === null &&
+                  ghostRequirementEdited === null && (
+                    <div className="flex gap-2 pt-4">
+                      <div className="w-36 space-y-2">
+                        <label className="font-semibold">Priority</label>
+                        <PriorityPicker
+                          priority={newRequirement.priorityId}
+                          onChange={async (priority) => {
+                            setNewRequirement((prev) => ({
+                              ...prev,
+                              priorityId: priority,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className="w-36 space-y-2">
+                        <label className="font-semibold">Type</label>
+                        <RequirementTypePicker
+                          type={newRequirement.requirementTypeId}
+                          onChange={async (type) => {
+                            setNewRequirement((prev) => ({
+                              ...prev,
+                              requirementTypeId: type,
+                            }));
+                          }}
+                        />
+                      </div>
+                      <div className="w-36 space-y-2">
+                        <label className="font-semibold">Focus</label>
+                        <RequirementFocusPicker
+                          focus={newRequirement.requirementFocusId}
+                          onChange={async (focus) => {
+                            setNewRequirement((prev) => ({
+                              ...prev,
+                              requirementFocusId: focus,
+                            }));
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-36 space-y-2">
-                      <label className="text-sm font-semibold">Type</label>
-                      <RequirementTypePicker
-                        type={newRequirement.requirementTypeId}
-                        onChange={async (type) => {
-                          setNewRequirement((prev) => ({
-                            ...prev,
-                            requirementTypeId: type,
-                          }));
-                        }}
-                      />
-                    </div>
-                    <div className="w-36 space-y-2">
-                      <label className="text-sm font-semibold">Focus</label>
-                      <RequirementFocusPicker
-                        focus={newRequirement.requirementFocusId}
-                        onChange={async (focus) => {
-                          setNewRequirement((prev) => ({
-                            ...prev,
-                            requirementFocusId: focus,
-                          }));
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
+                  )}
               </div>
             ) : (
               <div>
                 <div className="mt-4 text-lg">
-                  <Markdown>{requirementEdited.description}</Markdown>
+                  {requirementEditedData.description !== "" ? (
+                    <Markdown>{requirementEditedData.description}</Markdown>
+                  ) : (
+                    <p className="italic text-gray-500">
+                      No description provided.
+                    </p>
+                  )}
                 </div>
                 <br />
                 <div className="flex gap-2 pt-4">
                   <div className="w-36 space-y-2">
-                    <label className="text-sm font-semibold">Priority</label>
+                    <label className="font-semibold">Priority</label>
                     <PriorityPicker
                       priority={
-                        requirementEdited
-                          ? requirementEdited.priorityId
+                        requirementEditedData
+                          ? requirementEditedData.priorityId
                           : newRequirement.priorityId
                       }
                       onChange={async (priority) => {
+                        if (ghostRequirementEdited) {
+                          updateGhostRow(
+                            ghostRequirementEdited.id,
+                            (oldData) => ({
+                              ...oldData,
+                              priorityId: priority,
+                            }),
+                          );
+                          setGhostRequirementEdited((prev) => ({
+                            ...prev!,
+                            priorityId: priority,
+                          }));
+                          generatedRequirements.current =
+                            generatedRequirements.current?.map((req) => {
+                              if (req.id === ghostRequirementEdited.id) {
+                                return {
+                                  ...req,
+                                  priorityId: priority,
+                                };
+                              }
+                              return req;
+                            });
+                          return;
+                        }
+
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
@@ -918,14 +1046,39 @@ export default function RequirementsTable() {
                     />
                   </div>
                   <div className="w-36 space-y-2">
-                    <label className="text-sm font-semibold">Type</label>
+                    <label className="font-semibold">Type</label>
                     <RequirementTypePicker
                       type={
-                        requirementEdited
-                          ? requirementEdited.requirementTypeId
+                        requirementEditedData
+                          ? requirementEditedData.requirementTypeId
                           : newRequirement.requirementTypeId
                       }
                       onChange={async (type) => {
+                        if (ghostRequirementEdited) {
+                          updateGhostRow(
+                            ghostRequirementEdited.id,
+                            (oldData) => ({
+                              ...oldData,
+                              requirementTypeId: type,
+                            }),
+                          );
+                          setGhostRequirementEdited((prev) => ({
+                            ...prev!,
+                            requirementTypeId: type,
+                          }));
+                          generatedRequirements.current =
+                            generatedRequirements.current?.map((req) => {
+                              if (req.id === ghostRequirementEdited.id) {
+                                return {
+                                  ...req,
+                                  requirementTypeId: type,
+                                };
+                              }
+                              return req;
+                            });
+                          return;
+                        }
+
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
@@ -945,14 +1098,39 @@ export default function RequirementsTable() {
                     />
                   </div>
                   <div className="w-36 space-y-2">
-                    <label className="text-sm font-semibold">Focus</label>
+                    <label className="font-semibold">Focus</label>
                     <RequirementFocusPicker
                       focus={
-                        requirementEdited
-                          ? requirementEdited.requirementFocusId
+                        requirementEditedData
+                          ? requirementEditedData.requirementFocusId
                           : newRequirement.requirementFocusId
                       }
                       onChange={async (focus) => {
+                        if (ghostRequirementEdited) {
+                          updateGhostRow(
+                            ghostRequirementEdited.id,
+                            (oldData) => ({
+                              ...oldData,
+                              requirementFocusId: focus,
+                            }),
+                          );
+                          setGhostRequirementEdited((prev) => ({
+                            ...prev!,
+                            requirementFocusId: focus,
+                          }));
+                          generatedRequirements.current =
+                            generatedRequirements.current?.map((req) => {
+                              if (req.id === ghostRequirementEdited.id) {
+                                return {
+                                  ...req,
+                                  requirementFocusId: focus,
+                                };
+                              }
+                              return req;
+                            });
+                          return;
+                        }
+
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
