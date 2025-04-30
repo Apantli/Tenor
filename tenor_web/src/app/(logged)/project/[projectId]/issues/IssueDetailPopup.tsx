@@ -31,6 +31,7 @@ import {
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
+import StatusTooltip from "~/app/_components/StatusTooltip";
 
 interface Props {
   issueId: string;
@@ -229,7 +230,13 @@ export default function IssueDetailPopup({
                 </div>
 
                 <div className="mt-4 flex-1">
-                  <h3 className="text-lg font-semibold">Status</h3>
+                  <div className="flex">
+                    <h3 className="text-lg font-semibold">Status</h3>
+                    {issueDetail.status?.id == "" ||
+                      (issueDetail.status === undefined && (
+                        <StatusTooltip itemId={issueDetail.id} />
+                      ))}
+                  </div>
                   <StatusPicker
                     status={issueDetail.status}
                     onChange={async (status) => {
@@ -290,7 +297,7 @@ export default function IssueDetailPopup({
       disablePassiveDismiss={editMode}
     >
       {editMode && (
-        <div className="flex flex-col gap-4">  
+        <div className="flex flex-col gap-4">
           <InputTextField
             label="Issue name"
             value={editForm.name}

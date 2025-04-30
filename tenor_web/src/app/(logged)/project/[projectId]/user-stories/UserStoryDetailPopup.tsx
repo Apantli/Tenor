@@ -37,6 +37,7 @@ import {
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
+import StatusTooltip from "~/app/_components/StatusTooltip";
 
 interface Props {
   userStoryId: string;
@@ -321,7 +322,12 @@ export default function UserStoryDetailPopup({
                 {/* Only show if its not a ghost! */}
                 {userStoryData === undefined && (
                   <div className="mt-4 flex-1">
-                    <h3 className="text-lg font-semibold">Status</h3>
+                    <div className="flex">
+                      <h3 className="text-lg font-semibold">Status</h3>
+                      {userStoryDetail.status?.id == "" || userStoryDetail.status === undefined && (
+                        <StatusTooltip itemId={userStoryDetail.id} />
+                      )}
+                    </div>
                     <StatusPicker
                       status={userStoryDetail.status}
                       onChange={async (status) => {
