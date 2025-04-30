@@ -130,7 +130,7 @@ export default function StatusTable() {
   const tableData =
     filteredStatus?.map((status) => ({
       id: status.id,
-      order: status.orderIndex,
+      order: status.orderIndex + 1, // +1 to make it 1-indexed
       name: status.name,
       color: status.color,
       markTaskAsDone: status.marksTaskAsDone,
