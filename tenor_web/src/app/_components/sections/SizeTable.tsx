@@ -25,18 +25,18 @@ const SIZE_COLORS: Record<Size, string> = {
 };
 
 export default function SettingsSizeTable() {
-  const { projectId } = useParams() as { projectId: string };
+  const { projectId } = useParams();
 
   const { data: projectSettings } = api.settings.getSizeTypes.useQuery({
-    projectId,
-  }) as { data: number[] | undefined };
+    projectId: projectId as string,
+  }) as { data: number[]};
 
   const [sizeData, setSizeData] = useState<SizeCol[]>([]);
   const changeSizeMutation = api.settings.changeSize.useMutation();
 
   useEffect(() => {
     if (Array.isArray(projectSettings)) { 
-      const list = projectSettings as number[];  
+      const list = projectSettings;  
       const mapped = SIZE_ORDER.map((sizeName, index) => ({
         id: `${sizeName}-${index}`, 
         name: sizeName,
@@ -73,7 +73,11 @@ export default function SettingsSizeTable() {
 
   const handleSave = () => {
     const newSizes = sizeData.map((s) => s.value);
-    changeSizeMutation.mutate({ projectId, size: newSizes });
+    if (typeof projectId === "string") {
+      changeSizeMutation.mutate({ projectId, size: newSizes });
+    } else {
+      console.error("Invalid projectId: must be a string.");
+    }
   };
 
   const tableColumns: TableColumns<SizeCol> = {
