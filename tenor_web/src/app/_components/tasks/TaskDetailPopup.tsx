@@ -11,7 +11,10 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import { useFormatTaskScrumId, useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
+import {
+  useFormatTaskScrumId,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SidebarPopup } from "../Popup";
 import { Timestamp } from "firebase/firestore";
@@ -219,7 +222,7 @@ export default function TaskDetailPopup({
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
             placeholder="Task Objective"
-            className="mb-4"
+            containerClassName="mb-4"
           />
           <InputTextAreaField
             label="Notes"
@@ -228,7 +231,7 @@ export default function TaskDetailPopup({
               setEditForm({ ...editForm, description: e.target.value })
             }
             placeholder="Notes to complete the task"
-            className="mb-4"
+            containerClassName="mb-4"
           />
         </>
       )}
