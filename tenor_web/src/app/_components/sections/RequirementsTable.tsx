@@ -347,7 +347,7 @@ export default function RequirementsTable() {
         render(row, _, isGhost) {
           return (
             <button
-              className="flex w-full items-center truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 if (isGhost) {
                   setRequirementEdited(null);
@@ -360,6 +360,7 @@ export default function RequirementsTable() {
                 setEditingRequirement(false);
                 setShowSmallPopup(true);
               }}
+              disabled={row.scrumId === undefined}
             >
               {row.scrumId ? (
                 UseFormatForAssignReqTypeScrumId(
@@ -380,7 +381,7 @@ export default function RequirementsTable() {
         render(row, _, isGhost) {
           return (
             <button
-              className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
+              className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 if (isGhost) {
                   setRequirementEdited(null);
@@ -392,6 +393,7 @@ export default function RequirementsTable() {
                 setEditingRequirement(false);
                 setShowSmallPopup(true);
               }}
+              disabled={!isGhost && row.scrumId === undefined}
             >
               {row.name}
             </button>
