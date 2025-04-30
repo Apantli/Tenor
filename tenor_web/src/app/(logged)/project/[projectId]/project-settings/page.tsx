@@ -171,7 +171,8 @@ export default function ProjectGeneralSettings() {
           <InputTextAreaField
             label="Project Description"
             labelClassName="text-lg font-bold"
-            className="mt-auto h-[115px] min-h-16 w-full"
+            containerClassName="mt-auto"
+            className="h-[115px] min-h-16 w-full"
             value={editForm.description}
             name="description"
             onChange={handleChange}

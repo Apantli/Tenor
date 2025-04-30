@@ -803,7 +803,8 @@ export default function RequirementsTable() {
               <div>
                 <InputTextField
                   label="Title"
-                  className="mb-4 h-12"
+                  className="h-12"
+                  containerClassName="mb-4"
                   value={
                     requirementEdited ? editForm.name : newRequirement.name
                   }

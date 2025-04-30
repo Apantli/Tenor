@@ -162,7 +162,7 @@ export default function CreateIssuePopup({
         value={createForm.name}
         onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
         placeholder="Short summary of the issue..."
-        className="mb-4"
+        containerClassName="mb-4"
       />
       <InputTextAreaField
         label="Issue description"
@@ -171,7 +171,8 @@ export default function CreateIssuePopup({
           setCreateForm({ ...createForm, description: e.target.value })
         }
         placeholder="Explain the issue in detail..."
-        className="mb-4 h-36 min-h-36"
+        className="h-36 min-h-36"
+        containerClassName="mb-4"
       />
       <InputTextAreaField
         label="Steps To Recreate"
