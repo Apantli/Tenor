@@ -1,6 +1,6 @@
 "use client";
 
-import { type PropsWithChildren } from "react";
+import { useRef, type PropsWithChildren } from "react";
 import SettingsIcon from "@mui/icons-material/Settings";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -10,12 +10,8 @@ import { cn } from "~/lib/utils";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import path from "path";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { ModificationContext } from "~/app/_hooks/useModification";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
-import { usePathname } from "next/navigation";
-import path from "path";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import InterceptedLink from "~/app/_components/InterceptableLink";
 const joinPath = (...paths: string[]) => {
   const joined = path.join(...paths);
@@ -62,53 +58,52 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
         <h1 className="mb-5 text-3xl font-semibold">Project Settings</h1>
 
         {pages.map(({ title, link, icon: Icon }, i) => {
-                  {pages.map(({ title, link, icon: Icon }, i) => {
           if (title === "General") {
             if (role?.id !== "owner") {
               return null;
             }
           }
-         
+
           return (
-          <InterceptedLink
-            key={link}
-            className={cn(
-              "flex items-center gap-3 border-t-2 p-4 hover:bg-gray-100",
-              i === pages.length - 1 && "border-b-2",
-              joinPath(rootPath, link) === pathname && "bg-gray-100",
-            )}
-            href={joinPath(rootPath, link)}
-          >
-            <Icon fontSize="large" />
-            <span
+            <InterceptedLink
+              key={link}
               className={cn(
                 "flex items-center gap-3 border-t-2 p-4 hover:bg-gray-100",
                 i === pages.length - 1 && "border-b-2",
                 joinPath(rootPath, link) === pathName && "bg-gray-100",
               )}
-              onClick={async () => {
-                if (joinPath(rootPath, link) === pathName) return;
-                if (isModified.current) {
-                  const confirmation = await confirm(
-                    "Are you sure?",
-                    "Your changes will be discarded.",
-                    "Discard changes",
-                    "Keep Editing",
-                  );
-                  if (!confirmation) return;
-                }
-                isModified.current = false;
-                router.push(joinPath(rootPath, link));
-              }}
+              href={joinPath(rootPath, link)}
             >
-              {title}
-            </span>
-            {joinPath(rootPath, link) !== pathname && (
-              <ArrowForwardIosIcon className="ml-auto text-gray-300" />
-            )}
-          </InterceptedLink>)
-                  })}
-
+              <Icon fontSize="large" />
+              <span
+                className={cn(
+                  "flex items-center gap-3 border-t-2 p-4 hover:bg-gray-100",
+                  i === pages.length - 1 && "border-b-2",
+                  joinPath(rootPath, link) === pathName && "bg-gray-100",
+                )}
+                onClick={async () => {
+                  if (joinPath(rootPath, link) === pathName) return;
+                  if (isModified.current) {
+                    const confirmation = await confirm(
+                      "Are you sure?",
+                      "Your changes will be discarded.",
+                      "Discard changes",
+                      "Keep Editing",
+                    );
+                    if (!confirmation) return;
+                  }
+                  isModified.current = false;
+                  router.push(joinPath(rootPath, link));
+                }}
+              >
+                {title}
+              </span>
+              {joinPath(rootPath, link) !== pathName && (
+                <ArrowForwardIosIcon className="ml-auto text-gray-300" />
+              )}
+            </InterceptedLink>
+          );
+        })}
       </div>
       <div className="ml-10 flex-1 overflow-auto">{children}</div>
     </div>

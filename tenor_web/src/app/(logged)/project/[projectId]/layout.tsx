@@ -54,7 +54,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
 
         if (
           projectSettingsTabs.includes(tab) &&
-          role.tabs["projectSettings"] > 0
+          role.tabs["projectSettings" as keyof typeof role.tabs] > 0
         ) {
           return true;
         }

@@ -437,7 +437,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, tabId, permission } = input;
 
-      const roleDoc = await ctx.firestore
+      const roleDoc = ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .collection("settings")
@@ -466,7 +466,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, newValue } = input;
 
-      const roleDoc = await ctx.firestore
+      const roleDoc = ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .collection("settings")
@@ -491,7 +491,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, newValue } = input;
 
-      const roleDoc = await ctx.firestore
+      const roleDoc = ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .collection("settings")
@@ -539,7 +539,7 @@ const settingsRouter = createTRPCRouter({
         .collection("settings")
         .doc("settings")
         .collection("userTypes")
-        .doc(userData.roleId)
+        .doc(userData.roleId as string)
         .get();
       if (!roleDoc.exists) {
         throw new Error("Role not found");
