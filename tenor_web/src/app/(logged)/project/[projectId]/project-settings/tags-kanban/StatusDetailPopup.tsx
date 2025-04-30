@@ -248,7 +248,7 @@ export default function StatusDetailPopup({
             <HelpIcon
               className="ml-[3px] text-gray-500"
               data-tooltip-id="tooltip"
-              data-tooltip-content="Tasks moved to this status list will be considered as a completed task"
+              data-tooltip-content="Tasks moved to this status will be considered as a completed task"
               data-tooltip-place="top-start"
               style={{ width: "15px" }}
             />

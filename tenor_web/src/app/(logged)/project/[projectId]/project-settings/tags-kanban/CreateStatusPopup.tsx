@@ -17,7 +17,7 @@ import HelpIcon from "@mui/icons-material/Help";
 interface Props {
   showPopup: boolean;
   setShowPopup: (show: boolean) => void;
-  onStatusAdded: (listId: string) => void;
+  onStatusAdded: (statusId: string) => void;
 }
 
 export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
