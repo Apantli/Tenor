@@ -240,7 +240,6 @@ export default function IssuesTable() {
               console.error("Failed to update user story:", error);
             }
           };
-          console.log("row", row);
           return (
             <UserStoryPicker
               userStory={row.relatedUserStory}
@@ -317,7 +316,6 @@ export default function IssuesTable() {
         label: "Assignees",
         width: 120,
         render(row) {
-          console.log("Assign users:", row.assignUsers);
           return <AssignUsersList users={row.assignUsers} />;
         },
       },
