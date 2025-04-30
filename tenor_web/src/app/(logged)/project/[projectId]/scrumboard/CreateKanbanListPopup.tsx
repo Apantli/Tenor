@@ -26,7 +26,7 @@ export default function CreateKanbanListPopup({
   setShowPopup,
 }: Props) {
   const confirm = useConfirmation();
-  const invalidateQueriesKanbanLists = useInvalidateQueriesItemStatus();
+  const invalidateQueriesItemStatus = useInvalidateQueriesItemStatus();
 
   // REACT
   const { projectId } = useParams();
@@ -74,7 +74,7 @@ export default function CreateKanbanListPopup({
     });
 
     setShowPopup(false);
-    await invalidateQueriesKanbanLists(projectId as string);
+    await invalidateQueriesItemStatus(projectId as string);
   };
 
   return (

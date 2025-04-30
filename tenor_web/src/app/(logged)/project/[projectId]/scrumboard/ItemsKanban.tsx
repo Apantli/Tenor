@@ -15,14 +15,12 @@ import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import {
-  useInvalidateQueriesAllTasks,
-  useInvalidateQueriesAllUserStories,
   useInvalidateQueriesBacklogItemDetails,
   useInvalidateQueriesBacklogItems,
 } from "~/app/_hooks/invalidateHooks";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
+import type { KanbanCard } from "~/server/api/routers/kanban";
 
-// TODO: Invalidate correctly
 export default function ItemsKanban() {
   // GENERAL
   const { projectId } = useParams();
@@ -251,7 +249,7 @@ export default function ItemsKanban() {
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetailItemId}
                   setShowDetail={setShowDetail}
-                  renderCard={(item) => (
+                  renderCard={(item: KanbanCard) => (
                     <ItemCardRender
                       item={item}
                       scrumIdFormatter={formatUserStoryScrumId}

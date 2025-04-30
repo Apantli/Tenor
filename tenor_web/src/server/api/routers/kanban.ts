@@ -5,16 +5,16 @@ import { getTasksFromProject, getTasksFromItem } from "./tasks";
 import type {
   Issue,
   StatusTag,
+  Tag,
   UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
-import { getProjectSettingsRef } from "./settings";
+import { getBacklogTag, getProjectSettingsRef } from "./settings";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
 import { doingTagName, doneTagName, todoTagName } from "~/lib/defaultTags";
 
-// TODO: Fix double ids. Create 2 formats: one for tasks and one for items... (one does not hvae itemId i think, and just "itemType")
 // Only information needed by the kanban board columns / selectable cards
-export interface CardItem {
+export interface KanbanCard {
   id: string;
   scrumId: number;
   name: string;
@@ -28,9 +28,11 @@ export interface CardItem {
   columnId: string;
 }
 
-// The ID and type of the parent if its a task, or itself if its an item
-export interface CardItemWithType extends CardItem {
+export interface KanbanTaskCard extends KanbanCard {
   itemId: string;
+  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
+}
+export interface KanbanItemCard extends KanbanCard {
   itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 }
 
@@ -166,7 +168,7 @@ export const kanbanRouter = createTRPCRouter({
           columnId: statusId,
           itemType,
           itemId,
-        } as CardItemWithType;
+        } as KanbanTaskCard;
       });
 
       const columns = await getAllStatuses(ctx.firestore, input.projectId);
@@ -193,7 +195,6 @@ export const kanbanRouter = createTRPCRouter({
       };
     }),
 
-  // TODO: get items tags
   getBacklogItemsForKanban: protectedProcedure
     .input(
       z.object({
@@ -206,21 +207,36 @@ export const kanbanRouter = createTRPCRouter({
         .collection(`projects/${input.projectId}/userStories`)
         .where("deleted", "==", false);
       const userStoriesSnapshot = await userStoriesRef.get();
-
-      const userStories = userStoriesSnapshot.docs.map((doc) => {
-        const data = doc.data() as UserStory;
-        return {
-          id: doc.id,
-          scrumId: data.scrumId,
-          name: data.name,
-          description: data.description,
-          size: data.size,
-          tags: [],
-          columnId: data.statusId ?? "", // Handle potentially undefined statusId
-          itemType: "US" as const,
-          itemId: doc.id,
-        } as CardItemWithType;
-      });
+      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+      const memoTags = new Map<string, WithId<Tag>>();
+      const userStories = await Promise.all(
+        userStoriesSnapshot.docs.map(async (doc) => {
+          const data = doc.data() as UserStory;
+          const tags = await Promise.all(
+            data.tagIds.map(async (tagId: string) => {
+              if (memoTags.has(tagId)) {
+                return memoTags.get(tagId);
+              }
+              const tag = await getBacklogTag(settingsRef, tagId);
+              if (!tag) {
+                return null;
+              }
+              memoTags.set(tagId, tag);
+              return tag;
+            }),
+          );
+          return {
+            id: doc.id,
+            scrumId: data.scrumId,
+            name: data.name,
+            description: data.description,
+            size: data.size,
+            tags: tags,
+            columnId: data.statusId ?? "", // Handle potentially undefined statusId
+            itemType: "US" as const,
+          } as KanbanItemCard;
+        }),
+      );
 
       // Fetch issues
       const issuesRef = ctx.firestore
@@ -239,8 +255,7 @@ export const kanbanRouter = createTRPCRouter({
           tags: [],
           columnId: data.statusId ?? "", // Handle potentially undefined statusId
           itemType: "IS" as const,
-          itemId: doc.id,
-        } as CardItemWithType;
+        } as KanbanItemCard;
       });
 
       // Combine both types of backlog items
@@ -259,7 +274,7 @@ export const kanbanRouter = createTRPCRouter({
             const newCol = await getAutomaticStatusId(
               ctx.firestore,
               input.projectId,
-              item.itemId,
+              item.id,
               activeColumns,
             );
             item.columnId = newCol ?? "";
@@ -279,9 +294,9 @@ export const kanbanRouter = createTRPCRouter({
           itemIds: itemsWithStatus
             .filter((item) => item.columnId === column.id)
             .sort((a, b) => (a?.scrumId ?? 0) - (b?.scrumId ?? 0))
-            .map((item) => item.id)
+            .map((item) => item.id),
         }))
-        .sort((a, b) => (a.orderIndex > b.orderIndex ? -1 : 1));
+        .sort((a, b) => (a.orderIndex < b.orderIndex ? -1 : 1));
 
       return {
         columns: columnsWithItems,

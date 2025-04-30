@@ -4,7 +4,7 @@ import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CardColumn from "./CardColumn";
 import type { ClassNameValue } from "tailwind-merge";
 import ItemCardRender from "./ItemCardRender";
-import type { CardItem } from "~/server/api/routers/kanban";
+import type { KanbanCard } from "~/server/api/routers/kanban";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 
 interface Props {
@@ -34,7 +34,7 @@ export default function UserStoryCardColumn({
   dndId,
   lastDraggedUserStoryId: lastDraggedUserStoryId,
 }: Props) {
-  const cards: CardItem[] = userStories.map((userStory) => ({
+  const cards: KanbanCard[] = userStories.map((userStory) => ({
     id: userStory.id,
     scrumId: userStory.scrumId,
     name: userStory.name,

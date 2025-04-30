@@ -8,7 +8,7 @@ import {
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
-import { Tag } from "~/lib/types/firebaseSchemas";
+import { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 import { emptyRole, ownerRole } from "~/lib/defaultTags";
@@ -65,7 +65,7 @@ export const getBacklogTag = async (
   if (!tag.exists) {
     return undefined;
   }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+  return { id: tag.id, ...TagSchema.parse(tag.data()) } as WithId<Tag>;
 };
 
 // TODO: Fetch from db
@@ -437,7 +437,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, tabId, permission } = input;
 
-      const roleDoc = await ctx.firestore
+      const roleDoc = ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .collection("settings")
@@ -466,7 +466,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, newValue } = input;
 
-      const roleDoc = await ctx.firestore
+      const roleDoc = ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .collection("settings")
@@ -491,7 +491,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, newValue } = input;
 
-      const roleDoc = await ctx.firestore
+      const roleDoc = ctx.firestore
         .collection("projects")
         .doc(input.projectId)
         .collection("settings")
@@ -539,7 +539,7 @@ const settingsRouter = createTRPCRouter({
         .collection("settings")
         .doc("settings")
         .collection("userTypes")
-        .doc(userData.roleId)
+        .doc(userData.roleId as string)
         .get();
       if (!roleDoc.exists) {
         throw new Error("Role not found");

@@ -81,6 +81,9 @@ export const useInvalidateQueriesItemStatus = () => {
     await utils.kanban.getTasksForKanban.invalidate({
       projectId: projectId,
     });
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
+      projectId: projectId,
+    });
     await utils.settings.getStatusTypes.invalidate({ projectId: projectId });
   };
 };
@@ -171,8 +174,6 @@ export const useInvalidateQueriesBacklogItemDetails = () => {
       projectId,
       issues.map((i) => i.itemId),
     );
-
-    // TODO: Add one for general backlog items
   };
 };
 
