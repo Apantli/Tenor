@@ -80,7 +80,7 @@ export const getTasksFromProject = async (
  * @param {string} itemId - The ID of the item (user story, issue) to retrieve tasks for
  * @returns {Promise<WithId<Task>[]>} An array of task objects with their IDs
  */
-const getTasksFromItem = async (
+export const getTasksFromItem = async (
   dbAdmin: FirebaseFirestore.Firestore,
   projectId: string,
   itemId: string,
@@ -134,7 +134,7 @@ const getStatusTag = async (
  * @returns {Promise<Tag>} The Todo status tag object
  * @throws {TRPCError} If the Todo status tag is not found
  */
-const getTodoStatusTag = async (
+export const getTodoStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
 ) => {
   const todoTag = await settingsRef

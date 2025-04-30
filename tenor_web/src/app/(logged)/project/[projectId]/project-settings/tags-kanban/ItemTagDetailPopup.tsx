@@ -13,6 +13,7 @@ import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import Markdown from "react-markdown";
+import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   showPopup: boolean;
@@ -28,6 +29,7 @@ export default function ItemTagDetailPopup({
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
+  const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
 
   // REACT
   const { projectId } = useParams();
@@ -117,9 +119,7 @@ export default function ItemTagDetailPopup({
       },
     });
 
-    await utils.settings.getBacklogTags.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllTags(projectId as string);
     await refetch();
     setColorChanged(false);
   };
@@ -150,9 +150,7 @@ export default function ItemTagDetailPopup({
         projectId: projectId as string,
         tagId: tagId,
       });
-      await utils.settings.getBacklogTags.invalidate({
-        projectId: projectId as string,
-      });
+      await invalidateQueriesAllTags(projectId as string);
       setShowPopup(false);
     }
   };

@@ -14,6 +14,7 @@ import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import HelpIcon from "@mui/icons-material/Help";
+import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   showPopup: boolean;
@@ -29,6 +30,7 @@ export default function StatusDetailPopup({
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
+  const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
 
   const { projectId } = useParams();
   const [editMode, setEditMode] = useState(false);
@@ -122,9 +124,7 @@ export default function StatusDetailPopup({
       },
     });
 
-    await utils.settings.getStatusTypes.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllStatuses(projectId as string);
     await refetch();
   };
 
@@ -154,9 +154,7 @@ export default function StatusDetailPopup({
         projectId: projectId as string,
         statusId: statusId,
       });
-      await utils.settings.getStatusTypes.invalidate({
-        projectId: projectId as string,
-      });
+      await invalidateQueriesAllStatuses(projectId as string);
       setShowPopup(false);
     }
   };

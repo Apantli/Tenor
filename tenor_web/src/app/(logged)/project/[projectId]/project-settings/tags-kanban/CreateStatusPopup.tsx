@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { useInvalidateQueriesItemStatus } from "~/app/_hooks/invalidateHooks";
+import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
@@ -23,6 +23,7 @@ interface Props {
 export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
+  const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
 
   // REACT
   const { projectId } = useParams();
@@ -70,9 +71,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
     });
 
     setShowPopup(false);
-    await utils.settings.getStatusTypes.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllStatuses(projectId as string);
   };
 
   return (

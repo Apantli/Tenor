@@ -10,6 +10,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
+import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   showPopup: boolean;
@@ -20,6 +21,7 @@ interface Props {
 export default function CreateItemTagPopup({ showPopup, setShowPopup }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
+  const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
 
   // REACT
   const { projectId } = useParams();
@@ -67,9 +69,7 @@ export default function CreateItemTagPopup({ showPopup, setShowPopup }: Props) {
     });
 
     setShowPopup(false);
-    await utils.settings.getBacklogTags.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllTags(projectId as string);
   };
 
   return (

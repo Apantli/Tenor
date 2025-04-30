@@ -14,6 +14,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
 
 export default function ItemTagTable() {
   const { projectId } = useParams();
@@ -24,6 +25,7 @@ export default function ItemTagTable() {
     usePopupVisibilityState();
   const [selectedTagId, setSelectedTagId] = useState("");
   const confirm = useConfirmation();
+  const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
 
   const {
     data: tags,
@@ -142,9 +144,7 @@ export default function ItemTagTable() {
   ];
 
   const onTagAdded = async () => {
-    await utils.settings.getBacklogTags.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllTags(projectId as string);
   };
 
   return (

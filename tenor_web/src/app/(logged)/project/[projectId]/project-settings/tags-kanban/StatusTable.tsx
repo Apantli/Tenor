@@ -18,6 +18,7 @@ import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import HelpIcon from "@mui/icons-material/Help";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";
+import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
 
 export default function StatusTable() {
   const { projectId } = useParams();
@@ -29,6 +30,7 @@ export default function StatusTable() {
     usePopupVisibilityState();
   const [selectedStatusId, setSelectedStatusId] = useState("");
   const confirm = useConfirmation();
+  const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
 
   const {
     data: status,
@@ -217,9 +219,7 @@ export default function StatusTable() {
   ];
 
   const onStatusAdded = async () => {
-    await utils.settings.getStatusTypes.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllStatuses(projectId as string);
   };
 
   return (
