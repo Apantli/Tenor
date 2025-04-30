@@ -1,0 +1,9 @@
+{
+    "entryPoints": ["../tenor_web/src/server/api/root.ts"],
+    "plugin": ["typedoc-plugin-markdown"],
+    "out": "docs/api",
+    "readme": "none",
+    "hideBreadcrumbs": true,
+    "tsconfig": "../tenor_web/tsconfig.json",
+}
+  
