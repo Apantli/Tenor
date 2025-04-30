@@ -1,7 +1,7 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
-import { getTasksFromProject } from "./tasks";
+import { getTasksFromProject, getTasksFromItem } from "./tasks";
 import type {
   Issue,
   StatusTag,
@@ -10,7 +10,10 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { getProjectSettingsRef } from "./settings";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
+import { doingTagName, doneTagName, todoTagName } from "~/lib/defaultTags";
 
+// TODO: Fix double ids. Create 2 formats: one for tasks and one for items... (one does not hvae itemId i think, and just "itemType")
+// Only information needed by the kanban board columns / selectable cards
 export interface CardItem {
   id: string;
   scrumId: number;
@@ -25,7 +28,8 @@ export interface CardItem {
   columnId: string;
 }
 
-export interface CardTask extends CardItem {
+// The ID and type of the parent if its a task, or itself if its an item
+export interface CardItemWithType extends CardItem {
   itemId: string;
   itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 }
@@ -48,9 +52,88 @@ const getAllStatuses = async (
       ...doc.data(),
     };
   });
-  console.log("Raw Statuses", docs);
 
   return docs as WithId<StatusTag>[];
+};
+
+// Get the status ID based on tasks for a backlog item with undefined status
+const getAutomaticStatusId = async (
+  dbAdmin: FirebaseFirestore.Firestore,
+  projectId: string,
+  itemId: string,
+  statusTags: WithId<StatusTag>[],
+) => {
+  // Get all tasks for this item
+  const tasks = await getTasksFromItem(dbAdmin, projectId, itemId);
+
+  // Rule 1: No tasks? Item is set to TODO
+  if (tasks.length === 0) {
+    // Find the "Todo" status tag
+    const todoStatus = statusTags.find(
+      (status) => status.name.toLowerCase() === todoTagName,
+    );
+    if (todoStatus) return todoStatus.id;
+
+    // If no "Todo" status exists, use the first status in order
+    const orderedStatuses = [...statusTags].sort(
+      (a, b) => a.orderIndex - b.orderIndex,
+    );
+    if (orderedStatuses.length > 0) {
+      const firstStatus = orderedStatuses[0] ?? { id: "" }; // Weird, but TypeScript needs this
+      return firstStatus.id;
+    } else {
+      return "";
+    }
+  }
+
+  // Rule 2: All tasks have the same status? The item takes that status
+  const taskStatusIds = tasks
+    .map((task) => task.statusId)
+    .filter((id) => id !== "");
+  if (
+    taskStatusIds.length > 0 &&
+    taskStatusIds.every((id) => id === taskStatusIds[0])
+  ) {
+    return taskStatusIds[0];
+  }
+
+  // Rule 3: All tasks are resolved? The item is set to Done
+  const doneStatusIds = statusTags
+    .filter((status) => status.marksTaskAsDone)
+    .map((status) => status.id);
+
+  if (
+    tasks.length > 0 &&
+    tasks.every(
+      (task) => task.statusId && doneStatusIds.includes(task.statusId),
+    )
+  ) {
+    // Find the "Done" status tag
+    const doneStatus = statusTags.find(
+      (status) => status.name.toLowerCase() === doneTagName,
+    );
+    if (doneStatus) return doneStatus.id;
+
+    // If no specific "Done" status exists, use the first status that marks tasks as done
+    return doneStatusIds.length > 0 ? doneStatusIds[0] : "";
+  }
+
+  // Rule 4: Otherwise, the item is set to Doing
+  const doingStatus = statusTags.find(
+    (status) => status.name.toLowerCase() === doingTagName,
+  );
+  if (doingStatus) return doingStatus.id;
+
+  // If no "Doing" status exists, use a middle status based on order index
+  const orderedStatuses = [...statusTags].sort(
+    (a, b) => a.orderIndex - b.orderIndex,
+  );
+  if (orderedStatuses.length > 0) {
+    const middleIndex = Math.floor((orderedStatuses.length - 1) / 2);
+    return (orderedStatuses[middleIndex] ?? { id: "" }).id;
+  }
+
+  return "";
 };
 
 export const kanbanRouter = createTRPCRouter({
@@ -83,7 +166,7 @@ export const kanbanRouter = createTRPCRouter({
           columnId: statusId,
           itemType,
           itemId,
-        } as CardTask;
+        } as CardItemWithType;
       });
 
       const columns = await getAllStatuses(ctx.firestore, input.projectId);
@@ -110,6 +193,7 @@ export const kanbanRouter = createTRPCRouter({
       };
     }),
 
+  // TODO: get items tags
   getBacklogItemsForKanban: protectedProcedure
     .input(
       z.object({
@@ -131,11 +215,11 @@ export const kanbanRouter = createTRPCRouter({
           name: data.name,
           description: data.description,
           size: data.size,
-          tags: [], // Tags will be populated if needed
-          columnId: data.statusId,
+          tags: [],
+          columnId: data.statusId ?? "", // Handle potentially undefined statusId
           itemType: "US" as const,
           itemId: doc.id,
-        } as CardTask;
+        } as CardItemWithType;
       });
 
       // Fetch issues
@@ -152,11 +236,11 @@ export const kanbanRouter = createTRPCRouter({
           name: data.name,
           description: data.description,
           size: data.size,
-          tags: [], // Tags will be populated if needed
-          columnId: data.statusId,
+          tags: [],
+          columnId: data.statusId ?? "", // Handle potentially undefined statusId
           itemType: "IS" as const,
           itemId: doc.id,
-        } as CardTask;
+        } as CardItemWithType;
       });
 
       // Combine both types of backlog items
@@ -168,6 +252,22 @@ export const kanbanRouter = createTRPCRouter({
         (column) => column.deleted === false,
       );
 
+      // Assign automatic status to items with undefined status
+      const itemsWithStatus = await Promise.all(
+        backlogItems.map(async (item) => {
+          if (item.columnId === "") {
+            const newCol = await getAutomaticStatusId(
+              ctx.firestore,
+              input.projectId,
+              item.itemId,
+              activeColumns,
+            );
+            item.columnId = newCol ?? "";
+          }
+          return item;
+        }),
+      );
+
       // Group items by status
       const columnsWithItems = activeColumns
         .map((column) => ({
@@ -176,16 +276,17 @@ export const kanbanRouter = createTRPCRouter({
           color: column.color,
           orderIndex: column.orderIndex,
 
-          taskIds: backlogItems
+          itemIds: itemsWithStatus
             .filter((item) => item.columnId === column.id)
-            .map((item) => item.id),
+            .sort((a, b) => (a?.scrumId ?? 0) - (b?.scrumId ?? 0))
+            .map((item) => item.id)
         }))
-        .sort((a, b) => (a.orderIndex < b.orderIndex ? -1 : 1));
+        .sort((a, b) => (a.orderIndex > b.orderIndex ? -1 : 1));
 
       return {
         columns: columnsWithItems,
-        cardTasks: Object.fromEntries(
-          backlogItems.map((item) => [item.id, item]),
+        cardItems: Object.fromEntries(
+          itemsWithStatus.map((item) => [item.id, item]),
         ),
       };
     }),
@@ -203,7 +304,7 @@ export const kanbanRouter = createTRPCRouter({
       const { projectId, name, color, marksTaskAsDone } = input;
 
       const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
+        projectId,
         ctx.firestore,
       );
 

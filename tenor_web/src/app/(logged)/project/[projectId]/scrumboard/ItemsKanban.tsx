@@ -9,10 +9,7 @@ import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import {
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
-import { useAlert } from "~/app/_hooks/useAlert";
+import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
@@ -20,6 +17,8 @@ import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesBacklogItemDetails,
+  useInvalidateQueriesBacklogItems,
 } from "~/app/_hooks/invalidateHooks";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 
@@ -29,8 +28,9 @@ export default function ItemsKanban() {
   const { projectId } = useParams();
   const utils = api.useUtils();
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
-  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
+  const invalidateQueriesBacklogItemDetails =
+    useInvalidateQueriesBacklogItemDetails();
 
   // TRPC
   const { data: itemsAndColumnsData, isLoading } =
@@ -44,12 +44,6 @@ export default function ItemsKanban() {
   const { mutateAsync: modifyIssuesTags } =
     api.issues.modifyIssuesTags.useMutation();
 
-  const cancelGetBacklogItemsForKanbanQuery = async () => {
-    await utils.kanban.getBacklogItemsForKanban.cancel({
-      projectId: projectId as string,
-    });
-  };
-
   // REACT
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [lastDraggedItemId, setLastDraggedItemId] = useState<string | null>(
@@ -59,7 +53,7 @@ export default function ItemsKanban() {
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   // Detail item and parent
   const [detailItemId, setDetailItemId] = useState("");
-  const detailItem = itemsAndColumnsData?.cardTasks[detailItemId];
+  const detailItem = itemsAndColumnsData?.cardItems[detailItemId];
   const detailItemType = detailItem?.itemType;
 
   // UTILITY
@@ -68,17 +62,20 @@ export default function ItemsKanban() {
   const handleDragEnd = async (itemId: string, columnId: string) => {
     setLastDraggedItemId(null);
     if (itemsAndColumnsData == undefined) return;
-    if (columnId === itemsAndColumnsData.cardTasks[itemId]?.columnId) return;
+    if (columnId === itemsAndColumnsData.cardItems[itemId]?.columnId) return;
 
     setLastDraggedItemId(itemId);
     await moveItemsToColumn([itemId], columnId);
   };
 
+  // TODO: Fix sorting
   const moveItemsToColumn = async (itemIds: string[], columnId: string) => {
     if (itemsAndColumnsData == undefined) return;
     updateOperationsInProgress += 1;
-    const cardItems = itemsAndColumnsData.cardTasks;
-    await cancelGetBacklogItemsForKanbanQuery();
+    const cardItems = itemsAndColumnsData.cardItems;
+    await utils.kanban.getBacklogItemsForKanban.cancel({
+      projectId: projectId as string,
+    });
 
     utils.kanban.getBacklogItemsForKanban.setData(
       {
@@ -93,27 +90,35 @@ export default function ItemsKanban() {
           return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
         };
 
-        const columns = oldData.columns.map((column) => {
+        const unorderedColumns = oldData.columns.map((column) => {
           if (column.id === columnId) {
-            const sortedItemIds = [...column.taskIds, ...itemIds].sort(
-              sortByScrumId,
-            );
             return {
               ...column,
-              taskIds: sortedItemIds,
+              itemIds: [...column.itemIds, ...itemIds],
             };
           } else {
             return {
               ...column,
-              taskIds: column.taskIds.filter(
+              itemIds: column.itemIds.filter(
                 (itemId) => !itemIds.includes(itemId),
               ),
             };
           }
         });
 
+        // sorting
+        const columns = unorderedColumns.map((column) => {
+          if (column.id === columnId) {
+            return {
+              ...column,
+              itemIds: column.itemIds.sort(sortByScrumId),
+            };
+          }
+          return column;
+        });
+
         const updatedItems = Object.fromEntries(
-          Object.entries(oldData.cardTasks).map(([id, item]) => {
+          Object.entries(oldData.cardItems).map(([id, item]) => {
             if (itemIds.includes(id)) {
               return [
                 id,
@@ -129,7 +134,7 @@ export default function ItemsKanban() {
 
         return {
           columns,
-          cardTasks: updatedItems,
+          cardItems: updatedItems,
         };
       },
     );
@@ -138,7 +143,7 @@ export default function ItemsKanban() {
 
     await Promise.all(
       itemIds.map(async (itemId) => {
-        const item = itemsAndColumnsData.cardTasks[itemId];
+        const item = itemsAndColumnsData.cardItems[itemId];
         if (item?.itemType === "US") {
           await modifyUserStoryTags({
             projectId: projectId as string,
@@ -156,8 +161,25 @@ export default function ItemsKanban() {
     );
 
     if (updateOperationsInProgress == 1) {
-      await invalidateQueriesAllTasks(projectId as string);
-      await invalidateQueriesAllUserStories(projectId as string);
+      const userStories = itemIds.filter(
+        (itemId) => itemsAndColumnsData.cardItems[itemId]?.itemType === "US",
+      );
+      const issues = itemIds.filter(
+        (itemId) => itemsAndColumnsData.cardItems[itemId]?.itemType === "IS",
+      );
+      if (userStories.length > 0) {
+        await invalidateQueriesBacklogItems(projectId as string, "US");
+      }
+      if (issues.length > 0) {
+        await invalidateQueriesBacklogItems(projectId as string, "IS");
+      }
+      await invalidateQueriesBacklogItemDetails(
+        projectId as string,
+        itemIds.map((itemId) => ({
+          itemId: itemId,
+          itemType: itemsAndColumnsData.cardItems[itemId]?.itemType ?? "US",
+        })),
+      );
     }
 
     updateOperationsInProgress--;
@@ -196,17 +218,17 @@ export default function ItemsKanban() {
             )}
             {itemsAndColumnsData?.columns.map((column) => {
               const allSelected =
-                column.taskIds.length > 0 &&
-                column.taskIds.every((itemId) => selectedItems.has(itemId));
+                column.itemIds.length > 0 &&
+                column.itemIds.every((itemId) => selectedItems.has(itemId));
 
               const toggleSelectAll = () => {
                 const newSelection = new Set(selectedItems);
                 if (allSelected) {
-                  column.taskIds.forEach((itemId) => {
+                  column.itemIds.forEach((itemId) => {
                     newSelection.delete(itemId);
                   });
                 } else {
-                  column.taskIds.forEach((itemId) => {
+                  column.itemIds.forEach((itemId) => {
                     newSelection.add(itemId);
                   });
                 }
@@ -215,7 +237,7 @@ export default function ItemsKanban() {
 
               const renamedColumn = {
                 ...column,
-                itemIds: column.taskIds,
+                itemIds: column.itemIds,
               };
 
               return (
@@ -223,7 +245,7 @@ export default function ItemsKanban() {
                   lastDraggedItemId={lastDraggedItemId}
                   assignSelectionToColumn={assignSelectionToColumn}
                   column={renamedColumn}
-                  items={itemsAndColumnsData.cardTasks}
+                  items={itemsAndColumnsData.cardItems}
                   key={column.id}
                   selectedItems={selectedItems}
                   setSelectedItems={setSelectedItems}
@@ -273,7 +295,7 @@ export default function ItemsKanban() {
           {(source) => {
             const itemId = source.id as string;
             if (!itemId) return null;
-            const draggingItem = itemsAndColumnsData?.cardTasks[itemId];
+            const draggingItem = itemsAndColumnsData?.cardItems[itemId];
             if (!draggingItem) return null;
             return (
               <ItemCardRender
