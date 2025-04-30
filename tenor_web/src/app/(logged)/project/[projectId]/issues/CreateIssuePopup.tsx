@@ -31,8 +31,6 @@ export default function CreateIssuePopup({
   const { mutateAsync: createIssue, isPending } =
     api.issues.createIssue.useMutation();
 
-  const utils = api.useUtils();
-
   const [createForm, setCreateForm] = useState<{
     name: string;
     description: string;
@@ -90,10 +88,7 @@ export default function CreateIssuePopup({
     });
     onIssueAdded(issueId);
 
-    // FIXME
-    // await utils.userStories.getUserStoriesTableFriendly.invalidate();
-    // await utils.userStories.getAllUserStoryPreviews.invalidate();
-    // await utils.sprints.getUserStoryPreviewsBySprint.invalidate();
+    // Invalidation is done on the parent component
   };
 
   return (
@@ -167,7 +162,7 @@ export default function CreateIssuePopup({
         value={createForm.name}
         onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
         placeholder="Short summary of the issue..."
-        className="mb-4"
+        containerClassName="mb-4"
       />
       <InputTextAreaField
         label="Issue description"
@@ -176,7 +171,8 @@ export default function CreateIssuePopup({
           setCreateForm({ ...createForm, description: e.target.value })
         }
         placeholder="Explain the issue in detail..."
-        className="mb-4 h-36 min-h-36"
+        className="h-36 min-h-36"
+        containerClassName="mb-4"
       />
       <InputTextAreaField
         label="Steps To Recreate"

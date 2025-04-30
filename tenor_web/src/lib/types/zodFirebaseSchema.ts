@@ -38,6 +38,11 @@ export const TagSchema = z.object({
   deleted: z.boolean(),
 });
 
+export const StatusTagSchema = TagSchema.extend({
+  orderIndex: z.number(),
+  marksTaskAsDone: z.boolean(),
+});
+
 export const UserSchema = z.object({
   bio: z.string(),
   jobTitle: z.string(),
@@ -45,13 +50,13 @@ export const UserSchema = z.object({
   isManager: z.boolean(),
 });
 
-// Each number refers to 1 permission: "can't view" | "view" | "view-details" | "modify" | "create" | "delete"
-export type Permission = 0 | 1 | 2 | 3 | 4 | 5;
+// Each number refers to 1 permission: "none" | "read" | "write"
+export type Permission = 0 | 1 | 2;
 
-export const PermissionSchema = z.number().min(0).max(5);
+export const PermissionSchema = z.number().min(0).max(2);
 
 export const RoleSchema = z.object({
-  name: z.string(),
+  label: z.string(),
   canViewPerformance: z.boolean(),
   canControlSprints: z.boolean(),
   tabs: z.object({
@@ -122,12 +127,12 @@ export const UserStorySchema = BacklogItemSchema.extend({
   dependencyIds: z
     .array(z.string())
     .describe(
-      "List of user story ids. May be empty, only include them if this user story depends on them.",
+      "List of user story ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
   requiredByIds: z
     .array(z.string())
     .describe(
-      "List of user story ids. May be empty, only include them if this user story is required by them.",
+      "List of user story ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
 });
 
@@ -162,9 +167,19 @@ export const IssueSchema = BacklogItemSchema.extend({
 });
 
 export const RequirementSchema = BasicInfoSchema.extend({
-  priorityId: z.string(),
-  requirementTypeId: z.string(),
+  priorityId: z.string().describe("Use a valid, existing priority id"),
+  requirementTypeId: z
+    .string()
+    .describe("Use a valid, existing requirement type id"),
   requirementFocusId: z.string(),
+  name: z
+    .string()
+    .describe("Small (5 word maximum) description of the requirement"),
+  description: z
+    .string()
+    .describe(
+      "You can use valid markdown. Describe in detail what the requirement is, why it exists. Also include any relevant information that is needed to understand the requirement. Finally, you may include relevant implementation suggestions, only if you have sufficient knowledge about the tech stack. Otherwise, leave it to the developers to figure it out.",
+    ),
 });
 
 export const SettingsSchema = z.object({
@@ -181,7 +196,14 @@ export const SettingsSchema = z.object({
         }),
       )
       .default([]),
-    links: z.array(z.string()).default([]),
+    links: z
+      .array(
+        z.object({
+          content: z.string().nullable(),
+          link: z.string(),
+        }),
+      )
+      .default([]),
   }),
   // Removed because they should be in subcollections
 

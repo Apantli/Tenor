@@ -1,5 +1,6 @@
 // Use this hooks to invalidate the queries related to a specific item, task, project, etc.
 
+import type { itemTypes } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export const useInvalidateQueriesAllTasks = () => {
@@ -17,12 +18,17 @@ export const useInvalidateQueriesAllTasks = () => {
     await utils.kanban.getTasksForKanban.invalidate({
       projectId: projectId,
     });
+
+    // TODO: Also invalidate the queries that fetch the tasks for the specific item types
   };
 };
 
 export const useInvalidateQueriesTaskDetails = () => {
   const utils = api.useUtils();
   return async (projectId: string, taskIds: string[]) => {
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId,
+    });
     await Promise.all(
       taskIds.map(async (taskId) => {
         await utils.tasks.getTaskDetail.invalidate({
@@ -60,6 +66,76 @@ export const useInvalidateQueriesUserStoriesDetails = () => {
         });
       }),
     );
+  };
+};
+
+export const useInvalidateQueriesItemStatus = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId,
+    });
+    await utils.settings.getStatusTypes.invalidate({ projectId: projectId });
+  };
+};
+
+export const useInvalidateQueriesAllRequirements = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.requirements.getRequirementsTableFriendly.invalidate({
+      projectId: projectId,
+    });
+  };
+};
+
+export const useInvalidateQueriesRequirementDetails = () => {
+  const utils = api.useUtils();
+  return async (projectId: string, requirementIds: string[]) => {
+    await Promise.all(
+      requirementIds.map(async (requirementId) => {
+        await utils.requirements.getRequirement.invalidate({
+          projectId: projectId,
+          requirementId,
+        });
+      }),
+    );
+  };
+};
+
+export const useInvalidateQueriesAllIssues = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.issues.getIssuesTableFriendly.invalidate({
+      projectId: projectId,
+    });
+  };
+};
+
+export const useInvalidateQueriesIssueDetails = () => {
+  const utils = api.useUtils();
+  return async (projectId: string, issueIds: string[]) => {
+    await Promise.all(
+      issueIds.map(async (issueId) => {
+        await utils.issues.getIssueDetail.invalidate({
+          projectId: projectId,
+          issueId,
+        });
+      }),
+    );
+  };
+};
+
+export const useInvalidateQueriesBacklogItems = () => {
+  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
+
+  return async (projectId: string, itemType: itemTypes) => {
+    if (itemType === "US") {
+      await invalidateQueriesAllUserStories(projectId);
+    } else if (itemType === "IS") {
+      await invalidateQueriesAllIssues(projectId);
+    }
+    // TODO: Add one for general backlog items
   };
 };
 

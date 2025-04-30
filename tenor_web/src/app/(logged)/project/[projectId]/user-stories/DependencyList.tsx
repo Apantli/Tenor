@@ -19,6 +19,7 @@ interface Props {
   onChange: (userStories: UserStoryPreview[]) => void;
   userStoryId?: string;
   label: string;
+  onClick?: (userStoryId: string) => void;
 }
 
 export default function DependencyList({
@@ -26,6 +27,7 @@ export default function DependencyList({
   onChange,
   label,
   userStoryId,
+  onClick,
 }: Props) {
   const [showAll, setShowAll] = useState(false);
 
@@ -154,7 +156,7 @@ export default function DependencyList({
               className="text-left"
               data-tooltip-id="tooltip"
               data-tooltip-content={userStory.name}
-              onClick={() => console.log("OPEN")}
+              onClick={() => onClick?.(userStory.id)}
             >
               {formatUserStoryScrumId(userStory.scrumId)}
             </TagComponent>

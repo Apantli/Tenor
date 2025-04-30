@@ -5,12 +5,14 @@ import AiIcon from "@mui/icons-material/AutoAwesome";
 
 interface Props {
   asSpan?: boolean;
+  tooltip?: string;
 }
 
 export default function AiButton({
   className,
   children,
   asSpan,
+  tooltip,
   ...props
 }: BaseButtonProps & Props) {
   return (
@@ -25,6 +27,11 @@ export default function AiButton({
       )}
       {...props}
       asSpan={asSpan}
+      data-tooltip-id="tooltip"
+      data-tooltip-content={tooltip}
+      data-tooltip-hidden={tooltip === undefined}
+      data-tooltip-place="top-end"
+      data-tooltip-delay-show={1000}
     >
       <AiIcon fontSize="small" htmlColor="white" />
       {children}

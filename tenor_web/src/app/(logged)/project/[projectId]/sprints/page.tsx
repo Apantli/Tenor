@@ -22,7 +22,10 @@ import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
-import { useInvalidateQueriesAllUserStories, useInvalidateQueriesUserStoriesDetails } from "~/app/_hooks/invalidateHooks";
+import {
+  useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesUserStoriesDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 export type UserStories = inferRouterOutputs<
   typeof sprintsRouter
@@ -36,7 +39,8 @@ export default function ProjectSprints() {
   const { projectId } = useParams();
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
-  const invalidateQueriesUserStoriesDetails = useInvalidateQueriesUserStoriesDetails();
+  const invalidateQueriesUserStoriesDetails =
+    useInvalidateQueriesUserStoriesDetails();
 
   const { data: userStoriesBySprint, isLoading } =
     api.sprints.getUserStoryPreviewsBySprint.useQuery({
@@ -92,6 +96,7 @@ export default function ProjectSprints() {
   }, [isLoadingSprintDuration, defaultSprintDuration, userStoriesBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
+  const [sprintSearchValue, setSprintSearchValue] = useState("");
 
   const filteredUnassignedStories =
     userStoriesBySprint?.unassignedUserStoryIds.filter((userStoryId) => {
@@ -103,6 +108,76 @@ export default function ProjectSprints() {
       return fullUserStoryName
         .toLowerCase()
         .includes(searchValue.toLowerCase());
+    }) ?? [];
+
+  const filteredSprints =
+    userStoriesBySprint?.sprints.filter((sprint) => {
+      if (!sprintSearchValue) return true;
+
+      const sprintNumber = `Sprint ${sprint.sprint.number}`;
+      if (sprintNumber.toLowerCase().includes(sprintSearchValue.toLowerCase()))
+        return true;
+
+      if (
+        sprint.sprint.description
+          ?.toLowerCase()
+          .includes(sprintSearchValue.toLowerCase())
+      )
+        return true;
+
+      const formatDateRange = (startDate: Date, endDate: Date) => {
+        const months = [
+          "January",
+          "February",
+          "March",
+          "April",
+          "May",
+          "June",
+          "July",
+          "August",
+          "September",
+          "October",
+          "November",
+          "December",
+        ];
+
+        const startMonth = months[startDate.getMonth()];
+        const startDay =
+          startDate.getDate() < 10
+            ? `0${startDate.getDate()}`
+            : `${startDate.getDate()}`;
+
+        const endMonth = months[endDate.getMonth()];
+        const endDay =
+          endDate.getDate() < 10
+            ? `0${endDate.getDate()}`
+            : `${endDate.getDate()}`;
+
+        return `${startMonth} ${startDay} - ${endMonth} ${endDay}`.toLowerCase();
+      };
+
+      const dateRange = formatDateRange(
+        sprint.sprint.startDate,
+        sprint.sprint.endDate,
+      );
+      if (dateRange.toLowerCase().includes(sprintSearchValue.toLowerCase()))
+        return true;
+
+      const hasMatchingUserStory = sprint.userStoryIds.some((id) => {
+        const userStory = userStoriesBySprint?.userStories[id];
+        if (!userStory) return false;
+
+        const tagsList = userStory.tags
+          .map((tag) => "Tag:" + tag.name)
+          .join(" ");
+        const fullUserStoryName = `${formatUserStoryScrumId(userStory.scrumId)}: ${userStory.name} ${tagsList} Size:${userStory.size}`;
+
+        return fullUserStoryName
+          .toLowerCase()
+          .includes(sprintSearchValue.toLowerCase());
+      });
+
+      return hasMatchingUserStory;
     }) ?? [];
 
   const { mutateAsync: createSprint, isPending } =
@@ -294,7 +369,10 @@ export default function ProjectSprints() {
     // Cancel previous fetches for the sprint data
     await cancelUserStoryPreviewQuery();
     await invalidateQueriesAllUserStories(projectId as string);
-    await invalidateQueriesUserStoriesDetails(projectId as string, userStoryIds);
+    await invalidateQueriesUserStoriesDetails(
+      projectId as string,
+      userStoryIds,
+    );
   };
 
   const availableToBeAssignedTo =
@@ -403,12 +481,19 @@ export default function ProjectSprints() {
     // Only fetch again if this is the last operation
     if (dndOperationsInProgress == 1) {
       await invalidateQueriesAllUserStories(projectId as string);
-      await invalidateQueriesUserStoriesDetails(projectId as string, userStoryIds);
+      await invalidateQueriesUserStoriesDetails(
+        projectId as string,
+        userStoryIds,
+      );
     }
 
     // Mark operation as finished
     dndOperationsInProgress -= 1;
   };
+
+  useEffect(() => {
+    setLastDraggedUserStoryId(null);
+  }, [sprintSearchValue]);
 
   return (
     <>
@@ -425,8 +510,8 @@ export default function ProjectSprints() {
         }}
       >
         <div className="flex h-full overflow-hidden">
-          <div className="relative flex h-full w-[407px] min-w-[407px] flex-col overflow-hidden border-r-2 pr-5">
-            <div className="flex w-full justify-between pb-4">
+          <div className="relative flex h-full w-[407px] min-w-[407px] flex-col gap-0 overflow-hidden border-r-2 pr-5">
+            <div className="flex w-full justify-between pb-2">
               <h1 className="text-3xl font-semibold">Product Backlog</h1>
               <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
             </div>
@@ -494,13 +579,24 @@ export default function ProjectSprints() {
           <div className="ml-5 flex h-full grow flex-col overflow-x-hidden">
             <div className="flex w-full justify-between gap-5 pb-4">
               <h1 className="text-3xl font-semibold">Sprints</h1>
-              <PrimaryButton
-                onClick={() => {
-                  setShowSmallPopup(true);
-                }}
-              >
-                + Add Sprint
-              </PrimaryButton>
+              <div className="flex flex-1 items-center justify-end gap-3">
+                <div style={{ width: "500px" }}>
+                  <SearchBar
+                    searchValue={sprintSearchValue}
+                    handleUpdateSearch={(e) =>
+                      setSprintSearchValue(e.target.value)
+                    }
+                    placeholder="Find a sprint or item by title or id..."
+                  />
+                </div>
+                <PrimaryButton
+                  onClick={() => {
+                    setShowSmallPopup(true);
+                  }}
+                >
+                  + Add Sprint
+                </PrimaryButton>
+              </div>
             </div>
             <div className="flex w-full flex-1 gap-4 overflow-x-auto">
               {isLoading && (
@@ -508,12 +604,12 @@ export default function ProjectSprints() {
                   <LoadingSpinner color="primary" />
                 </div>
               )}
-              {userStoriesBySprint?.sprints.map((column) => (
+              {filteredSprints.map((column) => (
                 <SprintCardColumn
                   lastDraggedUserStoryId={lastDraggedUserStoryId}
                   assignSelectionToSprint={assignSelectionToSprint}
                   column={column}
-                  userStories={userStoriesBySprint.userStories}
+                  userStories={userStoriesBySprint?.userStories ?? {}}
                   key={column.sprint.id}
                   selectedUserStories={selectedUserStories}
                   setSelectedUserStories={setSelectedUserStories}

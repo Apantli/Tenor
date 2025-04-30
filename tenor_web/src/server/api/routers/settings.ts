@@ -1,8 +1,20 @@
-import { SettingsSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
+import {
+  PermissionSchema,
+  RoleSchema,
+  SettingsSchema,
+  StatusTagSchema,
+  TagSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
+import { fetchHTML } from "~/utils/webcontent";
+import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
+import { emptyRole, ownerRole } from "~/lib/defaultTags";
+import { remove } from "node_modules/cypress/types/lodash";
+import { RoleDetail } from "~/lib/types/detailSchemas";
+import { TRPCError } from "@trpc/server";
 
 /**
  * @function getProjectSettingsRef
@@ -20,6 +32,10 @@ export const getProjectSettingsRef = (
     .doc(projectId)
     .collection("settings")
     .doc("settings");
+};
+
+export const getProjectRef = (projectId: string, firestore: Firestore) => {
+  return firestore.collection("projects").doc(projectId);
 };
 
 /**
@@ -133,10 +149,11 @@ const settingsRouter = createTRPCRouter({
       );
       const statusTypes = await projectSettingsRef
         .collection("statusTypes")
+        .orderBy("orderIndex")
         .get();
       const statusTypesData = statusTypes.docs.map((doc) => ({
         id: doc.id,
-        ...TagSchema.parse(doc.data()),
+        ...StatusTagSchema.parse(doc.data()),
       }));
 
       return statusTypesData;
@@ -232,6 +249,395 @@ const settingsRouter = createTRPCRouter({
       const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
+    }),
+  getContextLinks: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const links: string[] = settingsData.aiContext.links.map(
+        (link) => link.link,
+      );
+      return links;
+    }),
+  getContextFiles: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const files: { name: string; type: string }[] =
+        settingsData.aiContext.files.map((file) => ({
+          name: file.name,
+          type: file.type,
+        }));
+      return files;
+    }),
+  getContextDialog: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const text: string = settingsData.aiContext.text;
+      return text;
+    }),
+  updateTextContext: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        text: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, text } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          text,
+        },
+      });
+    }),
+  addLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newLink = await fetchHTML(link).then(
+        (content) => ({ link, content }),
+        (error) => {
+          console.error("Error fetching HTML:", error);
+          return { link, content: null };
+        },
+      );
+      const newLinks = [...settingsData.aiContext.links, newLink];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+  removeLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove link from settingsData
+      const newLinks = settingsData.aiContext.links.filter(
+        (l) => l.link !== link,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+  addFiles: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        files: z.array(
+          z.object({
+            name: z.string(),
+            type: z.string(),
+            content: z.string(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, files } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+
+      const b64Files = files.map((file) => file.content);
+      const fileText = await fetchMultipleFiles(b64Files);
+
+      const filesDecoded = files.map((file, index) => ({
+        name: file.name,
+        type: file.type,
+        content: fileText[index] ?? "",
+      }));
+
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newFiles = [...settingsData.aiContext.files, ...filesDecoded];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
+    }),
+  removeFile: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        file: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, file } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove file from settingsData
+      const newFiles = settingsData.aiContext.files.filter(
+        (f) => f.name !== file,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
+    }),
+  getDetailedRoles: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const roles = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .orderBy("label")
+        .get();
+
+      const rolesData = roles.docs.map((doc) => {
+        const data = doc.data();
+        const role = RoleSchema.parse(data);
+        return {
+          id: doc.id,
+          ...role,
+          ...role.tabs,
+        } as RoleDetail;
+      });
+      return rolesData;
+    }),
+  addRole: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        label: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, label } = input;
+      // add the role document to the roles collection
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const roleDoc = await projectSettingsRef.collection("userTypes").add({
+        ...emptyRole,
+        label,
+        id: undefined,
+      });
+    }),
+  removeRole: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        roleId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, roleId } = input;
+      // remove the role document from the roles collection
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+
+      // Check if any user has this role
+      const usersWithRole = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("users")
+        .where("roleId", "==", roleId)
+        .get();
+
+      if (!usersWithRole.empty) {
+        throw new TRPCError({ code: "BAD_REQUEST" });
+      }
+
+      await projectSettingsRef.collection("userTypes").doc(roleId).delete();
+    }),
+  updateRoleTabPermissions: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        roleId: z.string(),
+        tabId: z.string(),
+        permission: PermissionSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, roleId, tabId, permission } = input;
+
+      const roleDoc = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .doc(roleId);
+
+      const roleData = await roleDoc.get();
+      const role = RoleSchema.parse(roleData.data());
+      const updatedTabs = {
+        ...role.tabs,
+        [tabId]: permission,
+      };
+      await roleDoc.update({
+        tabs: updatedTabs,
+      });
+    }),
+  updateViewPerformance: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        roleId: z.string(),
+        newValue: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, roleId, newValue } = input;
+
+      const roleDoc = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .doc(roleId);
+
+      const roleData = await roleDoc.get();
+      const role = RoleSchema.parse(roleData.data());
+      await roleDoc.update({
+        canViewPerformance: newValue,
+      });
+    }),
+  updateControlSprints: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        roleId: z.string(),
+        newValue: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, roleId, newValue } = input;
+
+      const roleDoc = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .doc(roleId);
+
+      const roleData = await roleDoc.get();
+      const role = RoleSchema.parse(roleData.data());
+      await roleDoc.update({
+        canControlSprints: newValue,
+      });
+    }),
+  getMyRole: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const userId = ctx.session.uid;
+
+      if (!input.projectId) return ownerRole;
+
+      const userDoc = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("users")
+        .doc(userId)
+        .get();
+      if (!userDoc.exists) {
+        throw new Error("User not found");
+      }
+      const userData = userDoc.data();
+      if (!userData) {
+        throw new Error("User data not found");
+      }
+
+      if (userData.roleId == null) {
+        return emptyRole;
+      }
+
+      if (userData.roleId === "owner") {
+        return ownerRole;
+      }
+
+      // Get role
+      const roleDoc = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings")
+        .collection("userTypes")
+        .doc(userData.roleId as string)
+        .get();
+      if (!roleDoc.exists) {
+        throw new Error("Role not found");
+      }
+      const roleData = roleDoc.data();
+      if (!roleData) {
+        throw new Error("Role data not found");
+      }
+      const role = RoleSchema.parse(roleData);
+      const roleId = roleDoc.id;
+      return {
+        id: roleId,
+        ...role,
+      };
     }),
 });
 
