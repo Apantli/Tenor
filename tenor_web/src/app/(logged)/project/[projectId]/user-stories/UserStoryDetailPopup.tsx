@@ -532,7 +532,6 @@ export default function UserStoryDetailPopup({
             addTaskToGhost={
               userStoryData !== undefined
                 ? (task) => {
-                    console.log(task);
                     setUserStoryData?.({
                       ...userStoryData,
                       tasks: [...userStoryData.tasks, task],

@@ -983,7 +983,13 @@ export default function RequirementsTable() {
             ) : (
               <div>
                 <div className="mt-4 text-lg">
-                  <Markdown>{requirementEditedData.description}</Markdown>
+                  {requirementEditedData.description !== "" ? (
+                    <Markdown>{requirementEditedData.description}</Markdown>
+                  ) : (
+                    <p className="italic text-gray-500">
+                      No description provided.
+                    </p>
+                  )}
                 </div>
                 <br />
                 <div className="flex gap-2 pt-4">

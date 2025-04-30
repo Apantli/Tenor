@@ -36,7 +36,7 @@ export function CreateTaskForm({
   const projectIdString = projectId as string;
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  const { data: users } = api.users.getUserListEdiBox.useQuery({
+  const { data: users } = api.users.getUserListEditBox.useQuery({
     projectId: projectIdString,
   });
 

@@ -75,7 +75,7 @@ export default function TaskDetailPopup({
   const { mutateAsync: updateTask } = api.tasks.modifyTask.useMutation();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
-  const { data: users } = api.users.getUserListEdiBox.useQuery({
+  const { data: users } = api.users.getUserListEditBox.useQuery({
     projectId: projectId as string,
   });
   const people: Option[] = users ?? [];

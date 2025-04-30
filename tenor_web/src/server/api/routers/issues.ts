@@ -233,7 +233,7 @@ export const issuesRouter = createTRPCRouter({
                 size: issue.size,
               };
             } catch (err) {
-              throw err; // Propagar el error hacia el bloque catch principal),
+              throw err; // Propagate the error to the outer catch block
             }
           }),
         );
