@@ -92,6 +92,14 @@ export default function ProjectGeneralSettings() {
     "Are you sure you want to leave? You have unsaved changes.",
   );
 
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+
+  if (role?.id !== "owner") {
+    router.push(`/project/${projectId}/project-settings/users`);
+  }
+
   return (
     <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
