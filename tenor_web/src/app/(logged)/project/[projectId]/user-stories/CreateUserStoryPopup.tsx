@@ -209,7 +209,7 @@ export default function CreateUserStoryPopup({
         value={createForm.name}
         onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
         placeholder="Short summary of the story..."
-        className="mb-4"
+        containerClassName="mb-4"
       />
       <InputTextAreaField
         label="Story description"
@@ -218,7 +218,7 @@ export default function CreateUserStoryPopup({
           setCreateForm({ ...createForm, description: e.target.value })
         }
         placeholder="Explain the story in detail..."
-        className="mb-4 h-36 min-h-36"
+        containerClassName="mb-4"
       />
       <InputTextAreaField
         label="Acceptance Criteria"
