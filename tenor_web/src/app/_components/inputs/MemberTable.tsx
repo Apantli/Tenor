@@ -11,6 +11,7 @@ import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
 import { emptyRole } from "~/lib/defaultProjectValues";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
   label?: string;
@@ -25,6 +26,7 @@ interface Props {
 
 export interface TeamMember {
   id: string;
+  isOwner: boolean;
   photoURL?: string;
   displayName: string;
   email: string;
@@ -44,6 +46,7 @@ export default function MemberTable({
   const { data: users, isLoading } = api.users.getUserList.useQuery();
   const [searchValue, setSearchValue] = useState("");
   const [tableSearchValue, setTableSearchValue] = useState("");
+  const { alert } = useAlert();
 
   const filteredTeamMembers = useMemo(() => {
     const search = tableSearchValue.toLowerCase();
@@ -57,6 +60,7 @@ export default function MemberTable({
 
   const columns: TableColumns<TeamMember> = {
     id: { visible: false },
+    isOwner: { visible: false },
     photoURL: {
       label: "",
       width: 50,
@@ -81,11 +85,28 @@ export default function MemberTable({
             className="w-full text-sm"
             hideSearch
             selectedItem={
-              roleList.find((role) => role.id === row.role) ?? emptyRole
+              row.isOwner
+                ? {
+                    id: "owner",
+                    label: "Owner",
+                  }
+                : {
+                    id: row.role,
+                    label:
+                      roleList.find((role) => role.id === row.role)?.label ||
+                      emptyRole.label,
+                  }
             }
             allItems={roleList}
             onChange={(item) => {
-              handleEditMemberRole(row.id, item.id);
+              if (!row.isOwner) {
+                handleEditMemberRole(row.id, item.id);
+              } else {
+                alert("Oops...", "You cannot edit the role of the owner.", {
+                  type: "error",
+                  duration: 5000,
+                });
+              }
             }}
           />
         );
@@ -97,7 +118,6 @@ export default function MemberTable({
 
   return (
     <div className={cn("w-full text-sm", className)}>
-      {/* FIMXE: Add seach bar */}
       <div className="flex items-center justify-between gap-x-4 py-4">
         {label && (
           <label

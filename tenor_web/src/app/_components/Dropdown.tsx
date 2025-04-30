@@ -21,6 +21,7 @@ interface Props {
   menuClassName?: ClassNameValue;
   scrollContainer?: React.RefObject<HTMLDivElement>;
   onOpen?: () => void;
+  onClose?: () => void;
   disabled?: boolean;
   close?: boolean;
 }
@@ -45,6 +46,7 @@ export default function Dropdown({
   menuClassName,
   scrollContainer,
   onOpen,
+  onClose,
   disabled,
   close,
 }: Props) {
@@ -65,6 +67,7 @@ export default function Dropdown({
   useEffect(() => {
     if (close) {
       setIsOpen(false);
+      onClose?.();
     }
   }, [close]);
 
@@ -72,6 +75,7 @@ export default function Dropdown({
   useClickOutside(ref, () => {
     if (isOpen) {
       setIsOpen(false);
+      onClose?.();
     }
   });
 
@@ -101,6 +105,7 @@ export default function Dropdown({
       setOpenDirection(positionDropdown(1));
     } else {
       setIsOpen(false);
+      onClose?.();
     }
   }, scrollContainer);
 
@@ -113,6 +118,8 @@ export default function Dropdown({
       setOpenDirection(positionDropdown(2));
       onOpen?.();
       startScrollPos.current = scrollContainer?.current?.scrollTop ?? null;
+    } else {
+      onClose?.();
     }
     setIsOpen(!isOpen);
   };
@@ -195,7 +202,10 @@ export default function Dropdown({
             <div
               key={i}
               className="border-b border-app-border text-base last:border-none"
-              onClick={() => setIsOpen(false)}
+              onClick={() => {
+                setIsOpen(false);
+                onClose?.();
+              }}
             >
               {option}
             </div>

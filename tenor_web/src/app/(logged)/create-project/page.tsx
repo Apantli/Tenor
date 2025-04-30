@@ -233,7 +233,7 @@ export default function ProjectCreator() {
 
     setForm((prev) => ({
       ...prev,
-      [name]: value.slice(0, maxProjectNameLength),
+      [name]: name === "name" ? value.slice(0, maxProjectNameLength) : value,
     }));
   };
 

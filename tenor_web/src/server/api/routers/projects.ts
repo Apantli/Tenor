@@ -158,7 +158,7 @@ export const projectsRouter = createTRPCRouter({
       // Add creator as project admin
       input.users.push({
         userId: ctx.session.uid,
-        roleId: "admin",
+        roleId: "owner",
         active: true,
       });
 
@@ -239,8 +239,8 @@ export const projectsRouter = createTRPCRouter({
         const userTypesMap: Record<string, string> = {};
         for (const role of defaultRoleList) {
           const roleDoc = await userTypesCollection.add({
-            label: role.label,
-            deleted: false,
+            ...role,
+            id: undefined,
           });
 
           userTypesMap[role.id] = roleDoc.id;
@@ -251,11 +251,13 @@ export const projectsRouter = createTRPCRouter({
           if (userTypesMap[user.roleId]) {
             user.roleId = userTypesMap[user.roleId]!;
           } else {
-            console.error(
-              `Role ID ${user.roleId} not found in userTypesMap`,
-              user,
-            );
-            user.roleId = "";
+            if (user.roleId !== "owner") {
+              console.error(
+                `Role ID ${user.roleId} not found in userTypesMap`,
+                user,
+              );
+              user.roleId = "";
+            }
           }
         });
 

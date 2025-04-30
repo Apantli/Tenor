@@ -1,39 +1,41 @@
 import React from "react";
-import { cn } from "~/lib/utils";
 
+import InputField, {
+  type Props as InputFieldProps,
+} from "./GenericTextInputField";
 interface Props {
   label?: string;
   labelClassName?: string;
   containerClassName?: string;
+  disableAI?: boolean;
+  aiTitle?: string;
 }
 
 export default function InputTextAreaField({
   label,
-  className,
-  containerClassName,
-  labelClassName,
   id,
+  labelClassName,
+  containerClassName,
+  className,
+  disableAI,
+  aiTitle,
+  value,
+  onChange,
   ...props
 }: Props & React.InputHTMLAttributes<HTMLTextAreaElement>) {
   return (
-    <div className={cn("w-full", containerClassName)}>
-      {label && (
-        <label
-          htmlFor={id}
-          className={cn("text-sm font-semibold", labelClassName)}
-        >
-          {label}
-        </label>
-      )}
-      <textarea
-        id={id}
-        html-rows="4"
-        className={cn(
-          "block min-h-40 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none",
-          className,
-        )}
-        {...props}
-      ></textarea>
-    </div>
+    <InputField
+      label={label}
+      id={id}
+      labelClassName={labelClassName}
+      containerClassName={containerClassName}
+      className={className}
+      disableAI={disableAI}
+      aiTitle={aiTitle}
+      value={value as string}
+      onChange={onChange as InputFieldProps["onChange"]}
+      isTextArea
+      {...props}
+    />
   );
 }

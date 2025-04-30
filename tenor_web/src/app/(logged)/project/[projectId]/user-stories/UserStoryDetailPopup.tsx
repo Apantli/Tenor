@@ -29,12 +29,17 @@ import type { TaskPreview } from "~/lib/types/detailSchemas";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
-import { useInvalidateQueriesAllTasks, useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
+import {
+  useInvalidateQueriesAllTasks,
+  useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesUserStoriesDetails,
+} from "~/app/_hooks/invalidateHooks";
 
 interface Props {
   userStoryId: string;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
+  setUserStoryId?: (userStoryId: string) => void;
   taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
 }
 
@@ -43,11 +48,14 @@ export default function UserStoryDetailPopup({
   showDetail,
   setShowDetail,
   taskIdToOpenImmediately,
+  setUserStoryId,
 }: Props) {
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesUserStoriesDetails =
+    useInvalidateQueriesUserStoriesDetails();
   const [unsavedTasks, setUnsavedTasks] = useState(false);
 
   const {
@@ -86,6 +94,14 @@ export default function UserStoryDetailPopup({
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { predefinedAlerts } = useAlert();
   const formatSprintNumber = useFormatSprintNumber();
+
+  const changeVisibleUserStory = async (userStoryId: string) => {
+    setShowDetail(false);
+    setTimeout(() => {
+      setUserStoryId?.(userStoryId);
+      setShowDetail(true);
+    }, 300);
+  };
 
   useEffect(() => {
     if (!userStoryDetail) return;
@@ -165,7 +181,7 @@ export default function UserStoryDetailPopup({
       },
     );
 
-    await updateUserStory({
+    const { updatedUserStoryIds } = await updateUserStory({
       projectId: projectId as string,
       userStoryId: userStoryId,
       userStoryData: updatedUserStory,
@@ -173,6 +189,10 @@ export default function UserStoryDetailPopup({
 
     // Make other places refetch the data
     await invalidateQueriesAllUserStories(projectId as string);
+    await invalidateQueriesUserStoriesDetails(
+      projectId as string,
+      updatedUserStoryIds,
+    );
 
     if (!editMode || saveEditForm) {
       await refetch();
@@ -276,6 +296,7 @@ export default function UserStoryDetailPopup({
                   onChange={async (dependencies) => {
                     await handleSave({ ...userStoryDetail, dependencies });
                   }}
+                  onClick={changeVisibleUserStory}
                 />
 
                 <DependencyList
@@ -285,6 +306,7 @@ export default function UserStoryDetailPopup({
                   onChange={async (requiredBy) => {
                     await handleSave({ ...userStoryDetail, requiredBy });
                   }}
+                  onClick={changeVisibleUserStory}
                 />
               </>
             )}
@@ -341,7 +363,7 @@ export default function UserStoryDetailPopup({
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
             placeholder="Short summary of the story..."
-            className="mb-4"
+            containerClassName="mb-4"
           />
           <InputTextAreaField
             label="Story description"
@@ -350,7 +372,8 @@ export default function UserStoryDetailPopup({
               setEditForm({ ...editForm, description: e.target.value })
             }
             placeholder="Explain the story in detail..."
-            className="mb-4 h-36 min-h-36"
+            className="h-36 min-h-36"
+            containerClassName="mb-4"
           />
           <InputTextAreaField
             label="Acceptance Criteria"

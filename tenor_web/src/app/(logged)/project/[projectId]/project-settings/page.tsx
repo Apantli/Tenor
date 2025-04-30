@@ -12,11 +12,10 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { toBase64 } from "~/utils/base64";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import { useModification } from "~/app/_hooks/useModification";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 export default function ProjectGeneralSettings() {
   const { projectId } = useParams();
-  const { setIsModified, isModified } = useModification();
   const [icon, setIcon] = useState<File | null>(null);
   const handleImageChange = async (file: File) => {
     const iconBase64 = (await toBase64(file)) as string;
@@ -77,11 +76,29 @@ export default function ProjectGeneralSettings() {
     );
   };
 
-  useEffect(() => {
-    if (computeIsModified() !== isModified.current) {
-      setIsModified(computeIsModified());
-    }
-  }, [computeIsModified(), isModified]);
+  useNavigationGuard(
+    async () => {
+      if (computeIsModified()) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved changes. Do you want to leave?",
+          "Discard changes",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    computeIsModified(),
+    "Are you sure you want to leave? You have unsaved changes.",
+  );
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+
+  if (role?.id !== "owner") {
+    router.push(`/project/${projectId}/project-settings/users`);
+  }
 
   return (
     <div className="flex h-full max-w-[600px] flex-col">
@@ -154,7 +171,8 @@ export default function ProjectGeneralSettings() {
           <InputTextAreaField
             label="Project Description"
             labelClassName="text-lg font-semibold"
-            className="mt-auto h-[115px] min-h-16 w-full"
+            containerClassName="mt-auto"
+            className="h-[115px] min-h-16 w-full"
             value={editForm.description}
             name="description"
             onChange={handleChange}
