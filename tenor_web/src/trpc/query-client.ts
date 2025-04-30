@@ -65,7 +65,8 @@ export const createQueryClient = () => {
       },
       mutations: {
         retry: (failureCount, err) => {
-          if (isTRPCError(err) && err.data?.code === "BAD_REQUEST") {
+          // eslint-disable-next-line
+          if (isTRPCError(err) && err.data?.code == "UNAUTHORIZED") {
             return false;
           }
 

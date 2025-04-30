@@ -2,13 +2,13 @@
 
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import { toBase64 } from "~/app/(logged)/create-project/page";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import FileList from "~/app/_components/inputs/FileList";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import LinkList from "~/app/_components/inputs/LinkList";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { api } from "~/trpc/react";
+import { toBase64 } from "~/utils/base64";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();

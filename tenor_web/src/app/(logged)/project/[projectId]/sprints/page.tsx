@@ -633,8 +633,9 @@ export default function ProjectSprints() {
               columnId: draggingUserStory.sprintId,
             };
             return (
+              // FIXME: Include issues in this view
               <ItemCardRender
-                item={item}
+                item={{ ...item, cardType: "US" }}
                 showBackground={true}
                 scrumIdFormatter={formatUserStoryScrumId}
               />

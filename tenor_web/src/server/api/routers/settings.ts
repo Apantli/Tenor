@@ -609,6 +609,22 @@ const settingsRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  fetchDefaultSprintDuration: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSprintDuration = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .select("sprintDuration")
+        .limit(1)
+        .get();
+
+      return (
+        (projectSprintDuration.docs[0]?.data().sprintDuration as number) ?? 7
+      );
+    }),
 });
 
 export default settingsRouter;

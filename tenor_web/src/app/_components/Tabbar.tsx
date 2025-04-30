@@ -5,7 +5,18 @@ import React, { type MouseEventHandler } from "react";
 import { cn } from "~/lib/utils";
 import InterceptedLink from "./InterceptableLink";
 import { api } from "~/trpc/react";
-import { permissionMapping } from "../(logged)/project/[projectId]/layout";
+
+// link links with permissions
+export const permissionMapping = {
+  requirements: "requirements",
+  "user-stories": "userStories",
+  issues: "issues",
+  sprints: "sprints",
+  scrumboard: "kanban",
+  calendar: "calendar",
+  performance: "performance",
+  "project-settings": "projectSettings",
+};
 
 interface Props {
   disabled?: boolean;
