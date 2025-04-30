@@ -11,7 +11,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import { Tag } from "~/lib/types/firebaseSchemas";
 import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
-import { emptyRole, ownerRole } from "~/lib/defaultTags";
+import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
 import { remove } from "node_modules/cypress/types/lodash";
 import { RoleDetail } from "~/lib/types/detailSchemas";
 import { TRPCError } from "@trpc/server";

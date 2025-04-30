@@ -11,7 +11,8 @@ import TimeMultiselect, {
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useInvalidateQueriesScrumPreferences } from "~/app/_hooks/invalidateHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { useModification } from "~/app/_hooks/useModification";
+import useConfirmation from "~/app/_hooks/useConfirmation";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
@@ -24,7 +25,7 @@ export default function ProjectScrumPreferences() {
   // HOOKS
   const { projectId } = useParams();
   const { alert } = useAlert();
-  const { setIsModified } = useModification();
+  const confirm = useConfirmation();
   const invalidateQueriesScrumPreferences =
     useInvalidateQueriesScrumPreferences();
   const utils = api.useUtils();
@@ -67,6 +68,22 @@ export default function ProjectScrumPreferences() {
     );
   };
 
+  useNavigationGuard(
+    async () => {
+      if (hasBeenModified()) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved changes. Do you want to leave?",
+          "Discard changes",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    hasBeenModified(),
+    "Are you sure you want to leave? You have unsaved changes.",
+  );
+
   useEffect(() => {
     if (scrumSettings) {
       setForm({
@@ -90,15 +107,6 @@ export default function ProjectScrumPreferences() {
       }
     }
   }, [scrumSettings]);
-
-  useEffect(() => {
-    setIsModified(hasBeenModified());
-  }, [
-    timeForm,
-    form.maximumSprintStoryPoints,
-    sprintDuration,
-    maximumSprintStoryPoints,
-  ]);
 
   // HANDLES
   const checkLargeNumber = (value: number) => {
