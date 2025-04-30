@@ -14,6 +14,7 @@ import type { TaskDetail } from "~/lib/types/detailSchemas";
 import { getProjectSettingsRef } from "./settings";
 import { timestampToDate } from "./sprints";
 import { askAiToGenerate } from "~/utils/aiGeneration";
+import { getProjectContextHeader } from "~/utils/aiContext";
 
 export interface TaskCol {
   id: string;
@@ -439,18 +440,20 @@ ${await getBacklogTagsContext(issueData.tagIds)}\n\n`;
 
       const passedInPrompt =
         prompt != ""
-          ? `Consider that the user wants the user stories for the following: ${prompt}`
+          ? `Consider that the user wants the tasks for the following: ${prompt}`
           : "";
 
       const completePrompt = `
-          Given the following context, follow the instructions below to the best of your ability.
-          
-          ${itemContext}
-          ${tasks.length > 0 ? tasksContext : ""}
-          
-          Generate ${amount} tasks about the detailed ${itemTypeName}. You can also see the tasks that already exist, DO NOT repeat tasks. Do NOT include any identifier in the name like "Task 1", just use a normal title. Always include a size.\n\n
-          
-          ${passedInPrompt}
+${await getProjectContextHeader(projectId, ctx.firestore)}
+
+Given the following context, follow the instructions below to the best of your ability.
+
+${itemContext}
+${tasks.length > 0 ? tasksContext : ""}
+
+Generate ${amount} tasks about the detailed ${itemTypeName}. You can also see the tasks that already exist, DO NOT repeat tasks. Do NOT include any identifier in the name like "Task 1", just use a normal title. Always include a size.\n\n
+
+${passedInPrompt}
           `;
 
       const generatedTasks = await askAiToGenerate(

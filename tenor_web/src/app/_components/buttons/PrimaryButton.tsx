@@ -7,12 +7,14 @@ interface Props {
   loading?: boolean;
   floatingSpinner?: boolean;
   asSpan?: boolean;
+  disabled?: boolean;
 }
 
 export default function PrimaryButton({
   children,
   className,
   loading,
+  disabled,
   floatingSpinner,
   asSpan,
   ...props
@@ -27,7 +29,7 @@ export default function PrimaryButton({
         className,
       )}
       {...props}
-      disabled={loading ?? ("disabled" in props && props.disabled)}
+      disabled={disabled ?? loading ?? false}
       asSpan={asSpan}
     >
       {children}

@@ -17,15 +17,15 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { defaultRoleList } from "~/lib/defaultTags";
 
-export default function ProjectCreator() {
-  const toBase64 = (file: File) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = reject;
-    });
+export const toBase64 = (file: File) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+  });
 
+export default function ProjectCreator() {
   const utils = api.useUtils();
 
   const router = useRouter();
@@ -233,7 +233,7 @@ export default function ProjectCreator() {
 
     setForm((prev) => ({
       ...prev,
-      [name]: value.slice(0, maxProjectNameLength),
+      [name]: name === "name" ? value.slice(0, maxProjectNameLength) : value,
     }));
   };
 

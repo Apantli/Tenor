@@ -105,18 +105,6 @@ export default function UserStoryList() {
       >[]
     >();
 
-  useNavigationGuard(async () => {
-    if ((generatedUserStories?.current?.length ?? 0) > 0) {
-      return !(await confirm(
-        "Are you sure?",
-        "You have unsaved AI generated user stories. To save them, please accept them first.",
-        "Discard",
-        "Keep editing",
-      ));
-    }
-    return false;
-  });
-
   const {
     onAccept,
     onAcceptAll,
@@ -176,6 +164,29 @@ export default function UserStoryList() {
       );
       generatedUserStories.current = newGeneratedUserStories;
     },
+  );
+
+  useNavigationGuard(
+    async () => {
+      if ((generatedUserStories?.current?.length ?? 0) > 0) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved AI generated user stories. To save them, please accept them first.",
+          "Discard",
+          "Keep editing",
+        ));
+      } else if (generating) {
+        return !(await confirm(
+          "Are you sure?",
+          "You are currently generating user stories. If you leave now, the generation will be cancelled.",
+          "Discard",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    generating || (generatedUserStories.current?.length ?? 0) > 0,
+    "Are you sure you want to leave? You have unsaved AI generated user stories. To save them, please accept them first.",
   );
 
   // Function to get the US table or message instead
@@ -568,6 +579,7 @@ export default function UserStoryList() {
             showDetail={showDetail}
             setShowDetail={setShowDetail}
             userStoryId={selectedUS}
+            setUserStoryId={setSelectedUS}
           />
         )}
 

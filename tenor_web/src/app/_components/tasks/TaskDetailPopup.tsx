@@ -222,7 +222,7 @@ export default function TaskDetailPopup({
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
             placeholder="Task Objective"
-            className="mb-4"
+            containerClassName="mb-4"
           />
           <InputTextAreaField
             label="Notes"
@@ -231,7 +231,7 @@ export default function TaskDetailPopup({
               setEditForm({ ...editForm, description: e.target.value })
             }
             placeholder="Notes to complete the task"
-            className="mb-4"
+            containerClassName="mb-4"
           />
         </>
       )}

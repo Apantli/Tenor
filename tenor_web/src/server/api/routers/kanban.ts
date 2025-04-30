@@ -57,7 +57,7 @@ export const kanbanRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const tasks = await getTasksFromProject(ctx.firestore, input.projectId);
-      const items = tasks.map((task) => {
+      const cardTasks = tasks.map((task) => {
         const {
           id,
           scrumId,
@@ -86,22 +86,22 @@ export const kanbanRouter = createTRPCRouter({
         (column) => column.deleted === false,
       );
 
-      const columnsWithItems = activeColumns
+      const columnsWithTasks = activeColumns
         .map((column) => ({
           id: column.id,
           name: column.name,
           color: column.color,
           orderIndex: column.orderIndex,
 
-          itemIds: items
+          taskIds: cardTasks
             .filter((item) => item.columnId === column.id)
             .map((item) => item.id),
         }))
         .sort((a, b) => (a.orderIndex < b.orderIndex ? -1 : 1));
 
       return {
-        columns: columnsWithItems,
-        items: Object.fromEntries(items.map((item) => [item.id, item])),
+        columns: columnsWithTasks,
+        cardTasks: Object.fromEntries(cardTasks.map((item) => [item.id, item])),
       };
     }),
 

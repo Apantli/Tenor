@@ -31,7 +31,7 @@ export default function InputFileField({
   };
 
   return (
-    <div className={cn("w-full", containerClassName)}>
+    <div className={cn("w-full", containerClassName)} onClick={openFilePicker}>
       <label
         htmlFor={id}
         className={cn("text-sm font-semibold", labelClassName)}
@@ -45,7 +45,7 @@ export default function InputFileField({
           className,
         )}
       >
-        <div className="flex h-10 items-center py-2" onClick={openFilePicker}>
+        <div className="flex h-10 items-center py-2">
           {/* Show file thumbnail */}
           <div>
             {(image && imagePreview && (

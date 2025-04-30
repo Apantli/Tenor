@@ -50,13 +50,13 @@ export const UserSchema = z.object({
   isManager: z.boolean(),
 });
 
-// Each number refers to 1 permission: "can't view" | "view" | "view-details" | "modify" | "create" | "delete"
-export type Permission = 0 | 1 | 2 | 3 | 4 | 5;
+// Each number refers to 1 permission: "none" | "read" | "write"
+export type Permission = 0 | 1 | 2;
 
-export const PermissionSchema = z.number().min(0).max(5);
+export const PermissionSchema = z.number().min(0).max(2);
 
 export const RoleSchema = z.object({
-  name: z.string(),
+  label: z.string(),
   canViewPerformance: z.boolean(),
   canControlSprints: z.boolean(),
   tabs: z.object({
@@ -167,9 +167,19 @@ export const IssueSchema = BacklogItemSchema.extend({
 });
 
 export const RequirementSchema = BasicInfoSchema.extend({
-  priorityId: z.string(),
-  requirementTypeId: z.string(),
+  priorityId: z.string().describe("Use a valid, existing priority id"),
+  requirementTypeId: z
+    .string()
+    .describe("Use a valid, existing requirement type id"),
   requirementFocusId: z.string(),
+  name: z
+    .string()
+    .describe("Small (5 word maximum) description of the requirement"),
+  description: z
+    .string()
+    .describe(
+      "You can use valid markdown. Describe in detail what the requirement is, why it exists. Also include any relevant information that is needed to understand the requirement. Finally, you may include relevant implementation suggestions, only if you have sufficient knowledge about the tech stack. Otherwise, leave it to the developers to figure it out.",
+    ),
 });
 
 export const SettingsSchema = z.object({
