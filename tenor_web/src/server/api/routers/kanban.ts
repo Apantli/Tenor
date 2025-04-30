@@ -236,7 +236,7 @@ export const kanbanRouter = createTRPCRouter({
             description: data.description,
             size: data.size,
             tags: tags,
-            columnId: data.statusId ?? "", // Handle potentially undefined statusId
+            columnId: data.statusId ?? "",
           } as KanbanItemCard;
         }),
       );
@@ -257,7 +257,7 @@ export const kanbanRouter = createTRPCRouter({
           description: data.description,
           size: data.size,
           tags: [],
-          columnId: data.statusId ?? "", // Handle potentially undefined statusId
+          columnId: data.statusId ?? "",
         } as KanbanItemCard;
       });
 
