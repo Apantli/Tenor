@@ -13,7 +13,7 @@ import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
 import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
 import { remove } from "node_modules/cypress/types/lodash";
-import { RoleDetail } from "~/lib/types/detailSchemas";
+import { type RoleDetail } from "~/lib/types/detailSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   defaultMaximumSprintStoryPoints,
@@ -165,6 +165,101 @@ const settingsRouter = createTRPCRouter({
       return statusTypesData;
     }),
 
+  getStatusTypeById: protectedProcedure
+    .input(z.object({ projectId: z.string(), statusId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, statusId } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const statusType = await projectSettingsRef
+        .collection("statusTypes")
+        .doc(statusId)
+        .get();
+      if (!statusType.exists) {
+        throw new Error("Status not found");
+      }
+      const statusTypeData = StatusTagSchema.parse(statusType.data());
+      return { id: statusType.id, ...statusTypeData };
+    }),
+  
+  createStatusType: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        name: z.string(),
+        color: z.string(),
+        marksTaskAsDone: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, name, color, marksTaskAsDone } = input;
+
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+
+      const statusCollectionRef = projectSettingsRef.collection("statusTypes");
+
+      const statusTypes = await statusCollectionRef.get();
+
+      const statusTypesData = statusTypes.docs.map((doc) => ({
+        id: doc.id,
+        ...StatusTagSchema.parse(doc.data()),
+      }));
+      const biggestOrderIndex = Math.max(
+        ...statusTypesData.map((status) => status.orderIndex),
+        0,
+      );
+
+      const newStatus = {
+        name,
+        color: color.toUpperCase(),
+        marksTaskAsDone,
+        deleted: false,
+        orderIndex: biggestOrderIndex + 1,
+      };
+
+      const docRef = await statusCollectionRef.add(newStatus);
+      return {
+        id: docRef.id,
+        ...newStatus,
+      };
+    }),
+
+  modifyStatusType: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        statusId: z.string(),
+        status: StatusTagSchema
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, statusId, status } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
+      await statusTypeRef.update(status);
+      const updatedStatus = await statusTypeRef.get();
+      return { ...status, id: updatedStatus.id };
+    }),
+
+  deleteStatusType: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        statusId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, statusId } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
+      await statusTypeRef.update({ deleted: true });
+      return { id: statusId };
+    }),
   /**
    * @procedure getBacklogTags
    * @description Retrieves all non-deleted backlog tags for a project
@@ -191,6 +286,24 @@ const settingsRouter = createTRPCRouter({
       return backlogTagsData;
     }),
 
+  getBacklogTagById: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, tagId } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const backlogTag = await projectSettingsRef
+        .collection("backlogTags")
+        .doc(tagId)
+        .get();
+      if (!backlogTag.exists) {
+        throw new Error("Tag not found");
+      }
+      const backlogTagData = TagSchema.parse(backlogTag.data());
+      return { id: backlogTag.id, ...backlogTagData };
+    }),
   /**
    * @procedure createBacklogTag
    * @description Creates a new backlog tag for a project
@@ -213,6 +326,37 @@ const settingsRouter = createTRPCRouter({
       return { ...tag, id: added.id };
     }),
 
+  modifyBacklogTag: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        tagId: z.string(),
+        tag: TagSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId, tag } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const backlogTagRef = projectRef.collection("backlogTags").doc(tagId);
+      await backlogTagRef.update(tag);
+      const updatedTag = await backlogTagRef.get();
+      return { ...tag, id: updatedTag.id };
+    }),
+
+  deleteBacklogTag: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        tagId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const backlogTagRef = projectRef.collection("backlogTags").doc(tagId);
+      await backlogTagRef.update({ deleted: true });
+      return { id: tagId };
+    }),
   /**
    * @procedure createRequirementType
    * @description Creates a new requirement type tag for a project
