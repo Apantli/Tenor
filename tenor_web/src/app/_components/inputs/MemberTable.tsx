@@ -93,7 +93,7 @@ export default function MemberTable({
                 : {
                     id: row.role,
                     label:
-                      roleList.find((role) => role.id === row.role)?.label ||
+                      roleList.find((role) => role.id === row.role)?.label ??
                       emptyRole.label,
                   }
             }

@@ -18,8 +18,7 @@
     "e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
     "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
     "component": "cypress open --component",
-    "component:headless": "cypress run --component",
-    "generate:docs": "documentation build pages/api/**/*.ts -f md -o docs/api"
+    "component:headless": "cypress run --component"
   },
   "dependencies": {
     "@auth/firebase-adapter": "^2.8.0",

@@ -17,13 +17,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { defaultRoleList } from "~/lib/defaultTags";
 
-export const toBase64 = (file: File) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-  });
+import { toBase64 } from "~/utils/base64";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();

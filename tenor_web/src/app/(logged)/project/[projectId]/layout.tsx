@@ -9,17 +9,7 @@ import Tabbar from "~/app/_components/Tabbar";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
-// link links with permissions
-export const permissionMapping = {
-  requirements: "requirements",
-  "user-stories": "userStories",
-  issues: "issues",
-  sprints: "sprints",
-  scrumboard: "kanban",
-  calendar: "calendar",
-  performance: "performance",
-  "project-settings": "projectSettings",
-};
+import { permissionMapping } from "~/lib/types/firebaseSchemas";
 
 export default function ProjectLayout({ children }: PropsWithChildren) {
   const { projectId } = useParams();

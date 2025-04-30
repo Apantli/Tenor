@@ -97,7 +97,7 @@ export default function ProjectGeneralSettings() {
   });
 
   if (role?.id !== "owner") {
-    router.push(`/project/${projectId}/project-settings/users`);
+    router.push(`/project/${projectId as string}/project-settings/users`);
   }
 
   return (
