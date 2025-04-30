@@ -52,7 +52,7 @@ export default function CreateItemTagPopup({ showPopup, setShowPopup }: Props) {
 
   const handleCreateTag = async () => {
     if (form.name === "") {
-      alert("Oops", "Please enter a name for the list.", {
+      alert("Oops", "Please enter a name for the tag.", {
         type: "error",
         duration: 5000,
       });
