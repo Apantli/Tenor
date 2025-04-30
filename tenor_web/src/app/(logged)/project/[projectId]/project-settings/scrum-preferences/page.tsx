@@ -251,6 +251,7 @@ export default function ProjectScrumPreferences() {
             onChange={(e) => {
               handleStoryPointsChange(e.target.value);
             }}
+            disableAI={true}
           />
         </>
       )}

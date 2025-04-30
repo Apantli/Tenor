@@ -60,6 +60,7 @@ export default function TimeMultiselect({
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
+          disableAI={true}
         />
         <Dropdown
           label={
