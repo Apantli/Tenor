@@ -9,7 +9,10 @@ import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
+import {
+  useFormatIssueScrumId,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scrumIdHooks";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
@@ -26,6 +29,7 @@ export default function ItemsKanban() {
   const { projectId } = useParams();
   const utils = api.useUtils();
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatIssueScrumId = useFormatIssueScrumId();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
@@ -52,9 +56,18 @@ export default function ItemsKanban() {
   // Detail item and parent
   const [detailItemId, setDetailItemId] = useState("");
   const detailItem = itemsAndColumnsData?.cardItems[detailItemId];
-  const detailItemType = detailItem?.itemType;
+  const detailItemType = detailItem?.cardType;
 
   // UTILITY
+  const getCorrectFormatter = (itemType: string) => {
+    if (itemType === "US") {
+      return formatUserStoryScrumId;
+    } else if (itemType === "IS") {
+      return formatIssueScrumId;
+    }
+    return formatUserStoryScrumId;
+  };
+
   let updateOperationsInProgress = 0;
 
   const handleDragEnd = async (itemId: string, columnId: string) => {
@@ -66,7 +79,6 @@ export default function ItemsKanban() {
     await moveItemsToColumn([itemId], columnId);
   };
 
-  // TODO: Fix sorting
   const moveItemsToColumn = async (itemIds: string[], columnId: string) => {
     if (itemsAndColumnsData == undefined) return;
     updateOperationsInProgress += 1;
@@ -142,13 +154,13 @@ export default function ItemsKanban() {
     await Promise.all(
       itemIds.map(async (itemId) => {
         const item = itemsAndColumnsData.cardItems[itemId];
-        if (item?.itemType === "US") {
+        if (item?.cardType === "US") {
           await modifyUserStoryTags({
             projectId: projectId as string,
             userStoryId: item.id,
             statusId: columnId,
           });
-        } else if (item?.itemType === "IS") {
+        } else if (item?.cardType === "IS") {
           await modifyIssuesTags({
             projectId: projectId as string,
             issueId: item.id,
@@ -160,10 +172,10 @@ export default function ItemsKanban() {
 
     if (updateOperationsInProgress == 1) {
       const userStories = itemIds.filter(
-        (itemId) => itemsAndColumnsData.cardItems[itemId]?.itemType === "US",
+        (itemId) => itemsAndColumnsData.cardItems[itemId]?.cardType === "US",
       );
       const issues = itemIds.filter(
-        (itemId) => itemsAndColumnsData.cardItems[itemId]?.itemType === "IS",
+        (itemId) => itemsAndColumnsData.cardItems[itemId]?.cardType === "IS",
       );
       if (userStories.length > 0) {
         await invalidateQueriesBacklogItems(projectId as string, "US");
@@ -175,7 +187,7 @@ export default function ItemsKanban() {
         projectId as string,
         itemIds.map((itemId) => ({
           itemId: itemId,
-          itemType: itemsAndColumnsData.cardItems[itemId]?.itemType ?? "US",
+          itemType: itemsAndColumnsData.cardItems[itemId]?.cardType ?? "US",
         })),
       );
     }
@@ -249,12 +261,15 @@ export default function ItemsKanban() {
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetailItemId}
                   setShowDetail={setShowDetail}
-                  renderCard={(item: KanbanCard) => (
-                    <ItemCardRender
-                      item={item}
-                      scrumIdFormatter={formatUserStoryScrumId}
-                    />
-                  )}
+                  renderCard={(item: KanbanCard) => {
+                    const formatter = getCorrectFormatter(item.cardType);
+                    return (
+                      <ItemCardRender
+                        item={item}
+                        scrumIdFormatter={formatter}
+                      />
+                    );
+                  }}
                   header={
                     <div className="flex flex-col items-start pr-1">
                       <div className="flex w-full justify-between">
@@ -295,11 +310,12 @@ export default function ItemsKanban() {
             if (!itemId) return null;
             const draggingItem = itemsAndColumnsData?.cardItems[itemId];
             if (!draggingItem) return null;
+            const formatter = getCorrectFormatter(draggingItem.cardType);
             return (
               <ItemCardRender
                 item={draggingItem}
                 showBackground={true}
-                scrumIdFormatter={formatUserStoryScrumId}
+                scrumIdFormatter={formatter}
               />
             );
           }}

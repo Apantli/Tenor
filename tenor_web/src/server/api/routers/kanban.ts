@@ -16,6 +16,7 @@ import { doingTagName, doneTagName, todoTagName } from "~/lib/defaultTags";
 // Only information needed by the kanban board columns / selectable cards
 export interface KanbanCard {
   id: string;
+  cardType: "US" | "IS" | "IT" | "TS"; // US = user story, IS = issue, IT = generic item, TS = task
   scrumId: number;
   name: string;
   size: "XS" | "S" | "M" | "L" | "XL" | "XXL" | undefined;
@@ -29,11 +30,12 @@ export interface KanbanCard {
 }
 
 export interface KanbanTaskCard extends KanbanCard {
+  cardType: "TS"; // TS = task
   itemId: string;
-  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
+  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, IT = generic item
 }
 export interface KanbanItemCard extends KanbanCard {
-  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
+  cardType: "US" | "IS" | "IT"; // US = user story, IS = issue, IT = generic item
 }
 
 const getAllStatuses = async (
@@ -160,6 +162,7 @@ export const kanbanRouter = createTRPCRouter({
         } = task;
         return {
           id,
+          cardType: "TS",
           scrumId,
           name,
           description,
@@ -227,13 +230,13 @@ export const kanbanRouter = createTRPCRouter({
           );
           return {
             id: doc.id,
+            cardType: "US",
             scrumId: data.scrumId,
             name: data.name,
             description: data.description,
             size: data.size,
             tags: tags,
             columnId: data.statusId ?? "", // Handle potentially undefined statusId
-            itemType: "US" as const,
           } as KanbanItemCard;
         }),
       );
@@ -248,13 +251,13 @@ export const kanbanRouter = createTRPCRouter({
         const data = doc.data() as Issue;
         return {
           id: doc.id,
+          cardType: "IS",
           scrumId: data.scrumId,
           name: data.name,
           description: data.description,
           size: data.size,
           tags: [],
           columnId: data.statusId ?? "", // Handle potentially undefined statusId
-          itemType: "IS" as const,
         } as KanbanItemCard;
       });
 
