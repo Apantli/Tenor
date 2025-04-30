@@ -13,8 +13,8 @@ interface Props {
 }
 export default function Tabbar({ disabled, mainPageName }: Props) {
   const pathname = usePathname();
-  const { projectId } = useParams();
-  const projectPath = `/project/${projectId as string}`;
+  const params = useParams();
+  const projectPath = `/project/${params.projectId as string}`;
   let cutPathname = pathname.slice(projectPath.length) || "/";
 
   // Consider the immediate parent directory, ignoring nested directories
@@ -43,7 +43,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   };
 
   const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
+    projectId: (params.projectId as string) ?? "",
   });
 
   return (

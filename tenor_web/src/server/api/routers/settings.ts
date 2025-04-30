@@ -510,6 +510,8 @@ const settingsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.uid;
 
+      if (!input.projectId) return ownerRole;
+
       const userDoc = await ctx.firestore
         .collection("projects")
         .doc(input.projectId)
