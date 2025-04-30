@@ -773,6 +773,17 @@ export default function RequirementsTable() {
                           description: editForm.description,
                         };
                       });
+                      generatedRequirements.current =
+                        generatedRequirements.current?.map((req) => {
+                          if (req.id === ghostRequirementEdited.id) {
+                            return {
+                              ...req,
+                              name: editForm.name,
+                              description: editForm.description,
+                            };
+                          }
+                          return req;
+                        });
                       return;
                     }
 
@@ -995,6 +1006,16 @@ export default function RequirementsTable() {
                             ...prev!,
                             priorityId: priority,
                           }));
+                          generatedRequirements.current =
+                            generatedRequirements.current?.map((req) => {
+                              if (req.id === ghostRequirementEdited.id) {
+                                return {
+                                  ...req,
+                                  priorityId: priority,
+                                };
+                              }
+                              return req;
+                            });
                           return;
                         }
 
@@ -1037,6 +1058,16 @@ export default function RequirementsTable() {
                             ...prev!,
                             requirementTypeId: type,
                           }));
+                          generatedRequirements.current =
+                            generatedRequirements.current?.map((req) => {
+                              if (req.id === ghostRequirementEdited.id) {
+                                return {
+                                  ...req,
+                                  requirementTypeId: type,
+                                };
+                              }
+                              return req;
+                            });
                           return;
                         }
 
@@ -1079,6 +1110,16 @@ export default function RequirementsTable() {
                             ...prev!,
                             requirementFocusId: focus,
                           }));
+                          generatedRequirements.current =
+                            generatedRequirements.current?.map((req) => {
+                              if (req.id === ghostRequirementEdited.id) {
+                                return {
+                                  ...req,
+                                  requirementFocusId: focus,
+                                };
+                              }
+                              return req;
+                            });
                           return;
                         }
 
