@@ -358,6 +358,42 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
+
+  getSizeTypes: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings");
+
+      const settingsSnap = await projectSettingsRef.get();
+
+      const settingsData = SettingsSchema.parse(settingsSnap.data());
+
+      return Array.isArray(settingsData.Size) ? settingsData.Size : [];
+    }),
+  
+  changeSize: protectedProcedure
+    .input(z.object({ projectId: z.string(), size: z.array(z.number()) }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, size } = input;
+      const projectSettingsRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("settings")
+        .doc("settings");
+
+      const settingsSnap = await projectSettingsRef.get();
+
+      const settingsData = SettingsSchema.parse(settingsSnap.data());
+
+      await projectSettingsRef.update({
+        Size: size,
+      });
+    }
+  ),
 });
 
 export default settingsRouter;
