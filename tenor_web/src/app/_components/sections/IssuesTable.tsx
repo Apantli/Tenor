@@ -20,6 +20,7 @@ import AssignUsersList from "../specific-pickers/AssignUsersList";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import {
   useInvalidateQueriesAllIssues,
+  useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 
@@ -40,6 +41,7 @@ export default function IssuesTable() {
   const confirm = useConfirmation();
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   const onIssueAdded = async (issueId: string) => {
     await invalidateQueriesAllIssues(projectId as string);
@@ -365,6 +367,7 @@ export default function IssuesTable() {
 
       await invalidateQueriesIssueDetails(projectId as string, ids);
       await invalidateQueriesAllIssues(projectId as string);
+      await invalidateQueriesAllTasks(projectId as string);
 
       return true;
     };

@@ -24,39 +24,58 @@ import { EditableBox } from "../EditableBox/EditableBox";
 import { Option } from "../EditableBox/EditableBox";
 import { DatePicker } from "../DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
-import { UserPreview } from "~/lib/types/detailSchemas";
+import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
+import PrimaryButton from "../buttons/PrimaryButton";
+import AiIcon from "@mui/icons-material/AutoAwesome";
 
 interface Props {
   taskId: string;
   itemId: string;
+  taskData?: TaskDetail;
+  updateTaskData?: (task: TaskDetail) => void;
   showDetail: boolean;
   setShowDetail: (show: boolean) => void;
+  isGhost?: boolean;
+  onAccept?: () => void;
+  onReject?: () => void;
 }
 
 export default function TaskDetailPopup({
   taskId,
   itemId,
+  taskData,
   showDetail,
   setShowDetail,
+  updateTaskData,
+  isGhost,
+  onAccept,
+  onReject,
 }: Props) {
   const { projectId } = useParams();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   const {
-    data: taskDetail,
+    data: fetchedTask,
     isLoading,
     refetch,
     error,
-  } = api.tasks.getTaskDetail.useQuery({
-    taskId,
-    projectId: projectId as string,
-  });
+  } = api.tasks.getTaskDetail.useQuery(
+    {
+      taskId,
+      projectId: projectId as string,
+    },
+    {
+      enabled: taskData === undefined,
+    },
+  );
+
+  const taskDetail = taskData ?? fetchedTask;
 
   const { mutateAsync: updateTask } = api.tasks.modifyTask.useMutation();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
-  const { data: users } = api.users.getUserListEdiBox.useQuery({
+  const { data: users } = api.users.getUserListEditBox.useQuery({
     projectId: projectId as string,
   });
   const people: Option[] = users ?? [];
@@ -107,6 +126,12 @@ export default function TaskDetailPopup({
       assignee: updatedData.assignee ?? undefined,
       dueDate: updatedData.dueDate,
     };
+
+    if (taskData !== undefined || isGhost) {
+      updateTaskData?.({ ...updatedTask, id: taskId });
+
+      return;
+    }
 
     await utils.tasks.getTaskDetail.cancel({
       taskId: taskId,
@@ -183,17 +208,35 @@ export default function TaskDetailPopup({
         setShowDetail(false);
       }}
       footer={
-        !isLoading && (
-          <DeleteButton onClick={handleDelete}>Delete Story</DeleteButton>
-        )
+        !isLoading &&
+        (!isGhost ? (
+          <DeleteButton onClick={handleDelete}>Delete task</DeleteButton>
+        ) : (
+          <div className="flex items-center gap-2">
+            <AiIcon
+              className="animate-pulse text-app-secondary"
+              data-tooltip-id="tooltip"
+              data-tooltip-content="This is a generated task. It will not get saved until you accept it."
+            />
+            <TertiaryButton onClick={onReject}>Reject</TertiaryButton>
+            <PrimaryButton
+              onClick={onAccept}
+              className="bg-app-secondary hover:bg-app-hover-secondary"
+            >
+              Accept
+            </PrimaryButton>
+          </div>
+        ))
       }
       title={
         <>
           {!isLoading && taskDetail && (
-            <h1 className="mb-4 text-3xl">
-              <span className="font-bold">
-                {formatTaskScrumId(taskDetail.scrumId)}:{" "}
-              </span>
+            <h1 className="mb-4 items-center text-3xl">
+              {taskDetail.scrumId && (
+                <span className="font-bold">
+                  {formatTaskScrumId(taskDetail.scrumId)}:{" "}
+                </span>
+              )}
               <span>{taskDetail.name}</span>
             </h1>
           )}

@@ -28,7 +28,7 @@ import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
 import type { Option } from "~/app/_components/EditableBox/EditableBox";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { defaultRoleList } from "~/lib/defaultTags";
+import { defaultRoleList } from "~/lib/defaultProjectValues";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import { acceptableTagColors } from "~/utils/colorUtils";
 

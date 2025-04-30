@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
@@ -15,7 +15,9 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import DependencyList from "./DependencyList";
-import TasksTable from "~/app/_components/sections/TasksTable";
+import TasksTable, {
+  type BacklogItemWithTasks,
+} from "~/app/_components/sections/TasksTable";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
@@ -25,15 +27,15 @@ import {
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
-import type { TaskPreview } from "~/lib/types/detailSchemas";
-import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
-import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
+import AiIcon from "@mui/icons-material/AutoAwesome";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 
 interface Props {
   userStoryId: string;
@@ -41,39 +43,53 @@ interface Props {
   setShowDetail: (show: boolean) => void;
   setUserStoryId?: (userStoryId: string) => void;
   taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
+  userStoryData?: UserStoryDetailWithTasks;
+  setUserStoryData?: (data: UserStoryDetailWithTasks | undefined) => void;
+  onAccept?: () => void;
+  onReject?: () => void;
 }
 
 export default function UserStoryDetailPopup({
   userStoryId,
   showDetail,
   setShowDetail,
-  taskIdToOpenImmediately,
   setUserStoryId,
+  taskIdToOpenImmediately,
+  userStoryData,
+  setUserStoryData,
+  onAccept,
+  onReject,
 }: Props) {
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const [unsavedTasks, setUnsavedTasks] = useState(false);
 
   const {
-    data: userStoryDetail,
+    data: fetchedUserStory,
     isLoading,
     refetch,
     error,
-  } = api.userStories.getUserStoryDetail.useQuery({
-    projectId: projectId as string,
-    userStoryId,
-  });
+  } = api.userStories.getUserStoryDetail.useQuery(
+    {
+      projectId: projectId as string,
+      userStoryId,
+    },
+    {
+      enabled: !userStoryData,
+    },
+  );
+
+  const userStoryDetail = userStoryData ?? fetchedUserStory;
 
   const { mutateAsync: updateUserStory } =
     api.userStories.modifyUserStory.useMutation();
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -85,11 +101,7 @@ export default function UserStoryDetailPopup({
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
 
-  const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
-    usePopupVisibilityState();
-  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
-    undefined,
-  );
+  const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { predefinedAlerts } = useAlert();
@@ -143,6 +155,12 @@ export default function UserStoryDetailPopup({
             acceptanceCriteria: editForm.acceptanceCriteria,
           }
         : updatedData;
+
+    // This means we're editing a ghost user story, so it should be treated differently
+    if (userStoryData !== undefined) {
+      setUserStoryData?.({ ...finalData, tasks: userStoryData.tasks });
+      return;
+    }
 
     const updatedUserStory = {
       name: finalData.name,
@@ -213,8 +231,29 @@ export default function UserStoryDetailPopup({
         userStoryId: userStoryId,
       });
       await invalidateQueriesAllUserStories(projectId as string);
+      await invalidateQueriesAllTasks(projectId as string);
       setShowDetail(false);
     }
+  };
+
+  const userStoryDataToItemData = (
+    userStory: UserStoryDetailWithTasks,
+  ): BacklogItemWithTasks => {
+    return {
+      scrumId: -1,
+      name: userStory.name,
+      description: userStory.description,
+      deleted: false,
+      sprintId: "",
+      taskIds: [],
+      complete: false,
+      tagIds: [],
+      size: userStory.size ?? "M",
+      priorityId: userStory.priority?.id ?? "",
+      statusId: "",
+      tasks: userStoryData?.tasks ?? [],
+      extra: userStoryData?.acceptanceCriteria ?? "",
+    };
   };
 
   return (
@@ -314,18 +353,38 @@ export default function UserStoryDetailPopup({
         )
       }
       footer={
-        !isLoading && (
+        !isLoading &&
+        (userStoryDetail?.scrumId !== undefined ? (
           <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
-        )
+        ) : (
+          <div className="flex items-center gap-2">
+            <AiIcon
+              className="animate-pulse text-app-secondary"
+              data-tooltip-id="tooltip"
+              data-tooltip-content="This is a generated task. It will not get saved until you accept it."
+            />
+            <TertiaryButton onClick={onReject}>Reject</TertiaryButton>
+            <PrimaryButton
+              className="bg-app-secondary hover:bg-app-hover-secondary"
+              onClick={onAccept}
+            >
+              Accept
+            </PrimaryButton>
+          </div>
+        ))
       }
       title={
         <>
           {!isLoading && userStoryDetail && (
-            <h1 className="mb-4 text-3xl">
+            <h1 className="mb-4 items-center text-3xl">
               <span className="font-bold">
-                {formatUserStoryScrumId(userStoryDetail.scrumId)}:{" "}
+                {userStoryDetail.scrumId && (
+                  <span className="pr-2">
+                    {formatUserStoryScrumId(userStoryDetail.scrumId)}:
+                  </span>
+                )}
               </span>
-              <span>{userStoryDetail.name}</span>
+              <span className="">{userStoryDetail.name}</span>
             </h1>
           )}
         </>
@@ -340,6 +399,7 @@ export default function UserStoryDetailPopup({
             "Keep editing",
           );
           if (!confirmation) return;
+          setUnsavedTasks(false);
         }
         setEditMode(isEditing);
 
@@ -415,11 +475,42 @@ export default function UserStoryDetailPopup({
           <TasksTable
             itemId={userStoryId}
             itemType="US"
+            setSelectedGhostTask={setSelectedGhostTaskId}
             setShowAddTaskPopup={setShowCreateTaskPopup}
-            setSelectedTaskId={setSelectedTaskId}
-            setShowTaskDetail={setShowTaskDetail}
+            selectedGhostTaskId={selectedGhostTaskId}
+            setItemData={(data) => {
+              if (!data || !userStoryData) return;
+              setUserStoryData?.({
+                ...userStoryData,
+                tasks: data.tasks,
+              });
+            }}
             setUnsavedTasks={setUnsavedTasks}
             taskIdToOpenImmediately={taskIdToOpenImmediately}
+            itemData={
+              userStoryData ? userStoryDataToItemData(userStoryData) : undefined
+            }
+            setTaskData={(tasks) => {
+              if (!userStoryData) return;
+              setUserStoryData?.({
+                ...userStoryData,
+                tasks: tasks ?? [],
+              });
+            }}
+            updateTaskData={(taskId, updater) => {
+              if (!userStoryData) return;
+              const taskIndex = userStoryData.tasks.findIndex(
+                (task) => task.id === taskId,
+              );
+              if (taskIndex === -1) return;
+              const updatedTask = updater(userStoryData.tasks[taskIndex]!);
+              const updatedTasks = [...userStoryData.tasks];
+              updatedTasks[taskIndex] = updatedTask;
+              setUserStoryData?.({
+                ...userStoryData,
+                tasks: updatedTasks,
+              });
+            }}
           />
         </div>
       )}
@@ -438,16 +529,18 @@ export default function UserStoryDetailPopup({
             itemId={userStoryId}
             itemType="US"
             onTaskAdded={() => setShowCreateTaskPopup(false)}
+            addTaskToGhost={
+              userStoryData !== undefined
+                ? (task) => {
+                    setUserStoryData?.({
+                      ...userStoryData,
+                      tasks: [...userStoryData.tasks, task],
+                    });
+                  }
+                : undefined
+            }
           />
         </SidebarPopup>
-      )}
-      {renderTaskDetailPopup && selectedTaskId && (
-        <TaskDetailPopup
-          taskId={selectedTaskId}
-          itemId={userStoryId}
-          showDetail={showTaskDetail}
-          setShowDetail={setShowTaskDetail}
-        />
       )}
     </Popup>
   );

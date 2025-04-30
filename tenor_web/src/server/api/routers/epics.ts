@@ -1,3 +1,13 @@
+/**
+ * Epics Router - Tenor API Endpoints for Epic Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing Epics in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve epic data within projects.
+ *
+ * @category API
+ */
+
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { EpicSchema, ExistingEpicSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";

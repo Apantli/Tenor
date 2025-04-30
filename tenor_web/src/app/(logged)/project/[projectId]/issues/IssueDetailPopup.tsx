@@ -30,6 +30,7 @@ import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
 import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
 import {
   useInvalidateQueriesAllIssues,
+  useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 
@@ -70,18 +71,15 @@ export default function IssueDetailPopup({
   const [showStepsToRecreate, setShowStepsToRecreate] = useState(false);
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
-  const [renderTaskDetailPopup, showTaskDetail, setShowTaskDetail] =
-    usePopupVisibilityState();
 
-  const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
-    undefined,
-  );
+  const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const { predefinedAlerts } = useAlert();
   const formatIssueScrumId = useFormatIssueScrumId();
   const formatSprintNumber = useFormatSprintNumber();
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   // Copy the editable data from the issue
   useEffect(() => {
@@ -171,6 +169,7 @@ export default function IssueDetailPopup({
 
       await invalidateQueriesIssueDetails(projectId as string, [issueId]);
       await invalidateQueriesAllIssues(projectId as string);
+      await invalidateQueriesAllTasks(projectId as string);
 
       setShowDetail(false);
     }
@@ -336,9 +335,9 @@ export default function IssueDetailPopup({
           <TasksTable
             itemId={issueId}
             itemType="IS"
+            setSelectedGhostTask={setSelectedGhostTaskId}
             setShowAddTaskPopup={setShowCreateTaskPopup}
-            setSelectedTaskId={setSelectedTaskId}
-            setShowTaskDetail={setShowTaskDetail}
+            selectedGhostTaskId={selectedGhostTaskId}
             taskIdToOpenImmediately={taskIdToOpenImmediately}
           />
         </div>
@@ -360,14 +359,6 @@ export default function IssueDetailPopup({
             onTaskAdded={() => setShowCreateTaskPopup(false)}
           />
         </SidebarPopup>
-      )}
-      {renderTaskDetailPopup && selectedTaskId && (
-        <TaskDetailPopup
-          taskId={selectedTaskId}
-          itemId={issueId}
-          showDetail={showTaskDetail}
-          setShowDetail={setShowTaskDetail}
-        />
       )}
     </Popup>
   );

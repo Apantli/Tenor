@@ -42,7 +42,7 @@ export default function FileList({
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <div>
-          <label className="text-sm font-semibold">{label}</label>
+          <label className="font-semibold">{label}</label>
           <span className="ml-2 text-xs text-gray-500">
             {(filesSumSize() / 1_000_000).toFixed(1)}
             MB / {(memoryLimit / 1_000_000).toFixed(1)}MB
@@ -52,7 +52,7 @@ export default function FileList({
         <div>
           <PrimaryButton
             onClick={openFilePicker}
-            className="flex max-h-[40px] items-center text-sm font-semibold"
+            className="flex max-h-[40px] items-center text-sm"
           >
             Add Context File +
           </PrimaryButton>
@@ -89,7 +89,7 @@ export default function FileList({
 
       <ul
         className={cn(
-          "flex h-[100px] w-full list-none gap-4 overflow-x-auto rounded-md border border-gray-300 px-4 py-2 shadow-sm",
+          "flex h-[100px] w-full list-none gap-4 overflow-x-auto overflow-y-hidden rounded-md border border-gray-300 px-4 py-2 shadow-sm",
           className,
         )}
       >
