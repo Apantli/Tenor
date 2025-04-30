@@ -91,3 +91,6 @@ export const ownerRole: Role = {
     sprintReview: 2,
   },
 };
+
+export const defaultMaximumSprintStoryPoints = 300;
+export const defaultSprintDuration = 7;

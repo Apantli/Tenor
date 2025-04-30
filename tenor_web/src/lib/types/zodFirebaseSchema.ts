@@ -1,5 +1,6 @@
 import type { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
+import { defaultMaximumSprintStoryPoints, defaultSprintDuration } from "../defaultProjectValues";
 
 export const TimestampType = z.custom<Timestamp>((value) => value as Timestamp);
 
@@ -183,8 +184,8 @@ export const RequirementSchema = BasicInfoSchema.extend({
 });
 
 export const SettingsSchema = z.object({
-  sprintDuration: z.number().default(7),
-  maximumSprintStoryPoints: z.number().default(10000),
+  sprintDuration: z.number().default(defaultSprintDuration),
+  maximumSprintStoryPoints: z.number().default(defaultMaximumSprintStoryPoints),
   aiContext: z.object({
     text: z.string().default(""),
     files: z
