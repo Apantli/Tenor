@@ -10,7 +10,7 @@ import ProfilePicture from "../ProfilePicture";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
-import { emptyRole } from "~/lib/defaultTags";
+import { emptyRole } from "~/lib/defaultProjectValues";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 interface Props {
@@ -122,7 +122,7 @@ export default function MemberTable({
         {label && (
           <label
             htmlFor="project-description"
-            className="justify flex text-sm font-semibold"
+            className="justify flex font-semibold"
           >
             {label}
           </label>

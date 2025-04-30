@@ -76,11 +76,9 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
             >
               <Icon fontSize="large" />
               <span
-                className={cn(
-                  "flex items-center gap-3 border-t-2 p-4 hover:bg-gray-100",
-                  i === pages.length - 1 && "border-b-2",
-                  joinPath(rootPath, link) === pathName && "bg-gray-100",
-                )}
+                className={cn({
+                  "font-semibold": joinPath(rootPath, link) === pathName,
+                })}
                 onClick={async () => {
                   if (joinPath(rootPath, link) === pathName) return;
                   if (isModified.current) {

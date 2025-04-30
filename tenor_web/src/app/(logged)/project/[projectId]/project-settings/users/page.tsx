@@ -7,7 +7,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import RoleTable from "~/app/_components/sections/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { defaultRoleList, emptyRole } from "~/lib/defaultTags";
+import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
 import { Permission, Role } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
@@ -302,9 +302,8 @@ export default function ProjectUsers() {
           handleUpdateControlSprints={handleUpdateControlSprints}
         ></RoleTable>
       ) : (
-        <div className="mt-5 flex flex-row gap-x-3">
-          <LoadingSpinner />
-          <p className="text-lg font-bold">Loading...</p>
+        <div className="flex h-40 w-full items-center justify-center">
+          <LoadingSpinner color="primary" />
         </div>
       )}
     </div>

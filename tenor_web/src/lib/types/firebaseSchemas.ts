@@ -95,7 +95,7 @@ export interface Project {
 }
 
 export interface Settings {
-  sprintDuration: number;
+  sprintDuration: number; // days
   maximumSprintStoryPoints: number;
   aiContext: {
     // embeddings maybe

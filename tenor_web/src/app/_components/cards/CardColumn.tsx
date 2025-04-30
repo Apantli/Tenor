@@ -6,7 +6,7 @@ import useClickOutside from "~/app/_hooks/useClickOutside";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import { useDroppable } from "@dnd-kit/react";
-import { CardItem } from "~/server/api/routers/kanban";
+import { KanbanCard } from "~/server/api/routers/kanban";
 
 interface Props {
   selection: Set<string>;
@@ -16,8 +16,8 @@ interface Props {
   header?: React.ReactNode;
   className: ClassNameValue;
 
-  cards: CardItem[];
-  renderCard: (item: CardItem) => React.ReactNode;
+  cards: KanbanCard[];
+  renderCard: (item: KanbanCard) => React.ReactNode;
   isLoading?: boolean;
 
   dndId: string;

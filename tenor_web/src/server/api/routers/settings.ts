@@ -6,15 +6,20 @@ import {
   TagSchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
-import z from "zod";
+import z, { number } from "zod";
 import type { Firestore } from "firebase-admin/firestore";
-import { Tag } from "~/lib/types/firebaseSchemas";
+import { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
-import { emptyRole, ownerRole } from "~/lib/defaultTags";
+import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
 import { remove } from "node_modules/cypress/types/lodash";
 import { RoleDetail } from "~/lib/types/detailSchemas";
 import { TRPCError } from "@trpc/server";
+import {
+  defaultMaximumSprintStoryPoints,
+  defaultSprintDuration,
+} from "~/lib/defaultProjectValues";
+import { getTodoStatusTag } from "./tasks";
 
 /**
  * @function getProjectSettingsRef
@@ -93,7 +98,7 @@ export const getBacklogTag = async (
   if (!tag.exists) {
     return undefined;
   }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+  return { id: tag.id, ...TagSchema.parse(tag.data()) } as WithId<Tag>;
 };
 
 /**
@@ -124,6 +129,7 @@ const settingsRouter = createTRPCRouter({
       );
       const priorityTypes = await projectSettingsRef
         .collection("priorityTypes")
+        .orderBy("name")
         .get();
       const priorityTypesData = priorityTypes.docs.map((doc) => ({
         id: doc.id,
@@ -638,6 +644,52 @@ const settingsRouter = createTRPCRouter({
         id: roleId,
         ...role,
       };
+    }),
+  getTodoTag: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const todoStatus = await getTodoStatusTag(
+        getProjectSettingsRef(projectId, ctx.firestore),
+      );
+      return todoStatus;
+    }),
+  fetchScrumSettings: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const settingsDocs = await getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      ).get();
+      const data = settingsDocs.data();
+      const scrumSettings = {
+        sprintDuration: (data?.sprintDuration ??
+          defaultSprintDuration) as number,
+        maximumSprintStoryPoints: (data?.maximumSprintStoryPoints ??
+          defaultMaximumSprintStoryPoints) as number,
+      };
+
+      return scrumSettings;
+    }),
+
+  updateScrumSettings: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        days: z.number(),
+        points: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, days, points } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      await settingsRef.update({
+        maximumSprintStoryPoints: points,
+        sprintDuration: days,
+      });
+
+      return { success: true };
     }),
 });
 

@@ -1,5 +1,11 @@
 import { useState } from "react";
 
+export type GhostTableStateManager<
+  // eslint-disable-next-line
+  T extends Record<string, any> & { id: I },
+  I extends string | number,
+> = ReturnType<typeof useGhostTableStateManager<T, I>>;
+
 export default function useGhostTableStateManager<
   // eslint-disable-next-line
   T extends Record<string, any> & { id: I },

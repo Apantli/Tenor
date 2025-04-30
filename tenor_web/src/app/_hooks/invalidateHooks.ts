@@ -19,7 +19,10 @@ export const useInvalidateQueriesAllTasks = () => {
       projectId: projectId,
     });
 
-    // TODO: Also invalidate the queries that fetch the tasks for the specific item types
+    // Invalidating this because items with automatic status fetch from tasks
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -52,6 +55,9 @@ export const useInvalidateQueriesAllUserStories = () => {
     await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
       projectId: projectId,
     });
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -73,6 +79,9 @@ export const useInvalidateQueriesItemStatus = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
     await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId,
+    });
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
       projectId: projectId,
     });
     await utils.settings.getStatusTypes.invalidate({ projectId: projectId });
@@ -108,6 +117,9 @@ export const useInvalidateQueriesAllIssues = () => {
     await utils.issues.getIssuesTableFriendly.invalidate({
       projectId: projectId,
     });
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -136,6 +148,41 @@ export const useInvalidateQueriesBacklogItems = () => {
       await invalidateQueriesAllIssues(projectId);
     }
     // TODO: Add one for general backlog items
+  };
+};
+
+interface CondenseItem {
+  itemId: string;
+  itemType: itemTypes;
+}
+
+export const useInvalidateQueriesBacklogItemDetails = () => {
+  const invalidateQueriesUserStoriesDetails =
+    useInvalidateQueriesUserStoriesDetails();
+  const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
+
+  return async (projectId: string, item: CondenseItem[]) => {
+    const userStories = item.filter((i) => i.itemType === "US");
+    const issues = item.filter((i) => i.itemType === "IS");
+
+    await invalidateQueriesUserStoriesDetails(
+      projectId,
+      userStories.map((i) => i.itemId),
+    );
+
+    await invalidateQueriesIssueDetails(
+      projectId,
+      issues.map((i) => i.itemId),
+    );
+  };
+};
+
+export const useInvalidateQueriesScrumPreferences = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.settings.fetchScrumSettings.invalidate({
+      projectId: projectId,
+    }); 
   };
 };
 

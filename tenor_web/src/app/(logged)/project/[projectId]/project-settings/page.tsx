@@ -134,48 +134,53 @@ export default function ProjectGeneralSettings() {
           </PrimaryButton>
         )}
       </div>
-      <p className="mb-2 text-lg font-bold">Project icon</p>
+      <p className="mb-2 text-lg font-semibold">Project icon</p>
       {project ? (
         <div className="flex h-full flex-col gap-y-8">
-          <div className="flex flex-row gap-x-3">
-            <img
-              src={
-                editForm.icon == ""
-                  ? undefined
-                  : icon
-                    ? URL.createObjectURL(icon)
-                    : editForm.icon.startsWith("/")
-                      ? editForm.icon
-                      : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
-              }
-              alt="Project logo"
-              className="h-20 w-20"
-            />
-            <InputFileField
-              label=""
-              accept="image/*"
-              containerClassName="mt-auto h-12"
-              image={icon}
-              handleImageChange={handleImageChange}
-              displayText="Change project icon..."
-            />
+          <div>
+            <p className="font-semibold">Project icon</p>
+            <div className="flex flex-row gap-x-3">
+              <img
+                src={
+                  editForm.icon == ""
+                    ? undefined
+                    : icon
+                      ? URL.createObjectURL(icon)
+                      : editForm.icon.startsWith("/")
+                        ? editForm.icon
+                        : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
+                }
+                alt="Project logo"
+                className="h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1"
+              />
+              <InputFileField
+                label=""
+                accept="image/*"
+                containerClassName="mt-auto h-12"
+                image={icon}
+                handleImageChange={handleImageChange}
+                displayText="Change project icon..."
+              />
+            </div>
           </div>
           <InputTextField
             label="Project Name"
             className="mt-auto w-full"
-            labelClassName="text-lg font-bold"
+            labelClassName="text-lg font-semibold"
             value={editForm.name}
             name="name"
             onChange={handleChange}
+            placeholder="What is your project called?"
           />
           <InputTextAreaField
             label="Project Description"
-            labelClassName="text-lg font-bold"
+            labelClassName="text-lg font-semibold"
             containerClassName="mt-auto"
             className="h-[115px] min-h-16 w-full"
             value={editForm.description}
             name="description"
             onChange={handleChange}
+            placeholder="What is this project about?"
           />
           <div className="mt-auto flex flex-col">
             <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">
@@ -217,9 +222,8 @@ export default function ProjectGeneralSettings() {
           </div>
         </div>
       ) : (
-        <div className="mt-5 flex flex-row gap-x-3">
-          <LoadingSpinner />
-          <p className="text-lg font-bold">Loading...</p>
+        <div className="flex h-40 w-full items-center justify-center">
+          <LoadingSpinner color="primary" />
         </div>
       )}
     </div>

@@ -28,12 +28,12 @@ export default function LinkList({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <label className="text-sm font-semibold">{label}</label>
+        <label className="font-semibold">{label}</label>
         <Dropdown
           label={
             <PrimaryButton
               asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
-              className="flex max-h-[40px] items-center text-sm font-semibold"
+              className="flex max-h-[40px] items-center text-sm"
             >
               Add Context Link +
             </PrimaryButton>
@@ -64,7 +64,7 @@ export default function LinkList({
       </div>
       <ul
         className={cn(
-          "flex h-[100px] w-full list-none gap-4 overflow-x-auto rounded-md border border-gray-300 px-4 py-2 shadow-sm",
+          "flex h-[100px] w-full list-none gap-4 overflow-x-auto overflow-y-hidden rounded-md border border-gray-300 px-4 py-2 shadow-sm",
           className,
         )}
       >
