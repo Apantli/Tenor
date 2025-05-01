@@ -540,4 +540,17 @@ export const issuesRouter = createTRPCRouter({
         updatedIssueData: updatedIssueData,
       };
     }),
+
+  getIssueCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const issueCount = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("issues")
+        .where("deleted", "==", false)
+        .count()
+        .get();
+      return issueCount.data().count;
+    }),
 });
