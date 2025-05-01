@@ -84,6 +84,11 @@ export default function ProjectAIConfig() {
     await utils.settings.getContextLinks.invalidate({
       projectId: projectId as string,
     });
+
+    alert("Success", "A new link was added to your project AI context.", {
+      type: "success",
+      duration: 5000,
+    });
   };
 
   const handleRemoveLink = async (link: string) => {
@@ -144,6 +149,11 @@ export default function ProjectAIConfig() {
     await utils.settings.getContextFiles.invalidate({
       projectId: projectId as string,
     });
+
+    alert("Success", "A new file was added to your project AI context.", {
+      type: "success",
+      duration: 5000,
+    });
   };
 
   const handleRemoveFile = async (file: File) => {
@@ -170,7 +180,6 @@ export default function ProjectAIConfig() {
 
   // Text util
   const handleUpdateText = async (text: string) => {
-    if (!text) return;
     // Uses optimistic update
     await utils.settings.getContextDialog.cancel({
       projectId: projectId as string,
