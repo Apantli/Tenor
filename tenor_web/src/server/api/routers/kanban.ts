@@ -212,6 +212,8 @@ export const kanbanRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       // Fetch user stories
+      // FIXME: This view should only include items assigned to the current sprint
+
       const userStoriesRef = ctx.firestore
         .collection(`projects/${input.projectId}/userStories`)
         .where("deleted", "==", false);

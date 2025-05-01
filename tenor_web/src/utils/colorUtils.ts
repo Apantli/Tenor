@@ -25,3 +25,10 @@ export function generateRandomTagColor(): string {
   const randomIndex = Math.floor(Math.random() * acceptableTagColors.length);
   return acceptableTagColors[randomIndex] ?? "#d9543d";
 }
+
+export const accentColorByCardType = {
+  US: "bg-app-secondary",
+  IS: "bg-yellow-500/80",
+  TS: "bg-cyan-700",
+  // IT: "bg-app-quaternary",
+};

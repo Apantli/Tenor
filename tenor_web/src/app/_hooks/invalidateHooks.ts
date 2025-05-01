@@ -56,7 +56,7 @@ export const useInvalidateQueriesAllUserStories = () => {
     await utils.userStories.getAllUserStoryPreviews.invalidate({
       projectId: projectId,
     });
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+    await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
       projectId: projectId,
     });
     await utils.kanban.getBacklogItemsForKanban.invalidate({
@@ -124,6 +124,9 @@ export const useInvalidateQueriesAllIssues = () => {
     await utils.kanban.getBacklogItemsForKanban.invalidate({
       projectId: projectId,
     });
+    await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -186,7 +189,7 @@ export const useInvalidateQueriesScrumPreferences = () => {
   return async (projectId: string) => {
     await utils.settings.fetchScrumSettings.invalidate({
       projectId: projectId,
-    }); 
+    });
   };
 };
 
@@ -197,7 +200,7 @@ export const useInvalidateQueriesAllTags = () => {
       projectId: projectId,
     });
   };
-}
+};
 
 export const useInvalidateQueriesAllStatuses = () => {
   const utils = api.useUtils();
@@ -207,8 +210,5 @@ export const useInvalidateQueriesAllStatuses = () => {
     });
   };
 };
-
-
-
 
 // TODO: Add one for all other stuff and use it in code

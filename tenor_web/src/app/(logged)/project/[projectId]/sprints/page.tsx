@@ -7,7 +7,6 @@ import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
 import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
-import UserStoryCardColumn from "~/app/_components/cards/UserStoryCardColumn";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
@@ -16,20 +15,25 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { Timestamp } from "firebase/firestore";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
+import {
+  useFormatIssueScrumId,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scrumIdHooks";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import {
-  useInvalidateQueriesAllUserStories,
-  useInvalidateQueriesUserStoriesDetails,
+  useInvalidateQueriesBacklogItemDetails,
+  useInvalidateQueriesBacklogItems,
 } from "~/app/_hooks/invalidateHooks";
+import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
+import IssueDetailPopup from "../issues/IssueDetailPopup";
 
-export type UserStories = inferRouterOutputs<
+export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
->["getUserStoryPreviewsBySprint"]["userStories"];
+>["getBacklogItemPreviewsBySprint"]["backlogItems"];
 
 const noSprintId = "noSprintId";
 
@@ -38,19 +42,18 @@ const noSprintId = "noSprintId";
 export default function ProjectSprints() {
   const { projectId } = useParams();
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
-  const invalidateQueriesUserStoriesDetails =
-    useInvalidateQueriesUserStoriesDetails();
+  const formatIssueScrumId = useFormatIssueScrumId();
+  const invalidateQueriesBacklogItemDetails =
+    useInvalidateQueriesBacklogItemDetails();
+  const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
 
-  const { data: userStoriesBySprint, isLoading } =
-    api.sprints.getUserStoryPreviewsBySprint.useQuery({
+  const { data: backlogItemsBySprint, isLoading } =
+    api.sprints.getBacklogItemPreviewsBySprint.useQuery({
       projectId: projectId as string,
     });
-  const [selectedUserStories, setSelectedUserStories] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   // Drag and drop state
-  const [lastDraggedUserStoryId, setLastDraggedUserStoryId] = useState<
+  const [lastDraggedBacklogItemId, setLastDraggedBacklogItemId] = useState<
     string | null
   >(null);
 
@@ -66,9 +69,9 @@ export default function ProjectSprints() {
     if (
       !isLoadingSprintDuration &&
       defaultSprintDuration !== undefined &&
-      userStoriesBySprint != undefined
+      backlogItemsBySprint != undefined
     ) {
-      for (const sprint of userStoriesBySprint?.sprints ?? []) {
+      for (const sprint of backlogItemsBySprint?.sprints ?? []) {
         if (
           defaultSprintInitialDate == null ||
           sprint.sprint.endDate > defaultSprintInitialDate
@@ -93,25 +96,31 @@ export default function ProjectSprints() {
       setNewSprintStartDate(defaultSprintInitialDate);
       setNewSprintEndDate(defaultSprintEndDate);
     }
-  }, [isLoadingSprintDuration, defaultSprintDuration, userStoriesBySprint]);
+  }, [isLoadingSprintDuration, defaultSprintDuration, backlogItemsBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
   const [sprintSearchValue, setSprintSearchValue] = useState("");
 
-  const filteredUnassignedStories =
-    userStoriesBySprint?.unassignedUserStoryIds.filter((userStoryId) => {
-      const userStory = userStoriesBySprint?.userStories[userStoryId];
-      if (!userStory) return false;
+  const filteredUnassignedItems =
+    backlogItemsBySprint?.unassignedItemIds.filter((itemId) => {
+      const item = backlogItemsBySprint?.backlogItems[itemId];
+      if (!item) return false;
 
-      const tagsList = userStory.tags.map((tag) => "Tag:" + tag.name).join(" ");
-      const fullUserStoryName = `${formatUserStoryScrumId(userStory.scrumId)}: ${userStory.name} ${tagsList} Size:${userStory.size}`;
-      return fullUserStoryName
-        .toLowerCase()
-        .includes(searchValue.toLowerCase());
+      const tagsList = item.tags.map((tag) => "Tag:" + tag.name).join(" ");
+      let formatter = formatUserStoryScrumId;
+      if (item.itemType === "IS") {
+        formatter = formatIssueScrumId;
+      }
+      const itemTypeName =
+        item.itemType === "US"
+          ? "Type:Story Type:UserStory Type:User Story"
+          : "Type:Issue Type:Bug";
+      const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
+      return fullItemName.toLowerCase().includes(searchValue.toLowerCase());
     }) ?? [];
 
   const filteredSprints =
-    userStoriesBySprint?.sprints.filter((sprint) => {
+    backlogItemsBySprint?.sprints.filter((sprint) => {
       if (!sprintSearchValue) return true;
 
       const sprintNumber = `Sprint ${sprint.sprint.number}`;
@@ -163,21 +172,27 @@ export default function ProjectSprints() {
       if (dateRange.toLowerCase().includes(sprintSearchValue.toLowerCase()))
         return true;
 
-      const hasMatchingUserStory = sprint.userStoryIds.some((id) => {
-        const userStory = userStoriesBySprint?.userStories[id];
-        if (!userStory) return false;
+      const hasMatchingItem = sprint.backlogItemIds.some((id) => {
+        const item = backlogItemsBySprint?.backlogItems[id];
+        if (!item) return false;
 
-        const tagsList = userStory.tags
-          .map((tag) => "Tag:" + tag.name)
-          .join(" ");
-        const fullUserStoryName = `${formatUserStoryScrumId(userStory.scrumId)}: ${userStory.name} ${tagsList} Size:${userStory.size}`;
+        const tagsList = item.tags.map((tag) => "Tag:" + tag.name).join(" ");
+        let formatter = formatUserStoryScrumId;
+        if (item.itemType === "IS") {
+          formatter = formatIssueScrumId;
+        }
+        const itemTypeName =
+          item.itemType === "US"
+            ? "Type:Story Type:UserStory Type:User Story"
+            : "Type:Issue Type:Bug";
+        const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
 
-        return fullUserStoryName
+        return fullItemName
           .toLowerCase()
           .includes(sprintSearchValue.toLowerCase());
       });
 
-      return hasMatchingUserStory;
+      return hasMatchingItem;
     }) ?? [];
 
   const { mutateAsync: createSprint, isPending } =
@@ -186,14 +201,14 @@ export default function ProjectSprints() {
   const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
     usePopupVisibilityState();
 
-  const cancelUserStoryPreviewQuery = async () => {
-    await utils.sprints.getUserStoryPreviewsBySprint.cancel({
+  const cancelBacklogItemsPreviewQuery = async () => {
+    await utils.sprints.getBacklogItemPreviewsBySprint.cancel({
       projectId: projectId as string,
     });
   };
 
-  const { mutateAsync: assignUserStoriesToSprint } =
-    api.sprints.assignUserStoriesToSprint.useMutation();
+  const { mutateAsync: assignItemsToSprint } =
+    api.sprints.assignItemsToSprint.useMutation();
 
   // New sprint variables
   const [newSprintDescription, setNewSprintDescription] = useState("");
@@ -215,7 +230,7 @@ export default function ProjectSprints() {
       return;
     }
 
-    for (const sprint of userStoriesBySprint?.sprints ?? []) {
+    for (const sprint of backlogItemsBySprint?.sprints ?? []) {
       if (
         (sprint.sprint.startDate <= newSprintStartDate &&
           sprint.sprint.endDate >= newSprintStartDate) ||
@@ -249,7 +264,7 @@ export default function ProjectSprints() {
       genericItemIds: [],
       issueIds: [],
     });
-    await utils.sprints.getUserStoryPreviewsBySprint.invalidate({
+    await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
       projectId: projectId as string,
     });
 
@@ -261,37 +276,37 @@ export default function ProjectSprints() {
   };
 
   const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
-  const [detailUserStoryId, setDetailUserStoryId] = useState("");
+  const [detailItemId, setDetailItemId] = useState("");
 
-  // Check if all unassigned user stories are selected
-  const allUnassignedSelected = filteredUnassignedStories.every((userStoryId) =>
-    selectedUserStories.has(userStoryId),
+  // Check if all unassigned items are selected
+  const allUnassignedSelected = filteredUnassignedItems.every((itemId) =>
+    selectedItems.has(itemId),
   );
 
   const toggleSelectAllUnassigned = () => {
-    const newSelection = new Set(selectedUserStories);
+    const newSelection = new Set(selectedItems);
     if (allUnassignedSelected) {
-      filteredUnassignedStories.forEach((userStoryId) => {
-        newSelection.delete(userStoryId);
+      filteredUnassignedItems.forEach((itemId) => {
+        newSelection.delete(itemId);
       });
     } else {
-      filteredUnassignedStories.forEach((userStoryId) => {
-        newSelection.add(userStoryId);
+      filteredUnassignedItems.forEach((itemId) => {
+        newSelection.add(itemId);
       });
     }
-    setSelectedUserStories(newSelection);
+    setSelectedItems(newSelection);
   };
 
   const assignSelectionToSprint = async (sprintId: string) => {
-    setLastDraggedUserStoryId(null);
-    const userStoryIds = Array.from(selectedUserStories);
-    const userStories = userStoriesBySprint?.userStories;
-    if (!userStories) return;
+    setLastDraggedBacklogItemId(null);
+    const itemIds = Array.from(selectedItems);
+    const items = backlogItemsBySprint?.backlogItems;
+    if (!items) return;
 
     // Cancel previous fetches for the sprint data
-    await cancelUserStoryPreviewQuery();
+    await cancelBacklogItemsPreviewQuery();
 
-    utils.sprints.getUserStoryPreviewsBySprint.setData(
+    utils.sprints.getBacklogItemPreviewsBySprint.setData(
       {
         projectId: projectId as string,
       },
@@ -299,108 +314,118 @@ export default function ProjectSprints() {
         if (!oldData) return undefined;
 
         const sortByScrumId = (a: string, b: string) => {
-          const storyA = userStories[a];
-          const storyB = userStories[b];
-          return (storyA?.scrumId ?? 0) - (storyB?.scrumId ?? 0);
+          const itemA = items[a];
+          const itemB = items[b];
+          if (itemA?.scrumId === itemB?.scrumId) {
+            return itemA?.itemType === "US" ? -1 : 1;
+          }
+          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
         };
 
         const sprints = oldData.sprints.map((sprint) => {
           if (sprint.sprint.id === sprintId) {
-            const sortedUserStoryIds = [
-              ...sprint.userStoryIds,
-              ...userStoryIds,
-            ].sort(sortByScrumId);
+            const sortedItemIds = [...sprint.backlogItemIds, ...itemIds].sort(
+              sortByScrumId,
+            );
             return {
               ...sprint,
-              userStoryIds: sortedUserStoryIds,
+              backlogItemIds: sortedItemIds,
             };
           } else {
             return {
               ...sprint,
-              userStoryIds: sprint.userStoryIds.filter(
-                (userStoryId) => !userStoryIds.includes(userStoryId),
+              backlogItemIds: sprint.backlogItemIds.filter(
+                (itemId) => !itemIds.includes(itemId),
               ),
             };
           }
         });
 
-        let newUnassignedUserStoryIds = [];
+        let newUnassignedItemIds = [];
         if (sprintId === "") {
-          newUnassignedUserStoryIds = [
-            ...oldData.unassignedUserStoryIds,
-            ...userStoryIds,
+          newUnassignedItemIds = [
+            ...oldData.unassignedItemIds,
+            ...itemIds,
           ].sort(sortByScrumId);
         } else {
-          newUnassignedUserStoryIds = oldData.unassignedUserStoryIds.filter(
-            (userStoryId) => !userStoryIds.includes(userStoryId),
+          newUnassignedItemIds = oldData.unassignedItemIds.filter(
+            (itemId) => !itemIds.includes(itemId),
           );
         }
 
-        const updatedUserStories = Object.fromEntries(
-          Object.entries(oldData.userStories).map(([id, userStory]) => {
-            if (userStoryIds.includes(id)) {
+        const updatedBacklogItems = Object.fromEntries(
+          Object.entries(oldData.backlogItems).map(([id, item]) => {
+            if (itemIds.includes(id)) {
               return [
                 id,
                 {
-                  ...userStory,
+                  ...item,
                   sprintId: sprintId,
                 },
               ];
             }
-            return [id, userStory];
+            return [id, item];
           }),
         );
 
         return {
           sprints,
-          unassignedUserStoryIds: newUnassignedUserStoryIds,
-          userStories: updatedUserStories,
+          unassignedItemIds: newUnassignedItemIds,
+          backlogItems: updatedBacklogItems,
         };
       },
     );
-    setSelectedUserStories(new Set());
+    setSelectedItems(new Set());
 
-    await assignUserStoriesToSprint({
+    await assignItemsToSprint({
       projectId: projectId as string,
       sprintId,
-      userStoryIds,
+      items: itemIds.map((itemId) => ({
+        id: itemId,
+        itemType: items[itemId]!.itemType as "US" | "IS",
+      })),
     });
 
     // Cancel previous fetches for the sprint data
-    await cancelUserStoryPreviewQuery();
-    await invalidateQueriesAllUserStories(projectId as string);
-    await invalidateQueriesUserStoriesDetails(
+    await cancelBacklogItemsPreviewQuery();
+
+    await invalidateQueriesBacklogItems(projectId as string, "US");
+    await invalidateQueriesBacklogItems(projectId as string, "IS");
+    await invalidateQueriesBacklogItemDetails(
       projectId as string,
-      userStoryIds,
+      itemIds.map((id) => ({
+        itemId: id,
+        itemType: items[id]!.itemType as "US" | "IS",
+      })),
     );
   };
 
   const availableToBeAssignedTo =
-    selectedUserStories.size > 0 &&
-    Array.from(selectedUserStories).every(
-      (selectedUserStoryId) =>
-        userStoriesBySprint?.userStories[selectedUserStoryId]?.sprintId !== "",
+    selectedItems.size > 0 &&
+    Array.from(selectedItems).every(
+      (selectedId) =>
+        backlogItemsBySprint?.backlogItems[selectedId]?.sprintId !== "",
     );
 
   //// Drag and drop operations
   let dndOperationsInProgress = 0;
 
   // Similar but not equal to assignSelectionToSprint
-  const handleDragEnd = async (userStoryId: string, sprintId: string) => {
+  const handleDragEnd = async (itemId: string, sprintId: string) => {
     if (sprintId == noSprintId) {
       sprintId = "";
     }
-    const userStories = userStoriesBySprint?.userStories;
-    if (!userStories || userStories[userStoryId]?.sprintId === sprintId) return;
+    const items = backlogItemsBySprint?.backlogItems;
+    if (!items || items[itemId]?.sprintId === sprintId) return;
 
     dndOperationsInProgress += 1;
     // Cancel previous fetches for the sprint data
-    await cancelUserStoryPreviewQuery();
+    await cancelBacklogItemsPreviewQuery();
 
-    setLastDraggedUserStoryId(userStoryId);
-    const userStoryIds = [userStoryId];
+    setLastDraggedBacklogItemId(itemId);
+    const itemIds = [itemId];
 
-    utils.sprints.getUserStoryPreviewsBySprint.setData(
+    utils.sprints.getBacklogItemPreviewsBySprint.setData(
       {
         projectId: projectId as string,
       },
@@ -408,83 +433,93 @@ export default function ProjectSprints() {
         if (!oldData) return undefined;
 
         const sortByScrumId = (a: string, b: string) => {
-          const storyA = userStories[a];
-          const storyB = userStories[b];
-          return (storyA?.scrumId ?? 0) - (storyB?.scrumId ?? 0);
+          const itemA = items[a];
+          const itemB = items[b];
+          if (itemA?.scrumId === itemB?.scrumId) {
+            return itemA?.itemType === "US" ? -1 : 1;
+          }
+          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
         };
 
         const sprints = oldData.sprints.map((sprint) => {
           if (sprint.sprint.id === sprintId) {
-            const sortedUserStoryIds = [
-              ...sprint.userStoryIds,
-              userStoryId,
+            const sortedBacklogItemIds = [
+              ...sprint.backlogItemIds,
+              itemId,
             ].sort(sortByScrumId);
             return {
               ...sprint,
-              userStoryIds: sortedUserStoryIds,
+              backlogItemIds: sortedBacklogItemIds,
             };
           } else {
             return {
               ...sprint,
-              userStoryIds: sprint.userStoryIds.filter(
-                (oldUserStoryId) => oldUserStoryId !== userStoryId,
+              backlogItemIds: sprint.backlogItemIds.filter(
+                (oldId) => oldId !== itemId,
               ),
             };
           }
         });
 
-        let newUnassignedUserStoryIds = [];
+        let newUnassignedItemIds = [];
         if (sprintId === "") {
-          newUnassignedUserStoryIds = [
-            ...oldData.unassignedUserStoryIds,
-            ...userStoryIds,
+          newUnassignedItemIds = [
+            ...oldData.unassignedItemIds,
+            ...itemIds,
           ].sort(sortByScrumId);
         } else {
-          newUnassignedUserStoryIds = oldData.unassignedUserStoryIds.filter(
-            (userStoryId) => !userStoryIds.includes(userStoryId),
+          newUnassignedItemIds = oldData.unassignedItemIds.filter(
+            (itemId) => !itemIds.includes(itemId),
           );
         }
 
-        const updatedUserStories = Object.fromEntries(
-          Object.entries(oldData.userStories).map(([id, userStory]) => {
-            if (userStoryIds.includes(id)) {
+        const updatedBacklogItems = Object.fromEntries(
+          Object.entries(oldData.backlogItems).map(([id, item]) => {
+            if (itemIds.includes(id)) {
               return [
                 id,
                 {
-                  ...userStory,
+                  ...item,
                   sprintId: sprintId,
                 },
               ];
             }
-            return [id, userStory];
+            return [id, item];
           }),
         );
 
         return {
           sprints,
-          unassignedUserStoryIds: newUnassignedUserStoryIds,
-          userStories: updatedUserStories,
+          unassignedItemIds: newUnassignedItemIds,
+          backlogItems: updatedBacklogItems,
         };
       },
     );
-    setSelectedUserStories(new Set());
+    setSelectedItems(new Set());
 
-    await assignUserStoriesToSprint({
+    await assignItemsToSprint({
       projectId: projectId as string,
       sprintId,
-      userStoryIds,
+      items: itemIds.map((itemId) => ({
+        id: itemId,
+        itemType: items[itemId]!.itemType as "US" | "IS",
+      })),
     });
 
     // Cancel previous fetches for the sprint data
-    await cancelUserStoryPreviewQuery();
+    await cancelBacklogItemsPreviewQuery();
 
     // Only fetch again if this is the last operation
     if (dndOperationsInProgress == 1) {
-      setLastDraggedUserStoryId(null);
-      await invalidateQueriesAllUserStories(projectId as string);
-      await invalidateQueriesUserStoriesDetails(
+      setLastDraggedBacklogItemId(null);
+      await invalidateQueriesBacklogItems(projectId as string, "US");
+      await invalidateQueriesBacklogItems(projectId as string, "IS");
+      await invalidateQueriesBacklogItemDetails(
         projectId as string,
-        userStoryIds,
+        itemIds.map((id) => ({
+          itemId: id,
+          itemType: items[id]!.itemType as "US" | "IS",
+        })),
       );
     }
 
@@ -493,7 +528,7 @@ export default function ProjectSprints() {
   };
 
   useEffect(() => {
-    setLastDraggedUserStoryId(null);
+    setLastDraggedBacklogItemId(null);
   }, [sprintSearchValue]);
 
   return (
@@ -525,21 +560,18 @@ export default function ProjectSprints() {
               ></SearchBar>
             </div>
 
-            <UserStoryCardColumn
-              lastDraggedUserStoryId={lastDraggedUserStoryId}
+            <BacklogItemCardColumn
+              lastDraggedBacklogItemId={lastDraggedBacklogItemId}
               dndId={noSprintId}
-              userStories={
-                filteredUnassignedStories
-                  .map(
-                    (userStoryId) =>
-                      userStoriesBySprint?.userStories[userStoryId],
-                  )
+              backlogItems={
+                filteredUnassignedItems
+                  .map((itemId) => backlogItemsBySprint?.backlogItems[itemId])
                   .filter((val) => val !== undefined) ?? []
               }
               isLoading={isLoading}
-              selection={selectedUserStories}
-              setSelection={setSelectedUserStories}
-              setDetailId={setDetailUserStoryId}
+              selection={selectedItems}
+              setSelection={setSelectedItems}
+              setDetailId={setDetailItemId}
               setShowDetail={setShowDetail}
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
@@ -547,7 +579,7 @@ export default function ProjectSprints() {
                   <button
                     className={cn("rounded-lg px-1 text-app-text transition", {
                       "text-app-secondary":
-                        filteredUnassignedStories.length > 0 &&
+                        filteredUnassignedItems.length > 0 &&
                         allUnassignedSelected,
                     })}
                     onClick={toggleSelectAllUnassigned}
@@ -607,14 +639,14 @@ export default function ProjectSprints() {
               )}
               {filteredSprints.map((column) => (
                 <SprintCardColumn
-                  lastDraggedUserStoryId={lastDraggedUserStoryId}
+                  lastDraggedBacklogItemId={lastDraggedBacklogItemId}
                   assignSelectionToSprint={assignSelectionToSprint}
                   column={column}
-                  userStories={userStoriesBySprint?.userStories ?? {}}
+                  backlogItems={backlogItemsBySprint?.backlogItems ?? {}}
                   key={column.sprint.id}
-                  selectedUserStories={selectedUserStories}
-                  setSelectedUserStories={setSelectedUserStories}
-                  setDetailUserStoryId={setDetailUserStoryId}
+                  selectedItems={selectedItems}
+                  setSelectedItems={setSelectedItems}
+                  setDetailItemId={setDetailItemId}
                   setShowDetail={setShowDetail}
                 />
               ))}
@@ -624,34 +656,45 @@ export default function ProjectSprints() {
 
         <DragOverlay>
           {(source) => {
-            const userStoryId = source.id as string;
-            if (!userStoryId) return null;
-            const draggingUserStory =
-              userStoriesBySprint?.userStories[userStoryId];
-            if (!draggingUserStory) return null;
+            const itemId = source.id as string;
+            if (!itemId) return null;
+            const draggingItem = backlogItemsBySprint?.backlogItems[itemId];
+            if (!draggingItem) return null;
             const item = {
-              ...draggingUserStory,
-              columnId: draggingUserStory.sprintId,
+              ...draggingItem,
+              columnId: draggingItem.sprintId,
             };
             return (
-              // FIXME: Add support for issues in this view
               <ItemCardRender
-                item={{ ...item, cardType: "US" }}
+                item={{ ...item, cardType: item.itemType as "US" | "IS" }}
                 showBackground={true}
-                scrumIdFormatter={formatUserStoryScrumId}
+                scrumIdFormatter={() =>
+                  item.itemType === "US"
+                    ? formatUserStoryScrumId(item.scrumId)
+                    : formatIssueScrumId(item.scrumId)
+                }
               />
             );
           }}
         </DragOverlay>
       </DragDropProvider>
 
-      {renderDetail && (
-        <UserStoryDetailPopup
-          setShowDetail={setShowDetail}
-          showDetail={showDetail}
-          userStoryId={detailUserStoryId}
-        />
-      )}
+      {renderDetail &&
+        backlogItemsBySprint?.backlogItems[detailItemId]?.itemType === "US" && (
+          <UserStoryDetailPopup
+            setShowDetail={setShowDetail}
+            showDetail={showDetail}
+            userStoryId={detailItemId}
+          />
+        )}
+      {renderDetail &&
+        backlogItemsBySprint?.backlogItems[detailItemId]?.itemType === "IS" && (
+          <IssueDetailPopup
+            setShowDetail={setShowDetail}
+            showDetail={showDetail}
+            issueId={detailItemId}
+          />
+        )}
       {renderSmallPopup && (
         <Popup
           show={showSmallPopup}

@@ -78,6 +78,7 @@ export default function CardColumn({
             lastDraggedItemId={lastDraggedItemId}
             key={cardInfo.id}
             dndId={cardInfo.id}
+            cardType={cardInfo.cardType}
             showCheckbox={selection.size > 0}
             selected={selection.has(cardInfo.id)}
             onChange={(selected) => {
