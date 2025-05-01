@@ -36,7 +36,6 @@ export default function CreateItemTagPopup({
   itemTagType,
 }: Props) {
   const confirm = useConfirmation();
-  const utils = api.useUtils();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
   const { projectId } = useParams();
   const { alert } = useAlert();

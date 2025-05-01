@@ -1,21 +1,16 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import { useAlert } from "~/app/_hooks/useAlert";
-import { useEffect } from "react";
 import SearchBar from "~/app/_components/SearchBar";
-import CreateItemTagPopup from "./CreateItemTagPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import ItemTagDetailPopup from "./ItemTagDetailPopup";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
-import HelpIcon from "@mui/icons-material/Help";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";

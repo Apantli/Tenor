@@ -8,7 +8,6 @@ import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -58,7 +57,7 @@ export default function StatusDetailPopup({
     statusId: statusId,
   });
 
-  const { mutateAsync: modifyStatus, isPending: modifyingStatus } =
+  const { mutateAsync: modifyStatus } =
     api.settings.modifyStatusType.useMutation();
   const { mutateAsync: deleteStatus } =
     api.settings.deleteStatusType.useMutation();

@@ -1,10 +1,8 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import { useAlert } from "~/app/_hooks/useAlert";
-import { useEffect } from "react";
 import SearchBar from "~/app/_components/SearchBar";
 import CreateItemTagPopup from "./CreateItemTagPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
@@ -23,31 +21,10 @@ interface TagTableConfig {
   emptyMessage: string;
 }
 
-interface TagDetail {
-  id: string;
-  name: string;
-  color: string;
-  deleted?: boolean;
-}
-
 type TagType = "ReqFocus" | "BacklogTag" | "ReqType";
 
 interface Props {
   itemTagType: TagType;
-}
-
-// Interfaces para los parámetros de operaciones
-interface TagParams {
-  projectId: string;
-  tagId: string;
-}
-
-interface ModifyTagParams extends TagParams {
-  tag: {
-    name: string;
-    color: string;
-    deleted: boolean;
-  };
 }
 
 export default function ItemTagTable({ itemTagType }: Props) {
@@ -61,7 +38,6 @@ export default function ItemTagTable({ itemTagType }: Props) {
   const confirm = useConfirmation();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
 
-  // Configuraciones para cada tipo de etiqueta
   const tagTypeConfigs: Record<TagType, TagTableConfig> = {
     BacklogTag: {
       title: "Backlog Tags",
@@ -85,7 +61,6 @@ export default function ItemTagTable({ itemTagType }: Props) {
 
   const currentConfig = tagTypeConfigs[itemTagType];
 
-  // Seleccionar la consulta de tags según el tipo
   let tagsQueryResult;
 
   switch (itemTagType) {
@@ -112,7 +87,6 @@ export default function ItemTagTable({ itemTagType }: Props) {
     refetch,
   } = tagsQueryResult || {};
 
-  // Obtener mutación para eliminar tags según el tipo
   let deleteTagMutation;
 
   switch (itemTagType) {
@@ -156,7 +130,6 @@ export default function ItemTagTable({ itemTagType }: Props) {
     }
 
     if (await confirm(confirmTitle, confirmMessage, "Delete", "Cancel")) {
-      // Cancelar y actualizar datos en caché según el tipo de tag
       switch (itemTagType) {
         case "BacklogTag":
           await utils.settings.getBacklogTags.cancel({
@@ -223,7 +196,6 @@ export default function ItemTagTable({ itemTagType }: Props) {
       deleted: tag.deleted ?? false,
     })) ?? [];
 
-  // Texto para la columna de nombre según el tipo de etiqueta
   let nameColumnLabel: string;
   switch (itemTagType) {
     case "BacklogTag":

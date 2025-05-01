@@ -8,11 +8,9 @@ import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import Markdown from "react-markdown";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
 
 interface TagDetail {
@@ -235,7 +233,7 @@ export default function ItemTagDetailPopup({
   }
 
   const { data: tagDetail, isLoading, refetch, error } = tagQuery;
-  const { mutateAsync: modifyTag, isPending: modifyingTag } = tagModifyMutation;
+  const { mutateAsync: modifyTag } = tagModifyMutation;
   const { mutateAsync: deleteTag } = tagDeleteMutation;
 
   const isValidTagDetail = (tag: unknown): tag is TagDetail => {
