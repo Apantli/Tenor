@@ -30,6 +30,7 @@ export default function StatusDetailPopup({
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  const { alert } = useAlert();
 
   const { projectId } = useParams();
   const [editMode, setEditMode] = useState(false);
@@ -93,6 +94,13 @@ export default function StatusDetailPopup({
   }, [error]);
 
   const handleSave = async (updatedData: NonNullable<typeof statusDetail>) => {
+    if (form.name === "") {
+      alert("Oops", "Please enter a name for the status.", {
+        type: "error",
+        duration: 5000,
+      });
+      return;
+    }
     const updatedStatus = {
       ...updatedData,
       name: form.name,

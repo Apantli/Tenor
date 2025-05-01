@@ -37,6 +37,7 @@ interface TagTypeConfig {
   deleteConfirmTitle: string;
   deleteConfirmMessage: string;
   deleteConfirmButtonText: string;
+  emptyNameError: string;
 }
 
 export default function ItemTagDetailPopup({
@@ -49,6 +50,7 @@ export default function ItemTagDetailPopup({
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
+  const { alert } = useAlert();
 
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
     BacklogTag: {
@@ -61,6 +63,7 @@ export default function ItemTagDetailPopup({
       deleteConfirmTitle: "Are you sure?",
       deleteConfirmMessage: "This action will delete the backlog tag.",
       deleteConfirmButtonText: "Delete",
+      emptyNameError: "Please enter a name for the backlog tag.",
     },
     ReqFocus: {
       title: "Requirement Focus: ",
@@ -72,6 +75,7 @@ export default function ItemTagDetailPopup({
       deleteConfirmTitle: "Are you sure?",
       deleteConfirmMessage: "This action will delete the requirement focus.",
       deleteConfirmButtonText: "Delete",
+      emptyNameError: "Please enter a name for the requirement focus.",
     },
     ReqType: {
       title: "Requirement Type: ",
@@ -83,6 +87,7 @@ export default function ItemTagDetailPopup({
       deleteConfirmTitle: "Are you sure?",
       deleteConfirmMessage: "This action will delete the requirement type.",
       deleteConfirmButtonText: "Delete",
+      emptyNameError: "Please enter a name for the requirement type.",
     },
   };
 
@@ -278,6 +283,16 @@ export default function ItemTagDetailPopup({
 
   const handleSave = async (updatedData: TagDetail) => {
     if (!isValidTagDetail(updatedData)) return;
+
+    const errorName = currentConfig.emptyNameError;
+
+    if (form.name === "") {
+      alert("Oops", errorName, {
+        type: "error",
+        duration: 5000,
+      });
+      return;
+    }
 
     const updateTag = {
       ...updatedData,
