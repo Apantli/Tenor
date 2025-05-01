@@ -23,6 +23,8 @@ import { api } from "~/trpc/react";
 
 const maxInputNumber = 10000000000;
 
+const maxInputSizeNumber = 1000;
+
 interface SizeCol {
   id: string; // id debe ser obligatorio
   name: Size;
@@ -237,7 +239,7 @@ export default function ProjectScrumPreferences() {
     }
 
     // Validation for size data between sizes
-    for (let i = 0; i < sizeData.length - 1; i++) {
+    for (let i = 0; i < sizeData.length; i++) {
       const current = sizeData[i];
       if (current && current.value <= 0) {
         alert(
@@ -250,7 +252,7 @@ export default function ProjectScrumPreferences() {
         );
         return;
       }
-      if (i > 0 && current && current.value < (sizeData[i - 1]?.value ?? 0)) {
+      if (i > 0 && current && current.value <= (sizeData[i - 1]?.value ?? 0)) {
         alert(
           "Invalid order",
           `${current.name} must be greater than or equal to ${(sizeData[i - 1]?.name ?? "previous size")}.`,
@@ -261,12 +263,23 @@ export default function ProjectScrumPreferences() {
         );
         return;
       }
+      if(i <= sizeData.length - 1 && current && current.value > (sizeData[i + 1]?.value ?? maxInputSizeNumber)) {
+        alert(
+          "Invalid order",
+          `${(sizeData[i + 1]?.name ?? " size")} must be more than to ${current.name}.`,
+          {
+            type: "error",
+            duration: 5000,
+          }
+        );
+        return;
+      }
     }
 
-    if ((sizeData[sizeData.length - 1]?.value ?? 0) > maxInputNumber) {
+    if ((sizeData[sizeData.length - 1]?.value ?? 0) > maxInputSizeNumber) {
       alert(
         "Number too large",
-        `Please only input numbers less or equal than ${maxInputNumber.toLocaleString()}.`,
+        `Please only input numbers less or equal than ${maxInputSizeNumber.toLocaleString()}.`,
         {
           type: "warning",
           duration: 5000,
