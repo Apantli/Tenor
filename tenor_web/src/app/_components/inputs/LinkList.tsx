@@ -5,8 +5,8 @@ import InsertLinkIcon from "@mui/icons-material/InsertLink";
 import PrimaryButton from "../buttons/PrimaryButton";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import InputTextField from "./InputTextField";
-import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import CloseIcon from "@mui/icons-material/Cancel";
 
 interface Props {
   label: string;
@@ -46,6 +46,7 @@ export default function LinkList({
               onChange={(e) => {
                 setLink(e.target.value);
               }}
+              disableAI
             />
           </DropdownItem>
 
@@ -88,10 +89,13 @@ export default function LinkList({
           >
             <span
               title={link}
-              className="flex flex-col items-center text-gray-500 hover:text-blue-500"
+              className="group relative flex cursor-pointer flex-col items-center text-gray-500 transition hover:text-gray-500/50"
               data-tooltip-id="tooltip"
-              data-tooltip-content={"Click to delete"}
+              data-tooltip-content={link}
             >
+              <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center pb-4 text-[40px] text-app-fail/90 opacity-0 transition group-hover:opacity-100">
+                <CloseIcon fontSize="inherit" />
+              </div>
               <InsertLinkIcon style={{ fontSize: "4rem" }} />
               <span className="mt-1 max-w-[80px] truncate text-center text-xs">
                 {

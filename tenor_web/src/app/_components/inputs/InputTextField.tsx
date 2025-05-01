@@ -34,6 +34,7 @@ export default function InputTextField({
       disableAI={disableAI}
       aiTitle={aiTitle}
       value={value as string}
+      disablePlaceholder
       onChange={onChange as InputFieldProps["onChange"]}
       {...props}
     />

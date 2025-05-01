@@ -899,7 +899,6 @@ export default function RequirementsTable() {
               <div className="pt-4">
                 <InputTextField
                   label="Title"
-                  className="h-12"
                   containerClassName="mb-4"
                   value={
                     requirementEditedData ? editForm.name : newRequirement.name

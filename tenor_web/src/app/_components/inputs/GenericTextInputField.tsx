@@ -26,6 +26,7 @@ export interface Props {
     e: ChangeEvent<HTMLTextAreaElement> | ChangeEvent<HTMLInputElement>,
   ) => void;
   className?: string;
+  disablePlaceholder?: boolean;
 }
 
 export default function InputField({
@@ -40,6 +41,7 @@ export default function InputField({
   isTextArea,
   onChange,
   placeholder,
+  disablePlaceholder,
   ...props
 }: Props &
   (
@@ -206,7 +208,9 @@ export default function InputField({
               html-rows="4"
               placeholder={
                 placeholder +
-                (isFocused ? " Press Ctrl/⌘ + K to generate with AI." : "")
+                (isFocused && !disablePlaceholder
+                  ? " Press Ctrl/⌘ + K to generate with AI."
+                  : "")
               }
               onFocus={() => {
                 setIsFocused(true);
@@ -234,7 +238,9 @@ export default function InputField({
               id={id}
               placeholder={
                 placeholder +
-                (isFocused ? " Press Ctrl/⌘ + K to generate with AI." : "")
+                (isFocused && !disablePlaceholder
+                  ? " Press Ctrl/⌘ + K to generate with AI."
+                  : "")
               }
               onFocus={() => {
                 setIsFocused(true);
