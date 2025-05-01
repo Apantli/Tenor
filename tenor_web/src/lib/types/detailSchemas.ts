@@ -82,15 +82,10 @@ export type TaskDetail = {
 export type RoleDetail = {
   id: string;
   label: string;
-  canViewPerformance: boolean;
-  canControlSprints: boolean;
-  requirements: Permission;
-  userStories: Permission;
-  issues: Permission;
-  sprints: Permission;
-  kanban: Permission;
-  calendar: Permission;
-  performance: Permission;
-  projectSettings: Permission;
-  sprintReview: Permission;
+  settings: Permission; // settings
+  performance: Permission; // performance
+  sprints: Permission; // sprints
+  scrumboard: Permission; // scrumboard, tasks status, calendar
+  issues: Permission; // issues, tasks
+  backlog: Permission; // requirements, epics, user stories, tasks
 };

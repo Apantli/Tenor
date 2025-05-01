@@ -39,30 +39,8 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
       return true;
     }
 
-    if (role && tab) {
-      const permissionKey =
-        permissionMapping[tab as keyof typeof permissionMapping];
-
-      // Check if the tab is in the project-settings mapping
-      if (!permissionKey) {
-        const projectSettingsTabs = [
-          "users",
-          "ai",
-          "scrum-preferences",
-          "tags-kanban",
-        ];
-
-        if (
-          projectSettingsTabs.includes(tab) &&
-          role.tabs["projectSettings" as keyof typeof role.tabs] > 0
-        ) {
-          return true;
-        }
-      }
-      const permission = role.tabs[permissionKey as keyof typeof role.tabs];
-      return permission && permission > 0;
-    }
-    return false;
+    // CHECK TABS BY FLAGS
+    return true;
   }, [role, tab]);
 
   return (

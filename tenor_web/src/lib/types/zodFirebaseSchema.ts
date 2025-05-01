@@ -57,19 +57,12 @@ export const PermissionSchema = z.number().min(0).max(2);
 
 export const RoleSchema = z.object({
   label: z.string(),
-  canViewPerformance: z.boolean(),
-  canControlSprints: z.boolean(),
-  tabs: z.object({
-    requirements: PermissionSchema,
-    userStories: PermissionSchema,
-    issues: PermissionSchema,
-    sprints: PermissionSchema,
-    kanban: PermissionSchema,
-    calendar: PermissionSchema,
-    performance: PermissionSchema,
-    projectSettings: PermissionSchema,
-    sprintReview: PermissionSchema,
-  }),
+  settings: PermissionSchema, // settings
+  performance: PermissionSchema, // performance
+  sprints: PermissionSchema, // sprints
+  scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
+  issues: PermissionSchema, // issues, tasks
+  backlog: PermissionSchema, // requirements, epics, user stories, tasks
 });
 
 export const BasicInfoSchema = z.object({

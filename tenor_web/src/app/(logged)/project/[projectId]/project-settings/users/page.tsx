@@ -165,7 +165,7 @@ export default function ProjectUsers() {
 
   const handleEditTabPermission = async function (
     roleId: string,
-    tabId: string,
+    parameter: string,
     permission: Permission,
   ) {
     if (!roles) return;
@@ -173,7 +173,7 @@ export default function ProjectUsers() {
       role.id === roleId
         ? {
             ...role,
-            [tabId]: permission,
+            [parameter]: permission,
           }
         : role,
     );
@@ -191,7 +191,7 @@ export default function ProjectUsers() {
     await updateRoleTabPermissions({
       projectId: projectId as string,
       roleId,
-      tabId,
+      parameter,
       permission,
     });
     await refetchRoles();
