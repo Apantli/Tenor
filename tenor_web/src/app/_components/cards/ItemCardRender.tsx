@@ -16,13 +16,26 @@ export default function ItemCardRender({
   showBackground = false,
   scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
+  const accentColorByCardType = {
+    US: "bg-app-primary",
+    IS: "bg-app-secondary",
+    TS: "bg-app-tertiary",
+    // IT: "bg-app-quaternary",
+  };
+  const accentColor =
+    accentColorByCardType[item.cardType as keyof typeof accentColorByCardType];
   return (
     <div
       className={cn({
-        "w-88 min-w-88 group relative flex min-h-8 min-w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-4 pl-4 pr-7 shadow-xl transition duration-100":
+        "w-88 min-w-88 group relative flex min-h-8 min-w-full cursor-pointer select-none overflow-hidden rounded-lg border border-app-border bg-white p-2 py-4 pb-5 pl-4 pr-7 shadow-xl transition duration-100":
           showBackground,
       })}
     >
+      {showBackground && (
+        <div
+          className={cn("absolute bottom-0 left-0 h-2 w-full", accentColor)}
+        ></div>
+      )}
       <div className={cn("flex w-full flex-col items-start gap-2")}>
         <div>
           <span className="font-semibold">
