@@ -240,7 +240,7 @@ export default function IssueDetailPopup({
                       <HelpIcon
                         className="ml-[3px] text-gray-500"
                         data-tooltip-id="tooltip"
-                        data-tooltip-html="<div style='display: flex; flex-direction: column; gap: 2px; align-items: center'><p>A status is assigned based on the progress of all its tasks.</p</div>"
+                        data-tooltip-content="A status is assigned based on the progress of all its tasks."
                         data-tooltip-place="top-start"
                         style={{ width: "15px" }}
                       />
