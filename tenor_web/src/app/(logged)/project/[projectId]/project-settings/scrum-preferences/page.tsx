@@ -214,7 +214,7 @@ export default function ProjectScrumPreferences() {
 
     await invalidateQueriesScrumPreferences(projectId as string);
 
-    alert("Success", "Scrum settings updated successfully", {
+    alert("Success", "Scrum settings have been updated successfully", {
       type: "success",
       duration: 5000,
     });

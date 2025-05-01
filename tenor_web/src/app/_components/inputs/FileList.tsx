@@ -101,7 +101,7 @@ export default function FileList({
               if (
                 !(await confirm(
                   "Remove file?",
-                  `Removing "${file.name}". This action is not revertible.`,
+                  `Removing "${file.name}". This action is not reversible.`,
                   "Delete file",
                 ))
               ) {

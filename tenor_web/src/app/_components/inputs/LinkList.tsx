@@ -77,7 +77,7 @@ export default function LinkList({
               if (
                 !(await confirm(
                   "Delete link?",
-                  `Removing "${link}". This action is not revertible.`,
+                  `Removing "${link}". This action is not reversible.`,
                   "Delete link",
                 ))
               ) {

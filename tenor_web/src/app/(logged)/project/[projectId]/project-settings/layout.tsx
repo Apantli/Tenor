@@ -53,7 +53,7 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
   const rootPath = pathName.slice(0, dirIndex);
 
   return (
-    <div className="flex h-[78vh] flex-row">
+    <div className="flex h-full flex-row">
       <div className="flex h-full w-[450px] basis-1/4 flex-col border-r-2 pr-10">
         <h1 className="mb-5 text-3xl font-semibold">Project Settings</h1>
 
