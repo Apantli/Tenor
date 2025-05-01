@@ -247,7 +247,7 @@ export default function StatusTable() {
           ) : (
             <Table
               className={`w-full ${
-                tableData.length > 5 ? "max-h-[230px] overflow-auto" : ""
+                tableData.length > 5 ? "max-h-[280px] overflow-auto" : ""
               }`}
               data={tableData}
               columns={columns}

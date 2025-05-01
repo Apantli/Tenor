@@ -247,6 +247,59 @@ export const requirementsRouter = createTRPCRouter({
       }));
       return tags;
     }),
+  
+  getRequirementTypeTagById: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+      const tagDoc = await settingsRef
+        .collection("requirementTypes")
+        .doc(input.tagId)
+        .get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
+    }),
+  
+  createRequirementTypeTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tag: TagSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tag } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const newTag = await settingsRef
+        .collection("requirementTypes")
+        .add(tag);
+      return { id: newTag.id };
+    }),
+
+  modifyRequirementTypeTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId, tag } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
+      const tagDoc = await tagRef.get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      await tagRef.update(tag);
+      return { id: tagId };
+    }),
+  
+  deleteRequirementTypeTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
+      const tagDoc = await tagRef.get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      await tagRef.update({ deleted: true });
+      return { id: tagId };
+    }),
 
   /**
    * @procedure getRequirementFocusTags
@@ -268,6 +321,59 @@ export const requirementsRouter = createTRPCRouter({
         ...(doc.data() as Tag),
       }));
       return tags;
+    }),
+
+  getRequirementFocusTagById: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+      const tagDoc = await settingsRef
+        .collection("requirementFocus")
+        .doc(input.tagId)
+        .get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
+    }),
+  
+  createRequirementFocusTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tag: TagSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tag } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const newTag = await settingsRef
+        .collection("requirementFocus")
+        .add(tag);
+      return { id: newTag.id };
+    }),
+
+  modifyRequirementFocusTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId, tag } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
+      const tagDoc = await tagRef.get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      await tagRef.update(tag);
+      return { id: tagId };
+    }),
+  
+  deleteRequirementFocusTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
+      const tagDoc = await tagRef.get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      await tagRef.update({ deleted: true });
+      return { id: tagId };
     }),
 
   /**
