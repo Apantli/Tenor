@@ -26,9 +26,7 @@ export default function ProjectGeneralSettings() {
     }));
   };
   const router = useRouter();
-
   const utils = api.useUtils();
-
   const { alert } = useAlert();
 
   const { data: project } = api.projects.getGeneralConfig.useQuery({
@@ -68,7 +66,7 @@ export default function ProjectGeneralSettings() {
     }));
   };
 
-  const computeIsModified = () => {
+  const isModified = () => {
     return (
       editForm.name !== project?.name ||
       (editForm.icon !== project?.logo && icon !== null) ||
@@ -78,7 +76,7 @@ export default function ProjectGeneralSettings() {
 
   useNavigationGuard(
     async () => {
-      if (computeIsModified()) {
+      if (isModified()) {
         return !(await confirm(
           "Are you sure?",
           "You have unsaved changes. Do you want to leave?",
@@ -88,7 +86,7 @@ export default function ProjectGeneralSettings() {
       }
       return false;
     },
-    computeIsModified(),
+    isModified(),
     "Are you sure you want to leave? You have unsaved changes.",
   );
 
@@ -132,7 +130,7 @@ export default function ProjectGeneralSettings() {
     <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
         <h1 className="mb-4 text-3xl font-semibold">General</h1>
-        {project && computeIsModified() && (
+        {project && isModified() && (
           <PrimaryButton onClick={handleSave} loading={modifyingProject}>
             Save
           </PrimaryButton>

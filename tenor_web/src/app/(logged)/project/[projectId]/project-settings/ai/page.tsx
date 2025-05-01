@@ -9,10 +9,16 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import LinkList from "~/app/_components/inputs/LinkList";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { api } from "~/trpc/react";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
+import useConfirmation from "~/app/_hooks/useConfirmation";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();
   const [newText, setNewText] = useState("");
+  const confirm = useConfirmation();
+  const utils = api.useUtils();
+  const { alert } = useAlert();
 
   // Fetch
   const { data: text, isLoading } = api.settings.getContextDialog.useQuery({
@@ -53,10 +59,9 @@ export default function ProjectAIConfig() {
   const { mutateAsync: removeLink } = api.settings.removeLink.useMutation();
   const { mutateAsync: removeFile } = api.settings.removeFile.useMutation();
   // Update
-  const { mutateAsync: updateContext } =
+  const { mutateAsync: updateContext, isPending: isContextUpdatePending } =
     api.settings.updateTextContext.useMutation();
 
-  const utils = api.useUtils();
   // Link utils
   const handleAddLink = async (link: string) => {
     if (!links) return;
@@ -80,6 +85,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
   };
+
   const handleRemoveLink = async (link: string) => {
     if (!links) return;
     const newData = links.filter((l) => l !== link);
@@ -101,6 +107,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
   };
+
   // File utils
   const handleAddFiles = async (files: File[]) => {
     if (!files) return;
@@ -138,6 +145,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
   };
+
   const handleRemoveFile = async (file: File) => {
     if (!files) return;
     const newData = files.filter((f) => f.name !== file.name);
@@ -159,6 +167,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
   };
+
   // Text util
   const handleUpdateText = async (text: string) => {
     if (!text) return;
@@ -179,18 +188,44 @@ export default function ProjectAIConfig() {
     await utils.settings.getContextDialog.invalidate({
       projectId: projectId as string,
     });
+
+    alert("Success", "Project AI context has been updated successfully.", {
+      type: "success",
+      duration: 5000,
+    });
   };
+
+  const isModified = () => {
+    return newText != text;
+  };
+
+  useNavigationGuard(
+    async () => {
+      if (isModified()) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved changes. Do you want to leave?",
+          "Discard changes",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    isModified(),
+    "Are you sure you want to leave? You have unsaved changes.",
+  );
 
   return (
     <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
           <h1 className="mb-4 text-3xl font-semibold">AI Context</h1>
-          {newText != text && !isLoading && (
+          {(isModified() || isContextUpdatePending) && (
             <PrimaryButton
               onClick={async () => {
                 await handleUpdateText(newText);
               }}
+              loading={isContextUpdatePending}
             >
               Save
             </PrimaryButton>
@@ -207,6 +242,7 @@ export default function ProjectAIConfig() {
             }}
             placeholder="Tell us about your project..."
             className="h-[250px]"
+            labelClassName="text-lg font-semibold"
           ></InputTextAreaField>
           <FileList
             label={"Context Files"}
@@ -223,8 +259,9 @@ export default function ProjectAIConfig() {
           ></LinkList>
         </div>
       ) : (
-        <div className="flex h-40 w-full items-center justify-center">
-          <LoadingSpinner color="primary" />
+        <div className="mt-5 flex flex-row gap-x-3">
+          <LoadingSpinner />
+          <p className="text-lg">Loading...</p>
         </div>
       )}
     </div>
