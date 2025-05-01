@@ -18,9 +18,27 @@ import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
 } from "~/lib/defaultProjectValues";
+import { Size } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 const maxInputNumber = 10000000000;
+
+interface SizeCol {
+  id: string; // id debe ser obligatorio
+  name: Size;
+  value: number;
+  color: string;
+}
+
+const sizeOrder: Size[] = ["XS", "S", "M", "L", "XL", "XXL"];
+const sizeColor: Record<Size, string> = {
+  XS: "#4A90E2",
+  S: "#2c9659",
+  M: "#a38921",
+  L: "#E67E22",
+  XL: "#E74C3C",
+  XXL: "#8E44AD",
+};
 
 export default function ProjectScrumPreferences() {
   // HOOKS
@@ -31,6 +49,8 @@ export default function ProjectScrumPreferences() {
     useInvalidateQueriesScrumPreferences();
   const utils = api.useUtils();
   const initialLoadRef = useRef(true);
+  const [sizeData, setSizeData] = useState<SizeCol[]>([]);
+  const [originalSizeData, setOriginalSizeData] = useState<SizeCol[]>([]);
 
   // TRPC
   const { data: scrumSettings, isLoading: settingFetchLoading } =
@@ -43,6 +63,12 @@ export default function ProjectScrumPreferences() {
 
   const { mutateAsync: updateScrumSettings, isPending: isUpdatePending } =
     api.settings.updateScrumSettings.useMutation();
+
+  const changeSizeMutation = api.settings.changeSize.useMutation();
+
+  const { data: projectSettings } = api.settings.getSizeTypes.useQuery({
+    projectId: projectId as string,
+  }) as { data: number[] | undefined };
 
   // REACT
   const [form, setForm] = useState({
@@ -60,12 +86,18 @@ export default function ProjectScrumPreferences() {
   const [numberWarningShown, setNumberWarningShown] = useState(false);
 
   const hasBeenModified = () => {
+    
     if (!sprintDuration || !maximumSprintStoryPoints) {
       return false;
     }
+
+    const sizeChanged = sizeData.some((item, index) => 
+      item.value !== originalSizeData?.[index]?.value
+    );
+
     return (
       form.sprintDuration !== sprintDuration ||
-      form.maximumSprintStoryPoints !== maximumSprintStoryPoints
+      form.maximumSprintStoryPoints !== maximumSprintStoryPoints || sizeChanged
     );
   };
 
@@ -108,6 +140,20 @@ export default function ProjectScrumPreferences() {
       }
     }
   }, [scrumSettings]);
+
+  useEffect(() => {
+    if (Array.isArray(projectSettings)) {
+      const list = projectSettings;
+      const mapped = sizeOrder.map((sizeName, index) => ({
+        id: `${sizeName}-${index}`,
+        name: sizeName,
+        color: sizeColor[sizeName],
+        value: list[index] ?? index,
+      }));
+      setSizeData(mapped);
+      setOriginalSizeData(mapped);
+    }
+  }, [projectSettings]);
 
   // HANDLES
   const checkLargeNumber = (value: number) => {
@@ -190,11 +236,62 @@ export default function ProjectScrumPreferences() {
       return;
     }
 
+    // Validation for size data between sizes
+    for (let i = 1; i < sizeData.length - 1; i++) {
+      const current = sizeData[i];
+      if (current && current.value < 0) {
+        alert(
+          "Invalid size values",
+          `The value of ${current.name} must be greater than 0.`,
+          {
+            type: "error",
+            duration: 5000,
+          }
+        );
+        return;
+      }
+      if (i > 0 && current && current.value < (sizeData[i - 1]?.value ?? 0)) {
+        alert(
+          "Invalid order",
+          `${current.name} must be greater than or equal to ${(sizeData[i - 1]?.name ?? "previous size")}.`,
+          {
+            type: "error",
+            duration: 5000,
+          }
+        );
+        return;
+      }
+    }
+
+    if ((sizeData[sizeData.length - 1]?.value ?? 0) > maxInputNumber) {
+      alert(
+        "Number too large",
+        `Please only input numbers less or equal than ${maxInputNumber.toLocaleString()}.`,
+        {
+          type: "warning",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
+    // Map sizeData to only the values
+    // This is a workaround to avoid the type error in the mutation
+    const newSize = sizeData.map((s) => s.value);
+
     await updateScrumSettings({
       projectId: projectId as string,
       days: form.sprintDuration,
       points: form.maximumSprintStoryPoints,
     });
+
+    // Optimistic update for size data
+    await changeSizeMutation.mutateAsync({
+      projectId: projectId as string,
+      size: newSize,
+    });
+
+    setOriginalSizeData([...sizeData]);
 
     // optimistic for button
     await utils.settings.fetchScrumSettings.cancel({
@@ -262,7 +359,10 @@ export default function ProjectScrumPreferences() {
           <p className="text-lg font-medium">Loading...</p>
         </div>
       )}
-      <SettingsSizeTable />
+      <SettingsSizeTable
+        sizeData={sizeData}
+        setSizeData={setSizeData}
+      />
     </div>
   );
 }
