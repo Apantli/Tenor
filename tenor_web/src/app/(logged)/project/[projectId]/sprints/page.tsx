@@ -30,6 +30,7 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
+import ColumnsIcon from "@mui/icons-material/ViewWeek";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -635,6 +636,25 @@ export default function ProjectSprints() {
               {isLoading && (
                 <div className="flex h-full w-full items-center justify-center">
                   <LoadingSpinner color="primary" />
+                </div>
+              )}
+              {!isLoading && backlogItemsBySprint?.sprints.length === 0 && (
+                <div className="flex h-full w-full items-center justify-center">
+                  <div className="flex flex-col items-center gap-5">
+                    <span className="-mb-10 text-[100px] text-gray-500">
+                      <ColumnsIcon fontSize="inherit" />
+                    </span>
+                    <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+                      No sprints yet
+                    </h1>
+                    <PrimaryButton
+                      onClick={() => {
+                        setShowSmallPopup(true);
+                      }}
+                    >
+                      Create your first sprint
+                    </PrimaryButton>
+                  </div>
                 </div>
               )}
               {filteredSprints.map((column) => (
