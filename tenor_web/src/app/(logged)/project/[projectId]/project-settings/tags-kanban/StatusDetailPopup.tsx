@@ -101,6 +101,36 @@ export default function StatusDetailPopup({
       });
       return;
     }
+
+    const protectedNames = ["todo", "doing", "done"];
+
+    const originalNameLower = statusDetail?.name.toLowerCase() ?? "";
+    const newNameLower = form.name.toLowerCase();
+
+    if (protectedNames.includes(originalNameLower)) {
+      if (originalNameLower !== newNameLower) {
+        alert(
+          "Default Status",
+          `You cannot change the name of a default status. You can only modify its capitalization.`,
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+        return;
+      }
+    } else if (protectedNames.includes(newNameLower)) {
+      alert(
+        "Default Status Name",
+        `"${form.name}" is a reserved name for default statuses and cannot be used.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     const updatedStatus = {
       ...updatedData,
       name: form.name,
@@ -108,10 +138,12 @@ export default function StatusDetailPopup({
       marksTaskAsDone: form.marksTaskAsDone,
       orderIndex: form.orderIndex,
     };
+
     await utils.settings.getStatusTypeById.cancel({
       projectId: projectId as string,
       statusId: statusId,
     });
+
     utils.settings.getStatusTypeById.setData(
       { projectId: projectId as string, statusId: statusId },
       (oldData) => {
@@ -119,6 +151,7 @@ export default function StatusDetailPopup({
         return { ...oldData, ...updatedStatus };
       },
     );
+
     await modifyStatus({
       projectId: projectId as string,
       statusId: statusId,
@@ -149,6 +182,18 @@ export default function StatusDetailPopup({
   };
 
   const handleDelete = async () => {
+    if (statusDetail && ["Todo", "Doing", "Done"].includes(statusDetail.name)) {
+      alert(
+        "Cannot delete default status",
+        `The status "${statusDetail.name}" is a default status and cannot be deleted.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     if (
       await confirm(
         "Are you sure?",
