@@ -115,7 +115,7 @@ export interface Settings {
 
   // roles: Role[];
 
-  Size: number[];
+  storyPointSizes?: number[];
 }
 
 export interface Tag {
