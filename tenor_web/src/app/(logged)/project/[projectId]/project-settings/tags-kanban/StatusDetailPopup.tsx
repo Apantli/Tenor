@@ -217,8 +217,9 @@ export default function StatusDetailPopup({
           </div>
           <InputTextField
             type="text"
-            placeholder="E.g., Todo, In Progress, Done, QA Testing, Blocked..."
+            placeholder="E.g., Todo, In Progress..."
             value={form.name}
+            disableAI={true}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <div>

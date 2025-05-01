@@ -43,7 +43,7 @@ export default function CreateItemTagPopup({
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
     BacklogTag: {
       title: "Create Backlog Tag",
-      namePlaceholder: "Enter a tag name (e.g., 'Bug', 'Feature', 'UI')...",
+      namePlaceholder: "E.g., 'Bug', 'Feature'...",
       nameLabel: "Tag name",
       colorLabel: "Tag color",
       errorEmptyName: "Please enter a name for the backlog tag.",
@@ -52,8 +52,7 @@ export default function CreateItemTagPopup({
     },
     ReqFocus: {
       title: "Create Requirement Focus",
-      namePlaceholder:
-        "Enter a focus area (e.g., 'Security', 'Performance', 'Usability')...",
+      namePlaceholder: "E.g., 'Security', 'Performance'...",
       nameLabel: "Focus name",
       colorLabel: "Focus color",
       errorEmptyName: "Please enter a name for the requirement focus.",
@@ -62,8 +61,7 @@ export default function CreateItemTagPopup({
     },
     ReqType: {
       title: "Create Requirement Type",
-      namePlaceholder:
-        "Enter a requirement type (e.g., 'Functional', 'Non-functional', 'Business')...",
+      namePlaceholder: "E.g., 'Functional', 'Non-functional'...",
       nameLabel: "Type name",
       colorLabel: "Type color",
       errorEmptyName: "Please enter a name for the requirement type.",
@@ -210,6 +208,7 @@ export default function CreateItemTagPopup({
           placeholder={currentConfig.namePlaceholder}
           label={currentConfig.nameLabel}
           value={form.name}
+          disableAI={true}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
         <DropdownColorPicker

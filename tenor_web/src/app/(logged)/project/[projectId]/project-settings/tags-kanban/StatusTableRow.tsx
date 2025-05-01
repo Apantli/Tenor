@@ -8,7 +8,6 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import TagComponent from "~/app/_components/TagComponent";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
-import { useRef } from "react";
 
 interface StatusItem {
   id: string;
@@ -47,7 +46,7 @@ export default function StatusTableRow({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    zIndex: isDragging ? 1 : 0,
+    // zIndex: isDragging ? 1 : 0,
     position: "relative" as const,
   };
 

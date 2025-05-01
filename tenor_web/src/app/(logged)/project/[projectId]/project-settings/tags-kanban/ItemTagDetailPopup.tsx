@@ -53,7 +53,7 @@ export default function ItemTagDetailPopup({
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
     BacklogTag: {
       title: "Tag: ",
-      namePlaceholder: "Enter a tag name (e.g., 'Bug', 'Feature', 'UI')...",
+      namePlaceholder: "E.g., 'Bug', 'Feature'...",
       nameLabel: "Tag name",
       colorLabel: "Tag color",
       editTitle: "Edit Backlog Tag",
@@ -64,8 +64,7 @@ export default function ItemTagDetailPopup({
     },
     ReqFocus: {
       title: "Requirement Focus: ",
-      namePlaceholder:
-        "Enter a focus area (e.g., 'Security', 'Performance', 'Usability')...",
+      namePlaceholder: "E.g., 'Security', 'Performance'...",
       nameLabel: "Focus name",
       colorLabel: "Focus color",
       editTitle: "Edit Requirement Focus",
@@ -76,8 +75,7 @@ export default function ItemTagDetailPopup({
     },
     ReqType: {
       title: "Requirement Type: ",
-      namePlaceholder:
-        "Enter a requirement type (e.g., 'Functional', 'Non-functional', 'Business')...",
+      namePlaceholder: "E.g., 'Functional', 'Non-functional'...",
       nameLabel: "Type name",
       colorLabel: "Type color",
       editTitle: "Edit Requirement Type",
@@ -434,6 +432,7 @@ export default function ItemTagDetailPopup({
             type="text"
             placeholder={currentConfig.namePlaceholder}
             value={form.name}
+            disableAI={true}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <div>
