@@ -12,6 +12,10 @@ export const useInvalidateQueriesAllTasks = () => {
           projectId: projectId,
           itemId: parentId,
         });
+        await utils.kanban.getItemAutomaticStatus.invalidate({
+          projectId: projectId,
+          itemId: parentId,
+        });
       }),
     );
 

@@ -11,7 +11,11 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { getBacklogTag, getProjectSettingsRef } from "./settings";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
-import { doingTagName, doneTagName, todoTagName } from "~/lib/defaultProjectValues";
+import {
+  doingTagName,
+  doneTagName,
+  todoTagName,
+} from "~/lib/defaultProjectValues";
 
 // Only information needed by the kanban board columns / selectable cards
 export interface KanbanCard {
@@ -47,7 +51,9 @@ const getAllStatuses = async (
     .doc(projectId)
     .collection("settings")
     .doc("settings")
-    .collection("statusTypes");
+    .collection("statusTypes")
+    .where("deleted", "==", false);
+
   const snap = await statusesRef.get();
 
   const docs = snap.docs.map((doc) => {
@@ -174,9 +180,9 @@ export const kanbanRouter = createTRPCRouter({
         } as KanbanTaskCard;
       });
 
-      const columns = await getAllStatuses(ctx.firestore, input.projectId);
-      const activeColumns = columns.filter(
-        (column) => column.deleted === false,
+      const activeColumns = await getAllStatuses(
+        ctx.firestore,
+        input.projectId,
       );
 
       const columnsWithTasks = activeColumns
@@ -265,9 +271,9 @@ export const kanbanRouter = createTRPCRouter({
       const backlogItems = [...userStories, ...issues];
 
       // Get all statuses
-      const columns = await getAllStatuses(ctx.firestore, input.projectId);
-      const activeColumns = columns.filter(
-        (column) => column.deleted === false,
+      const activeColumns = await getAllStatuses(
+        ctx.firestore,
+        input.projectId,
       );
 
       // Assign automatic status to items with undefined status
@@ -352,5 +358,38 @@ export const kanbanRouter = createTRPCRouter({
         id: docRef.id,
         ...newStatus,
       };
+    }),
+
+  getItemAutomaticStatus: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        itemId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { projectId, itemId } = input;
+      const activeStatuses = await getAllStatuses(
+        ctx.firestore,
+        input.projectId,
+      );
+      const statusId = await getAutomaticStatusId(
+        ctx.firestore,
+        projectId,
+        itemId,
+        activeStatuses,
+      );
+      const status = activeStatuses.find((status) => status.id === statusId);
+      if (!status) {
+        throw new Error("Status not found");
+      }
+      return {
+        id: status.id,
+        name: status.name,
+        color: status.color,
+        marksTaskAsDone: status.marksTaskAsDone,
+        orderIndex: status.orderIndex,
+        deleted: status.deleted,
+      } as StatusTag;
     }),
 });
