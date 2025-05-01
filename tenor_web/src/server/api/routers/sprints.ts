@@ -1,12 +1,15 @@
 import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
+  BacklogItemSchema,
+  IssueSchema,
   SprintInfoSchema,
   SprintSchema,
   TagSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
+import { collection } from "firebase/firestore";
 
 export const timestampToDate = (timestamp: {
   seconds: number;
@@ -115,7 +118,7 @@ export const sprintsRouter = createTRPCRouter({
       }
     }),
 
-  getUserStoryPreviewsBySprint: protectedProcedure
+  getBacklogItemPreviewsBySprint: protectedProcedure
     .input(
       z.object({
         projectId: z.string(),
@@ -128,11 +131,20 @@ export const sprintsRouter = createTRPCRouter({
         .doc(projectId)
         .collection("userStories")
         .where("deleted", "==", false)
-        .orderBy("scrumId", "asc")
         .get();
       const userStoriesData = z
         .array(UserStorySchema.extend({ id: z.string() }))
         .parse(userStories.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+
+      const issues = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("issues")
+        .where("deleted", "==", false)
+        .get();
+      const issuesData = z
+        .array(IssueSchema.extend({ id: z.string() }))
+        .parse(issues.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
 
       // FIXME: Exclude passed sprints
       const sprints = await ctx.firestore
@@ -140,7 +152,7 @@ export const sprintsRouter = createTRPCRouter({
         .doc(projectId)
         .collection("sprints")
         .where("deleted", "==", false)
-        .orderBy("number", "asc") // missing index
+        .orderBy("number", "asc")
         .get();
       const sprintsData = z
         .array(SprintSchema.extend({ id: z.string() }))
@@ -176,11 +188,40 @@ export const sprintsRouter = createTRPCRouter({
               return tag;
             })
             .filter((tag) => tag !== undefined),
+          itemType: "US",
+        };
+      });
+      const issuesPreviews = issuesData.map((issue) => {
+        return {
+          id: issue.id,
+          scrumId: issue.scrumId,
+          name: issue.name,
+          sprintId: issue.sprintId,
+          size: issue.size,
+          tags: issue.tagIds
+            .map((tagId) => {
+              const tag = backlogTagsData.find((tag) => tag.id === tagId);
+              return tag;
+            })
+            .filter((tag) => tag !== undefined),
+          itemType: "IS",
         };
       });
 
+      const allItems = [...userStoriesPreviews, ...issuesPreviews];
+      // Sort the items by scrumId
+      allItems.sort((a, b) => {
+        if (a.scrumId < b.scrumId) {
+          return -1;
+        }
+        if (a.scrumId > b.scrumId) {
+          return 1;
+        }
+        return 0;
+      });
+
       // Organize the user stories by sprint
-      const sprintsWithUserStories = sprintsData.map((sprint) => ({
+      const sprintsWithItems = sprintsData.map((sprint) => ({
         sprint: {
           id: sprint.id,
           description: sprint.description,
@@ -188,70 +229,89 @@ export const sprintsRouter = createTRPCRouter({
           startDate: sprint.startDate,
           endDate: sprint.endDate,
         },
-        userStoryIds: userStoriesPreviews
-          .filter((userStory) => userStory.sprintId === sprint.id)
-          .map((userStory) => userStory.id),
+        backlogItemIds: allItems
+          .filter((item) => item.sprintId === sprint.id)
+          .map((item) => item.id),
       }));
 
-      const unassignedUserStoryIds = userStoriesPreviews
-        .filter((userStory) => userStory.sprintId === "")
-        .map((userStory) => userStory.id);
+      const unassignedItemIds = allItems
+        .filter((item) => item.sprintId === "")
+        .map((item) => item.id);
 
       return {
-        sprints: sprintsWithUserStories,
-        unassignedUserStoryIds,
-        userStories: Object.fromEntries(
-          userStoriesPreviews.map((userStory) => [userStory.id, userStory]),
+        sprints: sprintsWithItems,
+        unassignedItemIds,
+        backlogItems: Object.fromEntries(
+          allItems.map((item) => [item.id, item]),
         ),
       };
     }),
 
-  assignUserStoriesToSprint: protectedProcedure
+  assignItemsToSprint: protectedProcedure
     .input(
       z.object({
         projectId: z.string(),
         sprintId: z.string().optional(),
-        userStoryIds: z.array(z.string()),
+        items: z.array(
+          z.object({ id: z.string(), itemType: z.enum(["US", "IS"]) }),
+        ),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, sprintId, userStoryIds } = input;
+      const { projectId, sprintId, items } = input;
 
       // Update the user stories in parallel
       await Promise.all(
-        userStoryIds.map(async (userStoryId) => {
+        items.map(async (item) => {
+          let collectionName = "";
+          let fieldName = "";
+          if (item.itemType === "US") {
+            collectionName = "userStories";
+            fieldName = "userStoryIds";
+          } else if (item.itemType === "IS") {
+            collectionName = "issues";
+            fieldName = "issueIds";
+          }
+
           // Obtain user story data
-          const userStoryRef = ctx.firestore
+          const itemRef = ctx.firestore
             .collection("projects")
             .doc(projectId)
-            .collection("userStories")
-            .doc(userStoryId);
-          const userStory = await userStoryRef.get();
-          const userStoryData = UserStorySchema.extend({
+            .collection(collectionName)
+            .doc(item.id);
+          const itemDoc = await itemRef.get();
+          const itemData = BacklogItemSchema.extend({
             id: z.string(),
           }).parse({
-            id: userStoryId,
-            ...userStory.data(),
+            id: itemDoc.id,
+            ...itemDoc.data(),
           });
 
           // Remove from previously assigned sprint
-          if (userStoryData.sprintId !== "") {
+          if (itemData.sprintId !== "") {
             const prevSprintRef = ctx.firestore
               .collection("projects")
               .doc(projectId)
               .collection("sprints")
-              .doc(userStoryData.sprintId);
+              .doc(itemData.sprintId);
             await prevSprintRef.update({
-              userStoryIds: FieldValue.arrayRemove(userStoryId),
+              [fieldName]: FieldValue.arrayRemove(item.id),
             });
           }
 
           // Update the user story with the new sprint ID
-          await userStoryRef.update({
+          await itemRef.update({
             sprintId: sprintId ?? "",
           });
         }),
       );
+
+      const addedUserStoryIds = items
+        .filter((item) => item.itemType === "US")
+        .map((item) => item.id);
+      const addedIssueIds = items
+        .filter((item) => item.itemType === "IS")
+        .map((item) => item.id);
 
       // Assign to the requested sprint
       if (sprintId && sprintId !== "") {
@@ -260,9 +320,16 @@ export const sprintsRouter = createTRPCRouter({
           .doc(projectId)
           .collection("sprints")
           .doc(sprintId);
-        await sprintRef.update({
-          userStoryIds: FieldValue.arrayUnion(...userStoryIds),
-        });
+        if (addedUserStoryIds.length > 0) {
+          await sprintRef.update({
+            userStoryIds: FieldValue.arrayUnion(...addedUserStoryIds),
+          });
+        }
+        if (addedIssueIds.length > 0) {
+          await sprintRef.update({
+            issueIds: FieldValue.arrayUnion(...addedIssueIds),
+          });
+        }
       }
     }),
 });

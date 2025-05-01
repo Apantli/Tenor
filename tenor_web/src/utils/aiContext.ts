@@ -90,22 +90,3 @@ export const collectBacklogTagsContext = async (
     firestore,
   );
 };
-
-export const ContextObjectSchema = z.record(z.string(), z.any());
-export type ContextObject = z.infer<typeof ContextObjectSchema>;
-
-export const parseContext = ({
-  contextObject,
-  removeEmpty = true,
-}: {
-  contextObject: ContextObject;
-  removeEmpty?: boolean;
-}) => {
-  let objectEntries = Object.entries(contextObject);
-  if (removeEmpty)
-    objectEntries = objectEntries.filter(([_, value]) => value !== null);
-
-  return objectEntries
-    .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-    .join("\n");
-};

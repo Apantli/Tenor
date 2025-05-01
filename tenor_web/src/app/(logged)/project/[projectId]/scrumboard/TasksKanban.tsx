@@ -7,7 +7,7 @@ import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
 import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
-import UserStoryCardColumn from "~/app/_components/cards/UserStoryCardColumn";
+import UserStoryCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
