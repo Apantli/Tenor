@@ -855,50 +855,6 @@ const settingsRouter = createTRPCRouter({
         (projectSprintDuration.docs[0]?.data().sprintDuration as number) ?? 7
       );
     }),
-  testingMutationWrite: roleRequiredProcedure({
-    flags: ["settings"],
-    permission: "write",
-  })
-    .input(z.object({ projectId: z.string() }))
-    .mutation(
-      async ({
-        ctx,
-        input,
-      }: {
-        ctx: { firestore: Firestore };
-        input: { projectId: string };
-      }) => {
-        const projectSettingsRef = getProjectSettingsRef(
-          input.projectId,
-          ctx.firestore,
-        );
-        const settings = await projectSettingsRef.get();
-        const settingsData = SettingsSchema.parse(settings.data());
-        return settingsData;
-      },
-    ),
-  testingMutationRead: roleRequiredProcedure({
-    flags: ["settings"],
-    permission: "read",
-  })
-    .input(z.object({ projectId: z.string() }))
-    .mutation(
-      async ({
-        ctx,
-        input,
-      }: {
-        ctx: { firestore: Firestore };
-        input: { projectId: string };
-      }) => {
-        const projectSettingsRef = getProjectSettingsRef(
-          input.projectId,
-          ctx.firestore,
-        );
-        const settings = await projectSettingsRef.get();
-        const settingsData = SettingsSchema.parse(settings.data());
-        return settingsData;
-      },
-    ),
 });
 
 export default settingsRouter;

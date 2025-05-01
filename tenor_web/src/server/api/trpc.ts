@@ -21,7 +21,6 @@ import {
   Role,
 } from "~/lib/types/firebaseSchemas";
 import { RoleSchema } from "~/lib/types/zodFirebaseSchema";
-import { getProjectRoleRef, getProjectUserRef } from "./routers/settings";
 import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
 
 /**
@@ -146,11 +145,12 @@ export const roleRequiredProcedure = (permissions: PermissionsRequired) =>
       const userId = ctx.session.uid;
       let role: Role = emptyRole;
 
-      const userDoc = await getProjectUserRef(
-        input.projectId,
-        userId,
-        ctx.firestore,
-      ).get();
+      const userDoc = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("users")
+        .doc(userId)
+        .get();
 
       // Check if the user is in the project
       if (!userDoc.exists) {
@@ -165,11 +165,15 @@ export const roleRequiredProcedure = (permissions: PermissionsRequired) =>
         role = ownerRole;
       } else if (userData.roleId != null) {
         // Check if the user has a role
-        const roleDoc = await getProjectRoleRef(
-          input.projectId,
-          userData.roleId as string,
-          ctx.firestore,
-        ).get();
+        const roleDoc = await ctx.firestore
+
+          .collection("projects")
+          .doc(input.projectId)
+          .collection("settings")
+          .doc("settings")
+          .collection("userTypes")
+          .doc(userData.roleId as string)
+          .get();
 
         // Check if the role exists
         if (!roleDoc.exists) {

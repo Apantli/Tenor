@@ -1,7 +1,11 @@
 import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import { getPriorityTag, getProjectSettingsRef } from "./settings";
 import { FieldPath } from "firebase-admin/firestore";
 import {
@@ -232,7 +236,10 @@ export const requirementsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of requirement type tags
    */
-  getRequirementTypeTags: protectedProcedure
+  getRequirementTypeTags: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
@@ -255,7 +262,10 @@ export const requirementsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of requirement focus tags
    */
-  getRequirementFocusTags: protectedProcedure
+  getRequirementFocusTags: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
@@ -281,7 +291,10 @@ export const requirementsRouter = createTRPCRouter({
    * @returns {Tag[]} returns.allRequirementTypeTags - All requirement type tags
    * @returns {Tag[]} returns.allRequirementFocusTags - All requirement focus tags
    */
-  getRequirementsTableFriendly: protectedProcedure
+  getRequirementsTableFriendly: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const rawRequirements = await getRequirementsFromProject(
@@ -315,7 +328,10 @@ export const requirementsRouter = createTRPCRouter({
    * @returns {WithId<Requirement>} The requirement with its ID
    * @throws {Error} If the requirement is not found
    */
-  getRequirement: protectedProcedure
+  getRequirement: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string(), requirementId: z.string() }))
     .query(async ({ ctx, input }) => {
       const requirement = (
@@ -342,7 +358,10 @@ export const requirementsRouter = createTRPCRouter({
    * @returns {string} Success message
    * @throws {Error} If the project is not found or the requirement to update is not found
    */
-  createOrModifyRequirement: protectedProcedure
+  createOrModifyRequirement: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "write",
+  })
     .input(RequirementSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const projectCount = (
@@ -393,7 +412,10 @@ export const requirementsRouter = createTRPCRouter({
    * @returns {object} Object with success status
    * @throws {Error} If the requirement is not found
    */
-  deleteRequirement: protectedProcedure
+  deleteRequirement: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "write",
+  })
     .input(
       z.object({
         projectId: z.string(),
@@ -416,7 +438,10 @@ export const requirementsRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  generateRequirements: protectedProcedure
+  generateRequirements: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "write",
+  })
     .input(
       z.object({
         projectId: z.string(),

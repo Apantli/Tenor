@@ -6,6 +6,7 @@ import { cn } from "~/lib/utils";
 import InterceptedLink from "./InterceptableLink";
 import { api } from "~/trpc/react";
 import { permissionMapping } from "~/lib/types/firebaseSchemas";
+import { tabs, tabsMetaInformation } from "~/lib/tabs";
 
 interface Props {
   disabled?: boolean;
@@ -22,19 +23,6 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     cutPathname = "/" + cutPathname.split("/")[1]!;
   }
 
-  // TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
-  const tabs = [
-    { title: mainPageName ?? "Overview", link: "/", enabled: true },
-    { title: "Requirements", link: "/requirements", enabled: true },
-    { title: "User Stories", link: "/user-stories", enabled: true },
-    { title: "Issues", link: "/issues", enabled: true },
-    { title: "Sprints", link: "/sprints", enabled: true },
-    { title: "Scrum Board", link: "/scrumboard", enabled: true },
-    { title: "Calendar", link: "/calendar", enabled: false },
-    { title: "Performance", link: "/performance", enabled: false },
-    { title: "Project Settings", link: "/project-settings", enabled: true },
-  ];
-
   const handleClick: MouseEventHandler = (e) => {
     const element = e.target as HTMLAnchorElement;
     element.scrollIntoView({
@@ -48,28 +36,19 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
 
   return (
     <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
-      {tabs.map(({ title, link, enabled }, i) => {
-        // Show only allowed tabs
-        const tab = link.slice(1);
-        if (tab) {
-          const permissionKey =
-            permissionMapping[tab as keyof typeof permissionMapping];
-          if (!permissionKey) {
+      {tabs.map((id) => {
+        const { title, link, enabled, flags } =
+          tabsMetaInformation[id as keyof typeof tabsMetaInformation];
+
+        for (const flag of flags) {
+          if (!role?.[flag as keyof typeof role]) {
             return null;
           }
-          const permission =
-            role?.tabs[permissionKey as keyof typeof role.tabs];
-          if (!permission || permission <= 0) {
-            return null;
-          }
-          // Overview
-        } else if (!role?.canViewPerformance) {
-          return null;
         }
 
         return (
           <InterceptedLink
-            key={i}
+            key={id}
             className={cn(
               "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
               {
@@ -81,7 +60,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
             href={projectPath + link}
             onClick={handleClick}
           >
-            {title}
+            {id === "overview" && mainPageName ? mainPageName : title}
             {link === cutPathname && (
               <>
                 <div className="absolute -left-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[5px_5px_0_0_white]"></div>

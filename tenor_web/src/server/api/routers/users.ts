@@ -1,4 +1,8 @@
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import { type TeamMember } from "~/app/_components/inputs/MemberTable";
 import { z } from "zod";
 import { remove } from "node_modules/cypress/types/lodash";
@@ -68,7 +72,10 @@ export const userRouter = createTRPCRouter({
       return users;
     }),
 
-  getTeamMembers: protectedProcedure
+  getTeamMembers: roleRequiredProcedure({
+    flags: ["settings"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
@@ -110,7 +117,10 @@ export const userRouter = createTRPCRouter({
       return users;
     }),
 
-  removeUser: protectedProcedure
+  removeUser: roleRequiredProcedure({
+    flags: ["settings"],
+    permission: "write",
+  })
     .input(z.object({ projectId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { projectId, userId } = input;
@@ -141,7 +151,7 @@ export const userRouter = createTRPCRouter({
       }
     }),
 
-  addUser: protectedProcedure
+  addUser: roleRequiredProcedure({ flags: ["settings"], permission: "write" })
     .input(z.object({ projectId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { projectId, userId } = input;
@@ -186,7 +196,10 @@ export const userRouter = createTRPCRouter({
         projects: ctx.firebaseAdmin.firestore.FieldValue.arrayUnion(projectId),
       });
     }),
-  updateUserRole: protectedProcedure
+  updateUserRole: roleRequiredProcedure({
+    flags: ["settings"],
+    permission: "write",
+  })
     .input(
       z.object({
         projectId: z.string(),
