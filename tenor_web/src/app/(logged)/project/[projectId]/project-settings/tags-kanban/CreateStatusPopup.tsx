@@ -115,9 +115,10 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
       <div className="flex flex-col justify-start gap-4">
         <InputTextField
           type="text"
-          placeholder="E.g., Todo, In Progress, Done, QA Testing, Blocked..."
+          placeholder="E.g., Todo, In Progress..."
           label="Status name"
           value={form.name}
+          disableAI={true}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
         <DropdownColorPicker

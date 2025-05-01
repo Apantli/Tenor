@@ -8,7 +8,6 @@ import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -31,6 +30,7 @@ export default function StatusDetailPopup({
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  const { alert } = useAlert();
 
   const { projectId } = useParams();
   const [editMode, setEditMode] = useState(false);
@@ -58,7 +58,7 @@ export default function StatusDetailPopup({
     statusId: statusId,
   });
 
-  const { mutateAsync: modifyStatus, isPending: modifyingStatus } =
+  const { mutateAsync: modifyStatus } =
     api.settings.modifyStatusType.useMutation();
   const { mutateAsync: deleteStatus } =
     api.settings.deleteStatusType.useMutation();
@@ -94,6 +94,13 @@ export default function StatusDetailPopup({
   }, [error]);
 
   const handleSave = async (updatedData: NonNullable<typeof statusDetail>) => {
+    if (form.name === "") {
+      alert("Oops", "Please enter a name for the status.", {
+        type: "error",
+        duration: 5000,
+      });
+      return;
+    }
     const updatedStatus = {
       ...updatedData,
       name: form.name,
@@ -218,8 +225,9 @@ export default function StatusDetailPopup({
           </div>
           <InputTextField
             type="text"
-            placeholder="E.g., Todo, In Progress, Done, QA Testing, Blocked..."
+            placeholder="E.g., Todo, In Progress..."
             value={form.name}
+            disableAI={true}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <div>
