@@ -11,7 +11,11 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { getBacklogTag, getProjectSettingsRef } from "./settings";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
-import { doingTagName, doneTagName, todoTagName } from "~/lib/defaultProjectValues";
+import {
+  doingTagName,
+  doneTagName,
+  todoTagName,
+} from "~/lib/defaultProjectValues";
 
 // Only information needed by the kanban board columns / selectable cards
 export interface KanbanCard {
@@ -206,6 +210,8 @@ export const kanbanRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       // Fetch user stories
+      // FIXME: This view should only include items assigned to the current sprint
+
       const userStoriesRef = ctx.firestore
         .collection(`projects/${input.projectId}/userStories`)
         .where("deleted", "==", false);

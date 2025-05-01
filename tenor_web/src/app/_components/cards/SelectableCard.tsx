@@ -9,6 +9,7 @@ interface Props {
   showCheckbox?: boolean;
   dndId: string;
   lastDraggedItemId: string | null;
+  cardType?: "US" | "IS" | "IT" | "TS";
 }
 
 export default function SelectableCard({
@@ -18,6 +19,7 @@ export default function SelectableCard({
   showCheckbox,
   dndId,
   lastDraggedItemId: lastDraggedItemId,
+  cardType,
   ...props
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
   const { ref: setNodeRef, isDragging } = useDraggable({
@@ -56,10 +58,21 @@ export default function SelectableCard({
     }
   }, [lastDraggedItemId, dndId]);
 
+  const accentColorByCardType = {
+    US: "bg-app-primary",
+    IS: "bg-app-secondary",
+    TS: "bg-app-tertiary",
+    // IT: "bg-app-quaternary",
+  };
+  const accentColor =
+    accentColorByCardType[
+      (cardType ?? "US") as keyof typeof accentColorByCardType
+    ];
+
   return (
     <div
       className={cn(
-        "group relative flex w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-2 shadow-xl transition-all duration-100",
+        "group relative flex w-full cursor-pointer select-none overflow-hidden rounded-lg border border-app-border bg-white p-2 pb-3 shadow-xl transition-all duration-100",
         {
           "ring-2 ring-app-secondary": selected,
           "opacity-60": isDragging,
@@ -77,6 +90,9 @@ export default function SelectableCard({
       }}
       {...props}
     >
+      <div
+        className={cn("absolute bottom-0 left-0 h-2 w-full", accentColor)}
+      ></div>
       <div
         className={cn(
           "shrink-0 grow basis-0 overflow-hidden py-2 opacity-0 transition-all group-hover:basis-6 group-hover:opacity-100",

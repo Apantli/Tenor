@@ -1,54 +1,53 @@
 import type { inferRouterOutputs } from "@trpc/server";
 import React from "react";
-import UserStoryCardColumn from "~/app/_components/cards/UserStoryCardColumn";
+import UserStoryCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import { cn } from "~/lib/utils";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import { type UserStories } from "./page";
+import { type BacklogItems } from "./page";
+import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
-  >["getUserStoryPreviewsBySprint"]["sprints"][number];
-  userStories: UserStories;
-  selectedUserStories: Set<string>;
-  setSelectedUserStories: (newSelection: Set<string>) => void;
-  setDetailUserStoryId: (detailId: string) => void;
+  >["getBacklogItemPreviewsBySprint"]["sprints"][number];
+  backlogItems: BacklogItems;
+  selectedItems: Set<string>;
+  setSelectedItems: (newSelection: Set<string>) => void;
+  setDetailItemId: (detailId: string) => void;
   setShowDetail: (showDetail: boolean) => void;
   assignSelectionToSprint: (sprintId: string) => Promise<void>;
-  lastDraggedUserStoryId: string | null;
+  lastDraggedBacklogItemId: string | null;
 }
 
 export default function SprintCardColumn({
   column,
-  userStories,
-  selectedUserStories,
-  setSelectedUserStories,
-  setDetailUserStoryId,
+  backlogItems,
+  selectedItems,
+  setSelectedItems,
+  setDetailItemId,
   setShowDetail,
   assignSelectionToSprint,
-  lastDraggedUserStoryId,
+  lastDraggedBacklogItemId,
 }: Props) {
   const allSelected =
-    column.userStoryIds.length > 0 &&
-    column.userStoryIds.every((userStoryId) =>
-      selectedUserStories.has(userStoryId),
-    );
+    column.backlogItemIds.length > 0 &&
+    column.backlogItemIds.every((itemId) => selectedItems.has(itemId));
 
   const toggleSelectAll = () => {
-    const newSelection = new Set(selectedUserStories);
+    const newSelection = new Set(selectedItems);
     if (allSelected) {
-      column.userStoryIds.forEach((userStoryId) => {
-        newSelection.delete(userStoryId);
+      column.backlogItemIds.forEach((itemId) => {
+        newSelection.delete(itemId);
       });
     } else {
-      column.userStoryIds.forEach((userStoryId) => {
-        newSelection.add(userStoryId);
+      column.backlogItemIds.forEach((itemId) => {
+        newSelection.add(itemId);
       });
     }
-    setSelectedUserStories(newSelection);
+    setSelectedItems(newSelection);
   };
 
   const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -58,12 +57,10 @@ export default function SprintCardColumn({
 
   // Check there's selected user stories and none of them are in this sprint
   const availableToBeAssignedTo =
-    selectedUserStories.size > 0 &&
-    Array.from(selectedUserStories).every(
-      (selectedUserStoryId) =>
-        !column.userStoryIds.some(
-          (userStoryId) => userStoryId === selectedUserStoryId,
-        ),
+    selectedItems.size > 0 &&
+    Array.from(selectedItems).every(
+      (selectedItemId) =>
+        !column.backlogItemIds.some((itemId) => itemId === selectedItemId),
     );
 
   return (
@@ -71,17 +68,17 @@ export default function SprintCardColumn({
       className="relative h-full w-96 min-w-96 overflow-hidden rounded-lg"
       key={column.sprint.id}
     >
-      <UserStoryCardColumn
-        lastDraggedUserStoryId={lastDraggedUserStoryId}
+      <BacklogItemCardColumn
+        lastDraggedBacklogItemId={lastDraggedBacklogItemId}
         dndId={column.sprint.id}
-        userStories={
-          column.userStoryIds
-            .map((userStoryId) => userStories[userStoryId])
+        backlogItems={
+          column.backlogItemIds
+            .map((itemId) => backlogItems[itemId])
             .filter((val) => val !== undefined) ?? []
         }
-        selection={selectedUserStories}
-        setSelection={setSelectedUserStories}
-        setDetailId={setDetailUserStoryId}
+        selection={selectedItems}
+        setSelection={setSelectedItems}
+        setDetailId={setDetailItemId}
         setShowDetail={setShowDetail}
         className={cn({ "pb-10": availableToBeAssignedTo })}
         header={

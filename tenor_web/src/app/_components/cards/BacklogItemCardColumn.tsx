@@ -5,12 +5,15 @@ import CardColumn from "./CardColumn";
 import type { ClassNameValue } from "tailwind-merge";
 import ItemCardRender from "./ItemCardRender";
 import type { KanbanCard } from "~/server/api/routers/kanban";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
+import {
+  useFormatIssueScrumId,
+  useFormatUserStoryScrumId,
+} from "~/app/_hooks/scrumIdHooks";
 
 interface Props {
-  userStories: inferRouterOutputs<
+  backlogItems: inferRouterOutputs<
     typeof sprintsRouter
-  >["getUserStoryPreviewsBySprint"]["userStories"][string][];
+  >["getBacklogItemPreviewsBySprint"]["backlogItems"][string][];
   selection: Set<string>;
   setSelection: (newSelection: Set<string>) => void;
   setDetailId: (detailId: string) => void;
@@ -19,11 +22,11 @@ interface Props {
   header?: React.ReactNode;
   className?: ClassNameValue;
   dndId: string;
-  lastDraggedUserStoryId: string | null;
+  lastDraggedBacklogItemId: string | null;
 }
 
-export default function UserStoryCardColumn({
-  userStories,
+export default function BacklogItemCardColumn({
+  backlogItems,
   selection,
   setSelection,
   setDetailId,
@@ -32,23 +35,24 @@ export default function UserStoryCardColumn({
   header,
   className,
   dndId,
-  lastDraggedUserStoryId: lastDraggedUserStoryId,
+  lastDraggedBacklogItemId,
 }: Props) {
-  const cards: KanbanCard[] = userStories.map((userStory) => ({
-    id: userStory.id,
-    scrumId: userStory.scrumId,
-    name: userStory.name,
-    size: userStory.size,
-    tags: userStory.tags,
-    columnId: userStory.sprintId,
-    cardType: "US",
+  const cards: KanbanCard[] = backlogItems.map((item) => ({
+    id: item.id,
+    scrumId: item.scrumId,
+    name: item.name,
+    size: item.size,
+    tags: item.tags,
+    columnId: item.sprintId,
+    cardType: item.itemType as "US" | "IS",
   }));
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatIssueScrumId = useFormatIssueScrumId();
 
   return (
     <CardColumn
-      lastDraggedItemId={lastDraggedUserStoryId}
+      lastDraggedItemId={lastDraggedBacklogItemId}
       dndId={dndId}
       cards={cards}
       selection={selection}
@@ -58,10 +62,14 @@ export default function UserStoryCardColumn({
       isLoading={isLoading}
       header={header}
       className={className}
-      renderCard={(userStory) => (
+      renderCard={(item) => (
         <ItemCardRender
-          item={userStory}
-          scrumIdFormatter={formatUserStoryScrumId}
+          item={item}
+          scrumIdFormatter={() =>
+            item.cardType === "US"
+              ? formatUserStoryScrumId(item.scrumId)
+              : formatIssueScrumId(item.scrumId)
+          }
         />
       )}
     />
