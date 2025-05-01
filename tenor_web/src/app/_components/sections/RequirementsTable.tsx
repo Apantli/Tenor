@@ -941,7 +941,7 @@ export default function RequirementsTable() {
                     }
                   }}
                   name="name"
-                  placeholder="Briefly describe the requirement"
+                  placeholder="Briefly describe the requirement..."
                 />
                 <InputTextAreaField
                   label="Description"

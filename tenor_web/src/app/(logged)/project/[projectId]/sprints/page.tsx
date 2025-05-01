@@ -745,7 +745,7 @@ export default function ProjectSprints() {
               label="Sprint description"
               value={newSprintDescription}
               onChange={(e) => setNewSprintDescription(e.target.value)}
-              placeholder="Your sprint description"
+              placeholder="Explain what will be done in this sprint..."
               className="h-[200px] w-full"
             />
             <div className="flex w-full justify-center gap-4">

@@ -134,11 +134,10 @@ export default function ProjectGeneralSettings() {
           </PrimaryButton>
         )}
       </div>
-      <p className="mb-2 text-lg font-semibold">Project icon</p>
       {project ? (
         <div className="flex h-full flex-col gap-y-8">
           <div>
-            <p className="font-semibold">Project icon</p>
+            <p className="text-lg font-semibold">Project icon</p>
             <div className="flex flex-row gap-x-3">
               <img
                 src={
@@ -170,17 +169,16 @@ export default function ProjectGeneralSettings() {
             value={editForm.name}
             name="name"
             onChange={handleChange}
-            placeholder="What is your project called?"
+            placeholder="What is your project called..."
           />
           <InputTextAreaField
             label="Project Description"
             labelClassName="text-lg font-semibold"
-            containerClassName="mt-auto"
             className="h-[115px] min-h-16 w-full"
             value={editForm.description}
             name="description"
             onChange={handleChange}
-            placeholder="What is this project about?"
+            placeholder="What is this project about..."
           />
           <div className="mt-auto flex flex-col">
             <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">

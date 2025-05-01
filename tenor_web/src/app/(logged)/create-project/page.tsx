@@ -260,7 +260,7 @@ export default function ProjectCreator() {
                   value={form.name}
                   onChange={handleChange}
                   name="name"
-                  placeholder="What is your project called?"
+                  placeholder="What is your project called..."
                 />
               </div>
 
@@ -280,7 +280,7 @@ export default function ProjectCreator() {
             <InputTextAreaField
               label="Description"
               html-rows="4"
-              placeholder="What is this project about?"
+              placeholder="What is this project about..."
               className="min-h-[140px] w-full"
               value={form.description}
               onChange={handleChange}

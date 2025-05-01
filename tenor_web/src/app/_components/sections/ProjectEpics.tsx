@@ -190,7 +190,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
           </h1>
           <InputTextField
             type="text"
-            placeholder="Your epic name"
+            placeholder="Briefly describe your epic..."
             label="Epic name"
             value={newEpicName}
             onChange={(e) => setNewEpicName(e.target.value)}
@@ -199,7 +199,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
             label="Epic description"
             value={newEpicDescription}
             onChange={(e) => setNewEpicDescription(e.target.value)}
-            placeholder="Your epic description"
+            placeholder="Explain the purpose of this epic..."
             className="h-auto w-full"
           />
         </div>
