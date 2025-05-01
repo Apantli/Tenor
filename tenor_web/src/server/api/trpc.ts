@@ -16,7 +16,6 @@ import { auth } from "../auth";
 
 import {
   Permission,
-  permissionMapping,
   permissionNumbers,
   Role,
 } from "~/lib/types/firebaseSchemas";

@@ -4,7 +4,7 @@ export const tabsMetaInformation = {
     title: "Overview",
     link: "/",
     enabled: true,
-    flags: ["performance"],
+    flags: [],
   },
   requirements: {
     title: "Requirements",
@@ -66,3 +66,13 @@ export const tabs = [
   "performance",
   "settings",
 ];
+export const tabsToLinks = {
+  requirements: "requirements",
+  "user-stories": "userStories",
+  issues: "issues",
+  sprints: "sprints",
+  scrumBoard: "scrumboard",
+  calendar: "calendar",
+  performance: "performance",
+  "project-settings": "settings",
+};

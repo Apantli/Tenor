@@ -8,8 +8,7 @@ import Navbar from "~/app/_components/Navbar";
 import Tabbar from "~/app/_components/Tabbar";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
-
-import { permissionMapping } from "~/lib/types/firebaseSchemas";
+import { tabsMetaInformation, tabsToLinks } from "~/lib/tabs";
 
 export default function ProjectLayout({ children }: PropsWithChildren) {
   const { projectId } = useParams();
@@ -25,12 +24,40 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     });
 
   const permitted = useMemo(() => {
+    if (!role) {
+      return false;
+    }
     // Project OverView
     if (tab == projectId) {
       return true;
     }
 
-    // CHECK TABS BY FLAGS
+    if (!tab) {
+      return false;
+    }
+
+    const metaTab = [
+      "ai",
+      "users",
+      "tags-kanban",
+      "scrum-preferences",
+    ].includes(tab)
+      ? tabsMetaInformation.settings
+      : tabsMetaInformation[
+          tabsToLinks[
+            tab as keyof typeof tabsToLinks
+          ] as keyof typeof tabsMetaInformation
+        ];
+    if (!metaTab) {
+      return false;
+    }
+    const { flags } = metaTab;
+    for (const flag of flags) {
+      if (!role?.[flag as keyof typeof role]) {
+        return false;
+      }
+    }
+
     return true;
   }, [role, tab]);
 

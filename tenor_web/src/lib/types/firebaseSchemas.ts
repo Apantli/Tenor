@@ -32,18 +32,6 @@ export interface AIMessage {
   explanation?: string;
 }
 
-// link links with permissions
-export const permissionMapping = {
-  requirements: "requirements",
-  "user-stories": "userStories",
-  issues: "issues",
-  sprints: "sprints",
-  scrumboard: "kanban",
-  calendar: "calendar",
-  performance: "performance",
-  "project-settings": "projectSettings",
-};
-
 export interface SprintSnapshot extends SprintInfo {
   snapshot: {
     userStories: UserStory[];
