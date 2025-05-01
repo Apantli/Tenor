@@ -152,6 +152,9 @@ export default function TasksKanban() {
     );
 
     if (updateOperationsInProgress == 1) {
+      setTimeout(() => {
+        setLastDraggedTaskId(null);
+      }, 1500);
       const uniqueItemIds = taskIds.reduce<Set<string>>((acc, taskId) => {
         const itemId = tasksAndColumnsData.cardTasks[taskId]?.itemId;
         if (itemId) {

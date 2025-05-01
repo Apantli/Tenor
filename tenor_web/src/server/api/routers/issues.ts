@@ -25,6 +25,7 @@ import {
 } from "./settings";
 import { TagSchema } from "~/lib/types/zodFirebaseSchema";
 import * as admin from "firebase-admin";
+import { getStatusTag } from "./tasks";
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -344,6 +345,11 @@ export const issuesRouter = createTRPCRouter({
         priorityTag = await getPriorityTag(settingsRef, issueData.priorityId);
       }
 
+      let statusTag = undefined;
+      if (issueData.statusId !== undefined) {
+        statusTag = await getStatusTag(settingsRef, issueData.statusId);
+      }
+
       const tags = await Promise.all(
         issueData.tagIds.map(async (tagId) => {
           return await getBacklogTag(settingsRef, tagId);
@@ -398,6 +404,7 @@ export const issuesRouter = createTRPCRouter({
         size: issueData.size,
         tags: tags,
         priority: priorityTag,
+        status: statusTag,
         tasks: filteredTasks,
         sprint: sprint,
         relatedUserStory: relatedUserStory,
@@ -467,7 +474,11 @@ export const issuesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId, size, priorityId, statusId } = input;
-      if (priorityId === undefined && size === undefined && statusId === undefined) {
+      if (
+        priorityId === undefined &&
+        size === undefined &&
+        statusId === undefined
+      ) {
         return;
       }
       const issueRef = ctx.firestore
