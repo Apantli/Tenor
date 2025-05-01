@@ -14,6 +14,35 @@ import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  restrictToVerticalAxis,
+  restrictToWindowEdges,
+} from "@dnd-kit/modifiers";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import StatusTableRow from "./StatusTableRow";
+
+interface StatusItem {
+  id: string;
+  name: string;
+  color: string;
+  markTaskAsDone: boolean;
+  deleted: boolean;
+  order: number;
+}
 
 export default function StatusTable() {
   const { projectId } = useParams();
@@ -27,6 +56,17 @@ export default function StatusTable() {
   const confirm = useConfirmation();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
   const {
     data: status,
     isLoading: isLoadingTags,
@@ -39,6 +79,8 @@ export default function StatusTable() {
     api.settings.modifyStatusType.useMutation();
   const { mutateAsync: deleteStatus } =
     api.settings.deleteStatusType.useMutation();
+  const { mutateAsync: reorderStatus } =
+    api.settings.reorderStatusTypes.useMutation();
 
   const handleModifyStatus = async function (statusId: string) {
     setSelectedStatusId(statusId);
@@ -72,6 +114,7 @@ export default function StatusTable() {
       await refetch();
     }
   };
+
   const handleToggleMarkAsDone = async (
     statusId: string,
     currentValue: boolean,
@@ -111,6 +154,39 @@ export default function StatusTable() {
     await refetch();
   };
 
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id && filteredStatus) {
+      const oldIndex = filteredStatus.findIndex(
+        (item) => item.id === active.id,
+      );
+      const newIndex = filteredStatus.findIndex((item) => item.id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newOrder = arrayMove([...filteredStatus], oldIndex, newIndex);
+
+        utils.settings.getStatusTypes.setData(
+          { projectId: projectId as string },
+          (oldData) => {
+            if (!oldData) return [];
+            return newOrder.map((item, index) => ({
+              ...item,
+              orderIndex: index,
+            }));
+          },
+        );
+
+        await reorderStatus({
+          projectId: projectId as string,
+          statusIds: newOrder.map((item) => item.id),
+        });
+
+        await refetch();
+      }
+    }
+  };
+
   const filteredStatus = status?.filter((status) => {
     if (
       (searchValue !== "" &&
@@ -125,7 +201,7 @@ export default function StatusTable() {
   const tableData =
     filteredStatus?.map((status) => ({
       id: status.id,
-      order: status.orderIndex + 1, // +1 to make it 1-indexed
+      order: status.orderIndex + 1,
       name: status.name,
       color: status.color,
       markTaskAsDone: status.marksTaskAsDone,
@@ -192,14 +268,7 @@ export default function StatusTable() {
       ),
     },
     deleted: { visible: false },
-  } as TableColumns<{
-    id: string;
-    name: string;
-    color: string;
-    markTaskAsDone: boolean;
-    deleted: boolean;
-    order: number;
-  }>;
+  } as TableColumns<StatusItem>;
 
   const extraOptions = [
     {
@@ -215,6 +284,58 @@ export default function StatusTable() {
 
   const onStatusAdded = async () => {
     await invalidateQueriesAllStatuses(projectId as string);
+  };
+
+  const renderTable = () => {
+    if (isLoadingTags) {
+      return <div className="py-4 text-center">Loading tags...</div>;
+    }
+
+    if (tableData.length === 0) {
+      return <div className="py-4 text-center">No status found</div>;
+    }
+
+    return (
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
+        onDragEnd={handleDragEnd}
+      >
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-app-card border-b border-app-border text-sm text-app-text/70">
+              <th className="w-10 px-3 py-2"></th>
+              <th className="w-[100px] px-3 py-2 text-left">Order</th>
+              <th className="w-[150px] px-3 py-2 text-left">Status Name</th>
+              <th className="w-[100px] px-3 py-2 text-left">Color</th>
+              <th className="w-[180px] px-3 py-2 text-center">
+                Marks tasks as completed
+              </th>
+              <th className="w-[50px] px-3 py-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <SortableContext
+              items={tableData.map((item) => item.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              {tableData.map((item) => (
+                <StatusTableRow
+                  key={item.id}
+                  item={item}
+                  onEdit={() => handleModifyStatus(item.id)}
+                  onDelete={() => handleDeleteStatus(item.id)}
+                  onToggleDone={() =>
+                    handleToggleMarkAsDone(item.id, item.markTaskAsDone)
+                  }
+                />
+              ))}
+            </SortableContext>
+          </tbody>
+        </table>
+      </DndContext>
+    );
   };
 
   return (
@@ -236,30 +357,7 @@ export default function StatusTable() {
           </PrimaryButton>
         </div>
 
-        <div className="max-w-[750px]">
-          {isLoadingTags ? (
-            <div className="py-4 text-center">Loading tags...</div>
-          ) : (
-            <Table
-              className={`w-full ${
-                tableData.length > 5 ? "max-h-[280px] overflow-auto" : ""
-              }`}
-              data={tableData}
-              columns={columns}
-              extraOptions={extraOptions}
-              deletable={true}
-              onDelete={(ids, callback) => {
-                if (ids[0]) {
-                  void handleDeleteStatus(ids[0]);
-                }
-                callback(true);
-              }}
-              multiselect={false}
-              emptyMessage="No status found"
-              tableKey="item-tag-table"
-            />
-          )}
-        </div>
+        <div className="max-w-[750px]">{renderTable()}</div>
       </div>
 
       {renderNewStatus && (
