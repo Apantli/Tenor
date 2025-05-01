@@ -276,6 +276,12 @@ export default function InputField({
           )}
           <div className={cn("absolute bottom-2 right-2")}>
             <Dropdown
+              className={cn(
+                "pointer-events-none cursor-auto group-focus-within:pointer-events-auto group-focus-within:cursor-pointer",
+                {
+                  "pointer-events-auto cursor-pointer": isDropdownOpen,
+                },
+              )}
               label={
                 <div
                   ref={dropdownButtonRef}
@@ -296,7 +302,6 @@ export default function InputField({
                   </span>
                 </div>
               }
-              className=""
               close={close}
               onOpen={() => {
                 setIsDropdownOpen(true);
