@@ -98,21 +98,21 @@ export const doneTagName = "Done";
 
 export const defaultStatusTags = [
   {
-    name: "Todo",
+    name: todoTagName,
     color: "#0737E3",
     deleted: false,
     marksTaskAsDone: false,
     orderIndex: 0,
   },
   {
-    name: "Doing",
+    name: doingTagName,
     color: "#AD7C00",
     deleted: false,
     marksTaskAsDone: false,
     orderIndex: 1,
   },
   {
-    name: "Done",
+    name: doneTagName,
     color: "#009719",
     deleted: false,
     marksTaskAsDone: true,

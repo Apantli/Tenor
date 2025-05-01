@@ -16,6 +16,7 @@ import { getProjectSettingsRef } from "./settings";
 import { timestampToDate } from "./sprints";
 import { askAiToGenerate } from "~/utils/aiGeneration";
 import { getProjectContextHeader } from "~/utils/aiContext";
+import { todoTagName } from "~/lib/defaultProjectValues";
 
 /**
  * @interface TaskCol
@@ -113,7 +114,7 @@ export const getTasksFromItem = async (
  * @param {string} statusId - The ID of the status tag to retrieve
  * @returns {Promise<Tag | undefined>} The status tag object or undefined if not found
  */
-const getStatusTag = async (
+export const getStatusTag = async (
   settingsRef: FirebaseFirestore.DocumentReference,
   statusId: string,
 ) => {
@@ -139,9 +140,10 @@ export const getTodoStatusTag = async (
 ) => {
   const todoTag = await settingsRef
     .collection("statusTypes")
-    .where("name", "==", "Todo")
+    .where("name", "==", todoTagName)
     .limit(1)
     .get();
+  console.log("Todo tag:", todoTag.docs);
   if (todoTag.empty || todoTag.docs.length !== 1) {
     throw new TRPCError({
       code: "NOT_FOUND",

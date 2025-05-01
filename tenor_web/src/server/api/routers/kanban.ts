@@ -74,7 +74,7 @@ const getAutomaticStatusId = async (
   if (tasks.length === 0) {
     // Find the "Todo" status tag
     const todoStatus = statusTags.find(
-      (status) => status.name.toLowerCase() === todoTagName,
+      (status) => status.name.toLowerCase() === todoTagName.toLowerCase(),
     );
     if (todoStatus) return todoStatus.id;
 
@@ -114,7 +114,7 @@ const getAutomaticStatusId = async (
   ) {
     // Find the "Done" status tag
     const doneStatus = statusTags.find(
-      (status) => status.name.toLowerCase() === doneTagName,
+      (status) => status.name.toLowerCase() === doneTagName.toLowerCase(),
     );
     if (doneStatus) return doneStatus.id;
 
@@ -124,7 +124,7 @@ const getAutomaticStatusId = async (
 
   // Rule 4: Otherwise, the item is set to Doing
   const doingStatus = statusTags.find(
-    (status) => status.name.toLowerCase() === doingTagName,
+    (status) => status.name.toLowerCase() === doingTagName.toLowerCase(),
   );
   if (doingStatus) return doingStatus.id;
 

@@ -23,16 +23,14 @@ import {
   useFormatIssueScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
-import type { TaskPreview } from "~/lib/types/detailSchemas";
-import type { Tag } from "~/lib/types/firebaseSchemas";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
-import TaskDetailPopup from "~/app/_components/tasks/TaskDetailPopup";
 import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
 import {
   useInvalidateQueriesAllIssues,
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
+import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 
 interface Props {
   issueId: string;
@@ -117,6 +115,7 @@ export default function IssueDetailPopup({
           .map((tag) => tag.id)
           .filter((tag) => tag !== undefined) ?? [],
       priorityId: updatedData?.priority?.id,
+      statusId: updatedData?.status?.id,
       size: updatedData?.size,
       relatedUserStoryId: updatedData?.relatedUserStory?.id ?? "",
       sprintId: updatedData?.sprint?.id ?? "",
@@ -229,6 +228,17 @@ export default function IssueDetailPopup({
                   </div>
                 </div>
 
+                <div className="mt-4 flex-1">
+                  <h3 className="text-lg font-semibold">Status</h3>
+                  <StatusPicker
+                    status={issueDetail.status}
+                    onChange={async (status) => {
+                      await handleSave({ ...issueDetail, status });
+                    }}
+                    showAutomaticStatus={true}
+                  />
+                </div>
+
                 <BacklogTagList
                   tags={issueDetail.tags}
                   onChange={async (tags) => {
@@ -280,13 +290,13 @@ export default function IssueDetailPopup({
       disablePassiveDismiss={editMode}
     >
       {editMode && (
-        <>
+        <div className="flex flex-col gap-4">  
           <InputTextField
             label="Issue name"
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
             placeholder="Short summary of the issue..."
-            containerClassName="mb-4"
+            containerClassName=""
           />
           <InputTextAreaField
             label="Issue description"
@@ -295,18 +305,18 @@ export default function IssueDetailPopup({
               setEditForm({ ...editForm, description: e.target.value })
             }
             placeholder="Explain the issue in detail..."
-            containerClassName="mb-4 h-36 min-h-36"
+            containerClassName="min-h-36"
           />
           <InputTextAreaField
-            label="Steps To Recreate"
+            label="Steps to recreate"
             value={editForm.stepsToRecreate}
             onChange={(e) =>
               setEditForm({ ...editForm, stepsToRecreate: e.target.value })
             }
             placeholder="Describe the steps to recreate the issue..."
-            className="h-36 min-h-36"
+            className="min-h-36"
           />
-        </>
+        </div>
       )}
       {!editMode && !isLoading && issueDetail && (
         <div className="overflow-hidden">

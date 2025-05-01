@@ -92,6 +92,10 @@ export const BacklogItemSchema = BasicInfoSchema.extend({
     .string()
     .optional()
     .describe("Use a valid, existing priority id"),
+  statusId: z
+    .string()
+    .optional()
+    .describe("Use a valid, existing status id"),
 });
 
 export const EpicSchema = BasicInfoSchema;

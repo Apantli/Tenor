@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
@@ -17,7 +17,7 @@ import { type Size, type Tag } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
-import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
+import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -72,12 +72,14 @@ export function CreateTaskForm({
   });
 
   // Select a status after the todo status is fetched
-  if (todoStatusTag && createForm.status.id === "") {
-    setCreateForm((prev) => ({
-      ...prev,
-      status: todoStatusTag,
-    }));
-  }
+  useEffect(() => {
+    if (todoStatusTag && createForm.status.id === "temp") {
+      setCreateForm((prev) => ({
+        ...prev,
+        status: todoStatusTag,
+      }));
+    }
+  }, [todoStatusTag]);
 
   const [selectedAssignee, setSelectedAssignee] = useState<
     Option | undefined

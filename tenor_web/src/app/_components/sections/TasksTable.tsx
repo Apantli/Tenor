@@ -128,10 +128,10 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
 
   // Show task detail if taskToOpen is provided
   useEffect(() => {
-    if (!taskIdToOpenImmediately) return;
-    if (!transformedTasks.some((task) => task.id === taskIdToOpenImmediately))
+    if (!taskToOpen) return;
+    if (!transformedTasks.some((task) => task.id === taskToOpen))
       return;
-    setSelectedTaskId(taskIdToOpenImmediately);
+    setSelectedTaskId(taskToOpen);
     setSelectedGhostTask("");
     setShowTaskDetail(true);
     setTaskToOpen(undefined);

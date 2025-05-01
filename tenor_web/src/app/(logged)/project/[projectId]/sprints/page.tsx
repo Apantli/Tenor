@@ -480,6 +480,7 @@ export default function ProjectSprints() {
 
     // Only fetch again if this is the last operation
     if (dndOperationsInProgress == 1) {
+      setLastDraggedUserStoryId(null);
       await invalidateQueriesAllUserStories(projectId as string);
       await invalidateQueriesUserStoriesDetails(
         projectId as string,
