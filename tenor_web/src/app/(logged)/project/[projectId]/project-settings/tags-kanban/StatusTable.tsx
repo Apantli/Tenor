@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import SearchBar from "~/app/_components/SearchBar";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -55,6 +55,7 @@ export default function StatusTable() {
   const [selectedStatusId, setSelectedStatusId] = useState("");
   const confirm = useConfirmation();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -296,51 +297,54 @@ export default function StatusTable() {
     }
 
     return (
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
-        onDragEnd={handleDragEnd}
-      >
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="bg-app-card border-b border-app-border text-sm text-app-text/70">
-              <th className="w-10 px-3 py-2"></th>
-              <th className="w-[100px] px-3 py-2 text-left font-normal">
-                Order
-              </th>
-              <th className="w-[150px] px-3 py-2 text-left font-normal">
-                Status Name
-              </th>
-              <th className="w-[100px] px-3 py-2 text-left font-normal">
-                Color
-              </th>
-              <th className="w-[180px] px-3 py-2 text-center font-normal">
-                Marks as resolved
-              </th>
-              <th className="w-[50px] px-3 py-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <SortableContext
-              items={tableData.map((item) => item.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              {tableData.map((item) => (
-                <StatusTableRow
-                  key={item.id}
-                  item={item}
-                  onEdit={() => handleModifyStatus(item.id)}
-                  onDelete={() => handleDeleteStatus(item.id)}
-                  onToggleDone={() =>
-                    handleToggleMarkAsDone(item.id, item.markTaskAsDone)
-                  }
-                />
-              ))}
-            </SortableContext>
-          </tbody>
-        </table>
-      </DndContext>
+      <div ref={scrollContainerRef} className="max-w-[750px] overflow-auto">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          modifiers={[restrictToVerticalAxis, restrictToWindowEdges]}
+          onDragEnd={handleDragEnd}
+        >
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-app-card border-b border-app-border text-sm text-app-text/70">
+                <th className="w-10 px-3 py-2"></th>
+                <th className="w-[100px] px-3 py-2 text-left font-normal">
+                  Order
+                </th>
+                <th className="w-[150px] px-3 py-2 text-left font-normal">
+                  Status Name
+                </th>
+                <th className="w-[100px] px-3 py-2 text-left font-normal">
+                  Color
+                </th>
+                <th className="w-[180px] px-3 py-2 text-center font-normal">
+                  Marks tasks as completed
+                </th>
+                <th className="w-[50px] px-3 py-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <SortableContext
+                items={tableData.map((item) => item.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                {tableData.map((item) => (
+                  <StatusTableRow
+                    key={item.id}
+                    item={item}
+                    onEdit={() => handleModifyStatus(item.id)}
+                    onDelete={() => handleDeleteStatus(item.id)}
+                    onToggleDone={() =>
+                      handleToggleMarkAsDone(item.id, item.markTaskAsDone)
+                    }
+                    scrollContainerRef={scrollContainerRef}
+                  />
+                ))}
+              </SortableContext>
+            </tbody>
+          </table>
+        </DndContext>
+      </div>
     );
   };
 

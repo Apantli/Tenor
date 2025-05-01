@@ -7,7 +7,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import TagComponent from "~/app/_components/TagComponent";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
-import { useState, useRef, useEffect } from "react";
+import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
+import { useRef } from "react";
 
 interface StatusItem {
   id: string;
@@ -23,6 +24,7 @@ interface StatusTableRowProps {
   onEdit: () => void;
   onDelete: () => void;
   onToggleDone: () => void;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 export default function StatusTableRow({
@@ -30,10 +32,8 @@ export default function StatusTableRow({
   onEdit,
   onDelete,
   onToggleDone,
+  scrollContainerRef,
 }: StatusTableRowProps) {
-  const [showDropdown, setShowDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
   const {
     attributes,
     listeners,
@@ -49,34 +49,6 @@ export default function StatusTableRow({
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1 : 0,
     position: "relative" as const,
-  };
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
-        setShowDropdown(false);
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onEdit();
-    setShowDropdown(false);
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onDelete();
-    setShowDropdown(false);
   };
 
   return (
@@ -119,36 +91,31 @@ export default function StatusTableRow({
         </div>
       </td>
       <td className="px-3 py-2 text-right">
-        <div className="relative" ref={dropdownRef}>
-          <button
-            type="button"
-            onClick={() => setShowDropdown(!showDropdown)}
-            className="inline-flex items-center text-app-light"
+        <Dropdown
+          label={
+            <span className="flex w-full items-center justify-end pr-3 font-bold text-app-light">
+              • • •
+            </span>
+          }
+          className="flex h-full w-full items-center justify-end text-sm font-semibold transition"
+          menuClassName="font-normal whitespace-nowrap z-50"
+          scrollContainer={scrollContainerRef}
+        >
+          <DropdownButton
+            className="flex items-center justify-between gap-8"
+            onClick={onEdit}
           >
-            <span className="font-bold">• • •</span>
-          </button>
-
-          {showDropdown && (
-            <div className="absolute right-0 top-full z-50 mt-1 min-w-32 rounded border border-app-border bg-white py-1 shadow-md">
-              <button
-                type="button"
-                onClick={handleEditClick}
-                className="hover:bg-app-hover flex w-full items-center justify-between px-4 py-2 text-left"
-              >
-                <span>Edit</span>
-                <EditIcon fontSize="small" />
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteClick}
-                className="hover:bg-app-hover flex w-full items-center justify-between px-4 py-2 text-left text-red-500"
-              >
-                <span>Delete</span>
-                <DeleteOutlineIcon fontSize="small" className="text-red-500" />
-              </button>
-            </div>
-          )}
-        </div>
+            <span>Edit</span>
+            <EditIcon fontSize="small" />
+          </DropdownButton>
+          <DropdownButton
+            className="flex items-center justify-between gap-8"
+            onClick={onDelete}
+          >
+            <span className="text-red-500">Delete</span>
+            <DeleteOutlineIcon className="text-red-500" />
+          </DropdownButton>
+        </Dropdown>
       </td>
     </tr>
   );

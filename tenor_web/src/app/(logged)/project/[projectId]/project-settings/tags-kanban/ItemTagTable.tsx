@@ -8,7 +8,7 @@ import CreateItemTagPopup from "./CreateItemTagPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import ItemTagDetailPopup from "./ItemTagDetailPopup";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import EditIcon from "@mui/icons-material/Edit";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -262,7 +262,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
   const extraOptions = [
     {
       label: "Edit",
-      icon: <MoreHorizIcon />,
+      icon: <EditIcon fontSize="small" />,
       action: (ids: string[]) => {
         if (ids.length === 1 && ids[0]) {
           void handleModifyTag(ids[0]);
