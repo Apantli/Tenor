@@ -8,11 +8,21 @@
  */
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 
 import { dbAdmin, firebaseAdmin } from "~/utils/firebaseAdmin";
 import { supabase } from "~/utils/supabase";
 import { auth } from "../auth";
+
+import {
+  Permission,
+  permissionMapping,
+  permissionNumbers,
+  Role,
+} from "~/lib/types/firebaseSchemas";
+import { RoleSchema } from "~/lib/types/zodFirebaseSchema";
+import { getProjectRoleRef, getProjectUserRef } from "./routers/settings";
+import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
 
 /**
  * 1. CONTEXT
@@ -108,3 +118,96 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
     },
   });
 });
+
+interface PermissionsRequired {
+  flags: (
+    | "settings"
+    | "performance"
+    | "sprints"
+    | "scrumboard"
+    | "issues"
+    | "backlog"
+  )[];
+  permission: "none" | "read" | "write";
+}
+
+export const roleRequiredProcedure = (permissions: PermissionsRequired) =>
+  protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .use(async ({ ctx, next, input }) => {
+      const permission = permissionNumbers[permissions.permission];
+
+      // Check if there is a projectId
+      if (!input.projectId) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      // By deafult, no permission
+      const userId = ctx.session.uid;
+      let role: Role = emptyRole;
+
+      const userDoc = await getProjectUserRef(
+        input.projectId,
+        userId,
+        ctx.firestore,
+      ).get();
+
+      // Check if the user is in the project
+      if (!userDoc.exists) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      // Check if the user is the owner
+      const userData = userDoc.data();
+      if (!userData) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      } else if (userData.roleId === "owner") {
+        role = ownerRole;
+      } else if (userData.roleId != null) {
+        // Check if the user has a role
+        const roleDoc = await getProjectRoleRef(
+          input.projectId,
+          userData.roleId as string,
+          ctx.firestore,
+        ).get();
+
+        // Check if the role exists
+        if (!roleDoc.exists) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        // Check if the role is valid
+        const roleData = roleDoc.data();
+        if (!roleData) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        // Check if the role is valid
+        const roleSchema = RoleSchema.parse(roleData);
+        const roleId = roleDoc.id;
+
+        // Parse the role data
+        role = {
+          id: roleId,
+          ...roleSchema,
+          settings: roleSchema.settings as Permission,
+          performance: roleSchema.performance as Permission,
+          sprints: roleSchema.sprints as Permission,
+          scrumboard: roleSchema.scrumboard as Permission,
+          issues: roleSchema.issues as Permission,
+          backlog: roleSchema.backlog as Permission,
+        };
+      }
+
+      let userPermission = 2;
+      // Go through the flags and get the minimum permission
+      permissions.flags.forEach((flag) => {
+        if ((role[flag as keyof Role] as number) < userPermission) {
+          userPermission = role[flag as keyof Role] as number;
+        }
+      });
+
+      if (permission > userPermission) {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+
+      return next({ ctx });
+    });
