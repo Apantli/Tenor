@@ -1,6 +1,6 @@
 "use client";
 
-import { ClassNameValue } from "tailwind-merge";
+import type { ClassNameValue } from "tailwind-merge";
 import { useState } from "react";
 import { cn } from "~/lib/utils";
 import SearchBar from "../SearchBar";
@@ -10,13 +10,9 @@ import InputTextField from "../inputs/InputTextField";
 import Table, { type TableColumns } from "../table/Table";
 import PillPickerComponent from "../PillPickerComponent";
 import { Checkbox } from "@mui/material";
-import {
-  permissionItems,
-  permissionLabels,
-  Role,
-} from "~/lib/types/firebaseSchemas";
-import { RoleDetail } from "~/lib/types/detailSchemas";
-import { Permission } from "~/lib/types/zodFirebaseSchema";
+import { permissionItems, permissionLabels } from "~/lib/types/firebaseSchemas";
+import type { RoleDetail } from "~/lib/types/detailSchemas";
+import type { Permission } from "~/lib/types/zodFirebaseSchema";
 
 interface Props {
   label?: string;
@@ -34,6 +30,7 @@ interface Props {
   isSearchable?: boolean;
 }
 
+// FIXME: This whole section is very laggy and needs to be optimized. Removing the pickers from the table kinda fixes the issue
 export default function RoleTable({
   label,
   roles,
@@ -302,7 +299,7 @@ export default function RoleTable({
   };
 
   return (
-    <div className={cn("w-full text-sm", className)}>
+    <div className={cn("w-full", className)}>
       <div className="flex items-center justify-between gap-x-4 py-4">
         {label && (
           <label
@@ -315,7 +312,7 @@ export default function RoleTable({
         {isSearchable && (
           <SearchBar
             searchValue={tableSearchValue}
-            placeholder="Find a member..."
+            placeholder="Find a role..."
             handleUpdateSearch={(e) => {
               setTableSearchValue(e.target.value);
             }}
@@ -326,9 +323,8 @@ export default function RoleTable({
           label={
             <PrimaryButton
               asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
-              className="flex max-h-[40px] items-center text-sm font-semibold"
             >
-              Add Role +
+              + Add Role
             </PrimaryButton>
           }
         >
@@ -339,6 +335,7 @@ export default function RoleTable({
               onChange={(e) => {
                 setRole(e.target.value);
               }}
+              disableAI={true}
             />
           </DropdownItem>
 
