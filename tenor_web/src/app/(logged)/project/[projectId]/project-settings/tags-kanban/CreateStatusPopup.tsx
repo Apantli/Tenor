@@ -63,6 +63,22 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
       return;
     }
 
+    // Normalize the input for case-insensitive comparison
+    const normalizedName = form.name.toLowerCase().trim();
+    const protectedNames = ["todo", "doing", "done"];
+
+    if (protectedNames.some((name) => normalizedName === name)) {
+      alert(
+        "Default status name",
+        `The status name "${form.name}" is reserved for default statuses and cannot be created manually.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     await createStatus({
       projectId: projectId as string,
       name: form.name,

@@ -14,6 +14,7 @@ import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
+import { useAlert } from "~/app/_hooks/useAlert";
 import {
   DndContext,
   closestCenter,
@@ -56,6 +57,7 @@ export default function StatusTable() {
   const confirm = useConfirmation();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { alert } = useAlert();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -89,6 +91,23 @@ export default function StatusTable() {
   };
 
   const handleDeleteStatus = async function (statusId: string) {
+    const statusToDelete = status?.find((s) => s.id === statusId);
+
+    if (
+      statusToDelete &&
+      ["Todo", "Doing", "Done"].includes(statusToDelete.name)
+    ) {
+      alert(
+        "Cannot delete default status",
+        `The status "${statusToDelete.name}" is a default status and cannot be deleted.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     if (
       await confirm(
         "Are you sure?",
