@@ -7,7 +7,6 @@ import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
 import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
-import UserStoryCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
@@ -26,12 +25,8 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import {
-  useInvalidateQueriesAllIssues,
-  useInvalidateQueriesAllUserStories,
   useInvalidateQueriesBacklogItemDetails,
   useInvalidateQueriesBacklogItems,
-  useInvalidateQueriesIssueDetails,
-  useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
@@ -177,7 +172,7 @@ export default function ProjectSprints() {
       if (dateRange.toLowerCase().includes(sprintSearchValue.toLowerCase()))
         return true;
 
-      const hasMatchingUserStory = sprint.backlogItemIds.some((id) => {
+      const hasMatchingItem = sprint.backlogItemIds.some((id) => {
         const item = backlogItemsBySprint?.backlogItems[id];
         if (!item) return false;
 
@@ -197,7 +192,7 @@ export default function ProjectSprints() {
           .includes(sprintSearchValue.toLowerCase());
       });
 
-      return hasMatchingUserStory;
+      return hasMatchingItem;
     }) ?? [];
 
   const { mutateAsync: createSprint, isPending } =
@@ -319,12 +314,12 @@ export default function ProjectSprints() {
         if (!oldData) return undefined;
 
         const sortByScrumId = (a: string, b: string) => {
-          const storyA = items[a];
-          const storyB = items[b];
-          if (storyA?.scrumId === storyB?.scrumId) {
-            return storyA?.itemType === "US" ? -1 : 1;
+          const itemA = items[a];
+          const itemB = items[b];
+          if (itemA?.scrumId === itemB?.scrumId) {
+            return itemA?.itemType === "US" ? -1 : 1;
           }
-          return (storyA?.scrumId ?? 0) - (storyB?.scrumId ?? 0);
+          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
         };
 
         const sprints = oldData.sprints.map((sprint) => {
@@ -438,12 +433,12 @@ export default function ProjectSprints() {
         if (!oldData) return undefined;
 
         const sortByScrumId = (a: string, b: string) => {
-          const storyA = items[a];
-          const storyB = items[b];
-          if (storyA?.scrumId === storyB?.scrumId) {
-            return storyA?.itemType === "US" ? -1 : 1;
+          const itemA = items[a];
+          const itemB = items[b];
+          if (itemA?.scrumId === itemB?.scrumId) {
+            return itemA?.itemType === "US" ? -1 : 1;
           }
-          return (storyA?.scrumId ?? 0) - (storyB?.scrumId ?? 0);
+          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
         };
 
         const sprints = oldData.sprints.map((sprint) => {

@@ -257,7 +257,7 @@ export default function ProjectCreator() {
               <div className="min-w-[300px] flex-1">
                 <InputTextField
                   label={`Project Name (${form.name.length}/${maxProjectNameLength})`}
-                  className="h-12"
+                  // className="h-12"
                   value={form.name}
                   onChange={handleChange}
                   name="name"

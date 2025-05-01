@@ -4,6 +4,7 @@ import TagComponent from "../TagComponent";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
 import type { KanbanCard } from "~/server/api/routers/kanban";
+import { accentColorByCardType } from "~/utils/colorUtils";
 
 interface Props {
   item: KanbanCard;
@@ -16,12 +17,6 @@ export default function ItemCardRender({
   showBackground = false,
   scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
-  const accentColorByCardType = {
-    US: "bg-app-primary",
-    IS: "bg-app-secondary",
-    TS: "bg-app-tertiary",
-    // IT: "bg-app-quaternary",
-  };
   const accentColor =
     accentColorByCardType[item.cardType as keyof typeof accentColorByCardType];
   return (
