@@ -237,9 +237,9 @@ export default function ProjectScrumPreferences() {
     }
 
     // Validation for size data between sizes
-    for (let i = 1; i < sizeData.length - 1; i++) {
+    for (let i = 0; i < sizeData.length - 1; i++) {
       const current = sizeData[i];
-      if (current && current.value < 0) {
+      if (current && current.value <= 0) {
         alert(
           "Invalid size values",
           `The value of ${current.name} must be greater than 0.`,

@@ -1,14 +1,9 @@
-import { useEffect, useState } from "react";
 import Table, { TableColumns } from "../table/Table";
-import { api } from "~/trpc/react";
-import { useParams } from "next/navigation";
 import { Size } from "~/lib/types/firebaseSchemas";
-import PrimaryButton from "../buttons/PrimaryButton";
 import InputTextField from "../inputs/InputTextField";
-import InputField from "../inputs/GenericTextInputField";
 
 interface SizeCol {
-  id: string; // id debe ser obligatorio
+  id: string; // id must be a string to match the API response
   name: Size;
   value: number;
   color: string;
@@ -56,12 +51,16 @@ export default function SettingsSizeTable({
       width: 80,
       render(row) {
         return (
-          <input
-            type="number"
+          <InputTextField
+            type="text"
+            labelClassName="text-lg font-semibold"
+            inputMode="numeric"
             min={0}
+            pattern="[0-9]*"
             className="w-full border border-gray-300 rounded px-2 py-1"
             value={row.value}
             onChange={(e) => handleValueChange(row.id, Number(e.target.value))}
+            disableAI = {true}
           />
         );
       },
