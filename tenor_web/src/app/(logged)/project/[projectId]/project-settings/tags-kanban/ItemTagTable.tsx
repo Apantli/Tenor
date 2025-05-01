@@ -110,24 +110,25 @@ export default function ItemTagTable({ itemTagType }: Props) {
     setShowDetailTag(true);
   };
 
-  const handleDeleteTag = async function (tagId: string) {
-    let confirmTitle: string;
-    let confirmMessage: string;
+  const handleDeleteTag = async function (
+    tagIds: string[],
+    callback: (del: boolean) => void,
+  ) {
+    const isMultiple = tagIds.length > 1;
+    const entityName = isMultiple
+      ? itemTagType === "BacklogTag"
+        ? "tags"
+        : itemTagType === "ReqFocus"
+          ? "requirement focus areas"
+          : "requirement types"
+      : itemTagType === "BacklogTag"
+        ? "tag"
+        : itemTagType === "ReqFocus"
+          ? "requirement focus area"
+          : "requirement type";
 
-    switch (itemTagType) {
-      case "BacklogTag":
-        confirmTitle = "Are you sure?";
-        confirmMessage = "This action will delete the tag.";
-        break;
-      case "ReqFocus":
-        confirmTitle = "Are you sure?";
-        confirmMessage = "This action will delete the requirement focus area.";
-        break;
-      case "ReqType":
-        confirmTitle = "Are you sure?";
-        confirmMessage = "This action will delete the requirement type.";
-        break;
-    }
+    const confirmTitle = "Are you sure?";
+    const confirmMessage = `This action will delete ${isMultiple ? "these " + tagIds.length + " " + entityName : "the " + entityName}.`;
 
     if (await confirm(confirmTitle, confirmMessage, "Delete", "Cancel")) {
       switch (itemTagType) {
@@ -139,7 +140,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
             { projectId: projectId as string },
             (oldData) => {
               if (!oldData) return [];
-              return oldData.filter((tag) => tag.id !== tagId);
+              return oldData.filter((tag) => !tagIds.includes(tag.id));
             },
           );
           break;
@@ -151,7 +152,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
             { projectId: projectId as string },
             (oldData) => {
               if (!oldData) return [];
-              return oldData.filter((tag) => tag.id !== tagId);
+              return oldData.filter((tag) => !tagIds.includes(tag.id!));
             },
           );
           break;
@@ -163,18 +164,28 @@ export default function ItemTagTable({ itemTagType }: Props) {
             { projectId: projectId as string },
             (oldData) => {
               if (!oldData) return [];
-              return oldData.filter((tag) => tag.id !== tagId);
+              return oldData.filter((tag) => !tagIds.includes(tag.id!));
             },
           );
           break;
       }
 
-      await deleteTag({
-        projectId: projectId as string,
-        tagId: tagId,
-      });
+      await Promise.all(
+        tagIds.map((tagId) =>
+          deleteTag({
+            projectId: projectId as string,
+            tagId: tagId,
+          }),
+        ),
+      );
+
+      callback(true);
       await refetch();
+      return true;
     }
+
+    callback(false);
+    return false;
   };
 
   const filteredTags = tags?.filter((tag) => {
@@ -267,8 +278,8 @@ export default function ItemTagTable({ itemTagType }: Props) {
   return (
     <div>
       <div className="flex flex-col gap-4">
-        <div className="flex max-w-[500px] items-center justify-between gap-4">
-          <div className="w-[400px]">
+        <div className="flex max-w-[750px] items-center justify-between gap-4">
+          <div className="w-[700px]">
             <SearchBar
               placeholder={currentConfig.searchPlaceholder}
               searchValue={searchValue}
@@ -283,7 +294,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
           </PrimaryButton>
         </div>
 
-        <div className="max-w-[500px]">
+        <div className="max-w-[750px]">
           {isLoadingTags ? (
             <div className="py-4 text-center">Loading...</div>
           ) : (
@@ -296,12 +307,13 @@ export default function ItemTagTable({ itemTagType }: Props) {
               extraOptions={extraOptions}
               deletable={true}
               onDelete={(ids, callback) => {
-                if (ids[0]) {
-                  void handleDeleteTag(ids[0]);
+                if (ids.length > 0) {
+                  void handleDeleteTag(ids, callback);
+                } else {
+                  callback(false);
                 }
-                callback(true);
               }}
-              multiselect={false}
+              multiselect={true}
               emptyMessage={currentConfig.emptyMessage}
               tableKey={`${itemTagType.toLowerCase()}-table`}
             />

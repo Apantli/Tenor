@@ -306,11 +306,17 @@ export default function StatusTable() {
           <thead>
             <tr className="bg-app-card border-b border-app-border text-sm text-app-text/70">
               <th className="w-10 px-3 py-2"></th>
-              <th className="w-[100px] px-3 py-2 text-left">Order</th>
-              <th className="w-[150px] px-3 py-2 text-left">Status Name</th>
-              <th className="w-[100px] px-3 py-2 text-left">Color</th>
-              <th className="w-[180px] px-3 py-2 text-center">
-                Marks tasks as completed
+              <th className="w-[100px] px-3 py-2 text-left font-normal">
+                Order
+              </th>
+              <th className="w-[150px] px-3 py-2 text-left font-normal">
+                Status Name
+              </th>
+              <th className="w-[100px] px-3 py-2 text-left font-normal">
+                Color
+              </th>
+              <th className="w-[180px] px-3 py-2 text-center font-normal">
+                Marks as resolved
               </th>
               <th className="w-[50px] px-3 py-2"></th>
             </tr>

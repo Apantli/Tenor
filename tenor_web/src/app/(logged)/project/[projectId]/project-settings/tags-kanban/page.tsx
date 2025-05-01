@@ -8,9 +8,9 @@ import { SegmentedControl } from "~/app/_components/SegmentedControl";
 export default function ProjectTags() {
   const options = [
     "Backlog Tags",
+    "Scrumboard Status",
     "Requirement Focus",
     "Requirement Type",
-    "Kanban Status",
   ];
 
   const [selectedOption, setSelectedOption] = useState<string>(
@@ -25,28 +25,13 @@ export default function ProjectTags() {
     };
 
   const currentTagType =
-    selectedOption !== "Kanban Status"
+    selectedOption !== "Scrumboard Status"
       ? (tagTypeMapping[selectedOption] ?? "BacklogTag")
       : null;
-
-  const tagTypeTitles: Record<string, string> = {
-    BacklogTag: "Backlog item tags",
-    ReqFocus: "Requirement focus areas",
-    ReqType: "Requirement types",
-    KanbanStatus: "Kanban status",
-  };
-
-  const getCurrentTitle = () => {
-    if (selectedOption === "Kanban Status") {
-      return "Kanban status";
-    }
-    return tagTypeTitles[currentTagType as keyof typeof tagTypeTitles];
-  };
 
   return (
     <div>
       <h1 className="mb-4 text-3xl font-semibold">Tags & Kanban</h1>
-
       <div className="mb-4">
         <SegmentedControl
           options={options}
@@ -54,12 +39,9 @@ export default function ProjectTags() {
           onChange={setSelectedOption}
         />
       </div>
-
       <div>
         <div className="mb-6">
-          <h2 className="mb-4 text-xl font-medium">{getCurrentTitle()}</h2>
-
-          {selectedOption !== "Kanban Status" ? (
+          {selectedOption !== "Scrumboard Status" ? (
             <ItemTagTable itemTagType={currentTagType!} />
           ) : (
             <StatusTable />

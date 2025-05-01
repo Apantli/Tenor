@@ -3,10 +3,11 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import TagComponent from "~/app/_components/TagComponent";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
+import { useState, useRef, useEffect } from "react";
 
 interface StatusItem {
   id: string;
@@ -30,6 +31,9 @@ export default function StatusTableRow({
   onDelete,
   onToggleDone,
 }: StatusTableRowProps) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const {
     attributes,
     listeners,
@@ -47,11 +51,41 @@ export default function StatusTableRow({
     position: "relative" as const,
   };
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEdit();
+    setShowDropdown(false);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete();
+    setShowDropdown(false);
+  };
+
   return (
     <tr
       ref={setNodeRef}
       style={style}
-      className={`hover:bg-app-hover border-b border-app-border ${isDragging ? "bg-app-hover" : ""}`}
+      className={`hover:bg-app-hover border-b border-app-border ${
+        isDragging ? "bg-app-hover" : ""
+      }`}
     >
       <td className="cursor-grab px-2" {...attributes} {...listeners}>
         <DragIndicatorIcon fontSize="small" className="text-gray-400" />
@@ -84,22 +118,36 @@ export default function StatusTableRow({
           </div>
         </div>
       </td>
-      <td className="px-2 py-2">
-        <div className="flex gap-2">
+      <td className="px-3 py-2 text-right">
+        <div className="relative" ref={dropdownRef}>
           <button
-            onClick={onEdit}
-            className="hover:bg-app-hover rounded p-1"
-            title="Edit"
+            type="button"
+            onClick={() => setShowDropdown(!showDropdown)}
+            className="inline-flex items-center text-app-light"
           >
-            <EditIcon fontSize="small" className="text-gray-500" />
+            <span className="font-bold">• • •</span>
           </button>
-          <button
-            onClick={onDelete}
-            className="hover:bg-app-hover rounded p-1"
-            title="Delete"
-          >
-            <DeleteOutlineIcon fontSize="small" className="text-red-500" />
-          </button>
+
+          {showDropdown && (
+            <div className="absolute right-0 top-full z-50 mt-1 min-w-32 rounded border border-app-border bg-white py-1 shadow-md">
+              <button
+                type="button"
+                onClick={handleEditClick}
+                className="hover:bg-app-hover flex w-full items-center justify-between px-4 py-2 text-left"
+              >
+                <span>Edit</span>
+                <EditIcon fontSize="small" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteClick}
+                className="hover:bg-app-hover flex w-full items-center justify-between px-4 py-2 text-left text-red-500"
+              >
+                <span>Delete</span>
+                <DeleteOutlineIcon fontSize="small" className="text-red-500" />
+              </button>
+            </div>
+          )}
         </div>
       </td>
     </tr>
