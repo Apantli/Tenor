@@ -186,13 +186,12 @@ export default function ProjectGeneralSettings() {
             <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">
               Danger Zone
             </h3>
-            <div className="flex flex-row justify-between gap-x-28">
+            <div className="flex flex-row justify-between gap-x-28 items-center">
               <div className="flex flex-col">
-                <p className="font-bold">Delete project</p>
+                <p className="font-semibold text-lg">Delete project</p>
                 <p>Once deleted, you cannot recover it.</p>
               </div>
               <DeleteButton
-                className="mb-10 mt-auto"
                 onClick={async () => {
                   if (
                     !(await confirm(
