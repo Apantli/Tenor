@@ -45,18 +45,14 @@ export interface KanbanItemCard extends KanbanCard {
 const getAllStatuses = async (
   dbAdmin: FirebaseFirestore.Firestore,
   projectId: string,
-  includeDeleted = false,
 ) => {
-  const statusesCollectionRef = dbAdmin
+  const statusesRef = dbAdmin
     .collection("projects")
     .doc(projectId)
     .collection("settings")
     .doc("settings")
-    .collection("statusTypes");
-
-  const statusesRef = includeDeleted
-    ? statusesCollectionRef
-    : statusesCollectionRef.where("deleted", "==", false);
+    .collection("statusTypes")
+    .where("deleted", "==", false);
 
   const snap = await statusesRef.get();
 

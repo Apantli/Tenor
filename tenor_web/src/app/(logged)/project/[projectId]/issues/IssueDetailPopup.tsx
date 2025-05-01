@@ -31,7 +31,8 @@ import {
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
-import StatusTooltip from "~/app/_components/StatusTooltip";
+import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
+import HelpIcon from "@mui/icons-material/Help";
 
 interface Props {
   issueId: string;
@@ -174,6 +175,9 @@ export default function IssueDetailPopup({
       setShowDetail(false);
     }
   };
+  const showAutomaticDetails = () => {
+    return issueDetail?.status === undefined || issueDetail?.status?.id == "";
+  };
 
   return (
     <Popup
@@ -232,10 +236,15 @@ export default function IssueDetailPopup({
                 <div className="mt-4 flex-1">
                   <div className="flex">
                     <h3 className="text-lg font-semibold">Status</h3>
-                    {issueDetail.status?.id == "" ||
-                      (issueDetail.status === undefined && (
-                        <StatusTooltip itemId={issueDetail.id} />
-                      ))}
+                    {showAutomaticDetails() && (
+                      <HelpIcon
+                        className="ml-[3px] text-gray-500"
+                        data-tooltip-id="tooltip"
+                        data-tooltip-html="<div style='display: flex; flex-direction: column; gap: 2px; align-items: center'><p>A status is assigned based on the progress of all its tasks.</p</div>"
+                        data-tooltip-place="top-start"
+                        style={{ width: "15px" }}
+                      />
+                    )}
                   </div>
                   <StatusPicker
                     status={issueDetail.status}
@@ -244,6 +253,9 @@ export default function IssueDetailPopup({
                     }}
                     showAutomaticStatus={true}
                   />
+                  {showAutomaticDetails() && (
+                    <ItemAutomaticStatus itemId={issueId} />
+                  )}
                 </div>
 
                 <BacklogTagList

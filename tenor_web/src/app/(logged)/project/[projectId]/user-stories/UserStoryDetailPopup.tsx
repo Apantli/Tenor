@@ -37,7 +37,8 @@ import {
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
-import StatusTooltip from "~/app/_components/StatusTooltip";
+import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
+import HelpIcon from "@mui/icons-material/Help";
 
 interface Props {
   userStoryId: string;
@@ -259,6 +260,12 @@ export default function UserStoryDetailPopup({
     };
   };
 
+  const showAutomaticDetails = () => {
+    return (
+      userStoryDetail?.status === undefined || userStoryDetail?.status?.id == ""
+    );
+  };
+
   return (
     <Popup
       show={showDetail}
@@ -324,8 +331,14 @@ export default function UserStoryDetailPopup({
                   <div className="mt-4 flex-1">
                     <div className="flex">
                       <h3 className="text-lg font-semibold">Status</h3>
-                      {userStoryDetail.status?.id == "" || userStoryDetail.status === undefined && (
-                        <StatusTooltip itemId={userStoryDetail.id} />
+                      {showAutomaticDetails() && (
+                        <HelpIcon
+                          className="ml-[3px] text-gray-500"
+                          data-tooltip-id="tooltip"
+                          data-tooltip-html="<div style='display: flex; flex-direction: column; gap: 2px; align-items: center'><p>An item with an automatic status is intelligently assigned to a status based on the progress of all its tasks.</p</div>"
+                          data-tooltip-place="top-start"
+                          style={{ width: "15px" }}
+                        />
                       )}
                     </div>
                     <StatusPicker
@@ -335,6 +348,9 @@ export default function UserStoryDetailPopup({
                       }}
                       showAutomaticStatus={true}
                     />
+                    {showAutomaticDetails() && (
+                      <ItemAutomaticStatus itemId={userStoryId} />
+                    )}
                   </div>
                 )}
 
