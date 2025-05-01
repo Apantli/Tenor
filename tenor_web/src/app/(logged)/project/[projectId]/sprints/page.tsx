@@ -116,7 +116,11 @@ export default function ProjectSprints() {
       if (item.itemType === "IS") {
         formatter = formatIssueScrumId;
       }
-      const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size}`;
+      const itemTypeName =
+        item.itemType === "US"
+          ? "Type:Story Type:UserStory Type:User Story"
+          : "Type:Issue Type:Bug";
+      const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
       return fullItemName.toLowerCase().includes(searchValue.toLowerCase());
     }) ?? [];
 
@@ -182,7 +186,11 @@ export default function ProjectSprints() {
         if (item.itemType === "IS") {
           formatter = formatIssueScrumId;
         }
-        const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size}`;
+        const itemTypeName =
+          item.itemType === "US"
+            ? "Type:Story Type:UserStory Type:User Story"
+            : "Type:Issue Type:Bug";
+        const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
 
         return fullItemName
           .toLowerCase()
