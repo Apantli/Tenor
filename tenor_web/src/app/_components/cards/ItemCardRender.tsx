@@ -1,7 +1,6 @@
 import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import TagComponent from "../TagComponent";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
 import type { KanbanCard } from "~/server/api/routers/kanban";
 import { accentColorByCardType } from "~/utils/colorUtils";
@@ -52,6 +51,8 @@ export default function ItemCardRender({
                 reducedPadding
                 color={tag.color}
                 className="max-w-20 truncate"
+                data-tooltip-id="tooltip"
+                data-tooltip-content={tag.name}
               >
                 {tag.name}
               </TagComponent>
