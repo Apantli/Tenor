@@ -17,11 +17,7 @@ export default function StatusTooltip({ itemId }: Props) {
   });
 
   const isUndefined = () => {
-    if (automaticStatus === undefined) {
-      return true;
-    } else {
-      return false;
-    }
+    return automaticStatus === undefined;
   };
   const tooltipHtml = `<div style='display: flex; flex-direction: column; gap: 2px; align-items: center'><p>An item with an automatic status is intelligently assigned to a status based on the progress of all its tasks.</p><p style='margin-left: auto; margin-right: auto'>Currently, the status of this item is: <strong>${automaticStatus?.name}</strong></p></div>`;
 
