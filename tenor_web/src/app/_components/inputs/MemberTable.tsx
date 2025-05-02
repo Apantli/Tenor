@@ -22,6 +22,7 @@ interface Props {
   className?: ClassNameValue;
   roleList: { id: string; label: string }[];
   isSearchable?: boolean;
+  labelClassName?: string;
 }
 
 export interface TeamMember {
@@ -40,6 +41,7 @@ export default function MemberTable({
   handleEditMemberRole,
   className,
   roleList,
+  labelClassName,
   isSearchable = false,
 }: Props) {
   const [searchValue, setSearchValue] = useState("");
@@ -120,7 +122,7 @@ export default function MemberTable({
         {label && (
           <label
             htmlFor="project-description"
-            className="justify flex font-semibold"
+            className={cn("justify flex font-semibold", labelClassName)}
           >
             {label}
           </label>
@@ -186,6 +188,7 @@ export default function MemberTable({
       </div>
 
       <Table
+        emptyMessage="No members found"
         className="w-full"
         data={filteredTeamMembers} // filter tableSearchValue by name or email
         columns={columns}
