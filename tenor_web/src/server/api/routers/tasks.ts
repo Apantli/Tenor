@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { WithId, Tag, Size } from "~/lib/types/firebaseSchemas";
+import type { WithId, Tag, Size, StatusTag } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { Task } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
@@ -7,6 +7,7 @@ import {
   BacklogItemSchema,
   EpicSchema,
   IssueSchema,
+  StatusTagSchema,
   TagSchema,
   TaskSchema,
   UserStorySchema,
@@ -34,7 +35,7 @@ export interface TaskCol {
   id: string;
   scrumId?: number;
   title: string;
-  status: Tag;
+  status: StatusTag;
   assignee?: {
     uid: string;
     displayName: string;
@@ -125,7 +126,7 @@ export const getStatusTag = async (
   if (!tag.exists) {
     return undefined;
   }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+  return { id: tag.id, ...StatusTagSchema.parse(tag.data()) } as Tag;
 };
 
 /**
@@ -653,7 +654,7 @@ ${passedInPrompt}
 
       return generatedTasks.map((task) => ({
         ...task,
-        status: todoTag as Tag,
+        status: todoTag as StatusTag,
       }));
     }),
 

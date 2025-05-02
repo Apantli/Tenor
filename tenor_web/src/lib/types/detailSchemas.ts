@@ -34,7 +34,7 @@ export type TaskPreview = {
   id: string;
   scrumId?: number;
   name: string;
-  status: Tag;
+  status: StatusTag;
   assignee?: UserPreview;
 };
 
@@ -84,7 +84,7 @@ export type TaskDetail = {
   scrumId?: number;
   name: string;
   description: string;
-  status: Tag;
+  status: StatusTag;
   size?: Size;
   assignee?: UserPreview;
   dueDate?: Date;
