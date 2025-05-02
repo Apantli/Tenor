@@ -103,9 +103,8 @@ export default function StatusDetailPopup({
     }
 
     const protectedNames = ["todo", "doing", "done"];
-
-    const originalNameLower = statusDetail?.name.toLowerCase() ?? "";
-    const newNameLower = form.name.toLowerCase();
+    const originalNameLower = statusDetail?.name.toLowerCase().trim() ?? "";
+    const newNameLower = form.name.toLowerCase().trim();
 
     if (protectedNames.includes(originalNameLower)) {
       if (originalNameLower !== newNameLower) {
@@ -129,6 +128,31 @@ export default function StatusDetailPopup({
         },
       );
       return;
+    }
+
+    if (newNameLower !== originalNameLower) {
+      const existingStatuses = await utils.settings.getStatusTypes.fetch({
+        projectId: projectId as string,
+      });
+
+      const statusWithSameNameExists = existingStatuses?.some(
+        (status) =>
+          status.id !== statusId &&
+          status.name.toLowerCase().trim() === newNameLower &&
+          !status.deleted,
+      );
+
+      if (statusWithSameNameExists) {
+        alert(
+          "Duplicate Status Name",
+          `A status with name "${form.name}" already exists.`,
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+        return;
+      }
     }
 
     const updatedStatus = {

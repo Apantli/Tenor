@@ -79,6 +79,27 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
       return;
     }
 
+    const existingStatuses = await utils.settings.getStatusTypes.fetch({
+      projectId: projectId as string,
+    });
+
+    const statusAlreadyExists = existingStatuses?.some(
+      (status) =>
+        status.name.toLowerCase().trim() === normalizedName && !status.deleted,
+    );
+
+    if (statusAlreadyExists) {
+      alert(
+        "Duplicate Status Name",
+        `A status with name "${form.name}" already exists.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     await createStatus({
       projectId: projectId as string,
       name: form.name,
