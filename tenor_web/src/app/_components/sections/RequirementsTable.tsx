@@ -758,7 +758,34 @@ export default function RequirementsTable() {
           setEditMode={
             requirementEditedData !== null
               ? async () => {
+                  const { name, description } = editForm;
+                  const {
+                    priorityId,
+                    requirementTypeId,
+                    requirementFocusId,
+                    scrumId,
+                  } = requirementEditedData;
+
                   if (editingRequirement) {
+                    if (!name) {
+                      alert("Oops...", "Requirement name must have a value.", {
+                        type: "error",
+                        duration: 5000, // time in ms (5 seconds)
+                      });
+                      return;
+                    }
+                    if (
+                      !priorityId?.id ||
+                      !requirementTypeId?.id ||
+                      !requirementFocusId?.id
+                    ) {
+                      alert("Oops...", "All properties must have a value.", {
+                        type: "error",
+                        duration: 5000, // time in ms (5 seconds)
+                      });
+                      return;
+                    }
+
                     setEditingRequirement(false);
 
                     if (ghostRequirementEdited) {
@@ -899,7 +926,6 @@ export default function RequirementsTable() {
               <div className="pt-4">
                 <InputTextField
                   label="Title"
-                  className="h-12"
                   containerClassName="mb-4"
                   value={
                     requirementEditedData ? editForm.name : newRequirement.name
@@ -915,7 +941,7 @@ export default function RequirementsTable() {
                     }
                   }}
                   name="name"
-                  placeholder="Requirement title"
+                  placeholder="Briefly describe the requirement..."
                 />
                 <InputTextAreaField
                   label="Description"
@@ -937,6 +963,7 @@ export default function RequirementsTable() {
                       : handleChange
                   }
                   name="description"
+                  placeholder="What is this requirement about..."
                 />
                 {requirementEdited === null &&
                   ghostRequirementEdited === null && (

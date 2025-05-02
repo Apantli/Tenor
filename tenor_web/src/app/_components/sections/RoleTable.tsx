@@ -339,6 +339,7 @@ export default function RoleTable({
               onChange={(e) => {
                 setRole(e.target.value);
               }}
+              disableAI
             />
           </DropdownItem>
 
