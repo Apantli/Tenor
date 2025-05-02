@@ -224,11 +224,8 @@ export default function RoleTable({
 
         <Dropdown
           label={
-            <PrimaryButton
-              asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
-              className="flex max-h-[40px] items-center text-sm font-semibold"
-            >
-              Add Role +
+            <PrimaryButton className="flex items-center text-sm" asSpan>
+              + Add Role
             </PrimaryButton>
           }
         >
