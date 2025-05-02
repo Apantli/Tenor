@@ -24,8 +24,6 @@ interface Props {
     tabId: string,
     permission: Permission,
   ) => void;
-  handleUpdateViewPerformance: (id: string, newValue: boolean) => void;
-  handleUpdateControlSprints: (id: string, newValue: boolean) => void;
   className?: ClassNameValue;
   isSearchable?: boolean;
 }
@@ -38,8 +36,6 @@ export default function RoleTable({
   handleRoleAdd,
   handleRoleRemove,
   handleEditTabPermission,
-  handleUpdateViewPerformance,
-  handleUpdateControlSprints,
   isSearchable = false,
 }: Props) {
   const [tableSearchValue, setTableSearchValue] = useState("");

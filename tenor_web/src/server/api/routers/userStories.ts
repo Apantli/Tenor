@@ -1,7 +1,11 @@
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import type { WithId, Tag, Size, StatusTag } from "~/lib/types/firebaseSchemas";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
@@ -122,60 +126,13 @@ const getTaskProgress = async (
 };
 
 export const userStoriesRouter = createTRPCRouter({
-  createUserStory: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        userStoryData: UserStorySchema.omit({ scrumId: true }),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const userStoryCount = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("userStories")
-          .count()
-          .get();
-        const userStory = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("userStories")
-          .add({
-            ...input.userStoryData,
-            scrumId: userStoryCount.data().count + 1,
-          });
-
-        // Add dependency and requiredBy references
-        await Promise.all(
-          input.userStoryData.dependencyIds.map(async (dependencyId) => {
-            await ctx.firestore
-              .collection("projects")
-              .doc(input.projectId)
-              .collection("userStories")
-              .doc(dependencyId)
-              .update({ requiredByIds: FieldValue.arrayUnion(userStory.id) });
-          }),
-        );
-        await Promise.all(
-          input.userStoryData.requiredByIds.map(async (requiredById) => {
-            await ctx.firestore
-              .collection("projects")
-              .doc(input.projectId)
-              .collection("userStories")
-              .doc(requiredById)
-              .update({ dependencyIds: FieldValue.arrayUnion(userStory.id) });
-          }),
-        );
-
-        return { success: true, userStoryId: userStory.id };
-      } catch (err) {
-        console.log("Error creating user story:", err);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      }
-    }),
-
-  getProjectUserStoriesOverview: protectedProcedure
+  getProjectUserStoriesOverview: roleRequiredProcedure(
+    {
+      flags: ["backlog", "issues"],
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const userStoriesSnapshot = await ctx.firestore
@@ -195,7 +152,13 @@ export const userStoriesRouter = createTRPCRouter({
       return userStories;
     }),
 
-  getUserStoriesTableFriendly: protectedProcedure
+  getUserStoriesTableFriendly: roleRequiredProcedure(
+    {
+      flags: ["backlog"],
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
@@ -237,7 +200,13 @@ export const userStoriesRouter = createTRPCRouter({
       return fixedData as UserStoryCol[];
     }),
 
-  getUserStoryDetail: protectedProcedure
+  getUserStoryDetail: roleRequiredProcedure(
+    {
+      flags: ["backlog"],
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ userStoryId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       // Get the necessary information to construct the UserStoryDetail
@@ -381,7 +350,13 @@ export const userStoriesRouter = createTRPCRouter({
       } as UserStoryDetail;
     }),
 
-  getAllUserStoryPreviews: protectedProcedure
+  getAllUserStoryPreviews: roleRequiredProcedure(
+    {
+      flags: ["backlog", "issues"],
+      optimistic: true,
+    },
+    "read",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -405,8 +380,69 @@ export const userStoriesRouter = createTRPCRouter({
       }));
       return userStoriesPreviews;
     }),
+  createUserStory: roleRequiredProcedure(
+    {
+      flags: ["backlog"],
+    },
+    "write",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        userStoryData: UserStorySchema.omit({ scrumId: true }),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const userStoryCount = await ctx.firestore
+          .collection("projects")
+          .doc(input.projectId)
+          .collection("userStories")
+          .count()
+          .get();
+        const userStory = await ctx.firestore
+          .collection("projects")
+          .doc(input.projectId)
+          .collection("userStories")
+          .add({
+            ...input.userStoryData,
+            scrumId: userStoryCount.data().count + 1,
+          });
 
-  modifyUserStory: protectedProcedure
+        // Add dependency and requiredBy references
+        await Promise.all(
+          input.userStoryData.dependencyIds.map(async (dependencyId) => {
+            await ctx.firestore
+              .collection("projects")
+              .doc(input.projectId)
+              .collection("userStories")
+              .doc(dependencyId)
+              .update({ requiredByIds: FieldValue.arrayUnion(userStory.id) });
+          }),
+        );
+        await Promise.all(
+          input.userStoryData.requiredByIds.map(async (requiredById) => {
+            await ctx.firestore
+              .collection("projects")
+              .doc(input.projectId)
+              .collection("userStories")
+              .doc(requiredById)
+              .update({ dependencyIds: FieldValue.arrayUnion(userStory.id) });
+          }),
+        );
+
+        return { success: true, userStoryId: userStory.id };
+      } catch (err) {
+        console.log("Error creating user story:", err);
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
+    }),
+  modifyUserStory: roleRequiredProcedure(
+    {
+      flags: ["backlog"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -515,8 +551,49 @@ export const userStoriesRouter = createTRPCRouter({
         ],
       };
     }),
+  deleteUserStory: roleRequiredProcedure(
+    {
+      flags: ["backlog"],
+    },
+    "write",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        userStoryId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userStoryId } = input;
+      const userStoryRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("userStories")
+        .doc(userStoryId);
+      await userStoryRef.update({ deleted: true });
 
-  modifyUserStoryTags: protectedProcedure
+      const tasks = await ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("tasks")
+        .where("itemType", "==", "US")
+        .where("itemId", "==", userStoryId)
+        .get();
+      const batch = ctx.firestore.batch();
+      tasks.docs.forEach((task) => {
+        batch.update(task.ref, { deleted: true });
+      });
+      await batch.commit();
+
+      return { success: true };
+    }),
+  modifyUserStoryTags: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -554,40 +631,12 @@ export const userStoriesRouter = createTRPCRouter({
       await userStoryRef.update(newUserStoryData);
       return { success: true };
     }),
-
-  deleteUserStory: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        userStoryId: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, userStoryId } = input;
-      const userStoryRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("userStories")
-        .doc(userStoryId);
-      await userStoryRef.update({ deleted: true });
-
-      const tasks = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .where("itemType", "==", "US")
-        .where("itemId", "==", userStoryId)
-        .get();
-      const batch = ctx.firestore.batch();
-      tasks.docs.forEach((task) => {
-        batch.update(task.ref, { deleted: true });
-      });
-      await batch.commit();
-
-      return { success: true };
-    }),
-
-  generateUserStories: protectedProcedure
+  generateUserStories: roleRequiredProcedure(
+    {
+      flags: ["backlog"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),

@@ -234,7 +234,8 @@ export const requirementsRouter = createTRPCRouter({
    */
   getRequirementTypeTags: roleRequiredProcedure(
     {
-      flags: ["backlog"],
+      flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "read",
   )
@@ -255,7 +256,8 @@ export const requirementsRouter = createTRPCRouter({
 
   getRequirementTypeTagById: roleRequiredProcedure(
     {
-      flags: ["backlog"],
+      flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "read",
   )
@@ -275,6 +277,7 @@ export const requirementsRouter = createTRPCRouter({
   createRequirementTypeTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "write",
   )
@@ -289,6 +292,7 @@ export const requirementsRouter = createTRPCRouter({
   modifyRequirementTypeTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "write",
   )
@@ -310,6 +314,7 @@ export const requirementsRouter = createTRPCRouter({
   deleteRequirementTypeTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "write",
   )
@@ -335,7 +340,8 @@ export const requirementsRouter = createTRPCRouter({
    */
   getRequirementFocusTags: roleRequiredProcedure(
     {
-      flags: ["backlog"],
+      flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "read",
   )
@@ -355,7 +361,8 @@ export const requirementsRouter = createTRPCRouter({
 
   getRequirementFocusTagById: roleRequiredProcedure(
     {
-      flags: ["backlog"],
+      flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "read",
   )
@@ -375,6 +382,7 @@ export const requirementsRouter = createTRPCRouter({
   createRequirementFocusTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "write",
   )
@@ -389,6 +397,7 @@ export const requirementsRouter = createTRPCRouter({
   modifyRequirementFocusTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "write",
   )
@@ -410,6 +419,7 @@ export const requirementsRouter = createTRPCRouter({
   deleteRequirementFocusTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
+      optimistic: true,
     },
     "write",
   )

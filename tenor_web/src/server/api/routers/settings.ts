@@ -150,7 +150,21 @@ const settingsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of priority type tags
    */
-  getPriorityTypes: protectedProcedure
+  getPriorityTypes: roleRequiredProcedure(
+    {
+      flags: [
+        "backlog",
+        "settings",
+        "issues",
+        "scrumboard",
+        "performance",
+        "sprints",
+      ],
+
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
@@ -177,7 +191,21 @@ const settingsRouter = createTRPCRouter({
    * @returns {Tag[]} An array of status type tags
    */
 
-  getStatusTypes: protectedProcedure
+  getStatusTypes: roleRequiredProcedure(
+    {
+      flags: [
+        "backlog",
+        "settings",
+        "issues",
+        "scrumboard",
+        "performance",
+        "sprints",
+      ],
+
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
@@ -198,7 +226,21 @@ const settingsRouter = createTRPCRouter({
       return statusTypesData;
     }),
 
-  getStatusTypeById: protectedProcedure
+  getStatusTypeById: roleRequiredProcedure(
+    {
+      flags: [
+        "backlog",
+        "settings",
+        "issues",
+        "scrumboard",
+        "performance",
+        "sprints",
+      ],
+
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string(), statusId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId, statusId } = input;
@@ -217,7 +259,13 @@ const settingsRouter = createTRPCRouter({
       return { id: statusType.id, ...statusTypeData };
     }),
 
-  createStatusType: protectedProcedure
+  createStatusType: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -257,7 +305,13 @@ const settingsRouter = createTRPCRouter({
       };
     }),
 
-  reorderStatusTypes: protectedProcedure
+  reorderStatusTypes: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -279,7 +333,13 @@ const settingsRouter = createTRPCRouter({
       await batch.commit();
     }),
 
-  modifyStatusType: protectedProcedure
+  modifyStatusType: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -296,7 +356,13 @@ const settingsRouter = createTRPCRouter({
       return { ...status, id: updatedStatus.id };
     }),
 
-  deleteStatusType: protectedProcedure
+  deleteStatusType: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -335,7 +401,21 @@ const settingsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of backlog tags
    */
-  getBacklogTags: protectedProcedure
+  getBacklogTags: roleRequiredProcedure(
+    {
+      flags: [
+        "backlog",
+        "settings",
+        "issues",
+        "scrumboard",
+        "performance",
+        "sprints",
+      ],
+
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
@@ -354,7 +434,21 @@ const settingsRouter = createTRPCRouter({
       return backlogTagsData;
     }),
 
-  getBacklogTagById: protectedProcedure
+  getBacklogTagById: roleRequiredProcedure(
+    {
+      flags: [
+        "backlog",
+        "settings",
+        "issues",
+        "scrumboard",
+        "performance",
+        "sprints",
+      ],
+
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string(), tagId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId, tagId } = input;
@@ -380,7 +474,13 @@ const settingsRouter = createTRPCRouter({
    * @input {object} input.tag - The tag data conforming to TagSchema
    * @returns {Tag & {id: string}} The created tag with its ID
    */
-  createBacklogTag: protectedProcedure
+  createBacklogTag: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -394,7 +494,13 @@ const settingsRouter = createTRPCRouter({
       return { ...tag, id: added.id };
     }),
 
-  modifyBacklogTag: protectedProcedure
+  modifyBacklogTag: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -411,7 +517,13 @@ const settingsRouter = createTRPCRouter({
       return { ...tag, id: updatedTag.id };
     }),
 
-  deleteBacklogTag: protectedProcedure
+  deleteBacklogTag: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -433,7 +545,13 @@ const settingsRouter = createTRPCRouter({
    * @input {object} input.tag - The tag data conforming to TagSchema
    * @returns {Tag & {id: string}} The created requirement type tag with its ID
    */
-  createRequirementType: protectedProcedure
+  createRequirementType: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -455,7 +573,13 @@ const settingsRouter = createTRPCRouter({
    * @input {object} input.tag - The tag data conforming to TagSchema
    * @returns {Tag & {id: string}} The created requirement focus tag with its ID
    */
-  createRequirementFocus: protectedProcedure
+  createRequirementFocus: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -468,7 +592,12 @@ const settingsRouter = createTRPCRouter({
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
     }),
-  getContextLinks: protectedProcedure
+  getContextLinks: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
@@ -482,7 +611,12 @@ const settingsRouter = createTRPCRouter({
       );
       return links;
     }),
-  getContextFiles: protectedProcedure
+  getContextFiles: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
@@ -499,7 +633,12 @@ const settingsRouter = createTRPCRouter({
         }));
       return files;
     }),
-  getContextDialog: protectedProcedure
+  getContextDialog: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
@@ -511,7 +650,12 @@ const settingsRouter = createTRPCRouter({
       const text: string = settingsData.aiContext.text;
       return text;
     }),
-  updateTextContext: protectedProcedure
+  updateTextContext: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -533,7 +677,12 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
-  addLink: protectedProcedure
+  addLink: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -563,7 +712,12 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
-  removeLink: protectedProcedure
+  removeLink: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -589,7 +743,12 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
-  addFiles: protectedProcedure
+  addFiles: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -630,7 +789,12 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
-  removeFile: protectedProcedure
+  removeFile: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -657,7 +821,21 @@ const settingsRouter = createTRPCRouter({
       });
     }),
 
-  getSizeTypes: protectedProcedure
+  getSizeTypes: roleRequiredProcedure(
+    {
+      flags: [
+        "backlog",
+        "settings",
+        "issues",
+        "scrumboard",
+        "performance",
+        "sprints",
+      ],
+
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = ctx.firestore
@@ -673,7 +851,13 @@ const settingsRouter = createTRPCRouter({
       return Array.isArray(settingsData.Size) ? settingsData.Size : [];
     }),
 
-  changeSize: protectedProcedure
+  changeSize: roleRequiredProcedure(
+    {
+      flags: ["backlog", "settings", "issues", "scrumboard"],
+      optimistic: true,
+    },
+    "write",
+  )
     .input(z.object({ projectId: z.string(), size: z.array(z.number()) }))
     .mutation(async ({ ctx, input }) => {
       const { projectId, size } = input;
@@ -691,7 +875,12 @@ const settingsRouter = createTRPCRouter({
         Size: size,
       });
     }),
-  getDetailedRoles: protectedProcedure
+  getDetailedRoles: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const roles = await ctx.firestore
@@ -713,7 +902,12 @@ const settingsRouter = createTRPCRouter({
       });
       return rolesData;
     }),
-  addRole: protectedProcedure
+  addRole: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -733,7 +927,12 @@ const settingsRouter = createTRPCRouter({
         id: undefined,
       });
     }),
-  removeRole: protectedProcedure
+  removeRole: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -762,7 +961,12 @@ const settingsRouter = createTRPCRouter({
 
       await projectSettingsRef.collection("userTypes").doc(roleId).delete();
     }),
-  updateRoleTabPermissions: protectedProcedure
+  updateRoleTabPermissions: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -781,44 +985,6 @@ const settingsRouter = createTRPCRouter({
       await roleDoc.update({
         ...role,
         [parameter]: permission,
-      });
-    }),
-  updateViewPerformance: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        roleId: z.string(),
-        newValue: z.boolean(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, roleId, newValue } = input;
-
-      const roleDoc = getProjectRoleRef(input.projectId, roleId, ctx.firestore);
-
-      const roleData = await roleDoc.get();
-      const role = RoleSchema.parse(roleData.data());
-      await roleDoc.update({
-        canViewPerformance: newValue,
-      });
-    }),
-  updateControlSprints: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        roleId: z.string(),
-        newValue: z.boolean(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, roleId, newValue } = input;
-
-      const roleDoc = getProjectRoleRef(input.projectId, roleId, ctx.firestore);
-
-      const roleData = await roleDoc.get();
-      const role = RoleSchema.parse(roleData.data());
-      await roleDoc.update({
-        canControlSprints: newValue,
       });
     }),
   getMyRole: protectedProcedure
@@ -867,7 +1033,21 @@ const settingsRouter = createTRPCRouter({
         ...role,
       };
     }),
-  getTodoTag: protectedProcedure
+  getTodoTag: roleRequiredProcedure(
+    {
+      flags: [
+        "backlog",
+        "settings",
+        "issues",
+        "scrumboard",
+        "performance",
+        "sprints",
+      ],
+
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
@@ -876,7 +1056,12 @@ const settingsRouter = createTRPCRouter({
       );
       return todoStatus;
     }),
-  fetchScrumSettings: protectedProcedure
+  fetchScrumSettings: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
@@ -894,8 +1079,12 @@ const settingsRouter = createTRPCRouter({
 
       return scrumSettings;
     }),
-
-  updateScrumSettings: protectedProcedure
+  updateScrumSettings: roleRequiredProcedure(
+    {
+      flags: ["settings"],
+    },
+    "read",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -913,7 +1102,14 @@ const settingsRouter = createTRPCRouter({
 
       return { success: true };
     }),
-  fetchDefaultSprintDuration: protectedProcedure
+  fetchDefaultSprintDuration: roleRequiredProcedure(
+    {
+      flags: ["settings", "sprints"],
+
+      optimistic: true,
+    },
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSprintDuration = await ctx.firestore
