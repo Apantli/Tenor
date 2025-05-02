@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toBase64 } from "~/utils/base64";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import FileList from "~/app/_components/inputs/FileList";
@@ -66,7 +66,7 @@ export default function ProjectAIConfig() {
   const handleAddLink = async (link: Links) => {
     if (!links) return;
     const newData = links;
-    newData.push({ link: link, valid: true });
+    newData.push({ url: link.url, valid: true });
     // Uses optimistic update
     await utils.settings.getContextLinks.cancel({
       projectId: projectId as string,
@@ -78,22 +78,37 @@ export default function ProjectAIConfig() {
     // Add to database
     await addLink({
       projectId: projectId as string,
-      link: link,
+      link: link.url,
     });
 
     await utils.settings.getContextLinks.invalidate({
       projectId: projectId as string,
     });
-
-    alert("Success", "A new link was added to your project AI context.", {
-      type: "success",
-      duration: 5000,
-    });
   };
+
+  useEffect(() => {
+    const invalidLinks = [];
+    let validLinks = 0;
+    for (const link of links ?? []) {
+      if (!link.valid) invalidLinks.push(link);
+      else validLinks++;
+    }
+    if (invalidLinks.length > 0) {
+      const plural = invalidLinks.length > 1 ? "s" : "";
+      alert(
+        `Invalid link${plural}`,
+        `${invalidLinks.length} link${plural} ${plural ? "are" : "is"} invalid.`,
+        {
+          type: "warning",
+          duration: 5000,
+        },
+      );
+    }
+  }, [links]);
 
   const handleRemoveLink = async (link: Links) => {
     if (!links) return;
-    const newData = links.filter((l) => l.link !== link.url);
+    const newData = links.filter((l) => l.url !== link.url);
     // Uses optimistic update
     await utils.settings.getContextLinks.cancel({
       projectId: projectId as string,
@@ -262,10 +277,7 @@ export default function ProjectAIConfig() {
           ></FileList>
           <LinkList
             label={"Context Links"}
-            links={links.map((link) => ({
-              url: link.link,
-              valid: link.valid,
-            }))}
+            links={links}
             handleLinkAdd={handleAddLink}
             handleLinkRemove={handleRemoveLink}
           ></LinkList>

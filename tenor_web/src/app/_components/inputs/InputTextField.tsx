@@ -10,6 +10,7 @@ interface Props {
   containerClassName?: string;
   disableAI?: boolean;
   aiTitle?: string;
+  ref?: React.Ref<HTMLInputElement>;
 }
 
 export default function InputTextField({
@@ -22,6 +23,7 @@ export default function InputTextField({
   aiTitle,
   value,
   onChange,
+  ref,
   ...props
 }: Props & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
@@ -35,6 +37,7 @@ export default function InputTextField({
       aiTitle={aiTitle}
       value={value as string}
       disablePlaceholder
+      ref={ref}
       onChange={onChange as InputFieldProps["onChange"]}
       {...props}
     />

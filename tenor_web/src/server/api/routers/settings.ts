@@ -483,7 +483,7 @@ const settingsRouter = createTRPCRouter({
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
       const links = settingsData.aiContext.links.map((link) => ({
-        link: link.link,
+        url: link.link,
         valid: link.content !== null,
       }));
       console.log("links:", links);

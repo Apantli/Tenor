@@ -27,6 +27,7 @@ export interface Props {
   ) => void;
   className?: string;
   disablePlaceholder?: boolean;
+  ref?: React.Ref<HTMLTextAreaElement | HTMLInputElement>;
 }
 
 export default function InputField({
@@ -42,6 +43,7 @@ export default function InputField({
   onChange,
   placeholder,
   disablePlaceholder,
+  ref,
   ...props
 }: Props &
   (
@@ -194,6 +196,7 @@ export default function InputField({
             "block min-h-40 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none",
             className,
           )}
+          ref={ref ? (ref as React.Ref<HTMLTextAreaElement>) : null}
           value={value}
           onChange={onChange as React.ChangeEventHandler<HTMLTextAreaElement>}
           {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
@@ -207,6 +210,7 @@ export default function InputField({
             "inline-block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500",
             className,
           )}
+          ref={ref ? (ref as React.Ref<HTMLInputElement>) : null}
           value={value}
           onChange={onChange as React.ChangeEventHandler<HTMLInputElement>}
           {...(props as React.InputHTMLAttributes<HTMLInputElement>)}

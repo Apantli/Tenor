@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import InsertLinkIcon from "@mui/icons-material/InsertLink";
@@ -29,6 +29,8 @@ export default function LinkList({
 }: Props) {
   const [link, setLink] = React.useState("");
   const confirm = useConfirmation();
+  const insertLinkRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
@@ -38,6 +40,11 @@ export default function LinkList({
             <PrimaryButton
               asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
               className="flex max-h-[40px] items-center"
+              onClick={() => {
+                if (insertLinkRef.current) {
+                  insertLinkRef.current.focus();
+                }
+              }}
             >
               Add Context Link +
             </PrimaryButton>
@@ -45,6 +52,7 @@ export default function LinkList({
         >
           <DropdownItem>
             <InputTextField
+              ref={insertLinkRef}
               placeholder="https://example.com"
               value={link}
               onChange={(e) => {
