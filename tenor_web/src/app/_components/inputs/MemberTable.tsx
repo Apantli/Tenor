@@ -49,15 +49,13 @@ export default function MemberTable({
     filter: searchValue,
   });
 
-  const filteredTeamMembers = useMemo(() => {
-    const search = tableSearchValue.toLowerCase();
-    return teamMembers.filter((member) => {
-      return (
-        member.displayName?.toLowerCase().includes(search) ||
-        member.email?.toLowerCase().includes(search)
-      );
-    });
-  }, [teamMembers, tableSearchValue]);
+  const search = tableSearchValue.toLowerCase();
+  const filteredTeamMembers = teamMembers.filter((member) => {
+    return (
+      member.displayName?.toLowerCase().includes(search) ||
+      member.email?.toLowerCase().includes(search)
+    );
+  });
 
   const columns: TableColumns<TeamMember> = {
     id: { visible: false },
