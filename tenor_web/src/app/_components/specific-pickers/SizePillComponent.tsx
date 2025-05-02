@@ -2,6 +2,7 @@ import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import PillComponent from "../PillComponent";
 
 interface Props {
+  projectId?: string;
   currentSize?: Size;
   callback: (size: Size) => void;
   className?: string;

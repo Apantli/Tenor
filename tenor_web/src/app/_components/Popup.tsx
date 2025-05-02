@@ -108,7 +108,7 @@ export default function Popup({
           style={{ zIndex: (zIndex ?? 100) + 1 }}
           ref={containerRef}
         >
-          <div className="grow justify-between gap-4 overflow-y-hidden">
+          <div className="grow justify-between gap-4 overflow-y-hidden overflow-x-hidden">
             <div className="flex h-full justify-between">
               <div
                 className={cn("flex grow flex-col justify-between pt-8", {
