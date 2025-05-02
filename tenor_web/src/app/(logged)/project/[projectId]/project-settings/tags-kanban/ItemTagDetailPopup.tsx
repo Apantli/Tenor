@@ -294,6 +294,54 @@ export default function ItemTagDetailPopup({
       return;
     }
 
+    if (
+      form.name.toLowerCase().trim() ===
+        updatedData.name.toLowerCase().trim() &&
+      form.color === updatedData.color
+    ) {
+      setEditMode(false);
+      return;
+    }
+
+    let existingTags;
+    switch (itemTagType) {
+      case "BacklogTag":
+        existingTags = await utils.settings.getBacklogTags.fetch({
+          projectId: projectId as string,
+        });
+        break;
+      case "ReqType":
+        existingTags = await utils.requirements.getRequirementTypeTags.fetch({
+          projectId: projectId as string,
+        });
+        break;
+      case "ReqFocus":
+        existingTags = await utils.requirements.getRequirementFocusTags.fetch({
+          projectId: projectId as string,
+        });
+        break;
+    }
+
+    const normalizedNewName = form.name.toLowerCase().trim();
+    const tagWithSameNameExists = existingTags?.some(
+      (tag) =>
+        tag.id !== tagId &&
+        tag.name.toLowerCase().trim() === normalizedNewName &&
+        !tag.deleted,
+    );
+
+    if (tagWithSameNameExists) {
+      alert(
+        "Duplicate Name",
+        `A ${itemTagType === "BacklogTag" ? "tag" : itemTagType === "ReqFocus" ? "focus area" : "requirement type"} with this name already exists.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     const updateTag = {
       ...updatedData,
       name: form.name,

@@ -39,6 +39,7 @@ export default function CreateItemTagPopup({
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
   const { projectId } = useParams();
   const { alert } = useAlert();
+  const utils = api.useUtils();
 
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
     BacklogTag: {
@@ -117,6 +118,42 @@ export default function CreateItemTagPopup({
         type: "error",
         duration: 5000,
       });
+      return;
+    }
+
+    let existingTags;
+    switch (itemTagType) {
+      case "BacklogTag":
+        existingTags = await utils.settings.getBacklogTags.fetch({
+          projectId: projectId as string,
+        });
+        break;
+      case "ReqType":
+        existingTags = await utils.requirements.getRequirementTypeTags.fetch({
+          projectId: projectId as string,
+        });
+        break;
+      case "ReqFocus":
+        existingTags = await utils.requirements.getRequirementFocusTags.fetch({
+          projectId: projectId as string,
+        });
+        break;
+    }
+
+    const normalizedName = form.name.toLowerCase().trim();
+    const tagAlreadyExists = existingTags?.some(
+      (tag) => tag.name.toLowerCase().trim() === normalizedName && !tag.deleted,
+    );
+
+    if (tagAlreadyExists) {
+      alert(
+        "Duplicate Name",
+        `A ${itemTagType === "BacklogTag" ? "tag" : itemTagType === "ReqFocus" ? "focus area" : "requirement type"} with this name already exists.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
       return;
     }
 
