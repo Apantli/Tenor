@@ -1,6 +1,8 @@
 import Table, { TableColumns } from "../table/Table";
 import { Size } from "~/lib/types/firebaseSchemas";
 import InputTextField from "../inputs/InputTextField";
+import { useAlert } from "~/app/_hooks/useAlert";
+import { useState } from "react";
 
 interface SizeCol {
   id: string; // id must be a string to match the API response
@@ -8,6 +10,8 @@ interface SizeCol {
   value: number;
   color: string;
 }
+
+const maxInputSizeNumber = 1000;
 
 export default function SettingsSizeTable({
   sizeData,
@@ -17,8 +21,34 @@ export default function SettingsSizeTable({
   setSizeData: React.Dispatch<React.SetStateAction<SizeCol[]>>;
 }
 ) {
+  //Hook
+  const { alert } = useAlert();
+
+  const [numberWarningShown, setNumberWarningShown] = useState(false);
+  
+
+  const checkLargeNumber = (value: number) => {
+    if (value < maxInputSizeNumber) return false;
+    if (numberWarningShown) return true;
+
+    alert(
+      "Number too large",
+      `Please only input numbers less or equal than ${maxInputSizeNumber.toLocaleString()}.`,
+      {
+        type: "warning",
+        duration: 3000,
+      },
+    );
+    return true;
+  };
+
   const handleValueChange = (id: string, newValue: number) => {
     if (newValue < 0 || isNaN(newValue)) return;
+    if (checkLargeNumber(newValue)) {
+      setNumberWarningShown(true);
+      return;
+    }
+    setNumberWarningShown(false);
 
     setSizeData((prev) => {
       const idx = prev.findIndex((item) => item.id === id);
