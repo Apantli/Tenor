@@ -385,6 +385,49 @@ export default function RequirementsTable() {
     },
   );
 
+  const deleteRequirements = async (ids: string[]) => {
+    const confirmMessage =
+      ids.length > 1
+        ? "delete these requirements?"
+        : "delete this requirement?";
+    if (
+      !(await confirm(
+        `Are you sure you want to ${confirmMessage}`,
+        "This action cannot be undone",
+        "Delete",
+      ))
+    ) {
+      return false;
+    }
+
+    const newData = requirementsData.filter((item) => !ids.includes(item.id));
+
+    await utils.requirements.getRequirementsTableFriendly.cancel({
+      projectId: params.projectId as string,
+    });
+    utils.requirements.getRequirementsTableFriendly.setData(
+      { projectId: params.projectId as string },
+      (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          fixedData: newData,
+        };
+      },
+    );
+
+    await Promise.all(
+      ids.map((id) =>
+        deleteRequirement({
+          projectId: params.projectId as string,
+          requirementId: id,
+        }),
+      ),
+    );
+    await refetchRequirements();
+    return true;
+  };
+
   const table = useMemo(() => {
     if (requirements == undefined || isLoadingRequirements) {
       return (
@@ -654,47 +697,9 @@ export default function RequirementsTable() {
       ids: string[],
       callback: (del: boolean) => void,
     ) => {
-      const confirmMessage =
-        ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
-      if (
-        !(await confirm(
-          `Are you sure you want to ${confirmMessage}`,
-          "This action cannot be undone",
-          "Delete",
-        ))
-      ) {
-        callback(false);
-        return;
-      }
-      callback(true); // call the callback as soon as posible
-
-      const newData = requirementsData.filter((item) => !ids.includes(item.id));
-
-      await utils.requirements.getRequirementsTableFriendly.cancel({
-        projectId: params.projectId as string,
-      });
-      utils.requirements.getRequirementsTableFriendly.setData(
-        { projectId: params.projectId as string },
-        (prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            fixedData: newData,
-          };
-        },
-      );
-
-      //Deletes in database
-      await Promise.all(
-        ids.map((id) =>
-          deleteRequirement({
-            projectId: params.projectId as string,
-            requirementId: id,
-          }),
-        ),
-      );
-      await refetchRequirements();
-      return true;
+      const deleted = await deleteRequirements(ids);
+      callback(deleted);
+      return deleted;
     };
 
     return (
@@ -946,7 +951,13 @@ export default function RequirementsTable() {
                   permission < permissionNumbers.write ? null : (
                     <DeleteButton
                       onClick={async () => {
-                        console.log("Deleting");
+                        if (
+                          requirementEdited &&
+                          (await deleteRequirements([requirementEdited.id]))
+                        ) {
+                          setShowSmallPopup(false);
+                          setRequirementEdited(null);
+                        }
                       }}
                     >
                       Delete
