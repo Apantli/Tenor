@@ -1,6 +1,6 @@
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { Permission, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type {
   RequirementCol,
   requirementsRouter,
@@ -106,10 +106,40 @@ export default function RequirementsTable() {
   const confirm = useConfirmation();
 
   const { alert } = useAlert();
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: params.projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    if (!role) return 0 as Permission;
+    return role.backlog as Permission;
+  }, [role]);
+
   const { mutateAsync: createOrModifyRequirement, isPending } =
-    api.requirements.createOrModifyRequirement.useMutation();
+    api.requirements.createOrModifyRequirement.useMutation({
+      onError: (error) => {
+        alert(
+          "Oops...",
+          "You do not have permission to create or modify requirements.",
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+      },
+    });
   const { mutateAsync: generateRequirements } =
-    api.requirements.generateRequirements.useMutation();
+    api.requirements.generateRequirements.useMutation({
+      onError: (error) => {
+        alert(
+          "Oops...",
+          "You do not have permission to generate requirements.",
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+      },
+    });
 
   const handleCreateRequirement = async () => {
     const {
@@ -232,7 +262,18 @@ export default function RequirementsTable() {
   });
 
   const { mutateAsync: deleteRequirement } =
-    api.requirements.deleteRequirement.useMutation();
+    api.requirements.deleteRequirement.useMutation({
+      onError: (error) => {
+        alert(
+          "Oops...",
+          `You do not have permission to delete this requirement.`,
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+      },
+    });
   useEffect(() => {
     if (requirements) {
       const query = searchValue.toLowerCase();
@@ -645,7 +686,7 @@ export default function RequirementsTable() {
         onDelete={handleDelete}
         emptyMessage="No requirements found"
         multiselect
-        deletable
+        deletable={permission >= 2}
         tableKey="requirements-table"
         ghostData={ghostData}
         ghostRows={ghostRows}
@@ -726,26 +767,30 @@ export default function RequirementsTable() {
               handleUpdateSearch={(e) => setSearchValue(e.target.value)}
             />
           </div>
-          <PrimaryButton
-            onClick={() => {
-              setEditingRequirement(false);
-              setRequirementEdited(null);
-              setNewRequirement(defaultRequirement);
-              setShowSmallPopup(true);
-            }}
-          >
-            + Add Requirement
-          </PrimaryButton>
-          <AiGeneratorDropdown
-            singularLabel="requirement"
-            pluralLabel="requirements"
-            className="w-[350px]"
-            onGenerate={handleGenerate}
-            alreadyGenerated={(ghostData?.length ?? 0) > 0}
-            disabled={generating}
-            onAcceptAll={onAcceptAll}
-            onRejectAll={onRejectAll}
-          />
+          {permission >= 2 && (
+            <div className="flex items-center gap-1">
+              <PrimaryButton
+                onClick={() => {
+                  setEditingRequirement(false);
+                  setRequirementEdited(null);
+                  setNewRequirement(defaultRequirement);
+                  setShowSmallPopup(true);
+                }}
+              >
+                + Add Requirement
+              </PrimaryButton>
+              <AiGeneratorDropdown
+                singularLabel="requirement"
+                pluralLabel="requirements"
+                className="w-[350px]"
+                onGenerate={handleGenerate}
+                alreadyGenerated={(ghostData?.length ?? 0) > 0}
+                disabled={generating}
+                onAcceptAll={onAcceptAll}
+                onRejectAll={onRejectAll}
+              />
+            </div>
+          )}
         </div>
       </div>
       {table}
@@ -756,7 +801,10 @@ export default function RequirementsTable() {
           size="small"
           className="h-[700px] w-[600px]"
           setEditMode={
-            requirementEditedData !== null
+
+            permission < 2
+              ? undefined
+              : requirementEditedData !== null
               ? async () => {
                   const { name, description } = editForm;
                   const {
@@ -788,13 +836,38 @@ export default function RequirementsTable() {
 
                     setEditingRequirement(false);
 
-                    if (ghostRequirementEdited) {
-                      updateGhostRow(ghostRequirementEdited.id, (oldData) => ({
-                        ...oldData,
-                        name: editForm.name,
-                        description: editForm.description,
-                      }));
-                      setGhostRequirementEdited((prev) => {
+                      if (ghostRequirementEdited) {
+                        updateGhostRow(
+                          ghostRequirementEdited.id,
+                          (oldData) => ({
+                            ...oldData,
+                            name: editForm.name,
+                            description: editForm.description,
+                          }),
+                        );
+                        setGhostRequirementEdited((prev) => {
+                          if (!prev) return null;
+                          return {
+                            ...prev,
+                            name: editForm.name,
+                            description: editForm.description,
+                          };
+                        });
+                        generatedRequirements.current =
+                          generatedRequirements.current?.map((req) => {
+                            if (req.id === ghostRequirementEdited.id) {
+                              return {
+                                ...req,
+                                name: editForm.name,
+                                description: editForm.description,
+                              };
+                            }
+                            return req;
+                          });
+                        return;
+                      }
+
+                      setRequirementEdited((prev) => {
                         if (!prev) return null;
                         return {
                           ...prev,
@@ -802,36 +875,20 @@ export default function RequirementsTable() {
                           description: editForm.description,
                         };
                       });
-                      generatedRequirements.current =
-                        generatedRequirements.current?.map((req) => {
-                          if (req.id === ghostRequirementEdited.id) {
-                            return {
-                              ...req,
-                              name: editForm.name,
-                              description: editForm.description,
-                            };
-                          }
-                          return req;
-                        });
-                      return;
+                      await handleEditRequirement(requirementEditedData);
+                    } else {
+                      setEditingRequirement(true);
                     }
-
-                    setRequirementEdited((prev) => {
-                      if (!prev) return null;
-                      return {
-                        ...prev,
-                        name: editForm.name,
-                        description: editForm.description,
-                      };
-                    });
-                    await handleEditRequirement(requirementEditedData);
-                  } else {
-                    setEditingRequirement(true);
                   }
-                }
-              : () => {}
+                : () => {}
           }
-          editMode={requirementEditedData ? editingRequirement : undefined}
+          editMode={
+            permission < 2
+              ? undefined
+              : requirementEditedData
+                ? editingRequirement
+                : undefined
+          }
           dismiss={() => {
             setShowSmallPopup(false);
           }}
@@ -864,13 +921,15 @@ export default function RequirementsTable() {
               {requirementEditedData ? (
                 requirementEdited ? (
                   // FIXME add delete functionality (NEW PR)
-                  <DeleteButton
-                    onClick={async () => {
-                      console.log("Deleting");
-                    }}
-                  >
-                    Delete
-                  </DeleteButton>
+                  permission < 2 ? null : (
+                    <DeleteButton
+                      onClick={async () => {
+                        console.log("Deleting");
+                      }}
+                    >
+                      Delete
+                    </DeleteButton>
+                  )
                 ) : (
                   ghostRequirementEdited && (
                     <div className="flex items-center gap-2">

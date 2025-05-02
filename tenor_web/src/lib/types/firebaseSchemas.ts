@@ -32,18 +32,6 @@ export interface AIMessage {
   explanation?: string;
 }
 
-// link links with permissions
-export const permissionMapping = {
-  requirements: "requirements",
-  "user-stories": "userStories",
-  issues: "issues",
-  sprints: "sprints",
-  scrumboard: "kanban",
-  calendar: "calendar",
-  performance: "performance",
-  "project-settings": "projectSettings",
-};
-
 export interface SprintSnapshot extends SprintInfo {
   snapshot: {
     userStories: UserStory[];
@@ -144,6 +132,11 @@ export const permissionLabels = {
   1: "read",
   2: "write",
 };
+export const permissionNumbers = {
+  none: 0,
+  read: 1,
+  write: 2,
+};
 export const permissionItems = [
   { id: "0", label: permissionLabels[0] },
   { id: "1", label: permissionLabels[1] },
@@ -153,19 +146,12 @@ export const permissionItems = [
 export interface Role {
   id: string;
   label: string;
-  canViewPerformance: boolean;
-  canControlSprints: boolean;
-  tabs: {
-    requirements: Permission;
-    userStories: Permission;
-    issues: Permission;
-    sprints: Permission;
-    kanban: Permission;
-    calendar: Permission;
-    performance: Permission;
-    projectSettings: Permission;
-    sprintReview: Permission;
-  };
+  settings: Permission; // settings
+  performance: Permission; // performance
+  sprints: Permission; // sprints
+  scrumboard: Permission; // scrumboard, tasks status, calendar
+  issues: Permission; // issues, tasks
+  backlog: Permission; // requirements, epics, user stories, tasks
 }
 
 /// Backlog items
