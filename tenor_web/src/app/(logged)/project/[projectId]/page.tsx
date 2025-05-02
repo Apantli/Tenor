@@ -13,17 +13,12 @@ export default function ProjectOverview() {
   });
 
   return (
-    <div>
-      <h1 className="text-2xl font-semibold">Project overview</h1>
-      <p>Project Id: {projectId}</p>
-      <p>
-        My role: {role?.label}. Permission{" "}
-        {
-          permissionLabels[
-            (role?.settings as keyof typeof permissionLabels) ?? 0
-          ]
-        }
-      </p>
+    <div className="-m-5 w-full">
+      <img
+        src="/overview_mockup.png"
+        alt=""
+        className="mx-auto w-[calc(100vw-200px)]"
+      />
     </div>
   );
 }
