@@ -52,171 +52,23 @@ export default function RoleTable({
       label: "Name",
       width: 140,
     },
-    canViewPerformance: {
-      label: "Can View Performance",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <Checkbox
-            checked={row.canViewPerformance}
-            onChange={(e) => {
-              handleUpdateViewPerformance(row.id, e.target.checked);
-            }}
-          />
-        );
-      },
-    },
-    canControlSprints: {
-      label: "Can Control Sprints",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <Checkbox
-            checked={row.canControlSprints}
-            onChange={(e) => {
-              handleUpdateControlSprints(row.id, e.target.checked);
-            }}
-          />
-        );
-      },
-    },
-    requirements: {
-      label: "Requirements",
+    settings: {
+      label: "Settings",
       width: defaultWidth,
       render: (row) => {
         return (
           <PillPickerComponent
-            label={permissionLabels[row.requirements]}
+            label={permissionLabels[row.settings]}
             selectedItem={{
-              id: row.requirements.toString(),
-              label: permissionLabels[row.requirements],
+              id: row.settings.toString(),
+              label: permissionLabels[row.settings],
             }}
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
               handleEditTabPermission(
                 row.id,
-                "requirements",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    userStories: {
-      label: "User Stories",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            label={permissionLabels[row.userStories]}
-            selectedItem={{
-              id: row.userStories.toString(),
-              label: permissionLabels[row.userStories],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "userStories",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    issues: {
-      label: "Issues",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            label={permissionLabels[row.issues]}
-            selectedItem={{
-              id: row.issues.toString(),
-              label: permissionLabels[row.issues],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "issues",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    sprints: {
-      label: "Sprints",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            label={permissionLabels[row.sprints]}
-            selectedItem={{
-              id: row.sprints.toString(),
-              label: permissionLabels[row.sprints],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "sprints",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    kanban: {
-      label: "Kanban",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            label={permissionLabels[row.kanban]}
-            selectedItem={{
-              id: row.kanban.toString(),
-              label: permissionLabels[row.kanban],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "kanban",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    calendar: {
-      label: "Calendar",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            label={permissionLabels[row.calendar]}
-            selectedItem={{
-              id: row.calendar.toString(),
-              label: permissionLabels[row.calendar],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "calendar",
+                "settings",
                 parseInt(item.id) as Permission,
               );
             }}
@@ -248,23 +100,23 @@ export default function RoleTable({
         );
       },
     },
-    projectSettings: {
-      label: "Project Settings",
+    sprints: {
+      label: "Sprints",
       width: defaultWidth,
       render: (row) => {
         return (
           <PillPickerComponent
-            label={permissionLabels[row.projectSettings]}
+            label={permissionLabels[row.sprints]}
             selectedItem={{
-              id: row.projectSettings.toString(),
-              label: permissionLabels[row.projectSettings],
+              id: row.sprints.toString(),
+              label: permissionLabels[row.sprints],
             }}
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
               handleEditTabPermission(
                 row.id,
-                "projectSettings",
+                "sprints",
                 parseInt(item.id) as Permission,
               );
             }}
@@ -272,23 +124,71 @@ export default function RoleTable({
         );
       },
     },
-    sprintReview: {
-      label: "Sprint Review",
+    scrumboard: {
+      label: "Scrum Board",
       width: defaultWidth,
       render: (row) => {
         return (
           <PillPickerComponent
-            label={permissionLabels[row.sprintReview]}
+            label={permissionLabels[row.scrumboard]}
             selectedItem={{
-              id: row.sprintReview.toString(),
-              label: permissionLabels[row.sprintReview],
+              id: row.scrumboard.toString(),
+              label: permissionLabels[row.scrumboard],
             }}
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
               handleEditTabPermission(
                 row.id,
-                "sprintReview",
+                "scrumboard",
+                parseInt(item.id) as Permission,
+              );
+            }}
+          />
+        );
+      },
+    },
+    issues: {
+      label: "Issues",
+      width: defaultWidth,
+      render: (row) => {
+        return (
+          <PillPickerComponent
+            label={permissionLabels[row.issues]}
+            selectedItem={{
+              id: row.issues.toString(),
+              label: permissionLabels[row.issues],
+            }}
+            hideSearch={true}
+            allItems={permissionItems}
+            onChange={(item: { id: string; label: string }): void => {
+              handleEditTabPermission(
+                row.id,
+                "issues",
+                parseInt(item.id) as Permission,
+              );
+            }}
+          />
+        );
+      },
+    },
+    backlog: {
+      label: "Backlog",
+      width: defaultWidth,
+      render: (row) => {
+        return (
+          <PillPickerComponent
+            label={permissionLabels[row.backlog]}
+            selectedItem={{
+              id: row.backlog.toString(),
+              label: permissionLabels[row.backlog],
+            }}
+            hideSearch={true}
+            allItems={permissionItems}
+            onChange={(item: { id: string; label: string }): void => {
+              handleEditTabPermission(
+                row.id,
+                "backlog",
                 parseInt(item.id) as Permission,
               );
             }}
@@ -335,7 +235,7 @@ export default function RoleTable({
               onChange={(e) => {
                 setRole(e.target.value);
               }}
-              disableAI={true}
+              disableAI
             />
           </DropdownItem>
 

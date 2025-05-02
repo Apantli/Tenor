@@ -5,7 +5,6 @@ import {
   StatusTagSchema,
   TagSchema,
 } from "~/lib/types/zodFirebaseSchema";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
 import z, { number } from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag, WithId } from "~/lib/types/firebaseSchemas";
@@ -20,6 +19,37 @@ import {
   defaultSprintDuration,
 } from "~/lib/defaultProjectValues";
 import { getTodoStatusTag } from "./tasks";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "../trpc";
+
+export const getProjectUserRef = (
+  projectId: string,
+  userId: string,
+  firestore: Firestore,
+) => {
+  return firestore
+    .collection("projects")
+    .doc(projectId)
+    .collection("users")
+    .doc(userId);
+};
+
+export const getProjectRoleRef = (
+  projectId: string,
+  roleId: string,
+  firestore: Firestore,
+) => {
+  return firestore
+    .collection("projects")
+    .doc(projectId)
+    .collection("settings")
+    .doc("settings")
+    .collection("userTypes")
+    .doc(roleId);
+};
 
 /**
  * @function getProjectSettingsRef
@@ -146,6 +176,7 @@ const settingsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of status type tags
    */
+
   getStatusTypes: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -155,8 +186,10 @@ const settingsRouter = createTRPCRouter({
       );
       const statusTypes = await projectSettingsRef
         .collection("statusTypes")
-        .orderBy("orderIndex")
+        .where("deleted", "==", false)
+        .orderBy("orderIndex")        
         .get();
+        
       const statusTypesData = statusTypes.docs.map((doc) => ({
         id: doc.id,
         ...StatusTagSchema.parse(doc.data()),
@@ -183,7 +216,7 @@ const settingsRouter = createTRPCRouter({
       const statusTypeData = StatusTagSchema.parse(statusType.data());
       return { id: statusType.id, ...statusTypeData };
     }),
-  
+
   createStatusType: protectedProcedure
     .input(
       z.object({
@@ -195,38 +228,53 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, name, color, marksTaskAsDone } = input;
-
       const projectSettingsRef = getProjectSettingsRef(
         input.projectId,
         ctx.firestore,
       );
-
       const statusCollectionRef = projectSettingsRef.collection("statusTypes");
 
-      const statusTypes = await statusCollectionRef.get();
+      const activeStatusTypes = await statusCollectionRef
+        .where("deleted", "==", false)
+        .orderBy("orderIndex")
+        .get();
 
-      const statusTypesData = statusTypes.docs.map((doc) => ({
-        id: doc.id,
-        ...StatusTagSchema.parse(doc.data()),
-      }));
-      const biggestOrderIndex = Math.max(
-        ...statusTypesData.map((status) => status.orderIndex),
-        0,
-      );
+      const newOrderIndex = activeStatusTypes.size;
 
       const newStatus = {
         name,
         color: color.toUpperCase(),
         marksTaskAsDone,
         deleted: false,
-        orderIndex: biggestOrderIndex + 1,
+        orderIndex: newOrderIndex,
       };
 
       const docRef = await statusCollectionRef.add(newStatus);
+      
       return {
         id: docRef.id,
         ...newStatus,
       };
+    }),
+  
+  reorderStatusTypes: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        statusIds: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, statusIds } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const batch = ctx.firestore.batch();
+
+      statusIds.forEach((statusId, index) => {
+        const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
+        batch.update(statusTypeRef, { orderIndex: index });
+      });
+
+      await batch.commit();
     }),
 
   modifyStatusType: protectedProcedure
@@ -234,7 +282,7 @@ const settingsRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         statusId: z.string(),
-        status: StatusTagSchema
+        status: StatusTagSchema,
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -256,10 +304,28 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, statusId } = input;
       const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
-      await statusTypeRef.update({ deleted: true });
+      const statusCollectionRef = projectRef.collection("statusTypes");
+      
+      await statusCollectionRef.doc(statusId).update({ 
+        deleted: true,
+        orderIndex: -1
+      });
+      
+      const activeStatusTypes = await statusCollectionRef
+        .where("deleted", "==", false)
+        .orderBy("orderIndex")
+        .get();
+      
+      const batch = ctx.firestore.batch();
+      
+      activeStatusTypes.docs.forEach((doc, index) => {
+        batch.update(doc.ref, { orderIndex: index });
+      });
+      
+      await batch.commit();      
       return { id: statusId };
     }),
+  
   /**
    * @procedure getBacklogTags
    * @description Retrieves all non-deleted backlog tags for a project
@@ -585,6 +651,42 @@ const settingsRouter = createTRPCRouter({
         },
       });
     }),
+
+  getSizeTypes: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("settings")
+        .doc("settings");
+
+      const settingsSnap = await projectSettingsRef.get();
+
+      const settingsData = SettingsSchema.parse(settingsSnap.data());
+
+      return Array.isArray(settingsData.Size) ? settingsData.Size : [];
+    }),
+  
+  changeSize: protectedProcedure
+    .input(z.object({ projectId: z.string(), size: z.array(z.number()) }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, size } = input;
+      const projectSettingsRef = ctx.firestore
+        .collection("projects")
+        .doc(projectId)
+        .collection("settings")
+        .doc("settings");
+
+      const settingsSnap = await projectSettingsRef.get();
+
+      const settingsData = SettingsSchema.parse(settingsSnap.data());
+
+      await projectSettingsRef.update({
+        Size: size,
+      });
+    }
+  ),
   getDetailedRoles: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -603,7 +705,6 @@ const settingsRouter = createTRPCRouter({
         return {
           id: doc.id,
           ...role,
-          ...role.tabs,
         } as RoleDetail;
       });
       return rolesData;
@@ -662,29 +763,20 @@ const settingsRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         roleId: z.string(),
-        tabId: z.string(),
+        parameter: z.string(),
         permission: PermissionSchema,
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, roleId, tabId, permission } = input;
+      const { projectId, roleId, parameter, permission } = input;
 
-      const roleDoc = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("settings")
-        .doc("settings")
-        .collection("userTypes")
-        .doc(roleId);
+      const roleDoc = getProjectRoleRef(input.projectId, roleId, ctx.firestore);
 
       const roleData = await roleDoc.get();
       const role = RoleSchema.parse(roleData.data());
-      const updatedTabs = {
-        ...role.tabs,
-        [tabId]: permission,
-      };
       await roleDoc.update({
-        tabs: updatedTabs,
+        ...role,
+        [parameter]: permission,
       });
     }),
   updateViewPerformance: protectedProcedure
@@ -698,13 +790,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, newValue } = input;
 
-      const roleDoc = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("settings")
-        .doc("settings")
-        .collection("userTypes")
-        .doc(roleId);
+      const roleDoc = getProjectRoleRef(input.projectId, roleId, ctx.firestore);
 
       const roleData = await roleDoc.get();
       const role = RoleSchema.parse(roleData.data());
@@ -723,13 +809,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, newValue } = input;
 
-      const roleDoc = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("settings")
-        .doc("settings")
-        .collection("userTypes")
-        .doc(roleId);
+      const roleDoc = getProjectRoleRef(input.projectId, roleId, ctx.firestore);
 
       const roleData = await roleDoc.get();
       const role = RoleSchema.parse(roleData.data());
@@ -744,12 +824,12 @@ const settingsRouter = createTRPCRouter({
 
       if (!input.projectId) return ownerRole;
 
-      const userDoc = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("users")
-        .doc(userId)
-        .get();
+      const userDoc = await getProjectUserRef(
+        input.projectId,
+        userId,
+        ctx.firestore,
+      ).get();
+
       if (!userDoc.exists) {
         throw new Error("User not found");
       }
@@ -767,14 +847,11 @@ const settingsRouter = createTRPCRouter({
       }
 
       // Get role
-      const roleDoc = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("settings")
-        .doc("settings")
-        .collection("userTypes")
-        .doc(userData.roleId as string)
-        .get();
+      const roleDoc = await getProjectRoleRef(
+        input.projectId,
+        userData.roleId as string,
+        ctx.firestore,
+      ).get();
       if (!roleDoc.exists) {
         throw new Error("Role not found");
       }

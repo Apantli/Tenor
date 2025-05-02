@@ -255,19 +255,34 @@ export const kanbanRouter = createTRPCRouter({
         .where("deleted", "==", false);
       const issuesSnapshot = await issuesRef.get();
 
-      const issues = issuesSnapshot.docs.map((doc) => {
-        const data = doc.data() as Issue;
-        return {
-          id: doc.id,
-          cardType: "IS",
-          scrumId: data.scrumId,
-          name: data.name,
-          description: data.description,
-          size: data.size,
-          tags: [],
-          columnId: data.statusId ?? "",
-        } as KanbanItemCard;
-      });
+      const issues = await Promise.all(
+        issuesSnapshot.docs.map(async (doc) => {
+          const data = doc.data() as Issue;
+          const tags = await Promise.all(
+            data.tagIds.map(async (tagId: string) => {
+              if (memoTags.has(tagId)) {
+                return memoTags.get(tagId);
+              }
+              const tag = await getBacklogTag(settingsRef, tagId);
+              if (!tag) {
+                return null;
+              }
+              memoTags.set(tagId, tag);
+              return tag;
+            }),
+          );
+          return {
+            id: doc.id,
+            cardType: "IS",
+            scrumId: data.scrumId,
+            name: data.name,
+            description: data.description,
+            size: data.size,
+            tags,
+            columnId: data.statusId ?? "",
+          } as KanbanItemCard;
+        }),
+      );
 
       // Combine both types of backlog items
       const backlogItems = [...userStories, ...issues];

@@ -3,7 +3,7 @@
 import InputFileField from "~/app/_components/inputs/InputFileField";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
@@ -15,6 +15,8 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 export default function ProjectGeneralSettings() {
+  const pathName = usePathname();
+  const tab = pathName.split("/").pop();
   const { projectId } = useParams();
   const [icon, setIcon] = useState<File | null>(null);
   const handleImageChange = async (file: File) => {
@@ -94,7 +96,7 @@ export default function ProjectGeneralSettings() {
     projectId: projectId as string,
   });
 
-  if (role?.id !== "owner") {
+  if (role?.id !== "owner" && tab == "project-settings") {
     router.push(`/project/${projectId as string}/project-settings/users`);
   }
 
@@ -169,7 +171,7 @@ export default function ProjectGeneralSettings() {
             value={editForm.name}
             name="name"
             onChange={handleChange}
-            placeholder="What is your project called?"
+            placeholder="What is your project called..."
             containerClassName="mt-3"
           />
           <InputTextAreaField
@@ -179,7 +181,7 @@ export default function ProjectGeneralSettings() {
             value={editForm.description}
             name="description"
             onChange={handleChange}
-            placeholder="What is this project about?"
+            placeholder="What is this project about..."
             containerClassName="mt-3"
           />
           <div className="mt-auto flex flex-col">

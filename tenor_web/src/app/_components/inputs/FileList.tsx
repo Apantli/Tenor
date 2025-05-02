@@ -7,6 +7,7 @@ import DescriptionIcon from "@mui/icons-material/Description";
 import PrimaryButton from "../buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import CloseIcon from "@mui/icons-material/Cancel";
 
 interface Props {
   label: string;
@@ -105,8 +106,8 @@ export default function FileList({
             onClick={async () => {
               if (
                 !(await confirm(
-                  "Remove file?",
-                  `Removing "${file.name}". This action is not reversible.`,
+                  "Are you sure you want to remove a file?",
+                  `You are about to remove "${file.name}". This action is not reversible.`,
                   "Delete file",
                 ))
               ) {
@@ -114,13 +115,15 @@ export default function FileList({
               }
               handleFileRemove(file);
             }}
-            title={file.name}
           >
             <span
-              className="flex flex-col items-center text-gray-500 hover:text-blue-500"
+              className="group relative flex cursor-pointer flex-col items-center text-gray-500 transition hover:text-gray-500/50"
               data-tooltip-id="tooltip"
-              data-tooltip-content={"Click to delete"}
+              data-tooltip-content={file.name}
             >
+              <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center pb-4 text-[40px] text-app-fail/90 opacity-0 transition group-hover:opacity-100">
+                <CloseIcon fontSize="inherit" />
+              </div>
               {/* Load Icon based on file type */}
               {file.type === "application/pdf" ? (
                 <PictureAsPdfIcon style={{ fontSize: "4rem" }} />

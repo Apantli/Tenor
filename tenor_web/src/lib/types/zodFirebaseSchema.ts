@@ -1,6 +1,9 @@
 import type { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-import { defaultMaximumSprintStoryPoints, defaultSprintDuration } from "../defaultProjectValues";
+import {
+  defaultMaximumSprintStoryPoints,
+  defaultSprintDuration,
+} from "../defaultProjectValues";
 
 export const TimestampType = z.custom<Timestamp>((value) => value as Timestamp);
 
@@ -58,19 +61,12 @@ export const PermissionSchema = z.number().min(0).max(2);
 
 export const RoleSchema = z.object({
   label: z.string(),
-  canViewPerformance: z.boolean(),
-  canControlSprints: z.boolean(),
-  tabs: z.object({
-    requirements: PermissionSchema,
-    userStories: PermissionSchema,
-    issues: PermissionSchema,
-    sprints: PermissionSchema,
-    kanban: PermissionSchema,
-    calendar: PermissionSchema,
-    performance: PermissionSchema,
-    projectSettings: PermissionSchema,
-    sprintReview: PermissionSchema,
-  }),
+  settings: PermissionSchema, // settings
+  performance: PermissionSchema, // performance
+  sprints: PermissionSchema, // sprints
+  scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
+  issues: PermissionSchema, // issues, tasks
+  backlog: PermissionSchema, // requirements, epics, user stories, tasks
 });
 
 export const BasicInfoSchema = z.object({
@@ -92,10 +88,7 @@ export const BacklogItemSchema = BasicInfoSchema.extend({
     .string()
     .optional()
     .describe("Use a valid, existing priority id"),
-  statusId: z
-    .string()
-    .optional()
-    .describe("Use a valid, existing status id"),
+  statusId: z.string().optional().describe("Use a valid, existing status id"),
 });
 
 export const EpicSchema = BasicInfoSchema;
@@ -214,6 +207,8 @@ export const SettingsSchema = z.object({
       )
       .default([]),
   }),
+
+  Size: z.array(z.number()).default([1, 2, 3, 5, 8, 13]),
   // Removed because they should be in subcollections
 
   // requirementFocusTags: z.array(TagSchema).default([]),

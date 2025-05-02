@@ -70,6 +70,11 @@ export const createQueryClient = () => {
             return false;
           }
 
+          // eslint-disable-next-line
+          if (isTRPCError(err) && err.data?.code === "FORBIDDEN") {
+            return false;
+          }
+
           if (failureCount > 3) {
             return false;
             // eslint-disable-next-line

@@ -63,6 +63,43 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
       return;
     }
 
+    // Normalize the input for case-insensitive comparison
+    const normalizedName = form.name.toLowerCase().trim();
+    const protectedNames = ["todo", "doing", "done"];
+
+    if (protectedNames.some((name) => normalizedName === name)) {
+      alert(
+        "Default status name",
+        `The status name "${form.name}" is reserved for default statuses and cannot be created manually.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
+    const existingStatuses = await utils.settings.getStatusTypes.fetch({
+      projectId: projectId as string,
+    });
+
+    const statusAlreadyExists = existingStatuses?.some(
+      (status) =>
+        status.name.toLowerCase().trim() === normalizedName && !status.deleted,
+    );
+
+    if (statusAlreadyExists) {
+      alert(
+        "Duplicate Status Name",
+        `A status with name "${form.name}" already exists.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     await createStatus({
       projectId: projectId as string,
       name: form.name,
@@ -115,9 +152,10 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
       <div className="flex flex-col justify-start gap-4">
         <InputTextField
           type="text"
-          placeholder="E.g., Todo, In Progress, Done, QA Testing, Blocked..."
+          placeholder="E.g., Todo, In Progress..."
           label="Status name"
           value={form.name}
+          disableAI={true}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
         />
         <DropdownColorPicker

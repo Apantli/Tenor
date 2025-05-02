@@ -8,8 +8,7 @@ import Navbar from "~/app/_components/Navbar";
 import Tabbar from "~/app/_components/Tabbar";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
-
-import { permissionMapping } from "~/lib/types/firebaseSchemas";
+import { tabsMetaInformation, tabsToLinks } from "~/lib/tabs";
 
 export default function ProjectLayout({ children }: PropsWithChildren) {
   const { projectId } = useParams();
@@ -25,35 +24,39 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     });
 
   const permitted = useMemo(() => {
+    if (!role || !tab) {
+      return false;
+    }
     // Project OverView
     if (tab == projectId) {
       return true;
     }
 
-    if (role && tab) {
-      const permissionKey =
-        permissionMapping[tab as keyof typeof permissionMapping];
-
-      // Check if the tab is in the project-settings mapping
-      if (!permissionKey) {
-        const projectSettingsTabs = [
-          "users",
-          "ai",
-          "scrum-preferences",
-          "tags-kanban",
+    const metaTab = [
+      "ai",
+      "users",
+      "tags-kanban",
+      "scrum-preferences",
+    ].includes(tab)
+      ? tabsMetaInformation.settings
+      : tabsMetaInformation[
+          tabsToLinks[
+            tab as keyof typeof tabsToLinks
+          ] as keyof typeof tabsMetaInformation
         ];
-
-        if (
-          projectSettingsTabs.includes(tab) &&
-          role.tabs["projectSettings" as keyof typeof role.tabs] > 0
-        ) {
-          return true;
-        }
-      }
-      const permission = role.tabs[permissionKey as keyof typeof role.tabs];
-      return permission && permission > 0;
+    if (!metaTab) {
+      return false;
     }
-    return false;
+
+    // Check if the user has the required permissions for the tab
+    const { flags } = metaTab;
+    for (const flag of flags) {
+      if (!role?.[flag as keyof typeof role]) {
+        return false;
+      }
+    }
+
+    return true;
   }, [role, tab]);
 
   return (

@@ -199,6 +199,13 @@ export const useInvalidateQueriesAllTags = () => {
     await utils.settings.getBacklogTags.invalidate({
       projectId: projectId,
     });
+    await utils.requirements.getRequirementFocusTags.invalidate({
+      projectId: projectId,
+    });
+    await utils.requirements.getRequirementTypeTags.invalidate({
+      projectId: projectId,
+    }); 
+
   };
 };
 

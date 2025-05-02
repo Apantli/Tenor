@@ -790,4 +790,17 @@ ${passedInPrompt}
 
       return parsedData;
     }),
+
+  getUserStoryCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const userStoryCount = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("userStories")
+        .where("deleted", "==", false)
+        .count()
+        .get();
+      return userStoryCount.data().count;
+    }),
 });

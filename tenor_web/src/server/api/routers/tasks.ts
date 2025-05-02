@@ -656,4 +656,17 @@ ${passedInPrompt}
         status: todoTag as Tag,
       }));
     }),
+
+  getTaskCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const taskCount = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("tasks")
+        .where("deleted", "==", false)
+        .count()
+        .get();
+      return taskCount.data().count;
+    }),
 });

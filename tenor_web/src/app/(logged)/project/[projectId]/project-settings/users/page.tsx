@@ -87,6 +87,18 @@ export default function ProjectUsers() {
 
   const handleRemoveUser = async function (ids: (string | number)[]) {
     if (!teamMembers) return;
+    //check if any of the ids belong to the owner
+    ids = ids.filter((id) => {
+      const user = teamMembers.find((user) => user.id === id);
+      if (user?.isOwner) {
+        alert("Oops...", "You cannot remove the owner of the project.", {
+          type: "error",
+          duration: 5000,
+        });
+        return false;
+      }
+      return true;
+    });
     const newData = teamMembers.filter((user) => !ids.includes(user.id));
 
     // Uses optimistic update
@@ -165,7 +177,7 @@ export default function ProjectUsers() {
 
   const handleEditTabPermission = async function (
     roleId: string,
-    tabId: string,
+    parameter: string,
     permission: Permission,
   ) {
     if (!roles) return;
@@ -173,7 +185,7 @@ export default function ProjectUsers() {
       role.id === roleId
         ? {
             ...role,
-            [tabId]: permission,
+            [parameter]: permission,
           }
         : role,
     );
@@ -191,7 +203,7 @@ export default function ProjectUsers() {
     await updateRoleTabPermissions({
       projectId: projectId as string,
       roleId,
-      tabId,
+      parameter,
       permission,
     });
     await refetchRoles();

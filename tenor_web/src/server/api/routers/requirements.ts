@@ -1,7 +1,11 @@
 import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import { getPriorityTag, getProjectSettingsRef } from "./settings";
 import { FieldPath } from "firebase-admin/firestore";
 import {
@@ -232,7 +236,10 @@ export const requirementsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of requirement type tags
    */
-  getRequirementTypeTags: protectedProcedure
+  getRequirementTypeTags: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
@@ -247,6 +254,59 @@ export const requirementsRouter = createTRPCRouter({
       }));
       return tags;
     }),
+  
+  getRequirementTypeTagById: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+      const tagDoc = await settingsRef
+        .collection("requirementTypes")
+        .doc(input.tagId)
+        .get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
+    }),
+  
+  createRequirementTypeTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tag: TagSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tag } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const newTag = await settingsRef
+        .collection("requirementTypes")
+        .add(tag);
+      return { id: newTag.id };
+    }),
+
+  modifyRequirementTypeTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId, tag } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
+      const tagDoc = await tagRef.get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      await tagRef.update(tag);
+      return { id: tagId };
+    }),
+  
+  deleteRequirementTypeTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
+      const tagDoc = await tagRef.get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      await tagRef.update({ deleted: true });
+      return { id: tagId };
+    }),
 
   /**
    * @procedure getRequirementFocusTags
@@ -255,7 +315,10 @@ export const requirementsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of requirement focus tags
    */
-  getRequirementFocusTags: protectedProcedure
+  getRequirementFocusTags: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
@@ -270,6 +333,59 @@ export const requirementsRouter = createTRPCRouter({
       return tags;
     }),
 
+  getRequirementFocusTagById: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+      const tagDoc = await settingsRef
+        .collection("requirementFocus")
+        .doc(input.tagId)
+        .get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
+    }),
+  
+  createRequirementFocusTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tag: TagSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tag } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const newTag = await settingsRef
+        .collection("requirementFocus")
+        .add(tag);
+      return { id: newTag.id };
+    }),
+
+  modifyRequirementFocusTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId, tag } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
+      const tagDoc = await tagRef.get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      await tagRef.update(tag);
+      return { id: tagId };
+    }),
+  
+  deleteRequirementFocusTag: protectedProcedure
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId } = input;
+      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
+      const tagDoc = await tagRef.get();
+      if (!tagDoc.exists) {
+        throw new Error("Tag not found");
+      }
+      await tagRef.update({ deleted: true });
+      return { id: tagId };
+    }),
+
   /**
    * @procedure getRequirementsTableFriendly
    * @description Gets requirements for a project in a table-friendly format
@@ -281,7 +397,10 @@ export const requirementsRouter = createTRPCRouter({
    * @returns {Tag[]} returns.allRequirementTypeTags - All requirement type tags
    * @returns {Tag[]} returns.allRequirementFocusTags - All requirement focus tags
    */
-  getRequirementsTableFriendly: protectedProcedure
+  getRequirementsTableFriendly: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const rawRequirements = await getRequirementsFromProject(
@@ -315,7 +434,10 @@ export const requirementsRouter = createTRPCRouter({
    * @returns {WithId<Requirement>} The requirement with its ID
    * @throws {Error} If the requirement is not found
    */
-  getRequirement: protectedProcedure
+  getRequirement: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "read",
+  })
     .input(z.object({ projectId: z.string(), requirementId: z.string() }))
     .query(async ({ ctx, input }) => {
       const requirement = (
@@ -342,7 +464,10 @@ export const requirementsRouter = createTRPCRouter({
    * @returns {string} Success message
    * @throws {Error} If the project is not found or the requirement to update is not found
    */
-  createOrModifyRequirement: protectedProcedure
+  createOrModifyRequirement: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "write",
+  })
     .input(RequirementSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const projectCount = (
@@ -393,7 +518,10 @@ export const requirementsRouter = createTRPCRouter({
    * @returns {object} Object with success status
    * @throws {Error} If the requirement is not found
    */
-  deleteRequirement: protectedProcedure
+  deleteRequirement: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "write",
+  })
     .input(
       z.object({
         projectId: z.string(),
@@ -416,7 +544,10 @@ export const requirementsRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  generateRequirements: protectedProcedure
+  generateRequirements: roleRequiredProcedure({
+    flags: ["backlog"],
+    permission: "write",
+  })
     .input(
       z.object({
         projectId: z.string(),
