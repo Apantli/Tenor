@@ -13,6 +13,7 @@ import Table, { type TableColumns } from "~/app/_components/table/Table";
 import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
 interface TagTableConfig {
   title: string;
@@ -296,7 +297,9 @@ export default function ItemTagTable({ itemTagType }: Props) {
 
         <div className="max-w-[750px]">
           {isLoadingTags ? (
-            <div className="py-4 text-center">Loading...</div>
+            <div className="mt-8 flex h-full w-full items-center justify-center">
+              <LoadingSpinner color="primary" />
+            </div>
           ) : (
             <Table
               className={`w-full ${
