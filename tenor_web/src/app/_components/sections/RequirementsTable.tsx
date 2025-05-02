@@ -126,7 +126,7 @@ export default function RequirementsTable() {
 
   const { mutateAsync: createOrModifyRequirement, isPending } =
     api.requirements.createOrModifyRequirement.useMutation({
-      onError: (error) => {
+      onError: async (error) => {
         alert(
           "Oops...",
           "You do not have permission to create or modify requirements.",
@@ -135,11 +135,13 @@ export default function RequirementsTable() {
             duration: 5000,
           },
         );
+
+        await refetchRequirements();
       },
     });
   const { mutateAsync: generateRequirements } =
     api.requirements.generateRequirements.useMutation({
-      onError: (error) => {
+      onError: async (error) => {
         alert(
           "Oops...",
           "You do not have permission to generate requirements.",
@@ -148,6 +150,8 @@ export default function RequirementsTable() {
             duration: 5000,
           },
         );
+
+        await refetchRequirements();
       },
     });
 
@@ -273,7 +277,7 @@ export default function RequirementsTable() {
 
   const { mutateAsync: deleteRequirement } =
     api.requirements.deleteRequirement.useMutation({
-      onError: (error) => {
+      onError: async (error) => {
         alert(
           "Oops...",
           `You do not have permission to delete this requirement.`,
@@ -282,6 +286,8 @@ export default function RequirementsTable() {
             duration: 5000,
           },
         );
+
+        await refetchRequirements();
       },
     });
   useEffect(() => {
