@@ -102,6 +102,8 @@ export interface Settings {
   // statusTypes: StatusTag[];
 
   // roles: Role[];
+
+  storyPointSizes?: number[];
 }
 
 export interface Tag {

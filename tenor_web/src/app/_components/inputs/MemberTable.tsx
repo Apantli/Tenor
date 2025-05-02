@@ -117,7 +117,7 @@ export default function MemberTable({
   const session = useFirebaseAuth();
 
   return (
-    <div className={cn("w-full text-sm", className)}>
+    <div className={cn("w-full", className)}>
       <div className="flex items-center justify-between gap-x-4 py-4">
         {label && (
           <label
@@ -138,7 +138,7 @@ export default function MemberTable({
         )}
         <Dropdown
           label={
-            <PrimaryButton className="flex items-center text-sm" asSpan>
+            <PrimaryButton className="flex items-center" asSpan>
               + Add Member
             </PrimaryButton>
           }
@@ -146,7 +146,7 @@ export default function MemberTable({
           <DropdownItem>
             <SearchBar
               searchValue={searchValue}
-              placeholder={"Member's name"}
+              placeholder={"Member's name..."}
               handleUpdateSearch={(e) => {
                 setSearchValue(e.target.value);
               }}

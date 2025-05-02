@@ -498,7 +498,7 @@ export default function UserStoryList() {
       if (
         !(await confirm(
           `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
-          "This action is not revertible.",
+          "This action is not reversible.",
           `Delete ${confirmMessage}`,
         ))
       ) {

@@ -28,9 +28,7 @@ export default function ProjectGeneralSettings() {
     }));
   };
   const router = useRouter();
-
   const utils = api.useUtils();
-
   const { alert } = useAlert();
 
   const { data: project } = api.projects.getGeneralConfig.useQuery({
@@ -70,7 +68,7 @@ export default function ProjectGeneralSettings() {
     }));
   };
 
-  const computeIsModified = () => {
+  const isModified = () => {
     return (
       editForm.name !== project?.name ||
       (editForm.icon !== project?.logo && icon !== null) ||
@@ -80,7 +78,7 @@ export default function ProjectGeneralSettings() {
 
   useNavigationGuard(
     async () => {
-      if (computeIsModified()) {
+      if (isModified()) {
         return !(await confirm(
           "Are you sure?",
           "You have unsaved changes. Do you want to leave?",
@@ -90,7 +88,7 @@ export default function ProjectGeneralSettings() {
       }
       return false;
     },
-    computeIsModified(),
+    isModified(),
     "Are you sure you want to leave? You have unsaved changes.",
   );
 
@@ -102,103 +100,105 @@ export default function ProjectGeneralSettings() {
     router.push(`/project/${projectId as string}/project-settings/users`);
   }
 
+  const handleSave = async () => {
+    if (!projectId) return;
+    if (!editForm.name) {
+      alert("Oops...", "Please enter a project name.", {
+        type: "error",
+        duration: 5000, // time in ms (5 seconds)
+      });
+      return;
+    }
+    if (modifyingProject) return;
+    await modifyProject({
+      projectId: projectId as string,
+      name: editForm.name,
+      description: editForm.description,
+      logo: editForm.icon,
+    });
+    await utils.projects.getGeneralConfig.invalidate();
+
+    // update project in the cache
+    setIcon(null);
+
+    alert("Success", "Project settings have been updated successfully.", {
+      type: "success",
+      duration: 5000,
+    });
+    return;
+  };
+
   return (
     <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
         <h1 className="mb-4 text-3xl font-semibold">General</h1>
-        {project && computeIsModified() && (
-          <PrimaryButton
-            onClick={async () => {
-              if (!projectId) return;
-              if (!editForm.name) {
-                alert("Oops...", "Please enter a project name.", {
-                  type: "error",
-                  duration: 5000, // time in ms (5 seconds)
-                });
-                return;
-              }
-              if (!modifyingProject) {
-                await modifyProject({
-                  projectId: projectId as string,
-                  name: editForm.name,
-                  description: editForm.description,
-                  logo: editForm.icon,
-                });
-                await utils.projects.getGeneralConfig.invalidate();
-
-                // update project in the cache
-                setIcon(null);
-              }
-            }}
-            loading={modifyingProject}
-          >
+        {project && isModified() && (
+          <PrimaryButton onClick={handleSave} loading={modifyingProject}>
             Save
           </PrimaryButton>
         )}
       </div>
       {project ? (
-        <div className="flex h-full flex-col gap-y-8">
-          <div>
-            <p className="text-lg font-semibold">Project icon</p>
-            <div className="flex flex-row gap-x-3">
-              <img
-                src={
-                  editForm.icon == ""
-                    ? undefined
-                    : icon
-                      ? URL.createObjectURL(icon)
-                      : editForm.icon.startsWith("/")
-                        ? editForm.icon
-                        : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
-                }
-                alt="Project logo"
-                className="h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1"
-              />
-              <InputFileField
-                label=""
-                accept="image/*"
-                containerClassName="mt-auto h-12"
-                image={icon}
-                handleImageChange={handleImageChange}
-                displayText="Change project icon..."
-              />
-            </div>
+        <div className="flex h-full flex-col gap-2">
+          <p className="mb-2 text-lg font-semibold">Project icon</p>
+          <div className="flex flex-row gap-x-3">
+            <img
+              src={
+                editForm.icon == ""
+                  ? undefined
+                  : icon
+                    ? URL.createObjectURL(icon)
+                    : editForm.icon.startsWith("/")
+                      ? editForm.icon
+                      : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
+              }
+              alt="Project logo"
+              className="h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1"
+            />
+            <InputFileField
+              label=""
+              accept="image/*"
+              containerClassName="mt-auto h-12"
+              image={icon}
+              handleImageChange={handleImageChange}
+              displayText="Change project icon..."
+            />
           </div>
           <InputTextField
             label="Project Name"
-            className="mt-auto w-full"
+            className="w-full"
             labelClassName="text-lg font-semibold"
             value={editForm.name}
             name="name"
             onChange={handleChange}
             placeholder="What is your project called..."
+            containerClassName="mt-3"
           />
           <InputTextAreaField
             label="Project Description"
             labelClassName="text-lg font-semibold"
-            className="h-[115px] min-h-16 w-full"
+            className="h-[115px] w-full"
             value={editForm.description}
             name="description"
             onChange={handleChange}
             placeholder="What is this project about..."
+            containerClassName="mt-3"
           />
           <div className="mt-auto flex flex-col">
             <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">
-              {" "}
               Danger Zone
             </h3>
-            <div className="flex flex-row justify-between gap-x-28">
+            <div className="flex flex-row justify-between gap-x-28 items-center">
               <div className="flex flex-col">
-                <p className="font-bold">Delete project</p>
-                <p className="text-sm">Once deleted, you cannot recover it.</p>
+                <p className="font-semibold text-lg">Delete project</p>
+                <p>Once deleted, you cannot recover it.</p>
               </div>
               <DeleteButton
-                className="mb-10 mt-auto"
                 onClick={async () => {
                   if (
                     !(await confirm(
                       "Delete project?",
-                      "This action is not revertible",
+                      "This action is not reversible",
                       "Delete project",
                     ))
                   ) {

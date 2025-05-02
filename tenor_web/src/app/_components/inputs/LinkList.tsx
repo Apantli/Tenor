@@ -16,6 +16,7 @@ interface Props {
   className?: ClassNameValue;
 }
 
+// FIXME: We need to improve a type checking for the links. You can just input "hey" and it will be added as a link
 export default function LinkList({
   label,
   className,
@@ -28,12 +29,12 @@ export default function LinkList({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <label className="font-semibold">{label}</label>
+        <label className="font-semibold text-lg">{label}</label>
         <Dropdown
           label={
             <PrimaryButton
               asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
-              className="flex max-h-[40px] items-center text-sm"
+              className="flex max-h-[40px] items-center"
             >
               Add Context Link +
             </PrimaryButton>
@@ -69,6 +70,11 @@ export default function LinkList({
           className,
         )}
       >
+        {links.length === 0 && (
+          <li className="flex h-full w-full text-gray-400 ">
+            No links added yet...
+          </li>
+        )}
         {links.map((link, index) => (
           <li
             key={index}
@@ -78,7 +84,7 @@ export default function LinkList({
               if (
                 !(await confirm(
                   "Delete link?",
-                  `Removing "${link}". This action is not revertible.`,
+                  `Removing "${link}". This action is not reversible.`,
                   "Delete link",
                 ))
               ) {

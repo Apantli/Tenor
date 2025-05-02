@@ -275,7 +275,7 @@ export default function ProjectUsers() {
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="flex flex-row justify-between">
+      <div className="mb-2 flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
           <h1 className="text-3xl font-semibold">Users & Permissions</h1>
           <SegmentedControl
@@ -285,38 +285,48 @@ export default function ProjectUsers() {
           ></SegmentedControl>
         </div>
       </div>
-      {section === "Users" ? (
-        teamMembers && userTypes && roles ? (
-          <MemberTable
-            label={undefined}
-            teamMembers={teamMembers}
-            handleMemberAdd={handleAddUser}
-            handleMemberRemove={handleRemoveUser}
-            handleEditMemberRole={handleUpdateUser}
-            roleList={roles}
-            isSearchable={true}
-            className="w-full"
-          />
-        ) : (
-          <div className="mt-5 flex flex-row gap-x-3">
-            <LoadingSpinner />
-            <p className="text-lg font-bold">Loading...</p>
-          </div>
-        )
-      ) : roles ? (
-        <RoleTable
-          isSearchable={true}
-          roles={roles}
-          handleRoleAdd={handleRoleAdd}
-          handleRoleRemove={handleRoleRemove}
-          handleEditTabPermission={handleEditTabPermission}
-          handleUpdateViewPerformance={handleUpdateViewPerformance}
-          handleUpdateControlSprints={handleUpdateControlSprints}
-        ></RoleTable>
-      ) : (
-        <div className="flex h-40 w-full items-center justify-center">
-          <LoadingSpinner color="primary" />
-        </div>
+      {section === "Users" && (
+        <>
+          {teamMembers && userTypes && roles && (
+            <MemberTable
+              label={undefined}
+              teamMembers={teamMembers}
+              handleMemberAdd={handleAddUser}
+              handleMemberRemove={handleRemoveUser}
+              handleEditMemberRole={handleUpdateUser}
+              roleList={roles}
+              isSearchable={true}
+              className="w-full"
+            />
+          )}
+          {!teamMembers && !userTypes && !roles && (
+            <div className="mt-5 flex flex-row gap-x-3">
+              <LoadingSpinner />
+              <p className="text-lg">Loading...</p>
+            </div>
+          )}
+        </>
+      )}
+      {section === "Roles" && (
+        <>
+          {roles && (
+            <RoleTable
+              isSearchable={true}
+              roles={roles}
+              handleRoleAdd={handleRoleAdd}
+              handleRoleRemove={handleRoleRemove}
+              handleEditTabPermission={handleEditTabPermission}
+              handleUpdateViewPerformance={handleUpdateViewPerformance}
+              handleUpdateControlSprints={handleUpdateControlSprints}
+            ></RoleTable>
+          )}
+          {!roles && (
+            <div className="flex h-40 w-full items-center justify-center">
+              <LoadingSpinner color="primary" />
+              <p className="text-lg">Loading...</p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

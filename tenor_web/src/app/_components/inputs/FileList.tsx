@@ -43,8 +43,8 @@ export default function FileList({
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <div>
-          <label className="font-semibold">{label}</label>
-          <span className="ml-2 text-xs text-gray-500">
+          <label className="font-semibold text-lg">{label}</label>
+          <span className="ml-2 text-sm text-gray-500">
             {(filesSumSize() / 1_000_000).toFixed(1)}
             MB / {(memoryLimit / 1_000_000).toFixed(1)}MB
           </span>
@@ -53,7 +53,7 @@ export default function FileList({
         <div>
           <PrimaryButton
             onClick={openFilePicker}
-            className="flex max-h-[40px] items-center text-sm"
+            className="flex max-h-[40px] items-center"
           >
             Add Context File +
           </PrimaryButton>
@@ -94,6 +94,11 @@ export default function FileList({
           className,
         )}
       >
+        {files.length === 0 && (
+          <li className="flex h-full w-full text-gray-400 ">
+            No files added yet...
+          </li>
+        )}
         {files.map((file, index) => (
           <li
             key={index}
@@ -102,7 +107,7 @@ export default function FileList({
               if (
                 !(await confirm(
                   "Are you sure you want to remove a file?",
-                  `You are about to remove "${file.name}". This action is not revertible.`,
+                  `You are about to remove "${file.name}". This action is not reversible.`,
                   "Delete file",
                 ))
               ) {
