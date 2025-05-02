@@ -23,9 +23,6 @@
         <!-- Arrow: Projects includes Activities -->
         <mxCell id="arrow_projects_activities" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="projects" target="activities">
           <mxGeometry relative="1" as="geometry" />
-          <mxCell value="includes" style="text;html=1;align=center;verticalAlign=middle;" vertex="1" parent="arrow_projects_activities">
-            <mxGeometry x="0.5" y="0.5" width="50" height="20" as="geometry" />
-          </mxCell>
         </mxCell>
 
         <!-- Users Subcollection -->
@@ -36,9 +33,6 @@
         <!-- Arrow: Projects includes Users -->
         <mxCell id="arrow_projects_users" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="projects" target="users_sub">
           <mxGeometry relative="1" as="geometry" />
-          <mxCell value="includes" style="text;html=1;align=center;verticalAlign=middle;" vertex="1" parent="arrow_projects_users">
-            <mxGeometry x="0.5" y="0.5" width="50" height="20" as="geometry" />
-          </mxCell>
         </mxCell>
 
         <!-- Settings -->
@@ -49,9 +43,6 @@
         <!-- Arrow: Projects includes Settings -->
         <mxCell id="arrow_projects_settings" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;" edge="1" parent="1" source="projects" target="settings">
           <mxGeometry relative="1" as="geometry" />
-          <mxCell value="includes" style="text;html=1;align=center;verticalAlign=middle;" vertex="1" parent="arrow_projects_settings">
-            <mxGeometry x="0.5" y="0.5" width="50" height="20" as="geometry" />
-          </mxCell>
         </mxCell>
 
         <!-- Add other subcollections and relationships similarly -->
