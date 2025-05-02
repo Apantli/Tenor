@@ -141,7 +141,7 @@ export const userRouter = createTRPCRouter({
       const teamMemberRef = getProjectUserRef(projectId, userId, ctx.firestore);
       const teamMemberSnap = await teamMemberRef.get();
 
-      if (!teamMemberRef) {
+      if (!teamMemberSnap.exists) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Team member not found",
