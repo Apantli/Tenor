@@ -119,6 +119,7 @@ export default function CreateKanbanListPopup({
           label="List name"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
+          disableAI
         />
         {/* FIXME: Only allow colors that have good contrast... Maybe just a picker from options is better */}
         <DropdownColorPicker

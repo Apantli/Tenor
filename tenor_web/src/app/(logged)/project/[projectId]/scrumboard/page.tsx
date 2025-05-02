@@ -19,7 +19,10 @@ export default function ProjectKanban() {
   // REACT
   const [renderNewList, showNewList, setShowNewList] =
     usePopupVisibilityState();
-  const [section, setSection] = useState<ScrumboardSections>("Tasks");
+  const [section, setSection] = useState<ScrumboardSections>(
+    (localStorage.getItem("scrumboard-section") as ScrumboardSections) ??
+      "Tasks",
+  );
 
   // HANDLES
   const onListAdded = async () => {
@@ -37,6 +40,7 @@ export default function ProjectKanban() {
             selectedOption={section}
             onChange={(value) => {
               setSection(value as ScrumboardSections);
+              localStorage.setItem("scrumboard-section", value);
             }}
           />
         </div>

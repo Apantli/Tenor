@@ -8,7 +8,6 @@ import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -31,6 +30,7 @@ export default function StatusDetailPopup({
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  const { alert } = useAlert();
 
   const { projectId } = useParams();
   const [editMode, setEditMode] = useState(false);
@@ -58,7 +58,7 @@ export default function StatusDetailPopup({
     statusId: statusId,
   });
 
-  const { mutateAsync: modifyStatus, isPending: modifyingStatus } =
+  const { mutateAsync: modifyStatus } =
     api.settings.modifyStatusType.useMutation();
   const { mutateAsync: deleteStatus } =
     api.settings.deleteStatusType.useMutation();
@@ -94,6 +94,43 @@ export default function StatusDetailPopup({
   }, [error]);
 
   const handleSave = async (updatedData: NonNullable<typeof statusDetail>) => {
+    if (form.name === "") {
+      alert("Oops", "Please enter a name for the status.", {
+        type: "error",
+        duration: 5000,
+      });
+      return;
+    }
+
+    const protectedNames = ["todo", "doing", "done"];
+
+    const originalNameLower = statusDetail?.name.toLowerCase() ?? "";
+    const newNameLower = form.name.toLowerCase();
+
+    if (protectedNames.includes(originalNameLower)) {
+      if (originalNameLower !== newNameLower) {
+        alert(
+          "Default Status",
+          `You cannot change the name of a default status. You can only modify its capitalization.`,
+          {
+            type: "error",
+            duration: 5000,
+          },
+        );
+        return;
+      }
+    } else if (protectedNames.includes(newNameLower)) {
+      alert(
+        "Default Status Name",
+        `"${form.name}" is a reserved name for default statuses and cannot be used.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     const updatedStatus = {
       ...updatedData,
       name: form.name,
@@ -101,10 +138,12 @@ export default function StatusDetailPopup({
       marksTaskAsDone: form.marksTaskAsDone,
       orderIndex: form.orderIndex,
     };
+
     await utils.settings.getStatusTypeById.cancel({
       projectId: projectId as string,
       statusId: statusId,
     });
+
     utils.settings.getStatusTypeById.setData(
       { projectId: projectId as string, statusId: statusId },
       (oldData) => {
@@ -112,6 +151,7 @@ export default function StatusDetailPopup({
         return { ...oldData, ...updatedStatus };
       },
     );
+
     await modifyStatus({
       projectId: projectId as string,
       statusId: statusId,
@@ -142,6 +182,18 @@ export default function StatusDetailPopup({
   };
 
   const handleDelete = async () => {
+    if (statusDetail && ["Todo", "Doing", "Done"].includes(statusDetail.name)) {
+      alert(
+        "Cannot delete default status",
+        `The status "${statusDetail.name}" is a default status and cannot be deleted.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     if (
       await confirm(
         "Are you sure?",
@@ -218,8 +270,9 @@ export default function StatusDetailPopup({
           </div>
           <InputTextField
             type="text"
-            placeholder="E.g., Todo, In Progress, Done, QA Testing, Blocked..."
+            placeholder="E.g., Todo, In Progress..."
             value={form.name}
+            disableAI={true}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <div>

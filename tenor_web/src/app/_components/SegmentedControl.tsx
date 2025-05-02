@@ -63,7 +63,7 @@ export function SegmentedControl({
   useEffect(() => {
     setTimeout(() => {
       setAnimationActive(true);
-    }, 1);
+    }, 100);
   }, []);
 
   // TODO: Make this be the same size as a button (or maybe leave as is, I need second opinion)

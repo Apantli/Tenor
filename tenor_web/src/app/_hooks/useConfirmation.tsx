@@ -73,6 +73,7 @@ export const ConfirmationProvider = ({ children }: PropsWithChildren) => {
     <ConfirmationContext.Provider value={{ confirm }}>
       {children}
       <Popup
+        className="max-w-[450px]"
         size="small"
         show={showConfirmation}
         dismiss={() => handleResolve(false)}
@@ -96,7 +97,7 @@ export const ConfirmationProvider = ({ children }: PropsWithChildren) => {
           </div>
         }
         title={
-          <h1 className="mb-5 min-w-96 text-2xl font-semibold pr-10">
+          <h1 className="mb-5 min-w-96 pr-10 text-2xl font-semibold">
             {confirmationInfo?.title}
           </h1>
         }

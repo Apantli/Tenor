@@ -115,4 +115,17 @@ export const epicsRouter = createTRPCRouter({
         return "Epic created successfully";
       }
     }),
+
+  getEpicCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const epicCount = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("epics")
+        .where("deleted", "==", false)
+        .count()
+        .get();
+      return epicCount.data().count;
+    }),
 });

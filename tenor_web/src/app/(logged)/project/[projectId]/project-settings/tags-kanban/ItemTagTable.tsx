@@ -1,22 +1,33 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import { useAlert } from "~/app/_hooks/useAlert";
-import { useEffect } from "react";
 import SearchBar from "~/app/_components/SearchBar";
 import CreateItemTagPopup from "./CreateItemTagPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import ItemTagDetailPopup from "./ItemTagDetailPopup";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import EditIcon from "@mui/icons-material/Edit";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
 
-export default function ItemTagTable() {
+interface TagTableConfig {
+  title: string;
+  addButtonText: string;
+  searchPlaceholder: string;
+  emptyMessage: string;
+}
+
+type TagType = "ReqFocus" | "BacklogTag" | "ReqType";
+
+interface Props {
+  itemTagType: TagType;
+}
+
+export default function ItemTagTable({ itemTagType }: Props) {
   const { projectId } = useParams();
   const utils = api.useUtils();
   const [searchValue, setSearchValue] = useState("");
@@ -27,50 +38,154 @@ export default function ItemTagTable() {
   const confirm = useConfirmation();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
 
+  const tagTypeConfigs: Record<TagType, TagTableConfig> = {
+    BacklogTag: {
+      title: "Backlog Tags",
+      addButtonText: "+ Add tag",
+      searchPlaceholder: "Find a tag...",
+      emptyMessage: "No tags found",
+    },
+    ReqFocus: {
+      title: "Requirement Focus Areas",
+      addButtonText: "+ Add focus",
+      searchPlaceholder: "Find a focus area...",
+      emptyMessage: "No focus areas found",
+    },
+    ReqType: {
+      title: "Requirement Types",
+      addButtonText: "+ Add type",
+      searchPlaceholder: "Find a type...",
+      emptyMessage: "No requirement types found",
+    },
+  };
+
+  const currentConfig = tagTypeConfigs[itemTagType];
+
+  let tagsQueryResult;
+
+  switch (itemTagType) {
+    case "BacklogTag":
+      tagsQueryResult = api.settings.getBacklogTags.useQuery({
+        projectId: projectId as string,
+      });
+      break;
+    case "ReqFocus":
+      tagsQueryResult = api.requirements.getRequirementFocusTags.useQuery({
+        projectId: projectId as string,
+      });
+      break;
+    case "ReqType":
+      tagsQueryResult = api.requirements.getRequirementTypeTags.useQuery({
+        projectId: projectId as string,
+      });
+      break;
+  }
+
   const {
     data: tags,
     isLoading: isLoadingTags,
-    refetch: refetch,
-  } = api.settings.getBacklogTags.useQuery({
-    projectId: projectId as string,
-  });
+    refetch,
+  } = tagsQueryResult || {};
 
-  const { mutateAsync: modifyTag } =
-    api.settings.modifyBacklogTag.useMutation();
-  const { mutateAsync: deleteTag } =
-    api.settings.deleteBacklogTag.useMutation();
+  let deleteTagMutation;
+
+  switch (itemTagType) {
+    case "BacklogTag":
+      deleteTagMutation = api.settings.deleteBacklogTag.useMutation();
+      break;
+    case "ReqFocus":
+      deleteTagMutation =
+        api.requirements.deleteRequirementFocusTag.useMutation();
+      break;
+    case "ReqType":
+      deleteTagMutation =
+        api.requirements.deleteRequirementTypeTag.useMutation();
+      break;
+  }
+
+  const { mutateAsync: deleteTag } = deleteTagMutation || {};
 
   const handleModifyTag = async function (tagId: string) {
     setSelectedTagId(tagId);
     setShowDetailTag(true);
   };
 
-  const handleDeleteTag = async function (tagId: string) {
-    if (
-      await confirm(
-        "Are you sure?",
-        "This action will delete the tag.",
-        "Delete",
-        "Cancel",
-      )
-    ) {
-      await utils.settings.getBacklogTags.cancel({
-        projectId: projectId as string,
-      });
-      utils.settings.getBacklogTags.setData(
-        { projectId: projectId as string },
-        (oldData) => {
-          if (!oldData) return [];
-          return oldData.filter((tag) => tag.id !== tagId);
-        },
+  const handleDeleteTag = async function (
+    tagIds: string[],
+    callback: (del: boolean) => void,
+  ) {
+    const isMultiple = tagIds.length > 1;
+    const entityName = isMultiple
+      ? itemTagType === "BacklogTag"
+        ? "tags"
+        : itemTagType === "ReqFocus"
+          ? "requirement focus areas"
+          : "requirement types"
+      : itemTagType === "BacklogTag"
+        ? "tag"
+        : itemTagType === "ReqFocus"
+          ? "requirement focus area"
+          : "requirement type";
+
+    const confirmTitle = "Are you sure?";
+    const confirmMessage = `This action will delete ${isMultiple ? "these " + tagIds.length + " " + entityName : "the " + entityName}.`;
+
+    if (await confirm(confirmTitle, confirmMessage, "Delete", "Cancel")) {
+      switch (itemTagType) {
+        case "BacklogTag":
+          await utils.settings.getBacklogTags.cancel({
+            projectId: projectId as string,
+          });
+          utils.settings.getBacklogTags.setData(
+            { projectId: projectId as string },
+            (oldData) => {
+              if (!oldData) return [];
+              return oldData.filter((tag) => !tagIds.includes(tag.id));
+            },
+          );
+          break;
+        case "ReqFocus":
+          await utils.requirements.getRequirementFocusTags.cancel({
+            projectId: projectId as string,
+          });
+          utils.requirements.getRequirementFocusTags.setData(
+            { projectId: projectId as string },
+            (oldData) => {
+              if (!oldData) return [];
+              return oldData.filter((tag) => !tagIds.includes(tag.id!));
+            },
+          );
+          break;
+        case "ReqType":
+          await utils.requirements.getRequirementTypeTags.cancel({
+            projectId: projectId as string,
+          });
+          utils.requirements.getRequirementTypeTags.setData(
+            { projectId: projectId as string },
+            (oldData) => {
+              if (!oldData) return [];
+              return oldData.filter((tag) => !tagIds.includes(tag.id!));
+            },
+          );
+          break;
+      }
+
+      await Promise.all(
+        tagIds.map((tagId) =>
+          deleteTag({
+            projectId: projectId as string,
+            tagId: tagId,
+          }),
+        ),
       );
 
-      await deleteTag({
-        projectId: projectId as string,
-        tagId: tagId,
-      });
+      callback(true);
       await refetch();
+      return true;
     }
+
+    callback(false);
+    return false;
   };
 
   const filteredTags = tags?.filter((tag) => {
@@ -86,16 +201,29 @@ export default function ItemTagTable() {
 
   const tableData =
     filteredTags?.map((tag) => ({
-      id: tag.id,
+      id: tag.id!,
       name: tag.name,
       color: tag.color,
-      deleted: tag.deleted,
+      deleted: tag.deleted ?? false,
     })) ?? [];
+
+  let nameColumnLabel: string;
+  switch (itemTagType) {
+    case "BacklogTag":
+      nameColumnLabel = "Tag Name";
+      break;
+    case "ReqFocus":
+      nameColumnLabel = "Focus Area";
+      break;
+    case "ReqType":
+      nameColumnLabel = "Requirement Type";
+      break;
+  }
 
   const columns = {
     id: { visible: false },
     name: {
-      label: "Tag Name",
+      label: nameColumnLabel,
       width: 220,
       filterable: "search-only",
       sortable: true,
@@ -134,7 +262,7 @@ export default function ItemTagTable() {
   const extraOptions = [
     {
       label: "Edit",
-      icon: <MoreHorizIcon />,
+      icon: <EditIcon fontSize="small" />,
       action: (ids: string[]) => {
         if (ids.length === 1 && ids[0]) {
           void handleModifyTag(ids[0]);
@@ -153,7 +281,7 @@ export default function ItemTagTable() {
         <div className="flex max-w-[750px] items-center justify-between gap-4">
           <div className="w-[700px]">
             <SearchBar
-              placeholder="Find a tag..."
+              placeholder={currentConfig.searchPlaceholder}
               searchValue={searchValue}
               handleUpdateSearch={(e) => setSearchValue(e.target.value)}
             />
@@ -162,31 +290,32 @@ export default function ItemTagTable() {
             onClick={() => setShowNewTag(true)}
             className="whitespace-nowrap"
           >
-            + Add tag
+            {currentConfig.addButtonText}
           </PrimaryButton>
         </div>
 
         <div className="max-w-[750px]">
           {isLoadingTags ? (
-            <div className="py-4 text-center">Loading tags...</div>
+            <div className="py-4 text-center">Loading...</div>
           ) : (
             <Table
               className={`w-full ${
-                tableData.length > 5 ? "max-h-[230px] overflow-auto" : ""
+                tableData.length > 5 ? "max-h-[280px] overflow-auto" : ""
               }`}
               data={tableData}
               columns={columns}
               extraOptions={extraOptions}
               deletable={true}
               onDelete={(ids, callback) => {
-                if (ids[0]) {
-                  void handleDeleteTag(ids[0]);
+                if (ids.length > 0) {
+                  void handleDeleteTag(ids, callback);
+                } else {
+                  callback(false);
                 }
-                callback(true);
               }}
-              multiselect={false}
-              emptyMessage="No tags found"
-              tableKey="item-tag-table"
+              multiselect={true}
+              emptyMessage={currentConfig.emptyMessage}
+              tableKey={`${itemTagType.toLowerCase()}-table`}
             />
           )}
         </div>
@@ -197,6 +326,7 @@ export default function ItemTagTable() {
           showPopup={showNewTag}
           onTagAdded={onTagAdded}
           setShowPopup={setShowNewTag}
+          itemTagType={itemTagType}
         />
       )}
 
@@ -205,6 +335,7 @@ export default function ItemTagTable() {
           showPopup={showDetailTag}
           setShowPopup={setShowDetailTag}
           tagId={selectedTagId}
+          itemTagType={itemTagType}
         />
       )}
     </div>

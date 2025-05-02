@@ -26,6 +26,7 @@ export interface Props {
     e: ChangeEvent<HTMLTextAreaElement> | ChangeEvent<HTMLInputElement>,
   ) => void;
   className?: string;
+  disablePlaceholder?: boolean;
 }
 
 export default function InputField({
@@ -40,6 +41,7 @@ export default function InputField({
   isTextArea,
   onChange,
   placeholder,
+  disablePlaceholder,
   ...props
 }: Props &
   (
@@ -56,6 +58,19 @@ export default function InputField({
   const dropdownInputRef = useRef<HTMLInputElement>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Scroll to the bottom of the messages container
+    const timeout = setTimeout(() => {
+      if (!messagesContainerRef.current) return;
+      messagesContainerRef.current.scrollTop =
+        messagesContainerRef.current.scrollHeight;
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  }, [messages]);
 
   const originalMessageRef = useRef<string>(value ?? "");
 
@@ -206,7 +221,9 @@ export default function InputField({
               html-rows="4"
               placeholder={
                 placeholder +
-                (isFocused ? " Press Ctrl/⌘ + K to generate with AI." : "")
+                (isFocused && !disablePlaceholder
+                  ? " Press Ctrl/⌘ + K to generate with AI."
+                  : "")
               }
               onFocus={() => {
                 setIsFocused(true);
@@ -234,7 +251,9 @@ export default function InputField({
               id={id}
               placeholder={
                 placeholder +
-                (isFocused ? " Press Ctrl/⌘ + K to generate with AI." : "")
+                (isFocused && !disablePlaceholder
+                  ? " Press Ctrl/⌘ + K to generate with AI."
+                  : "")
               }
               onFocus={() => {
                 setIsFocused(true);
@@ -255,16 +274,24 @@ export default function InputField({
               {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
             />
           )}
-          <div
-            className={cn(
-              "absolute bottom-2 right-2 opacity-0 transition-opacity duration-200",
-              "group-focus-within:opacity-100",
-              { "opacity-100": isDropdownOpen },
-            )}
-          >
+          <div className={cn("absolute bottom-2 right-2")}>
             <Dropdown
+              className={cn(
+                "pointer-events-none cursor-auto group-focus-within:pointer-events-auto group-focus-within:cursor-pointer",
+                {
+                  "pointer-events-auto cursor-pointer": isDropdownOpen,
+                },
+              )}
               label={
-                <div ref={dropdownButtonRef}>
+                <div
+                  ref={dropdownButtonRef}
+                  className={cn(
+                    "opacity-0 transition-opacity duration-200 group-focus-within:opacity-100",
+                    {
+                      "opacity-100": isDropdownOpen,
+                    },
+                  )}
+                >
                   <span
                     data-tooltip-html={
                       "<div style='display: flex; flex-direction: column; gap: 2px; align-items: center'><p><strong>Generate with AI</strong></p><p style='margin-left: auto; margin-right: auto'>Ctrl/⌘ K</p></div>"
@@ -275,7 +302,6 @@ export default function InputField({
                   </span>
                 </div>
               }
-              className=""
               close={close}
               onOpen={() => {
                 setIsDropdownOpen(true);
@@ -302,13 +328,16 @@ export default function InputField({
                           setClose();
                         }}
                         fontSize="medium"
-                        className="ml-auto text-gray-500"
+                        className="ml-auto cursor-pointer text-gray-500"
                       />
                     </div>
                   </div>
-                  <div className="flex max-h-48 flex-col overflow-y-auto px-4">
+                  <div
+                    className="flex max-h-48 flex-col overflow-y-auto px-4"
+                    ref={messagesContainerRef}
+                  >
                     {messages.length > 0 ? (
-                      <div className="flex flex-col">
+                      <div className="flex flex-col justify-start">
                         {messages.map((message, index) => (
                           <div
                             key={index}
@@ -320,11 +349,11 @@ export default function InputField({
                                   ? user
                                   : {
                                       displayName: "Frida AI",
+                                      uid: "129293", // Fake UID but gives a nice color
                                     }
                               }
-                              hideTooltip
                             />
-                            <p className="no-scrollbar max-w-[450px] overflow-x-auto text-sm">
+                            <p className="no-scrollbar max-w-[450px] overflow-x-auto whitespace-normal text-sm">
                               {message.explanation ?? message.content}
                             </p>
                           </div>
@@ -334,6 +363,19 @@ export default function InputField({
                       <p className="mt-3 text-sm text-gray-500">
                         No messages yet. Type something to get started.
                       </p>
+                    )}
+                    {status === "pending" && (
+                      <div className="flex flex-row items-center gap-2 border-b-2 px-1 py-2">
+                        <ProfilePicture
+                          user={{
+                            displayName: "Frida AI",
+                            uid: "129293", // Fake UID but gives a nice color
+                          }}
+                        />
+                        <p className="no-scrollbar max-w-[450px] animate-pulse overflow-x-auto whitespace-normal text-sm opacity-50">
+                          Generating...
+                        </p>
+                      </div>
                     )}
                   </div>
                   <div className="mt-auto px-4">
