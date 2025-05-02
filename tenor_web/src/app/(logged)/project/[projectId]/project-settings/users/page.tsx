@@ -90,7 +90,7 @@ export default function ProjectUsers() {
     //check if any of the ids belong to the owner
     ids = ids.filter((id) => {
       const user = teamMembers.find((user) => user.id === id);
-      if (user?.isOwner) {
+      if (user?.role === "owner") {
         alert("Oops...", "You cannot remove the owner of the project.", {
           type: "error",
           duration: 5000,

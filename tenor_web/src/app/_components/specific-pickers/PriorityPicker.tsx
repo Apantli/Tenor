@@ -9,9 +9,14 @@ import type { Tag } from "~/lib/types/firebaseSchemas";
 interface Props {
   priority?: Tag;
   onChange: (priority: Tag) => void;
+  disabled?: boolean;
 }
 
-export default function PriorityPicker({ priority, onChange }: Props) {
+export default function PriorityPicker({
+  priority,
+  onChange,
+  disabled,
+}: Props) {
   const { projectId } = useParams();
   const { data: priorities } = api.settings.getPriorityTypes.useQuery({
     projectId: projectId as string,
@@ -19,6 +24,7 @@ export default function PriorityPicker({ priority, onChange }: Props) {
 
   return (
     <PillComponent
+      disabled={disabled}
       currentTag={priority}
       allTags={priorities ?? []}
       callBack={onChange}

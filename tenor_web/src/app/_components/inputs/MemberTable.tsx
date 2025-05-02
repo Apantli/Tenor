@@ -26,7 +26,6 @@ interface Props {
 
 export interface TeamMember {
   id: string;
-  isOwner: boolean;
   photoURL?: string;
   displayName: string;
   email: string;
@@ -43,10 +42,12 @@ export default function MemberTable({
   roleList,
   isSearchable = false,
 }: Props) {
-  const { data: users, isLoading } = api.users.getUserList.useQuery();
   const [searchValue, setSearchValue] = useState("");
   const [tableSearchValue, setTableSearchValue] = useState("");
   const { alert } = useAlert();
+  const { data: users, isLoading } = api.users.getUserList.useQuery({
+    filter: searchValue,
+  });
 
   const filteredTeamMembers = useMemo(() => {
     const search = tableSearchValue.toLowerCase();
@@ -60,7 +61,6 @@ export default function MemberTable({
 
   const columns: TableColumns<TeamMember> = {
     id: { visible: false },
-    isOwner: { visible: false },
     photoURL: {
       label: "",
       width: 50,
@@ -85,7 +85,7 @@ export default function MemberTable({
             className="w-full text-sm"
             hideSearch
             selectedItem={
-              row.isOwner
+              row.role === "owner"
                 ? {
                     id: "owner",
                     label: "Owner",
@@ -99,7 +99,7 @@ export default function MemberTable({
             }
             allItems={roleList}
             onChange={(item) => {
-              if (!row.isOwner) {
+              if (row.role !== "owner") {
                 handleEditMemberRole(row.id, item.id);
               } else {
                 alert("Oops...", "You cannot edit the role of the owner.", {
