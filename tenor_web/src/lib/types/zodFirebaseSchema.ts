@@ -195,6 +195,7 @@ export const SettingsSchema = z.object({
           name: z.string(),
           type: z.string(),
           content: z.string(),
+          size: z.number(),
         }),
       )
       .default([]),

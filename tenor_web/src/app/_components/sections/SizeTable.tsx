@@ -19,13 +19,11 @@ export default function SettingsSizeTable({
 }: {
   sizeData: SizeCol[];
   setSizeData: React.Dispatch<React.SetStateAction<SizeCol[]>>;
-}
-) {
+}) {
   //Hook
   const { alert } = useAlert();
 
   const [numberWarningShown, setNumberWarningShown] = useState(false);
-  
 
   const checkLargeNumber = (value: number) => {
     if (value < maxInputSizeNumber) return false;
@@ -55,12 +53,12 @@ export default function SettingsSizeTable({
       if (idx === -1) return prev;
 
       const updated = [...prev];
-      updated[idx] = { 
-        ...updated[idx], 
-        id: updated[idx]?.id ?? "", 
-        name: updated[idx]?.name ?? {} as Size, 
-        color: updated[idx]?.color ?? "#000000", 
-        value: newValue 
+      updated[idx] = {
+        ...updated[idx],
+        id: updated[idx]?.id ?? "",
+        name: updated[idx]?.name ?? ({} as Size),
+        color: updated[idx]?.color ?? "#000000",
+        value: newValue,
       };
       return updated;
     });
@@ -77,8 +75,8 @@ export default function SettingsSizeTable({
       },
     },
     value: {
-      label: "Value",
-      width: 80,
+      label: "Story points",
+      width: 100,
       render(row) {
         return (
           <InputTextField
@@ -87,10 +85,10 @@ export default function SettingsSizeTable({
             inputMode="numeric"
             min={0}
             pattern="[0-9]*"
-            className="w-full border border-gray-300 rounded px-2 py-1"
+            className="w-full rounded border border-gray-300 px-2 py-1"
             value={row.value}
             onChange={(e) => handleValueChange(row.id, Number(e.target.value))}
-            disableAI = {true}
+            disableAI={true}
           />
         );
       },
@@ -98,7 +96,7 @@ export default function SettingsSizeTable({
   };
 
   return (
-    <div className="space-y-4  max-w-[220px]">
+    <div className="max-w-[220px] space-y-4">
       <label className="text-lg font-semibold">Size Settings</label>
       <Table
         className="w-sml"

@@ -4,17 +4,22 @@ import { useParams } from "next/navigation";
 import React from "react";
 import { api } from "~/trpc/react";
 import PillComponent from "../PillComponent";
-import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { StatusTag, Tag } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 
 interface Props {
   status?: Tag;
-  onChange: (status: Tag) => void;
+  onChange: (status: StatusTag) => void;
   className?: string;
   showAutomaticStatus?: boolean;
 }
 
-export default function StatusPicker({ status, onChange, className, showAutomaticStatus = false }: Props) {
+export default function StatusPicker({
+  status,
+  onChange,
+  className,
+  showAutomaticStatus = false,
+}: Props) {
   const { projectId } = useParams();
   const { data: statusValues } = api.settings.getStatusTypes.useQuery({
     projectId: projectId as string,
@@ -25,9 +30,11 @@ export default function StatusPicker({ status, onChange, className, showAutomati
     name: "Automatic",
     color: "#000000",
     deleted: false,
+    orderIndex: -1,
+    marksTaskAsDone: false,
   };
 
-  let statusValuesWithAuto: Tag[] = [];
+  let statusValuesWithAuto: StatusTag[] = [];
   if (showAutomaticStatus) {
     statusValuesWithAuto = [automaticTag, ...(statusValues ?? [])];
   } else {
@@ -43,7 +50,9 @@ export default function StatusPicker({ status, onChange, className, showAutomati
     <PillComponent
       currentTag={currentStatus}
       allTags={statusValuesWithAuto ?? []}
-      callBack={onChange}
+      callBack={(tag) =>
+        onChange(statusValuesWithAuto.find((t) => t.id === tag.id)!)
+      }
       labelClassName={cn("w-full", className)}
     />
   );

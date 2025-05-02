@@ -50,6 +50,7 @@ export default function ProjectCreator() {
       name: string;
       type: string;
       content: string;
+      size: number;
     }[] = [];
 
     for (const file of files) {
@@ -58,6 +59,7 @@ export default function ProjectCreator() {
         name: file.name,
         type: file.type,
         content: fileBase64,
+        size: file.size,
       });
     }
 
@@ -261,6 +263,7 @@ export default function ProjectCreator() {
                   onChange={handleChange}
                   name="name"
                   placeholder="What is your project called..."
+                  labelClassName="text-lg font-semibold"
                 />
               </div>
 
@@ -268,8 +271,8 @@ export default function ProjectCreator() {
               <div className="flex-1">
                 <InputFileField
                   label="Icon (max: 3MB)"
+                  labelClassName="text-lg font-semibold"
                   accept="image/*"
-                  className="h-12"
                   image={icon}
                   handleImageChange={handleImageChange}
                 />
@@ -285,12 +288,14 @@ export default function ProjectCreator() {
               value={form.description}
               onChange={handleChange}
               name="description"
+              labelClassName="text-lg font-semibold"
             />
 
             {/* Member Table */}
             <div className="gap-y-4">
               <MemberTable
                 label="Team Members"
+                labelClassName="text-lg font-semibold"
                 teamMembers={teamMembers}
                 className="w-full"
                 handleMemberAdd={handleAddTeamMember}
@@ -311,6 +316,7 @@ export default function ProjectCreator() {
               value={form.context}
               name="context"
               onChange={handleChange}
+              labelClassName="text-lg font-semibold"
             />
 
             {/* Context Files */}

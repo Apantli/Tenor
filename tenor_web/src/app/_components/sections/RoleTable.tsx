@@ -198,6 +198,11 @@ export default function RoleTable({
     },
   };
 
+  const filteredRoles = roles.filter((role) => {
+    const search = tableSearchValue.toLowerCase();
+    return role.label.toLowerCase().includes(search);
+  });
+
   return (
     <div className={cn("w-full", className)}>
       <div className="flex items-center justify-between gap-x-4 py-4">
@@ -252,8 +257,9 @@ export default function RoleTable({
       </div>
 
       <Table
+        emptyMessage="No roles found"
         className="w-full"
-        data={roles} // filter tableSearchValue by name or email
+        data={filteredRoles}
         columns={columns}
         multiselect
         deletable={{

@@ -14,7 +14,12 @@ import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
-import type { WithId, Tag, BacklogItem } from "~/lib/types/firebaseSchemas";
+import type {
+  WithId,
+  Tag,
+  BacklogItem,
+  StatusTag,
+} from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import type { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
@@ -129,8 +134,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
   // Show task detail if taskToOpen is provided
   useEffect(() => {
     if (!taskToOpen) return;
-    if (!transformedTasks.some((task) => task.id === taskToOpen))
-      return;
+    if (!transformedTasks.some((task) => task.id === taskToOpen)) return;
     setSelectedTaskId(taskToOpen);
     setSelectedGhostTask("");
     setShowTaskDetail(true);
@@ -158,10 +162,10 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
 
   const formatTaskScrumId = useFormatTaskScrumId();
   const completedTasks = transformedTasks.filter(
-    (task) => task.status?.name === "Done",
+    (task) => task.status?.marksTaskAsDone,
   ).length;
 
-  const onTaskStatusChange = async (taskId: string, status: Tag) => {
+  const onTaskStatusChange = async (taskId: string, status: StatusTag) => {
     // This is if it's inside a ghost
     if (tasksData !== undefined) {
       updateTaskData?.(taskId, (oldData) => ({
@@ -279,7 +283,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       label: "Status",
       width: 150,
       render(row, _, isGhost) {
-        const onGhostTaskStatusChange = (status: Tag) => {
+        const onGhostTaskStatusChange = (status: StatusTag) => {
           updateGhostRow(row.id, (oldData) => ({
             ...oldData,
             status: status,

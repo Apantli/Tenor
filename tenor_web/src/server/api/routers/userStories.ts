@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
-import type { WithId, Tag, Size } from "~/lib/types/firebaseSchemas";
+import type { WithId, Tag, Size, StatusTag } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
@@ -10,6 +10,7 @@ import {
   ExistingUserStorySchema,
   RequirementSchema,
   SprintSchema,
+  StatusTagSchema,
   TagSchema,
   TaskSchema,
   UserStorySchema,
@@ -82,7 +83,7 @@ const getStatusName = async (
   if (!tag.exists) {
     return undefined;
   }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+  return { id: tag.id, ...StatusTagSchema.parse(tag.data()) } as StatusTag;
 };
 
 const getTaskProgress = async (
@@ -113,7 +114,7 @@ const getTaskProgress = async (
         projectId,
         taskData.statusId,
       );
-      return statusTag?.name === "Done";
+      return statusTag?.marksTaskAsDone;
     }),
   ).then((results) => results.filter(Boolean).length);
 
