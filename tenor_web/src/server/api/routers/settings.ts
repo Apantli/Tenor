@@ -176,6 +176,7 @@ const settingsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of status type tags
    */
+
   getStatusTypes: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -185,8 +186,10 @@ const settingsRouter = createTRPCRouter({
       );
       const statusTypes = await projectSettingsRef
         .collection("statusTypes")
-        .orderBy("orderIndex")
+        .where("deleted", "==", false)
+        .orderBy("orderIndex")        
         .get();
+        
       const statusTypesData = statusTypes.docs.map((doc) => ({
         id: doc.id,
         ...StatusTagSchema.parse(doc.data()),
@@ -225,38 +228,53 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, name, color, marksTaskAsDone } = input;
-
       const projectSettingsRef = getProjectSettingsRef(
         input.projectId,
         ctx.firestore,
       );
-
       const statusCollectionRef = projectSettingsRef.collection("statusTypes");
 
-      const statusTypes = await statusCollectionRef.get();
+      const activeStatusTypes = await statusCollectionRef
+        .where("deleted", "==", false)
+        .orderBy("orderIndex")
+        .get();
 
-      const statusTypesData = statusTypes.docs.map((doc) => ({
-        id: doc.id,
-        ...StatusTagSchema.parse(doc.data()),
-      }));
-      const biggestOrderIndex = Math.max(
-        ...statusTypesData.map((status) => status.orderIndex),
-        0,
-      );
+      const newOrderIndex = activeStatusTypes.size;
 
       const newStatus = {
         name,
         color: color.toUpperCase(),
         marksTaskAsDone,
         deleted: false,
-        orderIndex: biggestOrderIndex + 1,
+        orderIndex: newOrderIndex,
       };
 
       const docRef = await statusCollectionRef.add(newStatus);
+      
       return {
         id: docRef.id,
         ...newStatus,
       };
+    }),
+  
+  reorderStatusTypes: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        statusIds: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, statusIds } = input;
+      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const batch = ctx.firestore.batch();
+
+      statusIds.forEach((statusId, index) => {
+        const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
+        batch.update(statusTypeRef, { orderIndex: index });
+      });
+
+      await batch.commit();
     }),
 
   modifyStatusType: protectedProcedure
@@ -286,10 +304,28 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, statusId } = input;
       const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
-      await statusTypeRef.update({ deleted: true });
+      const statusCollectionRef = projectRef.collection("statusTypes");
+      
+      await statusCollectionRef.doc(statusId).update({ 
+        deleted: true,
+        orderIndex: -1
+      });
+      
+      const activeStatusTypes = await statusCollectionRef
+        .where("deleted", "==", false)
+        .orderBy("orderIndex")
+        .get();
+      
+      const batch = ctx.firestore.batch();
+      
+      activeStatusTypes.docs.forEach((doc, index) => {
+        batch.update(doc.ref, { orderIndex: index });
+      });
+      
+      await batch.commit();      
       return { id: statusId };
     }),
+  
   /**
    * @procedure getBacklogTags
    * @description Retrieves all non-deleted backlog tags for a project

@@ -22,6 +22,7 @@ export function SegmentedControl({
   );
   const containerRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
+  const [animationActive, setAnimationActive] = useState(false);
 
   const calculateIndicatorPosition = () => {
     const container = containerRef.current;
@@ -58,6 +59,13 @@ export function SegmentedControl({
     onChange(option);
   };
 
+  // Wait for the component to mount before starting the animation
+  useEffect(() => {
+    setTimeout(() => {
+      setAnimationActive(true);
+    }, 100);
+  }, []);
+
   // TODO: Make this be the same size as a button (or maybe leave as is, I need second opinion)
   return (
     <div
@@ -69,7 +77,12 @@ export function SegmentedControl({
     >
       {/* Animated selector background */}
       <div
-        className="absolute rounded-md bg-app-primary transition-all duration-300 ease-in-out"
+        className={cn(
+          "absolute rounded-md bg-app-primary transition-none duration-300 ease-in-out",
+          {
+            "transition-all": animationActive,
+          },
+        )}
         style={{
           left: indicatorStyle.left,
           width: indicatorStyle.width,

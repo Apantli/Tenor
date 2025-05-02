@@ -1,9 +1,9 @@
 import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import TagComponent from "../TagComponent";
-import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
 import type { KanbanCard } from "~/server/api/routers/kanban";
+import { accentColorByCardType } from "~/utils/colorUtils";
 
 interface Props {
   item: KanbanCard;
@@ -16,13 +16,20 @@ export default function ItemCardRender({
   showBackground = false,
   scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
+  const accentColor =
+    accentColorByCardType[item.cardType as keyof typeof accentColorByCardType];
   return (
     <div
       className={cn({
-        "w-88 min-w-88 group relative flex min-h-8 min-w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 py-4 pl-4 pr-7 shadow-xl transition duration-100":
+        "w-88 min-w-88 group relative flex min-h-8 min-w-full cursor-pointer select-none overflow-hidden rounded-lg border border-app-border bg-white p-2 py-4 pb-5 pl-4 pr-7 shadow-xl transition duration-100":
           showBackground,
       })}
     >
+      {showBackground && (
+        <div
+          className={cn("absolute bottom-0 left-0 h-2 w-full", accentColor)}
+        ></div>
+      )}
       <div className={cn("flex w-full flex-col items-start gap-2")}>
         <div>
           <span className="font-semibold">
@@ -44,6 +51,8 @@ export default function ItemCardRender({
                 reducedPadding
                 color={tag.color}
                 className="max-w-20 truncate"
+                data-tooltip-id="tooltip"
+                data-tooltip-content={tag.name}
               >
                 {tag.name}
               </TagComponent>

@@ -31,6 +31,8 @@ import {
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
+import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
+import HelpIcon from "@mui/icons-material/Help";
 
 interface Props {
   issueId: string;
@@ -173,6 +175,9 @@ export default function IssueDetailPopup({
       setShowDetail(false);
     }
   };
+  const showAutomaticDetails = () => {
+    return issueDetail?.status === undefined || issueDetail?.status?.id == "";
+  };
 
   return (
     <Popup
@@ -229,7 +234,18 @@ export default function IssueDetailPopup({
                 </div>
 
                 <div className="mt-4 flex-1">
-                  <h3 className="text-lg font-semibold">Status</h3>
+                  <div className="flex">
+                    <h3 className="text-lg font-semibold">Status</h3>
+                    {showAutomaticDetails() && (
+                      <HelpIcon
+                        className="ml-[3px] text-gray-500"
+                        data-tooltip-id="tooltip"
+                        data-tooltip-content="A status is assigned based on the progress of all its tasks."
+                        data-tooltip-place="top-start"
+                        style={{ width: "15px" }}
+                      />
+                    )}
+                  </div>
                   <StatusPicker
                     status={issueDetail.status}
                     onChange={async (status) => {
@@ -237,6 +253,9 @@ export default function IssueDetailPopup({
                     }}
                     showAutomaticStatus={true}
                   />
+                  {showAutomaticDetails() && (
+                    <ItemAutomaticStatus itemId={issueId} />
+                  )}
                 </div>
 
                 <BacklogTagList
@@ -290,7 +309,7 @@ export default function IssueDetailPopup({
       disablePassiveDismiss={editMode}
     >
       {editMode && (
-        <div className="flex flex-col gap-4">  
+        <div className="flex flex-col gap-4">
           <InputTextField
             label="Issue name"
             value={editForm.name}

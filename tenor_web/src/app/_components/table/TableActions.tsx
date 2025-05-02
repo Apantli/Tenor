@@ -37,7 +37,8 @@ function TableActions<I extends string | number>({
         },
       )}
     >
-      {selection.size > 0 &&
+      {/* Multiselect editable options, not used yet */}
+      {/* {selection.size > 0 &&
         extraOptions?.map((option, i) => (
           <button
             key={i}
@@ -50,7 +51,7 @@ function TableActions<I extends string | number>({
           >
             {option.icon}
           </button>
-        ))}
+        ))} */}
       {deletable === true && selection.size > 0 && (
         <button
           data-tooltip-id="tooltip"
