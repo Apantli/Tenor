@@ -8,6 +8,7 @@ import { z } from "zod";
 import { remove } from "node_modules/cypress/types/lodash";
 import admin from "firebase-admin";
 import { emptyRole } from "~/lib/defaultProjectValues";
+import { TRPCError } from "@trpc/server";
 
 export const userRouter = createTRPCRouter({
   getUserList: protectedProcedure.query(async ({ ctx }) => {
@@ -130,12 +131,27 @@ export const userRouter = createTRPCRouter({
         .doc(projectId)
         .collection("users")
         .doc(userId);
+      const teamMemberSnap = await teamMemberRef.get();
+
+      if (!teamMemberRef) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team member not found",
+        });
+      }
+
+      if (teamMemberSnap.data()?.roleId === "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot remove owner",
+        });
+      }
 
       // Mark the team member as inactive
       await teamMemberRef.update({ active: false, roleId: emptyRole.id });
 
       // Get the actual userId from the teamMember document
-      const teamMemberSnap = await teamMemberRef.get();
+
       const realUserId = teamMemberSnap.data()?.userId as string;
 
       if (realUserId) {

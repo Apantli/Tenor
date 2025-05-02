@@ -24,16 +24,12 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     });
 
   const permitted = useMemo(() => {
-    if (!role) {
+    if (!role || !tab) {
       return false;
     }
     // Project OverView
     if (tab == projectId) {
       return true;
-    }
-
-    if (!tab) {
-      return false;
     }
 
     const metaTab = [
@@ -51,6 +47,8 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     if (!metaTab) {
       return false;
     }
+
+    // Check if the user has the required permissions for the tab
     const { flags } = metaTab;
     for (const flag of flags) {
       if (!role?.[flag as keyof typeof role]) {

@@ -266,7 +266,7 @@ export default function RequirementsTable() {
       onError: (error) => {
         alert(
           "Oops...",
-          `You do not have permission to delete this requirement. ${error.message}`,
+          `You do not have permission to delete this requirement.`,
           {
             type: "error",
             duration: 5000,
