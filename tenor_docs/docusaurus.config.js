@@ -11,7 +11,7 @@ import { themes as prismThemes } from "prism-react-renderer";
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: "Tenor",
-  tagline: "Adaptabilidad que fluye",
+  tagline: "Modern Project Management for Agile Teams",
   favicon: "img/favicon.ico",
 
   // Set the production url of your site here
@@ -22,8 +22,8 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: "facebook", // Usually your GitHub org/user name.
-  projectName: "docusaurus", // Usually your repo name.
+  organizationName: "Apantli", // Usually your GitHub org/user name.
+  projectName: "tenor", // Usually your repo name.
 
   onBrokenLinks: "throw",
   onBrokenMarkdownLinks: "warn",
@@ -75,20 +75,39 @@ const config = {
     ({
       // Replace with your project's social card
       image: "img/docusaurus-social-card.jpg",
+      colorMode: {
+        defaultMode: "light",
+        disableSwitch: false,
+        respectPrefersColorScheme: true,
+      },
       navbar: {
-        title: "Tenor",
+        title: "Tenor Docs",
         logo: {
           alt: "Tenor Logo",
-          src: "img/logo.svg",
+          src: "img/primary_logo.png",
         },
         items: [
           {
             type: "docSidebar",
             sidebarId: "tutorialSidebar",
             position: "left",
-            label: "Tutorial",
+            label: "Documentation",
           },
-          { to: "/blog", label: "Blog", position: "left" },
+          {
+            to: "/docs/ai-features",
+            label: "AI Features",
+            position: "left",
+          },
+          {
+            to: "/docs/architecture",
+            label: "Architecture",
+            position: "left",
+          },
+          // {
+          //   to: "/blog",
+          //   label: "Updates",
+          //   position: "left",
+          // },
           {
             href: "https://github.com/Apantli",
             label: "GitHub",
@@ -99,51 +118,57 @@ const config = {
       footer: {
         style: "dark",
         links: [
-          // {
-          //   title: "Docs",
-          //   items: [
-          //     {
-          //       label: "Tutorial",
-          //       to: "/docs/intro",
-          //     },
-          //   ],
-          // },
-          // {
-          //   title: "Community",
-          //   items: [
-          //     {
-          //       label: "Stack Overflow",
-          //       href: "https://stackoverflow.com/questions/tagged/docusaurus",
-          //     },
-          //     {
-          //       label: "Discord",
-          //       href: "https://discordapp.com/invite/docusaurus",
-          //     },
-          //     {
-          //       label: "X",
-          //       href: "https://x.com/docusaurus",
-          //     },
-          //   ],
-          // },
-          // {
-          //   title: "More",
-          //   items: [
-          //     {
-          //       label: "Blog",
-          //       to: "/blog",
-          //     },
-          //     {
-          //       label: "GitHub",
-          //       href: "https://github.com/facebook/docusaurus",
-          //     },
-          //   ],
-          // },
+          {
+            title: "Documentation",
+            items: [
+              {
+                label: "Introduction",
+                to: "/docs/intro",
+              },
+              {
+                label: "Architecture",
+                to: "/docs/architecture",
+              },
+              {
+                label: "User Interface",
+                to: "/docs/user-interface",
+              },
+            ],
+          },
+          {
+            title: "Features",
+            items: [
+              {
+                label: "AI Features",
+                to: "/docs/ai-features",
+              },
+              {
+                label: "Roles & Permissions",
+                to: "/docs/roles-permissions",
+              },
+            ],
+          },
+          {
+            title: "Community",
+            items: [
+              {
+                label: "GitHub",
+                href: "https://github.com/Apantli",
+              },
+            ],
+          },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} Apantli.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Tenor by Apantli. All rights reserved.`,
       },
       prism: {
         theme: prismThemes.github,
         darkTheme: prismThemes.dracula,
+      },
+      docs: {
+        sidebar: {
+          hideable: true,
+          autoCollapseCategories: true,
+        },
       },
     }),
 };

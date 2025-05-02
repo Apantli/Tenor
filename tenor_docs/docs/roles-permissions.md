@@ -48,37 +48,49 @@ Tenor includes the following predefined roles:
 Tenor divides permissions into six main areas:
 
 ### Settings
+
 Controls access to project configuration:
+
 - **Level 0**: No access to settings
 - **Level 1**: View-only access to settings
 - **Level 2**: Full access to modify project settings
 
 ### Performance
+
 Controls access to analytics and metrics:
+
 - **Level 0**: No access to performance data
 - **Level 1**: View-only access to performance data
 - **Level 2**: Full access to configure and analyze performance data
 
 ### Sprints
+
 Controls sprint management:
+
 - **Level 0**: View-only access to sprints
 - **Level 1**: Can participate in sprints and update tasks
 - **Level 2**: Full sprint management (create, edit, delete)
 
 ### Scrum Board
+
 Controls access to the Kanban-style task board:
+
 - **Level 0**: View-only access to the scrum board
 - **Level 1**: Can update task statuses and assignments
 - **Level 2**: Full scrum board management
 
 ### Issues
+
 Controls issue management:
+
 - **Level 0**: View-only access to issues
 - **Level 1**: Can create and edit issues
 - **Level 2**: Full issue management (create, edit, delete)
 
 ### Backlog
+
 Controls access to the product backlog:
+
 - **Level 0**: View-only access to backlog items
 - **Level 1**: Can create and edit backlog items
 - **Level 2**: Full backlog management (create, edit, delete)

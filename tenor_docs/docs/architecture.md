@@ -44,32 +44,38 @@ Tenor leverages Firebase for its backend services:
 Tenor is organized into several key modules:
 
 ### Project Management
+
 - Project creation and configuration
 - Team and user management
 - Project settings
 
 ### Backlog Management
+
 - User stories
 - Issues
 - Requirements
 - Tags and categorization
 
 ### Sprint Planning
+
 - Sprint creation and planning
 - Backlog item assignment
 - Sprint duration configuration
 
 ### Task Management
+
 - Task creation and assignment
 - Status tracking
 - Priority management
 
 ### Scrum Board
+
 - Kanban-style board visualization
 - Task status columns
 - Drag-and-drop functionality
 
 ### Performance Analytics
+
 - Sprint performance metrics
 - Team velocity tracking
 - Burndown charts
@@ -79,27 +85,33 @@ Tenor is organized into several key modules:
 Tenor's core data entities include:
 
 ### User
+
 - Profile information
 - Authentication details
 - Roles and permissions
 
 ### Project
+
 - Project metadata
 - Team members
 - Configuration settings
 
 ### Backlog Item
+
 Types include:
+
 - User Stories
 - Issues
 - Requirements
 
 ### Sprint
+
 - Sprint metadata
 - Assigned backlog items
 - Start and end dates
 
 ### Task
+
 - Task details
 - Assigned user
 - Status and priority information
