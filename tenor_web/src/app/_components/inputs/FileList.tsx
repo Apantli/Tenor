@@ -16,6 +16,7 @@ interface Props {
   className?: ClassNameValue;
   handleFileAdd: (files: File[]) => void;
   handleFileRemove: (file: File) => void;
+  labelClassName?: string;
 }
 
 export default function FileList({
@@ -25,6 +26,7 @@ export default function FileList({
   memoryLimit,
   handleFileAdd,
   handleFileRemove,
+  labelClassName,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -43,7 +45,9 @@ export default function FileList({
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
         <div>
-          <label className="font-semibold text-lg">{label}</label>
+          <label className={cn("text-lg font-semibold", labelClassName)}>
+            {label}
+          </label>
           <span className="ml-2 text-sm text-gray-500">
             {(filesSumSize() / 1_000_000).toFixed(1)}
             MB / {(memoryLimit / 1_000_000).toFixed(1)}MB
@@ -95,7 +99,7 @@ export default function FileList({
         )}
       >
         {files.length === 0 && (
-          <li className="flex h-full w-full text-gray-400 ">
+          <li className="flex h-full w-full text-gray-400">
             No files added yet...
           </li>
         )}

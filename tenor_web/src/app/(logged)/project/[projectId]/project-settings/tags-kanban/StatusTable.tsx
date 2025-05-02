@@ -13,6 +13,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import {
@@ -308,11 +309,46 @@ export default function StatusTable() {
 
   const renderTable = () => {
     if (isLoadingTags) {
-      return <div className="py-4 text-center">Loading tags...</div>;
+      return (
+        <div className="mt-8 flex h-full w-full items-center justify-center">
+          <LoadingSpinner color="primary" />
+        </div>
+      );
     }
 
     if (tableData.length === 0) {
-      return <div className="py-4 text-center">No status found</div>;
+      return (
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-app-card border-b border-app-border text-sm text-app-text/70">
+              <th className="w-10 px-3 py-2"></th>
+              <th className="w-[100px] px-3 py-2 text-left font-normal">
+                Order
+              </th>
+              <th className="w-[150px] px-3 py-2 text-left font-normal">
+                Status Name
+              </th>
+              <th className="w-[100px] px-3 py-2 text-left font-normal">
+                Color
+              </th>
+              <th className="w-[180px] px-3 py-2 text-center font-normal">
+                Marks tasks as completed
+              </th>
+              <th className="w-[50px] px-3 py-2"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td
+                colSpan={6}
+                className="border-b border-app-border p-3 text-center text-gray-500"
+              >
+                <span className="text-base">No status found</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      );
     }
 
     return (

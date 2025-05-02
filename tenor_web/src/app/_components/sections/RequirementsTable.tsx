@@ -1,6 +1,11 @@
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Permission, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import {
+  permissionNumbers,
+  type Permission,
+  type Tag,
+  type WithId,
+} from "~/lib/types/firebaseSchemas";
 import type {
   RequirementCol,
   requirementsRouter,
@@ -24,7 +29,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { inferRouterOutputs } from "@trpc/server";
+import type { inferRouterOutputs } from "@trpc/server";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 
 import {
@@ -33,6 +38,7 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import TertiaryButton from "../buttons/TertiaryButton";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -110,13 +116,17 @@ export default function RequirementsTable() {
     projectId: params.projectId as string,
   });
   const permission: Permission = useMemo(() => {
-    if (!role) return 0 as Permission;
-    return role.backlog as Permission;
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
   }, [role]);
 
   const { mutateAsync: createOrModifyRequirement, isPending } =
     api.requirements.createOrModifyRequirement.useMutation({
-      onError: (error) => {
+      onError: async (error) => {
         alert(
           "Oops...",
           "You do not have permission to create or modify requirements.",
@@ -125,11 +135,13 @@ export default function RequirementsTable() {
             duration: 5000,
           },
         );
+
+        await refetchRequirements();
       },
     });
   const { mutateAsync: generateRequirements } =
     api.requirements.generateRequirements.useMutation({
-      onError: (error) => {
+      onError: async (error) => {
         alert(
           "Oops...",
           "You do not have permission to generate requirements.",
@@ -138,6 +150,8 @@ export default function RequirementsTable() {
             duration: 5000,
           },
         );
+
+        await refetchRequirements();
       },
     });
 
@@ -263,7 +277,7 @@ export default function RequirementsTable() {
 
   const { mutateAsync: deleteRequirement } =
     api.requirements.deleteRequirement.useMutation({
-      onError: (error) => {
+      onError: async (error) => {
         alert(
           "Oops...",
           `You do not have permission to delete this requirement.`,
@@ -272,6 +286,8 @@ export default function RequirementsTable() {
             duration: 5000,
           },
         );
+
+        await refetchRequirements();
       },
     });
   useEffect(() => {
@@ -368,6 +384,49 @@ export default function RequirementsTable() {
       generatedRequirements.current = newGeneratedRequirements;
     },
   );
+
+  const deleteRequirements = async (ids: string[]) => {
+    const confirmMessage =
+      ids.length > 1
+        ? "delete these requirements?"
+        : "delete this requirement?";
+    if (
+      !(await confirm(
+        `Are you sure you want to ${confirmMessage}`,
+        "This action cannot be undone",
+        "Delete",
+      ))
+    ) {
+      return false;
+    }
+
+    const newData = requirementsData.filter((item) => !ids.includes(item.id));
+
+    await utils.requirements.getRequirementsTableFriendly.cancel({
+      projectId: params.projectId as string,
+    });
+    utils.requirements.getRequirementsTableFriendly.setData(
+      { projectId: params.projectId as string },
+      (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          fixedData: newData,
+        };
+      },
+    );
+
+    await Promise.all(
+      ids.map((id) =>
+        deleteRequirement({
+          projectId: params.projectId as string,
+          requirementId: id,
+        }),
+      ),
+    );
+    await refetchRequirements();
+    return true;
+  };
 
   const table = useMemo(() => {
     if (requirements == undefined || isLoadingRequirements) {
@@ -479,6 +538,7 @@ export default function RequirementsTable() {
 
           return (
             <PriorityPicker
+              disabled={permission < permissionNumbers.write}
               priority={row.priorityId}
               onChange={async (tag: Tag) => {
                 if (isGhost) {
@@ -540,6 +600,7 @@ export default function RequirementsTable() {
 
           return (
             <RequirementTypePicker
+              disabled={permission < permissionNumbers.write}
               type={row.requirementTypeId}
               onChange={async (requirementTypeId) => {
                 if (isGhost) {
@@ -603,6 +664,7 @@ export default function RequirementsTable() {
 
           return (
             <RequirementFocusPicker
+              disabled={permission < permissionNumbers.write}
               focus={row.requirementFocusId}
               onChange={async (requirementFocusId) => {
                 if (isGhost) {
@@ -635,47 +697,9 @@ export default function RequirementsTable() {
       ids: string[],
       callback: (del: boolean) => void,
     ) => {
-      const confirmMessage =
-        ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
-      if (
-        !(await confirm(
-          `Are you sure you want to ${confirmMessage}`,
-          "This action cannot be undone",
-          "Delete",
-        ))
-      ) {
-        callback(false);
-        return;
-      }
-      callback(true); // call the callback as soon as posible
-
-      const newData = requirementsData.filter((item) => !ids.includes(item.id));
-
-      await utils.requirements.getRequirementsTableFriendly.cancel({
-        projectId: params.projectId as string,
-      });
-      utils.requirements.getRequirementsTableFriendly.setData(
-        { projectId: params.projectId as string },
-        (prev) => {
-          if (!prev) return prev;
-          return {
-            ...prev,
-            fixedData: newData,
-          };
-        },
-      );
-
-      //Deletes in database
-      await Promise.all(
-        ids.map((id) =>
-          deleteRequirement({
-            projectId: params.projectId as string,
-            requirementId: id,
-          }),
-        ),
-      );
-      await refetchRequirements();
-      return true;
+      const deleted = await deleteRequirements(ids);
+      callback(deleted);
+      return deleted;
     };
 
     return (
@@ -685,8 +709,8 @@ export default function RequirementsTable() {
         columns={tableColumns}
         onDelete={handleDelete}
         emptyMessage="No requirements found"
-        multiselect
-        deletable={permission >= 2}
+        multiselect={permission >= permissionNumbers.write}
+        deletable={permission >= permissionNumbers.write}
         tableKey="requirements-table"
         ghostData={ghostData}
         ghostRows={ghostRows}
@@ -767,7 +791,7 @@ export default function RequirementsTable() {
               handleUpdateSearch={(e) => setSearchValue(e.target.value)}
             />
           </div>
-          {permission >= 2 && (
+          {permission >= permissionNumbers.write && (
             <div className="flex items-center gap-1">
               <PrimaryButton
                 onClick={() => {
@@ -800,41 +824,73 @@ export default function RequirementsTable() {
           reduceTopPadding={requirementEditedData === null}
           size="small"
           className="h-[700px] w-[600px]"
+          disablePassiveDismiss
+          dismiss={async () => {
+            const {
+              name,
+              description,
+              priorityId,
+              requirementTypeId,
+              requirementFocusId,
+            } = newRequirement;
+            const allFields = [
+              name,
+              description,
+              priorityId,
+              requirementTypeId,
+              requirementFocusId,
+            ];
+            if (
+              allFields.some((field) => field !== "" && field !== undefined)
+            ) {
+              const confirmation = await confirm(
+                "Are you sure?",
+                "Your changes will be discarded.",
+                "Discard changes",
+                "Keep Editing",
+              );
+              if (!confirmation) return;
+            }
+            setShowSmallPopup(false);
+          }}
           setEditMode={
-
-            permission < 2
+            permission < permissionNumbers.write
               ? undefined
               : requirementEditedData !== null
-              ? async () => {
-                  const { name, description } = editForm;
-                  const {
-                    priorityId,
-                    requirementTypeId,
-                    requirementFocusId,
-                    scrumId,
-                  } = requirementEditedData;
+                ? async () => {
+                    const { name, description } = editForm;
+                    const {
+                      priorityId,
+                      requirementTypeId,
+                      requirementFocusId,
+                      scrumId,
+                    } = requirementEditedData;
 
-                  if (editingRequirement) {
-                    if (!name) {
-                      alert("Oops...", "Requirement name must have a value.", {
-                        type: "error",
-                        duration: 5000, // time in ms (5 seconds)
-                      });
-                      return;
-                    }
-                    if (
-                      !priorityId?.id ||
-                      !requirementTypeId?.id ||
-                      !requirementFocusId?.id
-                    ) {
-                      alert("Oops...", "All properties must have a value.", {
-                        type: "error",
-                        duration: 5000, // time in ms (5 seconds)
-                      });
-                      return;
-                    }
+                    if (editingRequirement) {
+                      if (!name) {
+                        alert(
+                          "Oops...",
+                          "Requirement name must have a value.",
+                          {
+                            type: "error",
+                            duration: 5000, // time in ms (5 seconds)
+                          },
+                        );
+                        return;
+                      }
+                      if (
+                        !priorityId?.id ||
+                        !requirementTypeId?.id ||
+                        !requirementFocusId?.id
+                      ) {
+                        alert("Oops...", "All properties must have a value.", {
+                          type: "error",
+                          duration: 5000, // time in ms (5 seconds)
+                        });
+                        return;
+                      }
 
-                    setEditingRequirement(false);
+                      setEditingRequirement(false);
 
                       if (ghostRequirementEdited) {
                         updateGhostRow(
@@ -883,15 +939,12 @@ export default function RequirementsTable() {
                 : () => {}
           }
           editMode={
-            permission < 2
+            permission < permissionNumbers.write
               ? undefined
               : requirementEditedData
                 ? editingRequirement
                 : undefined
           }
-          dismiss={() => {
-            setShowSmallPopup(false);
-          }}
           title={
             <h1 className="text-2xl">
               <strong>
@@ -921,10 +974,16 @@ export default function RequirementsTable() {
               {requirementEditedData ? (
                 requirementEdited ? (
                   // FIXME add delete functionality (NEW PR)
-                  permission < 2 ? null : (
+                  permission < permissionNumbers.write ? null : (
                     <DeleteButton
                       onClick={async () => {
-                        console.log("Deleting");
+                        if (
+                          requirementEdited &&
+                          (await deleteRequirements([requirementEdited.id]))
+                        ) {
+                          setShowSmallPopup(false);
+                          setRequirementEdited(null);
+                        }
                       }}
                     >
                       Delete
@@ -1030,6 +1089,7 @@ export default function RequirementsTable() {
                       <div className="w-36 space-y-2">
                         <label className="font-semibold">Priority</label>
                         <PriorityPicker
+                          disabled={permission < permissionNumbers.write}
                           priority={newRequirement.priorityId}
                           onChange={async (priority) => {
                             setNewRequirement((prev) => ({
@@ -1042,6 +1102,7 @@ export default function RequirementsTable() {
                       <div className="w-36 space-y-2">
                         <label className="font-semibold">Type</label>
                         <RequirementTypePicker
+                          disabled={permission < permissionNumbers.write}
                           type={newRequirement.requirementTypeId}
                           onChange={async (type) => {
                             setNewRequirement((prev) => ({
@@ -1054,6 +1115,7 @@ export default function RequirementsTable() {
                       <div className="w-36 space-y-2">
                         <label className="font-semibold">Focus</label>
                         <RequirementFocusPicker
+                          disabled={permission < permissionNumbers.write}
                           focus={newRequirement.requirementFocusId}
                           onChange={async (focus) => {
                             setNewRequirement((prev) => ({
@@ -1082,6 +1144,7 @@ export default function RequirementsTable() {
                   <div className="w-36 space-y-2">
                     <label className="font-semibold">Priority</label>
                     <PriorityPicker
+                      disabled={permission < permissionNumbers.write}
                       priority={
                         requirementEditedData
                           ? requirementEditedData.priorityId
@@ -1134,6 +1197,7 @@ export default function RequirementsTable() {
                   <div className="w-36 space-y-2">
                     <label className="font-semibold">Type</label>
                     <RequirementTypePicker
+                      disabled={permission < permissionNumbers.write}
                       type={
                         requirementEditedData
                           ? requirementEditedData.requirementTypeId
@@ -1186,6 +1250,7 @@ export default function RequirementsTable() {
                   <div className="w-36 space-y-2">
                     <label className="font-semibold">Focus</label>
                     <RequirementFocusPicker
+                      disabled={permission < permissionNumbers.write}
                       focus={
                         requirementEditedData
                           ? requirementEditedData.requirementFocusId

@@ -54,7 +54,7 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
 
   return (
     <div className="flex h-full flex-row">
-      <div className="flex h-full w-[450px] basis-1/4 flex-col border-r-2 pr-10">
+      <div className="flex h-full w-[450px] basis-[400px] flex-col border-r-2 pr-10">
         <h1 className="mb-5 text-3xl font-semibold">Project Settings</h1>
 
         {pages.map(({ title, link, icon: Icon }, i) => {

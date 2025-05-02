@@ -4,7 +4,7 @@ export const tabsMetaInformation = {
     title: "Overview",
     link: "/",
     enabled: true,
-    flags: [],
+    flags: ["backlog", "performance"],
   },
   requirements: {
     title: "Requirements",
@@ -30,7 +30,7 @@ export const tabsMetaInformation = {
     enabled: true,
     flags: ["sprints"],
   },
-  scrumBoard: {
+  scrumboard: {
     title: "Scrum Board",
     link: "/scrumboard",
     enabled: true,
@@ -61,7 +61,7 @@ export const tabs = [
   "userStories",
   "issues",
   "sprints",
-  "scrumBoard",
+  "scrumboard",
   "calendar",
   "performance",
   "settings",
@@ -71,7 +71,7 @@ export const tabsToLinks = {
   "user-stories": "userStories",
   issues: "issues",
   sprints: "sprints",
-  scrumBoard: "scrumboard",
+  scrumboard: "scrumboard",
   calendar: "calendar",
   performance: "performance",
   "project-settings": "settings",

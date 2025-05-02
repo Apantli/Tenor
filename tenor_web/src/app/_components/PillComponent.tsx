@@ -18,6 +18,7 @@ interface Props {
   labelClassName: string;
   hideSearch?: boolean;
   addTag?: (tag: Tag) => Promise<Tag>;
+  disabled?: boolean;
 }
 
 export default function PillComponent({
@@ -28,6 +29,7 @@ export default function PillComponent({
   hideSearch,
   className,
   addTag,
+  disabled,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -99,7 +101,7 @@ export default function PillComponent({
         }}
       >
         <span className="truncate">{tag.name}</span>
-        <span className="basis-[5px]">
+        <span className={cn("basis-[5px]", disabled ? "hidden" : "")}>
           <ArrowDropDownIcon />
         </span>
       </div>
@@ -111,6 +113,7 @@ export default function PillComponent({
       label={createPillLabel(currentTag ?? noneSelectedTag)}
       className={className}
       onOpen={() => inputRef.current?.focus()}
+      disabled={disabled}
     >
       {!hideSearch && (
         <DropdownItem className="flex w-52 flex-col">

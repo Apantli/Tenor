@@ -12,6 +12,7 @@ import {
   ExistingUserStorySchema,
   IssueSchema,
   SprintSchema,
+  StatusTagSchema,
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
@@ -328,11 +329,10 @@ export const issuesRouter = createTRPCRouter({
           const taskData = TaskSchema.parse(task.data());
 
           // FIXME: Get tag information from database
-          const statusTag = TagSchema.parse({
-            name: "Done",
-            color: "#00FF00",
-            deleted: false,
-          });
+          const statusTag = await getStatusTag(
+            getProjectSettingsRef(projectId, ctx.firestore),
+            taskData.statusId,
+          );
 
           return { ...taskData, id: taskId, status: statusTag };
         }),

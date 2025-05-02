@@ -52,95 +52,23 @@ export default function RoleTable({
       label: "Name",
       width: 140,
     },
-    settings: {
-      label: "Settings",
+    backlog: {
+      label: "Backlog",
       width: defaultWidth,
       render: (row) => {
         return (
           <PillPickerComponent
-            label={permissionLabels[row.settings]}
+            label={permissionLabels[row.backlog]}
             selectedItem={{
-              id: row.settings.toString(),
-              label: permissionLabels[row.settings],
+              id: row.backlog.toString(),
+              label: permissionLabels[row.backlog],
             }}
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
               handleEditTabPermission(
                 row.id,
-                "settings",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    performance: {
-      label: "Performance",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            label={permissionLabels[row.performance]}
-            selectedItem={{
-              id: row.performance.toString(),
-              label: permissionLabels[row.performance],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "performance",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    sprints: {
-      label: "Sprints",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            label={permissionLabels[row.sprints]}
-            selectedItem={{
-              id: row.sprints.toString(),
-              label: permissionLabels[row.sprints],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "sprints",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    scrumboard: {
-      label: "Scrum Board",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            label={permissionLabels[row.scrumboard]}
-            selectedItem={{
-              id: row.scrumboard.toString(),
-              label: permissionLabels[row.scrumboard],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "scrumboard",
+                "backlog",
                 parseInt(item.id) as Permission,
               );
             }}
@@ -172,23 +100,95 @@ export default function RoleTable({
         );
       },
     },
-    backlog: {
-      label: "Backlog",
+    scrumboard: {
+      label: "Scrum Board",
       width: defaultWidth,
       render: (row) => {
         return (
           <PillPickerComponent
-            label={permissionLabels[row.backlog]}
+            label={permissionLabels[row.scrumboard]}
             selectedItem={{
-              id: row.backlog.toString(),
-              label: permissionLabels[row.backlog],
+              id: row.scrumboard.toString(),
+              label: permissionLabels[row.scrumboard],
             }}
             hideSearch={true}
             allItems={permissionItems}
             onChange={(item: { id: string; label: string }): void => {
               handleEditTabPermission(
                 row.id,
-                "backlog",
+                "scrumboard",
+                parseInt(item.id) as Permission,
+              );
+            }}
+          />
+        );
+      },
+    },
+    sprints: {
+      label: "Sprints",
+      width: defaultWidth,
+      render: (row) => {
+        return (
+          <PillPickerComponent
+            label={permissionLabels[row.sprints]}
+            selectedItem={{
+              id: row.sprints.toString(),
+              label: permissionLabels[row.sprints],
+            }}
+            hideSearch={true}
+            allItems={permissionItems}
+            onChange={(item: { id: string; label: string }): void => {
+              handleEditTabPermission(
+                row.id,
+                "sprints",
+                parseInt(item.id) as Permission,
+              );
+            }}
+          />
+        );
+      },
+    },
+    performance: {
+      label: "Performance",
+      width: defaultWidth,
+      render: (row) => {
+        return (
+          <PillPickerComponent
+            label={permissionLabels[row.performance]}
+            selectedItem={{
+              id: row.performance.toString(),
+              label: permissionLabels[row.performance],
+            }}
+            hideSearch={true}
+            allItems={permissionItems}
+            onChange={(item: { id: string; label: string }): void => {
+              handleEditTabPermission(
+                row.id,
+                "performance",
+                parseInt(item.id) as Permission,
+              );
+            }}
+          />
+        );
+      },
+    },
+    settings: {
+      label: "Settings",
+      width: defaultWidth,
+      render: (row) => {
+        return (
+          <PillPickerComponent
+            label={permissionLabels[row.settings]}
+            selectedItem={{
+              id: row.settings.toString(),
+              label: permissionLabels[row.settings],
+            }}
+            hideSearch={true}
+            allItems={permissionItems}
+            onChange={(item: { id: string; label: string }): void => {
+              handleEditTabPermission(
+                row.id,
+                "settings",
                 parseInt(item.id) as Permission,
               );
             }}
@@ -197,6 +197,11 @@ export default function RoleTable({
       },
     },
   };
+
+  const filteredRoles = roles.filter((role) => {
+    const search = tableSearchValue.toLowerCase();
+    return role.label.toLowerCase().includes(search);
+  });
 
   return (
     <div className={cn("w-full", className)}>
@@ -252,8 +257,9 @@ export default function RoleTable({
       </div>
 
       <Table
+        emptyMessage="No roles found"
         className="w-full"
-        data={roles} // filter tableSearchValue by name or email
+        data={filteredRoles}
         columns={columns}
         multiselect
         deletable={{

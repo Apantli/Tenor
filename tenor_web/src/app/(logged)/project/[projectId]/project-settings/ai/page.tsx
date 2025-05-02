@@ -35,7 +35,8 @@ export default function ProjectAIConfig() {
     const resultFiles: File[] = [];
     if (files) {
       files.forEach((file) => {
-        const blob = new Blob([], { type: file.type });
+        const dummyContent = new Uint8Array(file.size);
+        const blob = new Blob([dummyContent], { type: file.type });
         const newFile = new File([blob], file.name, { type: file.type });
         resultFiles.push(newFile);
       });
@@ -129,9 +130,9 @@ export default function ProjectAIConfig() {
   };
 
   // File utils
-  const handleAddFiles = async (files: File[]) => {
-    if (!files) return;
-    const newData = files;
+  const handleAddFiles = async (newFiles: File[]) => {
+    if (!newFiles || !files) return;
+    const newData = [...files, ...newFiles];
     // Uses optimistic update
     await utils.settings.getContextFiles.cancel({
       projectId: projectId as string,
@@ -144,14 +145,16 @@ export default function ProjectAIConfig() {
       name: string;
       type: string;
       content: string;
+      size: number;
     }[] = [];
 
-    for (const file of files) {
+    for (const file of newFiles) {
       const fileBase64 = (await toBase64(file)) as string;
       filesBase64Encoded.push({
         name: file.name,
         type: file.type,
         content: fileBase64,
+        size: file.size,
       });
     }
 

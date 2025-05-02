@@ -17,6 +17,7 @@ interface Props {
   handleLinkAdd: (link: Links) => void;
   handleLinkRemove: (link: Links) => void;
   className?: ClassNameValue;
+  labelClassName?: string;
 }
 
 // FIXME: We need to improve a type checking for the links. You can just input "hey" and it will be added as a link
@@ -26,6 +27,7 @@ export default function LinkList({
   handleLinkAdd,
   handleLinkRemove,
   links,
+  labelClassName,
 }: Props) {
   const [link, setLink] = React.useState("");
   const confirm = useConfirmation();
@@ -34,7 +36,9 @@ export default function LinkList({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <label className="text-lg font-semibold">{label}</label>
+        <label className={cn("text-lg font-semibold", labelClassName)}>
+          {label}
+        </label>
         <Dropdown
           label={
             <PrimaryButton
