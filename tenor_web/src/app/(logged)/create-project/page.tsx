@@ -272,6 +272,7 @@ export default function ProjectCreator() {
                 <InputFileField
                   label="Icon (max: 3MB)"
                   labelClassName="text-lg font-semibold"
+                  className="mt-1"
                   accept="image/*"
                   image={icon}
                   handleImageChange={handleImageChange}
