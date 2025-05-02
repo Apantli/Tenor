@@ -364,6 +364,10 @@ export default function ProjectScrumPreferences() {
             }}
             disableAI={true}
           />
+          <SettingsSizeTable
+            sizeData={sizeData}
+            setSizeData={setSizeData}
+          />
         </>
       )}
       {settingFetchLoading && (
@@ -372,10 +376,6 @@ export default function ProjectScrumPreferences() {
           <p className="text-lg font-medium">Loading...</p>
         </div>
       )}
-      <SettingsSizeTable
-        sizeData={sizeData}
-        setSizeData={setSizeData}
-      />
     </div>
   );
 }
