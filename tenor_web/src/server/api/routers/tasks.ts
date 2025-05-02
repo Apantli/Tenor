@@ -153,7 +153,7 @@ export const getTodoStatusTag = async (
   }
   return {
     id: todoTag.docs[0]!.id,
-    ...TagSchema.parse(todoTag.docs[0]!.data()),
+    ...StatusTagSchema.parse(todoTag.docs[0]!.data()),
   };
 };
 

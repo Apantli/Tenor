@@ -13,7 +13,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import { type Size, type Tag } from "~/lib/types/firebaseSchemas";
+import { StatusTag, type Size, type Tag } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
@@ -51,7 +51,7 @@ export function CreateTaskForm({
   const [createForm, setCreateForm] = useState<{
     name: string;
     description: string;
-    status: Tag;
+    status: StatusTag;
     assigneeId?: string;
     assignee?: UserPreview;
     size?: Size;
@@ -64,6 +64,8 @@ export function CreateTaskForm({
       name: "Todo",
       color: "#0737E3",
       deleted: false,
+      marksTaskAsDone: false,
+      orderIndex: 0,
     },
     assigneeId: "",
     assignee: undefined,
