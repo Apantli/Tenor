@@ -14,19 +14,13 @@ import { dbAdmin, firebaseAdmin } from "~/utils/firebaseAdmin";
 import { supabase } from "~/utils/supabase";
 import { auth } from "../auth";
 
-import {
-  Permission,
-  permissionNumbers,
-  Role,
-} from "~/lib/types/firebaseSchemas";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import { RoleSchema } from "~/lib/types/zodFirebaseSchema";
 import {
   checkPermissions,
-  emptyRole,
   FlagsRequired,
   ownerRole,
 } from "~/lib/defaultProjectValues";
-import { permission } from "process";
 
 /**
  * 1. CONTEXT
@@ -192,7 +186,7 @@ export const roleRequiredProcedure = (
         role = RoleSchema.parse(roleData);
       }
 
-      let userPermission = checkPermissions(flags, role);
+      const userPermission = checkPermissions(flags, role);
       if (permission > userPermission) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }

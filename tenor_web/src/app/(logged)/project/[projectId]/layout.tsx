@@ -90,7 +90,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
             <div className="flex h-full flex-col items-center justify-center text-center">
               <SearchOffIcon style={{ fontSize: 100, color: "gray" }} />
               <p className="mt-4 text-xl font-semibold text-gray-600">
-                Oops... the page you are looking for isn't here.
+                Oops... the page you are looking for is not here.
               </p>
               <p className="mt-2 text-sm text-gray-500">
                 If you are looking for a project, ask the administrator to give

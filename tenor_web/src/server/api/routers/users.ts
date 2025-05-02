@@ -21,16 +21,17 @@ export const userRouter = createTRPCRouter({
       const users = await ctx.firebaseAdmin.auth().listUsers(1000);
       const filteredUsers = users.users.filter(
         (user) =>
-          user.email?.includes(filter) || user.displayName?.includes(filter),
+          (user.email ?? "").toLowerCase().includes(filter.toLowerCase()) ||
+          (user.displayName ?? "").toLowerCase().includes(filter.toLowerCase()),
       );
 
-      const usersList = users.users.map((user) => ({
+      const usersList: TeamMember[] = users.users.map((user) => ({
         id: user.uid,
         photoURL: user.photoURL,
-        displayName: user.displayName,
-        email: user.email,
+        displayName: user.displayName ?? "No available name",
+        email: user.email ?? "No available email",
         role: "none",
-      })) as TeamMember[];
+      }));
       return usersList;
     }),
 
@@ -115,9 +116,7 @@ export const userRouter = createTRPCRouter({
         const userData = doc.data();
 
         try {
-          const firebaseUser = await ctx.firebaseAdmin
-            .auth()
-            .getUser(doc.id as string);
+          const firebaseUser = await ctx.firebaseAdmin.auth().getUser(doc.id);
 
           users.push({
             id: doc.id,
@@ -125,7 +124,7 @@ export const userRouter = createTRPCRouter({
             displayName: firebaseUser.displayName ?? "No available name",
             email: firebaseUser.email ?? "No available email",
             role: userData.roleId as string,
-          } as TeamMember);
+          });
         } catch (error) {
           console.error(`Error getting Firebase user ${doc.id}:`, error);
         }
