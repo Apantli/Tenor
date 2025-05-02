@@ -29,7 +29,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { inferRouterOutputs } from "@trpc/server";
+import type { inferRouterOutputs } from "@trpc/server";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 
 import {
@@ -824,6 +824,35 @@ export default function RequirementsTable() {
           reduceTopPadding={requirementEditedData === null}
           size="small"
           className="h-[700px] w-[600px]"
+          disablePassiveDismiss
+          dismiss={async () => {
+            const {
+              name,
+              description,
+              priorityId,
+              requirementTypeId,
+              requirementFocusId,
+            } = newRequirement;
+            const allFields = [
+              name,
+              description,
+              priorityId,
+              requirementTypeId,
+              requirementFocusId,
+            ];
+            if (
+              allFields.some((field) => field !== "" && field !== undefined)
+            ) {
+              const confirmation = await confirm(
+                "Are you sure?",
+                "Your changes will be discarded.",
+                "Discard changes",
+                "Keep Editing",
+              );
+              if (!confirmation) return;
+            }
+            setShowSmallPopup(false);
+          }}
           setEditMode={
             permission < permissionNumbers.write
               ? undefined
@@ -916,9 +945,6 @@ export default function RequirementsTable() {
                 ? editingRequirement
                 : undefined
           }
-          dismiss={() => {
-            setShowSmallPopup(false);
-          }}
           title={
             <h1 className="text-2xl">
               <strong>

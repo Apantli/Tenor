@@ -49,8 +49,6 @@ const getRequirementsFromProject = async (
     .orderBy("scrumId", "asc");
   const requirementsSnapshot = await requirementsRef.get();
 
-  console.log("Requirements snapshot:", requirementsSnapshot.docs);
-
   const requirements: WithId<Requirement>[] = [];
   requirementsSnapshot.forEach((doc) => {
     const data = doc.data() as Requirement;

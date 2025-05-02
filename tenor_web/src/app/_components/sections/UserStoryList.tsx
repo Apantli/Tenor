@@ -7,10 +7,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
-import type {
-  userStoriesRouter,
-  UserStoryCol,
-} from "~/server/api/routers/userStories";
+import type { UserStoryCol } from "~/server/api/routers/userStories";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../Popup";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
@@ -24,23 +21,16 @@ import {
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import LoadingSpinner from "../LoadingSpinner";
-import AiButton from "../buttons/AiButton";
-import Dropdown, { DropdownItem } from "../Dropdown";
-import PillPickerComponent from "../PillPickerComponent";
-import FloatingLabelInput from "../FloatingLabelInput";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { inferRouterOutputs } from "@trpc/server";
+
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
-import {
-  TaskDetail,
-  UserStoryDetailWithTasks,
-} from "~/lib/types/detailSchemas";
+import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
