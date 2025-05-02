@@ -31,7 +31,7 @@ export default function ProjectGeneralSettings() {
   const utils = api.useUtils();
   const { alert } = useAlert();
 
-  const { data: project } = api.projects.getGeneralConfig.useQuery({
+  const { data: project, isLoading } = api.projects.getGeneralConfig.useQuery({
     projectId: projectId as string,
   });
   const confirm = useConfirmation();
@@ -70,9 +70,10 @@ export default function ProjectGeneralSettings() {
 
   const isModified = () => {
     return (
-      editForm.name !== project?.name ||
-      (editForm.icon !== project?.logo && icon !== null) ||
-      editForm.description !== project?.description
+      (editForm.name !== project?.name ||
+        editForm.icon !== project?.logo ||
+        editForm.description !== project?.description) &&
+      !isLoading
     );
   };
 
@@ -116,10 +117,13 @@ export default function ProjectGeneralSettings() {
       description: editForm.description,
       logo: editForm.icon,
     });
-    await utils.projects.getGeneralConfig.invalidate();
+    await utils.projects.getGeneralConfig.invalidate({
+      projectId: projectId as string,
+    });
 
     // update project in the cache
     setIcon(null);
+    editForm.icon = project?.logo ?? "";
 
     alert("Success", "Project settings have been updated successfully.", {
       type: "success",
@@ -142,19 +146,28 @@ export default function ProjectGeneralSettings() {
         <div className="flex h-full flex-col gap-2">
           <p className="mb-2 text-lg font-semibold">Project icon</p>
           <div className="flex flex-row gap-x-3">
-            <img
-              src={
-                editForm.icon == ""
-                  ? undefined
-                  : icon
-                    ? URL.createObjectURL(icon)
-                    : editForm.icon.startsWith("/")
-                      ? editForm.icon
-                      : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
-              }
-              alt="Project logo"
-              className="h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1"
-            />
+            {editForm.icon === "" ? (
+              <div className="flex h-20 min-h-20 w-20 min-w-20 items-center justify-center rounded-md border border-app-border p-1">
+                <LoadingSpinner color="primary" />
+              </div>
+            ) : (
+              <div className="relative h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border p-1">
+                <img
+                  src={
+                    icon
+                      ? URL.createObjectURL(icon)
+                      : editForm.icon.startsWith("/")
+                        ? editForm.icon
+                        : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
+                  }
+                  alt="Project logo"
+                  className="h-full w-full object-contain"
+                />
+                <div className="absolute inset-0 flex items-center justify-center opacity-0">
+                  <LoadingSpinner color="primary" />
+                </div>
+              </div>
+            )}
             <InputFileField
               label=""
               accept="image/*"
@@ -188,9 +201,9 @@ export default function ProjectGeneralSettings() {
             <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">
               Danger Zone
             </h3>
-            <div className="flex flex-row justify-between gap-x-28 items-center">
+            <div className="flex flex-row items-center justify-between gap-x-28">
               <div className="flex flex-col">
-                <p className="font-semibold text-lg">Delete project</p>
+                <p className="text-lg font-semibold">Delete project</p>
                 <p>Once deleted, you cannot recover it.</p>
               </div>
               <DeleteButton

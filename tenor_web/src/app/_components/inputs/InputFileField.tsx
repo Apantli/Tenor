@@ -56,7 +56,7 @@ export default function InputFileField({
               />
             )) ?? <DriveFolderUploadIcon />}
           </div>
-          <span className="flex h-10 max-w-[200px] items-center truncate pl-2 text-sm text-gray-700">
+          <span className="flex h-10 w-full items-center truncate pl-2 text-sm text-gray-700">
             {image?.name ?? displayText}
           </span>
         </div>

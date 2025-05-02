@@ -208,7 +208,7 @@ export default function ProjectAIConfig() {
   };
 
   const isModified = () => {
-    return newText != text;
+    return newText != text && !isLoading;
   };
 
   useNavigationGuard(
