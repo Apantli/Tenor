@@ -163,7 +163,7 @@ export const userRouter = createTRPCRouter({
 
         // Remove the project from their list of projects
         await userRef.update({
-          projects:
+          projectIds:
             ctx.firebaseAdmin.firestore.FieldValue.arrayRemove(projectId),
         });
       } else {
@@ -197,7 +197,8 @@ export const userRouter = createTRPCRouter({
       // add project to user
       const userDoc = ctx.firestore.collection("users").doc(userId);
       await userDoc.update({
-        projects: ctx.firebaseAdmin.firestore.FieldValue.arrayUnion(projectId),
+        projectIds:
+          ctx.firebaseAdmin.firestore.FieldValue.arrayUnion(projectId),
       });
     }),
   updateUserRole: roleRequiredProcedure({ flags: ["settings"] }, "write")
