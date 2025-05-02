@@ -126,7 +126,7 @@ export const getStatusTag = async (
   if (!tag.exists) {
     return undefined;
   }
-  return { id: tag.id, ...StatusTagSchema.parse(tag.data()) } as Tag;
+  return { id: tag.id, ...StatusTagSchema.parse(tag.data()) } as StatusTag;
 };
 
 /**

@@ -73,7 +73,7 @@ export type IssueDetail = {
   tags: Tag[];
   priority?: Tag;
   size?: Size;
-  status?: Tag; // It is a statusTag, but in the detail we don't need the detail info!
+  status?: StatusTag;
   relatedUserStory?: ExistingUserStory;
   tasks: TaskPreview[];
   sprint?: SprintPreview;
