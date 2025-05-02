@@ -272,7 +272,12 @@ export const projectsRouter = createTRPCRouter({
         const usersCollection = newProjectRef.collection("users");
 
         await Promise.all(
-          users.map((user) => usersCollection.doc(user.userId).set(user)),
+          users.map((user) =>
+            usersCollection.doc(user.userId).set({
+              ...user,
+              userId: undefined,
+            }),
+          ),
         );
 
         const priorityTypesCollection = newProjectRef

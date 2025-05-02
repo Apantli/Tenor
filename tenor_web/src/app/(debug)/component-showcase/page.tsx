@@ -31,6 +31,7 @@ import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import { acceptableTagColors } from "~/utils/colorUtils";
+import Dropdown from "~/app/_components/Dropdown";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {

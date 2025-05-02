@@ -9,9 +9,14 @@ import type { Tag } from "~/lib/types/firebaseSchemas";
 interface Props {
   focus?: Tag;
   onChange: (priority: Tag) => void;
+  disabled?: boolean;
 }
 
-export default function RequirementFocusPicker({ focus, onChange }: Props) {
+export default function RequirementFocusPicker({
+  focus,
+  onChange,
+  disabled,
+}: Props) {
   const { projectId } = useParams();
   const { data: focusTags } = api.requirements.getRequirementFocusTags.useQuery(
     {
@@ -24,6 +29,7 @@ export default function RequirementFocusPicker({ focus, onChange }: Props) {
 
   return (
     <PillComponent
+      disabled={disabled}
       currentTag={focus}
       allTags={focusTags ?? []}
       callBack={onChange}

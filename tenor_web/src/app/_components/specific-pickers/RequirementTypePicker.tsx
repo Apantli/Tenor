@@ -10,9 +10,14 @@ import { cn } from "~/lib/utils";
 interface Props {
   type?: Tag;
   onChange: (priority: Tag) => void;
+  disabled?: boolean;
 }
 
-export default function RequirementTypePicker({ type, onChange }: Props) {
+export default function RequirementTypePicker({
+  type,
+  onChange,
+  disabled,
+}: Props) {
   const { projectId } = useParams();
   const { data: typeTags } = api.requirements.getRequirementTypeTags.useQuery({
     projectId: projectId as string,
@@ -23,6 +28,7 @@ export default function RequirementTypePicker({ type, onChange }: Props) {
 
   return (
     <PillComponent
+      disabled={disabled}
       currentTag={type}
       allTags={typeTags ?? []}
       callBack={onChange}
