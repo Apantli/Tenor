@@ -577,7 +577,7 @@ function ConfirmationShowcase() {
     if (
       await confirm(
         "Are you sure?",
-        "This action is not revertible",
+        "This action is not reversible",
         "Delete item",
       )
     ) {
@@ -585,7 +585,7 @@ function ConfirmationShowcase() {
       console.log("User confirmed");
       await confirm(
         "Are you really really sure?",
-        "This action is not revertible",
+        "This action is not reversible",
         "Delete item",
       );
     } else {

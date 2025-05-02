@@ -325,7 +325,7 @@ export default function ProjectScrumPreferences() {
 
     await invalidateQueriesScrumPreferences(projectId as string);
 
-    alert("Success", "Scrum settings updated successfully", {
+    alert("Success", "Scrum settings have been updated successfully", {
       type: "success",
       duration: 5000,
     });
@@ -373,7 +373,7 @@ export default function ProjectScrumPreferences() {
       {settingFetchLoading && (
         <div className="mt-5 flex flex-row gap-x-3">
           <LoadingSpinner />
-          <p className="text-lg font-medium">Loading...</p>
+          <p className="text-lg">Loading...</p>
         </div>
       )}
     </div>
