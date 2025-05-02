@@ -50,6 +50,7 @@ export default function ProjectCreator() {
       name: string;
       type: string;
       content: string;
+      size: number;
     }[] = [];
 
     for (const file of files) {
@@ -58,6 +59,7 @@ export default function ProjectCreator() {
         name: file.name,
         type: file.type,
         content: fileBase64,
+        size: file.size,
       });
     }
 

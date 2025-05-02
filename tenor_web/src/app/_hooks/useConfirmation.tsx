@@ -73,7 +73,6 @@ export const ConfirmationProvider = ({ children }: PropsWithChildren) => {
     <ConfirmationContext.Provider value={{ confirm }}>
       {children}
       <Popup
-        className="max-w-[450px]"
         size="small"
         show={showConfirmation}
         dismiss={() => handleResolve(false)}

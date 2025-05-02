@@ -491,10 +491,11 @@ const settingsRouter = createTRPCRouter({
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
-      const files: { name: string; type: string }[] =
+      const files: { name: string; type: string; size: number }[] =
         settingsData.aiContext.files.map((file) => ({
           name: file.name,
           type: file.type,
+          size: file.size,
         }));
       return files;
     }),
@@ -597,6 +598,7 @@ const settingsRouter = createTRPCRouter({
             name: z.string(),
             type: z.string(),
             content: z.string(),
+            size: z.number(),
           }),
         ),
       }),
@@ -615,6 +617,7 @@ const settingsRouter = createTRPCRouter({
         name: file.name,
         type: file.type,
         content: fileText[index] ?? "",
+        size: file.size,
       }));
 
       const settings = await projectSettingsRef.get();
@@ -669,7 +672,7 @@ const settingsRouter = createTRPCRouter({
 
       return Array.isArray(settingsData.Size) ? settingsData.Size : [];
     }),
-  
+
   changeSize: protectedProcedure
     .input(z.object({ projectId: z.string(), size: z.array(z.number()) }))
     .mutation(async ({ ctx, input }) => {
@@ -687,8 +690,7 @@ const settingsRouter = createTRPCRouter({
       await projectSettingsRef.update({
         Size: size,
       });
-    }
-  ),
+    }),
   getDetailedRoles: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

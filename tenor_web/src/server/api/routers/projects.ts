@@ -198,6 +198,7 @@ export const projectsRouter = createTRPCRouter({
         name: file.name,
         type: file.type,
         content: fileText[index] ?? "",
+        size: file.size,
       }));
 
       input.settings.aiContext.files = files;
