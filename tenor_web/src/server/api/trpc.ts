@@ -14,13 +14,13 @@ import { dbAdmin, firebaseAdmin } from "~/utils/firebaseAdmin";
 import { supabase } from "~/utils/supabase";
 import { auth } from "../auth";
 
-import {
-  Permission,
-  permissionNumbers,
-  Role,
-} from "~/lib/types/firebaseSchemas";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import { RoleSchema } from "~/lib/types/zodFirebaseSchema";
-import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
+import {
+  checkPermissions,
+  FlagsRequired,
+  ownerRole,
+} from "~/lib/defaultProjectValues";
 
 /**
  * 1. CONTEXT
@@ -117,23 +117,14 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   });
 });
 
-interface PermissionsRequired {
-  flags: (
-    | "settings"
-    | "performance"
-    | "sprints"
-    | "scrumboard"
-    | "issues"
-    | "backlog"
-  )[];
-  permission: "none" | "read" | "write";
-}
-
-export const roleRequiredProcedure = (permissions: PermissionsRequired) =>
+export const roleRequiredProcedure = (
+  flags: FlagsRequired,
+  access: "none" | "read" | "write",
+) =>
   protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .use(async ({ ctx, next, input }) => {
-      const permission = permissionNumbers[permissions.permission];
+      const permission = permissionNumbers[access];
 
       // Check if there is a projectId
       if (!input.projectId) {
@@ -142,7 +133,15 @@ export const roleRequiredProcedure = (permissions: PermissionsRequired) =>
 
       // By deafult, no permission
       const userId = ctx.session.uid;
-      let role: Role = emptyRole;
+      let role: z.infer<typeof RoleSchema> = {
+        label: "No role",
+        settings: 0,
+        performance: 0,
+        sprints: 0,
+        scrumboard: 0,
+        issues: 0,
+        backlog: 0,
+      };
 
       const userDoc = await ctx.firestore
         .collection("projects")
@@ -184,30 +183,10 @@ export const roleRequiredProcedure = (permissions: PermissionsRequired) =>
           throw new TRPCError({ code: "FORBIDDEN" });
         }
         // Check if the role is valid
-        const roleSchema = RoleSchema.parse(roleData);
-        const roleId = roleDoc.id;
-
-        // Parse the role data
-        role = {
-          id: roleId,
-          ...roleSchema,
-          settings: roleSchema.settings as Permission,
-          performance: roleSchema.performance as Permission,
-          sprints: roleSchema.sprints as Permission,
-          scrumboard: roleSchema.scrumboard as Permission,
-          issues: roleSchema.issues as Permission,
-          backlog: roleSchema.backlog as Permission,
-        };
+        role = RoleSchema.parse(roleData);
       }
 
-      let userPermission = 2;
-      // Go through the flags and get the minimum permission
-      permissions.flags.forEach((flag) => {
-        if ((role[flag as keyof Role] as number) < userPermission) {
-          userPermission = role[flag as keyof Role] as number;
-        }
-      });
-
+      const userPermission = checkPermissions(flags, role);
       if (permission > userPermission) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
