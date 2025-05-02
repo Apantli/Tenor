@@ -158,11 +158,8 @@ export const userRouter = createTRPCRouter({
       // Mark the team member as inactive
       await teamMemberRef.update({ active: false, roleId: emptyRole.id });
 
-      // Get the actual userId from the teamMember document
-      const realUserId = teamMemberSnap.data()?.userId as string;
-
-      if (realUserId) {
-        const userRef = ctx.firestore.collection("users").doc(realUserId);
+      if (userId) {
+        const userRef = ctx.firestore.collection("users").doc(userId);
 
         // Remove the project from their list of projects
         await userRef.update({
