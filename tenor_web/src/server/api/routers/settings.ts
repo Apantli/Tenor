@@ -25,6 +25,11 @@ import {
   roleRequiredProcedure,
 } from "../trpc";
 
+export interface Links {
+  url: string;
+  valid: boolean;
+}
+
 export const getProjectUserRef = (
   projectId: string,
   userId: string,
@@ -187,9 +192,9 @@ const settingsRouter = createTRPCRouter({
       const statusTypes = await projectSettingsRef
         .collection("statusTypes")
         .where("deleted", "==", false)
-        .orderBy("orderIndex")        
+        .orderBy("orderIndex")
         .get();
-        
+
       const statusTypesData = statusTypes.docs.map((doc) => ({
         id: doc.id,
         ...StatusTagSchema.parse(doc.data()),
@@ -250,13 +255,13 @@ const settingsRouter = createTRPCRouter({
       };
 
       const docRef = await statusCollectionRef.add(newStatus);
-      
+
       return {
         id: docRef.id,
         ...newStatus,
       };
     }),
-  
+
   reorderStatusTypes: protectedProcedure
     .input(
       z.object({
@@ -270,7 +275,9 @@ const settingsRouter = createTRPCRouter({
       const batch = ctx.firestore.batch();
 
       statusIds.forEach((statusId, index) => {
-        const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
+        const statusTypeRef = projectRef
+          .collection("statusTypes")
+          .doc(statusId);
         batch.update(statusTypeRef, { orderIndex: index });
       });
 
@@ -305,27 +312,27 @@ const settingsRouter = createTRPCRouter({
       const { projectId, statusId } = input;
       const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
       const statusCollectionRef = projectRef.collection("statusTypes");
-      
-      await statusCollectionRef.doc(statusId).update({ 
+
+      await statusCollectionRef.doc(statusId).update({
         deleted: true,
-        orderIndex: -1
+        orderIndex: -1,
       });
-      
+
       const activeStatusTypes = await statusCollectionRef
         .where("deleted", "==", false)
         .orderBy("orderIndex")
         .get();
-      
+
       const batch = ctx.firestore.batch();
-      
+
       activeStatusTypes.docs.forEach((doc, index) => {
         batch.update(doc.ref, { orderIndex: index });
       });
-      
-      await batch.commit();      
+
+      await batch.commit();
       return { id: statusId };
     }),
-  
+
   /**
    * @procedure getBacklogTags
    * @description Retrieves all non-deleted backlog tags for a project
@@ -475,9 +482,11 @@ const settingsRouter = createTRPCRouter({
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
-      const links: string[] = settingsData.aiContext.links.map(
-        (link) => link.link,
-      );
+      const links = settingsData.aiContext.links.map((link) => ({
+        link: link.link,
+        valid: link.content !== null,
+      }));
+      console.log("links:", links);
       return links;
     }),
   getContextFiles: protectedProcedure
@@ -494,6 +503,7 @@ const settingsRouter = createTRPCRouter({
           name: file.name,
           type: file.type,
         }));
+
       return files;
     }),
   getContextDialog: protectedProcedure
@@ -667,7 +677,7 @@ const settingsRouter = createTRPCRouter({
 
       return Array.isArray(settingsData.Size) ? settingsData.Size : [];
     }),
-  
+
   changeSize: protectedProcedure
     .input(z.object({ projectId: z.string(), size: z.array(z.number()) }))
     .mutation(async ({ ctx, input }) => {
@@ -685,8 +695,7 @@ const settingsRouter = createTRPCRouter({
       await projectSettingsRef.update({
         Size: size,
       });
-    }
-  ),
+    }),
   getDetailedRoles: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

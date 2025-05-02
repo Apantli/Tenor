@@ -2,17 +2,20 @@ import React from "react";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import InsertLinkIcon from "@mui/icons-material/InsertLink";
+import LinkOffIcon from "@mui/icons-material/LinkOff";
 import PrimaryButton from "../buttons/PrimaryButton";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import InputTextField from "./InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CloseIcon from "@mui/icons-material/Cancel";
 
+import { type Links } from "~/server/api/routers/settings";
+
 interface Props {
   label: string;
-  links: string[];
-  handleLinkAdd: (link: string) => void;
-  handleLinkRemove: (link: string) => void;
+  links: Links[];
+  handleLinkAdd: (link: Links) => void;
+  handleLinkRemove: (link: Links) => void;
   className?: ClassNameValue;
 }
 
@@ -29,7 +32,7 @@ export default function LinkList({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
-        <label className="font-semibold text-lg">{label}</label>
+        <label className="text-lg font-semibold">{label}</label>
         <Dropdown
           label={
             <PrimaryButton
@@ -55,7 +58,7 @@ export default function LinkList({
             className="flex items-center justify-between"
             onClick={() => {
               if (link.trim()) {
-                handleLinkAdd(link.trim());
+                handleLinkAdd({ url: link.trim(), valid: true });
                 setLink("");
               }
             }}
@@ -71,7 +74,7 @@ export default function LinkList({
         )}
       >
         {links.length === 0 && (
-          <li className="flex h-full w-full text-gray-400 ">
+          <li className="flex h-full w-full text-gray-400">
             No links added yet...
           </li>
         )}
@@ -79,34 +82,38 @@ export default function LinkList({
           <li
             key={index}
             className="h-[100px] flex-shrink-0"
-            title={link}
+            title={link.url}
             onClick={async () => {
               if (
                 !(await confirm(
                   "Delete link?",
-                  `Removing "${link}". This action is not reversible.`,
+                  `Removing "${link.url}". This action is not reversible.`,
                   "Delete link",
                 ))
               ) {
                 return;
               }
-              handleLinkRemove(link);
+              handleLinkRemove({ url: link.url, valid: link.valid });
             }}
           >
             <span
-              title={link}
+              title={link.url}
               className="group relative flex cursor-pointer flex-col items-center text-gray-500 transition hover:text-gray-500/50"
               data-tooltip-id="tooltip"
-              data-tooltip-content={link}
+              data-tooltip-content={link.url}
             >
               <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center pb-4 text-[40px] text-app-fail/90 opacity-0 transition group-hover:opacity-100">
                 <CloseIcon fontSize="inherit" />
               </div>
-              <InsertLinkIcon style={{ fontSize: "4rem" }} />
+              {link.valid ? (
+                <InsertLinkIcon style={{ fontSize: "4rem" }} />
+              ) : (
+                <LinkOffIcon style={{ fontSize: "4rem" }} />
+              )}
               <span className="mt-1 max-w-[80px] truncate text-center text-xs">
                 {
                   // remove the protocol from the link
-                  link.replace(/^(http:\/\/|https:\/\/)/, "")
+                  link.url.replace(/^(http:\/\/|https:\/\/)/, "")
                 }
               </span>
             </span>

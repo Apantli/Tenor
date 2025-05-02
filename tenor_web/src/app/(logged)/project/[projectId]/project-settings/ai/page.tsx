@@ -12,6 +12,7 @@ import { api } from "~/trpc/react";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { type Links } from "~/server/api/routers/settings";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();
@@ -32,7 +33,6 @@ export default function ProjectAIConfig() {
   });
   const loadedFiles = useMemo(() => {
     const resultFiles: File[] = [];
-    console.log(resultFiles);
     if (files) {
       files.forEach((file) => {
         const blob = new Blob([], { type: file.type });
@@ -63,10 +63,10 @@ export default function ProjectAIConfig() {
     api.settings.updateTextContext.useMutation();
 
   // Link utils
-  const handleAddLink = async (link: string) => {
+  const handleAddLink = async (link: Links) => {
     if (!links) return;
     const newData = links;
-    newData.push(link);
+    newData.push({ link: link, valid: true });
     // Uses optimistic update
     await utils.settings.getContextLinks.cancel({
       projectId: projectId as string,
@@ -91,9 +91,9 @@ export default function ProjectAIConfig() {
     });
   };
 
-  const handleRemoveLink = async (link: string) => {
+  const handleRemoveLink = async (link: Links) => {
     if (!links) return;
-    const newData = links.filter((l) => l !== link);
+    const newData = links.filter((l) => l.link !== link.url);
     // Uses optimistic update
     await utils.settings.getContextLinks.cancel({
       projectId: projectId as string,
@@ -105,7 +105,7 @@ export default function ProjectAIConfig() {
     // Remove from database
     await removeLink({
       projectId: projectId as string,
-      link: link,
+      link: link.url,
     });
 
     await utils.settings.getContextLinks.invalidate({
@@ -262,7 +262,10 @@ export default function ProjectAIConfig() {
           ></FileList>
           <LinkList
             label={"Context Links"}
-            links={links}
+            links={links.map((link) => ({
+              url: link.link,
+              valid: link.valid,
+            }))}
             handleLinkAdd={handleAddLink}
             handleLinkRemove={handleRemoveLink}
           ></LinkList>

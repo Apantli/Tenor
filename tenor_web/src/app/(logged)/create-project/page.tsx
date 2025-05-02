@@ -16,6 +16,7 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
+import { type Links } from "~/server/api/routers/settings";
 
 import { toBase64 } from "~/utils/base64";
 
@@ -63,7 +64,7 @@ export default function ProjectCreator() {
 
     const finalLinks: { link: string; content: string | null }[] = [];
     for (const link of links) {
-      finalLinks.push({ link, content: null });
+      finalLinks.push({ link: link.url, content: null });
     }
 
     const response = await createProject({
@@ -189,12 +190,12 @@ export default function ProjectCreator() {
     setFiles((prev) => prev.filter((f) => f !== file));
   }
 
-  const [links, setLinks] = useState<string[]>([]);
-  function handleLinkAdd(link: string) {
+  const [links, setLinks] = useState<Links[]>([]);
+  function handleLinkAdd(link: Links) {
     setLinks((prev) => [...prev, link]);
   }
-  function handleLinkDelete(link: string) {
-    setLinks((prev) => prev.filter((l) => l !== link));
+  function handleLinkDelete(link: Links) {
+    setLinks((prev) => prev.filter((l) => l.url !== link.url));
   }
 
   const maxProjectNameLength = 100;
