@@ -17,6 +17,9 @@
     "cypress:open": "cypress open",
     "e2e": "start-server-and-test dev http://localhost:3000 \"cypress open --e2e\"",
     "e2e:headless": "start-server-and-test dev http://localhost:3000 \"cypress run --e2e\"",
+    "start-emulators": "node ../scripts/start-emulator.js",
+    "test": "cross-env NEXT_PUBLIC_TEST_ENV=true FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 start-server-and-test \"concurrently -k \\\"npm run dev\\\" \\\"npm run start-emulators\\\"\" http://localhost:3000 \"cypress run --e2e\"",
+    "test-ui": "cross-env NEXT_PUBLIC_TEST_ENV=true FIRESTORE_EMULATOR_HOST=localhost:8080 FIREBASE_AUTH_EMULATOR_HOST=localhost:9099 start-server-and-test \"concurrently -k \\\"npm run dev\\\" \\\"npm run start-emulators\\\"\" http://localhost:3000 \"cypress open --e2e\"",
     "component": "cypress open --component",
     "component:headless": "cypress run --component"
   },

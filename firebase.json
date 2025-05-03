@@ -3,35 +3,16 @@
     "firestore": {
       "port": 8080
     },
+    "auth": {
+      "port": 9099
+    },
     "ui": {
       "enabled": true
     },
-    "singleProjectMode": true,
-    "functions": {
-      "port": 5001
-    },
-    "storage": {
-      "port": 9199
-    }
+    "singleProjectMode": true
   },
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
-  },
-  "functions": [
-    {
-      "source": "functions",
-      "codebase": "default",
-      "ignore": [
-        "venv",
-        ".git",
-        "firebase-debug.log",
-        "firebase-debug.*.log",
-        "*.local"
-      ]
-    }
-  ],
-  "storage": {
-    "rules": "storage.rules"
   }
 }
