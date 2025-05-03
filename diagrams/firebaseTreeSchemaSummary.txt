@@ -1,0 +1,145 @@
+users
+• createdAt: string
+• uid: string
+
+projects
+• name: string
+• description: string
+• logo: string
+• deleted: boolean
+• currentSprintId: string
+
+activities
+• title: string
+• activityId: string
+• type: string
+• newStatusId: string
+• userId: string
+• date: string
+
+users (subcollection)
+• userId: string
+• roleId: string
+• stats: object
+• active: boolean
+
+settings
+• sprintDuration: number
+• maximumSprintStoryPoints: number
+• aiContext: object
+
+requirementFocusTags
+• name: string
+• color: string
+• deleted: boolean
+
+requirementTypeTags
+• name: string
+• color: string
+• deleted: boolean
+
+backlogTags
+• name: string
+• color: string
+• deleted: boolean
+
+priorityTypes
+• name: string
+• color: string
+• deleted: boolean
+
+statusTags
+• name: string
+• color: string
+• deleted: boolean
+• marksTasksAsDone: boolean
+• orderIndex: number
+
+userTypes
+• label: string
+• settings: number
+• performance: number
+• sprints: number
+• scrumboard: number
+• issues: number
+• backlog: number
+
+epics
+• projectId: number
+• scrumId: number
+• name: string
+• description: string
+• deleted: boolean
+
+userStories
+• scrumId: number
+• name: string
+• description: string
+• deleted: boolean
+• sprintId: string
+• taskIds: string[]
+• complete: boolean
+• tagIds: string[]
+• size: string
+• priorityId: string
+• statusId: string
+• epicId: string
+• acceptanceCriteria: string
+• dependencyIds: string[]
+• requiredByIds: string[]
+
+issues
+• scrumId: number
+• name: string
+• description: string
+• deleted: boolean
+• sprintId: string
+• taskIds: string[]
+• complete: boolean
+• tagIds: string[]
+• size: string
+• priorityId: string
+• statusId: string
+• relatedUserStoryId: string
+• stepsToRecreate: string
+
+tasks
+• scrumId: number
+• name: string
+• description: string
+• deleted: boolean
+• statusId: string
+• assigneeId: string
+• dueDate: string
+• finishedDate: string | null
+• itemId: string
+• itemType: string
+• size: string
+
+requirements
+• deleted: boolean
+• description: string
+• name: string
+• priorityId: string
+• projectId: string
+• requirementFocusId: string
+• requirementTypeId: string
+• scrumId: number
+
+sprints
+• deleted: boolean
+• description: string
+• endDate: object
+• genericItemIds: string[]
+• issueIds: string[]
+• number: number
+• projectId: string
+• startDate: object
+• userStoryIds: string[]
+
+sprintSnapshots
+• number: number
+• description: string
+• startDate: object
+• endDate: object
+• snapshot: object

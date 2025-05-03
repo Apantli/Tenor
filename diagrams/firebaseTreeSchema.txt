@@ -60,7 +60,7 @@ projects (collection)
 │           ├── name: "Priority Type 1"
 │           ├── color: "#FF33A1"
 │           ├── deleted: false
-│   ├── statusTabs (subcollection)
+│   ├── statusTags (subcollection)
 │       ├── (statusTagId)
 │           ├── name: "Status Tab 1"
 │           ├── color: "#A133FF"
@@ -155,4 +155,20 @@ projects (collection)
 │       ├── userStoryIds:
 │       │   ├── 0: "MUgLVzJ8yDAXp4s19Hhp"
 │       │   ├── 1: "HiWlfbFwnJEMTBYJP525"
-
+├── sprintSnapshots (subcollection)
+│   ├── (snapshotId)
+│       ├── number: 1
+│       ├── description: "Initial snapshot"
+│       ├── startDate:
+│       │   ├── nanoseconds: 0
+│       │   ├── seconds: 1746893120
+│       ├── endDate:
+│       │   ├── nanoseconds: 0
+│       │   ├── seconds: 1747497920
+│       ├── snapshot:
+│       │   ├── userStories (subcollection. Same format as previous userStories)
+│       │   ├── issues (subcollection. Same format as previous issues)
+│       │   ├── userStoryPercentage: 75
+│       │   ├── tasksPerUser:
+│       │   │   ├── 0: { userId: "user1", taskPercentage: 50 }
+│       │   │   ├── 1: { userId: "user2", taskPercentage: 50 }

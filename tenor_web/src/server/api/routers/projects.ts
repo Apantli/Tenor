@@ -45,7 +45,7 @@ const emptySettings: Settings = {
   // requirementTypeTags: [],
   // backlogTags: [],
   // priorityTypes: [],
-  // statusTabs: [],
+  // statusTags: [],
   // roles: [],
 };
 

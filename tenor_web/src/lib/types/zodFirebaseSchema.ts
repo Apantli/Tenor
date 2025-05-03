@@ -216,7 +216,7 @@ export const SettingsSchema = z.object({
   // requirementTypeTags: z.array(TagSchema).default([]),
   // backlogTags: z.array(TagSchema).default([]),
   // priorityTypes: z.array(TagSchema).default([]),
-  // statusTabs: z.array(TagSchema).default([]),
+  // statusTags: z.array(TagSchema).default([]),
   // roles: z.array(RoleSchema).default([]),
 });
 
