@@ -93,8 +93,6 @@ export function signInProgrammatically({
         },
       },
     });
-
-    // Now Firebase has stored session in IndexedDB, and your hook will see it
   });
 }
 
