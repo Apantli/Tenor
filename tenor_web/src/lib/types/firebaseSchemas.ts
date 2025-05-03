@@ -51,7 +51,7 @@ export interface Project {
   description: string;
   logo: string;
   deleted: boolean;
-
+  currentSprintId: string;
   settings: Settings;
 
   users: {
@@ -78,8 +78,6 @@ export interface Project {
 
   // sprints: Sprint[];
   // sprintSnapshots: SprintSnapshot[];
-
-  currentSprintId: string;
 }
 
 export interface Settings {
