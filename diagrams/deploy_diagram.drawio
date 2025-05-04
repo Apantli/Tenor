@@ -1,14 +1,14 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36" version="26.2.14">
   <diagram name="Page-1" id="0SS3zf6m1jzSWQKbpXdB">
-    <mxGraphModel dx="1042" dy="608" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="834" dy="486" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="7tsyf0UTf00b5kSWK2DZ-9" value="" style="group" vertex="1" connectable="0" parent="1">
-          <mxGeometry x="70" y="20" width="460" height="510" as="geometry" />
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-25" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="10" y="30" width="490" height="470" as="geometry" />
         </mxCell>
-        <mxCell id="_6aESEJj8ueH60gg6m87-15" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-9" vertex="1" connectable="0">
-          <mxGeometry x="180" y="370" width="160" height="140" as="geometry" />
+        <mxCell id="_6aESEJj8ueH60gg6m87-15" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1" connectable="0">
+          <mxGeometry y="315" width="160" height="140" as="geometry" />
         </mxCell>
         <mxCell id="_6aESEJj8ueH60gg6m87-13" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:UserClient&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="_6aESEJj8ueH60gg6m87-15" vertex="1">
           <mxGeometry width="160" height="110" as="geometry" />
@@ -19,8 +19,8 @@
         <mxCell id="_6aESEJj8ueH60gg6m87-37" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;HTML&lt;/font&gt;" style="html=1;dashed=0;whiteSpace=wrap;align=center;verticalAlign=middle;spacingBottom=5;" parent="_6aESEJj8ueH60gg6m87-15" vertex="1">
           <mxGeometry x="20" y="96" width="50" height="10" as="geometry" />
         </mxCell>
-        <mxCell id="_6aESEJj8ueH60gg6m87-16" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-9" vertex="1" connectable="0">
-          <mxGeometry x="195" width="195" height="110" as="geometry" />
+        <mxCell id="_6aESEJj8ueH60gg6m87-16" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1" connectable="0">
+          <mxGeometry x="125" width="195" height="110" as="geometry" />
         </mxCell>
         <mxCell id="_6aESEJj8ueH60gg6m87-17" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; database &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:Azure VM&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="_6aESEJj8ueH60gg6m87-16" vertex="1">
           <mxGeometry width="195" height="110" as="geometry" />
@@ -28,8 +28,8 @@
         <mxCell id="_6aESEJj8ueH60gg6m87-18" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; Firebase Emualor &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:NoSQL DB (Firestore)&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:Auth&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=4;spacing=2;spacingLeft=5;" parent="_6aESEJj8ueH60gg6m87-16" vertex="1">
           <mxGeometry x="12.19" y="60" width="127.81" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="_6aESEJj8ueH60gg6m87-19" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-9" vertex="1" connectable="0">
-          <mxGeometry x="300" y="110" width="160" height="110" as="geometry" />
+        <mxCell id="_6aESEJj8ueH60gg6m87-19" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1" connectable="0">
+          <mxGeometry x="330" y="220" width="160" height="110" as="geometry" />
         </mxCell>
         <mxCell id="_6aESEJj8ueH60gg6m87-20" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:IA API&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="_6aESEJj8ueH60gg6m87-19" vertex="1">
           <mxGeometry width="160" height="110" as="geometry" />
@@ -37,8 +37,8 @@
         <mxCell id="_6aESEJj8ueH60gg6m87-36" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; API &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:Frida&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=4;spacing=2;spacingLeft=5;" parent="_6aESEJj8ueH60gg6m87-19" vertex="1">
           <mxGeometry x="10" y="60" width="100" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="_6aESEJj8ueH60gg6m87-28" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-9" vertex="1" connectable="0">
-          <mxGeometry y="200" width="160" height="110" as="geometry" />
+        <mxCell id="_6aESEJj8ueH60gg6m87-28" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1" connectable="0">
+          <mxGeometry x="125" y="180" width="160" height="110" as="geometry" />
         </mxCell>
         <mxCell id="_6aESEJj8ueH60gg6m87-29" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; Vercel Server &amp;gt;&amp;gt;&lt;br&gt;Vercel Server&lt;/font&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="_6aESEJj8ueH60gg6m87-28" vertex="1">
           <mxGeometry width="160" height="110" as="geometry" />
@@ -46,17 +46,8 @@
         <mxCell id="_6aESEJj8ueH60gg6m87-30" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; front/back-end &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;Web Site: Nextjs&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="_6aESEJj8ueH60gg6m87-28" vertex="1">
           <mxGeometry x="15" y="60" width="80" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="_6aESEJj8ueH60gg6m87-32" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" parent="7tsyf0UTf00b5kSWK2DZ-9" source="_6aESEJj8ueH60gg6m87-29" target="_6aESEJj8ueH60gg6m87-17" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="_6aESEJj8ueH60gg6m87-33" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" parent="7tsyf0UTf00b5kSWK2DZ-9" source="_6aESEJj8ueH60gg6m87-29" target="_6aESEJj8ueH60gg6m87-20" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="_6aESEJj8ueH60gg6m87-34" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;" parent="7tsyf0UTf00b5kSWK2DZ-9" source="_6aESEJj8ueH60gg6m87-29" target="_6aESEJj8ueH60gg6m87-13" edge="1">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="7tsyf0UTf00b5kSWK2DZ-5" value="" style="group" vertex="1" connectable="0" parent="7tsyf0UTf00b5kSWK2DZ-9">
-          <mxGeometry x="270" y="240" width="160" height="110" as="geometry" />
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-5" value="" style="group" vertex="1" connectable="0" parent="7tsyf0UTf00b5kSWK2DZ-25">
+          <mxGeometry x="170" y="360" width="160" height="110" as="geometry" />
         </mxCell>
         <mxCell id="7tsyf0UTf00b5kSWK2DZ-6" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:Gemini API&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" vertex="1" parent="7tsyf0UTf00b5kSWK2DZ-5">
           <mxGeometry width="160" height="110" as="geometry" />
@@ -64,7 +55,22 @@
         <mxCell id="7tsyf0UTf00b5kSWK2DZ-7" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; API &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:Gemini&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=4;spacing=2;spacingLeft=5;" vertex="1" parent="7tsyf0UTf00b5kSWK2DZ-5">
           <mxGeometry x="10" y="60" width="100" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="7tsyf0UTf00b5kSWK2DZ-8" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="7tsyf0UTf00b5kSWK2DZ-9" source="_6aESEJj8ueH60gg6m87-29" target="7tsyf0UTf00b5kSWK2DZ-6">
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-10" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-18" target="_6aESEJj8ueH60gg6m87-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-12" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-29" target="_6aESEJj8ueH60gg6m87-13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-18" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-29" target="7tsyf0UTf00b5kSWK2DZ-6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-20" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-29" target="_6aESEJj8ueH60gg6m87-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-23" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; Supabase &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:PostgresSQL&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;:Auth&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=4;spacing=2;spacingLeft=5;" vertex="1" parent="7tsyf0UTf00b5kSWK2DZ-25">
+          <mxGeometry x="345" y="140" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-24" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-29" target="7tsyf0UTf00b5kSWK2DZ-23">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
