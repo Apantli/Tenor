@@ -1,4 +1,4 @@
-import type { ProjectInfo } from "cypress/support/commands";
+import type { TestProjectInfo } from "cypress/fixtures/types";
 
 describe("Settings: Users and roles", () => {
   before(() => {
@@ -9,7 +9,7 @@ describe("Settings: Users and roles", () => {
   // Return to dashboard and select the project
   beforeEach(() => {
     cy.signIn("/");
-    cy.fixture("testProjectInfo").then((data: ProjectInfo) => {
+    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
       cy.get('[data-cy="project-list"]').find("li").contains(data.name).click();
     });
     cy.get('[data-cy="settings"]').click();
