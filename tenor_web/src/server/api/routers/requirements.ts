@@ -12,8 +12,6 @@ import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
-import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
 import {
   getRequirement,
@@ -31,7 +29,9 @@ import {
   getRequirementTypesRef,
 } from "~/utils/helpers/shortcuts/requirements";
 import { getProjectContextHeader } from "~/utils/helpers/shortcuts/ai";
+import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
+import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { getPriority } from "~/utils/helpers/shortcuts/tags";
 
 export const requirementsRouter = createTRPCRouter({

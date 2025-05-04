@@ -34,8 +34,6 @@ export default function CreateUserStoryPopup({
   const { mutateAsync: createUserStory, isPending } =
     api.userStories.createUserStory.useMutation();
 
-  const utils = api.useUtils();
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [createForm, setCreateForm] = useState<{
     name: string;

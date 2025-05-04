@@ -21,23 +21,16 @@ import {
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import LoadingSpinner from "../LoadingSpinner";
-import AiButton from "../buttons/AiButton";
-import Dropdown, { DropdownItem } from "../Dropdown";
-import PillPickerComponent from "../PillPickerComponent";
-import FloatingLabelInput from "../FloatingLabelInput";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { inferRouterOutputs } from "@trpc/server";
+
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
-import {
-  TaskDetail,
-  UserStoryDetailWithTasks,
-} from "~/lib/types/detailSchemas";
+import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
 import { UserStoryCol } from "~/lib/types/columnTypes";
 

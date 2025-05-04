@@ -68,15 +68,21 @@ export const generateAutocompletion = protectedProcedure
 
     const prompt = `Help the user to the best of your ability.
 
-  Your task is to return an assistant_message that provides A BRIEF DESCRIPTION OF THE CHANGES, and an autocompletion, WHICH SHOULD BE THE RESPONSE TO THE USERS' MESSAGE.
-  
-  Consider the following as context:
+Your task is to generate an assistant_message that includes:
+1. A **brief explanation** of what changes were made based on the latest user message (e.g., additions, removals, rephrasings).
+2. An **autocompletion**, which should be the assistant's direct response to the user's latest message.
 
-  ${contextString}
+Important requirements:
+- If the user's message does **not** request a change, **leave the autocompletion with the same value as the value in the field**, and only answer back with an assistant_message to answer the inquiry.
+- Be concise and relevant. Focus only on what was actually changed or requested.
+- If the user requests a change or to create something, make sure to include the changes in the autocompletion.
+- Address the user directly in the assistant_message, by using "you" or "your", or the user name if available and appropriate.
+Here is the context you should consider:
+${contextString}
 
-  Now, here is the list of messages:
-  ${input.messages.map((message) => `"${message.role}": <content>"${message.content}"</content>\n<explanation>${message.explanation ?? "None"}</explanation>`).join(", ")}
-  `;
+And here is the message history:
+${input.messages.map((message) => `"${message.role}": <content>"${message.content}"</content>\n<explanation>${message.explanation ?? "None"}</explanation>`).join(", ")}
+`;
 
     const aiMessage = await askAiToGenerate(
       prompt,

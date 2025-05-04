@@ -26,7 +26,7 @@ import LoadingSpinner from "../LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { inferRouterOutputs } from "@trpc/server";
+import type { inferRouterOutputs } from "@trpc/server";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 
 import {
@@ -338,6 +338,49 @@ export default function RequirementsTable() {
       generatedRequirements.current = newGeneratedRequirements;
     },
   );
+
+  const deleteRequirements = async (ids: string[]) => {
+    const confirmMessage =
+      ids.length > 1
+        ? "delete these requirements?"
+        : "delete this requirement?";
+    if (
+      !(await confirm(
+        `Are you sure you want to ${confirmMessage}`,
+        "This action cannot be undone",
+        "Delete",
+      ))
+    ) {
+      return false;
+    }
+
+    const newData = requirementsData.filter((item) => !ids.includes(item.id));
+
+    await utils.requirements.getRequirementTable.cancel({
+      projectId: params.projectId as string,
+    });
+    utils.requirements.getRequirementTable.setData(
+      { projectId: params.projectId as string },
+      (prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          fixedData: newData,
+        };
+      },
+    );
+
+    await Promise.all(
+      ids.map((id) =>
+        deleteRequirement({
+          projectId: params.projectId as string,
+          requirementId: id,
+        }),
+      ),
+    );
+    await refetchRequirements();
+    return true;
+  };
 
   const table = useMemo(() => {
     if (requirements == undefined || isLoadingRequirements) {
@@ -771,6 +814,35 @@ export default function RequirementsTable() {
           reduceTopPadding={requirementEditedData === null}
           size="small"
           className="h-[700px] w-[600px]"
+          disablePassiveDismiss
+          dismiss={async () => {
+            const {
+              name,
+              description,
+              priority,
+              requirementType,
+              requirementFocus,
+            } = newRequirement;
+            const allFields = [
+              name,
+              description,
+              priority,
+              requirementType,
+              requirementFocus,
+            ];
+            if (
+              allFields.some((field) => field !== "" && field !== undefined)
+            ) {
+              const confirmation = await confirm(
+                "Are you sure?",
+                "Your changes will be discarded.",
+                "Discard changes",
+                "Keep Editing",
+              );
+              if (!confirmation) return;
+            }
+            setShowSmallPopup(false);
+          }}
           setEditMode={
             permission < permissionNumbers.write
               ? undefined
@@ -863,9 +935,6 @@ export default function RequirementsTable() {
                 ? editingRequirement
                 : undefined
           }
-          dismiss={() => {
-            setShowSmallPopup(false);
-          }}
           title={
             <h1 className="text-2xl">
               <strong>
@@ -898,7 +967,13 @@ export default function RequirementsTable() {
                   permission < permissionNumbers.write ? null : (
                     <DeleteButton
                       onClick={async () => {
-                        console.log("Deleting");
+                        if (
+                          requirementEdited &&
+                          (await deleteRequirements([requirementEdited.id]))
+                        ) {
+                          setShowSmallPopup(false);
+                          setRequirementEdited(null);
+                        }
                       }}
                     >
                       Delete

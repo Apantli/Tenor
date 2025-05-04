@@ -35,3 +35,84 @@
 //     }
 //   }
 // }
+
+import { initializeApp } from "firebase/app";
+import {
+  Auth,
+  connectAuthEmulator,
+  initializeAuth,
+  indexedDBLocalPersistence,
+} from "firebase/auth";
+
+let auth: Auth;
+function getAuth() {
+  const app = initializeApp({
+    apiKey: Cypress.env("apiKey"),
+  });
+  auth =
+    auth ||
+    initializeAuth(app, {
+      persistence: indexedDBLocalPersistence,
+    });
+  connectAuthEmulator(auth, "http://localhost:9099");
+  return auth;
+}
+getAuth();
+
+export function signInProgrammatically({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) {
+  return cy.window().then(async (win) => {
+    // Import Firebase modules in browser context
+    const {
+      getAuth,
+      signInWithEmailAndPassword,
+      browserLocalPersistence,
+      setPersistence,
+    } = await import("firebase/auth");
+
+    const auth = getAuth();
+
+    // Set persistence so Firebase keeps the session
+    await setPersistence(auth, browserLocalPersistence);
+
+    // Sign in user
+    const user = await signInWithEmailAndPassword(auth, email, password);
+    const token = await user.user.getIdToken();
+
+    cy.request({
+      method: "POST",
+      url: "http://localhost:3000/api/trpc/auth.login?batch=1",
+      body: {
+        "0": {
+          json: { token },
+        },
+      },
+    });
+  });
+}
+
+Cypress.Commands.add(
+  "signIn",
+  (
+    redirectPath = "/",
+    credentials = {
+      email: Cypress.env(`EMAIL`) as string,
+      password: Cypress.env(`PASSWORD`) as string,
+    },
+  ) => {
+    cy.session([credentials.email, credentials.password], () => {
+      cy.task("createTestUser", {
+        email: credentials.email,
+        password: credentials.password,
+      }).then(() => {
+        signInProgrammatically(credentials);
+      });
+    });
+    cy.visit(redirectPath);
+  },
+);

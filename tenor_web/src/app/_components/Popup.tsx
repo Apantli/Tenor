@@ -108,7 +108,7 @@ export default function Popup({
           style={{ zIndex: (zIndex ?? 100) + 1 }}
           ref={containerRef}
         >
-          <div className="grow justify-between gap-4 overflow-y-hidden overflow-x-hidden">
+          <div className="grow justify-between gap-4 overflow-x-hidden overflow-y-hidden">
             <div className="flex h-full justify-between">
               <div
                 className={cn("flex grow flex-col justify-between pt-8", {
@@ -149,7 +149,7 @@ export default function Popup({
                   </div>
                 </div>
 
-                {footer !== undefined && (
+                {footer !== undefined && editMode !== true && (
                   <div className="ml-auto mt-3 shrink-0 grow-0">{footer}</div>
                 )}
               </div>
@@ -314,7 +314,7 @@ export function SidebarPopup({
                 </div>
               </div>
 
-              {footer !== undefined && (
+              {footer !== undefined && editMode !== true && (
                 <div className="ml-auto mt-3 shrink-0 grow-0">{footer}</div>
               )}
             </div>

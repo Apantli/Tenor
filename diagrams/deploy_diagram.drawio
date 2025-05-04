@@ -1,0 +1,105 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36" version="26.2.14">
+  <diagram name="Page-1" id="0SS3zf6m1jzSWQKbpXdB">
+    <mxGraphModel dx="1892" dy="1708" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="QUhqeSJaXLGbyRQvcmGK-1" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="-90" y="-40" width="590" height="540" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-25" value="" style="group" parent="QUhqeSJaXLGbyRQvcmGK-1" vertex="1" connectable="0">
+          <mxGeometry x="100" y="70" width="490" height="470" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-15" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1" connectable="0">
+          <mxGeometry y="315" width="160" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-13" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;UserClient&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="_6aESEJj8ueH60gg6m87-15" vertex="1">
+          <mxGeometry width="160" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-14" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;Browser&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=4;spacing=2;spacingLeft=5;" parent="_6aESEJj8ueH60gg6m87-15" vertex="1">
+          <mxGeometry x="10" y="60" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-37" value="&lt;div&gt;&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; &amp;nbsp;artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;/div&gt;&lt;font style=&quot;font-size: 7px;&quot;&gt;HTML5&lt;/font&gt;" style="html=1;dashed=0;whiteSpace=wrap;align=center;verticalAlign=middle;spacingBottom=5;" parent="_6aESEJj8ueH60gg6m87-15" vertex="1">
+          <mxGeometry x="20" y="96" width="50" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-19" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1" connectable="0">
+          <mxGeometry x="330" y="220" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-20" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;Softtek API&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="_6aESEJj8ueH60gg6m87-19" vertex="1">
+          <mxGeometry width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-3" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;Frida AI&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="_6aESEJj8ueH60gg6m87-19" vertex="1">
+          <mxGeometry x="20" y="60" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-28" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1" connectable="0">
+          <mxGeometry x="125" y="180" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-29" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;br&gt;Vercel Server&lt;/font&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="_6aESEJj8ueH60gg6m87-28" vertex="1">
+          <mxGeometry width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-30" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;NextJS&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;frontend &amp;amp; backend&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="_6aESEJj8ueH60gg6m87-28" vertex="1">
+          <mxGeometry x="15" y="60" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-5" value="" style="group" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1" connectable="0">
+          <mxGeometry x="170" y="360" width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-6" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;Google Cloud API&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="7tsyf0UTf00b5kSWK2DZ-5" vertex="1">
+          <mxGeometry width="160" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-4" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;Gemini AI&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="7tsyf0UTf00b5kSWK2DZ-5" vertex="1">
+          <mxGeometry x="9.999999999999995" y="60" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-12" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.25;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;endArrow=none;startFill=0;" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-29" target="_6aESEJj8ueH60gg6m87-13" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-18" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;startFill=0;" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-29" target="7tsyf0UTf00b5kSWK2DZ-6" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-20" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;startFill=0;" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-29" target="_6aESEJj8ueH60gg6m87-20" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-23" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&lt;br&gt;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;Supabase DB&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=4;spacing=2;spacingLeft=5;" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1">
+          <mxGeometry x="345" y="90" width="145" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-24" style="edgeStyle=none;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;startFill=0;" parent="7tsyf0UTf00b5kSWK2DZ-25" source="_6aESEJj8ueH60gg6m87-29" target="7tsyf0UTf00b5kSWK2DZ-23" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-2" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;PostgreSQL&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="7tsyf0UTf00b5kSWK2DZ-25" vertex="1">
+          <mxGeometry x="360" y="160" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-17" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 26px;&quot;&gt;&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;Azure VM&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="QUhqeSJaXLGbyRQvcmGK-1" vertex="1">
+          <mxGeometry x="225" width="170" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="_6aESEJj8ueH60gg6m87-18" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 27px;&quot;&gt;&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;span style=&quot;font-size: 8px;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/span&gt;&lt;br&gt;&lt;/div&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;Firebase emulator&lt;/font&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=4;spacing=2;spacingLeft=5;" parent="QUhqeSJaXLGbyRQvcmGK-1" vertex="1">
+          <mxGeometry x="237.19" y="73" width="107.81" height="117" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-5" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;Firebase Storage&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="QUhqeSJaXLGbyRQvcmGK-1" vertex="1">
+          <mxGeometry x="240" y="130" width="75" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7tsyf0UTf00b5kSWK2DZ-10" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;endArrow=none;startFill=0;" parent="QUhqeSJaXLGbyRQvcmGK-1" source="_6aESEJj8ueH60gg6m87-18" target="_6aESEJj8ueH60gg6m87-29" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-6" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;Firebase Functions&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="QUhqeSJaXLGbyRQvcmGK-1" vertex="1">
+          <mxGeometry x="240" y="160" width="75" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-10" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;startFill=0;" parent="QUhqeSJaXLGbyRQvcmGK-1" source="sGYQhSnnOkEsY5TiTAMy-7" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="250" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-7" value="&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 26px;&quot;&gt;&amp;nbsp;&lt;/font&gt;&lt;/div&gt;&lt;div style=&quot;line-height: 100%;&quot;&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;&amp;lt;&amp;lt; device &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;font style=&quot;font-size: 8px; line-height: 100%;&quot;&gt;Firebase&lt;/font&gt;&lt;/div&gt;&lt;/div&gt;" style="html=1;outlineConnect=0;whiteSpace=wrap;fillColor=#FFFFFF;shape=mxgraph.archimate3.node;align=left;verticalAlign=top;spacingTop=23;spacing=2;spacingLeft=15;" parent="QUhqeSJaXLGbyRQvcmGK-1" vertex="1">
+          <mxGeometry y="90" width="170" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-8" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;Firestore NoSQL DB&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="QUhqeSJaXLGbyRQvcmGK-1" vertex="1">
+          <mxGeometry x="20" y="170" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-14" style="rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;startFill=0;" parent="QUhqeSJaXLGbyRQvcmGK-1" source="sGYQhSnnOkEsY5TiTAMy-9" target="_6aESEJj8ueH60gg6m87-13" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sGYQhSnnOkEsY5TiTAMy-9" value="&lt;font style=&quot;font-size: 7px;&quot;&gt;&amp;lt;&amp;lt; artifact &amp;gt;&amp;gt;&lt;/font&gt;&lt;div&gt;&lt;span style=&quot;font-size: 7px;&quot;&gt;Firebase Auth&lt;/span&gt;&lt;/div&gt;" style="html=1;dashed=0;whiteSpace=wrap;spacingLeft=8;align=left;spacingTop=-4;" parent="QUhqeSJaXLGbyRQvcmGK-1" vertex="1">
+          <mxGeometry x="20" y="210" width="80" height="40" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

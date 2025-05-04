@@ -32,6 +32,8 @@ import {
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/helpers/base64";
 import {
+  defaultPriorityTypes,
+  defaultRequerimentTypes,
   defaultRoleList,
   defaultStatusTags,
   emptySettings,
@@ -274,37 +276,20 @@ export const projectsRouter = createTRPCRouter({
           .doc("settings")
           .collection("priorityTypes");
 
-        await priorityTypesCollection.add({
-          name: "P2",
-          color: "#2c7817",
-          deleted: false,
-        });
-        await priorityTypesCollection.add({
-          name: "P1",
-          color: "#d1b01d",
-          deleted: false,
-        });
-        await priorityTypesCollection.add({
-          name: "P0",
-          color: "#FF0000",
-          deleted: false,
-        });
+        await Promise.all(
+          defaultPriorityTypes.map((type) => priorityTypesCollection.add(type)),
+        );
 
         const requirementTypesCollection = newProjectRef
           .collection("settings")
           .doc("settings")
           .collection("requirementTypes");
 
-        await requirementTypesCollection.add({
-          name: "Functional",
-          color: "#24A5BC",
-          deleted: false,
-        });
-        await requirementTypesCollection.add({
-          name: "Non Functional",
-          color: "#CD4EC0",
-          deleted: false,
-        });
+        await Promise.all(
+          defaultRequerimentTypes.map((type) =>
+            requirementTypesCollection.add(type),
+          ),
+        );
 
         const statusCollection = newProjectRef
           .collection("settings")
