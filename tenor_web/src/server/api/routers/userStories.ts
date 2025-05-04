@@ -23,9 +23,11 @@ import {
   getPriority,
   getProjectContextHeader,
   getSettingsRef,
-  getStatusTag,
+  getStatusType,
+  getTasksRef,
   getUserStories,
   getUserStoriesRef,
+  getUserStory,
   getUserStoryDetail,
   getUserStoryNewId,
   getUserStoryRef,
@@ -33,14 +35,27 @@ import {
 } from "~/utils/helpers/shortcuts";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
 import { UserStory, WithId } from "~/lib/types/firebaseSchemas";
+import { UserStoryCol } from "~/lib/types/columnTypes";
 
 export const userStoriesRouter = createTRPCRouter({
+  /**
+   * @function getUserStories
+   * @description Retrieves all user stories for a given project.
+   * @param {string} projectId - The ID of the project to retrieve user stories for.
+   * @returns {Promise<WithId<UserStory>[]>} - A promise that resolves to an array of user stories.
+   */
   getUserStories: roleRequiredProcedure(backlogPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
       return await getUserStories(ctx.firestore, projectId);
     }),
+  /**
+   * @function getUserStoryTable
+   * @description Retrieves a table of user stories for a given project.
+   * @param {string} projectId - The ID of the project to retrieve user stories for.
+   * @returns {Promise<UserStoryCol[]>} - A promise that resolves to an array of user stories.
+   */
   getUserStoryTable: roleRequiredProcedure(backlogPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -48,13 +63,14 @@ export const userStoriesRouter = createTRPCRouter({
       return await getUserStoryTable(ctx.firestore, projectId);
     }),
 
-  getUserStoryDetail: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-      optimistic: true,
-    },
-    "read",
-  )
+  /**
+   * @function getUserStoryDetail
+   * @description Retrieves detailed information about a specific user story.
+   * @param {string} projectId - The ID of the project to which the user story belongs.
+   * @param {string} userStoryId - The ID of the user story to retrieve.
+   * @returns {Promise<UserStoryDetail>} - A promise that resolves to the detailed user story information.
+   */
+  getUserStoryDetail: roleRequiredProcedure(backlogPermissions, "read")
     .input(z.object({ userStoryId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       return await getUserStoryDetail(
@@ -121,7 +137,7 @@ export const userStoriesRouter = createTRPCRouter({
 
       let statusTag = undefined;
       if (userStoryData.statusId !== undefined) {
-        statusTag = await getStatusTag(
+        statusTag = await getStatusType(
           ctx.firestore,
           projectId,
           userStoryData.statusId!,
@@ -203,6 +219,15 @@ export const userStoriesRouter = createTRPCRouter({
         sprint,
       } as UserStoryDetail;
     }),
+
+  /**
+   * @function createUserStory
+   * @description Creates a new user story or modifies an existing one.
+   * @param {UserStorySchema} userStoryData - The data for the user story to create or modify.
+   * @param {string} projectId - The ID of the project to which the user story belongs.
+   * @param {string} [userStoryId] - The ID of the user story to modify (optional).
+   * @returns {Promise<WithId<UserStory>>} - A promise that resolves to the created or modified user story.
+   */
   createUserStory: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
@@ -251,6 +276,14 @@ export const userStoriesRouter = createTRPCRouter({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
+  /**
+   * @function modifyUserStory
+   * @description Modifies an existing user story.
+   * @param {string} projectId - The ID of the project to which the user story belongs.
+   * @param {string} userStoryId - The ID of the user story to modify.
+   * @param {UserStorySchema} userStoryData - The data for the user story to modify.
+   * @returns {Promise<{ success: boolean, updatedUserStoryIds: string[] }>} - A promise that resolves to an object indicating success and the IDs of updated user stories.
+   */
   modifyUserStory: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
@@ -261,14 +294,10 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, userStoryId, userStoryData } = input;
-      const userStoryRef = getUserStoryRef(
+      const oldUserStoryData = await getUserStory(
         ctx.firestore,
         projectId,
         userStoryId,
-      );
-
-      const oldUserStoryData = UserStorySchema.parse(
-        (await userStoryRef.get()).data(),
       );
 
       // Check the difference in dependency and requiredBy arrays
@@ -349,9 +378,10 @@ export const userStoriesRouter = createTRPCRouter({
         }),
       );
 
-      await userStoryRef.update(userStoryData);
+      await getUserStoryRef(ctx.firestore, projectId, userStoryId).update(
+        userStoryData,
+      );
       return {
-        success: true,
         updatedUserStoryIds: [
           ...addedDependencies,
           ...removedDependencies,
@@ -360,6 +390,12 @@ export const userStoriesRouter = createTRPCRouter({
         ],
       };
     }),
+  /**
+   * @function deleteUserStory
+   * @description Deletes a user story by marking it as deleted.
+   * @param {string} projectId - The ID of the project to which the user story belongs.
+   * @param {string} userStoryId - The ID of the user story to delete.
+   */
   deleteUserStory: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
@@ -369,28 +405,35 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, userStoryId } = input;
-      const userStoryRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("userStories")
-        .doc(userStoryId);
+      const userStoryRef = getUserStoryRef(
+        ctx.firestore,
+        projectId,
+        userStoryId,
+      );
       await userStoryRef.update({ deleted: true });
 
-      const tasks = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
+      const tasksSnapshot = await getTasksRef(ctx.firestore, projectId)
+        .where("deleted", "==", false)
         .where("itemType", "==", "US")
         .where("itemId", "==", userStoryId)
         .get();
+
+      // NOTE: This is a batch operation, so it will not be atomic. If one of the updates fails, the others will still be applied.
       const batch = ctx.firestore.batch();
-      tasks.docs.forEach((task) => {
+      tasksSnapshot.docs.forEach((task) => {
         batch.update(task.ref, { deleted: true });
       });
       await batch.commit();
-
-      return { success: true };
     }),
+  /**
+   * @function modifyUserStoryTags
+   * @description Modifies the tags of an existing user story.
+   * @param {string} projectId - The ID of the project to which the user story belongs.
+   * @param {string} userStoryId - The ID of the user story to modify.
+   * @param {string} [priorityId] - The ID of the priority tag to set (optional).
+   * @param {string} [size] - The size of the user story (optional).
+   * @param {string} [statusId] - The ID of the status tag to set (optional).
+   */
   modifyUserStoryTags: roleRequiredProcedure(tagPermissions, "write")
     .input(
       z.object({
@@ -411,23 +454,21 @@ export const userStoriesRouter = createTRPCRouter({
         return;
       }
 
-      const userStoryRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("userStories")
-        .doc(userStoryId);
-      const userStory = await userStoryRef.get();
-      if (!userStory.exists) {
+      const userStoryRef = getUserStoryRef(
+        ctx.firestore,
+        projectId,
+        userStoryId,
+      );
+      const userStorySnapshot = await userStoryRef.get();
+      if (!userStorySnapshot.exists) {
         throw new TRPCError({ code: "NOT_FOUND" });
       }
 
-      const newUserStoryData = {
+      await userStoryRef.update({
         priorityId: priorityId,
         size: size,
         statusId: statusId,
-      };
-      await userStoryRef.update(newUserStoryData);
-      return { success: true };
+      });
     }),
   generateUserStories: roleRequiredProcedure(backlogPermissions, "write")
     .input(

@@ -9,7 +9,7 @@
  */
 
 import { z } from "zod";
-import type { Issue } from "~/lib/types/firebaseSchemas";
+import type { Issue, WithId } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   IssueSchema,
@@ -17,48 +17,61 @@ import {
   TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
-import type { IssueDetail, UserPreview } from "~/lib/types/detailSchemas";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import type { IssueDetail } from "~/lib/types/detailSchemas";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "../trpc";
 import {
   getBacklogTag,
+  getIssue,
+  getIssueDetail,
+  getIssueNewId,
+  getIssueRef,
   getIssues,
+  getIssuesRef,
   getIssueTable,
   getPriority,
   getSettingsRef,
-  getStatusTag,
+  getStatusType,
   getUserStory,
 } from "~/utils/helpers/shortcuts";
-import { IssueCol } from "~/lib/types/columnTypes";
+import { issuePermissions } from "~/lib/permission";
+import { get } from "node_modules/cypress/types/lodash";
 
 export const issuesRouter = createTRPCRouter({
-  getIssueTable: protectedProcedure
+  /**
+   * @function getIssueTable
+   * @description Retrieves all issues for a given project.
+   * @param {string} projectId - The ID of the project to retrieve issues for.
+   * @returns {Promise<IssueCol[]>} - A promise that resolves to an array of issues.
+   */
+  getIssueTable: roleRequiredProcedure(issuePermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       return await getIssueTable(ctx.firestore, input.projectId);
     }),
-
-  getIssue: protectedProcedure
+  /**
+   * @function getIssue
+   * @description Retrieves a specific issue by its ID within a project.
+   * @param {string} projectId - The ID of the project.
+   * @param {string} issueId - The ID of the issue to retrieve.
+   * @returns {Promise<WithId<Issue>>} - A promise that resolves to the issue data or null if not found.
+   */
+  getIssue: roleRequiredProcedure(issuePermissions, "read")
     .input(z.object({ projectId: z.string(), issueId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const issue = (
-        await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("issues")
-          .doc(input.issueId)
-          .get()
-      ).data();
-
-      if (!issue) {
-        throw new Error("Issue not found");
-      }
-
-      return {
-        id: input.issueId,
-        ...issue,
-      };
+      const { projectId, issueId } = input;
+      return await getIssue(ctx.firestore, projectId, issueId);
     }),
-  createIssue: protectedProcedure
+  /**
+   * @function createIssue
+   * @description Creates a new issue within a project.
+   * @param {string} projectId - The ID of the project to create the issue in.
+   * @param {Issue} issueData - The data for the issue to create.
+   */
+  createIssue: roleRequiredProcedure(issuePermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -66,38 +79,36 @@ export const issuesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const { projectId, issueData } = input;
       try {
-        const issueCount = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("issues")
-          .count()
-          .get();
-        const issue = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("issues")
-          .add({
-            ...input.issueData,
-            scrumId: issueCount.data().count + 1,
-          });
-        return { success: true, issueId: issue.id };
+        const scrumId = await getIssueNewId(ctx.firestore, projectId);
+        const newIssue = IssueSchema.parse({
+          ...issueData,
+          scrumId: scrumId,
+        });
+        const issue = await getIssuesRef(ctx.firestore, projectId).add(
+          newIssue,
+        );
+        return { issueId: issue.id };
       } catch (err) {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
 
+  /**
+   * @function getIssueDetail
+   * @description Retrieves detailed information about a specific issue within a project.
+   * @param {string} projectId - The ID of the project.
+   * @param {string} issueId - The ID of the issue to retrieve details for.
+   * @returns {Promise<IssueDetail>} - A promise that resolves to the detailed issue data.
+   */
   getIssueDetail: protectedProcedure
     .input(z.object({ issueId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Get the necessary information to construct the IssueDetail
-
       const { projectId, issueId } = input;
-      const issueRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("issues")
-        .doc(issueId);
+      return await getIssueDetail(ctx.firestore, projectId, issueId);
+
+      const issueRef = getIssuesRef(ctx.firestore, projectId).doc(issueId);
       const issue = await issueRef.get();
       if (!issue.exists) {
         throw new TRPCError({ code: "NOT_FOUND" });
@@ -120,7 +131,7 @@ export const issuesRouter = createTRPCRouter({
           const taskData = TaskSchema.parse(task.data());
 
           // FIXME: Get tag information from database
-          const statusTag = await getStatusTag(
+          const statusTag = await getStatusType(
             ctx.firestore,
             projectId,
             taskData.statusId,
@@ -133,22 +144,22 @@ export const issuesRouter = createTRPCRouter({
       const settingsRef = getSettingsRef(ctx.firestore, input.projectId);
 
       let priorityTag = undefined;
-      if (issueData.priorityId !== undefined) {
-        priorityTag = await getPriority(
-          ctx.firestore,
-          input.projectId,
-          issueData.priorityId,
-        );
-      }
+      // if (issueData.priorityId !== undefined) {
+      //   priorityTag = await getPriority(
+      //     ctx.firestore,
+      //     input.projectId,
+      //     issueData.priorityId,
+      //   );
+      // }
 
       let statusTag = undefined;
-      if (issueData.statusId !== undefined) {
-        statusTag = await getStatusTag(
-          ctx.firestore,
-          input.projectId,
-          issueData.statusId,
-        );
-      }
+      // if (issueData.statusId !== undefined) {
+      //   statusTag = await getStatusTag(
+      //     ctx.firestore,
+      //     input.projectId,
+      //     issueData.statusId,
+      //   );
+      // }
 
       const tags = await Promise.all(
         issueData.tagIds.map(async (tagId) => {
@@ -211,6 +222,13 @@ export const issuesRouter = createTRPCRouter({
       } as IssueDetail;
     }),
 
+  /**
+   * @function modifyIssue
+   * @description Modifies an existing issue within a project.
+   * @param {string} projectId - The ID of the project.
+   * @param {string} issueId - The ID of the issue to modify.
+   * @param {Issue} issueData - The data for the issue to modify.
+   */
   modifyIssue: protectedProcedure
     .input(
       z.object({
@@ -221,15 +239,16 @@ export const issuesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId, issueData } = input;
-      const issueRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("issues")
-        .doc(issueId);
+      const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
       await issueRef.update(issueData);
-      return { success: true };
     }),
 
+  /**
+   * @function deleteIssue
+   * @description Deletes an issue within a project.
+   * @param {string} projectId - The ID of the project.
+   * @param {string} issueId - The ID of the issue to delete.
+   */
   deleteIssue: protectedProcedure
     .input(
       z.object({
@@ -239,29 +258,31 @@ export const issuesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId } = input;
-      const issueRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("issues")
-        .doc(issueId);
+      const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
       await issueRef.update({ deleted: true });
 
-      const tasks = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
+      const tasks = await getIssuesRef(ctx.firestore, projectId)
         .where("itemType", "==", "IS")
         .where("itemId", "==", issueId)
         .get();
+
+      // NOTE: This is a batch operation, so it will not be atomic. If one of the updates fails, the others will still be applied.
       const batch = ctx.firestore.batch();
       tasks.docs.forEach((task) => {
         batch.update(task.ref, { deleted: true });
       });
       await batch.commit();
-
-      return { success: true };
     }),
 
+  /**
+   * @function modifyIssuesTags
+   * @description Modifies the tags of an issue within a project.
+   * @param {string} projectId - The ID of the project.
+   * @param {string} issueId - The ID of the issue to modify.
+   * @param {string} [size] - The size of the issue (optional).
+   * @param {string} [priorityId] - The ID of the priority (optional).
+   * @param {string} [statusId] - The ID of the status (optional).
+   */
   modifyIssuesTags: protectedProcedure
     .input(
       z.object({
@@ -281,31 +302,25 @@ export const issuesRouter = createTRPCRouter({
       ) {
         return;
       }
-      const issueRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("issues")
-        .doc(issueId);
-      const issueDoc = await issueRef.get();
-      if (!issueDoc.exists) {
+      const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
+      const issueSnapshot = await issueRef.get();
+      if (!issueSnapshot.exists) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Issue not found" });
       }
-      const issueData = issueDoc.data() as Issue;
-      const updatedIssueData = {
-        ...issueData,
-        priorityId: priorityId ?? issueData.priorityId,
-        size: size ?? issueData.size,
-        statusId: statusId ?? issueData.statusId,
-      };
-
-      await issueRef.update(updatedIssueData);
-      return {
-        success: true,
-        issueId: issueId,
-        updatedIssueData: updatedIssueData,
-      };
+      await issueRef.update({
+        priorityId: priorityId,
+        size: size,
+        statusId: statusId,
+      });
     }),
 
+  /**
+   * @function modifyIssuesRelatedUserStory
+   * @description Modifies the related user story of an issue within a project.
+   * @param {string} projectId - The ID of the project.
+   * @param {string} issueId - The ID of the issue to modify.
+   * @param {string} [relatedUserStoryId] - The ID of the related user story (optional).
+   */
   modifyIssuesRelatedUserStory: protectedProcedure
     .input(
       z.object({
@@ -316,41 +331,15 @@ export const issuesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId, relatedUserStoryId } = input;
-      if (relatedUserStoryId === undefined) {
-        return;
-      }
-      const issueRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("issues")
-        .doc(issueId);
-      const issueDoc = await issueRef.get();
-      if (!issueDoc.exists) {
+
+      const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
+      const issueSnapshot = await issueRef.get();
+      if (!issueSnapshot.exists) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Issue not found" });
       }
-      const issueData = issueDoc.data() as Issue;
       const updatedIssueData = {
-        ...issueData,
-        relatedUserStoryId: relatedUserStoryId ?? issueData.relatedUserStoryId,
+        relatedUserStoryId: relatedUserStoryId,
       };
       await issueRef.update(updatedIssueData);
-      return {
-        success: true,
-        issueId: issueId,
-        updatedIssueData: updatedIssueData,
-      };
-    }),
-
-  getIssueCount: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const issueCount = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("issues")
-        .where("deleted", "==", false)
-        .count()
-        .get();
-      return issueCount.data().count;
     }),
 });

@@ -1,3 +1,13 @@
+/**
+ * Users Router - Tenor API Endpoints for User Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing Users in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve global users and within projects.
+ *
+ * @category API
+ */
+
 import {
   createTRPCRouter,
   protectedProcedure,

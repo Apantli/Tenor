@@ -10,15 +10,10 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
 import {
-  doingTagName,
-  doneTagName,
-  todoTagName,
-} from "~/lib/defaultProjectValues";
-import {
   getAutomaticStatusId,
   getBacklogTag,
   getSettingsRef,
-  getStatusTags,
+  getStatusTypes,
   getTasksFromProject,
 } from "~/utils/helpers/shortcuts";
 import { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
@@ -57,7 +52,10 @@ export const kanbanRouter = createTRPCRouter({
         } as KanbanTaskCard;
       });
 
-      const activeColumns = await getStatusTags(ctx.firestore, input.projectId);
+      const activeColumns = await getStatusTypes(
+        ctx.firestore,
+        input.projectId,
+      );
 
       const columnsWithTasks = activeColumns
         .map((column) => ({
@@ -170,7 +168,10 @@ export const kanbanRouter = createTRPCRouter({
       const backlogItems = [...userStories, ...issues];
 
       // Get all statuses
-      const activeColumns = await getStatusTags(ctx.firestore, input.projectId);
+      const activeColumns = await getStatusTypes(
+        ctx.firestore,
+        input.projectId,
+      );
 
       // Assign automatic status to items with undefined status
       const itemsWithStatus = await Promise.all(
@@ -262,7 +263,7 @@ export const kanbanRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { projectId, itemId } = input;
-      const activeStatuses = await getStatusTags(
+      const activeStatuses = await getStatusTypes(
         ctx.firestore,
         input.projectId,
       );

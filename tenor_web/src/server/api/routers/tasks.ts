@@ -16,7 +16,7 @@ import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
   getProjectContextHeader,
   getSettingsRef,
-  getStatusTag,
+  getStatusType,
   getTasksFromItem,
   getTodoStatusTag,
 } from "~/utils/helpers/shortcuts";
@@ -96,7 +96,11 @@ export const tasksRouter = createTRPCRouter({
             id: task.id,
             scrumId: task.scrumId,
             title: task.name,
-            status: await getStatusTag(ctx.firestore, projectId, task.statusId),
+            status: await getStatusType(
+              ctx.firestore,
+              projectId,
+              task.statusId,
+            ),
             assignee: assignee,
           };
         }),
@@ -137,7 +141,7 @@ export const tasksRouter = createTRPCRouter({
 
       let statusTag = undefined;
       if (taskData.statusId !== undefined) {
-        statusTag = await getStatusTag(
+        statusTag = await getStatusType(
           ctx.firestore,
           projectId,
           taskData.statusId,

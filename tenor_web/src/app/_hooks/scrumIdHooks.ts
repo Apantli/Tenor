@@ -44,13 +44,7 @@ export const useFormatTaskScrumId = () => {
 
 export const useFormatIssueScrumId = () => {
   const { projectId } = useParams();
-  const { data: issueCount } = api.issues.getIssueCount.useQuery({
-    projectId: projectId as string,
-  });
-  if (issueCount === undefined) {
-    return (_: number) => "";
-  }
-
+  // FIXME: Id is not the counts, remove the 1
   return (issueId: number) =>
-    `IS${String(issueId).padStart(calculatePaddingNeeded(issueCount), "0")}`;
+    `IS${String(issueId).padStart(calculatePaddingNeeded(1), "0")}`;
 };

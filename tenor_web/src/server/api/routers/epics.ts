@@ -11,7 +11,6 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { EpicSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { FieldPath } from "firebase-admin/firestore";
 import {
   getEpic,
   getEpicNewId,
@@ -19,10 +18,14 @@ import {
   getEpics,
   getEpicsRef,
 } from "~/utils/helpers/shortcuts";
-import { get } from "node_modules/cypress/types/lodash";
-import { WithId } from "~/lib/types/firebaseSchemas";
 
 export const epicsRouter = createTRPCRouter({
+  /**
+   * @function getEpics
+   * @description Retrieves all epics for a given project.
+   * @param {string} projectId - The ID of the project to retrieve epics for.
+   * @returns {Promise<EpicSchema[]>} - A promise that resolves to an array of epics.
+   */
   getEpics: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -30,6 +33,13 @@ export const epicsRouter = createTRPCRouter({
       return await getEpics(ctx.firestore, projectId);
     }),
 
+  /**
+   * @function getEpic
+   * @description Retrieves a specific epic by its ID within a project.
+   * @param {string} projectId - The ID of the project.
+   * @param {string} epicId - The ID of the epic to retrieve.
+   * @returns {Promise<EpicSchema>} - A promise that resolves to the epic data or null if not found.
+   */
   getEpic: protectedProcedure
     .input(z.object({ projectId: z.string(), epicId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -37,6 +47,13 @@ export const epicsRouter = createTRPCRouter({
       return await getEpic(ctx.firestore, projectId, epicId);
     }),
 
+  /**
+   * @function createOrModifyEpic
+   * @description Creates a new epic or modifies an existing one.
+   * @param {EpicSchema} epicData - The data for the epic to create or modify.
+   * @param {string} projectId - The ID of the project to which the epic belongs.
+   * @param {string} [epicId] - The ID of the epic to modify (optional).
+   */
   createOrModifyEpic: protectedProcedure
     .input(
       z.object({

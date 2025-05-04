@@ -1,13 +1,20 @@
-import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
+/**
+ * Requirements Router - Tenor API Endpoints for Requirement Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing Requirements in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve requirement data within projects.
+ *
+ * @category API
+ */
+
+import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
-import { FieldPath } from "firebase-admin/firestore";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import {
-  collectPriorityTagContext,
-  collectTagContext,
   getPriority,
   getProjectContextHeader,
   getRequirement,
@@ -17,16 +24,15 @@ import {
   getRequirementFocusRef,
   getRequirementNewId,
   getRequirementRef,
-  getRequirements,
   getRequirementsRef,
   getRequirementTable,
   getRequirementType,
   getRequirementTypeRef,
   getRequirementTypes,
   getRequirementTypesRef,
+  getSettingsRef,
 } from "~/utils/helpers/shortcuts";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
-import { get } from "node_modules/cypress/types/lodash";
 
 export const requirementsRouter = createTRPCRouter({
   getRequirementTypes: roleRequiredProcedure(tagPermissions, "read")
@@ -272,7 +278,7 @@ Generate ${amount} requirements for the mentioned software project. Do NOT inclu
         ),
       );
 
-      const settingsRef = getProjectSettingsRef(ctx.firestore, projectId);
+      const settingsRef = getSettingsRef(ctx.firestore, projectId);
 
       // Create the generated focus tags if they don't exist
       for (const req of generatedRequirements) {

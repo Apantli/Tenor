@@ -24,11 +24,13 @@ import {
   roleRequiredProcedure,
 } from "../trpc";
 import {
+  getPriorities,
   getRoleRef,
   getSettingsRef,
   getTodoStatusTag,
   getUserRef,
 } from "~/utils/helpers/shortcuts";
+import { generalPermissions } from "~/lib/permission";
 
 const settingsRouter = createTRPCRouter({
   /**
@@ -38,34 +40,11 @@ const settingsRouter = createTRPCRouter({
    * @input {string} input.projectId - The ID of the project
    * @returns {Tag[]} An array of priority type tags
    */
-  getPriorityTypes: roleRequiredProcedure(
-    {
-      flags: [
-        "backlog",
-        "settings",
-        "issues",
-        "scrumboard",
-        "performance",
-        "sprints",
-      ],
-
-      optimistic: true,
-    },
-    "read",
-  )
+  getPriorityTypes: roleRequiredProcedure(generalPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const projectSettingsRef = getSettingsRef(ctx.firestore, input.projectId);
-      const priorityTypes = await projectSettingsRef
-        .collection("priorityTypes")
-        .orderBy("name")
-        .get();
-      const priorityTypesData = priorityTypes.docs.map((doc) => ({
-        id: doc.id,
-        ...TagSchema.parse(doc.data()),
-      }));
-
-      return priorityTypesData;
+      const { projectId } = input;
+      return await getPriorities(ctx.firestore, projectId);
     }),
 
   /**
