@@ -24,7 +24,7 @@ export default function RequirementTypePicker({
   });
 
   const { mutateAsync: createRequirementTypeTag } =
-    api.settings.createRequirementType.useMutation();
+    api.requirements.createOrModifyRequirementType.useMutation();
 
   return (
     <PillComponent
@@ -36,7 +36,7 @@ export default function RequirementTypePicker({
       addTag={async (tag) => {
         const newTag = await createRequirementTypeTag({
           projectId: projectId as string,
-          tag: tag,
+          tagData: tag,
         });
         typeTags?.push(newTag);
         return newTag;

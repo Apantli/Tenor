@@ -23,7 +23,7 @@ export default function RequirementFocusPicker({
   });
 
   const { mutateAsync: createRequirementTypeTag } =
-    api.settings.createRequirementFocus.useMutation();
+    api.requirements.createOrModifyRequirementFocus.useMutation();
 
   return (
     <PillComponent
@@ -35,7 +35,7 @@ export default function RequirementFocusPicker({
       addTag={async (tag) => {
         const newTag = await createRequirementTypeTag({
           projectId: projectId as string,
-          tag: tag,
+          tagData: tag,
         });
         focusTags?.push(newTag);
         return newTag;

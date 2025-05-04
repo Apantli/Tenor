@@ -143,7 +143,7 @@ export default function ItemTagDetailPopup({
 
   switch (itemTagType) {
     case "BacklogTag": {
-      const query = api.settings.getBacklogTagById.useQuery({
+      const query = api.settings.getBacklogTag.useQuery({
         projectId: projectId as string,
         tagId: tagId,
       });
@@ -364,8 +364,8 @@ export default function ItemTagDetailPopup({
 
     switch (itemTagType) {
       case "BacklogTag":
-        await utils.settings.getBacklogTagById.cancel(params);
-        utils.settings.getBacklogTagById.setData(params, (oldData) => {
+        await utils.settings.getBacklogTag.cancel(params);
+        utils.settings.getBacklogTag.setData(params, (oldData) => {
           if (!oldData) return;
           return { ...oldData, ...updateTag };
         });

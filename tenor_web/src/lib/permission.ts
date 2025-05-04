@@ -1,7 +1,7 @@
 import { FlagsRequired } from "~/lib/defaultProjectValues";
 
 export const tagPermissions: FlagsRequired = {
-  flags: ["settings", "backlog"],
+  flags: ["settings", "backlog", "issues"],
   optimistic: true,
 };
 
@@ -43,5 +43,10 @@ export const usersPermissions: FlagsRequired = {
 
 export const settingsPermissions: FlagsRequired = {
   flags: ["settings"],
+  optimistic: true,
+};
+
+export const sprintPermissions: FlagsRequired = {
+  flags: ["sprints", "settings"],
   optimistic: true,
 };

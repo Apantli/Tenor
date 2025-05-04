@@ -91,7 +91,6 @@ export type TaskDetail = {
 };
 
 export type RoleDetail = {
-  id: string;
   label: string;
   settings: Permission; // settings
   performance: Permission; // performance

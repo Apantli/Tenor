@@ -65,7 +65,7 @@ export const getProjectRef = (firestore: Firestore, projectId: string) => {
 };
 
 /**
- * @function getProjectSettingsRef
+ * @function getSettingsRef
  * @description Gets a reference to the project settings document
  * @param {string} projectId - The ID of the project
  * @param {Firestore} firestore - The Firestore instance
@@ -78,7 +78,18 @@ export const getSettingsRef = (firestore: Firestore, projectId: string) => {
 };
 
 /**
- * @function getProjectRolesRef
+ * @function getSettings
+ * @description Retrieves the settings for a specific project
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ */
+export const getSettings = async (firestore: Firestore, projectId: string) => {
+  const settings = await getSettingsRef(firestore, projectId).get();
+  return SettingsSchema.parse(settings.data());
+};
+
+/**
+ * @function getRolesRef
  * @description Gets a reference to the project roles collection
  * @param {string} projectId - The ID of the project
  * @param {Firestore} firestore - The Firestore instance
@@ -89,7 +100,7 @@ export const getRolesRef = (firestore: Firestore, projectId: string) => {
 };
 
 /**
- * @function getProjectRoleRef
+ * @function getRoleRef
  * @description Gets a reference to a specific project role document
  * @param {string} projectId - The ID of the project
  * @param {string} roleId - The ID of the role
@@ -102,18 +113,6 @@ export const getRoleRef = (
   roleId: string,
 ) => {
   return getRolesRef(firestore, projectId).doc(roleId);
-};
-
-/**
- * @function getProjectSettings
- * @description Retrieves the settings for a specific project
- * @param {string} projectId - The ID of the project
- * @param {Firestore} firestore - The Firestore instance
- * @returns {Promise<any>} The project settings validated by SettingsSchema
- */
-export const getSettings = async (projectId: string, firestore: Firestore) => {
-  const settings = await getSettingsRef(firestore, projectId).get();
-  return SettingsSchema.parse(settings.data());
 };
 //#endregion
 
@@ -1233,6 +1232,13 @@ export const getTasksAssignUsers = async (
 //#endregion
 
 //#region Tags & Statuses
+/**
+ * @function getPrioritiesRef
+ * @description Gets a reference to the priority types collection for a specific project
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {FirebaseFirestore.CollectionReference} A reference to the priority types collection
+ */
 export const getPrioritiesRef = (firestore: Firestore, projectId: string) => {
   return getSettingsRef(firestore, projectId).collection("priorityTypes");
 };
@@ -1552,6 +1558,7 @@ export const getAutomaticStatusId = async (
 
   return "";
 };
+
 //#endregion
 
 //#region Articial Intelligence
