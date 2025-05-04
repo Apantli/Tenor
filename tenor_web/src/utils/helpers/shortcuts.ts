@@ -1108,32 +1108,22 @@ export const getTaskRef = (
 };
 
 /**
- * @function getTasksFromProject
+ * @function getTasks
  * @description Retrieves all non-deleted tasks from a project, ordered by scrumId
  * @param {Firestore} firestore - The Firestore database instance
  * @param {string} projectId - The ID of the project to retrieve tasks from
  * @returns {Promise<WithId<Task>[]>} An array of task objects with their IDs
  */
-export const getTasksFromProject = async (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  const taskCollectionRef = getTasksRef(firestore, projectId).orderBy(
-    "scrumId",
-  );
+export const getTasks = async (firestore: Firestore, projectId: string) => {
+  const tasksRef = getTasksRef(firestore, projectId).orderBy("scrumId");
 
-  const snap = await taskCollectionRef.get();
-
-  const docs = snap.docs.map((doc) => {
+  const tasksSnapshot = await tasksRef.get();
+  const tasks: WithId<Task>[] = tasksSnapshot.docs.map((doc) => {
     return {
       id: doc.id,
-      ...doc.data(),
-    };
+      ...TaskSchema.parse(doc.data()),
+    } as WithId<Task>;
   });
-
-  const tasks: WithId<Task>[] = docs.filter(
-    (task): task is WithId<Task> => task !== null,
-  );
 
   return tasks;
 };
@@ -1143,22 +1133,17 @@ export const getTasksFromItem = async (
   projectId: string,
   itemId: string,
 ) => {
-  const taskCollectionRef = getTasksRef(firestore, projectId)
+  const tasksRef = getTasksRef(firestore, projectId)
     .where("itemId", "==", itemId)
     .orderBy("scrumId");
-  const snap = await taskCollectionRef.get();
 
-  const docs = snap.docs.map((doc) => {
+  const tasksSnapshot = await tasksRef.get();
+  const tasks: WithId<Task>[] = tasksSnapshot.docs.map((doc) => {
     return {
       id: doc.id,
-      ...doc.data(),
-    };
+      ...TaskSchema.parse(doc.data()),
+    } as WithId<Task>;
   });
-
-  const tasks: WithId<Task>[] = docs.filter(
-    (task): task is WithId<Task> => task !== null,
-  );
-
   return tasks;
 };
 
@@ -1167,10 +1152,12 @@ export const getTaskProgress = async (
   projectId: string,
   itemId: string,
 ) => {
-  const tasksRef = getTasksRef(firestore, projectId);
-
-  const tasksSnapshot = await tasksRef.where("itemId", "==", itemId).get();
-
+  const tasksRef = getTasksRef(firestore, projectId).where(
+    "deleted",
+    "==",
+    false,
+  );
+  const tasksSnapshot = await tasksRef.get();
   const totalTasks = tasksSnapshot.size;
 
   const completedTasks = await Promise.all(
@@ -1193,7 +1180,7 @@ export const getTaskProgress = async (
 
 // TODO: This one needs admin access
 export const getTasksAssignUsers = async (
-  //   adminInstance: typeof admin,
+  admin: admin.app.App,
   firestore: Firestore,
   projectId: string,
   itemId: string,
@@ -1207,17 +1194,18 @@ export const getTasksAssignUsers = async (
     .map((task) => task.assigneeId)
     .filter((id): id is string => Boolean(id));
 
-  //   const users = await Promise.all(
-  //     userIds.map(async (userId) => {
-  //       const userRecord = await adminInstance.auth().getUser(userId);
-  //       return {
-  //         uid: userRecord.uid,
-  //         displayName: userRecord.displayName,
-  //         photoURL: userRecord.photoURL,
-  //       };
-  //     }),
-  //   );
-  const users: WithId<UserPreview>[] = [];
+  const users: WithId<UserPreview>[] = await Promise.all(
+    userIds.map(async (userId) => {
+      const userRecord = await admin.auth().getUser(userId);
+      const user: WithId<UserPreview> = {
+        id: userRecord.uid,
+        displayName: userRecord.displayName ?? "",
+        email: userRecord.email ?? "",
+        photoURL: userRecord.photoURL ?? "",
+      };
+      return user;
+    }),
+  );
 
   const filteredUsers = users.filter((user): user is WithId<UserPreview> =>
     Boolean(user?.id),

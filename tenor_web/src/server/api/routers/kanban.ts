@@ -14,7 +14,7 @@ import {
   getBacklogTag,
   getSettingsRef,
   getStatusTypes,
-  getTasksFromProject,
+  getTasks,
 } from "~/utils/helpers/shortcuts";
 import { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
 
@@ -26,7 +26,7 @@ export const kanbanRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const tasks = await getTasksFromProject(ctx.firestore, input.projectId);
+      const tasks = await getTasks(ctx.firestore, input.projectId);
       const cardTasks = tasks.map((task) => {
         const {
           id,
