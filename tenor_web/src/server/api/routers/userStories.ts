@@ -15,16 +15,10 @@ import type {
 } from "~/lib/types/detailSchemas";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { FieldValue } from "firebase-admin/firestore";
+import { backlogPermissions, tagPermissions } from "~/lib/permission";
+import { UserStory, WithId } from "~/lib/types/firebaseSchemas";
+import { UserStoryCol } from "~/lib/types/columnTypes";
 import {
-  collectBacklogTagsContext,
-  collectPriorityTagContext,
-  getBacklogTag,
-  getEpic,
-  getPriority,
-  getProjectContextHeader,
-  getSettingsRef,
-  getStatusType,
-  getTasksRef,
   getUserStories,
   getUserStoriesRef,
   getUserStory,
@@ -32,10 +26,20 @@ import {
   getUserStoryNewId,
   getUserStoryRef,
   getUserStoryTable,
-} from "~/utils/helpers/shortcuts";
-import { backlogPermissions, tagPermissions } from "~/lib/permission";
-import { UserStory, WithId } from "~/lib/types/firebaseSchemas";
-import { UserStoryCol } from "~/lib/types/columnTypes";
+} from "~/utils/helpers/shortcuts/userStories";
+import { getEpic } from "~/utils/helpers/shortcuts/epics";
+import {
+  getBacklogTag,
+  getPriority,
+  getStatusType,
+} from "~/utils/helpers/shortcuts/tags";
+import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
+import {
+  collectBacklogTagsContext,
+  collectPriorityTagContext,
+  getProjectContextHeader,
+} from "~/utils/helpers/shortcuts/ai";
+import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
 
 export const userStoriesRouter = createTRPCRouter({
   /**

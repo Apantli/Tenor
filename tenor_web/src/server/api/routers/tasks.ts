@@ -13,15 +13,15 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import type { TaskDetail } from "~/lib/types/detailSchemas";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
-import {
-  getProjectContextHeader,
-  getSettingsRef,
-  getStatusType,
-  getTasksFromItem,
-  getTodoStatusTag,
-} from "~/utils/helpers/shortcuts";
 import { TaskCol } from "~/lib/types/columnTypes";
 import { timestampToDate } from "~/utils/helpers/parsers";
+import { getTasksFromItem } from "~/utils/helpers/shortcuts/tasks";
+import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
+import {
+  getStatusType,
+  getTodoStatusTag,
+} from "~/utils/helpers/shortcuts/tags";
+import { getProjectContextHeader } from "~/utils/helpers/shortcuts/ai";
 
 export const tasksRouter = createTRPCRouter({
   /**

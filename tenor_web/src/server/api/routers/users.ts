@@ -16,14 +16,14 @@ import {
 import { z } from "zod";
 import { emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCError } from "@trpc/server";
+import { settingsPermissions, usersPermissions } from "~/lib/permission";
 import {
   getGlobalUserPreviews,
   getGlobalUserRef,
   getUserRef,
   getUsers,
   getUserTable,
-} from "~/utils/helpers/shortcuts";
-import { settingsPermissions, usersPermissions } from "~/lib/permission";
+} from "~/utils/helpers/shortcuts/users";
 
 export const userRouter = createTRPCRouter({
   /**

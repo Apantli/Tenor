@@ -14,9 +14,8 @@ import { z } from "zod";
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
+import { backlogPermissions, tagPermissions } from "~/lib/permission";
 import {
-  getPriority,
-  getProjectContextHeader,
   getRequirement,
   getRequirementFocus,
   getRequirementFocuses,
@@ -30,9 +29,10 @@ import {
   getRequirementTypeRef,
   getRequirementTypes,
   getRequirementTypesRef,
-  getSettingsRef,
-} from "~/utils/helpers/shortcuts";
-import { backlogPermissions, tagPermissions } from "~/lib/permission";
+} from "~/utils/helpers/shortcuts/requirements";
+import { getProjectContextHeader } from "~/utils/helpers/shortcuts/ai";
+import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
+import { getPriority } from "~/utils/helpers/shortcuts/tags";
 
 export const requirementsRouter = createTRPCRouter({
   getRequirementTypes: roleRequiredProcedure(tagPermissions, "read")

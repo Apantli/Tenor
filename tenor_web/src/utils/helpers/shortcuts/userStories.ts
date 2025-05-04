@@ -1,0 +1,170 @@
+import { UserStoryCol } from "~/lib/types/columnTypes";
+import { getEpic } from "./epics";
+import { noTag } from "~/lib/defaultProjectValues";
+import { getPriority } from "./tags";
+import { Epic, Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
+import { getProjectRef } from "./general";
+import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
+import { TRPCError } from "@trpc/server";
+import { UserStoryDetail } from "~/lib/types/detailSchemas";
+import { Firestore } from "firebase-admin/firestore";
+
+/**
+ * @function getUserStoriesRef
+ * @description Gets a reference to the user stories collection for a specific project
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {FirebaseFirestore.CollectionReference} A reference to the user stories collection
+ */
+export const getUserStoriesRef = (firestore: Firestore, projectId: string) => {
+  return getProjectRef(firestore, projectId).collection("userStories");
+};
+
+/**
+ * @function getUserStoryRef
+ * @description Gets a reference to a specific user story document
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @param userStoryId The ID of the user story
+ * @returns {FirebaseFirestore.DocumentReference} A reference to the user story document
+ */
+export const getUserStoryRef = (
+  firestore: Firestore,
+  projectId: string,
+  userStoryId: string,
+) => {
+  return getUserStoriesRef(firestore, projectId).doc(userStoryId);
+};
+
+// FIXME: This may overlap, this isnt quite right
+/**
+ * @function getUserStoryNewId
+ * @description Gets the next available user story ID for a specific project
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {Promise<number>} The next available user story ID
+ */
+export const getUserStoryNewId = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const userStoriesRef = getUserStoriesRef(firestore, projectId).count().get();
+  const userStoriesCount = (await userStoriesRef).data().count;
+  return userStoriesCount + 1;
+};
+
+/**
+ * @function getUserStories
+ * @description Retrieves all non-deleted user stories associated with a specific project
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve user stories from
+ * @returns {Promise<WithId<UserStory>[]>} An array of user story objects with their IDs
+ */
+export const getUserStories = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const userStoriesRef = getUserStoriesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .orderBy("scrumId", "desc");
+  const userStoriesSnapshot = await userStoriesRef.get();
+  const userStories: WithId<UserStory>[] = userStoriesSnapshot.docs.map(
+    (doc) => {
+      return {
+        id: doc.id,
+        ...UserStorySchema.parse(doc.data()),
+      } as WithId<UserStory>;
+    },
+  );
+  return userStories;
+};
+
+/**
+ * @function getUserStory
+ * @description Retrieves a specific user story from the Firestore database
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @param userStoryId The ID of the user story
+ * @returns {Promise<WithId<UserStory>>} The user story object validated by UserStorySchema or undefined if not found
+ */
+export const getUserStory = async (
+  firestore: Firestore,
+  projectId: string,
+  userStoryId: string,
+) => {
+  const userStoryRef = getUserStoryRef(firestore, projectId, userStoryId);
+  const userStorySnapshot = await userStoryRef.get();
+  if (!userStorySnapshot.exists) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "User story not found",
+    });
+  }
+  return {
+    id: userStorySnapshot.id,
+    ...UserStorySchema.parse(userStorySnapshot.data()),
+  } as WithId<UserStory>;
+};
+
+export const getUserStoryDetail = async (
+  firestore: Firestore,
+  projectId: string,
+  userStoryId: string,
+) => {
+  const userStory = await getUserStory(firestore, projectId, userStoryId);
+
+  const priority: Tag =
+    (await getPriority(firestore, projectId, userStory.priorityId)) ?? noTag;
+  const epic: WithId<Epic> | undefined = userStory.epicId
+    ? await getEpic(firestore, projectId, userStory.epicId)
+    : undefined;
+
+  // FIXME: Load Sprint, requiredBy, dependencies, tags, status, tasks
+  const userStoryDetail: UserStoryDetail = {
+    ...userStory,
+    priority,
+    epic,
+    tags: [],
+    dependencies: [],
+    requiredBy: [],
+  };
+
+  return userStoryDetail;
+};
+
+/**
+ * @function getUserStoryTable
+ * @description Retrieves all non-deleted user story previews associated with a specific project
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve user story previews from
+ * @returns {Promise<WithId<UserStoryCol>[]>} An array of user story objects with their IDs
+ */
+export const getUserStoryTable = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const userStories = await getUserStories(firestore, projectId);
+  const userStoryCols: UserStoryCol[] = await Promise.all(
+    userStories.map(async (userStory): Promise<UserStoryCol> => {
+      const priority: Tag =
+        (await getPriority(firestore, projectId, userStory.priorityId)) ??
+        noTag;
+
+      const epicScrumId: number | undefined =
+        userStory.epicId !== undefined
+          ? ((await getEpic(firestore, projectId, userStory.epicId)).scrumId ??
+            undefined)
+          : undefined;
+
+      // FIXME: Sprint, task progress
+      const userStoryCol: UserStoryCol = {
+        ...userStory,
+        epicScrumId,
+        priority,
+        taskProgress: [0, 1],
+      };
+      return userStoryCol;
+    }),
+  );
+  return userStoryCols;
+};

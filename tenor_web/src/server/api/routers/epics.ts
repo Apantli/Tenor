@@ -17,7 +17,7 @@ import {
   getEpicRef,
   getEpics,
   getEpicsRef,
-} from "~/utils/helpers/shortcuts";
+} from "~/utils/helpers/shortcuts/epics";
 
 export const epicsRouter = createTRPCRouter({
   /**

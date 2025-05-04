@@ -20,24 +20,6 @@ import {
   roleRequiredProcedure,
 } from "../trpc";
 import {
-  getBacklogTag,
-  getBacklogTagRef,
-  getBacklogTags,
-  getBacklogTagsRef,
-  getPriorities,
-  getPriority,
-  getRoleRef,
-  getRolesRef,
-  getSettings,
-  getSettingsRef,
-  getStatusType,
-  getStatusTypeRef,
-  getStatusTypes,
-  getStatusTypesRef,
-  getTodoStatusTag,
-  getUserRef,
-} from "~/utils/helpers/shortcuts";
-import {
   generalPermissions,
   settingsPermissions,
   tagPermissions,
@@ -48,6 +30,26 @@ import {
   Tag,
   WithId,
 } from "~/lib/types/firebaseSchemas";
+import {
+  getBacklogTag,
+  getBacklogTagRef,
+  getBacklogTags,
+  getBacklogTagsRef,
+  getPriorities,
+  getPriority,
+  getStatusType,
+  getStatusTypeRef,
+  getStatusTypes,
+  getStatusTypesRef,
+  getTodoStatusTag,
+} from "~/utils/helpers/shortcuts/tags";
+import {
+  getRoleRef,
+  getRolesRef,
+  getSettings,
+  getSettingsRef,
+} from "~/utils/helpers/shortcuts/general";
+import { getUserRef } from "~/utils/helpers/shortcuts/users";
 
 const settingsRouter = createTRPCRouter({
   /**

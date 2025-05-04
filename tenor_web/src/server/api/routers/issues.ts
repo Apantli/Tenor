@@ -9,7 +9,6 @@
  */
 
 import { z } from "zod";
-import type { Issue, WithId } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   IssueSchema,
@@ -23,22 +22,17 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "../trpc";
+import { issuePermissions } from "~/lib/permission";
 import {
-  getBacklogTag,
   getIssue,
   getIssueDetail,
   getIssueNewId,
   getIssueRef,
-  getIssues,
   getIssuesRef,
   getIssueTable,
-  getPriority,
-  getSettingsRef,
-  getStatusType,
-  getUserStory,
-} from "~/utils/helpers/shortcuts";
-import { issuePermissions } from "~/lib/permission";
-import { get } from "node_modules/cypress/types/lodash";
+} from "~/utils/helpers/shortcuts/issues";
+import { getBacklogTag, getStatusType } from "~/utils/helpers/shortcuts/tags";
+import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
 
 export const issuesRouter = createTRPCRouter({
   /**
