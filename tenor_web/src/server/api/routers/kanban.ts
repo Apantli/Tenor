@@ -17,7 +17,7 @@ import {
 import {
   getAutomaticStatusId,
   getBacklogTag,
-  getProjectSettingsRef,
+  getSettingsRef,
   getStatusTags,
   getTasksFromProject,
 } from "~/utils/helpers/shortcuts";
@@ -92,7 +92,7 @@ export const kanbanRouter = createTRPCRouter({
         .collection(`projects/${input.projectId}/userStories`)
         .where("deleted", "==", false);
       const userStoriesSnapshot = await userStoriesRef.get();
-      const settingsRef = getProjectSettingsRef(ctx.firestore, input.projectId);
+      const settingsRef = getSettingsRef(ctx.firestore, input.projectId);
       const memoTags = new Map<string, WithId<Tag>>();
       const userStories = await Promise.all(
         userStoriesSnapshot.docs.map(async (doc) => {
@@ -223,10 +223,7 @@ export const kanbanRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, name, color, marksTaskAsDone } = input;
 
-      const projectSettingsRef = getProjectSettingsRef(
-        ctx.firestore,
-        projectId,
-      );
+      const projectSettingsRef = getSettingsRef(ctx.firestore, projectId);
 
       const statusCollectionRef = projectSettingsRef.collection("statusTypes");
 

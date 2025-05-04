@@ -1,13 +1,8 @@
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  roleRequiredProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import {
   EpicSchema,
-  ExistingUserStorySchema,
   RequirementSchema,
   SprintSchema,
   TagSchema,
@@ -20,7 +15,6 @@ import type {
 } from "~/lib/types/detailSchemas";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { FieldValue } from "firebase-admin/firestore";
-import { UserStoryCol } from "~/lib/types/columnTypes";
 import {
   collectBacklogTagsContext,
   collectPriorityTagContext,
@@ -28,10 +22,8 @@ import {
   getEpic,
   getPriority,
   getProjectContextHeader,
-  getProjectSettingsRef,
-  getSprint,
+  getSettingsRef,
   getStatusTag,
-  getTaskProgress,
   getUserStories,
   getUserStoriesRef,
   getUserStoryDetail,
@@ -40,7 +32,6 @@ import {
   getUserStoryTable,
 } from "~/utils/helpers/shortcuts";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
-import { get } from "node_modules/cypress/types/lodash";
 import { UserStory, WithId } from "~/lib/types/firebaseSchemas";
 
 export const userStoriesRouter = createTRPCRouter({
@@ -495,7 +486,7 @@ export const userStoriesRouter = createTRPCRouter({
         ctx.firestore,
       );
 
-      const settingsRef = getProjectSettingsRef(ctx.firestore, projectId);
+      const settingsRef = getSettingsRef(ctx.firestore, projectId);
 
       // FIXME: Missing project context (currently the fruit market is hardcoded)
 

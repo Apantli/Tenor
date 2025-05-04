@@ -177,7 +177,7 @@ export default function UserStoryTable() {
                 name: task.name,
                 description: task.description,
                 itemId: userStoryId,
-                assigneeId: task.assignee?.uid ?? "",
+                assigneeId: task.assignee?.id ?? "",
                 dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : null,
                 itemType: "US",
                 statusId: task.status.id ?? "",

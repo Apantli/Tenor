@@ -74,3 +74,11 @@ export interface IssueCol {
     photoURL?: string;
   }[];
 }
+
+export interface UserCol {
+  id: string;
+  photoURL?: string;
+  displayName: string;
+  email: string;
+  roleId: string;
+}

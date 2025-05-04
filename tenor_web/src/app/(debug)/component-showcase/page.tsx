@@ -16,9 +16,7 @@ import FileList from "~/app/_components/inputs/FileList";
 import LinkList from "~/app/_components/inputs/LinkList";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import InputTextField from "~/app/_components/inputs/InputTextField";
-import MemberTable, {
-  type TeamMember,
-} from "~/app/_components/inputs/MemberTable";
+import MemberTable from "~/app/_components/inputs/MemberTable";
 import InputFileField from "~/app/_components/inputs/InputFileField";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { DatePicker } from "~/app/_components/DatePicker";
@@ -32,6 +30,8 @@ import { defaultRoleList } from "~/lib/defaultProjectValues";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import { acceptableTagColors } from "~/utils/helpers/colorUtils";
 import Dropdown from "~/app/_components/Dropdown";
+import { User } from "@supabase/supabase-js";
+import { UserCol } from "~/lib/types/columnTypes";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -629,29 +629,29 @@ function ConfirmationShowcase() {
 }
 
 function InputComponents() {
-  const teamMembers = [
+  const teamMembers: UserCol[] = [
     {
       id: "1",
       photoURL: undefined,
       displayName: "Alonso Huerta",
       email: "email@addres.com",
-      role: "developer_role_id",
+      roleId: "developer_role_id",
     },
     {
       id: "2",
       photoURL: undefined,
       displayName: "Sergio Gonzalez",
       email: "email@addres.com",
-      role: "admin_role_id",
+      roleId: "admin_role_id",
     },
     {
       id: "3",
       photoURL: undefined,
       displayName: "Luis Amado",
       email: "email@addres.com",
-      role: "viewer_role_id",
+      roleId: "viewer_role_id",
     },
-  ] as TeamMember[];
+  ];
 
   const links = [
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ",

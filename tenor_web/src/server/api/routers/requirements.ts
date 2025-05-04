@@ -10,7 +10,6 @@ import {
   collectTagContext,
   getPriority,
   getProjectContextHeader,
-  getProjectSettingsRef,
   getRequirement,
   getRequirementFocus,
   getRequirementFocuses,

@@ -3,142 +3,119 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import { type TeamMember } from "~/app/_components/inputs/MemberTable";
 import { z } from "zod";
-import { remove } from "node_modules/cypress/types/lodash";
-import admin from "firebase-admin";
 import { emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCError } from "@trpc/server";
-import { access } from "fs";
-import { getProjectUserRef } from "~/utils/helpers/shortcuts";
+import {
+  getGlobalUserPreviews,
+  getGlobalUserRef,
+  getUserRef,
+  getUsers,
+  getUserTable,
+} from "~/utils/helpers/shortcuts";
+import { settingsPermissions, usersPermissions } from "~/lib/permission";
 
 export const userRouter = createTRPCRouter({
-  // No role is required to get the user list
-  getUserList: protectedProcedure
-    .input(z.object({ filter: z.string() }))
+  /**
+   * @function getUserList
+   * @description Get a list of users from Firebase Auth and filter them based on the input filter.
+   * @param {string} filter - The filter string to search for in user emails and display names.
+   * @return {Promise<TeamMember[]>} - A promise that resolves to an array of TeamMember objects.
+   * @throws {TRPCError} - Throws an error if the user is not authenticated.
+   */
+  getGlobalUsers: protectedProcedure
+    .input(z.object({ filter: z.string().optional() }))
     .query(async ({ ctx, input }) => {
       const { filter } = input;
-      const users = await ctx.firebaseAdmin.auth().listUsers(1000);
-      const filteredUsers = users.users.filter(
-        (user) =>
-          (user.email ?? "").toLowerCase().includes(filter.toLowerCase()) ||
-          (user.displayName ?? "").toLowerCase().includes(filter.toLowerCase()),
+      const users = await getGlobalUserPreviews(ctx.firebaseAdmin.app());
+
+      // Get the users based on the filter
+      return users.filter((user) =>
+        (user.displayName ?? "")
+          .toLowerCase()
+          .includes(filter?.toLowerCase() ?? ""),
       );
-
-      const usersList: TeamMember[] = users.users.map((user) => ({
-        id: user.uid,
-        photoURL: user.photoURL,
-        displayName: user.displayName ?? "No available name",
-        email: user.email ?? "No available email",
-        role: "none",
-      }));
-      return usersList;
     }),
 
-  getUserListEditBox: roleRequiredProcedure(
-    {
-      flags: [
-        "backlog",
-        "settings",
-        "issues",
-        "scrumboard",
-        "performance",
-        "sprints",
-      ],
-
-      optimistic: true,
-    },
-    "read",
-  )
+  /**
+   * @function getUsers
+   * @description Get a list of users from Firestore based on the project ID.
+   * @param {string} projectId - The ID of the project to get users for.
+   * @return {Promise<WithId<UserPreview>[]>} - A promise that resolves to an array of TeamMember objects.
+   * @throws {TRPCError} - Throws an error if the user is not authenticated.
+   */
+  getUsers: roleRequiredProcedure(usersPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-
-      const userList = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("users")
-        .select("roleId", "userId")
-        .where("active", "==", true)
-        .get();
-
-      const users = [];
-
-      for (const doc of userList.docs) {
-        const userData = doc.data();
-
-        try {
-          const firebaseUser = await ctx.firebaseAdmin
-            .auth()
-            .getUser(userData.userId as string);
-
-          users.push({
-            id: doc.id,
-            roleId: userData.roleId as string,
-            userId: userData.userId as string,
-            active: userData.active as boolean,
-            name:
-              firebaseUser.displayName ??
-              firebaseUser.email ??
-              "No available name",
-            user: {
-              uid: firebaseUser.uid,
-              displayName: firebaseUser.displayName,
-              photoURL: firebaseUser.photoURL,
-            },
-          });
-        } catch (error) {
-          console.error(
-            `Error getting Firebase user ${userData.userId}:`,
-            error,
-          );
-        }
-      }
-
-      return users;
+      return await getUsers(ctx.firebaseAdmin.app(), ctx.firestore, projectId);
     }),
-  getTeamMembers: roleRequiredProcedure({ flags: ["settings"] }, "read")
-    .input(z.object({ projectId: z.string() }))
+
+  /**
+   * @function getUsersRef
+   * @description Get a reference to the users collection in Firestore based on the project ID.
+   * @param {string} projectId - The ID of the project to get users for.
+   * @return {UserCol[]} - An array of UserCol objects.
+   */
+  getUserTable: roleRequiredProcedure(usersPermissions, "read")
+    .input(z.object({ projectId: z.string(), filter: z.string().optional() }))
     .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-
-      const userList = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("users")
-        .select("roleId")
-        .where("active", "==", true)
-        .get();
-
-      const users: TeamMember[] = [];
-
-      for (const doc of userList.docs) {
-        const userData = doc.data();
-
-        try {
-          const admin = ctx.firebaseAdmin;
-          const firebaseUser = await ctx.firebaseAdmin.auth().getUser(doc.id);
-
-          users.push({
-            id: doc.id,
-            photoURL: firebaseUser.photoURL,
-            displayName: firebaseUser.displayName ?? "No available name",
-            email: firebaseUser.email ?? "No available email",
-            role: userData.roleId as string,
-          });
-        } catch (error) {
-          console.error(`Error getting Firebase user ${doc.id}:`, error);
-        }
-      }
-
-      return users;
+      return await getUserTable(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        input.projectId,
+      );
     }),
-  removeUser: roleRequiredProcedure({ flags: ["settings"] }, "write")
+
+  /**
+   * @function getUsersRef
+   * @description Get a reference to the users collection in Firestore based on the project ID.
+   * @param {string} projectId - The ID of the project to get users for.
+   */
+  addUser: roleRequiredProcedure(settingsPermissions, "write")
     .input(z.object({ projectId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
       const { projectId, userId } = input;
 
-      const teamMemberRef = getProjectUserRef(ctx.firestore, projectId, userId);
+      // search if it exists
+      const userRef = getUserRef(ctx.firestore, projectId, userId);
+      const userSnap = await userRef.get();
+
+      if (!userSnap.exists) {
+        // add user to project
+        await userRef.set({
+          roleId: emptyRole.id,
+          active: true,
+        });
+      } else {
+        // update user to project to active
+        await userRef.update({
+          active: true,
+          roleId: emptyRole.id,
+        });
+      }
+
+      // add project to user
+      const userDoc = getGlobalUserRef(ctx.firestore, userId);
+      await userDoc.update({
+        projectIds:
+          ctx.firebaseAdmin.firestore.FieldValue.arrayUnion(projectId),
+      });
+    }),
+
+  /**
+   * @function removeUser
+   * @description Remove a user from a project by marking them as inactive.
+   * @param {string} projectId - The ID of the project to remove the user from.
+   * @param {string} userId - The ID of the user to remove from the project.
+   * @throws {TRPCError} - Throws an error if the user is not authenticated or if the user is the owner.
+   */
+  removeUser: roleRequiredProcedure(settingsPermissions, "write")
+    .input(z.object({ projectId: z.string(), userId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userId } = input;
+
+      const teamMemberRef = getUserRef(ctx.firestore, projectId, userId);
       const teamMemberSnap = await teamMemberRef.get();
 
       if (!teamMemberSnap.exists) {
@@ -159,7 +136,7 @@ export const userRouter = createTRPCRouter({
       await teamMemberRef.update({ active: false, roleId: emptyRole.id });
 
       if (userId) {
-        const userRef = ctx.firestore.collection("users").doc(userId);
+        const userRef = getGlobalUserRef(ctx.firestore, userId);
 
         // Remove the project from their list of projects
         await userRef.update({
@@ -171,37 +148,14 @@ export const userRouter = createTRPCRouter({
       }
     }),
 
-  addUser: roleRequiredProcedure({ flags: ["settings"] }, "write")
-    .input(z.object({ projectId: z.string(), userId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, userId } = input;
-
-      // search if it exists
-      const userRef = getProjectUserRef(ctx.firestore, projectId, userId);
-      const userSnap = await userRef.get();
-
-      if (!userSnap.exists) {
-        // add user to project
-        await userRef.set({
-          roleId: emptyRole.id,
-          active: true,
-        });
-      } else {
-        // update user to project to active
-        await userRef.update({
-          active: true,
-          roleId: emptyRole.id,
-        });
-      }
-
-      // add project to user
-      const userDoc = ctx.firestore.collection("users").doc(userId);
-      await userDoc.update({
-        projectIds:
-          ctx.firebaseAdmin.firestore.FieldValue.arrayUnion(projectId),
-      });
-    }),
-  updateUserRole: roleRequiredProcedure({ flags: ["settings"] }, "write")
+  /**
+   * @function updateUserRole
+   * @description Update the role of a user in a project.
+   * @param {string} projectId - The ID of the project to update the user role for.
+   * @param {string} userId - The ID of the user to update the role for.
+   * @param {string} roleId - The ID of the new role to assign to the user.
+   */
+  updateUserRole: roleRequiredProcedure(settingsPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -212,7 +166,7 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, userId, roleId } = input;
 
-      const userRef = getProjectUserRef(ctx.firestore, projectId, userId);
+      const userRef = getUserRef(ctx.firestore, projectId, userId);
       await userRef.update({ roleId });
     }),
 });

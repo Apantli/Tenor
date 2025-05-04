@@ -12,25 +12,20 @@ import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
 import { emptyRole } from "~/lib/defaultProjectValues";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { UserPreview } from "~/lib/types/detailSchemas";
+import { UserCol } from "~/lib/types/columnTypes";
+import { WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   label?: string;
-  teamMembers: TeamMember[];
-  handleMemberAdd: (user: TeamMember) => void;
+  teamMembers: UserCol[];
+  handleMemberAdd: (user: WithId<UserPreview>) => void;
   handleMemberRemove: (id: (string | number)[]) => void;
   handleEditMemberRole: (id: string, role: string) => void;
   className?: ClassNameValue;
   roleList: { id: string; label: string }[];
   isSearchable?: boolean;
   labelClassName?: string;
-}
-
-export interface TeamMember {
-  id: string;
-  photoURL?: string;
-  displayName: string;
-  email: string;
-  role: string;
 }
 
 export default function MemberTable({
@@ -47,7 +42,7 @@ export default function MemberTable({
   const [searchValue, setSearchValue] = useState("");
   const [tableSearchValue, setTableSearchValue] = useState("");
   const { alert } = useAlert();
-  const { data: users, isLoading } = api.users.getUserList.useQuery({
+  const { data: users, isLoading } = api.users.getGlobalUsers.useQuery({
     filter: searchValue,
   });
 
@@ -59,7 +54,7 @@ export default function MemberTable({
     );
   });
 
-  const columns: TableColumns<TeamMember> = {
+  const columns: TableColumns<UserCol> = {
     id: { visible: false },
     photoURL: {
       label: "",
@@ -76,7 +71,7 @@ export default function MemberTable({
       label: "Email",
       width: 240,
     },
-    role: {
+    roleId: {
       label: "Role",
       width: 120,
       render(row) {
@@ -85,21 +80,21 @@ export default function MemberTable({
             className="w-full text-sm"
             hideSearch
             selectedItem={
-              row.role === "owner"
+              row.roleId === "owner"
                 ? {
                     id: "owner",
                     label: "Owner",
                   }
                 : {
-                    id: row.role,
+                    id: row.roleId,
                     label:
-                      roleList.find((role) => role.id === row.role)?.label ??
+                      roleList.find((role) => role.id === row.roleId)?.label ??
                       emptyRole.label,
                   }
             }
             allItems={roleList}
             onChange={(item) => {
-              if (row.role !== "owner") {
+              if (row.roleId !== "owner") {
                 handleEditMemberRole(row.id, item.id);
               } else {
                 alert("Oops...", "You cannot edit the role of the owner.", {
@@ -161,9 +156,6 @@ export default function MemberTable({
                   if (teamMembers.find((member) => member.id === user.id))
                     return null;
 
-                  if (!(user.email + user.displayName).includes(searchValue))
-                    return null;
-
                   return (
                     <DropdownButton
                       key={user.id}
@@ -175,9 +167,7 @@ export default function MemberTable({
                     >
                       <div className="flex items-center">
                         <ProfilePicture user={user ?? null} hideTooltip />
-                        <span className="ml-2 text-sm">
-                          {user.displayName ?? user.email}
-                        </span>
+                        <span className="ml-2 text-sm">{user.displayName}</span>
                       </div>
                     </DropdownButton>
                   );

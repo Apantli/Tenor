@@ -15,7 +15,7 @@ import type { TaskDetail } from "~/lib/types/detailSchemas";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
   getProjectContextHeader,
-  getProjectSettingsRef,
+  getSettingsRef,
   getStatusTag,
   getTasksFromItem,
   getTodoStatusTag,
@@ -77,7 +77,7 @@ export const tasksRouter = createTRPCRouter({
       const { projectId, itemId } = input;
       const rawUs = await getTasksFromItem(ctx.firestore, projectId, itemId);
       // Transforming into table format
-      const settingsRef = getProjectSettingsRef(ctx.firestore, projectId);
+      const settingsRef = getSettingsRef(ctx.firestore, projectId);
 
       const fixedData = await Promise.all(
         rawUs.map(async (task) => {
@@ -133,7 +133,7 @@ export const tasksRouter = createTRPCRouter({
       const taskData = TaskSchema.parse(task.data());
       // Fetch all the task information for the task in parallel
 
-      const settingsRef = getProjectSettingsRef(ctx.firestore, input.projectId);
+      const settingsRef = getSettingsRef(ctx.firestore, input.projectId);
 
       let statusTag = undefined;
       if (taskData.statusId !== undefined) {

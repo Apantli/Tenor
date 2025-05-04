@@ -9,3 +9,21 @@ export const backlogPermissions: FlagsRequired = {
   flags: ["backlog"],
   optimistic: true,
 };
+
+export const usersPermissions: FlagsRequired = {
+  flags: [
+    "backlog",
+    "settings",
+    "issues",
+    "scrumboard",
+    "performance",
+    "sprints",
+  ],
+
+  optimistic: true,
+};
+
+export const settingsPermissions: FlagsRequired = {
+  flags: ["settings"],
+  optimistic: true,
+};

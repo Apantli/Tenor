@@ -25,8 +25,8 @@ export type UserStoryPreview = {
 };
 
 export type UserPreview = {
-  uid: string;
   displayName: string;
+  email: string;
   photoURL: string;
 };
 
@@ -86,7 +86,7 @@ export type TaskDetail = {
   description: string;
   status: StatusTag;
   size?: Size;
-  assignee?: UserPreview;
+  assignee?: WithId<UserPreview>;
   dueDate?: Date;
 };
 

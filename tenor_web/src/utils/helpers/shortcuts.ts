@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { Firestore } from "firebase-admin/firestore";
-import { get } from "node_modules/cypress/types/lodash";
+import * as admin from "firebase-admin";
 import {
   doingTagName,
   doneTagName,
@@ -10,13 +10,10 @@ import {
 import {
   IssueCol,
   RequirementCol,
+  UserCol,
   UserStoryCol,
 } from "~/lib/types/columnTypes";
-import {
-  ExistingUserStory,
-  UserPreview,
-  UserStoryDetail,
-} from "~/lib/types/detailSchemas";
+import { UserPreview, UserStoryDetail } from "~/lib/types/detailSchemas";
 import {
   Epic,
   Issue,
@@ -30,7 +27,6 @@ import {
 import {
   EpicOverviewSchema,
   EpicSchema,
-  ExistingUserStorySchema,
   IssueSchema,
   ProjectSchema,
   RequirementSchema,
@@ -39,10 +35,21 @@ import {
   StatusTagSchema,
   TagSchema,
   TaskSchema,
+  UserSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
 
 //#region General Helpers
+/**
+ * @function getProjectsRef
+ * @description Gets a reference to the projects collection
+ * @param {Firestore} firestore - The Firestore instance
+ * @returns {FirebaseFirestore.CollectionReference} A reference to the projects collection
+ */
+export const getProjectsRef = (firestore: Firestore) => {
+  return firestore.collection("projects");
+};
+
 /**
  * @function getProjectRef
  * @description Gets a reference to the project document
@@ -51,7 +58,7 @@ import {
  * @returns {FirebaseFirestore.DocumentReference} A reference to the project document
  */
 export const getProjectRef = (firestore: Firestore, projectId: string) => {
-  return firestore.collection("projects").doc(projectId);
+  return getProjectsRef(firestore).doc(projectId);
 };
 
 /**
@@ -61,57 +68,37 @@ export const getProjectRef = (firestore: Firestore, projectId: string) => {
  * @param {Firestore} firestore - The Firestore instance
  * @returns {FirebaseFirestore.DocumentReference} A reference to the project settings document
  */
-export const getProjectSettingsRef = (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  return firestore
-    .collection("projects")
-    .doc(projectId)
+export const getSettingsRef = (firestore: Firestore, projectId: string) => {
+  return getProjectRef(firestore, projectId)
     .collection("settings")
     .doc("settings");
 };
 
 /**
- * @function getProjectUserRef
- * @description Gets a reference to the project user document
- * @param firestore
- * @param projectId
- * @param userId
- * @returns
+ * @function getProjectRolesRef
+ * @description Gets a reference to the project roles collection
+ * @param {string} projectId - The ID of the project
+ * @param {Firestore} firestore - The Firestore instance
+ * @returns {FirebaseFirestore.CollectionReference} A reference to the project roles collection
  */
-export const getProjectUserRef = (
-  firestore: Firestore,
-  projectId: string,
-  userId: string,
-) => {
-  return firestore
-    .collection("projects")
-    .doc(projectId)
-    .collection("users")
-    .doc(userId);
+export const getRolesRef = (firestore: Firestore, projectId: string) => {
+  return getSettingsRef(firestore, projectId).collection("userTypes");
 };
 
 /**
  * @function getProjectRoleRef
- * @description Gets a reference to the project role document
- * @param firestore
- * @param projectId
- * @param roleId
- * @returns
+ * @description Gets a reference to a specific project role document
+ * @param {string} projectId - The ID of the project
+ * @param {string} roleId - The ID of the role
+ * @param {Firestore} firestore - The Firestore instance
+ * @returns {FirebaseFirestore.DocumentReference} A reference to the project role document
  */
-export const getProjectRoleRef = (
+export const getRoleRef = (
   firestore: Firestore,
   projectId: string,
   roleId: string,
 ) => {
-  return firestore
-    .collection("projects")
-    .doc(projectId)
-    .collection("settings")
-    .doc("settings")
-    .collection("userTypes")
-    .doc(roleId);
+  return getRolesRef(firestore, projectId).doc(roleId);
 };
 
 /**
@@ -121,10 +108,175 @@ export const getProjectRoleRef = (
  * @param {Firestore} firestore - The Firestore instance
  * @returns {Promise<any>} The project settings validated by SettingsSchema
  */
-const getProjectSettings = async (projectId: string, firestore: Firestore) => {
-  const settings = await getProjectSettingsRef(firestore, projectId).get();
-
+export const getSettings = async (projectId: string, firestore: Firestore) => {
+  const settings = await getSettingsRef(firestore, projectId).get();
   return SettingsSchema.parse(settings.data());
+};
+//#endregion
+
+//#region Users
+/**
+ * @function getGlobalUsersRef
+ * @description Gets a reference to a specific user document
+ * @param firestore A Firestore instance
+ * @returns {FirebaseFirestore.DocumentReference} A reference to the user document
+ */
+export const getGlobalUsersRef = (firestore: Firestore) => {
+  return firestore.collection("users");
+};
+
+/**
+ * @function getGlobalUserRef
+ * @description Gets a reference to a specific user document
+ * @param firestore A Firestore instance
+ * @param userId The ID of the user
+ * @returns {FirebaseFirestore.DocumentReference} A reference to the user document
+ */
+export const getGlobalUserRef = (firestore: Firestore, userId: string) => {
+  return getGlobalUsersRef(firestore).doc(userId);
+};
+
+/**
+ * @function getGlobalUserPreviews
+ * @description Retrieves a list of user previews from Firebase Auth
+ * @param admin A Firebase Admin instance
+ * @returns {Promise<UserPreview[]>} An array of user preview objects
+ */
+export const getGlobalUserPreviews = async (admin: admin.app.App) => {
+  const users = await admin.auth().listUsers(1000);
+
+  const usersList: WithId<UserPreview>[] = users.users.map((user) => ({
+    id: user.uid,
+    displayName: user.displayName ?? user.email ?? "NA",
+    email: user.email ?? "",
+    photoURL: user.photoURL ?? "",
+  }));
+
+  return usersList;
+};
+
+/**
+ * @function getUsersRef
+ * @description Gets a reference to the users collection
+ * @param firestore A Firestore instance
+ * @returns {FirebaseFirestore.CollectionReference} A reference to the users collection
+ */
+export const getUsersRef = (firestore: Firestore, projectId: string) => {
+  return getProjectRef(firestore, projectId).collection("users");
+};
+
+/**
+ * @function getUserRef
+ * @description Gets a reference to a specific user document
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @param userId The ID of the user
+ * @returns {FirebaseFirestore.DocumentReference} A reference to the user document
+ */
+export const getUserRef = (
+  firestore: Firestore,
+  projectId: string,
+  userId: string,
+) => {
+  return getUsersRef(firestore, projectId).doc(userId);
+};
+
+/**
+ * @function getUsers
+ * @description Retrieves all non-deleted users associated with a specific project
+ * @param admin A Firebase Admin instance
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {Promise<WithId<User>[]>} An array of user objects with their IDs
+ */
+export const getUsers = async (
+  admin: admin.app.App,
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const usersSnapshot = await getUsersRef(firestore, projectId)
+    .where("active", "==", true)
+    .get();
+
+  const users: WithId<UserPreview>[] = await Promise.all(
+    usersSnapshot.docs.map(async (userDoc) => {
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+      const firebaseUser = await admin.auth().getUser(userId);
+      return {
+        id: firebaseUser.uid,
+        displayName: firebaseUser.displayName ?? firebaseUser.email ?? "NA",
+        email: firebaseUser.email ?? "",
+        photoURL: firebaseUser.photoURL ?? "",
+      } as WithId<UserPreview>;
+    }),
+  );
+  return users;
+};
+
+/**
+ * @function getUser
+ * @description Retrieves a specific user from the Firestore database
+ * @param admin A Firebase Admin instance
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @param userId The ID of the user
+ * @returns {Promise<WithId<User>>} The user object validated by UserSchema or undefined if not found
+ */
+export const getUser = async (
+  admin: admin.app.App,
+  firestore: Firestore,
+  projectId: string,
+  userId: string,
+) => {
+  const userRef = getUserRef(firestore, projectId, userId);
+  const userSnapshot = await userRef.get();
+  if (!userSnapshot.exists) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "User not found",
+    });
+  }
+  const userData = userSnapshot.data();
+  const firebaseUser = await admin.auth().getUser(userId);
+  return {
+    id: userSnapshot.id,
+    displayName: firebaseUser.displayName ?? firebaseUser.email ?? "NA",
+    email: firebaseUser.email ?? "",
+    photoURL: firebaseUser.photoURL ?? "",
+  } as WithId<UserPreview>;
+};
+
+/**
+ * @function getUserTable
+ * @description Retrieves all users associated with a specific project and their details
+ * @param admin A Firebase Admin instance
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {Promise<UserCol[]>} An array of user objects with their IDs and details
+ */
+export const getUserTable = async (
+  admin: admin.app.App,
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const usersSnapshot = await getUsersRef(firestore, projectId)
+    .where("active", "==", true)
+    .get();
+  const userTable: UserCol[] = await Promise.all(
+    usersSnapshot.docs.map(async (userDoc) => {
+      const user = await admin.auth().getUser(userDoc.id);
+      const userCol: UserCol = {
+        id: userDoc.id,
+        displayName: user.displayName ?? "",
+        email: user.email ?? "",
+        photoURL: user.photoURL ?? "",
+        roleId: userDoc.data().roleId,
+      };
+      return userCol;
+    }),
+  );
+  return userTable;
 };
 //#endregion
 
@@ -380,9 +532,7 @@ export const getRequirementTypesRef = (
   firestore: Firestore,
   projectId: string,
 ) => {
-  return getProjectSettingsRef(firestore, projectId).collection(
-    "requirementTypes",
-  );
+  return getSettingsRef(firestore, projectId).collection("requirementTypes");
 };
 
 /**
@@ -469,9 +619,7 @@ export const getRequirementFocusesRef = (
   firestore: Firestore,
   projectId: string,
 ) => {
-  return getProjectSettingsRef(firestore, projectId).collection(
-    "requirementFocus",
-  );
+  return getSettingsRef(firestore, projectId).collection("requirementFocus");
 };
 
 /**
@@ -1025,14 +1173,14 @@ export const getTasksAssignUsers = async (
   //       };
   //     }),
   //   );
-  const users: UserPreview[] = [];
+  const users: WithId<UserPreview>[] = [];
 
-  const filteredUsers = users.filter((user): user is UserPreview =>
-    Boolean(user?.uid),
+  const filteredUsers = users.filter((user): user is WithId<UserPreview> =>
+    Boolean(user?.id),
   );
 
   const uniqueUsers: UserPreview[] = Array.from(
-    new Map(filteredUsers.map((user) => [user.uid, user])).values(),
+    new Map(filteredUsers.map((user) => [user.id, user])).values(),
   );
 
   return uniqueUsers;
@@ -1041,9 +1189,7 @@ export const getTasksAssignUsers = async (
 
 //#region Tags & Statuses
 export const getPrioritiesRef = (firestore: Firestore, projectId: string) => {
-  return getProjectSettingsRef(firestore, projectId).collection(
-    "priorityTypes",
-  );
+  return getSettingsRef(firestore, projectId).collection("priorityTypes");
 };
 
 export const getPriotityRef = (
@@ -1071,7 +1217,7 @@ export const getPriority = async (
 };
 
 export const getStatusTypesRef = (firestore: Firestore, projectId: string) => {
-  return getProjectSettingsRef(firestore, projectId).collection("statusTypes");
+  return getSettingsRef(firestore, projectId).collection("statusTypes");
 };
 
 export const getStatusTags = async (
@@ -1150,7 +1296,7 @@ export const getTodoStatusTag = async (
 };
 
 export const getBacklogTagsRef = (firestore: Firestore, projectId: string) => {
-  return getProjectSettingsRef(firestore, projectId).collection("backlogTags");
+  return getSettingsRef(firestore, projectId).collection("backlogTags");
 };
 
 /**
@@ -1267,7 +1413,7 @@ export const getProjectContextHeader = async (
     .get();
   const projectData = ProjectSchema.parse(projectDoc.data());
 
-  const aiContextDoc = await getProjectSettingsRef(firestore, projectId).get();
+  const aiContextDoc = await getSettingsRef(firestore, projectId).get();
   const aiContext = SettingsSchema.parse(aiContextDoc.data()).aiContext;
 
   return `
@@ -1302,7 +1448,7 @@ export const collectTagContext = async (
   title: string,
   collectionName: string,
 ) => {
-  const settingsRef = getProjectSettingsRef(firestore, projectId);
+  const settingsRef = getSettingsRef(firestore, projectId);
   const tags = await settingsRef
     .collection(collectionName)
     .where("deleted", "==", false)

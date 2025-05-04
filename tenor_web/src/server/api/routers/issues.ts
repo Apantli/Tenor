@@ -24,7 +24,7 @@ import {
   getIssues,
   getIssueTable,
   getPriority,
-  getProjectSettingsRef,
+  getSettingsRef,
   getStatusTag,
   getUserStory,
 } from "~/utils/helpers/shortcuts";
@@ -130,7 +130,7 @@ export const issuesRouter = createTRPCRouter({
         }),
       );
 
-      const settingsRef = getProjectSettingsRef(ctx.firestore, input.projectId);
+      const settingsRef = getSettingsRef(ctx.firestore, input.projectId);
 
       let priorityTag = undefined;
       if (issueData.priorityId !== undefined) {
