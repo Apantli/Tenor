@@ -1,21 +1,19 @@
-import {
-  createTRPCRouter,
-  protectedProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { getGlobalUserRef, getUserRef } from "~/utils/helpers/shortcuts/users";
 
 interface UserWithFiles {
   files?: {
-    url: string,
-    name: string
-  }[]
-};
+    url: string;
+    name: string;
+  }[];
+}
 
 export const filesRouter = createTRPCRouter({
-  getUserFiles: protectedProcedure.query(async ({ctx}) => {
-    const docRef = ctx.firestore.collection("users").doc(ctx.session.user.uid);
-    const userDoc = await docRef.get();
+  getUserFiles: protectedProcedure.query(async ({ ctx }) => {
+    const userRef = getGlobalUserRef(ctx.firestore, ctx.session.user.uid);
+    const userDoc = await userRef.get();
 
     const user = userDoc.data() as UserWithFiles;
     return user.files ?? [];
-  })
+  }),
 });

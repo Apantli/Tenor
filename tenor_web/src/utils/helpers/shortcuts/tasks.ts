@@ -1,10 +1,12 @@
 import { Firestore } from "firebase-admin/firestore";
 import { getProjectRef } from "./general";
-import { Task, WithId } from "~/lib/types/firebaseSchemas";
+import { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import { TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusType } from "./tags";
-import { UserPreview } from "~/lib/types/detailSchemas";
+import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import * as admin from "firebase-admin";
+import { TaskCol } from "~/lib/types/columnTypes";
+import { getGlobalUserPreview } from "./users";
 
 /**
  * @function getTasksRef
@@ -33,6 +35,20 @@ export const getTaskRef = (
   return getTasksRef(firestore, projectId).doc(taskId);
 };
 
+// FIXME: This may overlap, this isnt quite right
+/**
+ * @function getTaskNewId
+ * @description Gets the next available epic ID for a specific project
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {Promise<number>} The next available task ID
+ */
+export const getTaskNewId = async (firestore: Firestore, projectId: string) => {
+  const tasksRef = getTasksRef(firestore, projectId).count().get();
+  const tasksCount = (await tasksRef).data().count;
+  return tasksCount + 1;
+};
+
 /**
  * @function getTasks
  * @description Retrieves all non-deleted tasks from a project, ordered by scrumId
@@ -52,6 +68,30 @@ export const getTasks = async (firestore: Firestore, projectId: string) => {
   });
 
   return tasks;
+};
+
+/**
+ * @function getTask
+ * @description Retrieves a specific task by its ID
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} taskId - The ID of the task to retrieve
+ * @returns {Promise<WithId<Task>>} The task object with its ID
+ */
+export const getTask = async (
+  firestore: Firestore,
+  projectId: string,
+  taskId: string,
+) => {
+  const taskRef = getTaskRef(firestore, projectId, taskId);
+  const taskSnapshot = await taskRef.get();
+  if (!taskSnapshot.exists) {
+    throw new Error(`Task with ID ${taskId} does not exist`);
+  }
+  return {
+    id: taskSnapshot.id,
+    ...TaskSchema.parse(taskSnapshot.data()),
+  } as WithId<Task>;
 };
 
 /**
@@ -166,4 +206,76 @@ export const getTasksAssignUsers = async (
   );
 
   return uniqueUsers;
+};
+
+/**
+ * @function getTaskDetail
+ * @description Retrieves detailed information about a specific task
+ * @param {admin.app.App} admin - The Firebase Admin instance
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} taskId - The ID of the task to retrieve
+ * @returns {Promise<TaskDetail>} The detailed task object
+ */
+export const getTaskDetail = async (
+  admin: admin.app.App,
+  firestore: Firestore,
+  projectId: string,
+  taskId: string,
+) => {
+  const task = await getTask(firestore, projectId, taskId);
+
+  const assignee: WithId<UserPreview> | undefined = (await task.assigneeId)
+    ? await getGlobalUserPreview(admin, task.assigneeId)
+    : undefined;
+
+  const status: StatusTag | undefined = task.statusId
+    ? await getStatusType(firestore, projectId, task.statusId)
+    : undefined;
+
+  const taskDetail: TaskDetail = {
+    ...task,
+    dueDate: task.dueDate ?? undefined,
+    assignee,
+    status,
+  };
+  return taskDetail;
+};
+
+/**
+ * @function getTaskTable
+ * @description Retrieves a table of tasks with their details for a specific item
+ * @param {admin.app.App} admin - The Firebase Admin instance
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} itemId - The ID of the item to retrieve tasks from
+ * @returns {Promise<TaskCol[]>} An array of task objects with their details
+ * */
+export const getTaskTable = async (
+  admin: admin.app.App,
+  firestore: Firestore,
+  projectId: string,
+  itemId: string,
+) => {
+  const tasks = await getTasksFromItem(firestore, projectId, itemId);
+
+  const taskCols: TaskCol[] = await Promise.all(
+    tasks.map(async (task): Promise<TaskCol> => {
+      const assignee: WithId<UserPreview> | undefined = (await task.assigneeId)
+        ? await getGlobalUserPreview(admin, task.assigneeId)
+        : undefined;
+
+      const status: StatusTag | undefined = task.statusId
+        ? await getStatusType(firestore, projectId, task.statusId)
+        : undefined;
+
+      const taskCol: TaskCol = {
+        ...task,
+        assignee,
+        status,
+      };
+      return taskCol;
+    }),
+  );
+  return taskCols;
 };

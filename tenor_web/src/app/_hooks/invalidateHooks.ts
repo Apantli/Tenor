@@ -8,7 +8,7 @@ export const useInvalidateQueriesAllTasks = () => {
   return async (projectId: string, parentItemIds: string[] = []) => {
     await Promise.all(
       parentItemIds.map(async (parentId) => {
-        await utils.tasks.getTasksTableFriendly.invalidate({
+        await utils.tasks.getTaskTable.invalidate({
           projectId: projectId,
           itemId: parentId,
         });

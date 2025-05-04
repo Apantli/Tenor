@@ -31,15 +31,10 @@ export const useFormatSprintNumber = () => {
 
 export const useFormatTaskScrumId = () => {
   const { projectId } = useParams();
-  const { data: taskCount } = api.tasks.getTaskCount.useQuery({
-    projectId: projectId as string,
-  });
-  if (taskCount === undefined) {
-    return (_: number) => "";
-  }
 
+  // FIXME: Id is not the counts, remove the 1
   return (scrumId: number) =>
-    `TS${String(scrumId).padStart(calculatePaddingNeeded(taskCount), "0")}`;
+    `TS${String(scrumId).padStart(calculatePaddingNeeded(1), "0")}`;
 };
 
 export const useFormatIssueScrumId = () => {

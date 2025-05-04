@@ -1,13 +1,23 @@
 import { UserStoryCol } from "~/lib/types/columnTypes";
 import { getEpic } from "./epics";
 import { noTag } from "~/lib/defaultProjectValues";
-import { getPriority } from "./tags";
-import { Epic, Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
+import { getBacklogTag, getPriority, getStatusType } from "./tags";
+import {
+  Epic,
+  Sprint,
+  StatusTag,
+  Tag,
+  Task,
+  UserStory,
+  WithId,
+} from "~/lib/types/firebaseSchemas";
 import { getProjectRef } from "./general";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import { UserStoryDetail } from "~/lib/types/detailSchemas";
 import { Firestore } from "firebase-admin/firestore";
+import { getTask } from "./tasks";
+import { getSprint } from "./sprints";
 
 /**
  * @function getUserStoriesRef
@@ -121,20 +131,55 @@ export const getUserStoryDetail = async (
 ) => {
   const userStory = await getUserStory(firestore, projectId, userStoryId);
 
-  const priority: Tag =
-    (await getPriority(firestore, projectId, userStory.priorityId)) ?? noTag;
+  const priority: Tag | undefined =
+    (await getPriority(firestore, projectId, userStory.priorityId)) ??
+    undefined;
+
   const epic: WithId<Epic> | undefined = userStory.epicId
     ? await getEpic(firestore, projectId, userStory.epicId)
     : undefined;
 
-  // FIXME: Load Sprint, requiredBy, dependencies, tags, status, tasks
-  const userStoryDetail: UserStoryDetail = {
+  const status: StatusTag | undefined =
+    (await getStatusType(firestore, projectId, userStory.statusId)) ??
+    undefined;
+
+  const tags: Tag[] = await Promise.all(
+    userStory.tagIds.map(async (tagId) => {
+      return await getBacklogTag(firestore, projectId, tagId);
+    }),
+  );
+
+  const dependencies: WithId<UserStory>[] = await Promise.all(
+    userStory.dependencyIds.map(async (dependencyId) => {
+      return await getUserStory(firestore, projectId, dependencyId);
+    }),
+  );
+
+  const requiredBy: WithId<UserStory>[] = await Promise.all(
+    userStory.requiredByIds.map(async (requiredById) => {
+      return await getUserStory(firestore, projectId, requiredById);
+    }),
+  );
+
+  const sprint: WithId<Sprint> | undefined = userStory.sprintId
+    ? await getSprint(firestore, projectId, userStory.sprintId)
+    : undefined;
+
+  //   const tasks: WithId<Task>[] = await Promise.all(
+  //     userStory.taskIds.map(async (taskId) => {
+  //       return await getTask(firestore, projectId, taskId);
+  //     }),
+  //   );
+
+  const userStoryDetail: WithId<UserStoryDetail> = {
     ...userStory,
+    sprint,
     priority,
+    status,
     epic,
-    tags: [],
-    dependencies: [],
-    requiredBy: [],
+    tags,
+    dependencies,
+    requiredBy,
   };
 
   return userStoryDetail;

@@ -45,7 +45,7 @@ export type SprintPreview = {
 
 export type UserStoryDetail = {
   id: string;
-  scrumId?: number;
+  scrumId: number;
   name: string;
   description: string;
   acceptanceCriteria: string;
@@ -53,7 +53,7 @@ export type UserStoryDetail = {
   size?: Size;
   tags: Tag[];
   priority?: Tag;
-  status?: Tag; // It is a statusTag, but in the detail we don't need the detail info!
+  status?: StatusTag; // It is a statusTag, but in the detail we don't need the detail info!
   dependencies: UserStoryPreview[];
   requiredBy: UserStoryPreview[];
   sprint?: SprintPreview;
@@ -74,17 +74,17 @@ export type IssueDetail = {
   priority?: Tag;
   size?: Size;
   status?: StatusTag;
-  relatedUserStory?: ExistingUserStory;
+  relatedUserStory?: UserStoryPreview;
   tasks: TaskPreview[];
   sprint?: SprintPreview;
 };
 
 export type TaskDetail = {
   id: string;
-  scrumId?: number;
+  scrumId: number;
   name: string;
   description: string;
-  status: StatusTag;
+  status?: StatusTag;
   size?: Size;
   assignee?: WithId<UserPreview>;
   dueDate?: Date;

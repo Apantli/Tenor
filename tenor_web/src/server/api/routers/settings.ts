@@ -1,3 +1,13 @@
+/**
+ * Settings - Tenor API Endpoints for Settings Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing Settings in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve settings.
+ *
+ * @category API
+ */
+
 import {
   PermissionSchema,
   RoleSchema,

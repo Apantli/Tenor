@@ -1,3 +1,13 @@
+/**
+ * Projects - Tenor API Endpoints for Projects Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing Projects in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve projects.
+ *
+ * @category API
+ */
+
 import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
 import type {

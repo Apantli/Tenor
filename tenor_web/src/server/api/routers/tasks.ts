@@ -1,3 +1,13 @@
+/**
+ * Tasks - Tenor API Endpoints for Task Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing Tasks in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve tasks.
+ *
+ * @category API
+ */
+
 import { z } from "zod";
 import type { Size, StatusTag } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -6,7 +16,6 @@ import {
   BacklogItemSchema,
   EpicSchema,
   IssueSchema,
-  StatusTagSchema,
   TagSchema,
   TaskSchema,
   UserStorySchema,
@@ -15,13 +24,22 @@ import type { TaskDetail } from "~/lib/types/detailSchemas";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { TaskCol } from "~/lib/types/columnTypes";
 import { timestampToDate } from "~/utils/helpers/parsers";
-import { getTasksFromItem } from "~/utils/helpers/shortcuts/tasks";
+import {
+  getTask,
+  getTaskDetail,
+  getTaskNewId,
+  getTaskRef,
+  getTasksFromItem,
+  getTasksRef,
+  getTaskTable,
+} from "~/utils/helpers/shortcuts/tasks";
 import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
 import {
   getStatusType,
   getTodoStatusTag,
 } from "~/utils/helpers/shortcuts/tags";
 import { getProjectContextHeader } from "~/utils/helpers/shortcuts/ai";
+import { get } from "node_modules/cypress/types/lodash";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -42,20 +60,10 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        const taskCount = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("tasks")
-          .count()
-          .get();
-        const task = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("tasks")
-          .add({
-            ...input.taskData,
-            scrumId: taskCount.data().count + 1,
-          });
+        const task = await getTasksRef(ctx.firestore, input.projectId).add({
+          ...input.taskData,
+          scrumId: await getTaskNewId(ctx.firestore, input.projectId),
+        });
         return { success: true, taskId: task.id };
       } catch (err) {
         console.log("Error creating task story:", err);
@@ -71,42 +79,16 @@ export const tasksRouter = createTRPCRouter({
    * @input {string} input.itemId - The ID of the item to get tasks for
    * @returns {TaskCol[]} Array of tasks in a table-friendly format
    */
-  getTasksTableFriendly: protectedProcedure
+  getTaskTable: protectedProcedure
     .input(z.object({ projectId: z.string(), itemId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId, itemId } = input;
-      const rawUs = await getTasksFromItem(ctx.firestore, projectId, itemId);
-      // Transforming into table format
-      const settingsRef = getSettingsRef(ctx.firestore, projectId);
-
-      const fixedData = await Promise.all(
-        rawUs.map(async (task) => {
-          let assignee = undefined;
-          if (task.assigneeId !== undefined && task.assigneeId !== "") {
-            const assigneeData = await ctx.firebaseAdmin
-              .auth()
-              .getUser(task.assigneeId);
-            assignee = {
-              uid: assigneeData.uid,
-              displayName: assigneeData.displayName,
-              photoURL: assigneeData.photoURL,
-            };
-          }
-          return {
-            id: task.id,
-            scrumId: task.scrumId,
-            title: task.name,
-            status: await getStatusType(
-              ctx.firestore,
-              projectId,
-              task.statusId,
-            ),
-            assignee: assignee,
-          };
-        }),
+      return await getTaskTable(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        projectId,
+        itemId,
       );
-
-      return fixedData as TaskCol[];
     }),
 
   /**
@@ -121,57 +103,13 @@ export const tasksRouter = createTRPCRouter({
   getTaskDetail: protectedProcedure
     .input(z.object({ projectId: z.string(), taskId: z.string() }))
     .query(async ({ ctx, input }) => {
-      // Get the necessary information to construct the Task Detail
-
       const { projectId, taskId } = input;
-      const taskRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId);
-      const task = await taskRef.get();
-      if (!task.exists) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
-
-      const taskData = TaskSchema.parse(task.data());
-      // Fetch all the task information for the task in parallel
-
-      const settingsRef = getSettingsRef(ctx.firestore, input.projectId);
-
-      let statusTag = undefined;
-      if (taskData.statusId !== undefined) {
-        statusTag = await getStatusType(
-          ctx.firestore,
-          projectId,
-          taskData.statusId,
-        );
-      }
-
-      let assignee = undefined;
-      if (taskData.assigneeId !== undefined && taskData.assigneeId !== "") {
-        const userRef = await ctx.firebaseAdmin
-          .auth()
-          .getUser(taskData.assigneeId);
-        assignee = {
-          uid: userRef.uid,
-          displayName: userRef.displayName,
-          photoURL: userRef.photoURL,
-        };
-      }
-
-      return {
-        id: taskId,
-        scrumId: taskData.scrumId,
-        name: taskData.name,
-        description: taskData.description,
-        status: statusTag,
-        size: taskData.size,
-        assignee: assignee,
-        dueDate: taskData.dueDate
-          ? timestampToDate(taskData.dueDate)
-          : undefined,
-      } as TaskDetail;
+      return await getTaskDetail(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        projectId,
+        taskId,
+      );
     }),
 
   /**
@@ -198,13 +136,8 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, taskData } = input;
-      const taskRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId);
+      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
       await taskRef.update(taskData);
-      return { success: true };
     }),
 
   /**
@@ -226,13 +159,8 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, statusId } = input;
-      const taskRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId);
+      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
       await taskRef.update({ statusId });
-      return { success: true };
     }),
 
   /**
@@ -252,13 +180,8 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId } = input;
-      const taskRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId);
+      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
       await taskRef.update({ deleted: true });
-      return { success: true };
     }),
 
   /**
@@ -528,18 +451,5 @@ ${passedInPrompt}
         ...task,
         status: todoTag as StatusTag,
       }));
-    }),
-
-  getTaskCount: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const taskCount = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("tasks")
-        .where("deleted", "==", false)
-        .count()
-        .get();
-      return taskCount.data().count;
     }),
 });

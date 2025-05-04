@@ -1,4 +1,4 @@
-import { ExistingUserStory } from "./detailSchemas";
+import { ExistingUserStory, UserPreview } from "./detailSchemas";
 import { Size, Sprint, StatusTag, Tag } from "./firebaseSchemas";
 
 export interface UserStoryCol {
@@ -27,13 +27,9 @@ export interface UserStoryCol {
 export interface TaskCol {
   id: string;
   scrumId?: number;
-  title: string;
-  status: StatusTag;
-  assignee?: {
-    uid: string;
-    displayName: string;
-    photoURL: string;
-  };
+  name: string;
+  status?: StatusTag;
+  assignee?: UserPreview;
 }
 
 /**

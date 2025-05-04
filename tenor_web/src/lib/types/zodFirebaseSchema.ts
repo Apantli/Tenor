@@ -140,7 +140,7 @@ export const ExistingUserStorySchema = BasicInfoSchema.merge(
 export const TaskSchema = BasicInfoSchema.extend({
   statusId: z.string(),
   assigneeId: z.string(),
-  dueDate: TimestampType.nullable(),
+  dueDate: TimestampType.optional(),
   // FIXME: Finished date should be added to show on calendar
   // finishedDate: TimestampType.nullable(),
   itemId: z.string(),

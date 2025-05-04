@@ -178,9 +178,11 @@ export default function UserStoryTable() {
                 description: task.description,
                 itemId: userStoryId,
                 assigneeId: task.assignee?.id ?? "",
-                dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : null,
+                dueDate: task.dueDate
+                  ? Timestamp.fromDate(task.dueDate)
+                  : undefined,
                 itemType: "US",
-                statusId: task.status.id ?? "",
+                statusId: task.status?.id ?? "",
                 deleted: false,
                 size: task.size,
               },

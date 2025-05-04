@@ -1,12 +1,22 @@
 import { Firestore } from "firebase-admin/firestore";
 import { getProjectRef } from "./general";
-import { Issue, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import {
+  Issue,
+  Sprint,
+  StatusTag,
+  Tag,
+  Task,
+  WithId,
+} from "~/lib/types/firebaseSchemas";
 import { IssueSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import { IssueCol } from "~/lib/types/columnTypes";
 import { IssueDetail } from "~/lib/types/detailSchemas";
 import { noTag } from "~/lib/defaultProjectValues";
-import { getPriority } from "./tags";
+import { getBacklogTag, getPriority, getStatusType } from "./tags";
+import { getTask } from "./tasks";
+import { getUserStory } from "./userStories";
+import { getSprint } from "./sprints";
 
 /**
  * @function getIssuesRef
@@ -144,14 +154,39 @@ export const getIssueDetail = async (
 ) => {
   const issue = await getIssue(firestore, projectId, issueId);
 
-  const priority: Tag =
-    (await getPriority(firestore, projectId, issue.priorityId)) ?? noTag;
+  const priority: Tag | undefined =
+    (await getPriority(firestore, projectId, issue.priorityId)) ?? undefined;
 
-  // FIXME: Load Sprint, requiredBy, dependencies, tags, status, tasks
+  const status: StatusTag | undefined =
+    (await getStatusType(firestore, projectId, issue.statusId)) ?? undefined;
+
+  const tags: Tag[] = await Promise.all(
+    issue.tagIds.map(async (tagId) => {
+      return await getBacklogTag(firestore, projectId, tagId);
+    }),
+  );
+
+  const relatedUserStory = issue.relatedUserStoryId
+    ? await getUserStory(firestore, projectId, issue.relatedUserStoryId)
+    : undefined;
+
+  const sprint: WithId<Sprint> | undefined = issue.sprintId
+    ? await getSprint(firestore, projectId, issue.sprintId)
+    : undefined;
+
+  //   const tasks: WithId<Task>[] = await Promise.all(
+  //     issue.taskIds.map(async (taskId) => {
+  //       return await getTask(firestore, projectId, taskId);
+  //     }),
+  //   );
+
   const userStoryDetail: IssueDetail = {
     ...issue,
+    sprint,
     priority,
-    tags: [],
+    status,
+    tags,
+    relatedUserStory,
     completed: false,
     tasks: [],
   };

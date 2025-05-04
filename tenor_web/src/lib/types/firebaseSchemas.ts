@@ -189,10 +189,10 @@ export interface UserStory extends BacklogItem {
 
 export type itemTypes = "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 export interface Task extends BasicInfo {
-  statusId: string;
+  statusId?: string;
   assigneeId: string;
-  dueDate: Date | null;
-  finishedDate: Date | null;
+  dueDate?: Date;
+  finishedDate?: Date;
   size: Size;
   itemId: string;
   itemType: itemTypes;

@@ -1,12 +1,19 @@
+/**
+ * User Stories Router - Tenor API Endpoints for User Story Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing User Stories in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve user stories.
+ *
+ * @category API
+ */
 import { z } from "zod";
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import {
   EpicSchema,
   RequirementSchema,
-  SprintSchema,
   TagSchema,
-  TaskSchema,
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
 import type {
@@ -17,7 +24,6 @@ import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { FieldValue } from "firebase-admin/firestore";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
 import { UserStory, WithId } from "~/lib/types/firebaseSchemas";
-import { UserStoryCol } from "~/lib/types/columnTypes";
 import {
   getUserStories,
   getUserStoriesRef,
@@ -82,146 +88,6 @@ export const userStoriesRouter = createTRPCRouter({
         input.projectId,
         input.userStoryId,
       );
-      // Get the necessary information to construct the UserStoryDetail
-
-      const { projectId, userStoryId } = input;
-      const userStoryRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("userStories")
-        .doc(userStoryId);
-      const userStory = await userStoryRef.get();
-      if (!userStory.exists) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
-
-      const userStoryData = UserStorySchema.parse(userStory.data());
-      // Fetch all the task information for the user story in parallel
-      const tasks = await Promise.all(
-        userStoryData.taskIds.map(async (taskId) => {
-          const taskRef = ctx.firestore
-            .collection("projects")
-            .doc(projectId)
-            .collection("tasks")
-            .doc(taskId);
-          const task = await taskRef.get();
-          if (!task.exists) {
-            throw new TRPCError({ code: "NOT_FOUND" });
-          }
-          const taskData = TaskSchema.parse(task.data());
-
-          // FIXME: Get tag information from database
-          const statusTag = TagSchema.parse({
-            name: "Done",
-            color: "#00FF00",
-            deleted: false,
-          });
-
-          return { ...taskData, id: taskId, status: statusTag };
-        }),
-      );
-
-      let epicData = undefined;
-      if (userStoryData.epicId !== "") {
-        epicData = await getEpic(
-          ctx.firestore,
-          projectId,
-          userStoryData.epicId,
-        );
-      }
-
-      let priorityTag = undefined;
-      if (userStoryData.priorityId !== undefined) {
-        priorityTag = await getPriority(
-          ctx.firestore,
-          projectId,
-          userStoryData.priorityId!,
-        );
-      }
-
-      let statusTag = undefined;
-      if (userStoryData.statusId !== undefined) {
-        statusTag = await getStatusType(
-          ctx.firestore,
-          projectId,
-          userStoryData.statusId!,
-        );
-      }
-
-      const tags = await Promise.all(
-        userStoryData.tagIds.map(async (tagId) => {
-          return await getBacklogTag(ctx.firestore, projectId, tagId);
-        }),
-      );
-
-      const dependencies = await Promise.all(
-        userStoryData.dependencyIds.map(async (dependencyId) => {
-          const dependency = await ctx.firestore
-            .collection("projects")
-            .doc(projectId)
-            .collection("userStories")
-            .doc(dependencyId)
-            .get();
-          const dependencyData = UserStorySchema.parse(dependency.data());
-          return {
-            id: dependency.id,
-            name: dependencyData.name,
-            scrumId: dependencyData.scrumId,
-          };
-        }),
-      );
-
-      const requiredBy = await Promise.all(
-        userStoryData.requiredByIds.map(async (requiredById) => {
-          const requiredBy = await ctx.firestore
-            .collection("projects")
-            .doc(projectId)
-            .collection("userStories")
-            .doc(requiredById)
-            .get();
-          const requiredByData = UserStorySchema.parse(requiredBy.data());
-          return {
-            id: requiredBy.id,
-            name: requiredByData.name,
-            scrumId: requiredByData.scrumId,
-          };
-        }),
-      );
-
-      let sprint = undefined;
-      if (userStoryData.sprintId !== "") {
-        const sprintDoc = await ctx.firestore
-          .collection("projects")
-          .doc(projectId)
-          .collection("sprints")
-          .doc(userStoryData.sprintId)
-          .get();
-        if (sprintDoc.exists) {
-          const sprintData = SprintSchema.parse(sprintDoc.data());
-          sprint = {
-            id: sprintDoc.id,
-            number: sprintData.number,
-          };
-        }
-      }
-
-      const filteredTasks = tasks.filter((task) => task.deleted === false);
-      return {
-        id: userStoryId,
-        scrumId: userStoryData.scrumId,
-        name: userStoryData.name,
-        description: userStoryData.description,
-        acceptanceCriteria: userStoryData.acceptanceCriteria,
-        epic: epicData,
-        size: userStoryData.size,
-        tags: tags,
-        status: statusTag,
-        priority: priorityTag,
-        dependencies: dependencies,
-        requiredBy: requiredBy,
-        tasks: filteredTasks,
-        sprint,
-      } as UserStoryDetail;
     }),
 
   /**

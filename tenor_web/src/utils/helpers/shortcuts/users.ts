@@ -47,6 +47,30 @@ export const getGlobalUserPreviews = async (admin: admin.app.App) => {
 };
 
 /**
+ * @function getGlobalUserPreview
+ * @description Retrieves a user preview from Firebase Auth
+ * @param admin A Firebase Admin instance
+ * @param userId The ID of the user
+ * @returns {Promise<UserPreview | undefined>} A user preview object or undefined if not found
+ */
+export const getGlobalUserPreview = async (
+  admin: admin.app.App,
+  userId: string,
+): Promise<WithId<UserPreview> | undefined> => {
+  const user = await admin.auth().getUser(userId);
+  if (!user) {
+    return undefined;
+  }
+  const userPreview: WithId<UserPreview> = {
+    id: user.uid,
+    displayName: user.displayName ?? user.email ?? "NA",
+    email: user.email ?? "",
+    photoURL: user.photoURL ?? "",
+  };
+  return userPreview;
+};
+
+/**
  * @function getUsersRef
  * @description Gets a reference to the users collection
  * @param firestore A Firestore instance

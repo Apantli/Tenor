@@ -1,3 +1,13 @@
+/**
+ * Sprints - Tenor API Endpoints for Sprint Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing Sprints in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve sprints.
+ *
+ * @category API
+ */
+
 import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {
@@ -9,35 +19,7 @@ import {
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { collection } from "firebase/firestore";
-
-export const timestampToDate = (timestamp: {
-  seconds: number;
-  nanoseconds: number;
-}) => {
-  return new Timestamp(timestamp.seconds, timestamp.nanoseconds).toDate();
-};
-
-export const getSprint = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-  sprintId: string,
-) => {
-  if (sprintId === undefined || sprintId === "") {
-    return undefined;
-  }
-  const sprintRef = dbAdmin
-    .collection("projects")
-    .doc(projectId)
-    .collection("sprints")
-    .doc(sprintId);
-  const sprint = await sprintRef.get();
-
-  if (!sprint.exists) {
-    return undefined;
-  }
-  return { id: sprint.id, ...SprintSchema.parse(sprint.data()) };
-};
+import { timestampToDate } from "~/utils/helpers/parsers";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: protectedProcedure
