@@ -14,9 +14,7 @@ import type {
   Project,
   WithId,
   User,
-  Settings,
   Requirement,
-  Tag,
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
