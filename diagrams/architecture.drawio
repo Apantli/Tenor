@@ -40,7 +40,7 @@
         <mxCell id="o_S3ILkpT6AB_PazXlzC-41" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;" parent="1" source="o_S3ILkpT6AB_PazXlzC-14" target="o_S3ILkpT6AB_PazXlzC-15" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="LHZvAIu-8wCrYszZRPIz-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;" edge="1" parent="1" source="o_S3ILkpT6AB_PazXlzC-14" target="LHZvAIu-8wCrYszZRPIz-1">
+        <mxCell id="LHZvAIu-8wCrYszZRPIz-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=classic;startFill=1;" parent="1" source="o_S3ILkpT6AB_PazXlzC-14" target="LHZvAIu-8wCrYszZRPIz-1" edge="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="430" y="260" />
@@ -172,7 +172,7 @@
         <mxCell id="xiCW2DMBRFnSdZSfyEem-4" value="Github OAuth" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="725" y="900" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="LHZvAIu-8wCrYszZRPIz-1" value="Gemini API" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+        <mxCell id="LHZvAIu-8wCrYszZRPIz-1" value="Gemini API" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
           <mxGeometry x="500" y="160" width="120" height="60" as="geometry" />
         </mxCell>
       </root>
