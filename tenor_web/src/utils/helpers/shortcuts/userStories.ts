@@ -106,6 +106,14 @@ export const getUserStory = async (
   } as WithId<UserStory>;
 };
 
+/**
+ * @function getUserStoryDetail
+ * @description Retrieves detailed information about a specific user story
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} userStoryId - The ID of the user story to retrieve details for
+ * @returns {Promise<UserStoryDetail>} The user story detail object
+ */
 export const getUserStoryDetail = async (
   firestore: Firestore,
   projectId: string,

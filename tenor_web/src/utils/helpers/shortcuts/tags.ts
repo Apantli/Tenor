@@ -1,5 +1,3 @@
-//#region Tags & Statuses
-
 import { Firestore } from "firebase-admin/firestore";
 import {
   doingTagName,
@@ -91,7 +89,7 @@ export const getStatusTypesRef = (firestore: Firestore, projectId: string) => {
 };
 
 /**
- * @function getStatusType
+ * @function getStatusTypeRef
  * @description Gets a reference to a specific status type document
  * @param firestore A Firestore instance
  * @param projectId The ID of the project
@@ -338,5 +336,3 @@ export const getAutomaticStatusId = async (
 
   return "";
 };
-
-//#endregion

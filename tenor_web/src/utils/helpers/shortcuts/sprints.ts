@@ -1,5 +1,77 @@
 import { Firestore } from "firebase-admin/firestore";
 import { SprintSchema } from "~/lib/types/zodFirebaseSchema";
+import { getProjectRef } from "./general";
+import { TRPCError } from "@trpc/server";
+import { Sprint, WithId } from "~/lib/types/firebaseSchemas";
+
+/**
+ * @function getSprintsRef
+ * @description Gets a reference to the sprints collection for a specific project
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {FirebaseFirestore.CollectionReference} A reference to the sprints collection
+ */
+export const getSprintsRef = (firestore: Firestore, projectId: string) => {
+  return getProjectRef(firestore, projectId).collection("sprints");
+};
+
+/**
+ * @function getSprintRef
+ * @description Gets a reference to a specific sprint document
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @param sprintId The ID of the sprint
+ * @returns {FirebaseFirestore.DocumentReference} A reference to the sprint document
+ */
+export const getSprintRef = (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  return getSprintsRef(firestore, projectId).doc(sprintId);
+};
+
+// FIXME: This may overlap, this isnt quite right
+/**
+ * @function getSprintNewId
+ * @description Gets the next available sprint ID for a specific project
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {Promise<number>} The next available sprint ID
+ */
+export const getSprintNewId = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const sprintsRef = getSprintsRef(firestore, projectId).count().get();
+  const sprintsCount = (await sprintsRef).data().count;
+  return sprintsCount + 1;
+};
+
+/**
+ * @function getSprints
+ * @description Retrieves all non-deleted sprints associated with a specific project
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve sprints from
+ * @returns {Promise<WithId<Sprint>[]>} An array of sprint objects with their IDs
+ */
+export const getSprints = async (firestore: Firestore, projectId: string) => {
+  const sprintsRef = getSprintsRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .orderBy("startDate", "desc");
+  const sprintsSnapshot = await sprintsRef.get();
+  const sprints: WithId<Sprint>[] = sprintsSnapshot.docs.map((sprintData) => {
+    const sprintSchema = SprintSchema.parse(sprintData.data());
+    const sprint: WithId<Sprint> = {
+      id: sprintData.id,
+      ...sprintSchema,
+      startDate: sprintSchema.startDate.toDate(),
+      endDate: sprintSchema.endDate.toDate(),
+    };
+    return sprint;
+  });
+  return sprints;
+};
 
 /**
  * @function getSprint
@@ -7,25 +79,29 @@ import { SprintSchema } from "~/lib/types/zodFirebaseSchema";
  * @param firestore
  * @param projectId
  * @param sprintId
- * @returns Sprint object or undefined if not found
+ * @returns {Promise<WithId<Sprint>>} The sprint object with its ID
  */
 export const getSprint = async (
   firestore: Firestore,
   projectId: string,
   sprintId: string,
 ) => {
-  if (sprintId === undefined || sprintId === "") {
-    return undefined;
+  const sprintRef = getSprintRef(firestore, projectId, sprintId);
+  const sprintDoc = await sprintRef.get();
+  if (!sprintDoc.exists) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Sprint not found",
+    });
   }
-  const sprintRef = firestore
-    .collection("projects")
-    .doc(projectId)
-    .collection("sprints")
-    .doc(sprintId);
-  const sprint = await sprintRef.get();
 
-  if (!sprint.exists) {
-    return undefined;
-  }
-  return { id: sprint.id, ...SprintSchema.parse(sprint.data()) };
+  const sprintSchema = SprintSchema.parse(sprintDoc.data());
+  const sprint: WithId<Sprint> = {
+    id: sprintDoc.id,
+    ...sprintSchema,
+    startDate: sprintSchema.startDate.toDate(),
+    endDate: sprintSchema.endDate.toDate(),
+  };
+
+  return sprint;
 };

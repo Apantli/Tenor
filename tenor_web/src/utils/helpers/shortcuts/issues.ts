@@ -100,6 +100,13 @@ export const getIssue = async (
   } as WithId<Issue>;
 };
 
+/**
+ * @function getIssueTable
+ * @description Retrieves all issues for a specific project and formats them into a table structure
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {Promise<IssueCol[]>} An array of issue objects formatted for display in a table
+ */
 export const getIssueTable = async (
   firestore: Firestore,
   projectId: string,
@@ -122,6 +129,14 @@ export const getIssueTable = async (
   return issueCols;
 };
 
+/**
+ * @function getIssueDetail
+ * @description Retrieves detailed information about a specific issue
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @param issueId The ID of the issue
+ * @returns {Promise<IssueDetail>} The detailed issue object
+ */
 export const getIssueDetail = async (
   firestore: Firestore,
   projectId: string,
@@ -143,4 +158,3 @@ export const getIssueDetail = async (
 
   return userStoryDetail;
 };
-//#endregion

@@ -1,5 +1,3 @@
-//#region Tasks
-
 import { Firestore } from "firebase-admin/firestore";
 import { getProjectRef } from "./general";
 import { Task, WithId } from "~/lib/types/firebaseSchemas";
@@ -56,6 +54,14 @@ export const getTasks = async (firestore: Firestore, projectId: string) => {
   return tasks;
 };
 
+/**
+ * @function getTasksFromItem
+ * @description Retrieves all non-deleted tasks associated with a specific item
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} itemId - The ID of the item to retrieve tasks from
+ * @returns {Promise<WithId<Task>[]>} An array of task objects with their IDs
+ */
 export const getTasksFromItem = async (
   firestore: Firestore,
   projectId: string,
@@ -75,6 +81,14 @@ export const getTasksFromItem = async (
   return tasks;
 };
 
+/**
+ * @function getTaskProgress
+ * @description Calculates the progress of tasks in a project
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} itemId - The ID of the item
+ * @returns {Promise<[number, number]>} A tuple containing the number of completed tasks and the total number of tasks
+ */
 export const getTaskProgress = async (
   firestore: Firestore,
   projectId: string,
@@ -106,7 +120,15 @@ export const getTaskProgress = async (
   return [completedTasks, totalTasks];
 };
 
-// TODO: This one needs admin access
+/**
+ * @function getTaskAssignUsers
+ * @description Retrieves unique users assigned to tasks in a specific item
+ * @param {admin.app.App} admin - The Firebase Admin instance
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} itemId - The ID of the item
+ * @returns {Promise<UserPreview[]>} An array of unique user objects with their IDs
+ */
 export const getTasksAssignUsers = async (
   admin: admin.app.App,
   firestore: Firestore,
@@ -145,4 +167,3 @@ export const getTasksAssignUsers = async (
 
   return uniqueUsers;
 };
-//#endregion
