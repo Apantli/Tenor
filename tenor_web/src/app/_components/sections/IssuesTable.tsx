@@ -6,7 +6,6 @@ import Table, { type TableColumns } from "../table/Table";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
-import type { IssueCol } from "~/server/api/routers/issues";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
@@ -23,6 +22,7 @@ import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
+import { IssueCol } from "~/lib/types/columnTypes";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -54,7 +54,7 @@ export default function IssuesTable() {
   // TRPC
   const utils = api.useUtils();
   const { data: issues, isLoading: isLoadingIssues } =
-    api.issues.getIssuesTableFriendly.useQuery({
+    api.issues.getIssueTable.useQuery({
       projectId: projectId as string,
     });
   const { mutateAsync: updateIssueTags } =
@@ -167,10 +167,10 @@ export default function IssuesTable() {
             const newData = [...issueData, issueRow];
 
             // Uses optimistic update to update the priority of the user story
-            await utils.issues.getIssuesTableFriendly.cancel({
+            await utils.issues.getIssueTable.cancel({
               projectId: projectId as string,
             });
-            utils.issues.getIssuesTableFriendly.setData(
+            utils.issues.getIssueTable.setData(
               { projectId: projectId as string },
               newData,
             );
@@ -205,11 +205,11 @@ export default function IssuesTable() {
             if (!projectId || !row?.id) return;
 
             try {
-              await utils.issues.getIssuesTableFriendly.cancel({
+              await utils.issues.getIssueTable.cancel({
                 projectId: projectId as string,
               });
 
-              utils.issues.getIssuesTableFriendly.setData(
+              utils.issues.getIssueTable.setData(
                 { projectId: projectId as string },
                 (oldData) => {
                   if (!oldData) return oldData;
@@ -285,10 +285,10 @@ export default function IssuesTable() {
             const newData = [...issueData, issueRow];
 
             // Uses optimistic update to update the size of the user story
-            await utils.issues.getIssuesTableFriendly.cancel({
+            await utils.issues.getIssueTable.cancel({
               projectId: projectId as string,
             });
-            utils.issues.getIssuesTableFriendly.setData(
+            utils.issues.getIssueTable.setData(
               { projectId: projectId as string },
               newData,
             );
@@ -344,11 +344,11 @@ export default function IssuesTable() {
 
       // Uses optimistic update to update the size of the user story
 
-      await utils.issues.getIssuesTableFriendly.cancel({
+      await utils.issues.getIssueTable.cancel({
         projectId: projectId as string,
       });
 
-      utils.issues.getIssuesTableFriendly.setData(
+      utils.issues.getIssueTable.setData(
         { projectId: projectId as string },
         newData,
       );

@@ -50,10 +50,7 @@ export const useInvalidateQueriesTaskDetails = () => {
 export const useInvalidateQueriesAllUserStories = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
-    await utils.userStories.getUserStoriesTableFriendly.invalidate({
-      projectId: projectId,
-    });
-    await utils.userStories.getAllUserStoryPreviews.invalidate({
+    await utils.userStories.getUserStoryTable.invalidate({
       projectId: projectId,
     });
     await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
@@ -95,7 +92,7 @@ export const useInvalidateQueriesItemStatus = () => {
 export const useInvalidateQueriesAllRequirements = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
-    await utils.requirements.getRequirementsTableFriendly.invalidate({
+    await utils.requirements.getRequirementTable.invalidate({
       projectId: projectId,
     });
   };
@@ -118,7 +115,7 @@ export const useInvalidateQueriesRequirementDetails = () => {
 export const useInvalidateQueriesAllIssues = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
-    await utils.issues.getIssuesTableFriendly.invalidate({
+    await utils.issues.getIssueTable.invalidate({
       projectId: projectId,
     });
     await utils.kanban.getBacklogItemsForKanban.invalidate({
@@ -199,13 +196,12 @@ export const useInvalidateQueriesAllTags = () => {
     await utils.settings.getBacklogTags.invalidate({
       projectId: projectId,
     });
-    await utils.requirements.getRequirementFocusTags.invalidate({
+    await utils.requirements.getRequirementFocus.invalidate({
       projectId: projectId,
     });
-    await utils.requirements.getRequirementTypeTags.invalidate({
+    await utils.requirements.getRequirementType.invalidate({
       projectId: projectId,
-    }); 
-
+    });
   };
 };
 

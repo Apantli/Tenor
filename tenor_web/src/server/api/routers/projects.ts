@@ -10,7 +10,7 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
-import { fetchMultipleFiles } from "~/utils/filecontent";
+import { fetchMultipleFiles } from "~/utils/helpers/filecontent";
 import {
   uploadBase64File,
   getLogoPath,
@@ -22,32 +22,12 @@ import {
   SettingsSchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { isBase64Valid } from "~/utils/base64";
-import { defaultRoleList, defaultStatusTags } from "~/lib/defaultProjectValues";
-
-const emptySettings: Settings = {
-  sprintDuration: 0,
-  maximumSprintStoryPoints: 0,
-  aiContext: {
-    text: "",
-    files: [],
-    links: [],
-  },
-  storyPointSizes: [
-    1, // XS
-    2, // S
-    3, // M
-    4, // L
-    5, // XL
-    6, // XXL
-  ],
-  // requirementFocusTags: [],
-  // requirementTypeTags: [],
-  // backlogTags: [],
-  // priorityTypes: [],
-  // statusTabs: [],
-  // roles: [],
-};
+import { isBase64Valid } from "~/utils/helpers/base64";
+import {
+  defaultRoleList,
+  defaultStatusTags,
+  emptySettings,
+} from "~/lib/defaultProjectValues";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -198,7 +178,7 @@ export const projectsRouter = createTRPCRouter({
         name: file.name,
         type: file.type,
         content: fileText[index] ?? "",
-        size: file.size,
+        size: Buffer.byteLength(fileText[index] ?? "", "utf-8"), // Calculate size in bytes
       }));
 
       input.settings.aiContext.files = files;

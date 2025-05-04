@@ -1,5 +1,5 @@
 import type { Timestamp } from "firebase-admin/firestore";
-import { z } from "zod";
+import { z, ZodTypeAny } from "zod";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
@@ -92,14 +92,6 @@ export const BacklogItemSchema = BasicInfoSchema.extend({
 });
 
 export const EpicSchema = BasicInfoSchema;
-
-// Mark the id as mandatorty
-export const ExistingEpicSchema = EpicSchema.merge(
-  z.object({
-    scrumId: z.number(),
-    description: z.string().optional(),
-  }),
-);
 
 export const EpicOverviewSchema = EpicSchema.omit({
   description: true,
@@ -195,7 +187,6 @@ export const SettingsSchema = z.object({
           name: z.string(),
           type: z.string(),
           content: z.string(),
-          size: z.number(),
         }),
       )
       .default([]),

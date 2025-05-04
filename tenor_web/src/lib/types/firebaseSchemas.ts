@@ -160,7 +160,7 @@ export interface Role {
 
 export interface BasicInfo {
   scrumId: number;
-  name?: string;
+  name: string;
   description: string; // Markdown
   deleted: boolean;
 }

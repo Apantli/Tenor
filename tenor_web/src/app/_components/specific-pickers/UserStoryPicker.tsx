@@ -18,10 +18,9 @@ interface Props {
 export default function UserStoryPicker({ userStory, onChange }: Props) {
   const { projectId } = useParams();
 
-  const { data: userStories } =
-    api.userStories.getProjectUserStoriesOverview.useQuery({
-      projectId: projectId as string,
-    });
+  const { data: userStories } = api.userStories.getUserStories.useQuery({
+    projectId: projectId as string,
+  });
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
 

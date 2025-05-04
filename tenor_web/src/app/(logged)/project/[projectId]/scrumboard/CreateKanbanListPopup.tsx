@@ -12,7 +12,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import HelpIcon from "@mui/icons-material/Help";
-import { generateRandomTagColor } from "~/utils/colorUtils";
+import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 
 interface Props {
   showPopup: boolean;

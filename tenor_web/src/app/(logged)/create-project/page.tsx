@@ -17,7 +17,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
 
-import { toBase64 } from "~/utils/base64";
+import { toBase64 } from "~/utils/helpers/base64";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();

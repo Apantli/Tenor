@@ -9,8 +9,8 @@ import { remove } from "node_modules/cypress/types/lodash";
 import admin from "firebase-admin";
 import { emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCError } from "@trpc/server";
-import { getProjectUserRef } from "./settings";
 import { access } from "fs";
+import { getProjectUserRef } from "~/utils/helpers/shortcuts";
 
 export const userRouter = createTRPCRouter({
   // No role is required to get the user list
@@ -116,6 +116,7 @@ export const userRouter = createTRPCRouter({
         const userData = doc.data();
 
         try {
+          const admin = ctx.firebaseAdmin;
           const firebaseUser = await ctx.firebaseAdmin.auth().getUser(doc.id);
 
           users.push({
@@ -137,7 +138,7 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, userId } = input;
 
-      const teamMemberRef = getProjectUserRef(projectId, userId, ctx.firestore);
+      const teamMemberRef = getProjectUserRef(ctx.firestore, projectId, userId);
       const teamMemberSnap = await teamMemberRef.get();
 
       if (!teamMemberSnap.exists) {
@@ -176,7 +177,7 @@ export const userRouter = createTRPCRouter({
       const { projectId, userId } = input;
 
       // search if it exists
-      const userRef = getProjectUserRef(projectId, userId, ctx.firestore);
+      const userRef = getProjectUserRef(ctx.firestore, projectId, userId);
       const userSnap = await userRef.get();
 
       if (!userSnap.exists) {
@@ -211,7 +212,7 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, userId, roleId } = input;
 
-      const userRef = getProjectUserRef(projectId, userId, ctx.firestore);
+      const userRef = getProjectUserRef(ctx.firestore, projectId, userId);
       await userRef.update({ roleId });
     }),
 });

@@ -9,123 +9,55 @@
  */
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { EpicSchema, ExistingEpicSchema } from "~/lib/types/zodFirebaseSchema";
+import { EpicSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { FieldPath } from "firebase-admin/firestore";
-
-// TODO: Use this function within the epic procedures (did not do it because of possible conflicts)
-export const getEpic = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-  epicId: string,
-) => {
-  if (epicId === undefined || epicId === "") {
-    return undefined;
-  }
-  const epicRef = dbAdmin
-    .collection("projects")
-    .doc(projectId)
-    .collection("epics")
-    .doc(epicId);
-  const epic = await epicRef.get();
-
-  if (!epic.exists) {
-    return undefined;
-  }
-  return { id: epic.id, ...EpicSchema.parse(epic.data()) };
-};
+import {
+  getEpic,
+  getEpicNewId,
+  getEpicRef,
+  getEpics,
+  getEpicsRef,
+} from "~/utils/helpers/shortcuts";
+import { get } from "node_modules/cypress/types/lodash";
+import { WithId } from "~/lib/types/firebaseSchemas";
 
 export const epicsRouter = createTRPCRouter({
-  getProjectEpicsOverview: protectedProcedure
+  getEpics: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const epicsSnapshot = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("epics")
-        .select("scrumId", "name")
-        .where("deleted", "==", false)
-        .orderBy("scrumId")
-        .get();
-
-      const epics = epicsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...ExistingEpicSchema.parse(doc.data()),
-      }));
-
-      return epics;
+      const { projectId } = input;
+      return await getEpics(ctx.firestore, projectId);
     }),
 
   getEpic: protectedProcedure
-    .input(z.object({ projectId: z.string(), epicId: z.number() }))
+    .input(z.object({ projectId: z.string(), epicId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const snapshot = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("epics")
-        .where("scrumId", "==", input.epicId)
-        .limit(1)
-        .get();
-
-      if (snapshot.empty) {
-        throw new Error("Epic not found");
-      }
-
-      const epicDoc = snapshot.docs[0];
-
-      return EpicSchema.parse({ ...epicDoc?.data() });
+      const { projectId, epicId } = input;
+      return await getEpic(ctx.firestore, projectId, epicId);
     }),
 
   createOrModifyEpic: protectedProcedure
-    .input(EpicSchema.extend({ projectId: z.string() }))
+    .input(
+      z.object({
+        epicData: EpicSchema,
+        projectId: z.string(),
+        epicId: z.string().optional(),
+      }),
+    )
     .mutation(async ({ ctx, input }) => {
-      const projectCount = (
-        await ctx.firestore
-          .collection("projects")
-          .where(FieldPath.documentId(), "==", input.projectId)
-          .count()
-          .get()
-      ).data().count;
+      const { projectId, epicId, epicData } = input;
 
-      if (projectCount === 0) {
-        throw new Error("Project not found");
-      }
-
-      const epicsRef = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("epics");
-
-      if (input.scrumId !== -1) {
-        const epicDocs = await epicsRef
-          .where("scrumId", "==", input.scrumId)
-          .get();
-
-        if (epicDocs.empty) {
-          throw new Error("Epic not found");
-        }
-
-        const epicDoc = epicDocs.docs[0];
+      if (epicId) {
+        const epicDoc = await getEpicRef(
+          ctx.firestore,
+          projectId,
+          epicId,
+        ).get();
         await epicDoc?.ref.update(input);
-        return "Epic updated successfully";
       } else {
-        const existingEpicsCount = (await epicsRef.count().get()).data().count;
-        input.scrumId = existingEpicsCount + 1;
-        await epicsRef.add(input);
-        return "Epic created successfully";
+        epicData.scrumId = await getEpicNewId(ctx.firestore, projectId);
+        await getEpicsRef(ctx.firestore, projectId).add(input);
       }
-    }),
-
-  getEpicCount: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const epicCount = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("epics")
-        .where("deleted", "==", false)
-        .count()
-        .get();
-      return epicCount.data().count;
     }),
 });

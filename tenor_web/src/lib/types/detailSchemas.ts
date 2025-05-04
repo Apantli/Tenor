@@ -8,14 +8,14 @@ import type {
   WithId,
 } from "./firebaseSchemas";
 import type {
-  ExistingEpicSchema,
+  EpicSchema,
   ExistingUserStorySchema,
   SprintSchema,
   UserStorySchema,
 } from "./zodFirebaseSchema";
 import type z from "zod";
 
-export type ExistingEpic = WithId<z.infer<typeof ExistingEpicSchema>>;
+export type ExistingEpic = WithId<z.infer<typeof EpicSchema>>;
 export type ExistingUserStory = WithId<z.infer<typeof ExistingUserStorySchema>>;
 
 export type UserStoryPreview = {

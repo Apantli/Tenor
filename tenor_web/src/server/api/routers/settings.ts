@@ -9,7 +9,7 @@ import z, { number } from "zod";
 import type { Firestore } from "firebase-admin/firestore";
 import { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { fetchHTML } from "~/utils/webcontent";
-import { fetchMultipleFiles, fetchText } from "~/utils/filecontent";
+import { fetchMultipleFiles, fetchText } from "~/utils/helpers/filecontent";
 import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
 import { remove } from "node_modules/cypress/types/lodash";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
@@ -18,129 +18,17 @@ import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
 } from "~/lib/defaultProjectValues";
-import { getTodoStatusTag } from "./tasks";
 import {
   createTRPCRouter,
   protectedProcedure,
   roleRequiredProcedure,
 } from "../trpc";
-
-export const getProjectUserRef = (
-  projectId: string,
-  userId: string,
-  firestore: Firestore,
-) => {
-  return firestore
-    .collection("projects")
-    .doc(projectId)
-    .collection("users")
-    .doc(userId);
-};
-
-export const getProjectRoleRef = (
-  projectId: string,
-  roleId: string,
-  firestore: Firestore,
-) => {
-  return firestore
-    .collection("projects")
-    .doc(projectId)
-    .collection("settings")
-    .doc("settings")
-    .collection("userTypes")
-    .doc(roleId);
-};
-
-/**
- * @function getProjectSettingsRef
- * @description Gets a reference to the project settings document
- * @param {string} projectId - The ID of the project
- * @param {Firestore} firestore - The Firestore instance
- * @returns {FirebaseFirestore.DocumentReference} A reference to the project settings document
- */
-export const getProjectSettingsRef = (
-  projectId: string,
-  firestore: Firestore,
-) => {
-  return firestore
-    .collection("projects")
-    .doc(projectId)
-    .collection("settings")
-    .doc("settings");
-};
-
-export const getProjectRef = (projectId: string, firestore: Firestore) => {
-  return firestore.collection("projects").doc(projectId);
-};
-
-/**
- * @function getProjectSettings
- * @description Retrieves the settings for a specific project
- * @param {string} projectId - The ID of the project
- * @param {Firestore} firestore - The Firestore instance
- * @returns {Promise<any>} The project settings validated by SettingsSchema
- */
-const getProjectSettings = async (projectId: string, firestore: Firestore) => {
-  const settings = await getProjectSettingsRef(projectId, firestore).get();
-
-  return SettingsSchema.parse(settings.data());
-};
-
-/**
- * @function getPriorityTag
- * @description Retrieves a priority tag from the priorityTypes collection based on its ID
- * @param {FirebaseFirestore.DocumentReference} settingsRef - Reference to the settings document
- * @param {string} priorityId - The ID of the priority tag to retrieve
- * @returns {Promise<Tag | undefined>} The priority tag object or undefined if not found
- */
-export const getPriorityTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  priorityId: string,
-) => {
-  if (priorityId === undefined) {
-    return undefined;
-  }
-  const tag = await settingsRef
-    .collection("priorityTypes")
-    .doc(priorityId)
-    .get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
-};
-
-/**
- * @function getBacklogTag
- * @description Retrieves a backlog tag from the backlogTags collection based on its ID
- * @param {FirebaseFirestore.DocumentReference} settingsRef - Reference to the settings document
- * @param {string} taskId - The ID of the backlog tag to retrieve
- * @returns {Promise<Tag | undefined>} The backlog tag object or undefined if not found
- */
-export const getBacklogTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  taskId: string,
-) => {
-  if (taskId === undefined) {
-    return undefined;
-  }
-  const tag = await settingsRef.collection("backlogTags").doc(taskId).get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as WithId<Tag>;
-};
-
-/**
- * @function getTaskProgress
- * @description Retrieves the progress of a task (placeholder for future implementation)
- * @returns {[number | undefined, number | undefined]} A tuple containing task progress values
- * @todo Fetch from db
- */
-// TODO: Fetch from db
-export const getTaskProgress = () => {
-  return [0, 0] as [number | undefined, number | undefined];
-};
+import {
+  getProjectRoleRef,
+  getProjectSettingsRef,
+  getProjectUserRef,
+  getTodoStatusTag,
+} from "~/utils/helpers/shortcuts";
 
 const settingsRouter = createTRPCRouter({
   /**
@@ -168,8 +56,8 @@ const settingsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
         ctx.firestore,
+        input.projectId,
       );
       const priorityTypes = await projectSettingsRef
         .collection("priorityTypes")
@@ -209,8 +97,8 @@ const settingsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
         ctx.firestore,
+        input.projectId,
       );
       const statusTypes = await projectSettingsRef
         .collection("statusTypes")
@@ -245,8 +133,8 @@ const settingsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId, statusId } = input;
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
       const statusType = await projectSettingsRef
         .collection("statusTypes")
@@ -277,8 +165,8 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, name, color, marksTaskAsDone } = input;
       const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
         ctx.firestore,
+        input.projectId,
       );
       const statusCollectionRef = projectSettingsRef.collection("statusTypes");
 
@@ -320,7 +208,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, statusIds } = input;
-      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const projectRef = getProjectSettingsRef(ctx.firestore, projectId);
       const batch = ctx.firestore.batch();
 
       statusIds.forEach((statusId, index) => {
@@ -349,7 +237,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, statusId, status } = input;
-      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const projectRef = getProjectSettingsRef(ctx.firestore, projectId);
       const statusTypeRef = projectRef.collection("statusTypes").doc(statusId);
       await statusTypeRef.update(status);
       const updatedStatus = await statusTypeRef.get();
@@ -371,7 +259,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, statusId } = input;
-      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const projectRef = getProjectSettingsRef(ctx.firestore, projectId);
       const statusCollectionRef = projectRef.collection("statusTypes");
 
       await statusCollectionRef.doc(statusId).update({
@@ -419,8 +307,8 @@ const settingsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
         ctx.firestore,
+        input.projectId,
       );
       const backlogTags = await projectSettingsRef
         .collection("backlogTags")
@@ -453,8 +341,8 @@ const settingsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId, tagId } = input;
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
       const backlogTag = await projectSettingsRef
         .collection("backlogTags")
@@ -484,14 +372,14 @@ const settingsRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
-        tag: TagSchema,
+        tagData: TagSchema,
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, tag } = input;
-      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const added = await projectRef.collection("backlogTags").add(tag);
-      return { ...tag, id: added.id };
+      const { projectId, tagData } = input;
+      const projectRef = getProjectSettingsRef(ctx.firestore, projectId);
+      const added = await projectRef.collection("backlogTags").add(tagData);
+      return { ...tagData, id: added.id };
     }),
 
   modifyBacklogTag: roleRequiredProcedure(
@@ -510,7 +398,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, tagId, tag } = input;
-      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const projectRef = getProjectSettingsRef(ctx.firestore, projectId);
       const backlogTagRef = projectRef.collection("backlogTags").doc(tagId);
       await backlogTagRef.update(tag);
       const updatedTag = await backlogTagRef.get();
@@ -532,7 +420,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, tagId } = input;
-      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const projectRef = getProjectSettingsRef(ctx.firestore, projectId);
       const backlogTagRef = projectRef.collection("backlogTags").doc(tagId);
       await backlogTagRef.update({ deleted: true });
       return { id: tagId };
@@ -560,7 +448,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, tag } = input;
-      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const projectRef = getProjectSettingsRef(ctx.firestore, projectId);
       const added = await projectRef.collection("requirementTypes").add(tag);
       return { ...tag, id: added.id };
     }),
@@ -588,7 +476,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, tag } = input;
-      const projectRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const projectRef = getProjectSettingsRef(ctx.firestore, projectId);
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
     }),
@@ -601,8 +489,8 @@ const settingsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
         ctx.firestore,
+        input.projectId,
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
@@ -620,8 +508,8 @@ const settingsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
         ctx.firestore,
+        input.projectId,
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
@@ -629,7 +517,7 @@ const settingsRouter = createTRPCRouter({
         settingsData.aiContext.files.map((file) => ({
           name: file.name,
           type: file.type,
-          size: file.size,
+          size: Buffer.byteLength(file.content ?? "", "utf-8"),
         }));
       return files;
     }),
@@ -642,8 +530,8 @@ const settingsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
         ctx.firestore,
+        input.projectId,
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
@@ -665,8 +553,8 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, text } = input;
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
@@ -692,8 +580,8 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, link } = input;
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
@@ -727,8 +615,8 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, link } = input;
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
@@ -765,8 +653,8 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, files } = input;
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
 
       const b64Files = files.map((file) => file.content);
@@ -804,8 +692,8 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, file } = input;
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
@@ -918,8 +806,8 @@ const settingsRouter = createTRPCRouter({
       const { projectId, label } = input;
       // add the role document to the roles collection
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
       const roleDoc = await projectSettingsRef.collection("userTypes").add({
         ...emptyRole,
@@ -943,8 +831,8 @@ const settingsRouter = createTRPCRouter({
       const { projectId, roleId } = input;
       // remove the role document from the roles collection
       const projectSettingsRef = getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       );
 
       // Check if any user has this role
@@ -978,7 +866,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, roleId, parameter, permission } = input;
 
-      const roleDoc = getProjectRoleRef(input.projectId, roleId, ctx.firestore);
+      const roleDoc = getProjectRoleRef(ctx.firestore, input.projectId, roleId);
 
       const roleData = await roleDoc.get();
       const role = RoleSchema.parse(roleData.data());
@@ -994,7 +882,7 @@ const settingsRouter = createTRPCRouter({
 
       if (!input.projectId) return ownerRole;
 
-      const userRef = getProjectUserRef(input.projectId, userId, ctx.firestore);
+      const userRef = getProjectUserRef(ctx.firestore, input.projectId, userId);
       const userDoc = await userRef.get();
 
       if (!userDoc.exists) {
@@ -1015,9 +903,9 @@ const settingsRouter = createTRPCRouter({
 
       // Get role
       const roleDoc = await getProjectRoleRef(
+        ctx.firestore,
         input.projectId,
         userData.roleId as string,
-        ctx.firestore,
       ).get();
       if (!roleDoc.exists) {
         throw new Error("Role not found");
@@ -1051,9 +939,7 @@ const settingsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      const todoStatus = await getTodoStatusTag(
-        getProjectSettingsRef(projectId, ctx.firestore),
-      );
+      const todoStatus = await getTodoStatusTag(ctx.firestore, projectId);
       return todoStatus;
     }),
   fetchScrumSettings: roleRequiredProcedure(
@@ -1066,8 +952,8 @@ const settingsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
       const settingsDocs = await getProjectSettingsRef(
-        projectId,
         ctx.firestore,
+        projectId,
       ).get();
       const data = settingsDocs.data();
       const scrumSettings = {
@@ -1094,7 +980,7 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, days, points } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const settingsRef = getProjectSettingsRef(ctx.firestore, projectId);
       await settingsRef.update({
         maximumSprintStoryPoints: points,
         sprintDuration: days,

@@ -19,7 +19,7 @@ export default function RequirementTypePicker({
   disabled,
 }: Props) {
   const { projectId } = useParams();
-  const { data: typeTags } = api.requirements.getRequirementTypeTags.useQuery({
+  const { data: typeTags } = api.requirements.getRequirementTypes.useQuery({
     projectId: projectId as string,
   });
 

@@ -71,12 +71,12 @@ export default function ItemTagTable({ itemTagType }: Props) {
       });
       break;
     case "ReqFocus":
-      tagsQueryResult = api.requirements.getRequirementFocusTags.useQuery({
+      tagsQueryResult = api.requirements.getRequirementFocuses.useQuery({
         projectId: projectId as string,
       });
       break;
     case "ReqType":
-      tagsQueryResult = api.requirements.getRequirementTypeTags.useQuery({
+      tagsQueryResult = api.requirements.getRequirementTypes.useQuery({
         projectId: projectId as string,
       });
       break;
@@ -95,12 +95,10 @@ export default function ItemTagTable({ itemTagType }: Props) {
       deleteTagMutation = api.settings.deleteBacklogTag.useMutation();
       break;
     case "ReqFocus":
-      deleteTagMutation =
-        api.requirements.deleteRequirementFocusTag.useMutation();
+      deleteTagMutation = api.requirements.deleteRequirementFocus.useMutation();
       break;
     case "ReqType":
-      deleteTagMutation =
-        api.requirements.deleteRequirementTypeTag.useMutation();
+      deleteTagMutation = api.requirements.deleteRequirementType.useMutation();
       break;
   }
 
@@ -146,10 +144,10 @@ export default function ItemTagTable({ itemTagType }: Props) {
           );
           break;
         case "ReqFocus":
-          await utils.requirements.getRequirementFocusTags.cancel({
+          await utils.requirements.getRequirementFocuses.cancel({
             projectId: projectId as string,
           });
-          utils.requirements.getRequirementFocusTags.setData(
+          utils.requirements.getRequirementFocuses.setData(
             { projectId: projectId as string },
             (oldData) => {
               if (!oldData) return [];
@@ -158,10 +156,10 @@ export default function ItemTagTable({ itemTagType }: Props) {
           );
           break;
         case "ReqType":
-          await utils.requirements.getRequirementTypeTags.cancel({
+          await utils.requirements.getRequirementTypes.cancel({
             projectId: projectId as string,
           });
-          utils.requirements.getRequirementTypeTags.setData(
+          utils.requirements.getRequirementTypes.setData(
             { projectId: projectId as string },
             (oldData) => {
               if (!oldData) return [];

@@ -5,7 +5,7 @@ import Popup from "~/app/_components/Popup";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
-import { generateRandomTagColor } from "~/utils/colorUtils";
+import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
@@ -172,14 +172,14 @@ export default function ItemTagDetailPopup({
       break;
     }
     case "ReqFocus": {
-      const query = api.requirements.getRequirementFocusTagById.useQuery({
+      const query = api.requirements.getRequirementFocus.useQuery({
         projectId: projectId as string,
-        tagId: tagId,
+        requirementFocusId: tagId,
       });
       const modifyMutation =
-        api.requirements.modifyRequirementFocusTag.useMutation();
+        api.requirements.createOrModifyRequirementFocus.useMutation();
       const deleteMutation =
-        api.requirements.deleteRequirementFocusTag.useMutation();
+        api.requirements.createOrModifyRequirementFocus.useMutation();
 
       tagQuery = {
         data: query.data as TagDetail | undefined,
@@ -203,14 +203,14 @@ export default function ItemTagDetailPopup({
       break;
     }
     case "ReqType": {
-      const query = api.requirements.getRequirementTypeTagById.useQuery({
+      const query = api.requirements.getRequirementType.useQuery({
         projectId: projectId as string,
-        tagId: tagId,
+        requirementTypeId: tagId,
       });
       const modifyMutation =
-        api.requirements.modifyRequirementTypeTag.useMutation();
+        api.requirements.createOrModifyRequirementType.useMutation();
       const deleteMutation =
-        api.requirements.deleteRequirementTypeTag.useMutation();
+        api.requirements.createOrModifyRequirementType.useMutation();
 
       tagQuery = {
         data: query.data as TagDetail | undefined,
@@ -311,12 +311,12 @@ export default function ItemTagDetailPopup({
         });
         break;
       case "ReqType":
-        existingTags = await utils.requirements.getRequirementTypeTags.fetch({
+        existingTags = await utils.requirements.getRequirementTypes.fetch({
           projectId: projectId as string,
         });
         break;
       case "ReqFocus":
-        existingTags = await utils.requirements.getRequirementFocusTags.fetch({
+        existingTags = await utils.requirements.getRequirementFocuses.fetch({
           projectId: projectId as string,
         });
         break;
@@ -371,9 +371,12 @@ export default function ItemTagDetailPopup({
         });
         break;
       case "ReqFocus":
-        await utils.requirements.getRequirementFocusTagById.cancel(params);
-        utils.requirements.getRequirementFocusTagById.setData(
-          params,
+        await utils.requirements.getRequirementFocus.cancel();
+        utils.requirements.getRequirementFocus.setData(
+          {
+            projectId: projectId as string,
+            requirementFocusId: tagId,
+          },
           (oldData) => {
             if (!oldData) return;
             return { ...oldData, ...updateTag };
@@ -381,9 +384,12 @@ export default function ItemTagDetailPopup({
         );
         break;
       case "ReqType":
-        await utils.requirements.getRequirementTypeTagById.cancel(params);
-        utils.requirements.getRequirementTypeTagById.setData(
-          params,
+        await utils.requirements.getRequirementType.cancel();
+        utils.requirements.getRequirementType.setData(
+          {
+            projectId: projectId as string,
+            requirementTypeId: tagId,
+          },
           (oldData) => {
             if (!oldData) return;
             return { ...oldData, ...updateTag };

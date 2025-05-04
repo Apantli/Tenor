@@ -1,7 +1,6 @@
 import { z } from "zod";
-import type { WithId, Tag, Size, StatusTag } from "~/lib/types/firebaseSchemas";
+import type { Size, StatusTag } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import type { Task } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   BacklogItemSchema,
@@ -13,149 +12,16 @@ import {
   UserStorySchema,
 } from "~/lib/types/zodFirebaseSchema";
 import type { TaskDetail } from "~/lib/types/detailSchemas";
-import { getProjectSettingsRef } from "./settings";
-import { timestampToDate } from "./sprints";
-import { askAiToGenerate } from "~/utils/aiGeneration";
-import { getProjectContextHeader } from "~/utils/aiContext";
-import { todoTagName } from "~/lib/defaultProjectValues";
-
-/**
- * @interface TaskCol
- * @description Represents a task in a table-friendly format for the UI
- * @property {string} id - The unique identifier of the task
- * @property {number} [scrumId] - The optional scrum ID of the task
- * @property {string} title - The title/name of the task
- * @property {Tag} status - The status tag of the task
- * @property {object} [assignee] - The optional user assigned to the task
- * @property {string} assignee.uid - The user ID of the assignee
- * @property {string} assignee.displayName - The display name of the assignee
- * @property {string} assignee.photoURL - The photo URL of the assignee
- */
-export interface TaskCol {
-  id: string;
-  scrumId?: number;
-  title: string;
-  status: StatusTag;
-  assignee?: {
-    uid: string;
-    displayName: string;
-    photoURL: string;
-  };
-}
-
-/**
- * @function getTasksFromProject
- * @description Retrieves all non-deleted tasks from a project, ordered by scrumId
- * @param {FirebaseFirestore.Firestore} dbAdmin - The Firestore database instance
- * @param {string} projectId - The ID of the project to retrieve tasks from
- * @returns {Promise<WithId<Task>[]>} An array of task objects with their IDs
- */
-export const getTasksFromProject = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-) => {
-  const taskCollectionRef = dbAdmin
-    .collection(`projects/${projectId}/tasks`)
-    .where("deleted", "==", false)
-    .orderBy("scrumId");
-  const snap = await taskCollectionRef.get();
-
-  const docs = snap.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...doc.data(),
-    };
-  });
-
-  const tasks: WithId<Task>[] = docs.filter(
-    (task): task is WithId<Task> => task !== null,
-  );
-
-  return tasks;
-};
-
-/**
- * @function getTasksFromItem
- * @description Retrieves all non-deleted tasks associated with a specific item (user story, issue, etc.)
- * @param {FirebaseFirestore.Firestore} dbAdmin - The Firestore database instance
- * @param {string} projectId - The ID of the project to retrieve tasks from
- * @param {string} itemId - The ID of the item (user story, issue) to retrieve tasks for
- * @returns {Promise<WithId<Task>[]>} An array of task objects with their IDs
- */
-export const getTasksFromItem = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-  itemId: string,
-) => {
-  const taskCollectionRef = dbAdmin
-    .collection(`projects/${projectId}/tasks`)
-    .where("deleted", "==", false)
-    .where("itemId", "==", itemId)
-    .orderBy("scrumId");
-  const snap = await taskCollectionRef.get();
-
-  const docs = snap.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...doc.data(),
-    };
-  });
-
-  const tasks: WithId<Task>[] = docs.filter(
-    (task): task is WithId<Task> => task !== null,
-  );
-
-  return tasks;
-};
-
-/**
- * @function getStatusTag
- * @description Retrieves a status tag from the settings collection based on its ID
- * @param {FirebaseFirestore.DocumentReference} settingsRef - Reference to the settings document
- * @param {string} statusId - The ID of the status tag to retrieve
- * @returns {Promise<Tag | undefined>} The status tag object or undefined if not found
- */
-export const getStatusTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-  statusId: string,
-) => {
-  if (statusId === undefined || statusId === "") {
-    return undefined;
-  }
-  const tag = await settingsRef.collection("statusTypes").doc(statusId).get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...StatusTagSchema.parse(tag.data()) } as StatusTag;
-};
-
-/**
- * @function getTodoStatusTag
- * @description Retrieves the "Todo" status tag from the settings collection
- * @param {FirebaseFirestore.DocumentReference} settingsRef - Reference to the settings document
- * @returns {Promise<Tag>} The Todo status tag object
- * @throws {TRPCError} If the Todo status tag is not found
- */
-export const getTodoStatusTag = async (
-  settingsRef: FirebaseFirestore.DocumentReference,
-) => {
-  const todoTag = await settingsRef
-    .collection("statusTypes")
-    .where("name", "==", todoTagName)
-    .limit(1)
-    .get();
-  console.log("Todo tag:", todoTag.docs);
-  if (todoTag.empty || todoTag.docs.length !== 1) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "To Do status tag not found",
-    });
-  }
-  return {
-    id: todoTag.docs[0]!.id,
-    ...StatusTagSchema.parse(todoTag.docs[0]!.data()),
-  };
-};
+import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import {
+  getProjectContextHeader,
+  getProjectSettingsRef,
+  getStatusTag,
+  getTasksFromItem,
+  getTodoStatusTag,
+} from "~/utils/helpers/shortcuts";
+import { TaskCol } from "~/lib/types/columnTypes";
+import { timestampToDate } from "~/utils/helpers/parsers";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -211,7 +77,7 @@ export const tasksRouter = createTRPCRouter({
       const { projectId, itemId } = input;
       const rawUs = await getTasksFromItem(ctx.firestore, projectId, itemId);
       // Transforming into table format
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const settingsRef = getProjectSettingsRef(ctx.firestore, projectId);
 
       const fixedData = await Promise.all(
         rawUs.map(async (task) => {
@@ -230,7 +96,7 @@ export const tasksRouter = createTRPCRouter({
             id: task.id,
             scrumId: task.scrumId,
             title: task.name,
-            status: await getStatusTag(settingsRef, task.statusId),
+            status: await getStatusTag(ctx.firestore, projectId, task.statusId),
             assignee: assignee,
           };
         }),
@@ -267,11 +133,15 @@ export const tasksRouter = createTRPCRouter({
       const taskData = TaskSchema.parse(task.data());
       // Fetch all the task information for the task in parallel
 
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+      const settingsRef = getProjectSettingsRef(ctx.firestore, input.projectId);
 
       let statusTag = undefined;
       if (taskData.statusId !== undefined) {
-        statusTag = await getStatusTag(settingsRef, taskData.statusId);
+        statusTag = await getStatusTag(
+          ctx.firestore,
+          projectId,
+          taskData.statusId,
+        );
       }
 
       let assignee = undefined;
@@ -621,7 +491,7 @@ ${await getBacklogTagsContext(itemData.tagIds)}\n\n`;
           : "";
 
       const completePrompt = `
-${await getProjectContextHeader(projectId, ctx.firestore)}
+${await getProjectContextHeader(ctx.firestore, projectId)}
 
 Given the following context, follow the instructions below to the best of your ability.
 
@@ -648,9 +518,7 @@ ${passedInPrompt}
         ), // This makes the AI only generate description, name, and size
       );
 
-      const todoTag = await getTodoStatusTag(
-        getProjectSettingsRef(projectId, ctx.firestore),
-      );
+      const todoTag = await getTodoStatusTag(ctx.firestore, projectId);
 
       return generatedTasks.map((task) => ({
         ...task,

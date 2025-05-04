@@ -1,6 +1,6 @@
 import { storageAdmin } from "~/utils/firebaseAdmin";
 import { env } from "~/env";
-import { base64ToBuffer } from "~/utils/base64";
+import { base64ToBuffer } from "~/utils/helpers/base64";
 
 export const uploadBase64File = async (
   uploadPath: string,

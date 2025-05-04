@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { ProjectEpics } from "~/app/_components/sections/ProjectEpics";
-import UserStoryList from "~/app/_components/sections/UserStoryList";
+import UserStoryTable from "~/app/_components/sections/UserStoryTable";
 
 export default function ProjectUserStories() {
   const { projectId } = useParams();
@@ -11,7 +11,7 @@ export default function ProjectUserStories() {
       <div className="shrink-0 basis-[407px] border-r-2 pr-5 pt-0">
         <ProjectEpics projectId={projectId as string} />
       </div>
-      <UserStoryList />
+      <UserStoryTable />
     </div>
   );
 }

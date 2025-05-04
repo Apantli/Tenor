@@ -30,7 +30,7 @@ import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import { acceptableTagColors } from "~/utils/colorUtils";
+import { acceptableTagColors } from "~/utils/helpers/colorUtils";
 import Dropdown from "~/app/_components/Dropdown";
 
 // This file is to showcase how to use the components available in Tenor

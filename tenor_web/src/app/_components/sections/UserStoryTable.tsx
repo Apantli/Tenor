@@ -7,10 +7,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
-import type {
-  userStoriesRouter,
-  UserStoryCol,
-} from "~/server/api/routers/userStories";
+import type { userStoriesRouter } from "~/server/api/routers/userStories";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../Popup";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
@@ -42,10 +39,11 @@ import {
   UserStoryDetailWithTasks,
 } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
+import { UserStoryCol } from "~/lib/types/columnTypes";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
-export default function UserStoryList() {
+export default function UserStoryTable() {
   // Hooks
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
@@ -72,7 +70,7 @@ export default function UserStoryList() {
     data: userStories,
     isLoading: isLoadingUS,
     refetch: refetchUS,
-  } = api.userStories.getUserStoriesTableFriendly.useQuery({
+  } = api.userStories.getUserStoryTable.useQuery({
     projectId: projectId as string,
   });
   const { mutateAsync: updateUserStoryTags } =
@@ -91,7 +89,7 @@ export default function UserStoryList() {
   const filteredData = (userStories ?? []).filter((userStory) => {
     const lowerSearchValue = searchValue.toLowerCase();
     return (
-      userStory.title.toLowerCase().includes(lowerSearchValue) ||
+      userStory.name.toLowerCase().includes(lowerSearchValue) ||
       formatUserStoryScrumId(userStory.scrumId!).includes(lowerSearchValue)
     );
   });
@@ -141,17 +139,17 @@ export default function UserStoryList() {
         acceptedIds.includes(ghost.id),
       );
       // Use optimistic update to update the user stories table
-      await utils.userStories.getUserStoriesTableFriendly.cancel({
+      await utils.userStories.getUserStoryTable.cancel({
         projectId: projectId as string,
       });
-      utils.userStories.getUserStoriesTableFriendly.setData(
+      utils.userStories.getUserStoryTable.setData(
         { projectId: projectId as string },
         userStoryData.concat(acceptedRows ?? []),
       );
 
       // Add the user stories to the database
       for (const userStory of accepted.reverse()) {
-        const { userStoryId } = await createUserStory({
+        const { id: userStoryId } = await createUserStory({
           projectId: projectId as string,
           userStoryData: {
             name: userStory.name,
@@ -262,7 +260,7 @@ export default function UserStoryList() {
         },
         hiddenOnGhost: true,
       },
-      title: {
+      name: {
         label: "Title",
         width: 220,
         sortable: true,
@@ -282,7 +280,7 @@ export default function UserStoryList() {
               }}
               disabled={!isGhost && row.scrumId === undefined}
             >
-              {row.title}
+              {row.name}
             </button>
           );
         },
@@ -331,11 +329,11 @@ export default function UserStoryList() {
             const newData = [...userStoryData, userStoryRow];
 
             // Uses optimistic update to update the priority of the user story
-            await utils.userStories.getUserStoriesTableFriendly.cancel({
+            await utils.userStories.getUserStoryTable.cancel({
               projectId: projectId as string,
             });
 
-            utils.userStories.getUserStoriesTableFriendly.setData(
+            utils.userStories.getUserStoryTable.setData(
               { projectId: projectId as string },
               newData,
             );
@@ -416,10 +414,10 @@ export default function UserStoryList() {
             const newData = [...userStoryData, userStoryRow];
 
             // Uses optimistic update to update the size of the user story
-            await utils.userStories.getUserStoriesTableFriendly.cancel({
+            await utils.userStories.getUserStoryTable.cancel({
               projectId: projectId as string,
             });
-            utils.userStories.getUserStoriesTableFriendly.setData(
+            utils.userStories.getUserStoryTable.setData(
               { projectId: projectId as string },
               newData,
             );
@@ -512,10 +510,10 @@ export default function UserStoryList() {
       );
 
       // Uses optimistic update to update the size of the user story
-      await utils.userStories.getUserStoriesTableFriendly.cancel({
+      await utils.userStories.getUserStoryTable.cancel({
         projectId: projectId as string,
       });
-      utils.userStories.getUserStoriesTableFriendly.setData(
+      utils.userStories.getUserStoryTable.setData(
         { projectId: projectId as string },
         newData,
       );
@@ -583,7 +581,7 @@ export default function UserStoryList() {
     const tableData = generatedData.map((data, i) => ({
       id: i.toString(),
       scrumId: undefined,
-      title: data.name,
+      name: data.name,
       epicScrumId: data.epic?.scrumId,
       priority: data.priority,
       size: data.size ?? "M",

@@ -2,618 +2,203 @@ import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
-import { getPriorityTag, getProjectSettingsRef } from "./settings";
 import { FieldPath } from "firebase-admin/firestore";
+import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import {
   collectPriorityTagContext,
   collectTagContext,
+  getPriority,
   getProjectContextHeader,
-} from "~/utils/aiContext";
-import { askAiToGenerate } from "~/utils/aiGeneration";
-import { generateRandomTagColor } from "~/utils/colorUtils";
-
-/**
- * @interface RequirementCol
- * @description Represents a requirement in a table-friendly format for the UI
- * @property {string} id - The unique identifier of the requirement
- * @property {string} [name] - The optional name of the requirement
- * @property {string} description - The description of the requirement
- * @property {Tag} priorityId - The priority tag of the requirement
- * @property {Tag} requirementTypeId - The requirement type tag
- * @property {Tag} requirementFocusId - The requirement focus tag
- * @property {number} scrumId - The scrum ID of the requirement
- */
-export interface RequirementCol {
-  id: string;
-  name?: string;
-  description: string;
-  priorityId: Tag;
-  requirementTypeId: Tag;
-  requirementFocusId: Tag;
-  scrumId?: number;
-}
-
-/**
- * @function getRequirementsFromProject
- * @description Retrieves all non-deleted requirements from a project, ordered by scrumId
- * @param {FirebaseFirestore.Firestore} dbAdmin - The Firestore database instance
- * @param {string} projectId - The ID of the project to retrieve requirements from
- * @returns {Promise<WithId<Requirement>[]>} An array of requirement objects with their IDs
- */
-const getRequirementsFromProject = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-) => {
-  const requirementsRef = dbAdmin
-    .collection(`projects/${projectId}/requirements`)
-    .orderBy("scrumId", "asc");
-  const requirementsSnapshot = await requirementsRef.get();
-
-  console.log("Requirements snapshot:", requirementsSnapshot.docs);
-
-  const requirements: WithId<Requirement>[] = [];
-  requirementsSnapshot.forEach((doc) => {
-    const data = doc.data() as Requirement;
-    if (data.deleted !== true) {
-      requirements.push({ id: doc.id, ...data });
-    }
-  });
-  return requirements;
-};
-
-/**
- * @function createRequirementsTableData
- * @description Transforms requirement data into a table-friendly format with all necessary tag information
- * @param {WithId<Requirement>[]} data - The raw requirement data
- * @param {string} projectId - The ID of the project
- * @param {FirebaseFirestore.Firestore} dbAdmin - The Firestore database instance
- * @returns {Promise<{allTags: Tag[], fixedData: RequirementCol[], allRequirementTypeTags: Tag[], allRequirementFocusTags: Tag[]}>}
- *         Object containing the processed data and all tag collections
- */
-const createRequirementsTableData = async (
-  data: WithId<Requirement>[],
-  projectId: string,
-  dbAdmin: FirebaseFirestore.Firestore,
-) => {
-  if (data.length === 0) {
-    return {
-      allTags: [],
-      fixedData: [],
-      allRequirementTypeTags: [],
-      allRequirementFocusTags: [],
-    };
-  }
-
-  // Get all the unique requirementFocusId, requirementTypeIds and priorityIds from the requirements
-  const uniqueRequirementTypeIds = Array.from(
-    new Set(data.map((req) => req.requirementTypeId).filter(Boolean)),
-  );
-
-  const uniquePriorityIds = Array.from(
-    new Set(data.map((req) => req.priorityId).filter(Boolean)),
-  );
-
-  const uniqueRequirementFocusIds = Array.from(
-    new Set(data.map((req) => req.requirementFocusId).filter(Boolean)),
-  );
-
-  // Get the project settings reference
-  const settingsRef = getProjectSettingsRef(projectId, dbAdmin);
-
-  // Get all the tags from the collection "priorityTypes"
-  const allTagsSnapshot = await settingsRef.collection("priorityTypes").get();
-  const allTags: Tag[] = allTagsSnapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...(doc.data() as Tag),
-  }));
-
-  // Get only the tags assign to the requirements
-  const tagsData = await Promise.all(
-    uniquePriorityIds.map(async (tagId) => {
-      const tagSnap = await settingsRef
-        .collection("priorityTypes")
-        .doc(tagId)
-        .get();
-      if (!tagSnap.exists) return null;
-      return { id: tagId, ...TagSchema.parse(tagSnap.data()) };
-    }),
-  );
-  console.log(tagsData);
-
-  // Get all the tags from the collection "requirementTypeTags"
-  const allRequirementTypeTagsSnapshot = await settingsRef
-    .collection("requirementTypes")
-    .get();
-  const allRequirementTypeTags: Tag[] = allRequirementTypeTagsSnapshot.docs.map(
-    (doc) => ({
-      id: doc.id,
-      ...(doc.data() as Tag),
-    }),
-  );
-
-  // Get only the tags assign to the requirements
-  const requirementTypeTagsData = await Promise.all(
-    uniqueRequirementTypeIds.map(async (tagId) => {
-      const tagSnap = await settingsRef
-        .collection("requirementTypes")
-        .doc(tagId)
-        .get();
-      if (!tagSnap.exists) return null;
-      return { id: tagId, ...TagSchema.parse(tagSnap.data()) };
-    }),
-  );
-  console.log(requirementTypeTagsData);
-
-  // Get all the tags from the collection "requirementFocusTags"
-  const allRequirementFocusTagsSnapshot = await settingsRef
-    .collection("requirementFocus")
-    .get();
-  const allRequirementFocusTags: Tag[] =
-    allRequirementFocusTagsSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...(doc.data() as Tag),
-    }));
-
-  // Get only the tags assign to the requirements
-  const requirementFocusTagsData = await Promise.all(
-    uniqueRequirementFocusIds.map(async (tagId) => {
-      const tagSnap = await settingsRef
-        .collection("requirementFocus")
-        .doc(tagId)
-        .get();
-      if (!tagSnap.exists) return null;
-      return { id: tagId, ...TagSchema.parse(tagSnap.data()) };
-    }),
-  );
-  console.log(requirementFocusTagsData);
-
-  // Map the tags to their ids
-  const tagMap = new Map(
-    tagsData
-      .filter((tag): tag is Tag & { id: string } => tag !== null)
-      .map((tag) => [tag.id, tag]),
-  );
-
-  const reqTypeTagMap = new Map(
-    requirementTypeTagsData
-      .filter((tag): tag is Tag & { id: string } => tag !== null)
-      .map((tag) => [tag.id, tag]),
-  );
-
-  const reqFocusTagMap = new Map(
-    requirementFocusTagsData
-      .filter((tag): tag is Tag & { id: string } => tag !== null)
-      .map((tag) => [tag.id, tag]),
-  );
-
-  const fixedData = data.map((requirement) => ({
-    id: requirement.id,
-    name: requirement.name,
-    description: requirement.description,
-    priorityId: tagMap.get(requirement.priorityId ?? "") ?? {
-      id: "unknown",
-      name: "Unknown",
-      color: "#CCCCCC",
-      deleted: false,
-    },
-    requirementTypeId: reqTypeTagMap.get(
-      requirement.requirementTypeId ?? "",
-    ) ?? {
-      id: "unknown",
-      name: "Unknown",
-      color: "#CCCCCC",
-      deleted: false,
-    },
-    requirementFocusId: reqFocusTagMap.get(
-      requirement.requirementFocusId ?? "",
-    ) ?? {
-      id: "unknown",
-      name: "Unknown",
-      color: "#CCCCCC",
-      deleted: false,
-    },
-    size: requirement.size,
-    scrumId: requirement.scrumId,
-  })) as RequirementCol[];
-
-  return {
-    allTags,
-    fixedData,
-    allRequirementTypeTags,
-    allRequirementFocusTags,
-  };
-};
+  getProjectSettingsRef,
+  getRequirement,
+  getRequirementFocus,
+  getRequirementFocuses,
+  getRequirementFocusesRef,
+  getRequirementFocusRef,
+  getRequirementNewId,
+  getRequirementRef,
+  getRequirements,
+  getRequirementsRef,
+  getRequirementTable,
+  getRequirementType,
+  getRequirementTypeRef,
+  getRequirementTypes,
+  getRequirementTypesRef,
+} from "~/utils/helpers/shortcuts";
+import { backlogPermissions, tagPermissions } from "~/lib/permission";
+import { get } from "node_modules/cypress/types/lodash";
 
 export const requirementsRouter = createTRPCRouter({
-  /**
-   * @procedure getRequirementTypeTags
-   * @description Retrieves all non-deleted requirement type tags for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of requirement type tags
-   */
-  getRequirementTypeTags: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "read",
-  )
+  getRequirementTypes: roleRequiredProcedure(tagPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
-
-      const tagsSnapshot = await settingsRef
-        .collection("requirementTypes")
-        .where("deleted", "==", false)
-        .get();
-      const tags: Tag[] = tagsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Tag),
-      }));
-      return tags;
+      const { projectId } = input;
+      return await getRequirementTypes(ctx.firestore, projectId);
     }),
 
-  getRequirementTypeTagById: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+  getRequirementType: roleRequiredProcedure(tagPermissions, "read")
+    .input(z.object({ projectId: z.string(), requirementTypeId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
-      const tagDoc = await settingsRef
-        .collection("requirementTypes")
-        .doc(input.tagId)
-        .get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
-    }),
-
-  createRequirementTypeTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "write",
-  )
-    .input(z.object({ projectId: z.string(), tag: TagSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tag } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const newTag = await settingsRef.collection("requirementTypes").add(tag);
-      return { id: newTag.id };
-    }),
-
-  modifyRequirementTypeTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "write",
-  )
-    .input(
-      z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tagId, tag } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
-      const tagDoc = await tagRef.get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      await tagRef.update(tag);
-      return { id: tagId };
-    }),
-
-  deleteRequirementTypeTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "write",
-  )
-    .input(z.object({ projectId: z.string(), tagId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tagId } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
-      const tagDoc = await tagRef.get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      await tagRef.update({ deleted: true });
-      return { id: tagId };
-    }),
-
-  /**
-   * @procedure getRequirementFocusTags
-   * @description Retrieves all non-deleted requirement focus tags for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of requirement focus tags
-   */
-  getRequirementFocusTags: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
-      const tagsSnapshot = await settingsRef
-        .collection("requirementFocus")
-        .where("deleted", "==", false)
-        .get();
-      const tags: Tag[] = tagsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Tag),
-      }));
-      return tags;
-    }),
-
-  getRequirementFocusTagById: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string(), tagId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
-      const tagDoc = await settingsRef
-        .collection("requirementFocus")
-        .doc(input.tagId)
-        .get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
-    }),
-
-  createRequirementFocusTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "write",
-  )
-    .input(z.object({ projectId: z.string(), tag: TagSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tag } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const newTag = await settingsRef.collection("requirementFocus").add(tag);
-      return { id: newTag.id };
-    }),
-
-  modifyRequirementFocusTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "write",
-  )
-    .input(
-      z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tagId, tag } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
-      const tagDoc = await tagRef.get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      await tagRef.update(tag);
-      return { id: tagId };
-    }),
-
-  deleteRequirementFocusTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "write",
-  )
-    .input(z.object({ projectId: z.string(), tagId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tagId } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
-      const tagDoc = await tagRef.get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      await tagRef.update({ deleted: true });
-      return { id: tagId };
-    }),
-
-  /**
-   * @procedure getRequirementsTableFriendly
-   * @description Gets requirements for a project in a table-friendly format
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {object} Object containing formatted requirement data and all tag collections
-   * @returns {RequirementCol[]} returns.fixedData - The requirements in a table-friendly format
-   * @returns {Tag[]} returns.allTags - All priority tags
-   * @returns {Tag[]} returns.allRequirementTypeTags - All requirement type tags
-   * @returns {Tag[]} returns.allRequirementFocusTags - All requirement focus tags
-   */
-  getRequirementsTableFriendly: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const rawRequirements = await getRequirementsFromProject(
+      const { projectId, requirementTypeId } = input;
+      return await getRequirementType(
         ctx.firestore,
-        input.projectId,
+        projectId,
+        requirementTypeId,
       );
-      const {
-        fixedData,
-        allTags,
-        allRequirementTypeTags,
-        allRequirementFocusTags,
-      } = await createRequirementsTableData(
-        rawRequirements,
-        input.projectId,
-        ctx.firestore,
-      );
-      return {
-        fixedData,
-        allTags,
-        allRequirementTypeTags,
-        allRequirementFocusTags,
-      };
     }),
 
-  /**
-   * @procedure getRequirement
-   * @description Gets a specific requirement by ID
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.requirementId - The ID of the requirement to retrieve
-   * @returns {WithId<Requirement>} The requirement with its ID
-   * @throws {Error} If the requirement is not found
-   */
-  getRequirement: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string(), requirementId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const requirement = (
-        await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("requirements")
-          .doc(input.requirementId)
-          .get()
-      ).data();
-      if (!requirement) {
-        throw new Error("Requirement not found");
-      }
-      return {
-        id: input.requirementId,
-        ...RequirementSchema.parse(requirement),
-      };
-    }),
-
-  /**
-   * @procedure createOrModifyRequirement
-   * @description Creates a new requirement or updates an existing one
-   * @input {Requirement & {projectId: string}} input - The requirement data with project ID
-   * @returns {string} Success message
-   * @throws {Error} If the project is not found or the requirement to update is not found
-   */
-  createOrModifyRequirement: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
-  )
-    .input(RequirementSchema.extend({ projectId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const projectCount = (
-        await ctx.firestore
-          .collection("projects")
-          .where(FieldPath.documentId(), "==", input.projectId)
-          .count()
-          .get()
-      ).data().count;
-
-      if (projectCount === 0) {
-        throw new Error("Project not found");
-      }
-
-      const requirementsRef = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("requirements");
-
-      if (input.scrumId !== -1) {
-        const requirementDocs = await requirementsRef
-          .where("scrumId", "==", input.scrumId)
-          .get();
-
-        if (requirementDocs.empty) {
-          throw new Error("Requirement not found");
-        }
-
-        const requirementDoc = requirementDocs.docs[0];
-        await requirementDoc?.ref.update(input);
-        return "Requirement updated successfully";
-      } else {
-        const existingRequirementCount = (
-          await requirementsRef.count().get()
-        ).data().count;
-        input.scrumId = existingRequirementCount + 1;
-        await requirementsRef.add(input);
-        return "Requirement created successfully";
-      }
-    }),
-
-  /**
-   * @procedure deleteRequirement
-   * @description Marks a requirement as deleted (soft delete)
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.requirementId - The ID of the requirement to delete
-   * @returns {object} Object with success status
-   * @throws {Error} If the requirement is not found
-   */
-  deleteRequirement: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
-  )
+  createOrModifyRequirementType: roleRequiredProcedure(tagPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
-        requirementId: z.string(),
+        requirementTypeId: z.string().optional(),
+        tagData: TagSchema,
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const requirementsRef = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("requirements")
-        .doc(input.requirementId);
+      const { projectId, requirementTypeId, tagData: requirementType } = input;
 
-      const requirementDoc = await requirementsRef.get();
-      if (!requirementDoc.exists) {
-        throw new Error("Requirement not found");
+      if (requirementTypeId) {
+        const requirementTypeDoc = await getRequirementTypeRef(
+          ctx.firestore,
+          projectId,
+          requirementTypeId,
+        ).get();
+        await requirementTypeDoc?.ref.update(requirementType);
+        return { id: requirementTypeId, ...requirementType };
+      } else {
+        const addedDoc = await getRequirementTypesRef(
+          ctx.firestore,
+          projectId,
+        ).add(requirementType);
+        return { id: addedDoc.id, ...requirementType };
       }
-
-      await requirementsRef.update({ deleted: true });
-      return { success: true };
     }),
-  /**
-   * @procedure generateRequirements
-   * @description Generates requirements using AI based on existing requirements and project context
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {number} input.amount - The number of requirements to generate
-   * @input {string} input.prompt - Additional prompt for the AI
-   * @returns {Requirement[]} An array of generated requirements
-   * @throws {Error} If the project is not found
-   * @throws {Error} If the AI generation fails
-   * @throws {Error} If the AI generation returns an empty array
-   * @throws {Error} If the AI generation returns an invalid response
-   */
+
+  deleteRequirementType: roleRequiredProcedure(tagPermissions, "write")
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId: requirementTypeId } = input;
+      const requirementTypeDoc = await getRequirementTypeRef(
+        ctx.firestore,
+        projectId,
+        requirementTypeId,
+      ).get();
+      await requirementTypeDoc?.ref.update({ deleted: true });
+    }),
+
+  getRequirementFocuses: roleRequiredProcedure(tagPermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getRequirementFocuses(ctx.firestore, projectId);
+    }),
+  getRequirementFocus: roleRequiredProcedure(tagPermissions, "read")
+    .input(z.object({ projectId: z.string(), requirementFocusId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, requirementFocusId } = input;
+      return await getRequirementFocus(
+        ctx.firestore,
+        projectId,
+        requirementFocusId,
+      );
+    }),
+  createOrModifyRequirementFocus: roleRequiredProcedure(tagPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        requirementFocusId: z.string().optional(),
+        tagData: TagSchema,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const {
+        projectId,
+        requirementFocusId,
+        tagData: requirementFocus,
+      } = input;
+      if (requirementFocusId) {
+        const requirementFocusDoc = await getRequirementFocusRef(
+          ctx.firestore,
+          projectId,
+          requirementFocusId,
+        ).get();
+        await requirementFocusDoc?.ref.update(requirementFocus);
+        return { id: requirementFocusId, ...requirementFocus } as WithId<Tag>;
+      } else {
+        const addedDoc = await getRequirementFocusesRef(
+          ctx.firestore,
+          projectId,
+        ).add(requirementFocus);
+        return { id: addedDoc.id, ...requirementFocus } as WithId<Tag>;
+      }
+    }),
+
+  deleteRequirementFocus: roleRequiredProcedure(tagPermissions, "write")
+    .input(z.object({ projectId: z.string(), tagId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, tagId: requirementFocusId } = input;
+      const requirementFocusDoc = await getRequirementFocusRef(
+        ctx.firestore,
+        projectId,
+        requirementFocusId,
+      ).get();
+      await requirementFocusDoc?.ref.update({ deleted: true });
+    }),
+
+  getRequirementTable: roleRequiredProcedure(backlogPermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await getRequirementTable(ctx.firestore, input.projectId);
+    }),
+
+  getRequirement: roleRequiredProcedure(backlogPermissions, "read")
+    .input(z.object({ projectId: z.string(), requirementId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, requirementId } = input;
+      return await getRequirement(ctx.firestore, projectId, requirementId);
+    }),
+
+  createOrModifyRequirement: roleRequiredProcedure(backlogPermissions, "write")
+    .input(
+      z.object({
+        requirementData: RequirementSchema,
+        projectId: z.string(),
+        requirementId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, requirementId, requirementData } = input;
+
+      if (requirementId) {
+        const requirementDoc = await getRequirementRef(
+          ctx.firestore,
+          projectId,
+          requirementId,
+        ).get();
+        await requirementDoc?.ref.update(requirementData);
+      } else {
+        requirementData.scrumId = await getRequirementNewId(
+          ctx.firestore,
+          projectId,
+        );
+        await getRequirementsRef(ctx.firestore, projectId).add(requirementData);
+      }
+    }),
+
+  deleteRequirement: roleRequiredProcedure(backlogPermissions, "write")
+    .input(z.object({ projectId: z.string(), requirementId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, requirementId } = input;
+      const requirementDoc = await getRequirementRef(
+        ctx.firestore,
+        projectId,
+        requirementId,
+      ).get();
+      await requirementDoc?.ref.update({ deleted: true });
+    }),
+
   generateRequirements: roleRequiredProcedure(
     {
       flags: ["backlog"],
@@ -630,61 +215,31 @@ export const requirementsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, amount, prompt } = input;
 
-      const requirements = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("requirements")
-        .where("deleted", "==", false)
-        .get();
-      const requirementsData = requirements.docs.map((doc) => ({
-        id: doc.id,
-        ...RequirementSchema.parse(doc.data()),
-      }));
-
-      // Gather all the focus tags for the ai context
-      const allRequirementFocusTags = await getProjectSettingsRef(
-        projectId,
+      const requirements = await getRequirementTable(ctx.firestore, projectId);
+      const requirementFocuses = await getRequirementFocuses(
         ctx.firestore,
-      )
-        .collection("requirementFocus")
-        .where("deleted", "==", false)
-        .get();
-      const allRequirementFocusTagsData: Tag[] =
-        allRequirementFocusTags.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Tag),
-        }));
-
-      const getFocusName = (focusId: string) => {
-        const focusTag = allRequirementFocusTagsData.find(
-          (tag) => tag.id === focusId,
-        );
-        return focusTag ? focusTag.name : "No focus";
-      };
+        projectId,
+      );
+      const requirementTypes = await getRequirementTypes(
+        ctx.firestore,
+        projectId,
+      );
 
       let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
-      requirementsData.forEach((requirement) => {
-        requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priorityId}\n- typeId: ${requirement.requirementTypeId}\n- focus: ${getFocusName(requirement.requirementFocusId)}\n\n`;
+      requirements.forEach((requirement) => {
+        requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priority}\n- typeId: ${requirement.requirementType}\n- focus: ${requirement.requirementFocus}\n\n`;
       });
 
-      const priorityTagContext = await collectPriorityTagContext(
-        projectId,
-        ctx.firestore,
-      );
-
-      const requirementTypeTagContext = await collectTagContext(
-        "REQUIREMENT TYPES",
-        "requirementTypes",
-        projectId,
-        ctx.firestore,
-      );
+      // const priorityTagContext = await collectPriorityTagContext(
+      //   ctx.firestore,
+      //   projectId,
+      // );
+      const priorities: WithId<Tag>[] = [];
 
       // Didn't include more information for the context so that the AI can generate it's own focus types (because initially there are none)
       const requirementFocusContext =
         "# FOCUS TYPES AVAILABLE\n\n" +
-        allRequirementFocusTagsData
-          .map((focus) => `- ${focus.name}`)
-          .join("\n") +
+        requirementFocuses.map((focus) => `- ${focus.name}`).join("\n") +
         "\n\n";
 
       const passedInPrompt =
@@ -693,13 +248,13 @@ export const requirementsRouter = createTRPCRouter({
           : "";
 
       const completePrompt = `
-${await getProjectContextHeader(projectId, ctx.firestore)}
+${await getProjectContextHeader(ctx.firestore, projectId)}
 
 Given the following context, follow the instructions below to the best of your ability.
 
 ${requirementsContext}
-${priorityTagContext}
-${requirementTypeTagContext}
+${priorities}
+${requirementTypes}
 ${requirementFocusContext}
 
 ${passedInPrompt}
@@ -718,16 +273,14 @@ Generate ${amount} requirements for the mentioned software project. Do NOT inclu
         ),
       );
 
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const settingsRef = getProjectSettingsRef(ctx.firestore, projectId);
 
       // Create the generated focus tags if they don't exist
       for (const req of generatedRequirements) {
         const focusName = req.requirementFocus;
         if (!focusName) continue;
 
-        if (
-          !allRequirementFocusTagsData.find((tag) => tag.name === focusName)
-        ) {
+        if (!requirementFocuses.find((tag) => tag.name === focusName)) {
           const newFocusTag = {
             name: req.requirementFocus,
             color: generateRandomTagColor(),
@@ -738,7 +291,7 @@ Generate ${amount} requirements for the mentioned software project. Do NOT inclu
             .add(newFocusTag);
 
           // Prevent the same focus tag from being added multiple times
-          allRequirementFocusTagsData.push({
+          requirementFocuses.push({
             id: addedFocusTag.id,
             ...newFocusTag,
           });
@@ -749,7 +302,11 @@ Generate ${amount} requirements for the mentioned software project. Do NOT inclu
         generatedRequirements.map(async (req) => {
           let priority = undefined;
           if (req.priorityId && req.priorityId !== "") {
-            priority = await getPriorityTag(settingsRef, req.priorityId);
+            priority = await getPriority(
+              ctx.firestore,
+              projectId,
+              req.priorityId,
+            );
           }
 
           let requirementType = undefined;
@@ -766,7 +323,7 @@ Generate ${amount} requirements for the mentioned software project. Do NOT inclu
 
           let requirementFocus = undefined;
           if (req.requirementFocus && req.requirementFocus !== "") {
-            requirementFocus = allRequirementFocusTagsData.find(
+            requirementFocus = requirementFocuses.find(
               (tag) => tag.name === req.requirementFocus,
             );
           }

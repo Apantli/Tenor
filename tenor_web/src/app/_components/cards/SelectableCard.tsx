@@ -2,7 +2,7 @@ import React, { useEffect, useRef, type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import InputCheckbox from "../inputs/InputCheckbox";
 import { useDraggable } from "@dnd-kit/react";
-import { accentColorByCardType } from "~/utils/colorUtils";
+import { accentColorByCardType } from "~/utils/helpers/colorUtils";
 
 interface Props {
   selected: boolean;

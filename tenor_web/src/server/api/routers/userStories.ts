@@ -1,20 +1,15 @@
 import { z } from "zod";
-import { zodToJsonSchema } from "zod-to-json-schema";
-import type { WithId, Tag, Size, StatusTag } from "~/lib/types/firebaseSchemas";
 import {
   createTRPCRouter,
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import type { UserStory } from "~/lib/types/firebaseSchemas";
 import { TRPCError } from "@trpc/server";
 import {
   EpicSchema,
-  ExistingEpicSchema,
   ExistingUserStorySchema,
   RequirementSchema,
   SprintSchema,
-  StatusTagSchema,
   TagSchema,
   TaskSchema,
   UserStorySchema,
@@ -23,181 +18,43 @@ import type {
   UserStoryDetail,
   UserStoryPreview,
 } from "~/lib/types/detailSchemas";
-import {
-  getBacklogTag,
-  getPriorityTag,
-  getProjectSettingsRef,
-} from "./settings";
-import { getEpic } from "./epics";
-import { getSprint } from "./sprints";
-import { env } from "~/env";
-import { askAiToGenerate } from "~/utils/aiGeneration";
+import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import { FieldValue } from "firebase-admin/firestore";
+import { UserStoryCol } from "~/lib/types/columnTypes";
 import {
   collectBacklogTagsContext,
   collectPriorityTagContext,
+  getBacklogTag,
+  getEpic,
+  getPriority,
   getProjectContextHeader,
-} from "~/utils/aiContext";
-import { FieldValue } from "firebase-admin/firestore";
-import { getStatusTag } from "./tasks";
-
-export interface UserStoryCol {
-  id: string;
-  scrumId?: number;
-  title: string;
-  epicScrumId?: number;
-  priority?: Tag;
-  size: Size;
-  sprintNumber?: number;
-  taskProgress: [number | undefined, number | undefined];
-}
-
-const getUserStoriesFromProject = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-) => {
-  const userStoryCollectionRef = dbAdmin
-    .collection(`projects/${projectId}/userStories`)
-    .where("deleted", "==", false)
-    .orderBy("scrumId", "desc");
-  const snap = await userStoryCollectionRef.get();
-
-  const docs = snap.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...doc.data(),
-    };
-  });
-
-  const userStories: WithId<UserStory>[] = docs.filter(
-    (userStory): userStory is WithId<UserStory> => userStory !== null,
-  );
-
-  return userStories;
-};
-const getStatusName = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-  statusId: string,
-) => {
-  if (!statusId) {
-    return undefined;
-  }
-  const settingsRef = getProjectSettingsRef(projectId, dbAdmin);
-  const tag = await settingsRef.collection("statusTypes").doc(statusId).get();
-  if (!tag.exists) {
-    return undefined;
-  }
-  return { id: tag.id, ...StatusTagSchema.parse(tag.data()) } as StatusTag;
-};
-
-const getTaskProgress = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-  itemId: string,
-) => {
-  const tasksRef = dbAdmin
-    .collection("projects")
-    .doc(projectId)
-    .collection("tasks");
-
-  const tasksSnapshot = await tasksRef
-    .where("deleted", "==", false)
-    .where("itemId", "==", itemId)
-    .get();
-
-  const totalTasks = tasksSnapshot.size;
-
-  const completedTasks = await Promise.all(
-    tasksSnapshot.docs.map(async (taskDoc) => {
-      const taskData = TaskSchema.parse(taskDoc.data());
-
-      if (!taskData.statusId) return false;
-
-      const statusTag = await getStatusName(
-        dbAdmin,
-        projectId,
-        taskData.statusId,
-      );
-      return statusTag?.marksTaskAsDone;
-    }),
-  ).then((results) => results.filter(Boolean).length);
-
-  return [completedTasks, totalTasks];
-};
+  getProjectSettingsRef,
+  getSprint,
+  getStatusTag,
+  getTaskProgress,
+  getUserStories,
+  getUserStoriesRef,
+  getUserStoryDetail,
+  getUserStoryNewId,
+  getUserStoryRef,
+  getUserStoryTable,
+} from "~/utils/helpers/shortcuts";
+import { backlogPermissions, tagPermissions } from "~/lib/permission";
+import { get } from "node_modules/cypress/types/lodash";
+import { UserStory, WithId } from "~/lib/types/firebaseSchemas";
 
 export const userStoriesRouter = createTRPCRouter({
-  getProjectUserStoriesOverview: roleRequiredProcedure(
-    {
-      flags: ["backlog", "issues"],
-      optimistic: true,
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const userStoriesSnapshot = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("userStories")
-        .select("scrumId", "name")
-        .where("deleted", "==", false)
-        .orderBy("scrumId")
-        .get();
-
-      const userStories = userStoriesSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...ExistingUserStorySchema.parse(doc.data()),
-      }));
-
-      return userStories;
-    }),
-
-  getUserStoriesTableFriendly: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-      optimistic: true,
-    },
-    "read",
-  )
+  getUserStories: roleRequiredProcedure(backlogPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      const rawUs = await getUserStoriesFromProject(ctx.firestore, projectId);
-
-      // Transforming into table format
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-
-      const fixedData = await Promise.all(
-        rawUs.map(async (userStory) => {
-          const sprint = await getSprint(
-            ctx.firestore,
-            projectId,
-            userStory.sprintId,
-          );
-          const epic = await getEpic(
-            ctx.firestore,
-            projectId,
-            userStory.epicId,
-          );
-          const taskProgress = await getTaskProgress(
-            ctx.firestore,
-            projectId,
-            userStory.id,
-          );
-          return {
-            id: userStory.id,
-            scrumId: userStory.scrumId,
-            title: userStory.name,
-            epicScrumId: epic?.scrumId,
-            priority: await getPriorityTag(settingsRef, userStory.priorityId),
-            size: userStory.size,
-            sprintNumber: sprint?.number,
-            taskProgress: taskProgress,
-          };
-        }),
-      );
-
-      return fixedData as UserStoryCol[];
+      return await getUserStories(ctx.firestore, projectId);
+    }),
+  getUserStoryTable: roleRequiredProcedure(backlogPermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getUserStoryTable(ctx.firestore, projectId);
     }),
 
   getUserStoryDetail: roleRequiredProcedure(
@@ -209,6 +66,11 @@ export const userStoriesRouter = createTRPCRouter({
   )
     .input(z.object({ userStoryId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
+      return await getUserStoryDetail(
+        ctx.firestore,
+        input.projectId,
+        input.userStoryId,
+      );
       // Get the necessary information to construct the UserStoryDetail
 
       const { projectId, userStoryId } = input;
@@ -250,33 +112,34 @@ export const userStoriesRouter = createTRPCRouter({
 
       let epicData = undefined;
       if (userStoryData.epicId !== "") {
-        const epic = await ctx.firestore
-          .collection("projects")
-          .doc(projectId)
-          .collection("epics")
-          .doc(userStoryData.epicId)
-          .get();
-        epicData = { ...EpicSchema.parse(epic.data()), id: epic.id };
+        epicData = await getEpic(
+          ctx.firestore,
+          projectId,
+          userStoryData.epicId,
+        );
       }
-
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
 
       let priorityTag = undefined;
       if (userStoryData.priorityId !== undefined) {
-        priorityTag = await getPriorityTag(
-          settingsRef,
-          userStoryData.priorityId,
+        priorityTag = await getPriority(
+          ctx.firestore,
+          projectId,
+          userStoryData.priorityId!,
         );
       }
 
       let statusTag = undefined;
       if (userStoryData.statusId !== undefined) {
-        statusTag = await getStatusTag(settingsRef, userStoryData.statusId);
+        statusTag = await getStatusTag(
+          ctx.firestore,
+          projectId,
+          userStoryData.statusId!,
+        );
       }
 
       const tags = await Promise.all(
         userStoryData.tagIds.map(async (tagId) => {
-          return await getBacklogTag(settingsRef, tagId);
+          return await getBacklogTag(ctx.firestore, projectId, tagId);
         }),
       );
 
@@ -349,43 +212,7 @@ export const userStoriesRouter = createTRPCRouter({
         sprint,
       } as UserStoryDetail;
     }),
-
-  getAllUserStoryPreviews: roleRequiredProcedure(
-    {
-      flags: ["backlog", "issues"],
-      optimistic: true,
-    },
-    "read",
-  )
-    .input(
-      z.object({
-        projectId: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const userStories = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("userStories")
-        .where("deleted", "==", false)
-        .get();
-      const userStoriesData = z
-        .array(UserStorySchema.extend({ id: z.string() }))
-        .parse(userStories.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
-
-      const userStoriesPreviews = userStoriesData.map((userStory) => ({
-        id: userStory.id,
-        scrumId: userStory.scrumId,
-        name: userStory.name,
-      }));
-      return userStoriesPreviews;
-    }),
-  createUserStory: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
-  )
+  createUserStory: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -394,55 +221,46 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       try {
-        const userStoryCount = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("userStories")
-          .count()
-          .get();
-        const userStory = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("userStories")
-          .add({
-            ...input.userStoryData,
-            scrumId: userStoryCount.data().count + 1,
-          });
+        const { projectId, userStoryData: userStoryDataRaw } = input;
+        const userStoryData = UserStorySchema.parse({
+          ...userStoryDataRaw,
+          scrumId: await getUserStoryNewId(ctx.firestore, projectId),
+        });
+        const userStory = await getUserStoriesRef(ctx.firestore, projectId).add(
+          userStoryData,
+        );
 
-        // Add dependency and requiredBy references
+        // Add dependency references
         await Promise.all(
           input.userStoryData.dependencyIds.map(async (dependencyId) => {
-            await ctx.firestore
-              .collection("projects")
-              .doc(input.projectId)
-              .collection("userStories")
-              .doc(dependencyId)
-              .update({ requiredByIds: FieldValue.arrayUnion(userStory.id) });
+            await getUserStoryRef(
+              ctx.firestore,
+              projectId,
+              dependencyId,
+            ).update({ requiredByIds: FieldValue.arrayUnion(userStory.id) });
           }),
         );
+        // Add requiredBy references
         await Promise.all(
           input.userStoryData.requiredByIds.map(async (requiredById) => {
-            await ctx.firestore
-              .collection("projects")
-              .doc(input.projectId)
-              .collection("userStories")
-              .doc(requiredById)
-              .update({ dependencyIds: FieldValue.arrayUnion(userStory.id) });
+            await getUserStoryRef(
+              ctx.firestore,
+              projectId,
+              requiredById,
+            ).update({ dependencyIds: FieldValue.arrayUnion(userStory.id) });
           }),
         );
 
-        return { success: true, userStoryId: userStory.id };
+        return {
+          id: userStory.id,
+          ...userStoryData,
+        } as WithId<UserStory>;
       } catch (err) {
         console.log("Error creating user story:", err);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
-  modifyUserStory: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
-  )
+  modifyUserStory: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -452,11 +270,11 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, userStoryId, userStoryData } = input;
-      const userStoryRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("userStories")
-        .doc(userStoryId);
+      const userStoryRef = getUserStoryRef(
+        ctx.firestore,
+        projectId,
+        userStoryId,
+      );
 
       const oldUserStoryData = UserStorySchema.parse(
         (await userStoryRef.get()).data(),
@@ -482,11 +300,11 @@ export const userStoriesRouter = createTRPCRouter({
         operation: "add" | "remove",
         field: "requiredByIds" | "dependencyIds",
       ) => {
-        const updateRef = ctx.firestore
-          .collection("projects")
-          .doc(projectId)
-          .collection("userStories")
-          .doc(userStoryId);
+        const updateRef = getUserStoryRef(
+          ctx.firestore,
+          projectId,
+          userStoryId,
+        );
         if (operation === "add") {
           return updateRef.update({
             [field]: FieldValue.arrayUnion(otherUserStoryId),
@@ -551,12 +369,7 @@ export const userStoriesRouter = createTRPCRouter({
         ],
       };
     }),
-  deleteUserStory: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
-  )
+  deleteUserStory: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -587,13 +400,7 @@ export const userStoriesRouter = createTRPCRouter({
 
       return { success: true };
     }),
-  modifyUserStoryTags: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-      optimistic: true,
-    },
-    "write",
-  )
+  modifyUserStoryTags: roleRequiredProcedure(tagPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -631,12 +438,7 @@ export const userStoriesRouter = createTRPCRouter({
       await userStoryRef.update(newUserStoryData);
       return { success: true };
     }),
-  generateUserStories: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
-  )
+  generateUserStories: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -675,10 +477,7 @@ export const userStoriesRouter = createTRPCRouter({
       });
 
       // Get the current user stories from the database (to avoid duplicates and provide context)
-      const userStories = await getUserStoriesFromProject(
-        ctx.firestore,
-        projectId,
-      );
+      const userStories = await getUserStories(ctx.firestore, projectId);
 
       let userStoryContext = "# EXISTING USER STORIES\n\n";
       userStories.forEach((userStory) => {
@@ -687,8 +486,8 @@ export const userStoriesRouter = createTRPCRouter({
       });
 
       const priorityContext = await collectPriorityTagContext(
-        projectId,
         ctx.firestore,
+        projectId,
       );
 
       const tagContext = await collectBacklogTagsContext(
@@ -696,7 +495,7 @@ export const userStoriesRouter = createTRPCRouter({
         ctx.firestore,
       );
 
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+      const settingsRef = getProjectSettingsRef(ctx.firestore, projectId);
 
       // FIXME: Missing project context (currently the fruit market is hardcoded)
 
@@ -706,7 +505,7 @@ export const userStoriesRouter = createTRPCRouter({
           : "";
 
       const completePrompt = `
-${await getProjectContextHeader(projectId, ctx.firestore)}
+${await getProjectContextHeader(ctx.firestore, projectId)}
 
 Given the following context, follow the instructions below to the best of your ability.
 
@@ -734,8 +533,9 @@ ${passedInPrompt}
             userStory.priorityId !== undefined &&
             userStory.priorityId !== ""
           ) {
-            const priorityTag = await getPriorityTag(
-              settingsRef,
+            const priorityTag = await getPriority(
+              ctx.firestore,
+              projectId,
               userStory.priorityId,
             );
             priority = priorityTag;
@@ -750,7 +550,7 @@ ${passedInPrompt}
               .doc(userStory.epicId)
               .get();
             if (epicTag.exists) {
-              const epicData = ExistingEpicSchema.parse(epicTag.data());
+              const epicData = EpicSchema.parse(epicTag.data());
               epic = { id: epicTag.id, ...epicData };
             }
           }
@@ -839,18 +639,5 @@ ${passedInPrompt}
       );
 
       return parsedData;
-    }),
-
-  getUserStoryCount: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const userStoryCount = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("userStories")
-        .where("deleted", "==", false)
-        .count()
-        .get();
-      return userStoryCount.data().count;
     }),
 });
