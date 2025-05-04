@@ -29,6 +29,7 @@ export default function DeleteButton({
       )}
       {...props}
       disabled={loading ?? ("disabled" in props && props.disabled)}
+      data-cy="delete-button"
     >
       <div className="flex gap-2">
         {!removeDeleteIcon && <DeleteIcon />}
