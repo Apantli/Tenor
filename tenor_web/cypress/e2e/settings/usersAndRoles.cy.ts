@@ -8,7 +8,7 @@ describe("Settings: Users and roles", () => {
 
   // Return to dashboard and select the project
   beforeEach(() => {
-    cy.get('img[alt="Tenor Logo"]').click();
+    cy.signIn("/");
     cy.fixture("testProjectInfo").then((data: ProjectInfo) => {
       cy.get('[data-cy="project-list"]').find("li").contains(data.name).click();
     });
@@ -25,8 +25,10 @@ describe("Settings: Users and roles", () => {
   });
 
   it("TC063: Attempt to delete scrum master", () => {
-    cy.get("li").contains("scrum").within(() => {
-      cy.get("button").click();
-    });
+    cy.contains("• • •").click();
+    cy.contains("Remove").click();
+    cy.contains("You cannot remove the owner of the project.").should(
+      "be.visible",
+    );
   });
 });
