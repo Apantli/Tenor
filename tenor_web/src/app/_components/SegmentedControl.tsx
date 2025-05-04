@@ -74,6 +74,7 @@ export function SegmentedControl({
         "relative flex rounded-lg bg-sprint-column-background p-1",
         className,
       )}
+      data-cy="segmented-control"
     >
       {/* Animated selector background */}
       <div

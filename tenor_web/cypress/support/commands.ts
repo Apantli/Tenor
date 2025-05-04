@@ -38,7 +38,7 @@
 
 import { initializeApp } from "firebase/app";
 import {
-  Auth,
+  type Auth,
   connectAuthEmulator,
   initializeAuth,
   indexedDBLocalPersistence,
@@ -116,3 +116,17 @@ Cypress.Commands.add(
     cy.visit(redirectPath);
   },
 );
+
+export interface ProjectInfo {
+  name: string;
+  description: string;
+}
+
+Cypress.Commands.add("createEmptyProject", () => {
+  cy.get(".mr-10 > .justify-between > .flex").click();
+  cy.fixture("testProjectInfo").then((data: ProjectInfo) => {
+    cy.get('[placeholder="What is your project called..."]').type(data.name);
+    cy.get(".header > .flex").click();
+    cy.contains(data.name).should("be.visible");
+  });
+});
