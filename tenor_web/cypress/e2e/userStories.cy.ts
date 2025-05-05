@@ -65,4 +65,21 @@ describe("User Stories", () => {
       });
     });
   });
+
+  it("TC018: Find User story", () => {
+      cy.fixture("TestUserStory").then((data: TestUserStory) => {
+          cy.get('[data-cy="primary-button"]').contains("+ New Story").click();
+          cy.get('[data-cy="popup"]').within(() => {
+            cy.get('[placeholder="Short summary of the story..."]').type(
+              "Non-important user story"
+            )
+            cy.get('[data-cy="primary-button"]').contains("Create story").click();
+          });
+          cy.wait(1000);
+          cy.get('[data-cy="popup-close-button"]').click();
+          cy.get('.pb-2 > :nth-child(1) > [data-cy="search-bar"]').type(data.title);
+          cy.contains(data.title).should("be.visible");
+      });
+    });
+
 });
