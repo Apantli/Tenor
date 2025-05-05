@@ -1,3 +1,23 @@
+/**
+ * Requirements Router - Tenor API Endpoints for Requirements Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing requirements in the Tenor application.
+ * It provides endpoints to create, read, update, delete, and generate software requirements.
+ * 
+ * The router includes procedures for:
+ * - Managing requirement type and focus tags
+ * - Creating and modifying requirements
+ * - Retrieving requirements in a table-friendly format
+ * - Generating new requirements using AI
+ * - Deleting requirements (soft delete)
+ *
+ * Requirements represent functional and non-functional specifications that define
+ * what the software system must do or how it must perform.
+ *
+ * @category API
+ */
+
 import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";

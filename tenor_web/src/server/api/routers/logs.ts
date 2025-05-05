@@ -1,3 +1,20 @@
+/**
+ * Logs Router - Tenor API Endpoints for User Emotion Logging
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing user emotion logs in the Tenor application.
+ * It provides endpoints to retrieve logs and to analyze and create new emotion log entries.
+ * 
+ * The router includes procedures for:
+ * - Retrieving logs associated with the current user
+ * - Analyzing user emotion and creating new log entries
+ *
+ * Emotion logging helps track user sentiment over time, which can be used for analytics
+ * and personalization features.
+ *
+ * @category API
+ */
+
 import { env } from "~/env";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";

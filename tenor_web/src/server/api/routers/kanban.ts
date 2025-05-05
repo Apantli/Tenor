@@ -1,3 +1,22 @@
+/**
+ * Kanban Router - Tenor API Endpoints for Kanban Board Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing Kanban boards in the Tenor application.
+ * It provides endpoints to retrieve and organize tasks and backlog items in a board layout.
+ * 
+ * The router includes procedures for:
+ * - Getting tasks formatted for Kanban board display
+ * - Getting backlog items (user stories and issues) for Kanban display
+ * - Creating new status lists (columns) for the Kanban board
+ * - Determining automatic status for items based on their tasks' statuses
+ *
+ * Kanban boards provide visual management of tasks and backlog items organized by status,
+ * allowing teams to visualize workflow and track progress.
+ *
+ * @category API
+ */
+
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";

@@ -1,3 +1,23 @@
+/**
+ * Tasks Router - Tenor API Endpoints for Task Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for task management in the Tenor application.
+ * It provides endpoints to create, read, update, delete, and generate tasks for projects and backlog items.
+ * 
+ * The router includes procedures for:
+ * - Creating and modifying tasks
+ * - Retrieving task details and table-friendly task data
+ * - Changing task status
+ * - Deleting tasks (soft delete)
+ * - Generating tasks using AI based on backlog items
+ * - Getting task counts
+ *
+ * Tasks are organized under projects and can be associated with user stories, issues, or other items.
+ *
+ * @category API
+ */
+
 import { z } from "zod";
 import type { WithId, Tag, Size, StatusTag } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";

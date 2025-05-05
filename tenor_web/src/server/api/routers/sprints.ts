@@ -1,3 +1,22 @@
+/**
+ * Sprints Router - Tenor API Endpoints for Sprint Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing sprints in the Tenor application.
+ * It provides endpoints to create, retrieve, and modify sprints and their associated backlog items.
+ * 
+ * The router includes procedures for:
+ * - Creating and modifying sprints with start/end dates and descriptions
+ * - Retrieving sprint details and overviews
+ * - Managing backlog items (user stories and issues) associated with sprints
+ * - Assigning and reassigning backlog items between sprints
+ *
+ * Sprints represent time-boxed iterations in the agile development process where 
+ * specific sets of tasks and user stories are worked on and completed.
+ *
+ * @category API
+ */
+
 import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import {

@@ -1,3 +1,22 @@
+/**
+ * Projects Router - Tenor API Endpoints for Project Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for project management in the Tenor application.
+ * It provides endpoints to create, read, update, and delete projects, as well as manage their configurations.
+ * 
+ * The router includes procedures for:
+ * - Creating new projects with default settings
+ * - Listing projects associated with a user
+ * - Managing project configurations including name, description, and logo
+ * - Retrieving project information and user roles
+ * - Deleting projects (soft delete)
+ *
+ * Projects are the central organizational unit in Tenor, containing user stories, tasks, epics, and other items.
+ *
+ * @category API
+ */
+
 import { TRPCError } from "@trpc/server";
 import { FieldValue } from "firebase-admin/firestore";
 import type {

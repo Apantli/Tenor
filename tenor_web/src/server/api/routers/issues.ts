@@ -1,3 +1,23 @@
+/**
+ * Issues Router - Tenor API Endpoints for Issue Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing issues in the Tenor application.
+ * It provides endpoints to create, read, update, and delete issues within projects.
+ * 
+ * The router includes procedures for:
+ * - Creating and modifying issues
+ * - Retrieving issue details and table-friendly issue data
+ * - Managing issue tags and related user stories
+ * - Deleting issues (soft delete)
+ * - Getting issue counts
+ *
+ * Issues represent bugs, problems, or defects that need to be addressed in a project
+ * and can be related to specific user stories.
+ *
+ * @category API
+ */
+
 import { boolean, z } from "zod";
 import type {
   Issue,

@@ -1,3 +1,23 @@
+/**
+ * Settings Router - Tenor API Endpoints for Project Settings Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing project settings in the Tenor application.
+ * It provides endpoints to create, read, update, and delete various project configuration options.
+ * 
+ * The router includes procedures for managing:
+ * - Status types, backlog tags, and priority types
+ * - User roles and permissions
+ * - Scrum settings including sprint durations and story points
+ * - AI context settings including text, links, and files
+ * - Project references and utility functions
+ *
+ * Settings are organized under projects and control the behavior and appearance of various
+ * project components throughout the application.
+ *
+ * @category API
+ */
+
 import {
   PermissionSchema,
   RoleSchema,
