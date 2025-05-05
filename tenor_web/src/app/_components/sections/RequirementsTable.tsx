@@ -970,7 +970,7 @@ export default function RequirementsTable() {
             </h1>
           }
           footer={
-            <div className="flex gap-2">
+            <div className="flex gap-2" data-cy="requirement-popup-footer">
               {requirementEditedData ? (
                 requirementEdited ? (
                   // FIXME add delete functionality (NEW PR)

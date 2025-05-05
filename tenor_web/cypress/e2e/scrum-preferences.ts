@@ -1,4 +1,4 @@
-describe("Test Project Creation", () => {
+describe("Test Scrum preferences", () => {
   // Create a project to view it
   before(() => {
     cy.signIn("/");
@@ -15,12 +15,13 @@ describe("Test Project Creation", () => {
     cy.visit("/");
     // Check if the logos exists
     cy.get(".flex-row > .flex").should("be.visible");
-    cy.contains("Test project").should("be.visible");
-    cy.contains("Test project").click();
+    cy.contains("Test project settings").should("be.visible");
+    cy.contains("Test project settings").click();
   });
 
   beforeEach(() => {
     cy.signIn("/");
+    cy.contains("Test project setting").click();
   });
 
   it("Requirements pop up", () => {
