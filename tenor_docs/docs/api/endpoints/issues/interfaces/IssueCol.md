@@ -10,7 +10,7 @@ sidebar_label: "IssueCol"
 
 # Interface: IssueCol
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:55](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L55)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:55](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L55)
 
 ## Properties
 
@@ -18,7 +18,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:55](https://github.com/
 
 > **assignUsers**: `object`[]
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:66](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L66)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:66](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L66)
 
 #### displayName?
 
@@ -38,7 +38,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:66](https://github.com/
 
 > **description**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:59](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L59)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:59](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L59)
 
 ***
 
@@ -46,7 +46,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:59](https://github.com/
 
 > **id**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:56](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L56)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:56](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L56)
 
 ***
 
@@ -54,7 +54,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:56](https://github.com/
 
 > **name**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:58](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L58)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:58](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L58)
 
 ***
 
@@ -62,7 +62,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:58](https://github.com/
 
 > **priority**: `Tag`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:60](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L60)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:60](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L60)
 
 ***
 
@@ -70,7 +70,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:60](https://github.com/
 
 > `optional` **relatedUserStory**: `ExistingUserStory`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:61](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L61)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:61](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L61)
 
 ***
 
@@ -78,7 +78,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:61](https://github.com/
 
 > **scrumId**: `number`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:57](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L57)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:57](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L57)
 
 ***
 
@@ -86,7 +86,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:57](https://github.com/
 
 > **size**: `Size`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:64](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L64)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:64](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L64)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:64](https://github.com/
 
 > `optional` **sprint**: `Sprint`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:65](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L65)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:65](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L65)
 
 ***
 
@@ -102,7 +102,7 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:65](https://github.com/
 
 > `optional` **stepsToRecreate**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:63](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L63)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:63](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L63)
 
 ***
 
@@ -110,4 +110,4 @@ Defined in: [tenor\_web/src/server/api/routers/issues.ts:63](https://github.com/
 
 > **tags**: `Tag`[]
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:62](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L62)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:62](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L62)

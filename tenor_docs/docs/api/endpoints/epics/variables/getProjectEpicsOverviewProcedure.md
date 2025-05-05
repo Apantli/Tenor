@@ -6,7 +6,7 @@
 
 > `const` **getProjectEpicsOverviewProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `object`[]; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/epics.ts:49](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/epics.ts#L49)
+Defined in: [tenor\_web/src/server/api/routers/epics.ts:49](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/epics.ts#L49)
 
 Retrieves an overview of epics for a specific project.
 

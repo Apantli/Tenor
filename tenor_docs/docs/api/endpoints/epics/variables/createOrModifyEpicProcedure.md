@@ -6,7 +6,7 @@
 
 > `const` **createOrModifyEpicProcedure**: `MutationProcedure`\<\{ `input`: \{ `deleted?`: `boolean`; `description`: `string`; `name`: `string`; `projectId`: `string`; `scrumId`: `number`; \}; `output`: `"Epic updated successfully"` \| `"Epic created successfully"`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/epics.ts:116](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/epics.ts#L116)
+Defined in: [tenor\_web/src/server/api/routers/epics.ts:116](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/epics.ts#L116)
 
 Creates a new epic or updates an existing one in a project.
 

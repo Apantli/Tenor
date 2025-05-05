@@ -6,7 +6,7 @@
 
 > `const` **modifyIssuesTagsProcedure**: `MutationProcedure`\<\{ `input`: \{ `issueId`: `string`; `priorityId?`: `string`; `projectId`: `string`; `size?`: `string`; `statusId?`: `string`; \}; `output`: `undefined` \| \{ `issueId`: `string`; `success`: `boolean`; `updatedIssueData`: \{ `complete`: `boolean`; `deleted`: `boolean`; `description`: `string`; `name?`: `string`; `priorityId`: `string`; `relatedUserStoryId`: `string`; `scrumId`: `number`; `size`: `string`; `sprintId`: `string`; `statusId`: `string`; `stepsToRecreate`: `string`; `tagIds`: `string`[]; `taskIds`: `string`[]; \}; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:569](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L569)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:569](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L569)
 
 Modifies tags for an issue in a project.
 

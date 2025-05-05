@@ -10,7 +10,7 @@ sidebar_label: "RequirementCol"
 
 # Interface: RequirementCol
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:46](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L46)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:46](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L46)
 
 RequirementCol
 
@@ -24,7 +24,7 @@ Represents a requirement in a table-friendly format for the UI
 
 > **description**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:49](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L49)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:49](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L49)
 
 The description of the requirement
 
@@ -34,7 +34,7 @@ The description of the requirement
 
 > **id**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:47](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L47)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:47](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L47)
 
 The unique identifier of the requirement
 
@@ -44,7 +44,7 @@ The unique identifier of the requirement
 
 > `optional` **name**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:48](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L48)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:48](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L48)
 
 The optional name of the requirement
 
@@ -54,7 +54,7 @@ The optional name of the requirement
 
 > **priorityId**: `Tag`
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:50](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L50)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:50](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L50)
 
 The priority tag of the requirement
 
@@ -64,7 +64,7 @@ The priority tag of the requirement
 
 > **requirementFocusId**: `Tag`
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:52](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L52)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:52](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L52)
 
 The requirement focus tag
 
@@ -74,7 +74,7 @@ The requirement focus tag
 
 > **requirementTypeId**: `Tag`
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:51](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L51)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:51](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L51)
 
 The requirement type tag
 
@@ -84,6 +84,6 @@ The requirement type tag
 
 > `optional` **scrumId**: `number`
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:53](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L53)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:53](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L53)
 
 The scrum ID of the requirement

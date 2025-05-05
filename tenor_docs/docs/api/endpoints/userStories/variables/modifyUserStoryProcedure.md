@@ -6,7 +6,7 @@
 
 > `const` **modifyUserStoryProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryData`: \{ `acceptanceCriteria`: `string`; `complete?`: `boolean`; `dependencyIds`: `string`[]; `description`: `string`; `epicId`: `string`; `name`: `string`; `priorityId?`: `string`; `requiredByIds`: `string`[]; `size?`: `"XS"` \| `"S"` \| `"M"` \| `"L"` \| `"XL"` \| `"XXL"`; `sprintId?`: `string`; `statusId?`: `string`; `tagIds`: `string`[]; `taskIds?`: `string`[]; \}; `userStoryId`: `string`; \}; `output`: \{ `success`: `boolean`; `updatedUserStoryIds`: `string`[]; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:491](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L491)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:491](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L491)
 
 Modifies an existing user story in a specific project.
 

@@ -10,7 +10,7 @@ sidebar_label: "UserStoryCol"
 
 # Interface: UserStoryCol
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:59](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L59)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:59](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L59)
 
 ## Properties
 
@@ -18,7 +18,7 @@ Defined in: [tenor\_web/src/server/api/routers/userStories.ts:59](https://github
 
 > `optional` **epicScrumId**: `number`
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:63](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L63)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:63](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L63)
 
 ***
 
@@ -26,7 +26,7 @@ Defined in: [tenor\_web/src/server/api/routers/userStories.ts:63](https://github
 
 > **id**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:60](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L60)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:60](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L60)
 
 ***
 
@@ -34,7 +34,7 @@ Defined in: [tenor\_web/src/server/api/routers/userStories.ts:60](https://github
 
 > `optional` **priority**: `Tag`
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:64](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L64)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:64](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L64)
 
 ***
 
@@ -42,7 +42,7 @@ Defined in: [tenor\_web/src/server/api/routers/userStories.ts:64](https://github
 
 > `optional` **scrumId**: `number`
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:61](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L61)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:61](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L61)
 
 ***
 
@@ -50,7 +50,7 @@ Defined in: [tenor\_web/src/server/api/routers/userStories.ts:61](https://github
 
 > **size**: `Size`
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:65](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L65)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:65](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L65)
 
 ***
 
@@ -58,7 +58,7 @@ Defined in: [tenor\_web/src/server/api/routers/userStories.ts:65](https://github
 
 > `optional` **sprintNumber**: `number`
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:66](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L66)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:66](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L66)
 
 ***
 
@@ -66,7 +66,7 @@ Defined in: [tenor\_web/src/server/api/routers/userStories.ts:66](https://github
 
 > **taskProgress**: \[`undefined` \| `number`, `undefined` \| `number`\]
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:67](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L67)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:67](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L67)
 
 ***
 
@@ -74,4 +74,4 @@ Defined in: [tenor\_web/src/server/api/routers/userStories.ts:67](https://github
 
 > **title**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:62](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/userStories.ts#L62)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:62](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L62)

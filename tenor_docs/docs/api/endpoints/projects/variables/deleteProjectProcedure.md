@@ -6,7 +6,7 @@
 
 > `const` **deleteProjectProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `success`: `boolean`; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:457](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/projects.ts#L457)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:457](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L457)
 
 Deletes a project by marking it as deleted.
 

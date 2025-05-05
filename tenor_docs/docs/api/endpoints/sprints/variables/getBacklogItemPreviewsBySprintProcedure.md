@@ -6,7 +6,7 @@
 
 > `const` **getBacklogItemPreviewsBySprintProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `backlogItems`: \{[`k`: `string`]: `object`; \}; `sprints`: `object`[]; `unassignedItemIds`: `string`[]; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/sprints.ts:193](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/sprints.ts#L193)
+Defined in: [tenor\_web/src/server/api/routers/sprints.ts:193](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/sprints.ts#L193)
 
 Retrieves backlog item previews grouped by sprint in a specific project.
 

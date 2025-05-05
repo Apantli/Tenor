@@ -6,7 +6,7 @@
 
 > `const` **createBacklogTagProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `tag`: \{ `color`: `string`; `deleted`: `boolean`; `name`: `string`; \}; \}; `output`: \{ `color`: `string`; `deleted`: `boolean`; `id`: `string`; `name`: `string`; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/settings.ts:485](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/settings.ts#L485)
+Defined in: [tenor\_web/src/server/api/routers/settings.ts:485](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/settings.ts#L485)
 
 Creates a new backlog tag for a project.
 

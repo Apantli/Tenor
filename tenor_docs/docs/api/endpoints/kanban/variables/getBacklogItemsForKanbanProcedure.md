@@ -6,7 +6,7 @@
 
 > `const` **getBacklogItemsForKanbanProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `cardItems`: \{[`k`: `string`]: [`KanbanItemCard`](../interfaces/KanbanItemCard.md); \}; `columns`: `object`[]; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:248](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L248)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:248](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L248)
 
 Retrieves backlog items for the Kanban board of a project.
 

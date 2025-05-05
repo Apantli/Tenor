@@ -10,7 +10,7 @@ sidebar_label: "KanbanCard"
 
 # Interface: KanbanCard
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:40](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L40)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:40](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L40)
 
 ## Extended by
 
@@ -23,7 +23,7 @@ Defined in: [tenor\_web/src/server/api/routers/kanban.ts:40](https://github.com/
 
 > **cardType**: `"US"` \| `"IS"` \| `"IT"` \| `"TS"`
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:42](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L42)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:42](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L42)
 
 ***
 
@@ -31,7 +31,7 @@ Defined in: [tenor\_web/src/server/api/routers/kanban.ts:42](https://github.com/
 
 > **columnId**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:52](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L52)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:52](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L52)
 
 ***
 
@@ -39,7 +39,7 @@ Defined in: [tenor\_web/src/server/api/routers/kanban.ts:52](https://github.com/
 
 > **id**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:41](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L41)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:41](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L41)
 
 ***
 
@@ -47,7 +47,7 @@ Defined in: [tenor\_web/src/server/api/routers/kanban.ts:41](https://github.com/
 
 > **name**: `string`
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:44](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L44)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:44](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L44)
 
 ***
 
@@ -55,7 +55,7 @@ Defined in: [tenor\_web/src/server/api/routers/kanban.ts:44](https://github.com/
 
 > **scrumId**: `number`
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:43](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L43)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:43](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L43)
 
 ***
 
@@ -63,7 +63,7 @@ Defined in: [tenor\_web/src/server/api/routers/kanban.ts:43](https://github.com/
 
 > **size**: `undefined` \| `"XS"` \| `"S"` \| `"M"` \| `"L"` \| `"XL"` \| `"XXL"`
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:45](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L45)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:45](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L45)
 
 ***
 
@@ -71,7 +71,7 @@ Defined in: [tenor\_web/src/server/api/routers/kanban.ts:45](https://github.com/
 
 > **tags**: `object`[]
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:46](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/kanban.ts#L46)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:46](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L46)
 
 #### color
 

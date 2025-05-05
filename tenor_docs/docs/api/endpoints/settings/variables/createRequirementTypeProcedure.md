@@ -6,7 +6,7 @@
 
 > `const` **createRequirementTypeProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `tag`: \{ `color`: `string`; `deleted`: `boolean`; `name`: `string`; \}; \}; `output`: \{ `color`: `string`; `deleted`: `boolean`; `id`: `string`; `name`: `string`; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/settings.ts:568](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/settings.ts#L568)
+Defined in: [tenor\_web/src/server/api/routers/settings.ts:568](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/settings.ts#L568)
 
 Creates a new requirement type tag for a project.
 

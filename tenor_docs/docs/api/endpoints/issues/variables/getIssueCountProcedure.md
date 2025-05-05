@@ -6,7 +6,7 @@
 
 > `const` **getIssueCountProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `number`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/issues.ts:672](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/issues.ts#L672)
+Defined in: [tenor\_web/src/server/api/routers/issues.ts:672](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/issues.ts#L672)
 
 Retrieves the count of issues in a project.
 

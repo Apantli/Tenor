@@ -6,7 +6,7 @@
 
 > `const` **getGeneralConfigProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `activities`: `object`[]; `currentSprintId`: `string`; `deleted`: `boolean`; `description`: `string`; `logo`: `string`; `name`: `string`; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:373](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/projects.ts#L373)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:373](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L373)
 
 Retrieves the general configuration of a project.
 

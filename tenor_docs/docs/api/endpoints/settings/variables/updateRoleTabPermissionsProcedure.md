@@ -6,7 +6,7 @@
 
 > `const` **updateRoleTabPermissionsProcedure**: `MutationProcedure`\<\{ `input`: \{ `parameter`: `string`; `permission`: `number`; `projectId`: `string`; `roleId`: `string`; \}; `output`: `void`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/settings.ts:783](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/settings.ts#L783)
+Defined in: [tenor\_web/src/server/api/routers/settings.ts:783](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/settings.ts#L783)
 
 Updates role tab permissions for a project.
 

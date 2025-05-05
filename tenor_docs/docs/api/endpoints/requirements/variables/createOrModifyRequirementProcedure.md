@@ -6,7 +6,7 @@
 
 > `const` **createOrModifyRequirementProcedure**: `MutationProcedure`\<\{ `input`: \{ `deleted?`: `boolean`; `description`: `string`; `name`: `string`; `priorityId`: `string`; `projectId`: `string`; `requirementFocusId`: `string`; `requirementTypeId`: `string`; `scrumId`: `number`; \}; `output`: `"Requirement updated successfully"` \| `"Requirement created successfully"`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:648](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/requirements.ts#L648)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:648](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L648)
 
 Creates a new requirement or updates an existing one.
 

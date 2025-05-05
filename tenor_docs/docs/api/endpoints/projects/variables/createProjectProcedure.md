@@ -6,7 +6,7 @@
 
 > `const` **createProjectProcedure**: `MutationProcedure`\<\{ `input`: \{ `activities?`: `object`[]; `currentSprintId?`: `string`; `deleted?`: `boolean`; `description`: `string`; `logo`: `string`; `name`: `string`; `settings`: \{ `aiContext`: \{ `files?`: `object`[]; `links?`: `object`[]; `text?`: `string`; \}; `maximumSprintStoryPoints?`: `number`; `Size?`: `number`[]; `sprintDuration?`: `number`; \}; `users`: `object`[]; \}; `output`: \{ `projectId`: `string`; `success`: `boolean`; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:207](https://github.com/Apantli/Tenor/blob/551fcec623199ab0ac9668d926e7d67c9012d18e/tenor_web/src/server/api/routers/projects.ts#L207)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:207](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L207)
 
 Creates a new project with the provided settings and users.
 
