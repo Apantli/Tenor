@@ -80,16 +80,25 @@ export const ConfirmationProvider = ({ children }: PropsWithChildren) => {
         zIndex={2000}
         footer={
           <div className="flex gap-2">
-            <SecondaryButton onClick={() => handleResolve(false)}>
+            <SecondaryButton
+              onClick={() => handleResolve(false)}
+              data-cy="cancel-button"
+            >
               {confirmationInfo?.cancellationMsg}
             </SecondaryButton>
             {!confirmationInfo?.destructive && (
-              <PrimaryButton onClick={() => handleResolve(true)}>
+              <PrimaryButton
+                onClick={() => handleResolve(true)}
+                data-cy="confirm-button"
+              >
                 {confirmationInfo?.confirmationMsg}
               </PrimaryButton>
             )}
             {confirmationInfo?.destructive && (
-              <DeleteButton onClick={() => handleResolve(true)}>
+              <DeleteButton
+                onClick={() => handleResolve(true)}
+                data-cy="confirm-button"
+              >
                 {confirmationInfo?.confirmationMsg}
               </DeleteButton>
             )}

@@ -155,7 +155,7 @@ export default function InputField({
         ...prev,
         {
           content: generatedData.autocompletion,
-          role: "assisstant",
+          role: "assistant",
           explanation: generatedData.assistant_message,
         },
       ]);
@@ -430,7 +430,7 @@ export default function InputField({
                           className=""
                           onClick={() => {
                             const filteredMessages = messages.filter(
-                              (msg) => msg.role == "assisstant",
+                              (msg) => msg.role == "assistant",
                             );
                             const valueToUse =
                               filteredMessages.length > 0

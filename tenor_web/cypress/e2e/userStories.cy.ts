@@ -1,18 +1,24 @@
 import type { TestProjectInfo, TestUserStory } from "cypress/fixtures/types";
 
+let projectPath = "";
+
 describe("User Stories", () => {
   before(() => {
     cy.signIn("/");
     cy.createEmptyProject();
+    cy.url().then((url) => {
+      projectPath = url;
+    });
   });
 
   // Return to dashboard and select the project
   beforeEach(() => {
-    cy.signIn("/");
-    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
-      cy.get('[data-cy="project-list"]').find("li").contains(data.name).click();
-    });
+    cy.visit(projectPath);
     cy.get('[data-cy="userStories"]').click();
+  });
+
+  it("TC016: No user stories message", () => {
+    cy.contains("No user stories found").should("exist");
   });
 
   it("TC029: Create empty user story", () => {
@@ -44,10 +50,16 @@ describe("User Stories", () => {
       });
 
       cy.get('[data-cy="popup"]').within(() => {
-        cy.contains(data.title).should(
-          "be.visible",
-        );
+        cy.contains(data.title).should("be.visible");
       });
+    });
+  });
+
+  it("TC017: User story appears on table", () => {
+    cy.fixture("TestUserStory").then((data: TestUserStory) => {
+      cy.contains("US01").should("be.visible");
+      cy.contains(data.title).should("be.visible");
+      cy.contains("No Epic").should("be.visible");
     });
   });
 
@@ -65,4 +77,21 @@ describe("User Stories", () => {
       });
     });
   });
+
+  it("TC018: Find User story", () => {
+      cy.fixture("TestUserStory").then((data: TestUserStory) => {
+          cy.get('[data-cy="primary-button"]').contains("+ New Story").click();
+          cy.get('[data-cy="popup"]').within(() => {
+            cy.get('[placeholder="Short summary of the story..."]').type(
+              "Non-important user story"
+            )
+            cy.get('[data-cy="primary-button"]').contains("Create story").click();
+          });
+          cy.wait(1000);
+          cy.get('[data-cy="popup-close-button"]').click();
+          cy.get('.pb-2 > :nth-child(1) > [data-cy="search-bar"]').type(data.title);
+          cy.contains(data.title).should("be.visible");
+      });
+    });
+
 });

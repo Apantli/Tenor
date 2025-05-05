@@ -33,7 +33,10 @@ const CreateNewProject = () => {
   };
 
   return (
-    <PrimaryButton onClick={handleCreateProject}> + New project </PrimaryButton>
+    <PrimaryButton onClick={handleCreateProject} data-cy="new-project-button">
+      {" "}
+      + New project{" "}
+    </PrimaryButton>
   );
 };
 
@@ -86,7 +89,10 @@ function ProjectList() {
         />
         <CreateNewProject />
       </div>
-      <ul className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto" data-cy="project-list">
+      <ul
+        className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto"
+        data-cy="project-list"
+      >
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
