@@ -18,7 +18,7 @@ describe("Settings: General", () => {
   it("TC049: Delete Project", () => {
     cy.get('[data-cy="delete-button"]').contains("Delete project").click();
     cy.get('[data-cy="popup"]').within(() => {
-      cy.get('[data-cy="delete-button"]').click();
+      cy.get('[data-cy="confirm-button"]').click();
     });
     cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
       cy.get('[data-cy="project-list"]')

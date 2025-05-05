@@ -18,15 +18,16 @@ export default function SearchBar({
     <div className="relative w-full">
       <input
         type="text"
-        className="h-10 w-full rounded-md border border-app-border px-2 pr-1 pl-8 outline-none"
+        className="h-10 w-full rounded-md border border-app-border px-2 pl-8 pr-1 outline-none"
         placeholder={placeholder}
         value={searchValue}
         onChange={handleUpdateSearch}
+        data-cy="search-bar"
       />
       <SearchIcon
         className="absolute left-2 top-1/4"
         fontSize="small"
-        style={{fill: "#9BA3AF"}}
+        style={{ fill: "#9BA3AF" }}
       ></SearchIcon>
     </div>
   );

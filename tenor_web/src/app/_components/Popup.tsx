@@ -172,6 +172,7 @@ export default function Popup({
             className={cn("absolute right-5 top-3 text-3xl text-gray-600", {
               "top-5": !!reduceTopPadding,
             })}
+            data-cy="popup-close-button"
           >
             <CloseIcon fontSize="inherit" />
           </button>
@@ -322,6 +323,7 @@ export function SidebarPopup({
             <button
               onClick={dismiss}
               className="absolute right-5 top-3 text-3xl text-gray-600"
+              data-cy="popup-close-button"
             >
               <CloseIcon fontSize="inherit" />
             </button>
