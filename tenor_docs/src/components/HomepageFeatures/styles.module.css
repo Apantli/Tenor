@@ -3,7 +3,7 @@
   align-items: center;
   padding: 3rem 0;
   width: 100%;
-  background-color: #f8f9fa;
+  background: #000000;
 }
 
 .featuresHeading {
@@ -17,7 +17,7 @@
   height: 100%;
   padding: 2rem;
   border-radius: 8px;
-  background-color: #ffffff;
+  background: #001c10;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   display: flex;
