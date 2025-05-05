@@ -1,4 +1,4 @@
-describe("Test edit epics", () => {
+describe("Test edit user stories", () => {
   // Create a project to view it
   before(() => {
     cy.signIn("/");
@@ -23,21 +23,19 @@ describe("Test edit epics", () => {
     cy.signIn("/");
   });
 
-  it("Requirements pop up", () => {
+  it("TC026: Change de title of a user story", () => {
     cy.contains("Test project").click();
     cy.contains("User Stories").click();
-    cy.contains("New Epic").click();
-    cy.get(".pt-0").should("be.visible");
-    cy.get('[placeholder="Briefly describe your epic..."]').click();
-    cy.get('[placeholder="Briefly describe your epic..."]').type(
-      "Test epic",
+    cy.contains("New Story").click();
+    cy.get('[placeholder="Short summary of the story..."]').click();
+    cy.get('[placeholder="Short summary of the story..."]').type(
+      "Test story",
     );
-    cy.contains("Create epic").click();
-    cy.wait(1000);
-    cy.contains("EP01").click();
-    cy.get('[data-cy="delete-button"]').click();
-    cy.wait(1000);
-    cy.get('[data-cy="confirm-button"]').click();
-    
+    cy.get('.shrink-0 > [data-cy="primary-button"]').click();
+    cy.wait(2000);
+    cy.get('.justify-between.gap-2 > .flex').click();
+    cy.get('[placeholder="Short summary of the story..."]').click();
+    cy.get('[placeholder="Short summary of the story..."]').clear().type("Test story edited", { force: true });
+    cy.get('.shrink-0 > [data-cy="primary-button"]').click();
   });
 });

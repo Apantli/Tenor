@@ -23,7 +23,7 @@ describe("Test edit epics", () => {
     cy.signIn("/");
   });
 
-  it("Requirements pop up", () => {
+  it("TC022: Edit Epic", () => {
     cy.contains("Test project").click();
     cy.contains("User Stories").click();
     cy.contains("New Epic").click();
