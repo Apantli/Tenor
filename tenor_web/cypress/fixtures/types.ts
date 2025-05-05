@@ -12,3 +12,14 @@ export interface TestUserStory {
 export interface TestSprint {
   description: string;
 }
+
+export interface TestIssue {
+  title: string;
+  description: string;
+  stepsToRecreate: string;
+}
+
+export interface TestEpic {
+  title: string;
+  description: string;
+}
