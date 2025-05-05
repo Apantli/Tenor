@@ -4,5 +4,6 @@ namespace Cypress {
       redirectPath?: string,
       credentials?: { email: string; password: string },
     ): void;
+    createEmptyProject(): void;
   }
 }

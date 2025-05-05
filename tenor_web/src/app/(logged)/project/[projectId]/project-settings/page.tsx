@@ -31,7 +31,7 @@ export default function ProjectGeneralSettings() {
   const utils = api.useUtils();
   const { alert } = useAlert();
 
-  const { data: project } = api.projects.getGeneralConfig.useQuery({
+  const { data: project, isLoading } = api.projects.getGeneralConfig.useQuery({
     projectId: projectId as string,
   });
   const confirm = useConfirmation();
@@ -70,9 +70,10 @@ export default function ProjectGeneralSettings() {
 
   const isModified = () => {
     return (
-      editForm.name !== project?.name ||
-      (editForm.icon !== project?.logo && icon !== null) ||
-      editForm.description !== project?.description
+      (editForm.name !== project?.name ||
+        editForm.icon !== project?.logo ||
+        editForm.description !== project?.description) &&
+      !isLoading
     );
   };
 

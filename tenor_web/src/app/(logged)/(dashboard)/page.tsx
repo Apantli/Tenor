@@ -86,7 +86,7 @@ function ProjectList() {
         />
         <CreateNewProject />
       </div>
-      <ul className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto">
+      <ul className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto" data-cy="project-list">
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li

@@ -59,7 +59,10 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
             href={projectPath + link}
             onClick={handleClick}
           >
-            {id === "overview" && mainPageName ? mainPageName : title}
+            <span data-cy={id}>
+              {id === "overview" && mainPageName ? mainPageName : title}
+            </span>
+
             {link === cutPathname && (
               <>
                 <div className="absolute -left-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[5px_5px_0_0_white]"></div>

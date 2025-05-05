@@ -31,6 +31,7 @@ export default function PrimaryButton({
       {...props}
       disabled={disabled ?? loading ?? false}
       asSpan={asSpan}
+      data-cy="primary-button"
     >
       {children}
       {loading && (
