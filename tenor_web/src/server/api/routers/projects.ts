@@ -149,11 +149,36 @@ const fetchUserProjects = async (
 };
 
 export const projectsRouter = createTRPCRouter({
+  /**
+   * Retrieves a list of projects associated with the current user.
+   *
+   * @param input None
+   *
+   * @returns Array of projects with their details.
+   *
+   * @http GET /api/trpc/projects.listProjects
+   */
   listProjects: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     const projects = await fetchUserProjects(useruid, ctx.firestore);
     return projects;
   }),
+
+  /**
+   * Creates a new project with the provided settings and users.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - name — Name of the project  
+   * - description — Description of the project  
+   * - logo — Base64 string of the project logo  
+   * - settings — Project settings including sprint duration, story points, etc.  
+   * - users — Array of users with their roles and activity status  
+   *
+   * @returns Object containing the ID of the created project.
+   *
+   * @http POST /api/trpc/projects.createProject
+   */
   createProject: protectedProcedure
     .input(ProjectSchemaCreator.extend({ settings: SettingsSchema }))
     .mutation(async ({ ctx, input }) => {
@@ -315,6 +340,17 @@ export const projectsRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * Retrieves the general configuration of a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch configuration for  
+   *
+   * @returns Object containing the project's general configuration.
+   *
+   * @http GET /api/trpc/projects.getGeneralConfig
+   */
   getGeneralConfig: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ input, ctx }) => {
@@ -326,6 +362,20 @@ export const projectsRouter = createTRPCRouter({
       return ProjectSchema.parse(project.data());
     }),
 
+  /**
+   * Modifies the general configuration of a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to modify  
+   * - name — New name of the project  
+   * - description — New description of the project  
+   * - logo — New base64 string of the project logo  
+   *
+   * @returns Object indicating success status.
+   *
+   * @http PUT /api/trpc/projects.modifyGeneralConfig
+   */
   modifyGeneralConfig: protectedProcedure
     .input(
       z.object({
@@ -373,6 +423,18 @@ export const projectsRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  /**
+   * Deletes a project by marking it as deleted.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to delete  
+   *
+   * @returns Object indicating success status.
+   *
+   * @http DELETE /api/trpc/projects.deleteProject
+   */
   deleteProject: protectedProcedure
     .input(
       z.object({
@@ -389,6 +451,18 @@ export const projectsRouter = createTRPCRouter({
       });
       return { success: true };
     }),
+
+  /**
+   * Retrieves the name of a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch the name for  
+   *
+   * @returns Object containing the project's name.
+   *
+   * @http GET /api/trpc/projects.getProjectName
+   */
   getProjectName: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -401,6 +475,17 @@ export const projectsRouter = createTRPCRouter({
       return { projectName: projectData.name };
     }),
 
+  /**
+   * Retrieves user types (roles) for a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch user types for  
+   *
+   * @returns Array of user types with their labels.
+   *
+   * @http GET /api/trpc/projects.getUserTypes
+   */
   getUserTypes: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

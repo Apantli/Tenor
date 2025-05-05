@@ -224,11 +224,15 @@ const createRequirementsTableData = async (
 
 export const requirementsRouter = createTRPCRouter({
   /**
-   * @procedure getRequirementTypeTags
-   * @description Retrieves all non-deleted requirement type tags for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of requirement type tags
+   * Retrieves all non-deleted requirement type tags for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch requirement type tags from  
+   *
+   * @returns Array of requirement type tags.
+   *
+   * @http GET /api/trpc/requirements.getRequirementTypeTags
    */
   getRequirementTypeTags: roleRequiredProcedure(
     {
@@ -251,6 +255,18 @@ export const requirementsRouter = createTRPCRouter({
       return tags;
     }),
 
+  /**
+   * Retrieves a specific requirement type tag by its ID.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the requirement type tag  
+   * - tagId — ID of the requirement type tag to fetch  
+   *
+   * @returns Requirement type tag object with its details.
+   *
+   * @http GET /api/trpc/requirements.getRequirementTypeTagById
+   */
   getRequirementTypeTagById: roleRequiredProcedure(
     {
       flags: ["backlog"],
@@ -270,6 +286,18 @@ export const requirementsRouter = createTRPCRouter({
       return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
     }),
 
+  /**
+   * Creates a new requirement type tag for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create the requirement type tag in  
+   * - tag — Tag data conforming to TagSchema  
+   *
+   * @returns Object containing the ID of the created requirement type tag.
+   *
+   * @http POST /api/trpc/requirements.createRequirementTypeTag
+   */
   createRequirementTypeTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
@@ -284,6 +312,19 @@ export const requirementsRouter = createTRPCRouter({
       return { id: newTag.id };
     }),
 
+  /**
+   * Modifies an existing requirement type tag in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the requirement type tag  
+   * - tagId — ID of the requirement type tag to modify  
+   * - tag — Updated tag data conforming to TagSchema  
+   *
+   * @returns Object containing the ID of the modified requirement type tag.
+   *
+   * @http PUT /api/trpc/requirements.modifyRequirementTypeTag
+   */
   modifyRequirementTypeTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
@@ -305,6 +346,18 @@ export const requirementsRouter = createTRPCRouter({
       return { id: tagId };
     }),
 
+  /**
+   * Deletes a requirement type tag from a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the requirement type tag  
+   * - tagId — ID of the requirement type tag to delete  
+   *
+   * @returns Object containing the ID of the deleted requirement type tag.
+   *
+   * @http DELETE /api/trpc/requirements.deleteRequirementTypeTag
+   */
   deleteRequirementTypeTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
@@ -325,11 +378,15 @@ export const requirementsRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure getRequirementFocusTags
-   * @description Retrieves all non-deleted requirement focus tags for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of requirement focus tags
+   * Retrieves all non-deleted requirement focus tags for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch requirement focus tags from  
+   *
+   * @returns Array of requirement focus tags.
+   *
+   * @http GET /api/trpc/requirements.getRequirementFocusTags
    */
   getRequirementFocusTags: roleRequiredProcedure(
     {
@@ -351,6 +408,18 @@ export const requirementsRouter = createTRPCRouter({
       return tags;
     }),
 
+  /**
+   * Retrieves a specific requirement focus tag by its ID.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the requirement focus tag  
+   * - tagId — ID of the requirement focus tag to fetch  
+   *
+   * @returns Requirement focus tag object with its details.
+   *
+   * @http GET /api/trpc/requirements.getRequirementFocusTagById
+   */
   getRequirementFocusTagById: roleRequiredProcedure(
     {
       flags: ["backlog"],
@@ -370,6 +439,18 @@ export const requirementsRouter = createTRPCRouter({
       return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
     }),
 
+  /**
+   * Creates a new requirement focus tag for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create the requirement focus tag in  
+   * - tag — Tag data conforming to TagSchema  
+   *
+   * @returns Object containing the ID of the created requirement focus tag.
+   *
+   * @http POST /api/trpc/requirements.createRequirementFocusTag
+   */
   createRequirementFocusTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
@@ -384,6 +465,19 @@ export const requirementsRouter = createTRPCRouter({
       return { id: newTag.id };
     }),
 
+  /**
+   * Modifies an existing requirement focus tag in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the requirement focus tag  
+   * - tagId — ID of the requirement focus tag to modify  
+   * - tag — Updated tag data conforming to TagSchema  
+   *
+   * @returns Object containing the ID of the modified requirement focus tag.
+   *
+   * @http PUT /api/trpc/requirements.modifyRequirementFocusTag
+   */
   modifyRequirementFocusTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
@@ -405,6 +499,18 @@ export const requirementsRouter = createTRPCRouter({
       return { id: tagId };
     }),
 
+  /**
+   * Deletes a requirement focus tag from a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the requirement focus tag  
+   * - tagId — ID of the requirement focus tag to delete  
+   *
+   * @returns Object containing the ID of the deleted requirement focus tag.
+   *
+   * @http DELETE /api/trpc/requirements.deleteRequirementFocusTag
+   */
   deleteRequirementFocusTag: roleRequiredProcedure(
     {
       flags: ["backlog", "settings"],
@@ -425,15 +531,19 @@ export const requirementsRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure getRequirementsTableFriendly
-   * @description Gets requirements for a project in a table-friendly format
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {object} Object containing formatted requirement data and all tag collections
-   * @returns {RequirementCol[]} returns.fixedData - The requirements in a table-friendly format
-   * @returns {Tag[]} returns.allTags - All priority tags
-   * @returns {Tag[]} returns.allRequirementTypeTags - All requirement type tags
-   * @returns {Tag[]} returns.allRequirementFocusTags - All requirement focus tags
+   * Retrieves requirements for a project in a table-friendly format.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch requirements for  
+   *
+   * @returns Object containing formatted requirement data and all tag collections:  
+   * - fixedData — Array of requirements in a table-friendly format  
+   * - allTags — Array of all priority tags  
+   * - allRequirementTypeTags — Array of all requirement type tags  
+   * - allRequirementFocusTags — Array of all requirement focus tags  
+   *
+   * @http GET /api/trpc/requirements.getRequirementsTableFriendly
    */
   getRequirementsTableFriendly: roleRequiredProcedure(
     {
@@ -466,13 +576,16 @@ export const requirementsRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure getRequirement
-   * @description Gets a specific requirement by ID
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.requirementId - The ID of the requirement to retrieve
-   * @returns {WithId<Requirement>} The requirement with its ID
-   * @throws {Error} If the requirement is not found
+   * Retrieves a specific requirement by ID.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the requirement  
+   * - requirementId — ID of the requirement to retrieve  
+   *
+   * @returns Requirement object with its details.
+   *
+   * @http GET /api/trpc/requirements.getRequirement
    */
   getRequirement: roleRequiredProcedure(
     {
@@ -500,11 +613,22 @@ export const requirementsRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure createOrModifyRequirement
-   * @description Creates a new requirement or updates an existing one
-   * @input {Requirement & {projectId: string}} input - The requirement data with project ID
-   * @returns {string} Success message
-   * @throws {Error} If the project is not found or the requirement to update is not found
+   * Creates a new requirement or updates an existing one.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create or update the requirement in  
+   * - scrumId — Scrum ID of the requirement (use -1 for new requirements)  
+   * - name — Name of the requirement  
+   * - description — Description of the requirement  
+   * - priorityId — ID of the priority tag  
+   * - requirementTypeId — ID of the requirement type tag  
+   * - requirementFocusId — ID of the requirement focus tag  
+   * - size — Size of the requirement  
+   *
+   * @returns Success message indicating whether the requirement was created or updated.
+   *
+   * @http POST /api/trpc/requirements.createOrModifyRequirement
    */
   createOrModifyRequirement: roleRequiredProcedure(
     {
@@ -554,13 +678,16 @@ export const requirementsRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure deleteRequirement
-   * @description Marks a requirement as deleted (soft delete)
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.requirementId - The ID of the requirement to delete
-   * @returns {object} Object with success status
-   * @throws {Error} If the requirement is not found
+   * Deletes a requirement from a project (soft delete).
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the requirement  
+   * - requirementId — ID of the requirement to delete  
+   *
+   * @returns Object indicating success status.
+   *
+   * @http DELETE /api/trpc/requirements.deleteRequirement
    */
   deleteRequirement: roleRequiredProcedure(
     {
@@ -589,18 +716,19 @@ export const requirementsRouter = createTRPCRouter({
       await requirementsRef.update({ deleted: true });
       return { success: true };
     }),
+
   /**
-   * @procedure generateRequirements
-   * @description Generates requirements using AI based on existing requirements and project context
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {number} input.amount - The number of requirements to generate
-   * @input {string} input.prompt - Additional prompt for the AI
-   * @returns {Requirement[]} An array of generated requirements
-   * @throws {Error} If the project is not found
-   * @throws {Error} If the AI generation fails
-   * @throws {Error} If the AI generation returns an empty array
-   * @throws {Error} If the AI generation returns an invalid response
+   * Generates requirements using AI based on existing requirements and project context.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to generate requirements for  
+   * - amount — Number of requirements to generate  
+   * - prompt — Additional prompt for the AI to consider  
+   *
+   * @returns Array of generated requirements with their details.
+   *
+   * @http POST /api/trpc/requirements.generateRequirements
    */
   generateRequirements: roleRequiredProcedure(
     {

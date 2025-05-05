@@ -184,6 +184,17 @@ const getTasksAssignUsers = async (
 };
 
 export const issuesRouter = createTRPCRouter({
+  /**
+   * Retrieves issues for a project in a table-friendly format.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch issues for  
+   *
+   * @returns Array of issues with their details, including priority, related user story, and assigned users.
+   *
+   * @http GET /api/trpc/issues.getIssuesTableFriendly
+   */
   getIssuesTableFriendly: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -246,6 +257,18 @@ export const issuesRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * Retrieves a specific issue by ID.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the issue  
+   * - issueId — ID of the issue to retrieve  
+   *
+   * @returns Issue object with its details.
+   *
+   * @http GET /api/trpc/issues.getIssue
+   */
   getIssue: protectedProcedure
     .input(z.object({ projectId: z.string(), issueId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -267,6 +290,19 @@ export const issuesRouter = createTRPCRouter({
         ...issue,
       };
     }),
+
+  /**
+   * Creates a new issue in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create the issue in  
+   * - issueData — Data for the new issue, excluding the scrum ID  
+   *
+   * @returns Object containing the ID of the created issue.
+   *
+   * @http POST /api/trpc/issues.createIssue
+   */
   createIssue: protectedProcedure
     .input(
       z.object({
@@ -296,6 +332,18 @@ export const issuesRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * Retrieves detailed information about a specific issue.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the issue  
+   * - issueId — ID of the issue to retrieve details for  
+   *
+   * @returns Detailed issue object, including tasks, tags, priority, status, and related user story.
+   *
+   * @http GET /api/trpc/issues.getIssueDetail
+   */
   getIssueDetail: protectedProcedure
     .input(z.object({ issueId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -411,6 +459,19 @@ export const issuesRouter = createTRPCRouter({
       } as IssueDetail;
     }),
 
+  /**
+   * Modifies an existing issue in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the issue  
+   * - issueId — ID of the issue to modify  
+   * - issueData — Updated data for the issue  
+   *
+   * @returns Object indicating success status.
+   *
+   * @http PUT /api/trpc/issues.modifyIssue
+   */
   modifyIssue: protectedProcedure
     .input(
       z.object({
@@ -430,6 +491,18 @@ export const issuesRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  /**
+   * Deletes an issue from a project (soft delete).
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the issue  
+   * - issueId — ID of the issue to delete  
+   *
+   * @returns Object indicating success status.
+   *
+   * @http DELETE /api/trpc/issues.deleteIssue
+   */
   deleteIssue: protectedProcedure
     .input(
       z.object({
@@ -462,6 +535,21 @@ export const issuesRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  /**
+   * Modifies tags for an issue in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the issue  
+   * - issueId — ID of the issue to modify tags for  
+   * - size — New size for the issue (optional)  
+   * - priorityId — New priority ID for the issue (optional)  
+   * - statusId — New status ID for the issue (optional)  
+   *
+   * @returns Object containing the updated issue data.
+   *
+   * @http PUT /api/trpc/issues.modifyIssuesTags
+   */
   modifyIssuesTags: protectedProcedure
     .input(
       z.object({
@@ -506,6 +594,19 @@ export const issuesRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Modifies the related user story for an issue in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the issue  
+   * - issueId — ID of the issue to modify  
+   * - relatedUserStoryId — ID of the related user story (optional)  
+   *
+   * @returns Object containing the updated issue data.
+   *
+   * @http PUT /api/trpc/issues.modifyIssuesRelatedUserStory
+   */
   modifyIssuesRelatedUserStory: protectedProcedure
     .input(
       z.object({
@@ -541,6 +642,17 @@ export const issuesRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Retrieves the count of issues in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to count issues for  
+   *
+   * @returns Number of issues in the project.
+   *
+   * @http GET /api/trpc/issues.getIssueCount
+   */
   getIssueCount: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

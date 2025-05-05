@@ -147,6 +147,19 @@ const getAutomaticStatusId = async (
 };
 
 export const kanbanRouter = createTRPCRouter({
+  /**
+   * Retrieves tasks for the Kanban board of a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch tasks for  
+   *
+   * @returns Object containing columns and tasks for the Kanban board:  
+   * - columns — Array of columns with their details and associated task IDs  
+   * - cardTasks — Object mapping task IDs to their details  
+   *
+   * @http GET /api/trpc/kanban.getTasksForKanban
+   */
   getTasksForKanban: protectedProcedure
     .input(
       z.object({
@@ -204,6 +217,19 @@ export const kanbanRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Retrieves backlog items for the Kanban board of a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch backlog items for  
+   *
+   * @returns Object containing columns and backlog items for the Kanban board:  
+   * - columns — Array of columns with their details and associated item IDs  
+   * - cardItems — Object mapping item IDs to their details  
+   *
+   * @http GET /api/trpc/kanban.getBacklogItemsForKanban
+   */
   getBacklogItemsForKanban: protectedProcedure
     .input(
       z.object({
@@ -332,6 +358,20 @@ export const kanbanRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Creates a new status list for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create the status list in  
+   * - name — Name of the status list  
+   * - color — Color of the status list  
+   * - marksTaskAsDone — Boolean indicating if the status marks tasks as done  
+   *
+   * @returns Object containing the details of the created status list.
+   *
+   * @http POST /api/trpc/kanban.createStatusList
+   */
   createStatusList: protectedProcedure
     .input(
       z.object({
@@ -377,6 +417,18 @@ export const kanbanRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Retrieves the automatic status for a backlog item based on its tasks.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the backlog item  
+   * - itemId — ID of the backlog item to determine the status for  
+   *
+   * @returns Object containing the automatic status details for the backlog item.
+   *
+   * @http GET /api/trpc/kanban.getItemAutomaticStatus
+   */
   getItemAutomaticStatus: protectedProcedure
     .input(
       z.object({

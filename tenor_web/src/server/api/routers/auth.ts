@@ -8,6 +8,18 @@ import admin from "firebase-admin";
 import { getEmails } from "~/lib/github";
 
 export const authRouter = createTRPCRouter({
+  /**
+   * Logs in a user using a token and optional GitHub access token.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - token — Firebase authentication token  
+   * - githubAccessToken — Optional GitHub access token for email verification  
+   *
+   * @returns Object indicating success status.
+   *
+   * @http POST /api/trpc/auth.login
+   */
   login: publicProcedure
     .input(
       z.object({ token: z.string(), githubAccessToken: z.string().optional() }),
@@ -68,6 +80,15 @@ export const authRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * Logs out the current user by revoking refresh tokens and clearing the auth cookie.
+   *
+   * @param input None
+   *
+   * @returns Object indicating success status.
+   *
+   * @http POST /api/trpc/auth.logout
+   */
   logout: publicProcedure.mutation(async ({ ctx }) => {
     if (!ctx.session) throw new TRPCError({ code: "UNAUTHORIZED" });
 
@@ -85,6 +106,15 @@ export const authRouter = createTRPCRouter({
     return { success: true };
   }),
 
+  /**
+   * Checks if the current user's email is verified.
+   *
+   * @param input None
+   *
+   * @returns Object indicating whether the user's email is verified.
+   *
+   * @http GET /api/trpc/auth.checkVerification
+   */
   checkVerification: publicProcedure.query(async ({ ctx }) => {
     if (!ctx.session) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
@@ -93,6 +123,17 @@ export const authRouter = createTRPCRouter({
     return { verified: ctx.session.emailVerified };
   }),
 
+  /**
+   * Refreshes the user's session by verifying and updating the auth token.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - token — Firebase authentication token  
+   *
+   * @returns Object indicating success status.
+   *
+   * @http POST /api/trpc/auth.refreshSession
+   */
   refreshSession: publicProcedure
     .input(z.object({ token: z.string() }))
     .mutation(async ({ ctx, input }) => {

@@ -122,6 +122,18 @@ const getTaskProgress = async (
 };
 
 export const userStoriesRouter = createTRPCRouter({
+  /**
+   * Creates a new user story in the specified project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project where the user story will be created  
+   * - userStoryData — Data for the new user story, excluding the scrumId field  
+   *
+   * @returns Object containing success status and the ID of the created user story.
+   *
+   * @http POST /api/trpc/userStories.createUserStory
+   */
   createUserStory: protectedProcedure
     .input(
       z.object({
@@ -175,6 +187,17 @@ export const userStoriesRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * Retrieves an overview of user stories for a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch user stories from  
+   *
+   * @returns Array of user stories with their scrumId and name.
+   *
+   * @http GET /api/trpc/userStories.getProjectUserStoriesOverview
+   */
   getProjectUserStoriesOverview: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -195,6 +218,17 @@ export const userStoriesRouter = createTRPCRouter({
       return userStories;
     }),
 
+  /**
+   * Retrieves user stories in a table-friendly format for a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch user stories from  
+   *
+   * @returns Array of user stories formatted for table display.
+   *
+   * @http GET /api/trpc/userStories.getUserStoriesTableFriendly
+   */
   getUserStoriesTableFriendly: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -237,6 +271,18 @@ export const userStoriesRouter = createTRPCRouter({
       return fixedData as UserStoryCol[];
     }),
 
+  /**
+   * Retrieves detailed information about a specific user story.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - userStoryId — ID of the user story to fetch details for  
+   * - projectId — ID of the project containing the user story  
+   *
+   * @returns Detailed information about the user story.
+   *
+   * @http GET /api/trpc/userStories.getUserStoryDetail
+   */
   getUserStoryDetail: protectedProcedure
     .input(z.object({ userStoryId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -381,6 +427,17 @@ export const userStoriesRouter = createTRPCRouter({
       } as UserStoryDetail;
     }),
 
+  /**
+   * Retrieves previews of all user stories in a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch user story previews from  
+   *
+   * @returns Array of user story previews with their ID, scrumId, and name.
+   *
+   * @http GET /api/trpc/userStories.getAllUserStoryPreviews
+   */
   getAllUserStoryPreviews: protectedProcedure
     .input(
       z.object({
@@ -406,6 +463,19 @@ export const userStoriesRouter = createTRPCRouter({
       return userStoriesPreviews;
     }),
 
+  /**
+   * Modifies an existing user story in a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the user story  
+   * - userStoryId — ID of the user story to modify  
+   * - userStoryData — Updated data for the user story, excluding scrumId and deleted fields  
+   *
+   * @returns Object containing success status and updated user story IDs.
+   *
+   * @http PUT /api/trpc/userStories.modifyUserStory
+   */
   modifyUserStory: protectedProcedure
     .input(
       z.object({
@@ -516,6 +586,21 @@ export const userStoriesRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Modifies tags for a specific user story.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the user story  
+   * - userStoryId — ID of the user story to modify  
+   * - priorityId — (Optional) New priority tag ID  
+   * - size — (Optional) New size tag  
+   * - statusId — (Optional) New status tag ID  
+   *
+   * @returns Object containing success status.
+   *
+   * @http PUT /api/trpc/userStories.modifyUserStoryTags
+   */
   modifyUserStoryTags: protectedProcedure
     .input(
       z.object({
@@ -555,6 +640,18 @@ export const userStoriesRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  /**
+   * Deletes a specific user story from a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the user story  
+   * - userStoryId — ID of the user story to delete  
+   *
+   * @returns Object containing success status.
+   *
+   * @http DELETE /api/trpc/userStories.deleteUserStory
+   */
   deleteUserStory: protectedProcedure
     .input(
       z.object({
@@ -587,6 +684,19 @@ export const userStoriesRouter = createTRPCRouter({
       return { success: true };
     }),
 
+  /**
+   * Generates user stories based on a given prompt and context.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to generate user stories for  
+   * - amount — Number of user stories to generate  
+   * - prompt — Prompt to guide the generation of user stories  
+   *
+   * @returns Array of generated user stories.
+   *
+   * @http POST /api/trpc/userStories.generateUserStories
+   */
   generateUserStories: protectedProcedure
     .input(
       z.object({
@@ -792,6 +902,17 @@ ${passedInPrompt}
       return parsedData;
     }),
 
+  /**
+   * Retrieves the count of user stories in a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to count user stories in  
+   *
+   * @returns Number of user stories in the project.
+   *
+   * @http GET /api/trpc/userStories.getUserStoryCount
+   */
   getUserStoryCount: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

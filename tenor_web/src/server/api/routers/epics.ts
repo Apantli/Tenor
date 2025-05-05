@@ -36,6 +36,17 @@ export const getEpic = async (
 };
 
 export const epicsRouter = createTRPCRouter({
+  /**
+   * Retrieves an overview of epics for a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch epics for  
+   *
+   * @returns Array of epics with their scrum IDs and names.
+   *
+   * @http GET /api/trpc/epics.getProjectEpicsOverview
+   */
   getProjectEpicsOverview: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -56,6 +67,18 @@ export const epicsRouter = createTRPCRouter({
       return epics;
     }),
 
+  /**
+   * Retrieves a specific epic by its scrum ID.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the epic  
+   * - epicId — Scrum ID of the epic to retrieve  
+   *
+   * @returns Epic object with its details.
+   *
+   * @http GET /api/trpc/epics.getEpic
+   */
   getEpic: protectedProcedure
     .input(z.object({ projectId: z.string(), epicId: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -76,6 +99,21 @@ export const epicsRouter = createTRPCRouter({
       return EpicSchema.parse({ ...epicDoc?.data() });
     }),
 
+  /**
+   * Creates a new epic or updates an existing one in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create or update the epic in  
+   * - scrumId — Scrum ID of the epic (use -1 for new epics)  
+   * - name — Name of the epic  
+   * - description — Description of the epic  
+   * - deleted — Boolean indicating if the epic is deleted  
+   *
+   * @returns Success message indicating whether the epic was created or updated.
+   *
+   * @http POST /api/trpc/epics.createOrModifyEpic
+   */
   createOrModifyEpic: protectedProcedure
     .input(EpicSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -116,6 +154,17 @@ export const epicsRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * Retrieves the count of epics in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to count epics for  
+   *
+   * @returns Number of epics in the project.
+   *
+   * @http GET /api/trpc/epics.getEpicCount
+   */
   getEpicCount: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

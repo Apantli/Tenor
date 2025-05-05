@@ -13,7 +13,17 @@ import { getProjectUserRef } from "./settings";
 import { access } from "fs";
 
 export const userRouter = createTRPCRouter({
-  // No role is required to get the user list
+  /**
+   * Retrieves a list of users filtered by a search term.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - filter — Search term to filter users by email or display name  
+   *
+   * @returns Array of users matching the filter criteria.
+   *
+   * @http GET /api/trpc/users.getUserList
+   */
   getUserList: protectedProcedure
     .input(z.object({ filter: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -35,6 +45,17 @@ export const userRouter = createTRPCRouter({
       return usersList;
     }),
 
+  /**
+   * Retrieves a list of users with their roles for a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch users from  
+   *
+   * @returns Array of users with their roles and activity status.
+   *
+   * @http GET /api/trpc/users.getUserListEditBox
+   */
   getUserListEditBox: roleRequiredProcedure(
     {
       flags: [
@@ -97,6 +118,18 @@ export const userRouter = createTRPCRouter({
 
       return users;
     }),
+
+  /**
+   * Retrieves team members for a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch team members from  
+   *
+   * @returns Array of team members with their roles and activity status.
+   *
+   * @http GET /api/trpc/users.getTeamMembers
+   */
   getTeamMembers: roleRequiredProcedure({ flags: ["settings"] }, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -132,6 +165,19 @@ export const userRouter = createTRPCRouter({
 
       return users;
     }),
+
+  /**
+   * Removes a user from a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to remove the user from  
+   * - userId — ID of the user to be removed  
+   *
+   * @returns Void.
+   *
+   * @http DELETE /api/trpc/users.removeUser
+   */
   removeUser: roleRequiredProcedure({ flags: ["settings"] }, "write")
     .input(z.object({ projectId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -170,6 +216,18 @@ export const userRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * Adds a user to a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to add the user to  
+   * - userId — ID of the user to be added  
+   *
+   * @returns Void.
+   *
+   * @http POST /api/trpc/users.addUser
+   */
   addUser: roleRequiredProcedure({ flags: ["settings"] }, "write")
     .input(z.object({ projectId: z.string(), userId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -200,6 +258,20 @@ export const userRouter = createTRPCRouter({
           ctx.firebaseAdmin.firestore.FieldValue.arrayUnion(projectId),
       });
     }),
+
+  /**
+   * Updates the role of a user in a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project where the user role will be updated  
+   * - userId — ID of the user whose role will be updated  
+   * - roleId — New role ID to assign to the user  
+   *
+   * @returns Void.
+   *
+   * @http PUT /api/trpc/users.updateUserRole
+   */
   updateUserRole: roleRequiredProcedure({ flags: ["settings"] }, "write")
     .input(
       z.object({

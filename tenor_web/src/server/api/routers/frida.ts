@@ -13,6 +13,17 @@ interface APIResponse {
 }
 
 export const fridaRouter = createTRPCRouter({
+  /**
+   * Generates a list of functional and non-functional requirements based on the provided context.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - context — Context for generating the requirements  
+   *
+   * @returns Object containing the success status, generated data, message, and any error details.
+   *
+   * @http POST /api/trpc/frida.generateREQ
+   */
   generateREQ: publicProcedure.input(z.string()).query(async ({input}) => {
     const result = await fetch('https://stk-formador-25.azurewebsites.net/epics/generate-from-prompt/', 
     {

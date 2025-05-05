@@ -11,6 +11,15 @@ interface UserWithFiles {
 };
 
 export const filesRouter = createTRPCRouter({
+  /**
+   * Retrieves the list of files associated with the current user.
+   *
+   * @param input None
+   *
+   * @returns Array of files with their URLs and names.
+   *
+   * @http GET /api/trpc/files.getUserFiles
+   */
   getUserFiles: protectedProcedure.query(async ({ctx}) => {
     const docRef = ctx.firestore.collection("users").doc(ctx.session.user.uid);
     const userDoc = await docRef.get();

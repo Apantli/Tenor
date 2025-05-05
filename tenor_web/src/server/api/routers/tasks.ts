@@ -159,13 +159,16 @@ export const getTodoStatusTag = async (
 
 export const tasksRouter = createTRPCRouter({
   /**
-   * @procedure createTask
-   * @description Creates a new task in the specified project and assigns it a scrumId
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {object} input.taskData - The task data without scrumId
-   * @returns {object} Object with success status and the created task ID
-   * @throws {TRPCError} If there's an error creating the task
+   * Creates a new task in the specified project and assigns it a scrumId.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project where the task will be created  
+   * - taskData — Data for the new task, excluding the scrumId field  
+   *
+   * @returns Object containing success status and the ID of the created task.
+   *
+   * @http POST /api/trpc/tasks.createTask
    */
   createTask: protectedProcedure
     .input(
@@ -198,12 +201,16 @@ export const tasksRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure getTasksTableFriendly
-   * @description Gets tasks for a specific item in a table-friendly format
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.itemId - The ID of the item to get tasks for
-   * @returns {TaskCol[]} Array of tasks in a table-friendly format
+   * Retrieves tasks for a specific item in a table-friendly format.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch tasks from  
+   * - itemId — ID of the item to fetch tasks for  
+   *
+   * @returns Array of tasks formatted for table display.
+   *
+   * @http GET /api/trpc/tasks.getTasksTableFriendly
    */
   getTasksTableFriendly: protectedProcedure
     .input(z.object({ projectId: z.string(), itemId: z.string() }))
@@ -240,13 +247,16 @@ export const tasksRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure getTaskDetail
-   * @description Gets detailed information about a specific task
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.taskId - The ID of the task
-   * @returns {TaskDetail} Detailed task information
-   * @throws {TRPCError} If the task is not found
+   * Retrieves detailed information about a specific task.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the task  
+   * - taskId — ID of the task to fetch details for  
+   *
+   * @returns Detailed information about the task.
+   *
+   * @http GET /api/trpc/tasks.getTaskDetail
    */
   getTaskDetail: protectedProcedure
     .input(z.object({ projectId: z.string(), taskId: z.string() }))
@@ -301,13 +311,17 @@ export const tasksRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure modifyTask
-   * @description Updates a task with new data
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.taskId - The ID of the task to modify
-   * @input {object} input.taskData - The new task data
-   * @returns {object} Object with success status
+   * Updates a task with new data.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the task  
+   * - taskId — ID of the task to modify  
+   * - taskData — Updated data for the task, excluding certain fields  
+   *
+   * @returns Object containing success status.
+   *
+   * @http PUT /api/trpc/tasks.modifyTask
    */
   modifyTask: protectedProcedure
     .input(
@@ -334,13 +348,17 @@ export const tasksRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure changeTaskStatus
-   * @description Updates the status of a task
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.taskId - The ID of the task to modify
-   * @input {string} input.statusId - The ID of the new status
-   * @returns {object} Object with success status
+   * Updates the status of a task.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the task  
+   * - taskId — ID of the task to modify  
+   * - statusId — ID of the new status  
+   *
+   * @returns Object containing success status.
+   *
+   * @http PUT /api/trpc/tasks.changeTaskStatus
    */
   changeTaskStatus: protectedProcedure
     .input(
@@ -362,12 +380,16 @@ export const tasksRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure deleteTask
-   * @description Marks a task as deleted (soft delete)
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.taskId - The ID of the task to delete
-   * @returns {object} Object with success status
+   * Marks a task as deleted (soft delete).
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the task  
+   * - taskId — ID of the task to delete  
+   *
+   * @returns Object containing success status.
+   *
+   * @http DELETE /api/trpc/tasks.deleteTask
    */
   deleteTask: protectedProcedure
     .input(
@@ -388,15 +410,19 @@ export const tasksRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure generateTasks
-   * @description Generates tasks for an item using AI
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.itemId - The ID of the item to generate tasks for
-   * @input {string} input.itemType - The type of the item (US, IS, IT)
-   * @input {number} input.amount - The number of tasks to generate
-   * @input {string} input.prompt - Additional user prompt for task generation
-   * @returns {Array} Array of generated tasks with Todo status
+   * Generates tasks for an item using AI.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to generate tasks for  
+   * - itemId — ID of the item to generate tasks for  
+   * - itemType — Type of the item (e.g., "US", "IS", "IT")  
+   * - amount — Number of tasks to generate  
+   * - prompt — Additional user prompt for task generation  
+   *
+   * @returns Array of generated tasks with Todo status.
+   *
+   * @http POST /api/trpc/tasks.generateTasks
    */
   generateTasks: protectedProcedure
     .input(
@@ -658,6 +684,17 @@ ${passedInPrompt}
       }));
     }),
 
+  /**
+   * Retrieves the count of tasks in a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to count tasks in  
+   *
+   * @returns Number of tasks in the project.
+   *
+   * @http GET /api/trpc/tasks.getTaskCount
+   */
   getTaskCount: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

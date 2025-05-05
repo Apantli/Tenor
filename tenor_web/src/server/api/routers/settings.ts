@@ -144,11 +144,15 @@ export const getTaskProgress = () => {
 
 const settingsRouter = createTRPCRouter({
   /**
-   * @procedure getPriorityTypes
-   * @description Retrieves all priority types for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of priority type tags
+   * Retrieves all priority types for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch priority types from  
+   *
+   * @returns Array of priority type tags.
+   *
+   * @http GET /api/trpc/settings.getPriorityTypes
    */
   getPriorityTypes: protectedProcedure
     .input(z.object({ projectId: z.string() }))
@@ -170,13 +174,16 @@ const settingsRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure getStatusTypes
-   * @description Retrieves all status types for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of status type tags
+   * Retrieves all status types for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch status types from  
+   *
+   * @returns Array of status type tags.
+   *
+   * @http GET /api/trpc/settings.getStatusTypes
    */
-
   getStatusTypes: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -198,6 +205,18 @@ const settingsRouter = createTRPCRouter({
       return statusTypesData;
     }),
 
+  /**
+   * Retrieves a specific status type by its ID.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the status type  
+   * - statusId — ID of the status type to fetch  
+   *
+   * @returns Status type object with its details.
+   *
+   * @http GET /api/trpc/settings.getStatusTypeById
+   */
   getStatusTypeById: protectedProcedure
     .input(z.object({ projectId: z.string(), statusId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -217,6 +236,20 @@ const settingsRouter = createTRPCRouter({
       return { id: statusType.id, ...statusTypeData };
     }),
 
+  /**
+   * Creates a new status type for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create the status type in  
+   * - name — Name of the status type  
+   * - color — Color of the status type  
+   * - marksTaskAsDone — Whether the status marks a task as done  
+   *
+   * @returns Object containing the created status type with its ID.
+   *
+   * @http POST /api/trpc/settings.createStatusType
+   */
   createStatusType: protectedProcedure
     .input(
       z.object({
@@ -257,6 +290,18 @@ const settingsRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Reorders status types for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to reorder status types in  
+   * - statusIds — Array of status type IDs in the desired order  
+   *
+   * @returns Void.
+   *
+   * @http PUT /api/trpc/settings.reorderStatusTypes
+   */
   reorderStatusTypes: protectedProcedure
     .input(
       z.object({
@@ -279,6 +324,19 @@ const settingsRouter = createTRPCRouter({
       await batch.commit();
     }),
 
+  /**
+   * Modifies an existing status type in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the status type  
+   * - statusId — ID of the status type to modify  
+   * - status — Updated status type data  
+   *
+   * @returns Object containing the updated status type with its ID.
+   *
+   * @http PUT /api/trpc/settings.modifyStatusType
+   */
   modifyStatusType: protectedProcedure
     .input(
       z.object({
@@ -296,6 +354,18 @@ const settingsRouter = createTRPCRouter({
       return { ...status, id: updatedStatus.id };
     }),
 
+  /**
+   * Deletes a status type from a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the status type  
+   * - statusId — ID of the status type to delete  
+   *
+   * @returns Object containing the ID of the deleted status type.
+   *
+   * @http DELETE /api/trpc/settings.deleteStatusType
+   */
   deleteStatusType: protectedProcedure
     .input(
       z.object({
@@ -329,11 +399,15 @@ const settingsRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure getBacklogTags
-   * @description Retrieves all non-deleted backlog tags for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of backlog tags
+   * Retrieves all backlog tags for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch backlog tags from  
+   *
+   * @returns Array of backlog tags.
+   *
+   * @http GET /api/trpc/settings.getBacklogTags
    */
   getBacklogTags: protectedProcedure
     .input(z.object({ projectId: z.string() }))
@@ -354,6 +428,18 @@ const settingsRouter = createTRPCRouter({
       return backlogTagsData;
     }),
 
+  /**
+   * Retrieves a specific backlog tag by its ID.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the backlog tag  
+   * - tagId — ID of the backlog tag to fetch  
+   *
+   * @returns Backlog tag object with its details.
+   *
+   * @http GET /api/trpc/settings.getBacklogTagById
+   */
   getBacklogTagById: protectedProcedure
     .input(z.object({ projectId: z.string(), tagId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -372,13 +458,18 @@ const settingsRouter = createTRPCRouter({
       const backlogTagData = TagSchema.parse(backlogTag.data());
       return { id: backlogTag.id, ...backlogTagData };
     }),
+
   /**
-   * @procedure createBacklogTag
-   * @description Creates a new backlog tag for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {object} input.tag - The tag data conforming to TagSchema
-   * @returns {Tag & {id: string}} The created tag with its ID
+   * Creates a new backlog tag for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create the backlog tag in  
+   * - tag — Tag data conforming to TagSchema  
+   *
+   * @returns Object containing the created backlog tag with its ID.
+   *
+   * @http POST /api/trpc/settings.createBacklogTag
    */
   createBacklogTag: protectedProcedure
     .input(
@@ -394,6 +485,19 @@ const settingsRouter = createTRPCRouter({
       return { ...tag, id: added.id };
     }),
 
+  /**
+   * Modifies an existing backlog tag in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the backlog tag  
+   * - tagId — ID of the backlog tag to modify  
+   * - tag — Updated tag data conforming to TagSchema  
+   *
+   * @returns Object containing the updated backlog tag with its ID.
+   *
+   * @http PUT /api/trpc/settings.modifyBacklogTag
+   */
   modifyBacklogTag: protectedProcedure
     .input(
       z.object({
@@ -411,6 +515,18 @@ const settingsRouter = createTRPCRouter({
       return { ...tag, id: updatedTag.id };
     }),
 
+  /**
+   * Deletes a backlog tag from a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the backlog tag  
+   * - tagId — ID of the backlog tag to delete  
+   *
+   * @returns Object containing the ID of the deleted backlog tag.
+   *
+   * @http DELETE /api/trpc/settings.deleteBacklogTag
+   */
   deleteBacklogTag: protectedProcedure
     .input(
       z.object({
@@ -425,13 +541,18 @@ const settingsRouter = createTRPCRouter({
       await backlogTagRef.update({ deleted: true });
       return { id: tagId };
     }),
+
   /**
-   * @procedure createRequirementType
-   * @description Creates a new requirement type tag for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {object} input.tag - The tag data conforming to TagSchema
-   * @returns {Tag & {id: string}} The created requirement type tag with its ID
+   * Creates a new requirement type tag for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create the requirement type tag in  
+   * - tag — Tag data conforming to TagSchema  
+   *
+   * @returns Object containing the created requirement type tag with its ID.
+   *
+   * @http POST /api/trpc/settings.createRequirementType
    */
   createRequirementType: protectedProcedure
     .input(
@@ -448,12 +569,16 @@ const settingsRouter = createTRPCRouter({
     }),
 
   /**
-   * @procedure createRequirementFocus
-   * @description Creates a new requirement focus tag for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {object} input.tag - The tag data conforming to TagSchema
-   * @returns {Tag & {id: string}} The created requirement focus tag with its ID
+   * Creates a new requirement focus tag for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create the requirement focus tag in  
+   * - tag — Tag data conforming to TagSchema  
+   *
+   * @returns Object containing the created requirement focus tag with its ID.
+   *
+   * @http POST /api/trpc/settings.createRequirementFocus
    */
   createRequirementFocus: protectedProcedure
     .input(
@@ -468,195 +593,18 @@ const settingsRouter = createTRPCRouter({
       const added = await projectRef.collection("requirementFocus").add(tag);
       return { ...tag, id: added.id };
     }),
-  getContextLinks: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
-        ctx.firestore,
-      );
-      const settings = await projectSettingsRef.get();
-      const settingsData = SettingsSchema.parse(settings.data());
-      const links: string[] = settingsData.aiContext.links.map(
-        (link) => link.link,
-      );
-      return links;
-    }),
-  getContextFiles: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
-        ctx.firestore,
-      );
-      const settings = await projectSettingsRef.get();
-      const settingsData = SettingsSchema.parse(settings.data());
-      const files: { name: string; type: string; size: number }[] =
-        settingsData.aiContext.files.map((file) => ({
-          name: file.name,
-          type: file.type,
-          size: file.size,
-        }));
-      return files;
-    }),
-  getContextDialog: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const projectSettingsRef = getProjectSettingsRef(
-        input.projectId,
-        ctx.firestore,
-      );
-      const settings = await projectSettingsRef.get();
-      const settingsData = SettingsSchema.parse(settings.data());
-      const text: string = settingsData.aiContext.text;
-      return text;
-    }),
-  updateTextContext: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        text: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, text } = input;
-      const projectSettingsRef = getProjectSettingsRef(
-        projectId,
-        ctx.firestore,
-      );
-      const settings = await projectSettingsRef.get();
-      const settingsData = SettingsSchema.parse(settings.data());
-      await projectSettingsRef.update({
-        aiContext: {
-          ...settingsData.aiContext,
-          text,
-        },
-      });
-    }),
-  addLink: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        link: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, link } = input;
-      const projectSettingsRef = getProjectSettingsRef(
-        projectId,
-        ctx.firestore,
-      );
-      const settings = await projectSettingsRef.get();
-      const settingsData = SettingsSchema.parse(settings.data());
-      const newLink = await fetchHTML(link).then(
-        (content) => ({ link, content }),
-        (error) => {
-          console.error("Error fetching HTML:", error);
-          return { link, content: null };
-        },
-      );
-      const newLinks = [...settingsData.aiContext.links, newLink];
-      await projectSettingsRef.update({
-        aiContext: {
-          ...settingsData.aiContext,
-          links: newLinks,
-        },
-      });
-    }),
-  removeLink: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        link: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, link } = input;
-      const projectSettingsRef = getProjectSettingsRef(
-        projectId,
-        ctx.firestore,
-      );
-      const settings = await projectSettingsRef.get();
-      const settingsData = SettingsSchema.parse(settings.data());
-      // remove link from settingsData
-      const newLinks = settingsData.aiContext.links.filter(
-        (l) => l.link !== link,
-      );
-      await projectSettingsRef.update({
-        aiContext: {
-          ...settingsData.aiContext,
-          links: newLinks,
-        },
-      });
-    }),
-  addFiles: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        files: z.array(
-          z.object({
-            name: z.string(),
-            type: z.string(),
-            content: z.string(),
-            size: z.number(),
-          }),
-        ),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, files } = input;
-      const projectSettingsRef = getProjectSettingsRef(
-        projectId,
-        ctx.firestore,
-      );
 
-      const b64Files = files.map((file) => file.content);
-      const fileText = await fetchMultipleFiles(b64Files);
-
-      const filesDecoded = files.map((file, index) => ({
-        name: file.name,
-        type: file.type,
-        content: fileText[index] ?? "",
-        size: file.size,
-      }));
-
-      const settings = await projectSettingsRef.get();
-      const settingsData = SettingsSchema.parse(settings.data());
-      const newFiles = [...settingsData.aiContext.files, ...filesDecoded];
-      await projectSettingsRef.update({
-        aiContext: {
-          ...settingsData.aiContext,
-          files: newFiles,
-        },
-      });
-    }),
-  removeFile: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        file: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, file } = input;
-      const projectSettingsRef = getProjectSettingsRef(
-        projectId,
-        ctx.firestore,
-      );
-      const settings = await projectSettingsRef.get();
-      const settingsData = SettingsSchema.parse(settings.data());
-      // remove file from settingsData
-      const newFiles = settingsData.aiContext.files.filter(
-        (f) => f.name !== file,
-      );
-      await projectSettingsRef.update({
-        aiContext: {
-          ...settingsData.aiContext,
-          files: newFiles,
-        },
-      });
-    }),
-
+  /**
+   * Retrieves all size types for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch size types from  
+   *
+   * @returns Array of size types.
+   *
+   * @http GET /api/trpc/settings.getSizeTypes
+   */
   getSizeTypes: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -673,6 +621,18 @@ const settingsRouter = createTRPCRouter({
       return Array.isArray(settingsData.Size) ? settingsData.Size : [];
     }),
 
+  /**
+   * Updates the size types for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to update size types in  
+   * - size — Array of size values  
+   *
+   * @returns Void.
+   *
+   * @http PUT /api/trpc/settings.changeSize
+   */
   changeSize: protectedProcedure
     .input(z.object({ projectId: z.string(), size: z.array(z.number()) }))
     .mutation(async ({ ctx, input }) => {
@@ -691,6 +651,18 @@ const settingsRouter = createTRPCRouter({
         Size: size,
       });
     }),
+
+  /**
+   * Retrieves detailed roles for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch roles from  
+   *
+   * @returns Array of roles with their details.
+   *
+   * @http GET /api/trpc/settings.getDetailedRoles
+   */
   getDetailedRoles: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -713,6 +685,19 @@ const settingsRouter = createTRPCRouter({
       });
       return rolesData;
     }),
+
+  /**
+   * Adds a new role to a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to add the role to  
+   * - label — Label of the new role  
+   *
+   * @returns Void.
+   *
+   * @http POST /api/trpc/settings.addRole
+   */
   addRole: protectedProcedure
     .input(
       z.object({
@@ -733,6 +718,19 @@ const settingsRouter = createTRPCRouter({
         id: undefined,
       });
     }),
+
+  /**
+   * Removes a role from a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the role  
+   * - roleId — ID of the role to remove  
+   *
+   * @returns Void.
+   *
+   * @http DELETE /api/trpc/settings.removeRole
+   */
   removeRole: protectedProcedure
     .input(
       z.object({
@@ -762,6 +760,7 @@ const settingsRouter = createTRPCRouter({
 
       await projectSettingsRef.collection("userTypes").doc(roleId).delete();
     }),
+
   updateRoleTabPermissions: protectedProcedure
     .input(
       z.object({
@@ -783,6 +782,7 @@ const settingsRouter = createTRPCRouter({
         [parameter]: permission,
       });
     }),
+
   updateViewPerformance: protectedProcedure
     .input(
       z.object({
@@ -802,6 +802,7 @@ const settingsRouter = createTRPCRouter({
         canViewPerformance: newValue,
       });
     }),
+
   updateControlSprints: protectedProcedure
     .input(
       z.object({
@@ -821,6 +822,7 @@ const settingsRouter = createTRPCRouter({
         canControlSprints: newValue,
       });
     }),
+
   getMyRole: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -867,6 +869,7 @@ const settingsRouter = createTRPCRouter({
         ...role,
       };
     }),
+
   getTodoTag: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -876,6 +879,7 @@ const settingsRouter = createTRPCRouter({
       );
       return todoStatus;
     }),
+
   fetchScrumSettings: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -913,6 +917,7 @@ const settingsRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
   fetchDefaultSprintDuration: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -927,6 +932,299 @@ const settingsRouter = createTRPCRouter({
       return (
         (projectSprintDuration.docs[0]?.data().sprintDuration as number) ?? 7
       );
+    }),
+
+  /**
+   * Retrieves all context links for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch context links from  
+   *
+   * @returns Array of context links.
+   *
+   * @http GET /api/trpc/settings.getContextLinks
+   */
+  getContextLinks: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const links: string[] = settingsData.aiContext.links.map(
+        (link) => link.link,
+      );
+      return links;
+    }),
+
+  /**
+   * Retrieves all context files for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch context files from  
+   *
+   * @returns Array of context files with their name, type, and size.
+   *
+   * @http GET /api/trpc/settings.getContextFiles
+   */
+  getContextFiles: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const files: { name: string; type: string; size: number }[] =
+        settingsData.aiContext.files.map((file) => ({
+          name: file.name,
+          type: file.type,
+          size: file.size,
+        }));
+      return files;
+    }),
+
+  /**
+   * Retrieves the context dialog text for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch context dialog text from  
+   *
+   * @returns Context dialog text.
+   *
+   * @http GET /api/trpc/settings.getContextDialog
+   */
+  getContextDialog: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const projectSettingsRef = getProjectSettingsRef(
+        input.projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const text: string = settingsData.aiContext.text;
+      return text;
+    }),
+
+  /**
+   * Updates the context dialog text for a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to update context dialog text in  
+   * - text — New context dialog text  
+   *
+   * @returns Void.
+   *
+   * @http PUT /api/trpc/settings.updateTextContext
+   */
+  updateTextContext: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        text: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, text } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          text,
+        },
+      });
+    }),
+
+  /**
+   * Adds a new link to the context of a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to add the link to  
+   * - link — URL of the link to add  
+   *
+   * @returns Void.
+   *
+   * @http POST /api/trpc/settings.addLink
+   */
+  addLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newLink = await fetchHTML(link).then(
+        (content) => ({ link, content }),
+        (error) => {
+          console.error("Error fetching HTML:", error);
+          return { link, content: null };
+        },
+      );
+      const newLinks = [...settingsData.aiContext.links, newLink];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+
+  /**
+   * Removes a link from the context of a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to remove the link from  
+   * - link — URL of the link to remove  
+   *
+   * @returns Void.
+   *
+   * @http DELETE /api/trpc/settings.removeLink
+   */
+  removeLink: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        link: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, link } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove link from settingsData
+      const newLinks = settingsData.aiContext.links.filter(
+        (l) => l.link !== link,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          links: newLinks,
+        },
+      });
+    }),
+
+  /**
+   * Adds new files to the context of a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to add files to  
+   * - files — Array of files to add, each containing:  
+   *   - name — Name of the file  
+   *   - type — Type of the file  
+   *   - content — Base64-encoded content of the file  
+   *   - size — Size of the file in bytes  
+   *
+   * @returns Void.
+   *
+   * @http POST /api/trpc/settings.addFiles
+   */
+  addFiles: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        files: z.array(
+          z.object({
+            name: z.string(),
+            type: z.string(),
+            content: z.string(),
+            size: z.number(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, files } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+
+      const b64Files = files.map((file) => file.content);
+      const fileText = await fetchMultipleFiles(b64Files);
+
+      const filesDecoded = files.map((file, index) => ({
+        name: file.name,
+        type: file.type,
+        content: fileText[index] ?? "",
+        size: file.size,
+      }));
+
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      const newFiles = [...settingsData.aiContext.files, ...filesDecoded];
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
+    }),
+
+  /**
+   * Removes a file from the context of a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to remove the file from  
+   * - file — Name of the file to remove  
+   *
+   * @returns Void.
+   *
+   * @http DELETE /api/trpc/settings.removeFile
+   */
+  removeFile: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        file: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, file } = input;
+      const projectSettingsRef = getProjectSettingsRef(
+        projectId,
+        ctx.firestore,
+      );
+      const settings = await projectSettingsRef.get();
+      const settingsData = SettingsSchema.parse(settings.data());
+      // remove file from settingsData
+      const newFiles = settingsData.aiContext.files.filter(
+        (f) => f.name !== file,
+      );
+      await projectSettingsRef.update({
+        aiContext: {
+          ...settingsData.aiContext,
+          files: newFiles,
+        },
+      });
     }),
 });
 

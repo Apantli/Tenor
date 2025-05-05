@@ -40,6 +40,17 @@ export const getSprint = async (
 };
 
 export const sprintsRouter = createTRPCRouter({
+  /**
+   * Retrieves an overview of all sprints in a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch sprints from  
+   *
+   * @returns Array of sprints with their number, description, start date, and end date.
+   *
+   * @http GET /api/trpc/sprints.getProjectSprintsOverview
+   */
   getProjectSprintsOverview: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -58,6 +69,19 @@ export const sprintsRouter = createTRPCRouter({
 
       return sprints;
     }),
+
+  /**
+   * Retrieves a specific sprint by its number in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project containing the sprint  
+   * - sprintNumber — Number of the sprint to fetch  
+   *
+   * @returns Sprint object with its details.
+   *
+   * @http GET /api/trpc/sprints.getSprint
+   */
   getSprint: protectedProcedure
     .input(z.object({ projectId: z.string(), sprintNumber: z.number() }))
     .query(async ({ ctx, input }) => {
@@ -77,6 +101,25 @@ export const sprintsRouter = createTRPCRouter({
 
       return SprintSchema.parse({ ...sprintDoc?.data() });
     }),
+
+  /**
+   * Creates or modifies a sprint in a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to create or modify the sprint in  
+   * - number — Sprint number (-1 for new sprint)  
+   * - description — Description of the sprint  
+   * - startDate — Start date of the sprint  
+   * - endDate — End date of the sprint  
+   * - userStoryIds — Array of user story IDs associated with the sprint  
+   * - issueIds — Array of issue IDs associated with the sprint  
+   * - genericItemIds — Array of generic item IDs associated with the sprint  
+   *
+   * @returns Success message indicating whether the sprint was created or updated.
+   *
+   * @http POST /api/trpc/sprints.createOrModifySprint
+   */
   createOrModifySprint: protectedProcedure
     .input(SprintSchema.extend({ projectId: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -118,6 +161,17 @@ export const sprintsRouter = createTRPCRouter({
       }
     }),
 
+  /**
+   * Retrieves backlog item previews grouped by sprint in a specific project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to fetch backlog items from  
+   *
+   * @returns Object containing sprints with their associated backlog items and unassigned items.
+   *
+   * @http GET /api/trpc/sprints.getBacklogItemPreviewsBySprint
+   */
   getBacklogItemPreviewsBySprint: protectedProcedure
     .input(
       z.object({
@@ -247,6 +301,21 @@ export const sprintsRouter = createTRPCRouter({
       };
     }),
 
+  /**
+   * Assigns backlog items to a specific sprint in a project.
+   *
+   * @param input Object containing procedure parameters  
+   * Input object structure:  
+   * - projectId — ID of the project to assign items in  
+   * - sprintId — (Optional) ID of the sprint to assign items to  
+   * - items — Array of items to assign, each containing:  
+   *   - id — ID of the item  
+   *   - itemType — Type of the item ("US" for user story, "IS" for issue)  
+   *
+   * @returns Void.
+   *
+   * @http PUT /api/trpc/sprints.assignItemsToSprint
+   */
   assignItemsToSprint: protectedProcedure
     .input(
       z.object({
