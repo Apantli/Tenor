@@ -259,9 +259,9 @@ export default function RequirementsTable() {
         })
         .sort((a, b) => {
           // Flipped to show the latest requirements first (also makes AI generated ones appear at the top after getting accepted)
-          if (a.scrumId === undefined && b.scrumId === undefined) return 0;
-          if (a.scrumId === undefined) return -1;
-          if (b.scrumId === undefined) return 1;
+          if (a.scrumId === -1 && b.scrumId === -1) return 0;
+          if (a.scrumId === -1) return -1;
+          if (b.scrumId === -1) return 1;
 
           return a.scrumId < b.scrumId ? 1 : -1;
         });
@@ -300,10 +300,7 @@ export default function RequirementsTable() {
         { projectId: params.projectId as string },
         (oldData) => {
           if (!oldData) return oldData;
-          return {
-            ...oldData,
-            fixedData: oldData.concat(acceptedRows ?? []),
-          };
+          return oldData.concat(acceptedRows ?? []);
         },
       );
 
@@ -355,10 +352,7 @@ export default function RequirementsTable() {
       { projectId: params.projectId as string },
       (prev) => {
         if (!prev) return prev;
-        return {
-          ...prev,
-          fixedData: newData,
-        };
+        return newData;
       },
     );
 
@@ -406,9 +400,9 @@ export default function RequirementsTable() {
                 setEditingRequirement(false);
                 setShowSmallPopup(true);
               }}
-              disabled={row.scrumId === undefined}
+              disabled={row.scrumId === -1}
             >
-              {row.scrumId ? (
+              {row.scrumId !== -1 ? (
                 UseFormatForAssignReqTypeScrumId(
                   row.requirementType.name,
                   row.scrumId,
@@ -439,7 +433,7 @@ export default function RequirementsTable() {
                 setEditingRequirement(false);
                 setShowSmallPopup(true);
               }}
-              disabled={!isGhost && row.scrumId === undefined}
+              disabled={!isGhost && row.scrumId === -1}
             >
               {row.name}
             </button>
@@ -664,10 +658,7 @@ export default function RequirementsTable() {
         { projectId: params.projectId as string },
         (prev) => {
           if (!prev) return prev;
-          return {
-            ...prev,
-            fixedData: newData,
-          };
+          return newData;
         },
       );
 
