@@ -1,3 +1,5 @@
+import type { TestProjectInfo } from "cypress/fixtures/types";
+
 describe("test list projects", () => {
   beforeEach(() => {
     cy.signIn("/");
@@ -22,22 +24,15 @@ describe("test list projects", () => {
   });
 
   it("Filter projects", () => {
-    // Dummy test example to view it
-    cy.get(".mr-10 > .justify-between > .flex").click();
-    cy.get('[placeholder="What is your project called..."]').type(
-      "Test project",
-    );
-    // Create the project
-    cy.get(".header > .flex").click();
+    cy.createEmptyProject();
 
     // Navigate to the homepage
     cy.visit("/");
-    cy.get(".relative > .h-10").type("Test project");
-    // Check if the logos exists
-    cy.contains("Test project").should("be.visible");
-
-    cy.get(".relative > .h-10").clear().type("TesT PROJECT");
-
-    cy.contains("Test project").should("be.visible");
+    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
+      cy.get(".relative > .h-10").type(data.name);
+      cy.contains(data.name).should("be.visible");
+      cy.get(".relative > .h-10").clear().type(data.name.toUpperCase());
+      cy.contains(data.name).should("be.visible");
+    });
   });
 });
