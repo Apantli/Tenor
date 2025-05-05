@@ -3,13 +3,13 @@ describe("Test edit epics", () => {
   before(() => {
     cy.signIn("/");
     // Dummy test example to view it
-    // cy.get(".mr-10 > .justify-between > .flex").click();
-    // cy.get('[placeholder="What is your project called..."]').type(
-    //   "Test project",
-    // );
+    cy.get(".mr-10 > .justify-between > .flex").click();
+    cy.get('[placeholder="What is your project called..."]').type(
+      "Test project",
+    );
 
-    // // Create the project
-    // cy.get(".header > .flex").click();
+    // Create the project
+    cy.get(".header > .flex").click();
 
     // Navigate to the homepage
     cy.visit("/");
@@ -26,7 +26,7 @@ describe("Test edit epics", () => {
   it("TC022: Edit Epic", () => {
     cy.contains("Test project").click();
     cy.contains("User Stories").click();
-    cy.contains("New Epic").click();
+    cy.contains('New Epic').click();
     cy.get(".pt-0").should("be.visible");
     cy.get('[placeholder="Briefly describe your epic..."]').click();
     cy.get('[placeholder="Briefly describe your epic..."]').type(
