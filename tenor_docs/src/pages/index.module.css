@@ -7,7 +7,7 @@
   padding: 4rem 0;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(to right, #f8f9fa, #e9f5f5);
+  background: linear-gradient(to right, #000000, #002222);
   margin-bottom: 2rem;
 }
 
@@ -91,7 +91,7 @@
 .featureCard {
   padding: 2rem;
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: linear-gradient(to right, #000000, #002222);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   border: 1px solid var(--ifm-color-emphasis-300);
