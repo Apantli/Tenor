@@ -1,9 +1,25 @@
 {
-    "entryPoints": ["../tenor_web/src/server/api/routers/ai.ts", "../tenor_web/src/server/api/routers/epics.ts"],
+    "entryPoints": [
+        "../tenor_web/src/server/api/routers/ai.ts", 
+        "../tenor_web/src/server/api/routers/epics.ts",
+        "../tenor_web/src/server/api/routers/auth.ts",
+        "../tenor_web/src/server/api/routers/files.ts",
+        "../tenor_web/src/server/api/routers/frida.ts",
+        "../tenor_web/src/server/api/routers/issues.ts",
+        "../tenor_web/src/server/api/routers/kanban.ts",
+        "../tenor_web/src/server/api/routers/logs.ts",
+        "../tenor_web/src/server/api/routers/projects.ts",
+        "../tenor_web/src/server/api/routers/requirements.ts",
+        "../tenor_web/src/server/api/routers/settings.ts",
+        "../tenor_web/src/server/api/routers/sprints.ts",
+        "../tenor_web/src/server/api/routers/tasks.ts",
+        "../tenor_web/src/server/api/routers/userStories.ts",
+        "../tenor_web/src/server/api/routers/users.ts"
+    ],
     "plugin": ["typedoc-plugin-markdown"],
-    "out": "docs/api",
+    "out": "docs/api/endpoints",
     "readme": "none",
     "hideBreadcrumbs": true,
     "tsconfig": "../tenor_web/tsconfig.json",
-    "name": "Tenor API Documentation",
+    "name": "Tenor API Documentation"
 }
