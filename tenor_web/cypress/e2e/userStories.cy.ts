@@ -1,18 +1,24 @@
 import type { TestProjectInfo, TestUserStory } from "cypress/fixtures/types";
 
+let projectPath = "";
+
 describe("User Stories", () => {
   before(() => {
     cy.signIn("/");
     cy.createEmptyProject();
+    cy.url().then((url) => {
+      projectPath = url;
+    });
   });
 
   // Return to dashboard and select the project
   beforeEach(() => {
-    cy.signIn("/");
-    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
-      cy.get('[data-cy="project-list"]').find("li").contains(data.name).click();
-    });
+    cy.visit(projectPath);
     cy.get('[data-cy="userStories"]').click();
+  });
+
+  it("TCTC016: No user stories message", () => {
+    cy.contains("No user stories found").should("exist");
   });
 
   it("TC029: Create empty user story", () => {
@@ -44,9 +50,7 @@ describe("User Stories", () => {
       });
 
       cy.get('[data-cy="popup"]').within(() => {
-        cy.contains(data.title).should(
-          "be.visible",
-        );
+        cy.contains(data.title).should("be.visible");
       });
     });
   });
