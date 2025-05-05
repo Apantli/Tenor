@@ -17,7 +17,7 @@ describe("User Stories", () => {
     cy.get('[data-cy="userStories"]').click();
   });
 
-  it("TCTC016: No user stories message", () => {
+  it("TC016: No user stories message", () => {
     cy.contains("No user stories found").should("exist");
   });
 
