@@ -6,7 +6,7 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type {
   ExistingUserStory,
   UserStoryPreview,
@@ -84,7 +84,7 @@ export default function CreateIssuePopup({
         tagIds: createForm.tags
           .map((tag) => tag.id)
           .filter((val) => val !== undefined),
-        priorityId: createForm.priority?.id,
+        priorityId: createForm.priority?.id ?? "",
         size: createForm.size,
         relatedUserStoryId: createForm.relatedUserStory?.id ?? "", // FIXME
         stepsToRecreate: createForm.stepsToRecreate, // FIXME

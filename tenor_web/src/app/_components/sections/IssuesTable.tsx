@@ -3,7 +3,7 @@ import { api } from "~/trpc/react";
 import { usePopupVisibilityState } from "../Popup";
 import { ChangeEventHandler, useMemo, useState } from "react";
 import Table, { type TableColumns } from "../table/Table";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";

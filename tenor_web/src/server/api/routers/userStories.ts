@@ -44,6 +44,7 @@ import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import { getProjectContext } from "~/utils/helpers/shortcuts/ai";
 import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
 import { getRequirementContext } from "~/utils/helpers/shortcuts/requirements";
+import { UserCol, UserStoryCol } from "~/lib/types/columnTypes";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -335,6 +336,14 @@ export const userStoriesRouter = createTRPCRouter({
         statusId: statusId,
       });
     }),
+  /**
+   * @function generateUserStories
+   * @description Generates user stories using AI based on a given prompt.
+   * @param {string} projectId - The ID of the project to which the user stories belong.
+   * @param {number} amount - The number of user stories to generate.
+   * @param {string} prompt - The prompt to use for generating user stories.
+   * @returns {Promise<WithId<UserStoryDetail>[]>} - A promise that resolves to an array of generated user stories.
+   */
   generateUserStories: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
@@ -358,115 +367,79 @@ export const userStoriesRouter = createTRPCRouter({
         z.array(UserStorySchema.omit({ scrumId: true, deleted: true })),
       );
 
-      const parsedData = await Promise.all(
+      const parsedData: UserStoryDetail[] = await Promise.all(
         data.map(async (userStory) => {
-          let priority = undefined;
-          if (
-            userStory.priorityId !== undefined &&
-            userStory.priorityId !== ""
-          ) {
-            const priorityTag = await getPriority(
-              ctx.firestore,
-              projectId,
-              userStory.priorityId,
-            );
-            priority = priorityTag;
-          }
+          const priority = userStory.priorityId
+            ? await getPriority(ctx.firestore, projectId, userStory.priorityId)
+            : undefined;
 
-          let epic = undefined;
-          if (userStory.epicId !== undefined && userStory.epicId !== "") {
-            const epicTag = await ctx.firestore
-              .collection("projects")
-              .doc(projectId)
-              .collection("epics")
-              .doc(userStory.epicId)
-              .get();
-            if (epicTag.exists) {
-              const epicData = EpicSchema.parse(epicTag.data());
-              epic = { id: epicTag.id, ...epicData };
-            }
-          }
+          const epic = userStory.epicId
+            ? await getEpic(ctx.firestore, projectId, userStory.epicId)
+            : undefined;
 
           // Check the related user stories exist and are valid
-          const validDependencies: string[] = [];
-          const dependencies = (
+          const dependencies: WithId<UserStoryPreview>[] = (
             await Promise.all(
               userStory.dependencyIds.map(async (dependencyId) => {
-                const dependency = await ctx.firestore
-                  .collection("projects")
-                  .doc(projectId)
-                  .collection("userStories")
-                  .doc(dependencyId)
-                  .get();
-                if (dependency.exists) {
-                  validDependencies.push(dependencyId);
-                  const dependencyData = UserStorySchema.parse(
-                    dependency.data(),
+                try {
+                  return await getUserStory(
+                    ctx.firestore,
+                    projectId,
+                    dependencyId,
                   );
-                  return {
-                    id: dependency.id,
-                    name: dependencyData.name,
-                    scrumId: dependencyData.scrumId,
-                  };
+                } catch (error) {
+                  console.error(
+                    "Error fetching dependencyId user story:",
+                    error,
+                  );
+                  return undefined;
                 }
-                return undefined;
               }),
             )
           ).filter((dep) => dep !== undefined);
 
-          const validRequiredBy: string[] = [];
-          const requiredBy = (
+          const requiredBy: WithId<UserStoryPreview>[] = (
             await Promise.all(
               userStory.requiredByIds.map(async (requiredById) => {
-                const requiredBy = await ctx.firestore
-                  .collection("projects")
-                  .doc(projectId)
-                  .collection("userStories")
-                  .doc(requiredById)
-                  .get();
-                if (requiredBy.exists) {
-                  validRequiredBy.push(requiredById);
-                  const requiredByData = UserStorySchema.parse(
-                    requiredBy.data(),
+                try {
+                  return await getUserStory(
+                    ctx.firestore,
+                    projectId,
+                    requiredById,
                   );
-                  return {
-                    id: requiredBy.id,
-                    name: requiredByData.name,
-                    scrumId: requiredByData.scrumId,
-                  };
+                } catch (error) {
+                  console.error("Error fetching requiredBy user story:", error);
+                  return undefined;
                 }
-                return undefined;
               }),
             )
           ).filter((req) => req !== undefined);
 
-          // const tags = (
-          //   await Promise.all(
-          //     userStory.tagIds.map(async (tagId) => {
-          //       const tag = await settingsRef
-          //         .collection("backlogTags")
-          //         .doc(tagId)
-          //         .get();
-          //       if (tag.exists) {
-          //         const tagData = TagSchema.parse(tag.data());
-          //         return { id: tag.id, ...tagData };
-          //       }
-          //       return undefined;
-          //     }),
-          //   )
-          // ).filter((tag) => tag !== undefined);
+          const tags: WithId<Tag>[] = (
+            await Promise.all(
+              userStory.tagIds.map(async (tagId) => {
+                try {
+                  return await getBacklogTag(ctx.firestore, projectId, tagId);
+                } catch (error) {
+                  console.error("Error fetching tag:", error);
+                  return undefined;
+                }
+              }),
+            )
+          ).filter((tag) => tag !== undefined);
 
-          return {
-            name: userStory.name,
-            description: userStory.description,
-            acceptanceCriteria: userStory.acceptanceCriteria,
-            epic: epic,
-            size: userStory.size,
-            tags: [] as Tag[],
-            priority: priority,
-            dependencies: dependencies as UserStoryPreview[],
-            requiredBy: requiredBy as UserStoryPreview[],
-          } as UserStoryDetail;
+          const newUserStory: UserStoryDetail = {
+            id: crypto.randomUUID(),
+            ...userStory,
+            requiredBy,
+            dependencies,
+            epic,
+            priority,
+            scrumId: 0,
+            tags,
+          };
+
+          return newUserStory;
         }),
       );
 

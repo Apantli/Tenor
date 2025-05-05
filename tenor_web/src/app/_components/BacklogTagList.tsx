@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import TagComponent from "./TagComponent";
 import Dropdown, { DropdownButton, DropdownItem } from "./Dropdown";
 import { api } from "~/trpc/react";

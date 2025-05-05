@@ -212,6 +212,14 @@ export const requirementsRouter = createTRPCRouter({
       await requirementDoc?.ref.update({ deleted: true });
     }),
 
+  /**
+   * @function generateRequirements
+   * @description Retrieves the context for generating requirements based on the project ID and amount.
+   * @param projectId The ID of the project.
+   * @param amount The number of requirements to generate.
+   * @param prompt The prompt to use for generating requirements.
+   * @returns {Promise<RequirementCol[]>} An array of generated requirements.
+   */
   generateRequirements: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
@@ -269,7 +277,7 @@ export const requirementsRouter = createTRPCRouter({
         }
       }
 
-      const parsedRequirements = await Promise.all(
+      const parsedRequirements: RequirementCol[] = await Promise.all(
         generatedRequirements.map(async (req) => {
           const priority = req.priorityId
             ? await getPriority(ctx.firestore, projectId, req.priorityId)
