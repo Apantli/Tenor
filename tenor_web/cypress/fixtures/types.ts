@@ -8,3 +8,8 @@ export interface TestUserStory {
   description: string;
   acceptanceCriteria: string;
 }
+
+export interface TestTask {
+  name: string;
+  description: string;
+}
