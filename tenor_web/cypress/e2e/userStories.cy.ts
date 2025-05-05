@@ -55,6 +55,14 @@ describe("User Stories", () => {
     });
   });
 
+  it("TC017: User story appears on table", () => {
+    cy.fixture("TestUserStory").then((data: TestUserStory) => {
+      cy.contains("US01").should("be.visible");
+      cy.contains(data.title).should("be.visible");
+      cy.contains("No Epic").should("be.visible");
+    });
+  });
+
   it("TC028: See user story details", () => {
     cy.fixture("TestUserStory").then((data: TestUserStory) => {
       cy.contains(data.title).click();
