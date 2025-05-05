@@ -9,6 +9,10 @@ export interface TestUserStory {
   acceptanceCriteria: string;
 }
 
+export interface TestSprint {
+  description: string;
+}
+
 export interface TestIssue {
   title: string;
   description: string;
