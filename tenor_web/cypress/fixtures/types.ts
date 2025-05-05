@@ -9,6 +9,11 @@ export interface TestUserStory {
   acceptanceCriteria: string;
 }
 
+export interface TestTask {
+  name: string;
+  description: string;
+}
+
 export interface TestSprint {
   description: string;
 }

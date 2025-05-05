@@ -1,41 +1,70 @@
-describe("Test edit user stories", () => {
-  // Create a project to view it
+import type {
+  TestProjectInfo,
+  TestUserStory,
+  TestTask,
+} from "cypress/fixtures/types";
+
+describe("Tasks", () => {
   before(() => {
     cy.signIn("/");
-    // Dummy test example to view it
-    cy.get(".mr-10 > .justify-between > .flex").click();
-    cy.get('[placeholder="What is your project called..."]').type(
-      "Test project",
-    );
-
-    // Create the project
-    cy.get(".header > .flex").click();
-
-    // Navigate to the homepage
-    cy.visit("/");
-    // Check if the logos exists
-    cy.get(".flex-row > .flex").should("be.visible");
-    cy.contains("Test project").should("be.visible");
-    cy.contains("Test project").click();
+    cy.createEmptyProject();
   });
 
+  // Return to dashboard and select the project
   beforeEach(() => {
     cy.signIn("/");
+    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
+      cy.get('[data-cy="project-list"]').find("li").contains(data.name).click();
+    });
+    cy.get('[data-cy="userStories"]').click();
   });
 
-  it("TC032: Visualize user story tasks", () => {
-    cy.contains("Test project").click();
-    cy.contains("User Stories").click();
-    cy.contains("New Story").click();
-    cy.get('[placeholder="Short summary of the story..."]').click();
-    cy.get('[placeholder="Short summary of the story..."]').type(
-      "Test story",
-    );
-    cy.get('.shrink-0 > [data-cy="primary-button"]').click();
-    cy.wait(2000);
-    cy.get('.mt-4.flex > .gap-3 > .gap-1 > [data-cy="primary-button"]').click();
-    cy.get('[placeholder="Enter task name..."]').click();
-    cy.get('[placeholder="Enter task name..."]').clear().type("Test task edited", { force: true });
-    cy.get('.mt-4 > [data-cy="primary-button"]').click();
+  it("TC035: Create user story alert message", () => {
+    cy.fixture("TestUserStory").then((data: TestUserStory) => {
+      cy.get('[data-cy="primary-button"]').contains("+ New Story").click();
+
+      cy.get('[data-cy="popup"]').within(() => {
+        cy.get('[placeholder="Short summary of the story..."]').type(
+          data.title,
+        );
+        cy.get('[placeholder="Explain the story in detail..."]').type(
+          data.description,
+        );
+        cy.get(
+          '[placeholder="Describe the work that needs to be done..."]',
+        ).type(data.acceptanceCriteria);
+        cy.get('[data-cy="primary-button"]').contains("Create story").click();
+      });
+    });
+
+    cy.get('[data-cy="primary-button"]').contains("+ Add task").click();
+    cy.get('[data-cy="primary-button"]').contains("Create Task").click();
+    cy.contains("Oops").should("be.visible");
+  });
+
+  it("TC036: Create task", () => {
+    cy.contains("US01").click();
+
+    cy.get('[data-cy="primary-button"]').contains("+ Add task").click();
+
+    cy.fixture("TestTask").then((data: TestTask) => {
+      cy.get('[data-cy="popup"]').within(() => {
+        cy.get('[placeholder="Enter task name..."]').type(data.name);
+        cy.get('[placeholder="Task description"]').type(data.description);
+
+        cy.get('[data-cy="primary-button"]').contains("Create Task").click();
+      });
+    });
+  });
+
+  it("TC038: Open tasks", () => {
+    cy.contains("US01").click();
+
+    cy.fixture("TestTask").then((data: TestTask) => {
+      cy.get('[data-cy="popup"]').within(() => {
+        cy.contains("TS01").click();
+        cy.contains(data.description).should("be.visible");
+      });
+    });
   });
 });
