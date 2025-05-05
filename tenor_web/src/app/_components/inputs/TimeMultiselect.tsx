@@ -3,6 +3,7 @@ import { cn } from "~/lib/utils";
 import Dropdown, { DropdownButton } from "../Dropdown";
 import InputTextField from "./InputTextField";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import { props } from "node_modules/cypress/types/bluebird";
 
 export type TimeFrame = "Days" | "Weeks";
 export const timeframeMultiplier = {
@@ -28,7 +29,8 @@ export default function TimeMultiselect({
   timeFrame,
   onTimeNumberChange,
   onTimeFrameChange,
-}: Props) {
+  ...props
+}: Props & React.HTMLProps<HTMLDivElement>) {
   const id = useId();
   const timeframeOptions = ["Days", "Weeks"] as TimeFrame[];
 
@@ -61,6 +63,7 @@ export default function TimeMultiselect({
           inputMode="numeric"
           pattern="[0-9]*"
           disableAI={true}
+          {...props}
         />
         <Dropdown
           label={
