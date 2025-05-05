@@ -157,8 +157,9 @@ export const getIssueDetail = async (
   const priority: Tag | undefined =
     (await getPriority(firestore, projectId, issue.priorityId)) ?? undefined;
 
-  const status: StatusTag | undefined =
-    (await getStatusType(firestore, projectId, issue.statusId)) ?? undefined;
+  const status: StatusTag | undefined = issue.statusId
+    ? await getStatusType(firestore, projectId, issue.statusId)
+    : undefined;
 
   const tags: Tag[] = await Promise.all(
     issue.tagIds.map(async (tagId) => {

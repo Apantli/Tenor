@@ -129,6 +129,7 @@ export const getUserStoryDetail = async (
   projectId: string,
   userStoryId: string,
 ) => {
+  console.log("LOADING USER STORY DETAIL", userStoryId);
   const userStory = await getUserStory(firestore, projectId, userStoryId);
 
   const priority: Tag | undefined =
@@ -139,9 +140,9 @@ export const getUserStoryDetail = async (
     ? await getEpic(firestore, projectId, userStory.epicId)
     : undefined;
 
-  const status: StatusTag | undefined =
-    (await getStatusType(firestore, projectId, userStory.statusId)) ??
-    undefined;
+  const status: StatusTag | undefined = userStory.statusId
+    ? await getStatusType(firestore, projectId, userStory.statusId)
+    : undefined;
 
   const tags: Tag[] = await Promise.all(
     userStory.tagIds.map(async (tagId) => {

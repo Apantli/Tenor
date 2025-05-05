@@ -85,9 +85,9 @@ export default function CreateItemTagPopup({
   const { mutateAsync: createBacklogTag, isPending: creatingBacklogTag } =
     api.settings.createBacklogTag.useMutation();
   const { mutateAsync: createReqTypeTag, isPending: creatingReqTypeTag } =
-    api.requirements.createRequirementTypeTag.useMutation();
+    api.requirements.createOrModifyRequirementType.useMutation();
   const { mutateAsync: createReqFocusTag, isPending: creatingReqFocusTag } =
-    api.requirements.createRequirementFocusTag.useMutation();
+    api.requirements.createOrModifyRequirementFocus.useMutation();
 
   const isLoading = () => {
     switch (itemTagType) {
@@ -129,12 +129,12 @@ export default function CreateItemTagPopup({
         });
         break;
       case "ReqType":
-        existingTags = await utils.requirements.getRequirementTypeTags.fetch({
+        existingTags = await utils.requirements.getRequirementTypes.fetch({
           projectId: projectId as string,
         });
         break;
       case "ReqFocus":
-        existingTags = await utils.requirements.getRequirementFocusTags.fetch({
+        existingTags = await utils.requirements.getRequirementFocuses.fetch({
           projectId: projectId as string,
         });
         break;
@@ -159,7 +159,7 @@ export default function CreateItemTagPopup({
 
     const tagData = {
       projectId: projectId as string,
-      tag: {
+      tagData: {
         name: form.name,
         color: form.color,
         deleted: false,

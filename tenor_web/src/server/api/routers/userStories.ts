@@ -83,11 +83,8 @@ export const userStoriesRouter = createTRPCRouter({
   getUserStoryDetail: roleRequiredProcedure(backlogPermissions, "read")
     .input(z.object({ userStoryId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await getUserStoryDetail(
-        ctx.firestore,
-        input.projectId,
-        input.userStoryId,
-      );
+      const { userStoryId, projectId } = input;
+      return await getUserStoryDetail(ctx.firestore, projectId, userStoryId);
     }),
 
   /**

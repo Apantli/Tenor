@@ -13,7 +13,12 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import { StatusTag, type Size, type Tag } from "~/lib/types/firebaseSchemas";
+import {
+  StatusTag,
+  WithId,
+  type Size,
+  type Tag,
+} from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
@@ -36,7 +41,7 @@ export function CreateTaskForm({
   const projectIdString = projectId as string;
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  const { data: users } = api.users.getUserListEditBox.useQuery({
+  const { data: users } = api.users.getUsers.useQuery({
     projectId: projectIdString,
   });
 
@@ -53,7 +58,7 @@ export function CreateTaskForm({
     description: string;
     status: StatusTag;
     assigneeId?: string;
-    assignee?: UserPreview;
+    assignee?: WithId<UserPreview>;
     size?: Size;
     dueDate?: Date;
   }>({
@@ -97,7 +102,7 @@ export function CreateTaskForm({
       return;
     }
 
-    let dueDate: Timestamp | null = null;
+    let dueDate: Timestamp | undefined = undefined;
     if (createForm.dueDate) {
       dueDate = Timestamp.fromDate(createForm.dueDate);
     }
@@ -113,6 +118,7 @@ export function CreateTaskForm({
         size: createForm.size,
         assignee: createForm.assignee,
         dueDate: createForm.dueDate,
+        scrumId: -1,
       });
       onTaskAdded?.(taskId);
       return;
@@ -198,9 +204,10 @@ export function CreateTaskForm({
                 ...createForm,
                 assigneeId: person?.id?.toString() ?? undefined,
                 assignee: {
-                  uid: person?.user?.uid?.toString() ?? "",
+                  id: person?.id?.toString() ?? "",
                   displayName: person?.user?.displayName ?? "",
                   photoURL: person?.user?.photoURL ?? "",
+                  email: "",
                 },
               });
             }}

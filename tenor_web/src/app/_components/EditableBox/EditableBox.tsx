@@ -6,16 +6,15 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
 import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
+import { User } from "firebase/auth";
+import { UserPreview } from "~/lib/types/detailSchemas";
+import { WithId } from "~/lib/types/firebaseSchemas";
 
 export interface Option {
   id: string | number | null;
-  name: string;
+  displayName: string;
   image?: string;
-  user?: {
-    uid: string;
-    displayName?: string;
-    photoURL?: string;
-  };
+  user?: WithId<UserPreview>;
 }
 
 interface EditableBoxProps {
@@ -36,7 +35,7 @@ export function EditableBox({
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredOptions = options.filter((option) =>
-    option.name?.toLowerCase().includes(searchTerm.toLowerCase()),
+    option.displayName?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleSelect = (option: Option) => {
@@ -61,18 +60,18 @@ export function EditableBox({
               ) : selectedOption.image ? (
                 <img
                   src={selectedOption.image}
-                  alt={selectedOption.name}
+                  alt={selectedOption.displayName}
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
                   <span className="text-sm font-medium text-gray-500">
-                    {selectedOption.name.charAt(0).toUpperCase()}
+                    {selectedOption.displayName.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
               <span className="font-medium text-gray-700">
-                {selectedOption.name}
+                {selectedOption.displayName}
               </span>
             </div>
             <div
@@ -104,18 +103,18 @@ export function EditableBox({
         ) : option.image ? (
           <img
             src={option.image}
-            alt={option.name}
+            alt={option.displayName}
             className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
             {/* Perhaps is better to just show the name if there is no image, I added this because is better in case just one element has an image an others don't */}
             <span className="text-sm font-medium text-gray-500">
-              {option.name.charAt(0).toUpperCase()}
+              {option.displayName.charAt(0).toUpperCase()}
             </span>
           </div>
         )}
-        <span>{option.name}</span>
+        <span>{option.displayName}</span>
       </DropdownButton>
     );
   };

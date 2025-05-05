@@ -452,4 +452,10 @@ ${passedInPrompt}
         status: todoTag as StatusTag,
       }));
     }),
+
+  getTodoStatusTag: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await getTodoStatusTag(ctx.firestore, input.projectId);
+    }),
 });

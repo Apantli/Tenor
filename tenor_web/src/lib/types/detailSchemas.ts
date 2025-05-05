@@ -84,7 +84,7 @@ export type TaskDetail = {
   scrumId: number;
   name: string;
   description: string;
-  status?: StatusTag;
+  status: StatusTag;
   size?: Size;
   assignee?: WithId<UserPreview>;
   dueDate?: Date;

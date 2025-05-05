@@ -58,8 +58,8 @@ export default function ProjectSprints() {
     string | null
   >(null);
 
-  const { data: defaultSprintDuration, isLoading: isLoadingSprintDuration } =
-    api.settings.fetchDefaultSprintDuration.useQuery({
+  const { data: scrumSettings, isLoading: isLoadingSprintDuration } =
+    api.settings.fetchScrumSettings.useQuery({
       projectId: projectId as string,
     });
 
@@ -69,7 +69,7 @@ export default function ProjectSprints() {
   useEffect(() => {
     if (
       !isLoadingSprintDuration &&
-      defaultSprintDuration !== undefined &&
+      scrumSettings !== undefined &&
       backlogItemsBySprint != undefined
     ) {
       for (const sprint of backlogItemsBySprint?.sprints ?? []) {
@@ -92,12 +92,12 @@ export default function ProjectSprints() {
 
       defaultSprintEndDate = new Date(
         (defaultSprintInitialDate ?? new Date()).getTime() +
-          defaultSprintDuration * 24 * 60 * 60 * 1000,
+          scrumSettings.sprintDuration * 24 * 60 * 60 * 1000,
       );
       setNewSprintStartDate(defaultSprintInitialDate);
       setNewSprintEndDate(defaultSprintEndDate);
     }
-  }, [isLoadingSprintDuration, defaultSprintDuration, backlogItemsBySprint]);
+  }, [isLoadingSprintDuration, scrumSettings, backlogItemsBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
   const [sprintSearchValue, setSprintSearchValue] = useState("");

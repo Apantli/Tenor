@@ -4,15 +4,12 @@ import { useParams } from "next/navigation";
 import React from "react";
 import { api } from "~/trpc/react";
 import PillPickerComponent from "../PillPickerComponent";
-import type { ExistingUserStory } from "~/lib/types/detailSchemas";
-import {
-  useFormatEpicScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
+import type { UserStoryPreview } from "~/lib/types/detailSchemas";
+import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 
 interface Props {
-  userStory?: ExistingUserStory;
-  onChange: (userStory?: ExistingUserStory) => void;
+  userStory?: UserStoryPreview;
+  onChange: (userStory?: UserStoryPreview) => void;
 }
 
 export default function UserStoryPicker({ userStory, onChange }: Props) {
@@ -24,11 +21,11 @@ export default function UserStoryPicker({ userStory, onChange }: Props) {
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
 
-  const getUserStoryId = (userStory: ExistingUserStory) => {
+  const getUserStoryId = (userStory: UserStoryPreview) => {
     return formatUserStoryScrumId(userStory.scrumId);
   };
 
-  const userStoryToItem = (userStory?: ExistingUserStory) => ({
+  const userStoryToItem = (userStory?: UserStoryPreview) => ({
     id: userStory?.scrumId.toString() ?? "",
     label: userStory?.name ?? "Choose user story",
     prefix: userStory ? getUserStoryId(userStory) : undefined,

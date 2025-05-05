@@ -28,7 +28,7 @@ export interface TaskCol {
   id: string;
   scrumId?: number;
   name: string;
-  status?: StatusTag;
+  status: StatusTag;
   assignee?: UserPreview;
 }
 

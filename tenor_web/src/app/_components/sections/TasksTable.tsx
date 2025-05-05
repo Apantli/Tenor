@@ -21,7 +21,7 @@ import type {
   StatusTag,
 } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import type { TaskCol, tasksRouter } from "~/server/api/routers/tasks";
+import type { tasksRouter } from "~/server/api/routers/tasks";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import type { inferRouterOutputs } from "@trpc/server";
@@ -36,6 +36,7 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "../Popup";
 import TaskDetailPopup from "../tasks/TaskDetailPopup";
+import { TaskCol } from "~/lib/types/columnTypes";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];
@@ -92,11 +93,15 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
 
   const tasksData = itemData?.tasks;
 
+  const { data: todoStatus } = api.tasks.getTodoStatusTag.useQuery({
+    projectId: projectId as string,
+  });
+
   const {
     data: fetchedTasksTable,
     refetch: refetchTasks,
     isLoading,
-  } = api.tasks.getTasksTableFriendly.useQuery(
+  } = api.tasks.getTaskTable.useQuery(
     {
       projectId: projectId as string,
       itemId,
@@ -112,7 +117,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
 
   const taskDetailToTaskCol = (detail: TaskDetail): TaskCol => ({
     id: detail.id,
-    title: detail.name,
+    name: detail.name,
     scrumId: detail.scrumId,
     status: detail.status,
     assignee: detail.assignee,
@@ -125,7 +130,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     (task) => ({
       id: task.id,
       scrumId: task.scrumId,
-      name: task.title,
+      name: task.name,
       status: task.status,
       assignee: task.assignee,
     }),
@@ -185,12 +190,12 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       return task;
     });
 
-    await utils.tasks.getTasksTableFriendly.cancel({
+    await utils.tasks.getTaskTable.cancel({
       projectId: projectId as string,
       itemId,
     });
 
-    utils.tasks.getTasksTableFriendly.setData(
+    utils.tasks.getTaskTable.setData(
       {
         projectId: projectId as string,
         itemId,
@@ -356,20 +361,20 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     // Optimistic update - filter out deleted tasks
     const newTasks = transformedTasks.filter((task) => !ids.includes(task.id));
 
-    await utils.tasks.getTasksTableFriendly.cancel({
+    await utils.tasks.getTaskTable.cancel({
       projectId: projectId as string,
       itemId: itemId,
     });
 
     const newTransformedTasks = newTasks.map((task) => ({
       id: task.id,
-      scrumId: task.scrumId!,
-      title: task.name, // name to title
+      scrumId: task.scrumId,
+      name: task.name,
       status: task.status,
       assignee: task.assignee,
     }));
 
-    utils.tasks.getTasksTableFriendly.setData(
+    utils.tasks.getTaskTable.setData(
       { projectId: projectId as string, itemId: itemId },
       newTransformedTasks,
     );
@@ -416,7 +421,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             (task) =>
               ({
                 id: crypto.randomUUID(),
-                scrumId: undefined,
+                scrumId: -1,
                 name: task.name,
                 description: task.description,
                 status: task.status,
@@ -429,7 +434,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         return;
       }
 
-      await utils.tasks.getTasksTableFriendly.cancel({
+      await utils.tasks.getTaskTable.cancel({
         projectId: projectId as string,
         itemId: itemId,
       });
@@ -442,9 +447,10 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         assignee: task.assignee,
       }));
 
-      utils.tasks.getTasksTableFriendly.setData(
+      utils.tasks.getTaskTable.setData(
         { projectId: projectId as string, itemId: itemId },
-        tasksTableData?.concat(generatedTasksPreviews ?? []),
+        // tasksTableData?.concat(generatedTasksPreviews ?? []),
+        tasksTableData?.concat([]),
       );
 
       // Add the tasks to the database
@@ -458,8 +464,10 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             itemType: itemType,
             size: task.size,
             statusId: task.status.id ?? "",
-            assigneeId: task.assignee?.uid ?? "",
-            dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : null,
+            assigneeId: task.assignee?.id ?? "",
+            dueDate: task.dueDate
+              ? Timestamp.fromDate(task.dueDate)
+              : undefined,
           },
         });
       }
@@ -521,7 +529,9 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     setGeneratedTasks(
       generatedData.map((task, i) => ({
         ...task,
+        scrumId: -1,
         id: i.toString(),
+        status: task.status ?? todoStatus!,
       })),
     );
     if (setUnsavedTasks) setUnsavedTasks(true);
@@ -649,7 +659,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
                 updateGhostRow(selectedGhostTaskId, (_) => ({
                   id: selectedGhostTaskId,
                   name: task.name,
-                  status: task.status,
+                  status: task.status ?? todoStatus!,
                   scrumId: task.scrumId,
                   assignee: task.assignee,
                 }));

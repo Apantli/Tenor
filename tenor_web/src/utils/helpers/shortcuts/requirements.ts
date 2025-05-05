@@ -149,7 +149,7 @@ export const getRequirementTypes = async (
 ) => {
   const requirementTypesRef = getRequirementTypesRef(firestore, projectId)
     .where("deleted", "==", false)
-    .orderBy("scrumId", "desc");
+    .orderBy("name", "desc");
   const requirementTypesSnapshot = await requirementTypesRef.get();
   const requirementTypes: WithId<Tag>[] = requirementTypesSnapshot.docs.map(
     (doc) => {
@@ -237,7 +237,7 @@ export const getRequirementFocuses = async (
 ) => {
   const requirementFocusesRef = getRequirementFocusesRef(firestore, projectId)
     .where("deleted", "==", false)
-    .orderBy("scrumId", "desc");
+    .orderBy("name", "desc");
   const requirementFocusesSnapshot = await requirementFocusesRef.get();
   const requirementFocuses: WithId<Tag>[] = requirementFocusesSnapshot.docs.map(
     (doc) => {
@@ -281,7 +281,6 @@ export const getRequirementFocus = async (
   } as WithId<Tag>;
 };
 
-// FIXME: Move defaults to another place
 /**
  * @function getRequirementTable
  * @description Retrieves all requirements associated with a specific project and their details

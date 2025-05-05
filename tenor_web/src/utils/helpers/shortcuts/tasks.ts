@@ -2,11 +2,12 @@ import { Firestore } from "firebase-admin/firestore";
 import { getProjectRef } from "./general";
 import { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import { TaskSchema } from "~/lib/types/zodFirebaseSchema";
-import { getPriority, getStatusType } from "./tags";
+import { getPriority, getStatusType, getTodoStatusTag } from "./tags";
 import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import * as admin from "firebase-admin";
 import { TaskCol } from "~/lib/types/columnTypes";
 import { getGlobalUserPreview } from "./users";
+import { stat } from "fs";
 
 /**
  * @function getTasksRef
@@ -225,7 +226,7 @@ export const getTaskDetail = async (
 ) => {
   const task = await getTask(firestore, projectId, taskId);
 
-  const assignee: WithId<UserPreview> | undefined = (await task.assigneeId)
+  const assignee: WithId<UserPreview> | undefined = task.assigneeId
     ? await getGlobalUserPreview(admin, task.assigneeId)
     : undefined;
 
@@ -237,7 +238,7 @@ export const getTaskDetail = async (
     ...task,
     dueDate: task.dueDate ?? undefined,
     assignee,
-    status,
+    status: status ?? (await getTodoStatusTag(firestore, projectId)),
   };
   return taskDetail;
 };
@@ -258,21 +259,25 @@ export const getTaskTable = async (
   itemId: string,
 ) => {
   const tasks = await getTasksFromItem(firestore, projectId, itemId);
+  const todoStatus = await getTodoStatusTag(firestore, projectId);
 
   const taskCols: TaskCol[] = await Promise.all(
     tasks.map(async (task): Promise<TaskCol> => {
-      const assignee: WithId<UserPreview> | undefined = (await task.assigneeId)
+      const assignee: WithId<UserPreview> | undefined = task.assigneeId
         ? await getGlobalUserPreview(admin, task.assigneeId)
         : undefined;
 
-      const status: StatusTag | undefined = task.statusId
-        ? await getStatusType(firestore, projectId, task.statusId)
-        : undefined;
+      // FIXME: Is this expected behaviour?
+      const status: StatusTag | undefined = await getStatusType(
+        firestore,
+        projectId,
+        task.statusId,
+      );
 
       const taskCol: TaskCol = {
         ...task,
         assignee,
-        status,
+        status: status ?? todoStatus,
       };
       return taskCol;
     }),

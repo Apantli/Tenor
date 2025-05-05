@@ -75,7 +75,7 @@ export default function TaskDetailPopup({
   const { mutateAsync: updateTask } = api.tasks.modifyTask.useMutation();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
-  const { data: users } = api.users.getUserListEditBox.useQuery({
+  const { data: users } = api.users.getUsers.useQuery({
     projectId: projectId as string,
   });
   const people: Option[] = users ?? [];
@@ -128,7 +128,7 @@ export default function TaskDetailPopup({
     };
 
     if (taskData !== undefined || isGhost) {
-      updateTaskData?.({ ...updatedTask, id: taskId });
+      updateTaskData?.({ ...updatedTask, id: taskId, scrumId: -1 });
 
       return;
     }
@@ -160,10 +160,10 @@ export default function TaskDetailPopup({
         description: updatedData.description,
         statusId: updatedData.status?.id ?? "",
         size: updatedData.size,
-        assigneeId: updatedData.assignee?.uid ?? "",
+        assigneeId: updatedData.assignee?.id ?? "",
         dueDate: updatedData.dueDate
           ? Timestamp.fromDate(updatedData.dueDate)
-          : null,
+          : undefined,
       },
     });
 
@@ -313,8 +313,8 @@ export default function TaskDetailPopup({
               selectedOption={
                 taskDetail.assignee
                   ? {
-                      id: taskDetail.assignee?.uid ?? "",
-                      name: taskDetail.assignee?.displayName ?? "",
+                      id: taskDetail.assignee?.id ?? "",
+                      displayName: taskDetail.assignee?.displayName ?? "",
                       image: taskDetail.assignee?.photoURL,
                       user: taskDetail.assignee,
                     }
@@ -323,7 +323,7 @@ export default function TaskDetailPopup({
               onChange={async (assignee) => {
                 await handleSave({
                   ...taskDetail,
-                  assignee: assignee?.user as UserPreview | undefined,
+                  assignee: assignee?.user as WithId<UserPreview> | undefined,
                 });
               }}
               placeholder="Select a person"
