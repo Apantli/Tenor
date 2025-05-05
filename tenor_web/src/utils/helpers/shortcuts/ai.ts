@@ -1,24 +1,22 @@
 import { Firestore } from "firebase-admin/firestore";
-
 import {
   ProjectSchema,
   SettingsSchema,
   TagSchema,
 } from "~/lib/types/zodFirebaseSchema";
-import { getSettingsRef } from "./general";
+import {
+  getProject,
+  getProjectRef,
+  getSettings,
+  getSettingsRef,
+} from "./general";
 
-export const getProjectContextHeader = async (
+export const getProjectContext = async (
   firestore: Firestore,
   projectId: string,
 ) => {
-  const projectDoc = await firestore
-    .collection("projects")
-    .doc(projectId)
-    .get();
-  const projectData = ProjectSchema.parse(projectDoc.data());
-
-  const aiContextDoc = await getSettingsRef(firestore, projectId).get();
-  const aiContext = SettingsSchema.parse(aiContextDoc.data()).aiContext;
+  const project = await getProject(firestore, projectId);
+  const aiContext = (await getSettings(firestore, projectId)).aiContext;
 
   return `
   The following is some context for a software project that is being developed. Your job is to help the user organize their project in different ways. Read the following context and then answer the required question.
@@ -26,10 +24,10 @@ export const getProjectContextHeader = async (
   ###### BEGINNING OF PROJECT CONTEXT
   
   # PROJECT NAME
-  ${projectData.name}
+  ${project.name}
   
   # PROJECT DESCRIPTION
-  ${projectData.description}
+  ${project.description}
   
   # TEXTUAL CONTEXT
   ${aiContext.text}
@@ -44,49 +42,4 @@ export const getProjectContextHeader = async (
   
   ###### END OF PROJECT CONTEXT
     `;
-};
-
-export const collectTagContext = async (
-  firestore: Firestore,
-  projectId: string,
-  title: string,
-  collectionName: string,
-) => {
-  const settingsRef = getSettingsRef(firestore, projectId);
-  const tags = await settingsRef
-    .collection(collectionName)
-    .where("deleted", "==", false)
-    .get();
-
-  let context = `# ${title.toUpperCase()}\n\n`;
-  tags.forEach((tag) => {
-    const tagData = TagSchema.parse(tag.data());
-    context += `- id: ${tag.id}\n- name: ${tagData.name}\n\n`;
-  });
-
-  return context;
-};
-
-export const collectPriorityTagContext = async (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  return await collectTagContext(
-    firestore,
-    projectId,
-    "PRIORITY TAGS",
-    "priorityTypes",
-  );
-};
-
-export const collectBacklogTagsContext = async (
-  projectId: string,
-  firestore: Firestore,
-) => {
-  return await collectTagContext(
-    firestore,
-    projectId,
-    "BACKLOG TAGS",
-    "backlogTags",
-  );
 };

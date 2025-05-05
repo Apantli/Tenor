@@ -90,6 +90,7 @@ export const getTask = async (
     throw new Error(`Task with ID ${taskId} does not exist`);
   }
 
+  // FIXME: move this function to a new place
   // Parse the task due date
   const dueDateData: { seconds: number; nanoseconds: number } | undefined =
     taskSnapshot.data()?.dueDate as

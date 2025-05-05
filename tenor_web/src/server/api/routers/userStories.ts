@@ -23,11 +23,12 @@ import type {
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { FieldValue } from "firebase-admin/firestore";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
-import { UserStory, WithId } from "~/lib/types/firebaseSchemas";
+import { Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
 import {
   getUserStories,
   getUserStoriesRef,
   getUserStory,
+  getUserStoryContext,
   getUserStoryDetail,
   getUserStoryNewId,
   getUserStoryRef,
@@ -40,12 +41,9 @@ import {
   getStatusType,
 } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
-import {
-  collectBacklogTagsContext,
-  collectPriorityTagContext,
-  getProjectContextHeader,
-} from "~/utils/helpers/shortcuts/ai";
+import { getProjectContext } from "~/utils/helpers/shortcuts/ai";
 import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
+import { getRequirementContext } from "~/utils/helpers/shortcuts/requirements";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -348,77 +346,12 @@ export const userStoriesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, amount, prompt } = input;
 
-      const requirements = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("requirements")
-        .where("deleted", "==", false)
-        .get();
-
-      let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
-      requirements.forEach((requirement) => {
-        const requirementData = RequirementSchema.parse(requirement.data());
-        requirementsContext += `- id: ${requirement.id}\n- name: ${requirementData.name}\n- description: ${requirementData.description}\n- priorityId: ${requirementData.priorityId}\n\n`;
-      });
-
-      // Get the epics from the database
-      const epics = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("epics")
-        .where("deleted", "==", false)
-        .get();
-
-      let epicContext = "# EXISTING EPICS\n\n";
-      epics.forEach((epic) => {
-        const epicData = EpicSchema.parse(epic.data());
-        epicContext += `- id: ${epic.id}\n- name: ${epicData.name}\n- description: ${epicData.description}\n\n`;
-      });
-
-      // Get the current user stories from the database (to avoid duplicates and provide context)
-      const userStories = await getUserStories(ctx.firestore, projectId);
-
-      let userStoryContext = "# EXISTING USER STORIES\n\n";
-      userStories.forEach((userStory) => {
-        const userStoryData = UserStorySchema.parse(userStory);
-        userStoryContext += `- id: ${userStory.id}\n- name: ${userStoryData.name}\n- description: ${userStoryData.description}\n- priorityId: ${userStoryData.priorityId}\n- tagIds: [${userStoryData.tagIds.join(" , ")}]\n- dependencies: [${userStoryData.dependencyIds.join(" , ")}]\n- requiredBy: [${userStoryData.requiredByIds.join(" , ")}]\n\n`;
-      });
-
-      const priorityContext = await collectPriorityTagContext(
+      const completePrompt = await getUserStoryContext(
         ctx.firestore,
         projectId,
+        amount,
+        prompt,
       );
-
-      const tagContext = await collectBacklogTagsContext(
-        projectId,
-        ctx.firestore,
-      );
-
-      const settingsRef = getSettingsRef(ctx.firestore, projectId);
-
-      // FIXME: Missing project context (currently the fruit market is hardcoded)
-
-      const passedInPrompt =
-        prompt != ""
-          ? `Consider that the user wants the user stories for the following: ${prompt}`
-          : "";
-
-      const completePrompt = `
-${await getProjectContextHeader(ctx.firestore, projectId)}
-
-Given the following context, follow the instructions below to the best of your ability.
-
-${requirementsContext}
-${epicContext}
-${userStoryContext}
-${priorityContext}
-${tagContext}
-
-Generate ${amount} user stories for the mentioned software project. Do NOT include any identifier in the name like "User Story 1", just use a normal title.\n\n
-
-${passedInPrompt}
-
-`;
 
       const data = await askAiToGenerate(
         completePrompt,
@@ -507,21 +440,21 @@ ${passedInPrompt}
             )
           ).filter((req) => req !== undefined);
 
-          const tags = (
-            await Promise.all(
-              userStory.tagIds.map(async (tagId) => {
-                const tag = await settingsRef
-                  .collection("backlogTags")
-                  .doc(tagId)
-                  .get();
-                if (tag.exists) {
-                  const tagData = TagSchema.parse(tag.data());
-                  return { id: tag.id, ...tagData };
-                }
-                return undefined;
-              }),
-            )
-          ).filter((tag) => tag !== undefined);
+          // const tags = (
+          //   await Promise.all(
+          //     userStory.tagIds.map(async (tagId) => {
+          //       const tag = await settingsRef
+          //         .collection("backlogTags")
+          //         .doc(tagId)
+          //         .get();
+          //       if (tag.exists) {
+          //         const tagData = TagSchema.parse(tag.data());
+          //         return { id: tag.id, ...tagData };
+          //       }
+          //       return undefined;
+          //     }),
+          //   )
+          // ).filter((tag) => tag !== undefined);
 
           return {
             name: userStory.name,
@@ -529,7 +462,7 @@ ${passedInPrompt}
             acceptanceCriteria: userStory.acceptanceCriteria,
             epic: epic,
             size: userStory.size,
-            tags: tags,
+            tags: [] as Tag[],
             priority: priority,
             dependencies: dependencies as UserStoryPreview[],
             requiredBy: requiredBy as UserStoryPreview[],

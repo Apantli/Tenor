@@ -1,5 +1,6 @@
 import { Firestore } from "firebase-admin/firestore";
-import { SettingsSchema } from "~/lib/types/zodFirebaseSchema";
+import { Project, WithId } from "~/lib/types/firebaseSchemas";
+import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
 
 /**
  * @function getProjectsRef
@@ -20,6 +21,21 @@ export const getProjectsRef = (firestore: Firestore) => {
  */
 export const getProjectRef = (firestore: Firestore, projectId: string) => {
   return getProjectsRef(firestore).doc(projectId);
+};
+
+/**
+ * @function getProject
+ * @description Retrieves the project document
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @returns {Promise<WithId<Project>>} A promise that resolves to the project document
+ */
+export const getProject = async (firestore: Firestore, projectId: string) => {
+  const project = await getProjectRef(firestore, projectId).get();
+  if (!project.exists) {
+    throw new Error("Project not found");
+  }
+  return { id: project.id, ...ProjectSchema.parse(project.data()) };
 };
 
 /**

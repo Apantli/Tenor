@@ -15,24 +15,32 @@ import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
 import {
   getRequirement,
+  getRequirementContext,
   getRequirementFocus,
+  getRequirementFocusContext,
   getRequirementFocuses,
   getRequirementFocusesRef,
   getRequirementFocusRef,
   getRequirementNewId,
   getRequirementRef,
+  getRequirementsContext,
   getRequirementsRef,
   getRequirementTable,
   getRequirementType,
+  getRequirementTypeContext,
   getRequirementTypeRef,
   getRequirementTypes,
   getRequirementTypesRef,
 } from "~/utils/helpers/shortcuts/requirements";
-import { getProjectContextHeader } from "~/utils/helpers/shortcuts/ai";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
-import { getPriority } from "~/utils/helpers/shortcuts/tags";
+import {
+  getPriorities,
+  getPriority,
+  getPriorityContext,
+} from "~/utils/helpers/shortcuts/tags";
+import { RequirementCol } from "~/lib/types/columnTypes";
 
 export const requirementsRouter = createTRPCRouter({
   getRequirementTypes: roleRequiredProcedure(tagPermissions, "read")
@@ -204,12 +212,7 @@ export const requirementsRouter = createTRPCRouter({
       await requirementDoc?.ref.update({ deleted: true });
     }),
 
-  generateRequirements: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
-  )
+  generateRequirements: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -220,52 +223,12 @@ export const requirementsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, amount, prompt } = input;
 
-      const requirements = await getRequirementTable(ctx.firestore, projectId);
-      const requirementFocuses = await getRequirementFocuses(
+      const completePrompt = await getRequirementContext(
         ctx.firestore,
         projectId,
+        amount,
+        prompt,
       );
-      const requirementTypes = await getRequirementTypes(
-        ctx.firestore,
-        projectId,
-      );
-
-      let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
-      requirements.forEach((requirement) => {
-        requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priority.name}\n- typeId: ${requirement.requirementType.name}\n- focus: ${requirement.requirementFocus.name}\n\n`;
-      });
-
-      // const priorityTagContext = await collectPriorityTagContext(
-      //   ctx.firestore,
-      //   projectId,
-      // );
-      const priorities: WithId<Tag>[] = [];
-
-      // Didn't include more information for the context so that the AI can generate it's own focus types (because initially there are none)
-      const requirementFocusContext =
-        "# FOCUS TYPES AVAILABLE\n\n" +
-        requirementFocuses.map((focus) => `- ${focus.name}`).join("\n") +
-        "\n\n";
-
-      const passedInPrompt =
-        prompt != ""
-          ? `Consider that the user wants the user stories for the following: ${prompt}`
-          : "";
-
-      const completePrompt = `
-${await getProjectContextHeader(ctx.firestore, projectId)}
-
-Given the following context, follow the instructions below to the best of your ability.
-
-${requirementsContext}
-${priorities.map((tag) => `${tag.id} - ${tag.name}`).join("\n")}
-${requirementTypes.map((tag) => `${tag.id} - ${tag.name}`).join("\n")}
-${requirementFocusContext}
-
-${passedInPrompt}
-
-Generate ${amount} requirements for the mentioned software project. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). Be extremely vague with the requirement focus so that it can apply to multiple requirements. Do NOT tie the requirement focus too tightly with the functionality. For example, a good requirement focus would be 'Core functionality', 'Security', 'Performance', or it could be related to the type of application such as 'Website', 'Mobile app', etc... For the requirement type, always use one of the available types. When creating the requirement description, make sure to use statistics if possible and if appropriate, and make sure they are as realistic as possible. Don't make the requirement description too long, maximum 4 sentences.
-      `;
 
       const generatedRequirements = await askAiToGenerate(
         completePrompt,
@@ -278,9 +241,11 @@ Generate ${amount} requirements for the mentioned software project. Do NOT inclu
         ),
       );
 
-      const settingsRef = getSettingsRef(ctx.firestore, projectId);
-
       // Create the generated focus tags if they don't exist
+      const requirementFocuses = await getRequirementFocuses(
+        ctx.firestore,
+        projectId,
+      );
       for (const req of generatedRequirements) {
         const focusName = req.requirementFocus;
         if (!focusName) continue;
@@ -291,9 +256,10 @@ Generate ${amount} requirements for the mentioned software project. Do NOT inclu
             color: generateRandomTagColor(),
             deleted: false,
           };
-          const addedFocusTag = await settingsRef
-            .collection("requirementFocus")
-            .add(newFocusTag);
+          const addedFocusTag = await getRequirementFocusesRef(
+            ctx.firestore,
+            projectId,
+          ).add(newFocusTag);
 
           // Prevent the same focus tag from being added multiple times
           requirementFocuses.push({
@@ -305,40 +271,37 @@ Generate ${amount} requirements for the mentioned software project. Do NOT inclu
 
       const parsedRequirements = await Promise.all(
         generatedRequirements.map(async (req) => {
-          let priority = undefined;
-          if (req.priorityId && req.priorityId !== "") {
-            priority = await getPriority(
-              ctx.firestore,
-              projectId,
-              req.priorityId,
-            );
+          const priority = req.priorityId
+            ? await getPriority(ctx.firestore, projectId, req.priorityId)
+            : undefined;
+
+          const requirementType = req.requirementTypeId
+            ? await getRequirementType(
+                ctx.firestore,
+                projectId,
+                req.requirementTypeId,
+              )
+            : undefined;
+
+          const requirementFocus = requirementFocuses.find(
+            (tag) => tag.name === req.requirementFocus,
+          );
+
+          if (!requirementFocus || !requirementType || !priority) {
+            throw new Error("Requirement focus, type, or priority not found");
           }
 
-          let requirementType = undefined;
-          if (req.requirementTypeId && req.requirementTypeId !== "") {
-            const requirementTypeDoc = await settingsRef
-              .collection("requirementTypes")
-              .doc(req.requirementTypeId)
-              .get();
-            requirementType = {
-              id: req.requirementTypeId,
-              ...TagSchema.parse(requirementTypeDoc.data()),
-            } as Tag;
-          }
-
-          let requirementFocus = undefined;
-          if (req.requirementFocus && req.requirementFocus !== "") {
-            requirementFocus = requirementFocuses.find(
-              (tag) => tag.name === req.requirementFocus,
-            );
-          }
-
-          return {
+          // generate a random uuid
+          const newRequirement: WithId<RequirementCol> = {
+            id: crypto.randomUUID(),
+            scrumId: -1, // Assign a valid scrumId here
             ...req,
-            priorityId: priority,
-            requirementTypeId: requirementType,
-            requirementFocusId: requirementFocus,
+            requirementFocus: requirementFocus,
+            requirementType: requirementType,
+            priority: priority,
           };
+
+          return newRequirement;
         }),
       );
 

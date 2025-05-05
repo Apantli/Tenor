@@ -239,7 +239,7 @@ export default function RequirementsTable() {
   useEffect(() => {
     if (requirements) {
       const query = searchValue.toLowerCase();
-
+      console.log("Query: ", requirements);
       const filtered = requirements
         .filter((requirement) => {
           const name = requirement.name?.toLowerCase() ?? "";
@@ -313,10 +313,10 @@ export default function RequirementsTable() {
           projectId: params.projectId as string,
           requirementData: {
             ...req,
-            scrumId: -1,
-            priorityId: req.priorityId?.id ?? "",
-            requirementTypeId: req.requirementTypeId?.id ?? "",
-            requirementFocusId: req.requirementFocusId?.id ?? "",
+            scrumId: 0,
+            priorityId: req.priority.id ?? "",
+            requirementTypeId: req.requirementType.id ?? "",
+            requirementFocusId: req.requirementFocus.id ?? "",
           },
         });
       }
@@ -474,7 +474,7 @@ export default function RequirementsTable() {
                 if (req.id === row.id) {
                   return {
                     ...req,
-                    priorityId: tag,
+                    priorityId: tag.id ?? "",
                   };
                 }
                 return req;
@@ -598,7 +598,7 @@ export default function RequirementsTable() {
                 if (req.id === row.id) {
                   return {
                     ...req,
-                    requirementFocus: tag.id ?? "",
+                    requirementFocus: tag,
                   };
                 }
                 return req;
@@ -723,9 +723,9 @@ export default function RequirementsTable() {
       scrumId: -1,
       name: req.name,
       description: req.description,
-      priority: req.priorityId ?? noTag,
-      requirementType: req.requirementTypeId ?? noTag,
-      requirementFocus: req.requirementFocusId ?? noTag,
+      priority: req.priority ?? noTag,
+      requirementType: req.requirementType ?? noTag,
+      requirementFocus: req.requirementFocus ?? noTag,
     }));
 
     // New requirement focus might have been created, so we need to invalidate the query
@@ -1256,7 +1256,7 @@ export default function RequirementsTable() {
                               if (req.id === ghostRequirementEdited.id) {
                                 return {
                                   ...req,
-                                  requirementFocus: focus.id ?? "",
+                                  requirementFocus: focus,
                                 };
                               }
                               return req;

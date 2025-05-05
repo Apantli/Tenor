@@ -38,8 +38,8 @@ import {
   getStatusType,
   getTodoStatusTag,
 } from "~/utils/helpers/shortcuts/tags";
-import { getProjectContextHeader } from "~/utils/helpers/shortcuts/ai";
 import { get } from "node_modules/cypress/types/lodash";
+import { getProjectContext } from "~/utils/helpers/shortcuts/ai";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -418,7 +418,7 @@ ${await getBacklogTagsContext(itemData.tagIds)}\n\n`;
           : "";
 
       const completePrompt = `
-${await getProjectContextHeader(ctx.firestore, projectId)}
+${await getProjectContext(ctx.firestore, projectId)}
 
 Given the following context, follow the instructions below to the best of your ability.
 

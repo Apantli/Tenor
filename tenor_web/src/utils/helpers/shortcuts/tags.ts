@@ -336,3 +336,28 @@ export const getAutomaticStatusId = async (
 
   return "";
 };
+
+export const getPriorityContext = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const priorities = await getPriorities(firestore, projectId);
+
+  let prioritiesContext = "# PRIORITY TAGS\n\n";
+  priorities.forEach((tag) => {
+    prioritiesContext += `- id: ${tag.id}\n- name: ${tag.name}\n\n`;
+  });
+  return prioritiesContext;
+};
+
+export const getBacklogContext = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const backlogTags = await getBacklogTags(firestore, projectId);
+  let backlogTagsContext = "# BACKLOG TAGS\n\n";
+  backlogTags.forEach((tag) => {
+    backlogTagsContext += `- id: ${tag.id}\n- name: ${tag.name}\n\n`;
+  });
+  return backlogTagsContext;
+};

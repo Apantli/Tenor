@@ -1,7 +1,13 @@
 import { UserStoryCol } from "~/lib/types/columnTypes";
-import { getEpic } from "./epics";
+import { getEpic, getEpicsContext } from "./epics";
 import { noTag } from "~/lib/defaultProjectValues";
-import { getBacklogTag, getPriority, getStatusType } from "./tags";
+import {
+  getBacklogTag,
+  getBacklogContext,
+  getPriority,
+  getPriorityContext,
+  getStatusType,
+} from "./tags";
 import {
   Epic,
   Sprint,
@@ -18,6 +24,8 @@ import { UserStoryDetail } from "~/lib/types/detailSchemas";
 import { Firestore } from "firebase-admin/firestore";
 import { getTask } from "./tasks";
 import { getSprint } from "./sprints";
+import { getRequirementContext, getRequirementsContext } from "./requirements";
+import { getProjectContext } from "./ai";
 
 /**
  * @function getUserStoriesRef
@@ -221,4 +229,66 @@ export const getUserStoryTable = async (
     }),
   );
   return userStoryCols;
+};
+
+export const getUserStoriesContext = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const userStories = await getUserStories(firestore, projectId);
+  let userStoryContext = "# EXISTING USER STORIES\n\n";
+  userStories.forEach((userStory) => {
+    const userStoryData = UserStorySchema.parse(userStory);
+    userStoryContext += `- id: ${userStory.id}\n- name: ${userStoryData.name}\n- description: ${userStoryData.description}\n- priorityId: ${userStoryData.priorityId}\n- tagIds: [${userStoryData.tagIds.join(" , ")}]\n- dependencies: [${userStoryData.dependencyIds.join(" , ")}]\n- requiredBy: [${userStoryData.requiredByIds.join(" , ")}]\n\n`;
+  });
+  return userStoryContext;
+};
+
+export const getUserStoryContext = async (
+  firestore: Firestore,
+  projectId: string,
+  amount: number,
+  prompt: string,
+) => {
+  // load all contexts simultaneously
+  const [
+    projectContext,
+    epicsContext,
+    requirementContext,
+    userStoryContext,
+    prioritiesContext,
+    backlogContext,
+  ] = await Promise.all([
+    getUserStoriesContext(firestore, projectId),
+    getEpicsContext(firestore, projectId),
+    getRequirementsContext(firestore, projectId),
+    getUserStoriesContext(firestore, projectId),
+    getPriorityContext(firestore, projectId),
+    getBacklogContext(firestore, projectId),
+  ]);
+
+  const passedInPrompt =
+    prompt != ""
+      ? `Consider that the user wants the user stories for the following: ${prompt}`
+      : "";
+
+  // Context for the AI ---------------------------
+  const completePrompt = `
+  ${projectContext}
+  
+  Given the following context, follow the instructions below to the best of your ability.
+  
+  ${epicsContext}
+  ${requirementContext}
+  ${userStoryContext}
+  ${prioritiesContext}
+  ${backlogContext}
+
+  ${passedInPrompt}
+  
+  Generate ${amount} user stories for the mentioned software project. Do NOT include any identifier in the name like "User Story 1", just use a normal title.\n\n
+`;
+  // ---------------------------------------------
+
+  return completePrompt;
 };

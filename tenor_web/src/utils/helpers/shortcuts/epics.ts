@@ -142,3 +142,16 @@ export const getEpicOverview = async (
     ...epic,
   };
 };
+
+export const getEpicsContext = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const epics = await getEpics(firestore, projectId);
+  let epicContext = "# EXISTING EPICS\n\n";
+  epics.forEach((epic) => {
+    const epicData = EpicSchema.parse(epic);
+    epicContext += `- id: ${epic.id}\n- name: ${epicData.name}\n- description: ${epicData.description}\n\n`;
+  });
+  return epicContext;
+};

@@ -5,7 +5,8 @@ import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import { RequirementCol } from "~/lib/types/columnTypes";
 import { noTag } from "~/lib/defaultProjectValues";
-import { getPriority } from "./tags";
+import { getPriority, getPriorityContext } from "./tags";
+import { getProjectContext } from "./ai";
 
 /**
  * @function getRequirementsRef
@@ -326,4 +327,92 @@ export const getRequirementTable = async (
   );
 
   return requierentCols;
+};
+
+/**
+ * @function getRequirementContext
+ * @description Generates a context string for all requirements associated with a specific project
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve requirements from
+ * @returns {Promise<string>} A string containing the context of all requirements
+ */
+export const getRequirementsContext = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const requirements = await getRequirementTable(firestore, projectId);
+  let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
+  requirements.forEach((requirement) => {
+    requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priority.name}\n- typeId: ${requirement.requirementType.name}\n- focus: ${requirement.requirementFocus.name}\n\n`;
+  });
+  return requirementsContext;
+};
+
+export const getRequirementTypeContext = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const requirementTypes = await getRequirementTypes(firestore, projectId);
+  let requirementTypesContext = "# EXISTING REQUIREMENT TYPES\n\n";
+  requirementTypes.forEach((requirementType) => {
+    requirementTypesContext += `- id: ${requirementType.id}\n- name: ${requirementType.name}\n\n`;
+  });
+  return requirementTypesContext;
+};
+
+export const getRequirementFocusContext = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const requirementFocuses = await getRequirementFocuses(firestore, projectId);
+  let requirementFocusesContext = "# EXISTING REQUIREMENT FOCUS\n\n";
+  requirementFocuses.forEach((requirementFocus) => {
+    requirementFocusesContext += `- id: ${requirementFocus.id}\n- name: ${requirementFocus.name}\n\n`;
+  });
+  return requirementFocusesContext;
+};
+
+export const getRequirementContext = async (
+  firestore: Firestore,
+  projectId: string,
+  amount: number,
+  prompt: string,
+) => {
+  // load all contexts simultaneously
+  const [
+    projectContext,
+    requirementContext,
+    prioritiesContext,
+    requirementFocusContext,
+    requirementTypesContext,
+  ] = await Promise.all([
+    getProjectContext(firestore, projectId),
+    getRequirementsContext(firestore, projectId),
+    getPriorityContext(firestore, projectId),
+    getRequirementFocusContext(firestore, projectId),
+    getRequirementTypeContext(firestore, projectId),
+  ]);
+
+  const passedInPrompt = prompt
+    ? `Consider that the user wants the user stories for the following: ${prompt}`
+    : "";
+
+  // Context for the AI ---------------------------
+  const completePrompt = `
+${projectContext}
+
+Given the following context, follow the instructions below to the best of your ability.
+
+${requirementContext}
+${prioritiesContext}
+${requirementFocusContext}
+${requirementTypesContext}
+
+${passedInPrompt}
+
+Generate ${amount} requirements for the mentioned software project. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). Be extremely vague with the requirement focus so that it can apply to multiple requirements. Do NOT tie the requirement focus too tightly with the functionality. For example, a good requirement focus would be 'Core functionality', 'Security', 'Performance', or it could be related to the type of application such as 'Website', 'Mobile app', etc... For the requirement type, always use one of the available types. When creating the requirement description, make sure to use statistics if possible and if appropriate, and make sure they are as realistic as possible. Don't make the requirement description too long, maximum 4 sentences.
+`;
+  // ---------------------------------------------
+
+  return completePrompt;
 };
