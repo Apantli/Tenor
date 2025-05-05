@@ -5,7 +5,7 @@ describe("test list projects", () => {
     cy.signIn("/");
   });
 
-  it("Create a project and view it", () => {
+  it("TC001: Create a project and view it", () => {
     // Dummy test example to view it
     cy.get(".mr-10 > .justify-between > .flex").click();
     cy.get('[placeholder="What is your project called..."]').type(
@@ -23,7 +23,7 @@ describe("test list projects", () => {
     cy.contains("Test project").click();
   });
 
-  it("Filter projects", () => {
+  it("TC003: Filter projects", () => {
     cy.createEmptyProject();
 
     // Navigate to the homepage

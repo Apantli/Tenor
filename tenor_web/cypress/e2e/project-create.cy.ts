@@ -3,7 +3,7 @@ describe("Test Project Creation", () => {
     cy.signIn("/");
   });
 
-  it("Verify mandatory fields", () => {
+  it("TC004:Verify mandatory fields", () => {
     // Go to project creation page
     cy.get(".mr-10 > .justify-between > .flex").click();
     // Try creating the project

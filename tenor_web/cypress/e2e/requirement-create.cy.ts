@@ -8,7 +8,7 @@ describe("Requirement Creation", () => {
     cy.signIn("/");
   });
 
-  it("Requirements pop up", () => {
+  it("TC010: Requirements pop up", () => {
     cy.contains("Test project").click();
     cy.contains("Requirements").click();
     cy.get(".gap-1 > .bg-app-primary").click();
