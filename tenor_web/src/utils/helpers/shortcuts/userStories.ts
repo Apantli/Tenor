@@ -1,5 +1,5 @@
 import { UserStoryCol } from "~/lib/types/columnTypes";
-import { getEpic, getEpicsContext } from "./epics";
+import { getEpic, getEpicContext, getEpicsContext } from "./epics";
 import { noTag } from "~/lib/defaultProjectValues";
 import {
   getBacklogTag,
@@ -7,6 +7,7 @@ import {
   getPriority,
   getPriorityContext,
   getStatusType,
+  getBacklogTagsContext,
 } from "./tags";
 import {
   Epic,
@@ -17,7 +18,7 @@ import {
   UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
-import { getProjectRef } from "./general";
+import { getGenericBacklogItemContext, getProjectRef } from "./general";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import { UserStoryDetail } from "~/lib/types/detailSchemas";
@@ -291,4 +292,43 @@ export const getUserStoryContext = async (
   // ---------------------------------------------
 
   return completePrompt;
+};
+
+export const getUserStoryContextSolo = async (
+  firestore: Firestore,
+  projectId: string,
+  userStoryId: string,
+) => {
+  const userStory = await getUserStory(firestore, projectId, userStoryId);
+
+  // User story context
+  const itemContext = await getGenericBacklogItemContext(
+    firestore,
+    projectId,
+    userStory.name,
+    userStory.description,
+    userStory.priorityId ?? "",
+    userStory.size,
+  );
+
+  // User story context
+  const epicContext = await getEpicContext(
+    firestore,
+    projectId,
+    userStory.epicId,
+  );
+
+  // Related tags context
+  const tagContext = await getBacklogTagsContext(
+    firestore,
+    projectId,
+    userStory.tagIds,
+  );
+
+  return `# USER STORY DETAILS\n
+${itemContext}
+- acceptanceCriteria: ${userStory.acceptanceCriteria}
+${epicContext}
+${tagContext}\n
+`;
 };

@@ -1,6 +1,9 @@
 import { Firestore } from "firebase-admin/firestore";
-import { Project, WithId } from "~/lib/types/firebaseSchemas";
+import { Project, Size, WithId } from "~/lib/types/firebaseSchemas";
 import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
+import { getPriotityRef } from "./tags";
+import { firestore } from "firebase-admin";
+import { getProjectContext } from "./ai";
 
 /**
  * @function getProjectsRef
@@ -87,4 +90,56 @@ export const getRoleRef = (
   roleId: string,
 ) => {
   return getRolesRef(firestore, projectId).doc(roleId);
+};
+
+export const getGenericBacklogItemContext = async (
+  firestore: Firestore,
+  projectId: string,
+  name: string,
+  description: string,
+  priorityId: string,
+  size?: Size,
+) => {
+  const prioritySnapshot = await getPriotityRef(
+    firestore,
+    projectId,
+    priorityId,
+  ).get();
+
+  const priorityData = prioritySnapshot.data();
+  const priority = priorityData ? (priorityData.name as string) : "";
+  const priorityContext = priority ? `- priority: ${priority}\n` : "";
+
+  const sizeContext = size ? `- size: ${size}\n` : "";
+
+  return `- name: ${name}\n- description: ${description}\n${priorityContext}${sizeContext}\n\n`;
+};
+
+export const generateTaskContext = async (
+  firestore: Firestore,
+  projectId: string,
+  itemContext: string,
+  itemTypeName: string,
+  tasksContext: string,
+  amount: number,
+  prompt: string,
+) => {
+  const passedInPrompt =
+    prompt != ""
+      ? `Consider that the user wants the tasks for the following: ${prompt}`
+      : "";
+
+  const completePrompt = `
+  ${await getProjectContext(firestore, projectId)}
+  
+  Given the following context, follow the instructions below to the best of your ability.
+  
+  ${itemContext}
+  ${tasksContext}
+  
+  Generate ${amount} tasks about the detailed ${itemTypeName}. You can also see the tasks that already exist, DO NOT repeat tasks. Do NOT include any identifier in the name like "Task 1", just use a normal title. Always include a size.\n\n
+  
+  ${passedInPrompt}
+            `;
+  return completePrompt;
 };

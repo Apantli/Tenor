@@ -1,5 +1,5 @@
 import { Firestore } from "firebase-admin/firestore";
-import { getProjectRef } from "./general";
+import { getGenericBacklogItemContext, getProjectRef } from "./general";
 import {
   Issue,
   Sprint,
@@ -13,7 +13,12 @@ import { TRPCError } from "@trpc/server";
 import { IssueCol } from "~/lib/types/columnTypes";
 import { IssueDetail } from "~/lib/types/detailSchemas";
 import { noTag } from "~/lib/defaultProjectValues";
-import { getBacklogTag, getPriority, getStatusType } from "./tags";
+import {
+  getBacklogTag,
+  getBacklogTagsContext,
+  getPriority,
+  getStatusType,
+} from "./tags";
 import { getTask } from "./tasks";
 import { getUserStory } from "./userStories";
 import { getSprint } from "./sprints";
@@ -193,4 +198,63 @@ export const getIssueDetail = async (
   };
 
   return userStoryDetail;
+};
+
+/**
+ * @function getIssuesContext
+ * @description Retrieves all issues for a specific project and formats them into a context string
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @returns {Promise<string>} A formatted string containing all issues
+ */
+export const getIssuesContext = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const issues = await getIssues(firestore, projectId);
+  let issuesContext = "# EXISTING ISSUES\n\n";
+  issues.forEach((issue) => {
+    issuesContext += `- id: ${issue.id}\n- name: ${issue.name}\n- description: ${issue.description}\n- stepsToRecreate: ${issue.stepsToRecreate}\n\n`;
+  });
+  return issuesContext;
+};
+
+export const getIssueContextSolo = async (
+  firestore: Firestore,
+  projectId: string,
+  issueId: string,
+) => {
+  const issue = await getIssue(firestore, projectId, issueId);
+
+  // Issue context
+  const itemContext = await getGenericBacklogItemContext(
+    firestore,
+    projectId,
+    issue.name,
+    issue.description,
+    issue.priorityId ?? "",
+    issue.size,
+  );
+
+  // Related user story context
+  const userStory = issue.relatedUserStoryId
+    ? await getUserStory(firestore, projectId, issue.relatedUserStoryId ?? "")
+    : "";
+  const userStoryContext = userStory
+    ? `- related user story: ${userStory.name}\n`
+    : "";
+
+  // Related tags context
+  const tagContext = await getBacklogTagsContext(
+    firestore,
+    projectId,
+    issue.tagIds,
+  );
+
+  return `# ISSUE DETAILS\n
+${itemContext}
+- steps to reproduce: ${issue.stepsToRecreate}
+${userStoryContext}
+${tagContext}\n
+`;
 };

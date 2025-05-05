@@ -258,6 +258,19 @@ export const getTaskDetail = async (
   return taskDetail;
 };
 
+export const getTaskContextFromItem = async (
+  firestore: Firestore,
+  projectId: string,
+  itemId: string,
+) => {
+  const tasks = await getTasksFromItem(firestore, projectId, itemId);
+  let taskContext = "# EXISTING TASKS\n\n";
+  tasks.map((task) => {
+    taskContext += `- name: ${task.name}\n- description: ${task.description}\n`;
+  });
+  return taskContext;
+};
+
 /**
  * @function getTaskTable
  * @description Retrieves a table of tasks with their details for a specific item

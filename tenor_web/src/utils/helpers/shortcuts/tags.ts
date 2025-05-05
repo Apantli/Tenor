@@ -361,3 +361,23 @@ export const getBacklogContext = async (
   });
   return backlogTagsContext;
 };
+
+export const getBacklogTagsContext = async (
+  firestore: Firestore,
+  projectId: string,
+  tagIds: string[],
+) => {
+  const tags = await Promise.all(
+    tagIds.map(async (tagId) => {
+      const tag = await getBacklogTagRef(firestore, projectId, tagId).get();
+      if (tag.exists) {
+        const tagData = TagSchema.parse(tag.data());
+        return `- ${tagData.name}`;
+      }
+      return "";
+    }),
+  );
+  return (
+    "RELATED TAGS\n\n" + tags.filter((tag) => tag !== "").join("\n") + "\n\n"
+  );
+};

@@ -155,3 +155,22 @@ export const getEpicsContext = async (
   });
   return epicContext;
 };
+
+export const getEpicContext = async (
+  firestore: Firestore,
+  projectId: string,
+  epicId: string,
+) => {
+  let epicContext = "";
+  if (epicId && epicId !== "") {
+    const epic = await getEpicRef(firestore, projectId, epicId).get();
+    if (epic.exists) {
+      const epicData = {
+        id: epic.id,
+        ...EpicSchema.parse(epic.data()),
+      };
+      epicContext = `# RELATED EPIC\n\n- name: ${epicData.name}\n- description: ${epicData.description}\n\n`;
+    }
+  }
+  return epicContext;
+};
