@@ -1,3 +1,23 @@
+/**
+ * Requirements Router - Tenor API Endpoints for Requirements Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for managing requirements in the Tenor application.
+ * It provides endpoints to create, read, update, delete, and generate software requirements.
+ * 
+ * The router includes procedures for:
+ * - Managing requirement type and focus tags
+ * - Creating and modifying requirements
+ * - Retrieving requirements in a table-friendly format
+ * - Generating new requirements using AI
+ * - Deleting requirements (soft delete)
+ *
+ * Requirements represent functional and non-functional specifications that define
+ * what the software system must do or how it must perform.
+ *
+ * @category API
+ */
+
 import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
@@ -222,465 +242,587 @@ const createRequirementsTableData = async (
   };
 };
 
-export const requirementsRouter = createTRPCRouter({
-  /**
-   * @procedure getRequirementTypeTags
-   * @description Retrieves all non-deleted requirement type tags for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of requirement type tags
-   */
-  getRequirementTypeTags: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+/**
+ * Retrieves all non-deleted requirement type tags for a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to fetch requirement type tags from
+ *
+ * @returns Array of requirement type tags.
+ *
+ * @http GET /api/trpc/requirements.getRequirementTypeTags
+ */
+export const getRequirementTypeTagsProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "read",
+)
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
 
-      const tagsSnapshot = await settingsRef
-        .collection("requirementTypes")
-        .where("deleted", "==", false)
+    const tagsSnapshot = await settingsRef
+      .collection("requirementTypes")
+      .where("deleted", "==", false)
+      .get();
+    const tags: Tag[] = tagsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Tag),
+    }));
+    return tags;
+  });
+
+/**
+ * Retrieves a specific requirement type tag by its ID.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the requirement type tag
+ * - tagId — ID of the requirement type tag to fetch
+ *
+ * @returns Requirement type tag object with its details.
+ *
+ * @http GET /api/trpc/requirements.getRequirementTypeTagById
+ */
+export const getRequirementTypeTagByIdProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "read",
+)
+  .input(z.object({ projectId: z.string(), tagId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+    const tagDoc = await settingsRef
+      .collection("requirementTypes")
+      .doc(input.tagId)
+      .get();
+    if (!tagDoc.exists) {
+      throw new Error("Tag not found");
+    }
+    return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
+  });
+
+/**
+ * Creates a new requirement type tag for a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to create the requirement type tag in
+ * - tag — Tag data conforming to TagSchema
+ *
+ * @returns Object containing the ID of the created requirement type tag.
+ *
+ * @http POST /api/trpc/requirements.createRequirementTypeTag
+ */
+export const createRequirementTypeTagProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog", "settings"],
+  },
+  "write",
+)
+  .input(z.object({ projectId: z.string(), tag: TagSchema }))
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, tag } = input;
+    const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+    const newTag = await settingsRef.collection("requirementTypes").add(tag);
+    return { id: newTag.id };
+  });
+
+/**
+ * Modifies an existing requirement type tag in a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the requirement type tag
+ * - tagId — ID of the requirement type tag to modify
+ * - tag — Updated tag data conforming to TagSchema
+ *
+ * @returns Object containing the ID of the modified requirement type tag.
+ *
+ * @http PUT /api/trpc/requirements.modifyRequirementTypeTag
+ */
+export const modifyRequirementTypeTagProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog", "settings"],
+  },
+  "write",
+)
+  .input(z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }))
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, tagId, tag } = input;
+    const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+    const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
+    const tagDoc = await tagRef.get();
+    if (!tagDoc.exists) {
+      throw new Error("Tag not found");
+    }
+    await tagRef.update(tag);
+    return { id: tagId };
+  });
+
+/**
+ * Deletes a requirement type tag from a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the requirement type tag
+ * - tagId — ID of the requirement type tag to delete
+ *
+ * @returns Object containing the ID of the deleted requirement type tag.
+ *
+ * @http DELETE /api/trpc/requirements.deleteRequirementTypeTag
+ */
+export const deleteRequirementTypeTagProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog", "settings"],
+  },
+  "write",
+)
+  .input(z.object({ projectId: z.string(), tagId: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, tagId } = input;
+    const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+    const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
+    const tagDoc = await tagRef.get();
+    if (!tagDoc.exists) {
+      throw new Error("Tag not found");
+    }
+    await tagRef.update({ deleted: true });
+    return { id: tagId };
+  });
+
+/**
+ * Retrieves all non-deleted requirement focus tags for a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to fetch requirement focus tags from
+ *
+ * @returns Array of requirement focus tags.
+ *
+ * @http GET /api/trpc/requirements.getRequirementFocusTags
+ */
+export const getRequirementFocusTagsProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "read",
+)
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+    const tagsSnapshot = await settingsRef
+      .collection("requirementFocus")
+      .where("deleted", "==", false)
+      .get();
+    const tags: Tag[] = tagsSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...(doc.data() as Tag),
+    }));
+    return tags;
+  });
+
+/**
+ * Retrieves a specific requirement focus tag by its ID.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the requirement focus tag
+ * - tagId — ID of the requirement focus tag to fetch
+ *
+ * @returns Requirement focus tag object with its details.
+ *
+ * @http GET /api/trpc/requirements.getRequirementFocusTagById
+ */
+export const getRequirementFocusTagByIdProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "read",
+)
+  .input(z.object({ projectId: z.string(), tagId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+    const tagDoc = await settingsRef
+      .collection("requirementFocus")
+      .doc(input.tagId)
+      .get();
+    if (!tagDoc.exists) {
+      throw new Error("Tag not found");
+    }
+    return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
+  });
+
+/**
+ * Creates a new requirement focus tag for a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to create the requirement focus tag in
+ * - tag — Tag data conforming to TagSchema
+ *
+ * @returns Object containing the ID of the created requirement focus tag.
+ *
+ * @http POST /api/trpc/requirements.createRequirementFocusTag
+ */
+export const createRequirementFocusTagProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog", "settings"],
+  },
+  "write",
+)
+  .input(z.object({ projectId: z.string(), tag: TagSchema }))
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, tag } = input;
+    const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+    const newTag = await settingsRef.collection("requirementFocus").add(tag);
+    return { id: newTag.id };
+  });
+
+/**
+ * Modifies an existing requirement focus tag in a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the requirement focus tag
+ * - tagId — ID of the requirement focus tag to modify
+ * - tag — Updated tag data conforming to TagSchema
+ *
+ * @returns Object containing the ID of the modified requirement focus tag.
+ *
+ * @http PUT /api/trpc/requirements.modifyRequirementFocusTag
+ */
+export const modifyRequirementFocusTagProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog", "settings"],
+  },
+  "write",
+)
+  .input(z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }))
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, tagId, tag } = input;
+    const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+    const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
+    const tagDoc = await tagRef.get();
+    if (!tagDoc.exists) {
+      throw new Error("Tag not found");
+    }
+    await tagRef.update(tag);
+    return { id: tagId };
+  });
+
+/**
+ * Deletes a requirement focus tag from a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the requirement focus tag
+ * - tagId — ID of the requirement focus tag to delete
+ *
+ * @returns Object containing the ID of the deleted requirement focus tag.
+ *
+ * @http DELETE /api/trpc/requirements.deleteRequirementFocusTag
+ */
+export const deleteRequirementFocusTagProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog", "settings"],
+  },
+  "write",
+)
+  .input(z.object({ projectId: z.string(), tagId: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, tagId } = input;
+    const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+    const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
+    const tagDoc = await tagRef.get();
+    if (!tagDoc.exists) {
+      throw new Error("Tag not found");
+    }
+    await tagRef.update({ deleted: true });
+    return { id: tagId };
+  });
+
+/**
+ * Retrieves requirements for a project in a table-friendly format.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to fetch requirements for
+ *
+ * @returns Object containing formatted requirement data and all tag collections:
+ * - fixedData — Array of requirements in a table-friendly format
+ * - allTags — Array of all priority tags
+ * - allRequirementTypeTags — Array of all requirement type tags
+ * - allRequirementFocusTags — Array of all requirement focus tags
+ *
+ * @http GET /api/trpc/requirements.getRequirementsTableFriendly
+ */
+export const getRequirementsTableFriendlyProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "read",
+)
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const rawRequirements = await getRequirementsFromProject(
+      ctx.firestore,
+      input.projectId,
+    );
+    const {
+      fixedData,
+      allTags,
+      allRequirementTypeTags,
+      allRequirementFocusTags,
+    } = await createRequirementsTableData(
+      rawRequirements,
+      input.projectId,
+      ctx.firestore,
+    );
+    return {
+      fixedData,
+      allTags,
+      allRequirementTypeTags,
+      allRequirementFocusTags,
+    };
+  });
+
+/**
+ * Retrieves a specific requirement by ID.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the requirement
+ * - requirementId — ID of the requirement to retrieve
+ *
+ * @returns Requirement object with its details.
+ *
+ * @http GET /api/trpc/requirements.getRequirement
+ */
+export const getRequirementProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "read",
+)
+  .input(z.object({ projectId: z.string(), requirementId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const requirement = (
+      await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("requirements")
+        .doc(input.requirementId)
+        .get()
+    ).data();
+    if (!requirement) {
+      throw new Error("Requirement not found");
+    }
+    return {
+      id: input.requirementId,
+      ...RequirementSchema.parse(requirement),
+    };
+  });
+
+/**
+ * Creates a new requirement or updates an existing one.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to create or update the requirement in
+ * - scrumId — Scrum ID of the requirement (use -1 for new requirements)
+ * - name — Name of the requirement
+ * - description — Description of the requirement
+ * - priorityId — ID of the priority tag
+ * - requirementTypeId — ID of the requirement type tag
+ * - requirementFocusId — ID of the requirement focus tag
+ * - size — Size of the requirement
+ *
+ * @returns Success message indicating whether the requirement was created or updated.
+ *
+ * @http POST /api/trpc/requirements.createOrModifyRequirement
+ */
+export const createOrModifyRequirementProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "write",
+)
+  .input(RequirementSchema.extend({ projectId: z.string() }))
+  .mutation(async ({ ctx, input }) => {
+    const projectCount = (
+      await ctx.firestore
+        .collection("projects")
+        .where(FieldPath.documentId(), "==", input.projectId)
+        .count()
+        .get()
+    ).data().count;
+
+    if (projectCount === 0) {
+      throw new Error("Project not found");
+    }
+
+    const requirementsRef = ctx.firestore
+      .collection("projects")
+      .doc(input.projectId)
+      .collection("requirements");
+
+    if (input.scrumId !== -1) {
+      const requirementDocs = await requirementsRef
+        .where("scrumId", "==", input.scrumId)
         .get();
-      const tags: Tag[] = tagsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Tag),
-      }));
-      return tags;
-    }),
 
-  getRequirementTypeTagById: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string(), tagId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
-      const tagDoc = await settingsRef
-        .collection("requirementTypes")
-        .doc(input.tagId)
-        .get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
-    }),
-
-  createRequirementTypeTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-    },
-    "write",
-  )
-    .input(z.object({ projectId: z.string(), tag: TagSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tag } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const newTag = await settingsRef.collection("requirementTypes").add(tag);
-      return { id: newTag.id };
-    }),
-
-  modifyRequirementTypeTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-    },
-    "write",
-  )
-    .input(
-      z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tagId, tag } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
-      const tagDoc = await tagRef.get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      await tagRef.update(tag);
-      return { id: tagId };
-    }),
-
-  deleteRequirementTypeTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-    },
-    "write",
-  )
-    .input(z.object({ projectId: z.string(), tagId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tagId } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const tagRef = settingsRef.collection("requirementTypes").doc(tagId);
-      const tagDoc = await tagRef.get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      await tagRef.update({ deleted: true });
-      return { id: tagId };
-    }),
-
-  /**
-   * @procedure getRequirementFocusTags
-   * @description Retrieves all non-deleted requirement focus tags for a project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Tag[]} An array of requirement focus tags
-   */
-  getRequirementFocusTags: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
-      const tagsSnapshot = await settingsRef
-        .collection("requirementFocus")
-        .where("deleted", "==", false)
-        .get();
-      const tags: Tag[] = tagsSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as Tag),
-      }));
-      return tags;
-    }),
-
-  getRequirementFocusTagById: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string(), tagId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
-      const tagDoc = await settingsRef
-        .collection("requirementFocus")
-        .doc(input.tagId)
-        .get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      return { id: tagDoc.id, ...TagSchema.parse(tagDoc.data()) };
-    }),
-
-  createRequirementFocusTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-    },
-    "write",
-  )
-    .input(z.object({ projectId: z.string(), tag: TagSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tag } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const newTag = await settingsRef.collection("requirementFocus").add(tag);
-      return { id: newTag.id };
-    }),
-
-  modifyRequirementFocusTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-    },
-    "write",
-  )
-    .input(
-      z.object({ projectId: z.string(), tagId: z.string(), tag: TagSchema }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tagId, tag } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
-      const tagDoc = await tagRef.get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      await tagRef.update(tag);
-      return { id: tagId };
-    }),
-
-  deleteRequirementFocusTag: roleRequiredProcedure(
-    {
-      flags: ["backlog", "settings"],
-    },
-    "write",
-  )
-    .input(z.object({ projectId: z.string(), tagId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, tagId } = input;
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
-      const tagRef = settingsRef.collection("requirementFocus").doc(tagId);
-      const tagDoc = await tagRef.get();
-      if (!tagDoc.exists) {
-        throw new Error("Tag not found");
-      }
-      await tagRef.update({ deleted: true });
-      return { id: tagId };
-    }),
-
-  /**
-   * @procedure getRequirementsTableFriendly
-   * @description Gets requirements for a project in a table-friendly format
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {object} Object containing formatted requirement data and all tag collections
-   * @returns {RequirementCol[]} returns.fixedData - The requirements in a table-friendly format
-   * @returns {Tag[]} returns.allTags - All priority tags
-   * @returns {Tag[]} returns.allRequirementTypeTags - All requirement type tags
-   * @returns {Tag[]} returns.allRequirementFocusTags - All requirement focus tags
-   */
-  getRequirementsTableFriendly: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const rawRequirements = await getRequirementsFromProject(
-        ctx.firestore,
-        input.projectId,
-      );
-      const {
-        fixedData,
-        allTags,
-        allRequirementTypeTags,
-        allRequirementFocusTags,
-      } = await createRequirementsTableData(
-        rawRequirements,
-        input.projectId,
-        ctx.firestore,
-      );
-      return {
-        fixedData,
-        allTags,
-        allRequirementTypeTags,
-        allRequirementFocusTags,
-      };
-    }),
-
-  /**
-   * @procedure getRequirement
-   * @description Gets a specific requirement by ID
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.requirementId - The ID of the requirement to retrieve
-   * @returns {WithId<Requirement>} The requirement with its ID
-   * @throws {Error} If the requirement is not found
-   */
-  getRequirement: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "read",
-  )
-    .input(z.object({ projectId: z.string(), requirementId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const requirement = (
-        await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("requirements")
-          .doc(input.requirementId)
-          .get()
-      ).data();
-      if (!requirement) {
+      if (requirementDocs.empty) {
         throw new Error("Requirement not found");
       }
-      return {
-        id: input.requirementId,
-        ...RequirementSchema.parse(requirement),
-      };
-    }),
 
-  /**
-   * @procedure createOrModifyRequirement
-   * @description Creates a new requirement or updates an existing one
-   * @input {Requirement & {projectId: string}} input - The requirement data with project ID
-   * @returns {string} Success message
-   * @throws {Error} If the project is not found or the requirement to update is not found
-   */
-  createOrModifyRequirement: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
-  )
-    .input(RequirementSchema.extend({ projectId: z.string() }))
-    .mutation(async ({ ctx, input }) => {
-      const projectCount = (
-        await ctx.firestore
-          .collection("projects")
-          .where(FieldPath.documentId(), "==", input.projectId)
-          .count()
-          .get()
+      const requirementDoc = requirementDocs.docs[0];
+      await requirementDoc?.ref.update(input);
+      return "Requirement updated successfully";
+    } else {
+      const existingRequirementCount = (
+        await requirementsRef.count().get()
       ).data().count;
+      input.scrumId = existingRequirementCount + 1;
+      await requirementsRef.add(input);
+      return "Requirement created successfully";
+    }
+  });
 
-      if (projectCount === 0) {
-        throw new Error("Project not found");
-      }
-
-      const requirementsRef = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("requirements");
-
-      if (input.scrumId !== -1) {
-        const requirementDocs = await requirementsRef
-          .where("scrumId", "==", input.scrumId)
-          .get();
-
-        if (requirementDocs.empty) {
-          throw new Error("Requirement not found");
-        }
-
-        const requirementDoc = requirementDocs.docs[0];
-        await requirementDoc?.ref.update(input);
-        return "Requirement updated successfully";
-      } else {
-        const existingRequirementCount = (
-          await requirementsRef.count().get()
-        ).data().count;
-        input.scrumId = existingRequirementCount + 1;
-        await requirementsRef.add(input);
-        return "Requirement created successfully";
-      }
+/**
+ * Deletes a requirement from a project (soft delete).
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the requirement
+ * - requirementId — ID of the requirement to delete
+ *
+ * @returns Object indicating success status.
+ *
+ * @http DELETE /api/trpc/requirements.deleteRequirement
+ */
+export const deleteRequirementProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "write",
+)
+  .input(
+    z.object({
+      projectId: z.string(),
+      requirementId: z.string(),
     }),
-
-  /**
-   * @procedure deleteRequirement
-   * @description Marks a requirement as deleted (soft delete)
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.requirementId - The ID of the requirement to delete
-   * @returns {object} Object with success status
-   * @throws {Error} If the requirement is not found
-   */
-  deleteRequirement: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
   )
-    .input(
-      z.object({
-        projectId: z.string(),
-        requirementId: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const requirementsRef = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("requirements")
-        .doc(input.requirementId);
+  .mutation(async ({ ctx, input }) => {
+    const requirementsRef = ctx.firestore
+      .collection("projects")
+      .doc(input.projectId)
+      .collection("requirements")
+      .doc(input.requirementId);
 
-      const requirementDoc = await requirementsRef.get();
-      if (!requirementDoc.exists) {
-        throw new Error("Requirement not found");
-      }
+    const requirementDoc = await requirementsRef.get();
+    if (!requirementDoc.exists) {
+      throw new Error("Requirement not found");
+    }
 
-      await requirementsRef.update({ deleted: true });
-      return { success: true };
+    await requirementsRef.update({ deleted: true });
+    return { success: true };
+  });
+
+/**
+ * Generates requirements using AI based on existing requirements and project context.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to generate requirements for
+ * - amount — Number of requirements to generate
+ * - prompt — Additional prompt for the AI to consider
+ *
+ * @returns Array of generated requirements with their details.
+ *
+ * @http POST /api/trpc/requirements.generateRequirements
+ */
+export const generateRequirementsProcedure = roleRequiredProcedure(
+  {
+    flags: ["backlog"],
+  },
+  "write",
+)
+  .input(
+    z.object({
+      projectId: z.string(),
+      amount: z.number(),
+      prompt: z.string(),
     }),
-  /**
-   * @procedure generateRequirements
-   * @description Generates requirements using AI based on existing requirements and project context
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {number} input.amount - The number of requirements to generate
-   * @input {string} input.prompt - Additional prompt for the AI
-   * @returns {Requirement[]} An array of generated requirements
-   * @throws {Error} If the project is not found
-   * @throws {Error} If the AI generation fails
-   * @throws {Error} If the AI generation returns an empty array
-   * @throws {Error} If the AI generation returns an invalid response
-   */
-  generateRequirements: roleRequiredProcedure(
-    {
-      flags: ["backlog"],
-    },
-    "write",
   )
-    .input(
-      z.object({
-        projectId: z.string(),
-        amount: z.number(),
-        prompt: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, amount, prompt } = input;
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, amount, prompt } = input;
 
-      const requirements = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("requirements")
-        .where("deleted", "==", false)
-        .get();
-      const requirementsData = requirements.docs.map((doc) => ({
+    const requirements = await ctx.firestore
+      .collection("projects")
+      .doc(projectId)
+      .collection("requirements")
+      .where("deleted", "==", false)
+      .get();
+    const requirementsData = requirements.docs.map((doc) => ({
+      id: doc.id,
+      ...RequirementSchema.parse(doc.data()),
+    }));
+
+    // Gather all the focus tags for the ai context
+    const allRequirementFocusTags = await getProjectSettingsRef(
+      projectId,
+      ctx.firestore,
+    )
+      .collection("requirementFocus")
+      .where("deleted", "==", false)
+      .get();
+    const allRequirementFocusTagsData: Tag[] = allRequirementFocusTags.docs.map(
+      (doc) => ({
         id: doc.id,
-        ...RequirementSchema.parse(doc.data()),
-      }));
+        ...(doc.data() as Tag),
+      }),
+    );
 
-      // Gather all the focus tags for the ai context
-      const allRequirementFocusTags = await getProjectSettingsRef(
-        projectId,
-        ctx.firestore,
-      )
-        .collection("requirementFocus")
-        .where("deleted", "==", false)
-        .get();
-      const allRequirementFocusTagsData: Tag[] =
-        allRequirementFocusTags.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as Tag),
-        }));
-
-      const getFocusName = (focusId: string) => {
-        const focusTag = allRequirementFocusTagsData.find(
-          (tag) => tag.id === focusId,
-        );
-        return focusTag ? focusTag.name : "No focus";
-      };
-
-      let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
-      requirementsData.forEach((requirement) => {
-        requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priorityId}\n- typeId: ${requirement.requirementTypeId}\n- focus: ${getFocusName(requirement.requirementFocusId)}\n\n`;
-      });
-
-      const priorityTagContext = await collectPriorityTagContext(
-        projectId,
-        ctx.firestore,
+    const getFocusName = (focusId: string) => {
+      const focusTag = allRequirementFocusTagsData.find(
+        (tag) => tag.id === focusId,
       );
+      return focusTag ? focusTag.name : "No focus";
+    };
 
-      const requirementTypeTagContext = await collectTagContext(
-        "REQUIREMENT TYPES",
-        "requirementTypes",
-        projectId,
-        ctx.firestore,
-      );
+    let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
+    requirementsData.forEach((requirement) => {
+      requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priorityId}\n- typeId: ${requirement.requirementTypeId}\n- focus: ${getFocusName(requirement.requirementFocusId)}\n\n`;
+    });
 
-      // Didn't include more information for the context so that the AI can generate it's own focus types (because initially there are none)
-      const requirementFocusContext =
-        "# FOCUS TYPES AVAILABLE\n\n" +
-        allRequirementFocusTagsData
-          .map((focus) => `- ${focus.name}`)
-          .join("\n") +
-        "\n\n";
+    const priorityTagContext = await collectPriorityTagContext(
+      projectId,
+      ctx.firestore,
+    );
 
-      const passedInPrompt =
-        prompt != ""
-          ? `Consider that the user wants the user stories for the following: ${prompt}`
-          : "";
+    const requirementTypeTagContext = await collectTagContext(
+      "REQUIREMENT TYPES",
+      "requirementTypes",
+      projectId,
+      ctx.firestore,
+    );
 
-      const completePrompt = `
+    // Didn't include more information for the context so that the AI can generate it's own focus types (because initially there are none)
+    const requirementFocusContext =
+      "# FOCUS TYPES AVAILABLE\n\n" +
+      allRequirementFocusTagsData.map((focus) => `- ${focus.name}`).join("\n") +
+      "\n\n";
+
+    const passedInPrompt =
+      prompt != ""
+        ? `Consider that the user wants the user stories for the following: ${prompt}`
+        : "";
+
+    const completePrompt = `
 ${await getProjectContextHeader(projectId, ctx.firestore)}
 
 Given the following context, follow the instructions below to the best of your ability.
@@ -693,81 +835,96 @@ ${requirementFocusContext}
 ${passedInPrompt}
 
 Generate ${amount} requirements for the mentioned software project. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). Be extremely vague with the requirement focus so that it can apply to multiple requirements. Do NOT tie the requirement focus too tightly with the functionality. For example, a good requirement focus would be 'Core functionality', 'Security', 'Performance', or it could be related to the type of application such as 'Website', 'Mobile app', etc... For the requirement type, always use one of the available types. When creating the requirement description, make sure to use statistics if possible and if appropriate, and make sure they are as realistic as possible. Don't make the requirement description too long, maximum 4 sentences.
-      `;
+    `;
 
-      const generatedRequirements = await askAiToGenerate(
-        completePrompt,
-        z.array(
-          RequirementSchema.omit({
-            requirementFocusId: true,
-            scrumId: true,
-            deleted: true,
-          }).extend({ requirementFocus: z.string() }),
-        ),
-      );
+    const generatedRequirements = await askAiToGenerate(
+      completePrompt,
+      z.array(
+        RequirementSchema.omit({
+          requirementFocusId: true,
+          scrumId: true,
+          deleted: true,
+        }).extend({ requirementFocus: z.string() }),
+      ),
+    );
 
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+    const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
 
-      // Create the generated focus tags if they don't exist
-      for (const req of generatedRequirements) {
-        const focusName = req.requirementFocus;
-        if (!focusName) continue;
+    // Create the generated focus tags if they don't exist
+    for (const req of generatedRequirements) {
+      const focusName = req.requirementFocus;
+      if (!focusName) continue;
 
-        if (
-          !allRequirementFocusTagsData.find((tag) => tag.name === focusName)
-        ) {
-          const newFocusTag = {
-            name: req.requirementFocus,
-            color: generateRandomTagColor(),
-            deleted: false,
-          };
-          const addedFocusTag = await settingsRef
-            .collection("requirementFocus")
-            .add(newFocusTag);
+      if (!allRequirementFocusTagsData.find((tag) => tag.name === focusName)) {
+        const newFocusTag = {
+          name: req.requirementFocus,
+          color: generateRandomTagColor(),
+          deleted: false,
+        };
+        const addedFocusTag = await settingsRef
+          .collection("requirementFocus")
+          .add(newFocusTag);
 
-          // Prevent the same focus tag from being added multiple times
-          allRequirementFocusTagsData.push({
-            id: addedFocusTag.id,
-            ...newFocusTag,
-          });
-        }
+        // Prevent the same focus tag from being added multiple times
+        allRequirementFocusTagsData.push({
+          id: addedFocusTag.id,
+          ...newFocusTag,
+        });
       }
+    }
 
-      const parsedRequirements = await Promise.all(
-        generatedRequirements.map(async (req) => {
-          let priority = undefined;
-          if (req.priorityId && req.priorityId !== "") {
-            priority = await getPriorityTag(settingsRef, req.priorityId);
-          }
+    const parsedRequirements = await Promise.all(
+      generatedRequirements.map(async (req) => {
+        let priority = undefined;
+        if (req.priorityId && req.priorityId !== "") {
+          priority = await getPriorityTag(settingsRef, req.priorityId);
+        }
 
-          let requirementType = undefined;
-          if (req.requirementTypeId && req.requirementTypeId !== "") {
-            const requirementTypeDoc = await settingsRef
-              .collection("requirementTypes")
-              .doc(req.requirementTypeId)
-              .get();
-            requirementType = {
-              id: req.requirementTypeId,
-              ...TagSchema.parse(requirementTypeDoc.data()),
-            } as Tag;
-          }
+        let requirementType = undefined;
+        if (req.requirementTypeId && req.requirementTypeId !== "") {
+          const requirementTypeDoc = await settingsRef
+            .collection("requirementTypes")
+            .doc(req.requirementTypeId)
+            .get();
+          requirementType = {
+            id: req.requirementTypeId,
+            ...TagSchema.parse(requirementTypeDoc.data()),
+          } as Tag;
+        }
 
-          let requirementFocus = undefined;
-          if (req.requirementFocus && req.requirementFocus !== "") {
-            requirementFocus = allRequirementFocusTagsData.find(
-              (tag) => tag.name === req.requirementFocus,
-            );
-          }
+        let requirementFocus = undefined;
+        if (req.requirementFocus && req.requirementFocus !== "") {
+          requirementFocus = allRequirementFocusTagsData.find(
+            (tag) => tag.name === req.requirementFocus,
+          );
+        }
 
-          return {
-            ...req,
-            priorityId: priority,
-            requirementTypeId: requirementType,
-            requirementFocusId: requirementFocus,
-          };
-        }),
-      );
+        return {
+          ...req,
+          priorityId: priority,
+          requirementTypeId: requirementType,
+          requirementFocusId: requirementFocus,
+        };
+      }),
+    );
 
-      return parsedRequirements;
-    }),
+    return parsedRequirements;
+  });
+
+export const requirementsRouter = createTRPCRouter({
+  getRequirementTypeTags: getRequirementTypeTagsProcedure,
+  getRequirementTypeTagById: getRequirementTypeTagByIdProcedure,
+  createRequirementTypeTag: createRequirementTypeTagProcedure,
+  modifyRequirementTypeTag: modifyRequirementTypeTagProcedure,
+  deleteRequirementTypeTag: deleteRequirementTypeTagProcedure,
+  getRequirementFocusTags: getRequirementFocusTagsProcedure,
+  getRequirementFocusTagById: getRequirementFocusTagByIdProcedure,
+  createRequirementFocusTag: createRequirementFocusTagProcedure,
+  modifyRequirementFocusTag: modifyRequirementFocusTagProcedure,
+  deleteRequirementFocusTag: deleteRequirementFocusTagProcedure,
+  getRequirementsTableFriendly: getRequirementsTableFriendlyProcedure,
+  getRequirement: getRequirementProcedure,
+  createOrModifyRequirement: createOrModifyRequirementProcedure,
+  deleteRequirement: deleteRequirementProcedure,
+  generateRequirements: generateRequirementsProcedure,
 });

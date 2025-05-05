@@ -1,3 +1,23 @@
+/**
+ * Tasks Router - Tenor API Endpoints for Task Management
+ *
+ * @packageDocumentation
+ * This file defines the TRPC router and procedures for task management in the Tenor application.
+ * It provides endpoints to create, read, update, delete, and generate tasks for projects and backlog items.
+ * 
+ * The router includes procedures for:
+ * - Creating and modifying tasks
+ * - Retrieving task details and table-friendly task data
+ * - Changing task status
+ * - Deleting tasks (soft delete)
+ * - Generating tasks using AI based on backlog items
+ * - Getting task counts
+ *
+ * Tasks are organized under projects and can be associated with user stories, issues, or other items.
+ *
+ * @category API
+ */
+
 import { z } from "zod";
 import type { WithId, Tag, Size, StatusTag } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -157,470 +177,493 @@ export const getTodoStatusTag = async (
   };
 };
 
-export const tasksRouter = createTRPCRouter({
-  /**
-   * @procedure createTask
-   * @description Creates a new task in the specified project and assigns it a scrumId
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {object} input.taskData - The task data without scrumId
-   * @returns {object} Object with success status and the created task ID
-   * @throws {TRPCError} If there's an error creating the task
-   */
-  createTask: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        taskData: TaskSchema.omit({ scrumId: true }),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      try {
-        const taskCount = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("tasks")
-          .count()
-          .get();
-        const task = await ctx.firestore
-          .collection("projects")
-          .doc(input.projectId)
-          .collection("tasks")
-          .add({
-            ...input.taskData,
-            scrumId: taskCount.data().count + 1,
-          });
-        return { success: true, taskId: task.id };
-      } catch (err) {
-        console.log("Error creating task story:", err);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      }
+/**
+ * Creates a new task in the specified project and assigns it a scrumId.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project where the task will be created
+ * - taskData — Data for the new task, excluding the scrumId field
+ *
+ * @returns Object containing success status and the ID of the created task.
+ *
+ * @http POST /api/trpc/tasks.createTask
+ */
+export const createTaskProcedure = protectedProcedure
+  .input(
+    z.object({
+      projectId: z.string(),
+      taskData: TaskSchema.omit({ scrumId: true }),
     }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    try {
+      const taskCount = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("tasks")
+        .count()
+        .get();
+      const task = await ctx.firestore
+        .collection("projects")
+        .doc(input.projectId)
+        .collection("tasks")
+        .add({
+          ...input.taskData,
+          scrumId: taskCount.data().count + 1,
+        });
+      return { success: true, taskId: task.id };
+    } catch (err) {
+      console.log("Error creating task story:", err);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  });
 
-  /**
-   * @procedure getTasksTableFriendly
-   * @description Gets tasks for a specific item in a table-friendly format
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.itemId - The ID of the item to get tasks for
-   * @returns {TaskCol[]} Array of tasks in a table-friendly format
-   */
-  getTasksTableFriendly: protectedProcedure
-    .input(z.object({ projectId: z.string(), itemId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId, itemId } = input;
-      const rawUs = await getTasksFromItem(ctx.firestore, projectId, itemId);
-      // Transforming into table format
-      const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
+/**
+ * Retrieves tasks for a specific item in a table-friendly format.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to fetch tasks from
+ * - itemId — ID of the item to fetch tasks for
+ *
+ * @returns Array of tasks formatted for table display.
+ *
+ * @http GET /api/trpc/tasks.getTasksTableFriendly
+ */
+export const getTasksTableFriendlyProcedure = protectedProcedure
+  .input(z.object({ projectId: z.string(), itemId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const { projectId, itemId } = input;
+    const rawUs = await getTasksFromItem(ctx.firestore, projectId, itemId);
+    // Transforming into table format
+    const settingsRef = getProjectSettingsRef(projectId, ctx.firestore);
 
-      const fixedData = await Promise.all(
-        rawUs.map(async (task) => {
-          let assignee = undefined;
-          if (task.assigneeId !== undefined && task.assigneeId !== "") {
-            const assigneeData = await ctx.firebaseAdmin
-              .auth()
-              .getUser(task.assigneeId);
-            assignee = {
-              uid: assigneeData.uid,
-              displayName: assigneeData.displayName,
-              photoURL: assigneeData.photoURL,
-            };
-          }
-          return {
-            id: task.id,
-            scrumId: task.scrumId,
-            title: task.name,
-            status: await getStatusTag(settingsRef, task.statusId),
-            assignee: assignee,
+    const fixedData = await Promise.all(
+      rawUs.map(async (task) => {
+        let assignee = undefined;
+        if (task.assigneeId !== undefined && task.assigneeId !== "") {
+          const assigneeData = await ctx.firebaseAdmin
+            .auth()
+            .getUser(task.assigneeId);
+          assignee = {
+            uid: assigneeData.uid,
+            displayName: assigneeData.displayName,
+            photoURL: assigneeData.photoURL,
           };
-        }),
-      );
-
-      return fixedData as TaskCol[];
-    }),
-
-  /**
-   * @procedure getTaskDetail
-   * @description Gets detailed information about a specific task
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.taskId - The ID of the task
-   * @returns {TaskDetail} Detailed task information
-   * @throws {TRPCError} If the task is not found
-   */
-  getTaskDetail: protectedProcedure
-    .input(z.object({ projectId: z.string(), taskId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      // Get the necessary information to construct the Task Detail
-
-      const { projectId, taskId } = input;
-      const taskRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId);
-      const task = await taskRef.get();
-      if (!task.exists) {
-        throw new TRPCError({ code: "NOT_FOUND" });
-      }
-
-      const taskData = TaskSchema.parse(task.data());
-      // Fetch all the task information for the task in parallel
-
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
-
-      let statusTag = undefined;
-      if (taskData.statusId !== undefined) {
-        statusTag = await getStatusTag(settingsRef, taskData.statusId);
-      }
-
-      let assignee = undefined;
-      if (taskData.assigneeId !== undefined && taskData.assigneeId !== "") {
-        const userRef = await ctx.firebaseAdmin
-          .auth()
-          .getUser(taskData.assigneeId);
-        assignee = {
-          uid: userRef.uid,
-          displayName: userRef.displayName,
-          photoURL: userRef.photoURL,
+        }
+        return {
+          id: task.id,
+          scrumId: task.scrumId,
+          title: task.name,
+          status: await getStatusTag(settingsRef, task.statusId),
+          assignee: assignee,
         };
-      }
-
-      return {
-        id: taskId,
-        scrumId: taskData.scrumId,
-        name: taskData.name,
-        description: taskData.description,
-        status: statusTag,
-        size: taskData.size,
-        assignee: assignee,
-        dueDate: taskData.dueDate
-          ? timestampToDate(taskData.dueDate)
-          : undefined,
-      } as TaskDetail;
-    }),
-
-  /**
-   * @procedure modifyTask
-   * @description Updates a task with new data
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.taskId - The ID of the task to modify
-   * @input {object} input.taskData - The new task data
-   * @returns {object} Object with success status
-   */
-  modifyTask: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        taskId: z.string(),
-        taskData: TaskSchema.omit({
-          scrumId: true,
-          deleted: true,
-          itemType: true,
-          itemId: true,
-        }),
       }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, taskId, taskData } = input;
-      const taskRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId);
-      await taskRef.update(taskData);
-      return { success: true };
-    }),
+    );
 
-  /**
-   * @procedure changeTaskStatus
-   * @description Updates the status of a task
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.taskId - The ID of the task to modify
-   * @input {string} input.statusId - The ID of the new status
-   * @returns {object} Object with success status
-   */
-  changeTaskStatus: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        taskId: z.string(),
-        statusId: z.string().default(""),
+    return fixedData as TaskCol[];
+  });
+
+/**
+ * Retrieves detailed information about a specific task.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the task
+ * - taskId — ID of the task to fetch details for
+ *
+ * @returns Detailed information about the task.
+ *
+ * @http GET /api/trpc/tasks.getTaskDetail
+ */
+export const getTaskDetailProcedure = protectedProcedure
+  .input(z.object({ projectId: z.string(), taskId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    // Get the necessary information to construct the Task Detail
+
+    const { projectId, taskId } = input;
+    const taskRef = ctx.firestore
+      .collection("projects")
+      .doc(projectId)
+      .collection("tasks")
+      .doc(taskId);
+    const task = await taskRef.get();
+    if (!task.exists) {
+      throw new TRPCError({ code: "NOT_FOUND" });
+    }
+
+    const taskData = TaskSchema.parse(task.data());
+    // Fetch all the task information for the task in parallel
+
+    const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+
+    let statusTag = undefined;
+    if (taskData.statusId !== undefined) {
+      statusTag = await getStatusTag(settingsRef, taskData.statusId);
+    }
+
+    let assignee = undefined;
+    if (taskData.assigneeId !== undefined && taskData.assigneeId !== "") {
+      const userRef = await ctx.firebaseAdmin
+        .auth()
+        .getUser(taskData.assigneeId);
+      assignee = {
+        uid: userRef.uid,
+        displayName: userRef.displayName,
+        photoURL: userRef.photoURL,
+      };
+    }
+
+    return {
+      id: taskId,
+      scrumId: taskData.scrumId,
+      name: taskData.name,
+      description: taskData.description,
+      status: statusTag,
+      size: taskData.size,
+      assignee: assignee,
+      dueDate: taskData.dueDate ? timestampToDate(taskData.dueDate) : undefined,
+    } as TaskDetail;
+  });
+
+/**
+ * Updates a task with new data.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the task
+ * - taskId — ID of the task to modify
+ * - taskData — Updated data for the task, excluding certain fields
+ *
+ * @returns Object containing success status.
+ *
+ * @http PUT /api/trpc/tasks.modifyTask
+ */
+export const modifyTaskProcedure = protectedProcedure
+  .input(
+    z.object({
+      projectId: z.string(),
+      taskId: z.string(),
+      taskData: TaskSchema.omit({
+        scrumId: true,
+        deleted: true,
+        itemType: true,
+        itemId: true,
       }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, taskId, statusId } = input;
-      const taskRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId);
-      await taskRef.update({ statusId });
-      return { success: true };
     }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, taskId, taskData } = input;
+    const taskRef = ctx.firestore
+      .collection("projects")
+      .doc(projectId)
+      .collection("tasks")
+      .doc(taskId);
+    await taskRef.update(taskData);
+    return { success: true };
+  });
 
-  /**
-   * @procedure deleteTask
-   * @description Marks a task as deleted (soft delete)
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.taskId - The ID of the task to delete
-   * @returns {object} Object with success status
-   */
-  deleteTask: protectedProcedure
-    .input(
-      z.object({
+/**
+ * Updates the status of a task.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the task
+ * - taskId — ID of the task to modify
+ * - statusId — ID of the new status
+ *
+ * @returns Object containing success status.
+ *
+ * @http PUT /api/trpc/tasks.changeTaskStatus
+ */
+export const changeTaskStatusProcedure = protectedProcedure
+  .input(
+    z.object({
+      projectId: z.string(),
+      taskId: z.string(),
+      statusId: z.string().default(""),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, taskId, statusId } = input;
+    const taskRef = ctx.firestore
+      .collection("projects")
+      .doc(projectId)
+      .collection("tasks")
+      .doc(taskId);
+    await taskRef.update({ statusId });
+    return { success: true };
+  });
+
+/**
+ * Marks a task as deleted (soft delete).
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project containing the task
+ * - taskId — ID of the task to delete
+ *
+ * @returns Object containing success status.
+ *
+ * @http DELETE /api/trpc/tasks.deleteTask
+ */
+export const deleteTaskProcedure = protectedProcedure
+  .input(
+    z.object({
+      projectId: z.string(),
+      taskId: z.string(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, taskId } = input;
+    const taskRef = ctx.firestore
+      .collection("projects")
+      .doc(projectId)
+      .collection("tasks")
+      .doc(taskId);
+    await taskRef.update({ deleted: true });
+    return { success: true };
+  });
+
+/**
+ * Generates tasks for an item using AI.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to generate tasks for
+ * - itemId — ID of the item to generate tasks for
+ * - itemType — Type of the item (e.g., "US", "IS", "IT")
+ * - amount — Number of tasks to generate
+ * - prompt — Additional user prompt for task generation
+ *
+ * @returns Array of generated tasks with Todo status.
+ *
+ * @http POST /api/trpc/tasks.generateTasks
+ */
+export const generateTasksProcedure = protectedProcedure
+  .input(
+    z
+      .object({
         projectId: z.string(),
-        taskId: z.string(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, taskId } = input;
-      const taskRef = ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("tasks")
-        .doc(taskId);
-      await taskRef.update({ deleted: true });
-      return { success: true };
-    }),
-
-  /**
-   * @procedure generateTasks
-   * @description Generates tasks for an item using AI
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @input {string} input.itemId - The ID of the item to generate tasks for
-   * @input {string} input.itemType - The type of the item (US, IS, IT)
-   * @input {number} input.amount - The number of tasks to generate
-   * @input {string} input.prompt - Additional user prompt for task generation
-   * @returns {Array} Array of generated tasks with Todo status
-   */
-  generateTasks: protectedProcedure
-    .input(
-      z
-        .object({
+        itemId: z.string(),
+        itemType: z.enum(["US", "IS", "IT"]),
+        amount: z.number(),
+        prompt: z.string(),
+      })
+      .or(
+        z.object({
           projectId: z.string(),
-          itemId: z.string(),
-          itemType: z.enum(["US", "IS", "IT"]),
           amount: z.number(),
           prompt: z.string(),
-        })
-        .or(
-          z.object({
-            projectId: z.string(),
-            amount: z.number(),
-            prompt: z.string(),
-            itemType: z.enum(["US", "IS", "IT"]),
-            itemDetail: BacklogItemSchema.omit({
-              scrumId: true,
-              deleted: true,
-              complete: true,
-            }).extend({
-              tasks: z.array(
-                TaskSchema.omit({
-                  scrumId: true,
-                  deleted: true,
-                  itemType: true,
-                  itemId: true,
-                  assigneeId: true,
-                  dueDate: true,
-                }),
-              ),
-              extra: z.string(),
-            }),
+          itemType: z.enum(["US", "IS", "IT"]),
+          itemDetail: BacklogItemSchema.omit({
+            scrumId: true,
+            deleted: true,
+            complete: true,
+          }).extend({
+            tasks: z.array(
+              TaskSchema.omit({
+                scrumId: true,
+                deleted: true,
+                itemType: true,
+                itemId: true,
+                assigneeId: true,
+                dueDate: true,
+              }),
+            ),
+            extra: z.string(),
           }),
-        ),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, amount, prompt } = input;
+        }),
+      ),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const { projectId, amount, prompt } = input;
 
-      const getGenericBacklogItemContext = async (
-        name: string,
-        description: string,
-        priorityId: string,
-        size?: Size,
-      ) => {
-        let priorityContext = "";
-        if (priorityId && priorityId !== "") {
-          const priorityTag = await ctx.firestore
+    const getGenericBacklogItemContext = async (
+      name: string,
+      description: string,
+      priorityId: string,
+      size?: Size,
+    ) => {
+      let priorityContext = "";
+      if (priorityId && priorityId !== "") {
+        const priorityTag = await ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("backlogTags")
+          .doc(priorityId)
+          .get();
+        if (priorityTag.exists) {
+          const priorityData = TagSchema.parse(priorityTag.data());
+          priorityContext = `- priority: ${priorityData.name}\n`;
+        }
+      }
+
+      const sizeContext = size ? `- size: ${size}\n` : "";
+
+      return `- name: ${name}\n- description: ${description}\n${priorityContext}${sizeContext}\n\n`;
+    };
+
+    const getBacklogTagsContext = async (tagIds: string[]) => {
+      const tags = await Promise.all(
+        tagIds.map(async (tagId) => {
+          const tag = await ctx.firestore
             .collection("projects")
             .doc(projectId)
             .collection("backlogTags")
-            .doc(priorityId)
+            .doc(tagId)
             .get();
-          if (priorityTag.exists) {
-            const priorityData = TagSchema.parse(priorityTag.data());
-            priorityContext = `- priority: ${priorityData.name}\n`;
+          if (tag.exists) {
+            const tagData = TagSchema.parse(tag.data());
+            return `- ${tagData.name}`;
           }
-        }
+          return "";
+        }),
+      );
+      return (
+        "RELATED TAGS\n\n" +
+        tags.filter((tag) => tag !== "").join("\n") +
+        "\n\n"
+      );
+    };
 
-        const sizeContext = size ? `- size: ${size}\n` : "";
-
-        return `- name: ${name}\n- description: ${description}\n${priorityContext}${sizeContext}\n\n`;
-      };
-
-      const getBacklogTagsContext = async (tagIds: string[]) => {
-        const tags = await Promise.all(
-          tagIds.map(async (tagId) => {
-            const tag = await ctx.firestore
-              .collection("projects")
-              .doc(projectId)
-              .collection("backlogTags")
-              .doc(tagId)
-              .get();
-            if (tag.exists) {
-              const tagData = TagSchema.parse(tag.data());
-              return `- ${tagData.name}`;
-            }
-            return "";
-          }),
-        );
-        return (
-          "RELATED TAGS\n\n" +
-          tags.filter((tag) => tag !== "").join("\n") +
-          "\n\n"
-        );
-      };
-
-      const getEpicContext = async (epicId: string) => {
-        let epicContext = "";
-        if (epicId && epicId !== "") {
-          const epic = await ctx.firestore
-            .collection("projects")
-            .doc(projectId)
-            .collection("epics")
-            .doc(epicId)
-            .get();
-          if (epic.exists) {
-            const epicData = {
-              id: epic.id,
-              ...EpicSchema.parse(epic.data()),
-            };
-            epicContext = `# RELATED EPIC\n\n- name: ${epicData.name}\n- description: ${epicData.description}\n\n`;
-          }
-        }
-        return epicContext;
-      };
-
-      // Get the item data
-      let itemContext = "";
-      let itemTypeName = "";
-      let tasksContext = "";
-
-      if ("itemId" in input) {
-        const { itemId } = input;
-
-        if (input.itemType === "US") {
-          itemTypeName = "user story";
-          const userStory = await ctx.firestore
-            .collection("projects")
-            .doc(projectId)
-            .collection("userStories")
-            .doc(itemId)
-            .get();
-          const userStoryData = {
-            id: userStory.id,
-            ...UserStorySchema.parse(userStory.data()),
+    const getEpicContext = async (epicId: string) => {
+      let epicContext = "";
+      if (epicId && epicId !== "") {
+        const epic = await ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("epics")
+          .doc(epicId)
+          .get();
+        if (epic.exists) {
+          const epicData = {
+            id: epic.id,
+            ...EpicSchema.parse(epic.data()),
           };
+          epicContext = `# RELATED EPIC\n\n- name: ${epicData.name}\n- description: ${epicData.description}\n\n`;
+        }
+      }
+      return epicContext;
+    };
 
-          const epicContext = await getEpicContext(userStoryData.epicId ?? "");
+    // Get the item data
+    let itemContext = "";
+    let itemTypeName = "";
+    let tasksContext = "";
 
-          itemContext = `# USER STORY DETAILS\n
+    if ("itemId" in input) {
+      const { itemId } = input;
+
+      if (input.itemType === "US") {
+        itemTypeName = "user story";
+        const userStory = await ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("userStories")
+          .doc(itemId)
+          .get();
+        const userStoryData = {
+          id: userStory.id,
+          ...UserStorySchema.parse(userStory.data()),
+        };
+
+        const epicContext = await getEpicContext(userStoryData.epicId ?? "");
+
+        itemContext = `# USER STORY DETAILS\n
 ${await getGenericBacklogItemContext(userStoryData.name, userStoryData.description, userStoryData.priorityId ?? "", userStoryData.size)}
 - acceptance criteria: ${userStoryData.acceptanceCriteria}
 
 ${epicContext}
 
 ${await getBacklogTagsContext(userStoryData.tagIds)}\n\n`;
-        } else if (input.itemType === "IS") {
-          itemTypeName = "issue";
-          const issue = await ctx.firestore
+      } else if (input.itemType === "IS") {
+        itemTypeName = "issue";
+        const issue = await ctx.firestore
+          .collection("projects")
+          .doc(projectId)
+          .collection("issues")
+          .doc(itemId)
+          .get();
+        const issueData = {
+          id: issue.id,
+          ...IssueSchema.parse(issue.data()),
+        };
+
+        let userStoryContext = "";
+        if (issueData.relatedUserStoryId) {
+          const userStory = await ctx.firestore
             .collection("projects")
             .doc(projectId)
-            .collection("issues")
-            .doc(itemId)
+            .collection("userStories")
+            .doc(issueData.relatedUserStoryId)
             .get();
-          const issueData = {
-            id: issue.id,
-            ...IssueSchema.parse(issue.data()),
-          };
-
-          let userStoryContext = "";
-          if (issueData.relatedUserStoryId) {
-            const userStory = await ctx.firestore
-              .collection("projects")
-              .doc(projectId)
-              .collection("userStories")
-              .doc(issueData.relatedUserStoryId)
-              .get();
-            if (userStory.exists) {
-              const userStoryData = {
-                id: userStory.id,
-                ...UserStorySchema.parse(userStory.data()),
-              };
-              userStoryContext = `# RELATED USER STORY\n\n- name: ${userStoryData.name}\n- description: ${userStoryData.description}\n- acceptance criteria: ${userStoryData.acceptanceCriteria}\n\n`;
-            }
+          if (userStory.exists) {
+            const userStoryData = {
+              id: userStory.id,
+              ...UserStorySchema.parse(userStory.data()),
+            };
+            userStoryContext = `# RELATED USER STORY\n\n- name: ${userStoryData.name}\n- description: ${userStoryData.description}\n- acceptance criteria: ${userStoryData.acceptanceCriteria}\n\n`;
           }
+        }
 
-          itemContext = `# ISSUE DETAILS\n
+        itemContext = `# ISSUE DETAILS\n
 ${await getGenericBacklogItemContext(issueData.name, issueData.description, issueData.priorityId ?? "", issueData.size)}
 - steps to reproduce: ${issueData.stepsToRecreate}
 
 ${userStoryContext}
 
 ${await getBacklogTagsContext(issueData.tagIds)}\n\n`;
-        }
-        // FIXME: Also deal with generic items (IT)
+      }
+      // FIXME: Also deal with generic items (IT)
 
-        const tasks = await getTasksFromItem(ctx.firestore, projectId, itemId);
-        tasksContext =
-          tasks.length > 0
-            ? "# EXISTING TASKS\n\n" +
-              tasks
-                .map((task) => {
-                  return `- name: ${task.name}\n- description: ${task.description}\n`;
-                })
-                .join("\n")
-            : "";
+      const tasks = await getTasksFromItem(ctx.firestore, projectId, itemId);
+      tasksContext =
+        tasks.length > 0
+          ? "# EXISTING TASKS\n\n" +
+            tasks
+              .map((task) => {
+                return `- name: ${task.name}\n- description: ${task.description}\n`;
+              })
+              .join("\n")
+          : "";
+    } else {
+      let extra = "";
+      const itemData = input.itemDetail;
+      if (input.itemType === "IT") {
+        itemTypeName = "backlog item";
+      } else if (input.itemType === "IS") {
+        itemTypeName = "issue";
+        extra = `- steps to recreate: ${itemData.extra}`;
       } else {
-        let extra = "";
-        const itemData = input.itemDetail;
-        if (input.itemType === "IT") {
-          itemTypeName = "backlog item";
-        } else if (input.itemType === "IS") {
-          itemTypeName = "issue";
-          extra = `- steps to recreate: ${itemData.extra}`;
-        } else {
-          itemTypeName = "user story";
-          extra = `- acceptance criteria: ${itemData.extra}`;
-        }
+        itemTypeName = "user story";
+        extra = `- acceptance criteria: ${itemData.extra}`;
+      }
 
-        itemContext = `# ${itemTypeName.toUpperCase()} DETAILS\n
+      itemContext = `# ${itemTypeName.toUpperCase()} DETAILS\n
 ${await getGenericBacklogItemContext(itemData.name, itemData.description, itemData.priorityId ?? "", itemData.size)}
 ${extra}
 
 ${await getBacklogTagsContext(itemData.tagIds)}\n\n`;
 
-        tasksContext =
-          itemData.tasks.length > 0
-            ? "# EXISTING TASKS\n\n" +
-              itemData.tasks
-                .map((task) => {
-                  return `- name: ${task.name}\n- description: ${task.description}\n`;
-                })
-                .join("\n")
-            : "";
-      }
-
-      const passedInPrompt =
-        prompt != ""
-          ? `Consider that the user wants the tasks for the following: ${prompt}`
+      tasksContext =
+        itemData.tasks.length > 0
+          ? "# EXISTING TASKS\n\n" +
+            itemData.tasks
+              .map((task) => {
+                return `- name: ${task.name}\n- description: ${task.description}\n`;
+              })
+              .join("\n")
           : "";
+    }
 
-      const completePrompt = `
+    const passedInPrompt =
+      prompt != ""
+        ? `Consider that the user wants the tasks for the following: ${prompt}`
+        : "";
+
+    const completePrompt = `
 ${await getProjectContextHeader(projectId, ctx.firestore)}
 
 Given the following context, follow the instructions below to the best of your ability.
@@ -631,43 +674,64 @@ ${tasksContext}
 Generate ${amount} tasks about the detailed ${itemTypeName}. You can also see the tasks that already exist, DO NOT repeat tasks. Do NOT include any identifier in the name like "Task 1", just use a normal title. Always include a size.\n\n
 
 ${passedInPrompt}
-          `;
+        `;
 
-      const generatedTasks = await askAiToGenerate(
-        completePrompt,
-        z.array(
-          TaskSchema.omit({
-            scrumId: true,
-            deleted: true,
-            itemType: true,
-            itemId: true,
-            assigneeId: true,
-            statusId: true,
-            dueDate: true,
-          }),
-        ), // This makes the AI only generate description, name, and size
-      );
+    const generatedTasks = await askAiToGenerate(
+      completePrompt,
+      z.array(
+        TaskSchema.omit({
+          scrumId: true,
+          deleted: true,
+          itemType: true,
+          itemId: true,
+          assigneeId: true,
+          statusId: true,
+          dueDate: true,
+        }),
+      ), // This makes the AI only generate description, name, and size
+    );
 
-      const todoTag = await getTodoStatusTag(
-        getProjectSettingsRef(projectId, ctx.firestore),
-      );
+    const todoTag = await getTodoStatusTag(
+      getProjectSettingsRef(projectId, ctx.firestore),
+    );
 
-      return generatedTasks.map((task) => ({
-        ...task,
-        status: todoTag as StatusTag,
-      }));
-    }),
+    return generatedTasks.map((task) => ({
+      ...task,
+      status: todoTag as StatusTag,
+    }));
+  });
 
-  getTaskCount: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const taskCount = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .collection("tasks")
-        .where("deleted", "==", false)
-        .count()
-        .get();
-      return taskCount.data().count;
-    }),
+/**
+ * Retrieves the count of tasks in a specific project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId — ID of the project to count tasks in
+ *
+ * @returns Number of tasks in the project.
+ *
+ * @http GET /api/trpc/tasks.getTaskCount
+ */
+export const getTaskCountProcedure = protectedProcedure
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const taskCount = await ctx.firestore
+      .collection("projects")
+      .doc(input.projectId)
+      .collection("tasks")
+      .where("deleted", "==", false)
+      .count()
+      .get();
+    return taskCount.data().count;
+  });
+
+export const tasksRouter = createTRPCRouter({
+  createTask: createTaskProcedure,
+  getTasksTableFriendly: getTasksTableFriendlyProcedure,
+  getTaskDetail: getTaskDetailProcedure,
+  modifyTask: modifyTaskProcedure,
+  changeTaskStatus: changeTaskStatusProcedure,
+  deleteTask: deleteTaskProcedure,
+  generateTasks: generateTasksProcedure,
+  getTaskCount: getTaskCountProcedure,
 });
