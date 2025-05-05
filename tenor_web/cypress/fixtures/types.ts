@@ -11,6 +11,7 @@ export interface TestUserStory {
 
 export interface TestTask {
   name: string;
+  description: string;
 }
 
 export interface TestSprint {
