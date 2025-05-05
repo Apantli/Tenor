@@ -323,7 +323,8 @@ export default function TaskDetailPopup({
               onChange={async (assignee) => {
                 await handleSave({
                   ...taskDetail,
-                  assignee: assignee?.user as WithId<UserPreview> | undefined,
+                  // assignee: assignee?.user as WithId<UserPreview> | undefined,
+                  assignee: undefined,
                 });
               }}
               placeholder="Select a person"

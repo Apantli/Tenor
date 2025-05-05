@@ -186,7 +186,7 @@ export const getUserTable = async (
         displayName: user.displayName ?? "",
         email: user.email ?? "",
         photoURL: user.photoURL ?? "",
-        roleId: userDoc.data().roleId,
+        roleId: userDoc.data().roleId as string,
       };
       return userCol;
     }),

@@ -60,7 +60,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
     };
     const addedTag = await createTag({
       projectId: projectId as string,
-      tag: newTagValue,
+      tagData: newTagValue,
     });
     await refetch();
     setSearchValue("");

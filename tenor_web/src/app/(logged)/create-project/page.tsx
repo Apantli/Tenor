@@ -6,18 +6,18 @@ import Tabbar from "~/app/_components/Tabbar";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import InputFileField from "~/app/_components/inputs/InputFileField";
-import MemberTable, {
-  type TeamMember,
-} from "~/app/_components/inputs/MemberTable";
 import LinkList from "~/app/_components/inputs/LinkList";
 import FileList from "~/app/_components/inputs/FileList";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { defaultRoleList } from "~/lib/defaultProjectValues";
-
+import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
 import { toBase64 } from "~/utils/helpers/base64";
+import { UserCol } from "~/lib/types/columnTypes";
+import MemberTable from "~/app/_components/inputs/MemberTable";
+import { UserPreview } from "~/lib/types/detailSchemas";
+import { WithId } from "~/lib/types/firebaseSchemas";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();
@@ -74,7 +74,7 @@ export default function ProjectCreator() {
       logo: logoBase64Encoded ?? "",
       users: teamMembers.map((member) => ({
         userId: member.id,
-        roleId: member.role,
+        roleId: member.roleId,
       })),
       settings: {
         aiContext: {
@@ -106,12 +106,12 @@ export default function ProjectCreator() {
     context: "",
   });
 
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamMembers, setTeamMembers] = useState<UserCol[]>([]);
   const handleRemoveTeamMember = (id: (string | number)[]) => {
     setTeamMembers((prev) => prev.filter((member) => !id.includes(member.id)));
   };
-  const handleAddTeamMember = (user: TeamMember) => {
-    setTeamMembers((prev) => [...prev, user]);
+  const handleAddTeamMember = (user: WithId<UserPreview>) => {
+    setTeamMembers((prev) => [...prev, { ...user, roleId: emptyRole.id }]);
   };
   const handleEditMemberRole = (id: string, role: string) => {
     setTeamMembers((prev) =>

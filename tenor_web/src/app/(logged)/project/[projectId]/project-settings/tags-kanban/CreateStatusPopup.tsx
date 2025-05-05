@@ -102,9 +102,13 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
 
     await createStatus({
       projectId: projectId as string,
-      name: form.name,
-      color: form.color,
-      marksTaskAsDone: form.marksTaskAsDone,
+      tagData: {
+        name: form.name,
+        color: form.color,
+        marksTaskAsDone: form.marksTaskAsDone,
+        deleted: false,
+        orderIndex: 0,
+      },
     });
 
     setShowPopup(false);

@@ -2,8 +2,8 @@ import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import TagComponent from "../TagComponent";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
-import type { KanbanCard } from "~/server/api/routers/kanban";
 import { accentColorByCardType } from "~/utils/helpers/colorUtils";
+import { KanbanCard } from "~/lib/types/kanbanTypes";
 
 interface Props {
   item: KanbanCard;

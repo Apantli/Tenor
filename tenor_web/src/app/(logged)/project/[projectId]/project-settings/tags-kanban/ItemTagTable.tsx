@@ -151,7 +151,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
             { projectId: projectId as string },
             (oldData) => {
               if (!oldData) return [];
-              return oldData.filter((tag) => !tagIds.includes(tag.id!));
+              return oldData.filter((tag) => !tagIds.includes(tag.id));
             },
           );
           break;
@@ -163,7 +163,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
             { projectId: projectId as string },
             (oldData) => {
               if (!oldData) return [];
-              return oldData.filter((tag) => !tagIds.includes(tag.id!));
+              return oldData.filter((tag) => !tagIds.includes(tag.id));
             },
           );
           break;
@@ -200,7 +200,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
 
   const tableData =
     filteredTags?.map((tag) => ({
-      id: tag.id!,
+      id: tag.id,
       name: tag.name,
       color: tag.color,
       deleted: tag.deleted ?? false,

@@ -232,7 +232,7 @@ export const requirementsRouter = createTRPCRouter({
 
       let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
       requirements.forEach((requirement) => {
-        requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priority}\n- typeId: ${requirement.requirementType}\n- focus: ${requirement.requirementFocus}\n\n`;
+        requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priority.name}\n- typeId: ${requirement.requirementType.name}\n- focus: ${requirement.requirementFocus.name}\n\n`;
       });
 
       // const priorityTagContext = await collectPriorityTagContext(
@@ -258,8 +258,8 @@ ${await getProjectContextHeader(ctx.firestore, projectId)}
 Given the following context, follow the instructions below to the best of your ability.
 
 ${requirementsContext}
-${priorities}
-${requirementTypes}
+${priorities.map((tag) => `${tag.id} - ${tag.name}`).join("\n")}
+${requirementTypes.map((tag) => `${tag.id} - ${tag.name}`).join("\n")}
 ${requirementFocusContext}
 
 ${passedInPrompt}

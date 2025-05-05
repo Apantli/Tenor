@@ -71,10 +71,10 @@ export const epicsRouter = createTRPCRouter({
           projectId,
           epicId,
         ).get();
-        await epicDoc?.ref.update(input);
+        await epicDoc?.ref.update(epicData);
       } else {
         epicData.scrumId = await getEpicNewId(ctx.firestore, projectId);
-        await getEpicsRef(ctx.firestore, projectId).add(input);
+        await getEpicsRef(ctx.firestore, projectId).add(epicData);
       }
     }),
 });

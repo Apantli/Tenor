@@ -53,7 +53,7 @@ export default function StatusDetailPopup({
     isLoading,
     refetch,
     error,
-  } = api.settings.getStatusTypeById.useQuery({
+  } = api.settings.getStatusType.useQuery({
     projectId: projectId as string,
     statusId: statusId,
   });
@@ -163,12 +163,12 @@ export default function StatusDetailPopup({
       orderIndex: form.orderIndex,
     };
 
-    await utils.settings.getStatusTypeById.cancel({
+    await utils.settings.getStatusType.cancel({
       projectId: projectId as string,
       statusId: statusId,
     });
 
-    utils.settings.getStatusTypeById.setData(
+    utils.settings.getStatusType.setData(
       { projectId: projectId as string, statusId: statusId },
       (oldData) => {
         if (!oldData) return;

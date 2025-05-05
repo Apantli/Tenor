@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "~/lib/utils";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CardColumn from "./CardColumn";
-import type { KanbanCard } from "~/server/api/routers/kanban";
+import { KanbanCard } from "~/lib/types/kanbanTypes";
 
 // WithId<BasicInfo> change into only needed info...
 
@@ -41,9 +41,7 @@ export default function AssignableCardColumn({
     selectedItems.size > 0 &&
     Array.from(selectedItems).every(
       (selectedItem) =>
-        !column.itemIds.some(
-          (itemId) => itemId === selectedItem,
-        ),
+        !column.itemIds.some((itemId) => itemId === selectedItem),
     );
 
   return (

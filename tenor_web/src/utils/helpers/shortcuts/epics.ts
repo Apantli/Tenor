@@ -79,7 +79,7 @@ export const getEpic = async (
   projectId: string,
   epicId: string,
 ) => {
-  let epicData = await getEpicRef(firestore, projectId, epicId).get();
+  const epicData = await getEpicRef(firestore, projectId, epicId).get();
   if (!epicData.exists) {
     throw new TRPCError({
       code: "NOT_FOUND",

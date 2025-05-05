@@ -213,7 +213,7 @@ export default function RequirementsTable() {
       priorityId: priority.id ?? "",
       requirementTypeId: requirementType.id ?? "",
       requirementFocusId: requirementFocus.id ?? "",
-      scrumId: scrumId!,
+      scrumId: scrumId,
       deleted: false,
     };
 
@@ -256,7 +256,7 @@ export default function RequirementsTable() {
           // Asegúrate de que este hook devuelve un string consistente
           const formattedScrumText = UseFormatForAssignReqTypeScrumId(
             requirement.requirementType.name,
-            requirement.scrumId!,
+            requirement.scrumId,
           ).toLowerCase();
 
           return (
@@ -535,14 +535,14 @@ export default function RequirementsTable() {
           const handleGhostReqTypeChange = (tag: Tag) => {
             updateGhostRow(row.id, (oldData) => ({
               ...oldData,
-              requirementTypeId: tag,
+              requirementType: tag,
             }));
             generatedRequirements.current = generatedRequirements.current?.map(
               (req) => {
                 if (req.id === row.id) {
                   return {
                     ...req,
-                    requirementTypeId: tag,
+                    requirementType: tag,
                   };
                 }
                 return req;
@@ -1084,7 +1084,7 @@ export default function RequirementsTable() {
                           onChange={async (priority) => {
                             setNewRequirement((prev) => ({
                               ...prev,
-                              priorityId: priority,
+                              priority: priority,
                             }));
                           }}
                         />
@@ -1097,7 +1097,7 @@ export default function RequirementsTable() {
                           onChange={async (type) => {
                             setNewRequirement((prev) => ({
                               ...prev,
-                              requirementTypeId: type,
+                              requirementType: type,
                             }));
                           }}
                         />
@@ -1110,7 +1110,7 @@ export default function RequirementsTable() {
                           onChange={async (focus) => {
                             setNewRequirement((prev) => ({
                               ...prev,
-                              requirementFocusId: focus,
+                              requirementFocus: focus,
                             }));
                           }}
                         />
@@ -1146,12 +1146,12 @@ export default function RequirementsTable() {
                             ghostRequirementEdited.id,
                             (oldData) => ({
                               ...oldData,
-                              priorityId: priority,
+                              priority: priority,
                             }),
                           );
                           setGhostRequirementEdited((prev) => ({
                             ...prev!,
-                            priorityId: priority,
+                            priority: priority,
                           }));
                           generatedRequirements.current =
                             generatedRequirements.current?.map((req) => {
@@ -1169,12 +1169,12 @@ export default function RequirementsTable() {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
-                            priorityId: priority,
+                            priority: priority,
                           }));
                         } else {
                           setRequirementEdited((prev) => ({
                             ...prev!,
-                            priorityId: priority,
+                            priority: priority,
                           }));
                           await handleEditRequirement({
                             ...requirementEdited,
@@ -1204,14 +1204,14 @@ export default function RequirementsTable() {
                           );
                           setGhostRequirementEdited((prev) => ({
                             ...prev!,
-                            requirementTypeId: type,
+                            requirementType: type,
                           }));
                           generatedRequirements.current =
                             generatedRequirements.current?.map((req) => {
                               if (req.id === ghostRequirementEdited.id) {
                                 return {
                                   ...req,
-                                  requirementTypeId: type,
+                                  requirementType: type,
                                 };
                               }
                               return req;
@@ -1222,12 +1222,12 @@ export default function RequirementsTable() {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
-                            requirementTypeId: type,
+                            requirementType: type,
                           }));
                         } else {
                           setRequirementEdited((prev) => ({
                             ...prev!,
-                            requirementTypeId: type,
+                            requirementType: type,
                           }));
                           await handleEditRequirement({
                             ...requirementEdited,
@@ -1252,12 +1252,12 @@ export default function RequirementsTable() {
                             ghostRequirementEdited.id,
                             (oldData) => ({
                               ...oldData,
-                              requirementFocusId: focus,
+                              requirementFocus: focus,
                             }),
                           );
                           setGhostRequirementEdited((prev) => ({
                             ...prev!,
-                            requirementFocusId: focus,
+                            requirementFocus: focus,
                           }));
                           generatedRequirements.current =
                             generatedRequirements.current?.map((req) => {
@@ -1275,12 +1275,12 @@ export default function RequirementsTable() {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
-                            requirementFocusId: focus,
+                            requirementFocus: focus,
                           }));
                         } else {
                           setRequirementEdited((prev) => ({
                             ...prev!,
-                            requirementFocusId: focus,
+                            requirementFocus: focus,
                           }));
                           await handleEditRequirement({
                             ...requirementEdited,

@@ -764,9 +764,17 @@ function EditableBoxShowCase() {
 
   // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
   const people: Option[] = [
-    { id: user?.uid ?? "", name: user?.displayName ?? "", user: mockUser },
-    { id: "2", name: "Ana García" },
-    { id: "3", name: "Carlos Pérez" },
+    {
+      id: user?.uid ?? "",
+      displayName: user?.displayName ?? "",
+      user: {
+        id: mockUser.uid,
+        email: "",
+        ...mockUser,
+      },
+    },
+    { id: "2", displayName: "Ana García" },
+    { id: "3", displayName: "Carlos Pérez" },
   ];
 
   return (

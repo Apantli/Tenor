@@ -10,7 +10,10 @@ import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import UserStoryPicker from "../specific-pickers/UserStoryPicker";
-import type { ExistingUserStory } from "~/lib/types/detailSchemas";
+import type {
+  ExistingUserStory,
+  UserStoryPreview,
+} from "~/lib/types/detailSchemas";
 import PrimaryButton from "../buttons/PrimaryButton";
 import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
 import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
@@ -200,7 +203,7 @@ export default function IssuesTable() {
         render(row) {
           const handleUserStoryChange = async (
             row: IssueCol,
-            userStory?: ExistingUserStory,
+            userStory?: UserStoryPreview,
           ) => {
             if (!projectId || !row?.id) return;
 
@@ -218,7 +221,9 @@ export default function IssuesTable() {
                     if (issue.id === row.id) {
                       return {
                         ...issue,
-                        relatedUserStory: userStory,
+                        relatedUserStory: userStory
+                          ? { ...userStory, deleted: false } // Ensure 'deleted' property is added
+                          : undefined,
                       };
                     }
                     return issue;

@@ -14,8 +14,10 @@ import Markdown from "react-markdown";
 import SecondaryButton from "../buttons/SecondaryButton";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import SearchBar from "../SearchBar";
+import { useParams } from "next/navigation";
 
-export const ProjectEpics = ({ projectId }: { projectId: string }) => {
+export const ProjectEpics = () => {
+  const { projectId } = useParams();
   const { mutateAsync: createEpic, isPending: creatingEpic } =
     api.epics.createOrModifyEpic.useMutation();
 
@@ -35,7 +37,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
 
   const { data: epics } = api.epics.getEpics.useQuery(
     {
-      projectId: projectId,
+      projectId: projectId as string,
     },
     { enabled: !!projectId },
   );
@@ -47,7 +49,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
 
   const { data: epic, isLoading: epicLoading } = api.epics.getEpic.useQuery(
     {
-      projectId: projectId,
+      projectId: projectId as string,
       epicId: selectedEpic ?? "",
     },
     {
@@ -108,7 +110,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
 
     if (!creatingEpic) {
       await createEpic({
-        projectId: projectId,
+        projectId: projectId as string,
         epicData: {
           name: newEpicName,
           description: newEpicDescription,
@@ -241,7 +243,8 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
                 return;
               }
               await createEpic({
-                projectId: projectId,
+                projectId: projectId as string,
+                epicId: epic?.id,
                 epicData: {
                   name: editEpicName,
                   description: editEpicDescription,
@@ -284,7 +287,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
                 }
                 if (!deletingEpic) {
                   await deleteEpic({
-                    projectId: projectId,
+                    projectId: projectId as string,
 
                     epicId: epic?.id,
 
