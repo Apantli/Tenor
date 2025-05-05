@@ -6,8 +6,8 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
 import {
   type Option,
-  EditableBox,
-} from "~/app/_components/EditableBox/EditableBox";
+  UserPicker,
+} from "~/app/_components/specific-pickers/UserPicker";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
@@ -195,7 +195,7 @@ export function CreateTaskForm({
 
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Assigned to</label>
-          <EditableBox
+          <UserPicker
             options={people}
             selectedOption={selectedAssignee}
             onChange={(person) => {

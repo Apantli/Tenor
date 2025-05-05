@@ -263,24 +263,24 @@ export const kanbanRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { projectId, itemId } = input;
-      console.log("LOADING 1");
+
       const activeStatuses = await getStatusTypes(
         ctx.firestore,
         input.projectId,
       );
-      console.log("LOADING 2");
+
       const statusId = await getAutomaticStatusId(
         ctx.firestore,
         projectId,
         itemId,
         activeStatuses,
       );
-      console.log("LOADING 3");
+
       const status = activeStatuses.find((status) => status.id === statusId);
       if (!status) {
         throw new Error("Status not found");
       }
-      console.log("LOADING 3");
+
       return {
         id: status.id,
         name: status.name,

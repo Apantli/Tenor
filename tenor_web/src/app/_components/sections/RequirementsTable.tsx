@@ -128,14 +128,6 @@ export default function RequirementsTable() {
     api.requirements.deleteRequirement.useMutation();
   const { mutateAsync: generateRequirements } =
     api.requirements.generateRequirements.useMutation();
-  const { data: getRequirementTypes } =
-    api.requirements.getRequirementTypes.useQuery({
-      projectId: params.projectId as string,
-    });
-  const { data: getRequirementFocus } =
-    api.requirements.getRequirementFocuses.useQuery({
-      projectId: params.projectId as string,
-    });
 
   const handleCreateRequirement = async () => {
     if (!newRequirement.name) {

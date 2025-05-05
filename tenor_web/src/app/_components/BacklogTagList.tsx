@@ -100,7 +100,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
                 <DropdownButton
                   onClick={() => handleTagClick(tag)}
                   className="flex max-w-52 items-center gap-2 border-b border-app-border px-2 py-2 last:border-none"
-                  key={tag.name}
+                  key={tag.id}
                 >
                   <Check
                     fontSize="inherit"
@@ -143,7 +143,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
             color={tag.color}
             onDelete={() => handleTagClick(tag)}
             expanded
-            key={tag.name}
+            key={tag.id}
           >
             {tag.name}
           </TagComponent>

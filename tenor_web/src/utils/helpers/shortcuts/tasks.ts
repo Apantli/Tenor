@@ -89,9 +89,23 @@ export const getTask = async (
   if (!taskSnapshot.exists) {
     throw new Error(`Task with ID ${taskId} does not exist`);
   }
+
+  // Parse the task due date
+  const dueDateData: { seconds: number; nanoseconds: number } | undefined =
+    taskSnapshot.data()?.dueDate as
+      | {
+          seconds: number;
+          nanoseconds: number;
+        }
+      | undefined;
+  const dueDate = dueDateData
+    ? new Date(dueDateData.seconds * 1000 + dueDateData.nanoseconds / 1e6)
+    : undefined;
+
   return {
     id: taskSnapshot.id,
     ...TaskSchema.parse(taskSnapshot.data()),
+    dueDate,
   } as WithId<Task>;
 };
 

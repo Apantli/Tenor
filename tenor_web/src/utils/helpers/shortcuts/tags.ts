@@ -221,7 +221,7 @@ export const getBacklogTags = async (
 ) => {
   const backlogTagsRef = getBacklogTagsRef(firestore, projectId)
     .where("deleted", "==", false)
-    .orderBy("scrumId", "desc");
+    .orderBy("name", "desc");
   const backlogTagsSnapshot = await backlogTagsRef.get();
   const backlogTags: WithId<Tag>[] = backlogTagsSnapshot.docs.map((doc) => {
     return {

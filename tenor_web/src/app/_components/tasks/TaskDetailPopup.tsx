@@ -20,14 +20,14 @@ import { SidebarPopup } from "../Popup";
 import { Timestamp } from "firebase/firestore";
 import { update } from "node_modules/cypress/types/lodash";
 import StatusPicker from "../specific-pickers/StatusPicker";
-import { EditableBox } from "../EditableBox/EditableBox";
-import { Option } from "../EditableBox/EditableBox";
+import { UserPicker } from "../specific-pickers/UserPicker";
 import { DatePicker } from "../DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
 import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import PrimaryButton from "../buttons/PrimaryButton";
 import AiIcon from "@mui/icons-material/AutoAwesome";
+import { WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   taskId: string;
@@ -78,7 +78,7 @@ export default function TaskDetailPopup({
   const { data: users } = api.users.getUsers.useQuery({
     projectId: projectId as string,
   });
-  const people: Option[] = users ?? [];
+  const people: WithId<UserPreview>[] = users ?? [];
 
   const utils = api.useUtils();
 
@@ -308,23 +308,14 @@ export default function TaskDetailPopup({
             <label className="mb-1 block text-sm font-medium">
               Assigned to
             </label>
-            <EditableBox
+            <UserPicker
               options={people}
-              selectedOption={
-                taskDetail.assignee
-                  ? {
-                      id: taskDetail.assignee?.id ?? "",
-                      displayName: taskDetail.assignee?.displayName ?? "",
-                      image: taskDetail.assignee?.photoURL,
-                      user: taskDetail.assignee,
-                    }
-                  : undefined
-              }
+              selectedOption={taskDetail.assignee}
               onChange={async (assignee) => {
+                console.log(assignee);
                 await handleSave({
                   ...taskDetail,
-                  // assignee: assignee?.user as WithId<UserPreview> | undefined,
-                  assignee: undefined,
+                  assignee: assignee,
                 });
               }}
               placeholder="Select a person"

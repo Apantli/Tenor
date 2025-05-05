@@ -6,7 +6,7 @@ import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
-import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import PillComponent from "~/app/_components/PillComponent";
 import Popup, { SidebarPopup } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -22,8 +22,7 @@ import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { DatePicker } from "~/app/_components/DatePicker";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import TagComponent from "~/app/_components/TagComponent";
-import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
-import type { Option } from "~/app/_components/EditableBox/EditableBox";
+import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
@@ -32,6 +31,7 @@ import { acceptableTagColors } from "~/utils/helpers/colorUtils";
 import Dropdown from "~/app/_components/Dropdown";
 import { User } from "@supabase/supabase-js";
 import { UserCol } from "~/lib/types/columnTypes";
+import { UserPreview } from "~/lib/types/detailSchemas";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -735,7 +735,7 @@ function SegmentedControlShowcase() {
 
 // Showcase of the date picker component
 function DatePickerShowcase() {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   return (
     <div>
       <hr />
@@ -753,7 +753,9 @@ function DatePickerShowcase() {
 }
 
 function EditableBoxShowCase() {
-  const [selectedPerson, setSelectedPerson] = useState<Option | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<
+    WithId<UserPreview> | undefined
+  >(undefined);
   const { user } = useFirebaseAuth();
 
   const mockUser = {
@@ -763,25 +765,19 @@ function EditableBoxShowCase() {
   };
 
   // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
-  const people: Option[] = [
+  const people: WithId<UserPreview>[] = [
     {
-      id: user?.uid ?? "",
-      displayName: user?.displayName ?? "",
-      user: {
-        id: mockUser.uid,
-        email: "",
-        ...mockUser,
-      },
+      id: mockUser.uid,
+      email: "",
+      ...mockUser,
     },
-    { id: "2", displayName: "Ana García" },
-    { id: "3", displayName: "Carlos Pérez" },
   ];
 
   return (
     <div>
       <hr />
       <h2 className="my-2 text-2xl font-medium">Editable Box</h2>
-      <EditableBox
+      <UserPicker
         options={people}
         selectedOption={selectedPerson}
         onChange={setSelectedPerson}
