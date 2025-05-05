@@ -13,7 +13,6 @@ export const authRouter = createTRPCRouter({
       z.object({ token: z.string(), githubAccessToken: z.string().optional() }),
     )
     .mutation(async ({ input, ctx }) => {
-      console.log("Login input: ", process.env.FIREBASE_AUTH_EMULATOR_HOST);
       const { token, githubAccessToken } = input;
 
       try {
