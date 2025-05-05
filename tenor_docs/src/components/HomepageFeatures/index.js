@@ -1,49 +1,52 @@
-import clsx from 'clsx';
-import Heading from '@theme/Heading';
-import styles from './styles.module.css';
+import clsx from "clsx";
+import Heading from "@theme/Heading";
+import styles from "./styles.module.css";
 
 const FeatureList = [
   {
-    title: 'Easy to Use',
-    Svg: require('@site/static/img/undraw_docusaurus_mountain.svg').default,
+    title: "Complete Project Management",
+    icon: "🔄",
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Tenor provides end-to-end management for agile projects from initial
+        requirements to sprint planning, task tracking, and performance
+        analysis.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
-    Svg: require('@site/static/img/undraw_docusaurus_tree.svg').default,
+    title: "AI-Powered Assistance",
+    icon: "🤖",
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Generate tasks, user stories, and issues automatically using Tenor's
+        built-in AI capabilities to accelerate your workflow.
       </>
     ),
   },
   {
-    title: 'Powered by React',
-    Svg: require('@site/static/img/undraw_docusaurus_react.svg').default,
+    title: "Team Collaboration",
+    icon: "👥",
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Enable effective team collaboration with customizable roles and
+        permissions, real-time updates, and transparent task assignment.
       </>
     ),
   },
 ];
 
-function Feature({Svg, title, description}) {
+function Feature({ icon, title, description }) {
   return (
-    <div className={clsx('col col--4')}>
-      <div className="text--center">
-        <Svg className={styles.featureSvg} role="img" />
-      </div>
-      <div className="text--center padding-horiz--md">
-        <Heading as="h3">{title}</Heading>
-        <p>{description}</p>
+    <div className={clsx("col col--4")}>
+      <div className={styles.featureCard}>
+        <div className={styles.featureIcon}>{icon}</div>
+        <div className={styles.featureContent}>
+          <Heading as="h3" className={styles.featureTitle}>
+            {title}
+          </Heading>
+          <p>{description}</p>
+        </div>
       </div>
     </div>
   );
@@ -53,10 +56,18 @@ export default function HomepageFeatures() {
   return (
     <section className={styles.features}>
       <div className="container">
+        <Heading as="h2" className={styles.featuresHeading}>
+          Why Choose Tenor?
+        </Heading>
         <div className="row">
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />
           ))}
+        </div>
+        <div className={styles.cta}>
+          <a href="/docs/intro" className="button button--primary button--lg">
+            Explore Documentation
+          </a>
         </div>
       </div>
     </section>

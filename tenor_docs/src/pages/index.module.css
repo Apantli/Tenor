@@ -5,19 +5,119 @@
 
 .heroBanner {
   padding: 4rem 0;
-  text-align: center;
   position: relative;
   overflow: hidden;
+  background: linear-gradient(to right, #f8f9fa, #e9f5f5);
+  margin-bottom: 2rem;
+}
+
+.heroContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.heroText {
+  flex: 1;
+  text-align: left;
+}
+
+.heroImage {
+  flex: 1;
+  max-width: 50%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(8, 106, 114, 0.15);
+}
+
+.heroImage img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 @media screen and (max-width: 996px) {
   .heroBanner {
     padding: 2rem;
   }
+
+  .heroContent {
+    flex-direction: column;
+  }
+
+  .heroText {
+    text-align: center;
+  }
+
+  .heroImage {
+    max-width: 100%;
+    margin-top: 2rem;
+  }
 }
 
 .buttons {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@media screen and (max-width: 768px) {
+  .buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.keyFeatures {
+  padding: 3rem 0;
+}
+
+.featuresTitle {
+  text-align: center;
+  margin-bottom: 3rem;
+  color: var(--ifm-heading-color);
+  font-weight: 700;
+}
+
+.featureGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-bottom: 3rem;
+}
+
+.featureCard {
+  padding: 2rem;
+  border-radius: 8px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  border: 1px solid var(--ifm-color-emphasis-300);
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(8, 106, 114, 0.1);
+  border-color: var(--ifm-color-primary);
+}
+
+.featureIcon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.featureCard h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+}
+
+.featureCard p {
+  color: var(--ifm-font-color-base);
+  margin-bottom: 0;
+  font-size: 1rem;
+  line-height: 1.6;
 }
