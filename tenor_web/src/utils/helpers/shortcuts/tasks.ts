@@ -124,6 +124,7 @@ export const getTasksFromItem = async (
   itemId: string,
 ) => {
   const tasksRef = getTasksRef(firestore, projectId)
+    .where("deleted", "==", false)
     .where("itemId", "==", itemId)
     .orderBy("scrumId");
 
