@@ -14,9 +14,13 @@ import { getTasks } from "~/utils/helpers/shortcuts/tasks";
 import {
   getAutomaticStatusId,
   getBacklogTag,
+  getStatusTypeRef,
   getStatusTypes,
+  getStatusTypesRef,
 } from "~/utils/helpers/shortcuts/tags";
 import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
+import { getUserStoriesRef } from "~/utils/helpers/shortcuts/userStories";
+import { getIssuesRef } from "~/utils/helpers/shortcuts/issues";
 
 export const kanbanRouter = createTRPCRouter({
   getTasksForKanban: protectedProcedure
@@ -85,12 +89,15 @@ export const kanbanRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       // Fetch user stories
       // FIXME: This view should only include items assigned to the current sprint
+      const { projectId } = input;
 
-      const userStoriesRef = ctx.firestore
-        .collection(`projects/${input.projectId}/userStories`)
-        .where("deleted", "==", false);
+      const userStoriesRef = getUserStoriesRef(ctx.firestore, projectId).where(
+        "deleted",
+        "==",
+        false,
+      );
       const userStoriesSnapshot = await userStoriesRef.get();
-      const settingsRef = getSettingsRef(ctx.firestore, input.projectId);
+
       const memoTags = new Map<string, WithId<Tag>>();
       const userStories = await Promise.all(
         userStoriesSnapshot.docs.map(async (doc) => {
@@ -100,11 +107,7 @@ export const kanbanRouter = createTRPCRouter({
               if (memoTags.has(tagId)) {
                 return memoTags.get(tagId);
               }
-              const tag = await getBacklogTag(
-                ctx.firestore,
-                input.projectId,
-                tagId,
-              );
+              const tag = await getBacklogTag(ctx.firestore, projectId, tagId);
               if (!tag) {
                 return null;
               }
@@ -126,9 +129,12 @@ export const kanbanRouter = createTRPCRouter({
       );
 
       // Fetch issues
-      const issuesRef = ctx.firestore
-        .collection(`projects/${input.projectId}/issues`)
-        .where("deleted", "==", false);
+      const issuesRef = getIssuesRef(ctx.firestore, projectId).where(
+        "deleted",
+        "==",
+        false,
+      );
+
       const issuesSnapshot = await issuesRef.get();
 
       const issues = await Promise.all(
@@ -139,11 +145,7 @@ export const kanbanRouter = createTRPCRouter({
               if (memoTags.has(tagId)) {
                 return memoTags.get(tagId);
               }
-              const tag = await getBacklogTag(
-                ctx.firestore,
-                input.projectId,
-                tagId,
-              );
+              const tag = await getBacklogTag(ctx.firestore, projectId, tagId);
               if (!tag) {
                 return null;
               }
@@ -168,10 +170,7 @@ export const kanbanRouter = createTRPCRouter({
       const backlogItems = [...userStories, ...issues];
 
       // Get all statuses
-      const activeColumns = await getStatusTypes(
-        ctx.firestore,
-        input.projectId,
-      );
+      const activeColumns = await getStatusTypes(ctx.firestore, projectId);
 
       // Assign automatic status to items with undefined status
       const itemsWithStatus = await Promise.all(
@@ -179,7 +178,7 @@ export const kanbanRouter = createTRPCRouter({
           if (item.columnId === "") {
             const newCol = await getAutomaticStatusId(
               ctx.firestore,
-              input.projectId,
+              projectId,
               item.id,
               activeColumns,
             );
@@ -223,10 +222,7 @@ export const kanbanRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, name, color, marksTaskAsDone } = input;
-
-      const projectSettingsRef = getSettingsRef(ctx.firestore, projectId);
-
-      const statusCollectionRef = projectSettingsRef.collection("statusTypes");
+      const statusCollectionRef = getStatusTypesRef(ctx.firestore, projectId);
 
       const statusTypes = await statusCollectionRef.get();
 
