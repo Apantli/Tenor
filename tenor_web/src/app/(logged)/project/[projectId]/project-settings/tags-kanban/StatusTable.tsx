@@ -6,11 +6,7 @@ import { useRef, useState } from "react";
 import SearchBar from "~/app/_components/SearchBar";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import Table, { type TableColumns } from "~/app/_components/table/Table";
-import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -36,15 +32,6 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import StatusTableRow from "./StatusTableRow";
-
-interface StatusItem {
-  id: string;
-  name: string;
-  color: string;
-  markTaskAsDone: boolean;
-  deleted: boolean;
-  order: number;
-}
 
 export default function StatusTable() {
   const { projectId } = useParams();
@@ -191,13 +178,24 @@ export default function StatusTable() {
           { projectId: projectId as string },
           (oldData) => {
             if (!oldData) return [];
-            return newOrder.map((item, index) => ({
-              ...item,
-              orderIndex: index,
-            }));
+            // Create a new array with the updated orderIndex values
+            const updatedStatuses = [...oldData];
+            newOrder.forEach((item, index) => {
+              const existingIndex = updatedStatuses.findIndex(
+                (s) => s.id === item.id,
+              );
+              if (existingIndex !== -1) {
+                updatedStatuses[existingIndex] = {
+                  ...updatedStatuses[existingIndex],
+                  orderIndex: index,
+                } as (typeof updatedStatuses)[number];
+              }
+            });
+            return updatedStatuses;
           },
         );
 
+        // Send the update to the server
         await reorderStatus({
           projectId: projectId as string,
           statusIds: newOrder.map((item) => item.id),
@@ -219,89 +217,19 @@ export default function StatusTable() {
     return true;
   });
 
+  const sortedFilteredStatus = filteredStatus?.sort(
+    (a, b) => a.orderIndex - b.orderIndex,
+  );
+
   const tableData =
-    filteredStatus?.map((status) => ({
+    sortedFilteredStatus?.map((status, index) => ({
       id: status.id,
-      order: status.orderIndex + 1,
+      order: index + 1, // (1-based index)
       name: status.name,
       color: status.color,
       markTaskAsDone: status.marksTaskAsDone,
       deleted: status.deleted,
     })) ?? [];
-
-  const columns: TableColumns<StatusItem> = {
-    id: { visible: false },
-    order: {
-      label: "Order",
-      width: 100,
-      filterable: "search-only",
-      sortable: true,
-      sorter: (a: { order: number }, b: { order: number }) =>
-        a.order > b.order ? 1 : -1,
-    },
-    name: {
-      label: "Status Name",
-      width: 150,
-      filterable: "search-only",
-      sortable: true,
-      sorter: (a, b) => a.name.localeCompare(b.name),
-      render(row) {
-        return (
-          <button
-            className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
-            onClick={() => {
-              setSelectedStatusId(row.id);
-              setShowDetailStatus(true);
-            }}
-          >
-            {row.name}
-          </button>
-        );
-      },
-    },
-    color: {
-      label: "Color",
-      width: 100,
-      render: (row) => (
-        <TagComponent color={row.color} reducedPadding className="min-w-8">
-          {row.color}
-        </TagComponent>
-      ),
-    },
-    markTaskAsDone: {
-      label: "Marks tasks as completed",
-      width: 180,
-      render: (row: { id: string; markTaskAsDone: boolean }) => (
-        <div className="flex h-full w-full items-center justify-center">
-          <div
-            className="flex items-center justify-center"
-            style={{ margin: "0 auto" }}
-          >
-            <InputCheckbox
-              checked={row.markTaskAsDone}
-              onChange={() =>
-                handleToggleMarkAsDone(row.id, row.markTaskAsDone)
-              }
-              className="m-0 cursor-pointer"
-            />
-          </div>
-        </div>
-      ),
-    },
-    deleted: { visible: false },
-  };
-
-  const extraOptions = [
-    {
-      label: "Edit",
-      icon: <MoreHorizIcon />,
-      action: (ids: string[]) => {
-        if (ids.length === 1 && ids[0]) {
-          void handleModifyStatus(ids[0]);
-        }
-      },
-    },
-  ];
 
   const onStatusAdded = async () => {
     await invalidateQueriesAllStatuses(projectId as string);

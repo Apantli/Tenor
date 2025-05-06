@@ -46,8 +46,6 @@ export default function StatusDetailPopup({
     marksTaskAsDone: false,
   });
 
-  const [colorChanged, setColorChanged] = useState(false);
-
   const {
     data: statusDetail,
     isLoading,
@@ -194,7 +192,6 @@ export default function StatusDetailPopup({
 
   const handleColorChange = async (color: string) => {
     setForm({ ...form, color });
-    setColorChanged(true);
 
     if (!editMode && statusDetail) {
       const updatedData = {
