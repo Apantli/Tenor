@@ -832,14 +832,9 @@ export default function RequirementsTable() {
               ? undefined
               : requirementEditedData !== null
                 ? async () => {
-                    const { name, description } = editForm;
-                    const {
-                      priority,
-                      requirementType,
-                      requirementFocus,
-                      scrumId,
-                    } = requirementEditedData;
-
+                    const { name } = editForm;
+                    const { priority, requirementType, requirementFocus } =
+                      requirementEditedData;
                     if (editingRequirement) {
                       if (!name) {
                         alert(

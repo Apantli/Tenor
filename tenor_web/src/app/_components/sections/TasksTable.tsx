@@ -86,19 +86,16 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     projectId: projectId as string,
   });
 
-  const {
-    data: fetchedTasksTable,
-    refetch: refetchTasks,
-    isLoading,
-  } = api.tasks.getTaskTable.useQuery(
-    {
-      projectId: projectId as string,
-      itemId,
-    },
-    {
-      enabled: tasksData === undefined,
-    },
-  );
+  const { data: fetchedTasksTable, isLoading } =
+    api.tasks.getTaskTable.useQuery(
+      {
+        projectId: projectId as string,
+        itemId,
+      },
+      {
+        enabled: tasksData === undefined,
+      },
+    );
   const { mutateAsync: changeStatus } =
     api.tasks.changeTaskStatus.useMutation();
   const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
@@ -428,18 +425,17 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         itemId: itemId,
       });
 
-      const generatedTasksPreviews = accepted?.map((task) => ({
+      const generatedTasksPreviews: TaskCol[] = accepted?.map((task) => ({
         id: task.id,
         scrumId: undefined,
-        title: task.name,
+        name: task.name,
         status: task.status,
         assignee: task.assignee,
       }));
 
       utils.tasks.getTaskTable.setData(
         { projectId: projectId as string, itemId: itemId },
-        // tasksTableData?.concat(generatedTasksPreviews ?? []),
-        tasksTableData?.concat([]),
+        tasksTableData?.concat(generatedTasksPreviews ?? []),
       );
 
       // Add the tasks to the database

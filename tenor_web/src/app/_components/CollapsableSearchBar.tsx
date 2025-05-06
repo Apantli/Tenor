@@ -13,7 +13,6 @@ interface Props {
 }
 
 export default function CollapsableSearchBar({
-  className,
   searchText,
   setSearchText,
 }: Props) {
