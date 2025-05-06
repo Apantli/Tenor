@@ -257,7 +257,6 @@ export const getBacklogTag = async (
   } as WithId<Tag>;
 };
 
-// FIXME: THIS IS MAYHAM Get the status ID based on tasks for a backlog item with undefined status
 export const getAutomaticStatusId = async (
   firestore: Firestore,
   projectId: string,

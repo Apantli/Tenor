@@ -150,11 +150,9 @@ export const getTaskProgress = async (
   projectId: string,
   itemId: string,
 ) => {
-  const tasksRef = getTasksRef(firestore, projectId).where(
-    "deleted",
-    "==",
-    false,
-  );
+  const tasksRef = getTasksRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("itemId", "==", itemId);
   const tasksSnapshot = await tasksRef.get();
   const totalTasks = tasksSnapshot.size;
 
@@ -173,7 +171,7 @@ export const getTaskProgress = async (
     }),
   ).then((results) => results.filter(Boolean).length);
 
-  return [completedTasks, totalTasks];
+  return [completedTasks, totalTasks] as [number, number];
 };
 
 /**

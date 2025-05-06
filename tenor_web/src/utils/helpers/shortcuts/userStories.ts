@@ -23,7 +23,7 @@ import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import { UserStoryDetail } from "~/lib/types/detailSchemas";
 import { Firestore } from "firebase-admin/firestore";
-import { getTask } from "./tasks";
+import { getTask, getTaskProgress } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementContext, getRequirementsContext } from "./requirements";
 import { getProjectContext } from "./ai";
@@ -217,12 +217,22 @@ export const getUserStoryTable = async (
         ? (await getEpic(firestore, projectId, userStory.epicId)).scrumId
         : undefined;
 
-      // FIXME: Sprint, task progress
+      const sprint: WithId<Sprint> | undefined = userStory.sprintId
+        ? await getSprint(firestore, projectId, userStory.sprintId)
+        : undefined;
+
+      const taskProgress = await getTaskProgress(
+        firestore,
+        projectId,
+        userStory.id,
+      );
+
       const userStoryCol: UserStoryCol = {
         ...userStory,
+        sprintNumber: sprint?.number,
         epicScrumId,
         priority,
-        taskProgress: [0, 1],
+        taskProgress,
       };
       return userStoryCol;
     }),
