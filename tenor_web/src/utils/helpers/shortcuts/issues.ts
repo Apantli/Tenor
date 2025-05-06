@@ -234,7 +234,7 @@ export const getIssueContextSolo = async (
     projectId,
     issue.name,
     issue.description,
-    issue.priorityId ?? "",
+    issue.priorityId,
     issue.size,
   );
 

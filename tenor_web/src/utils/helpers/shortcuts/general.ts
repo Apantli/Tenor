@@ -1,7 +1,7 @@
 import { Firestore } from "firebase-admin/firestore";
 import { Project, Role, Size, WithId } from "~/lib/types/firebaseSchemas";
 import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
-import { getPriotityRef } from "./tags";
+import { getPriority, getPriotityRef } from "./tags";
 import { firestore } from "firebase-admin";
 import { getProjectContext } from "./ai";
 
@@ -109,19 +109,13 @@ export const getGenericBacklogItemContext = async (
   projectId: string,
   name: string,
   description: string,
-  priorityId: string,
+  priorityId?: string,
   size?: Size,
 ) => {
-  const prioritySnapshot = await getPriotityRef(
-    firestore,
-    projectId,
-    priorityId,
-  ).get();
-
-  const priorityData = prioritySnapshot.data();
-  const priority = priorityData ? (priorityData.name as string) : "";
-  const priorityContext = priority ? `- priority: ${priority}\n` : "";
-
+  const priority = priorityId
+    ? await getPriority(firestore, projectId, priorityId)
+    : undefined;
+  const priorityContext = priority ? `- priority: ${priority.name}\n` : "";
   const sizeContext = size ? `- size: ${size}\n` : "";
 
   return `- name: ${name}\n- description: ${description}\n${priorityContext}${sizeContext}\n\n`;
