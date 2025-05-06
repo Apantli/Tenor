@@ -213,11 +213,9 @@ export const getUserStoryTable = async (
         (await getPriority(firestore, projectId, userStory.priorityId)) ??
         noTag;
 
-      const epicScrumId: number | undefined =
-        userStory.epicId !== undefined
-          ? ((await getEpic(firestore, projectId, userStory.epicId)).scrumId ??
-            undefined)
-          : undefined;
+      const epicScrumId: number | undefined = userStory.epicId
+        ? (await getEpic(firestore, projectId, userStory.epicId)).scrumId
+        : undefined;
 
       // FIXME: Sprint, task progress
       const userStoryCol: UserStoryCol = {
