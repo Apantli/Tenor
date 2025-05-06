@@ -4,11 +4,11 @@ import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CardColumn from "./CardColumn";
 import type { ClassNameValue } from "tailwind-merge";
 import ItemCardRender from "./ItemCardRender";
-import type { KanbanCard } from "~/server/api/routers/kanban";
 import {
   useFormatIssueScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
+import { KanbanCard } from "~/lib/types/kanbanTypes";
 
 interface Props {
   backlogItems: inferRouterOutputs<

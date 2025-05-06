@@ -6,21 +6,22 @@ import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import CloseIcon from "@mui/icons-material/Close";
 
 interface DatePickerProps {
-  onChange: (date: Date | null) => void;
-  selectedDate?: Date | null;
+  onChange: (date: Date | undefined) => void;
+  selectedDate?: Date | undefined;
   className?: string;
   placeholder?: string;
 }
 
 export function DatePicker({
   onChange,
-  selectedDate = null,
+  selectedDate = undefined,
   className,
   placeholder = "No date",
 }: DatePickerProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const formatDate = (date: Date): string => {
+    console.log("Formatting date:", date);
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -30,7 +31,7 @@ export function DatePicker({
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.value) {
-      onChange(null);
+      onChange(undefined);
       return;
     }
     const newDate = new Date(`${e.target.value}T23:59:59`);
@@ -39,7 +40,7 @@ export function DatePicker({
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onChange(null);
+    onChange(undefined);
   };
 
   const openDatePicker = () => {

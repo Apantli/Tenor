@@ -87,7 +87,7 @@ export default function CreateUserStoryPopup({
     try {
       setIsSubmitting(true);
 
-      const { userStoryId } = await createUserStory({
+      const { id: userStoryId } = await createUserStory({
         projectId: projectId as string,
         userStoryData: {
           name: createForm.name,

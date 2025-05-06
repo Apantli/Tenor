@@ -15,7 +15,7 @@ interface Props {
 export default function EpicPicker({ epic, onChange }: Props) {
   const { projectId } = useParams();
 
-  const { data: epics } = api.epics.getProjectEpicsOverview.useQuery({
+  const { data: epics } = api.epics.getEpics.useQuery({
     projectId: projectId as string,
   });
 

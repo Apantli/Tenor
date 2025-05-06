@@ -6,29 +6,20 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
 import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
-
-export interface Option {
-  id: string | number | null;
-  name: string;
-  image?: string;
-  user?: {
-    uid: string;
-    displayName?: string;
-    photoURL?: string;
-  };
-}
+import { UserPreview } from "~/lib/types/detailSchemas";
+import { WithId } from "~/lib/types/firebaseSchemas";
 
 interface EditableBoxProps {
-  options: Option[];
-  selectedOption?: Option | null;
-  onChange: (option: Option | null) => void;
+  options: WithId<UserPreview>[];
+  selectedOption?: WithId<UserPreview> | undefined;
+  onChange: (option: WithId<UserPreview> | undefined) => void;
   className?: string;
   placeholder?: string;
 }
 
-export function EditableBox({
+export function UserPicker({
   options,
-  selectedOption = null,
+  selectedOption = undefined,
   onChange,
   className,
   placeholder = "Select an option",
@@ -36,17 +27,17 @@ export function EditableBox({
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredOptions = options.filter((option) =>
-    option.name?.toLowerCase().includes(searchTerm.toLowerCase()),
+    option.displayName?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const handleSelect = (option: Option) => {
+  const handleSelect = (option: WithId<UserPreview>) => {
     onChange(option);
     setSearchTerm("");
   };
 
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onChange(null);
+    onChange(undefined);
     setSearchTerm("");
   };
 
@@ -56,23 +47,10 @@ export function EditableBox({
         {selectedOption ? (
           <>
             <div className="flex flex-grow items-center gap-2">
-              {selectedOption.user ? (
-                <ProfilePicture user={selectedOption.user} hideTooltip />
-              ) : selectedOption.image ? (
-                <img
-                  src={selectedOption.image}
-                  alt={selectedOption.name}
-                  className="h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
-                  <span className="text-sm font-medium text-gray-500">
-                    {selectedOption.name.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              )}
+              <ProfilePicture user={selectedOption} hideTooltip />
+
               <span className="font-medium text-gray-700">
-                {selectedOption.name}
+                {selectedOption.displayName}
               </span>
             </div>
             <div
@@ -92,30 +70,15 @@ export function EditableBox({
     );
   };
 
-  const createOption = (option: Option) => {
+  const createOption = (option: WithId<UserPreview>) => {
     return (
       <DropdownButton
         onClick={() => handleSelect(option)}
         className="flex items-center gap-2 border-b border-app-border px-2 py-2 last:border-none"
         key={option.id}
       >
-        {option.user ? (
-          <ProfilePicture user={option.user} hideTooltip />
-        ) : option.image ? (
-          <img
-            src={option.image}
-            alt={option.name}
-            className="h-8 w-8 rounded-full object-cover"
-          />
-        ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200">
-            {/* Perhaps is better to just show the name if there is no image, I added this because is better in case just one element has an image an others don't */}
-            <span className="text-sm font-medium text-gray-500">
-              {option.name.charAt(0).toUpperCase()}
-            </span>
-          </div>
-        )}
-        <span>{option.name}</span>
+        <ProfilePicture user={option} hideTooltip />
+        <span>{option.displayName}</span>
       </DropdownButton>
     );
   };

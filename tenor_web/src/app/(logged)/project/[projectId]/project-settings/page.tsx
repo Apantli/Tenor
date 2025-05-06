@@ -10,7 +10,7 @@ import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { toBase64 } from "~/utils/base64";
+import { toBase64 } from "~/utils/helpers/base64";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
@@ -189,9 +189,9 @@ export default function ProjectGeneralSettings() {
             <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">
               Danger Zone
             </h3>
-            <div className="flex flex-row justify-between gap-x-28 items-center">
+            <div className="flex flex-row items-center justify-between gap-x-28">
               <div className="flex flex-col">
-                <p className="font-semibold text-lg">Delete project</p>
+                <p className="text-lg font-semibold">Delete project</p>
                 <p>Once deleted, you cannot recover it.</p>
               </div>
               <DeleteButton

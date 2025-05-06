@@ -58,18 +58,18 @@ export default function ProjectSprints() {
     string | null
   >(null);
 
-  const { data: defaultSprintDuration, isLoading: isLoadingSprintDuration } =
-    api.settings.fetchDefaultSprintDuration.useQuery({
+  const { data: scrumSettings, isLoading: isLoadingSprintDuration } =
+    api.settings.fetchScrumSettings.useQuery({
       projectId: projectId as string,
     });
 
-  let defaultSprintInitialDate: Date | null = null;
-  let defaultSprintEndDate: Date | null = null;
+  let defaultSprintInitialDate: Date | undefined = undefined;
+  let defaultSprintEndDate: Date | undefined = undefined;
   // update values once loaded
   useEffect(() => {
     if (
       !isLoadingSprintDuration &&
-      defaultSprintDuration !== undefined &&
+      scrumSettings !== undefined &&
       backlogItemsBySprint != undefined
     ) {
       for (const sprint of backlogItemsBySprint?.sprints ?? []) {
@@ -92,12 +92,12 @@ export default function ProjectSprints() {
 
       defaultSprintEndDate = new Date(
         (defaultSprintInitialDate ?? new Date()).getTime() +
-          defaultSprintDuration * 24 * 60 * 60 * 1000,
+          scrumSettings.sprintDuration * 24 * 60 * 60 * 1000,
       );
       setNewSprintStartDate(defaultSprintInitialDate);
       setNewSprintEndDate(defaultSprintEndDate);
     }
-  }, [isLoadingSprintDuration, defaultSprintDuration, backlogItemsBySprint]);
+  }, [isLoadingSprintDuration, scrumSettings, backlogItemsBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
   const [sprintSearchValue, setSprintSearchValue] = useState("");
@@ -213,14 +213,17 @@ export default function ProjectSprints() {
 
   // New sprint variables
   const [newSprintDescription, setNewSprintDescription] = useState("");
-  const [newSprintStartDate, setNewSprintStartDate] = useState<Date | null>(
-    null,
+  const [newSprintStartDate, setNewSprintStartDate] = useState<
+    Date | undefined
+  >(undefined);
+  const [newSprintEndDate, setNewSprintEndDate] = useState<Date | undefined>(
+    undefined,
   );
-  const [newSprintEndDate, setNewSprintEndDate] = useState<Date | null>(null);
 
   const { alert } = useAlert();
   const handleCreateSprint = async () => {
-    if (newSprintStartDate === null || newSprintEndDate === null) return;
+    if (newSprintStartDate === undefined || newSprintEndDate === undefined)
+      return;
 
     // Validate dates
     if (newSprintStartDate >= newSprintEndDate) {
@@ -256,14 +259,16 @@ export default function ProjectSprints() {
 
     const response = await createSprint({
       projectId: projectId as string,
-      number: -1,
-      description: newSprintDescription,
-      startDate: Timestamp.fromDate(newSprintStartDate),
-      endDate: Timestamp.fromDate(newSprintEndDate),
-      // updatedData.dueDate ? Timestamp.fromDate(updatedData.dueDate) : null,
-      userStoryIds: [],
-      genericItemIds: [],
-      issueIds: [],
+      sprintData: {
+        number: -1,
+        description: newSprintDescription,
+        startDate: Timestamp.fromDate(newSprintStartDate),
+        endDate: Timestamp.fromDate(newSprintEndDate),
+        // updatedData.dueDate ? Timestamp.fromDate(updatedData.dueDate) : null,
+        userStoryIds: [],
+        genericItemIds: [],
+        issueIds: [],
+      },
     });
     await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
       projectId: projectId as string,

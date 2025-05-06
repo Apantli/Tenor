@@ -36,10 +36,9 @@ export default function DependencyList({
 
   const { projectId } = useParams();
 
-  const { data: allUserStories } =
-    api.userStories.getAllUserStoryPreviews.useQuery({
-      projectId: projectId as string,
-    });
+  const { data: allUserStories } = api.userStories.getUserStories.useQuery({
+    projectId: projectId as string,
+  });
   const allUserStoriesExceptCurrent = allUserStories?.filter(
     (userStory) => userStory.id !== userStoryId,
   );

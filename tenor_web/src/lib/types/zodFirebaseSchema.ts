@@ -1,5 +1,5 @@
 import type { Timestamp } from "firebase-admin/firestore";
-import { z } from "zod";
+import { z, ZodTypeAny } from "zod";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
@@ -93,14 +93,6 @@ export const BacklogItemSchema = BasicInfoSchema.extend({
 
 export const EpicSchema = BasicInfoSchema;
 
-// Mark the id as mandatorty
-export const ExistingEpicSchema = EpicSchema.merge(
-  z.object({
-    scrumId: z.number(),
-    description: z.string().optional(),
-  }),
-);
-
 export const EpicOverviewSchema = EpicSchema.omit({
   description: true,
   deleted: true,
@@ -148,7 +140,7 @@ export const ExistingUserStorySchema = BasicInfoSchema.merge(
 export const TaskSchema = BasicInfoSchema.extend({
   statusId: z.string(),
   assigneeId: z.string(),
-  dueDate: TimestampType.nullable(),
+  dueDate: TimestampType.optional(),
   // FIXME: Finished date should be added to show on calendar
   // finishedDate: TimestampType.nullable(),
   itemId: z.string(),
@@ -195,7 +187,6 @@ export const SettingsSchema = z.object({
           name: z.string(),
           type: z.string(),
           content: z.string(),
-          size: z.number(),
         }),
       )
       .default([]),

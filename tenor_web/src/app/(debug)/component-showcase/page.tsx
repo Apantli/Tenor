@@ -6,7 +6,7 @@ import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
-import type { Tag } from "~/lib/types/firebaseSchemas";
+import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import PillComponent from "~/app/_components/PillComponent";
 import Popup, { SidebarPopup } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -16,22 +16,22 @@ import FileList from "~/app/_components/inputs/FileList";
 import LinkList from "~/app/_components/inputs/LinkList";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import InputTextField from "~/app/_components/inputs/InputTextField";
-import MemberTable, {
-  type TeamMember,
-} from "~/app/_components/inputs/MemberTable";
+import MemberTable from "~/app/_components/inputs/MemberTable";
 import InputFileField from "~/app/_components/inputs/InputFileField";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { DatePicker } from "~/app/_components/DatePicker";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import TagComponent from "~/app/_components/TagComponent";
-import { EditableBox } from "~/app/_components/EditableBox/EditableBox";
-import type { Option } from "~/app/_components/EditableBox/EditableBox";
+import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import { acceptableTagColors } from "~/utils/colorUtils";
+import { acceptableTagColors } from "~/utils/helpers/colorUtils";
 import Dropdown from "~/app/_components/Dropdown";
+import { User } from "@supabase/supabase-js";
+import { UserCol } from "~/lib/types/columnTypes";
+import { UserPreview } from "~/lib/types/detailSchemas";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
@@ -629,29 +629,29 @@ function ConfirmationShowcase() {
 }
 
 function InputComponents() {
-  const teamMembers = [
+  const teamMembers: UserCol[] = [
     {
       id: "1",
       photoURL: undefined,
       displayName: "Alonso Huerta",
       email: "email@addres.com",
-      role: "developer_role_id",
+      roleId: "developer_role_id",
     },
     {
       id: "2",
       photoURL: undefined,
       displayName: "Sergio Gonzalez",
       email: "email@addres.com",
-      role: "admin_role_id",
+      roleId: "admin_role_id",
     },
     {
       id: "3",
       photoURL: undefined,
       displayName: "Luis Amado",
       email: "email@addres.com",
-      role: "viewer_role_id",
+      roleId: "viewer_role_id",
     },
-  ] as TeamMember[];
+  ];
 
   const links = [
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -735,7 +735,7 @@ function SegmentedControlShowcase() {
 
 // Showcase of the date picker component
 function DatePickerShowcase() {
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   return (
     <div>
       <hr />
@@ -753,7 +753,9 @@ function DatePickerShowcase() {
 }
 
 function EditableBoxShowCase() {
-  const [selectedPerson, setSelectedPerson] = useState<Option | null>(null);
+  const [selectedPerson, setSelectedPerson] = useState<
+    WithId<UserPreview> | undefined
+  >(undefined);
   const { user } = useFirebaseAuth();
 
   const mockUser = {
@@ -763,17 +765,19 @@ function EditableBoxShowCase() {
   };
 
   // Option = id, name, image? (in case is not used for users), user? (profilepicture component accepts only users)
-  const people: Option[] = [
-    { id: user?.uid ?? "", name: user?.displayName ?? "", user: mockUser },
-    { id: "2", name: "Ana García" },
-    { id: "3", name: "Carlos Pérez" },
+  const people: WithId<UserPreview>[] = [
+    {
+      id: mockUser.uid,
+      email: "",
+      ...mockUser,
+    },
   ];
 
   return (
     <div>
       <hr />
       <h2 className="my-2 text-2xl font-medium">Editable Box</h2>
-      <EditableBox
+      <UserPicker
         options={people}
         selectedOption={selectedPerson}
         onChange={setSelectedPerson}

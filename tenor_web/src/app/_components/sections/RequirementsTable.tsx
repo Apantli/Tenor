@@ -6,10 +6,7 @@ import {
   type Tag,
   type WithId,
 } from "~/lib/types/firebaseSchemas";
-import type {
-  RequirementCol,
-  requirementsRouter,
-} from "~/server/api/routers/requirements";
+import type { requirementsRouter } from "~/server/api/routers/requirements";
 import { api } from "~/trpc/react";
 import Table, { type TableColumns } from "../table/Table";
 import { cn } from "~/lib/utils";
@@ -38,7 +35,8 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import TertiaryButton from "../buttons/TertiaryButton";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { checkPermissions, emptyRole, noTag } from "~/lib/defaultProjectValues";
+import { RequirementCol } from "~/lib/types/columnTypes";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -94,9 +92,9 @@ export default function RequirementsTable() {
   const defaultRequirement = {
     name: "",
     description: "",
-    priorityId: undefined as Tag | undefined,
-    requirementTypeId: undefined as Tag | undefined,
-    requirementFocusId: undefined as Tag | undefined,
+    priority: undefined as Tag | undefined,
+    requirementType: undefined as Tag | undefined,
+    requirementFocus: undefined as Tag | undefined,
   };
   const [newRequirement, setNewRequirement] = useState(defaultRequirement);
   const handleChange = (
@@ -125,46 +123,14 @@ export default function RequirementsTable() {
   }, [role]);
 
   const { mutateAsync: createOrModifyRequirement, isPending } =
-    api.requirements.createOrModifyRequirement.useMutation({
-      onError: async (error) => {
-        alert(
-          "Oops...",
-          "You do not have permission to create or modify requirements.",
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
-
-        await refetchRequirements();
-      },
-    });
+    api.requirements.createOrModifyRequirement.useMutation();
+  const { mutateAsync: deleteRequirement } =
+    api.requirements.deleteRequirement.useMutation();
   const { mutateAsync: generateRequirements } =
-    api.requirements.generateRequirements.useMutation({
-      onError: async (error) => {
-        alert(
-          "Oops...",
-          "You do not have permission to generate requirements.",
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
-
-        await refetchRequirements();
-      },
-    });
+    api.requirements.generateRequirements.useMutation();
 
   const handleCreateRequirement = async () => {
-    const {
-      priorityId,
-      requirementTypeId,
-      requirementFocusId,
-      name,
-      description,
-    } = newRequirement;
-
-    if (!name) {
+    if (!newRequirement.name) {
       alert("Oops...", "Requirement Name must have a value.", {
         type: "error",
         duration: 5000, // time in ms (5 seconds)
@@ -172,7 +138,11 @@ export default function RequirementsTable() {
       return;
     }
 
-    if (!priorityId?.id || !requirementTypeId?.id || !requirementFocusId?.id) {
+    if (
+      !newRequirement.priority?.id ||
+      !newRequirement.requirementType?.id ||
+      !newRequirement.requirementFocus?.id
+    ) {
       alert("Oops...", "All Properties must have a value.", {
         type: "error",
         duration: 5000, // time in ms (5 seconds)
@@ -180,20 +150,15 @@ export default function RequirementsTable() {
       return;
     }
 
-    // Unwrap values
-    const unwrappedPriorityId = priorityId.id;
-    const unwrappedRequirementTypeId = requirementTypeId.id;
-    const unwrappedRequirementFocusId = requirementFocusId.id;
-
     const response = await createOrModifyRequirement({
       projectId: projectId as string,
-      name,
-      description,
-      priorityId: unwrappedPriorityId,
-      requirementTypeId: unwrappedRequirementTypeId,
-      requirementFocusId: unwrappedRequirementFocusId,
-      scrumId: -1,
-      deleted: false,
+      requirementData: {
+        ...newRequirement,
+        scrumId: -1,
+        priorityId: newRequirement.priority.id,
+        requirementTypeId: newRequirement.requirementType.id,
+        requirementFocusId: newRequirement.requirementFocus.id,
+      },
     });
 
     await invalidateAllRequirements(projectId as string);
@@ -209,7 +174,7 @@ export default function RequirementsTable() {
     checkValues = true,
   ) => {
     let { name, description } = editForm;
-    const { priorityId, requirementTypeId, requirementFocusId, scrumId } =
+    const { priority, requirementType, requirementFocus, scrumId } =
       requirement;
     if (checkValues) {
       if (!name) {
@@ -219,11 +184,7 @@ export default function RequirementsTable() {
         });
         return;
       }
-      if (
-        !priorityId?.id ||
-        !requirementTypeId?.id ||
-        !requirementFocusId?.id
-      ) {
+      if (!priority?.id || !requirementType?.id || !requirementFocus?.id) {
         alert("Oops...", "All properties must have a value.", {
           type: "error",
           duration: 5000, // time in ms (5 seconds)
@@ -236,23 +197,19 @@ export default function RequirementsTable() {
       name = requirement.name ?? "";
       description = requirement.description;
     }
-    // Unwrap values
-    const unwrappedPriorityId = priorityId.id;
-    const unwrappedRequirementTypeId = requirementTypeId.id;
-    const unwrappedRequirementFocusId = requirementFocusId.id;
 
     const newRequirement = {
       projectId: projectId as string,
       name,
       description,
-      priorityId: unwrappedPriorityId ?? "",
-      requirementTypeId: unwrappedRequirementTypeId ?? "",
-      requirementFocusId: unwrappedRequirementFocusId ?? "",
-      scrumId: scrumId!,
+      priorityId: priority.id ?? "",
+      requirementTypeId: requirementType.id ?? "",
+      requirementFocusId: requirementFocus.id ?? "",
+      scrumId: scrumId,
       deleted: false,
     };
 
-    await utils.requirements.getRequirementsTableFriendly.cancel({
+    await utils.requirements.getRequirementTable.cancel({
       projectId: projectId as string,
     });
     await utils.requirements.getRequirement.cancel({
@@ -260,7 +217,11 @@ export default function RequirementsTable() {
       requirementId: requirement.id,
     });
 
-    const response = await createOrModifyRequirement(newRequirement);
+    const response = await createOrModifyRequirement({
+      projectId: projectId as string,
+      requirementId: requirement.id,
+      requirementData: newRequirement,
+    });
 
     await invalidateAllRequirements(projectId as string);
     await invalidateRequirementDetails(projectId as string, [requirement.id]);
@@ -271,38 +232,23 @@ export default function RequirementsTable() {
     data: requirements,
     isLoading: isLoadingRequirements,
     refetch: refetchRequirements,
-  } = api.requirements.getRequirementsTableFriendly.useQuery({
+  } = api.requirements.getRequirementTable.useQuery({
     projectId: params.projectId as string,
   });
 
-  const { mutateAsync: deleteRequirement } =
-    api.requirements.deleteRequirement.useMutation({
-      onError: async (error) => {
-        alert(
-          "Oops...",
-          `You do not have permission to delete this requirement.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
-
-        await refetchRequirements();
-      },
-    });
   useEffect(() => {
     if (requirements) {
       const query = searchValue.toLowerCase();
-
-      const filtered = requirements.fixedData
-        .filter((req) => {
-          const name = req.name?.toLowerCase() ?? "";
-          const description = req.description.toLowerCase();
+      console.log("Query: ", requirements);
+      const filtered = requirements
+        .filter((requirement) => {
+          const name = requirement.name?.toLowerCase() ?? "";
+          const description = requirement.description.toLowerCase();
 
           // Asegúrate de que este hook devuelve un string consistente
           const formattedScrumText = UseFormatForAssignReqTypeScrumId(
-            req.requirementTypeId.name,
-            req.scrumId!,
+            requirement.requirementType.name,
+            requirement.scrumId,
           ).toLowerCase();
 
           return (
@@ -313,9 +259,9 @@ export default function RequirementsTable() {
         })
         .sort((a, b) => {
           // Flipped to show the latest requirements first (also makes AI generated ones appear at the top after getting accepted)
-          if (a.scrumId === undefined && b.scrumId === undefined) return 0;
-          if (a.scrumId === undefined) return -1;
-          if (b.scrumId === undefined) return 1;
+          if (a.scrumId === -1 && b.scrumId === -1) return 0;
+          if (a.scrumId === -1) return -1;
+          if (b.scrumId === -1) return 1;
 
           return a.scrumId < b.scrumId ? 1 : -1;
         });
@@ -345,19 +291,16 @@ export default function RequirementsTable() {
         acceptedIds.includes(ghost.id),
       );
 
-      await utils.requirements.getRequirementsTableFriendly.cancel({
+      await utils.requirements.getRequirementTable.cancel({
         projectId: params.projectId as string,
       });
 
       // FIXME: I'm a little confused how the data is being stored here, might have issues with some of the tags
-      utils.requirements.getRequirementsTableFriendly.setData(
+      utils.requirements.getRequirementTable.setData(
         { projectId: params.projectId as string },
         (oldData) => {
           if (!oldData) return oldData;
-          return {
-            ...oldData,
-            fixedData: oldData.fixedData.concat(acceptedRows ?? []),
-          };
+          return oldData.concat(acceptedRows ?? []);
         },
       );
 
@@ -365,13 +308,13 @@ export default function RequirementsTable() {
       for (const req of accepted.reverse()) {
         await createOrModifyRequirement({
           projectId: params.projectId as string,
-          name: req.name,
-          description: req.description,
-          priorityId: req.priorityId!.id!,
-          requirementTypeId: req.requirementTypeId!.id!,
-          requirementFocusId: req.requirementFocusId!.id!,
-          scrumId: -1,
-          deleted: false,
+          requirementData: {
+            ...req,
+            scrumId: 0,
+            priorityId: req.priority.id ?? "",
+            requirementTypeId: req.requirementType.id ?? "",
+            requirementFocusId: req.requirementFocus.id ?? "",
+          },
         });
       }
 
@@ -402,17 +345,14 @@ export default function RequirementsTable() {
 
     const newData = requirementsData.filter((item) => !ids.includes(item.id));
 
-    await utils.requirements.getRequirementsTableFriendly.cancel({
+    await utils.requirements.getRequirementTable.cancel({
       projectId: params.projectId as string,
     });
-    utils.requirements.getRequirementsTableFriendly.setData(
+    utils.requirements.getRequirementTable.setData(
       { projectId: params.projectId as string },
       (prev) => {
         if (!prev) return prev;
-        return {
-          ...prev,
-          fixedData: newData,
-        };
+        return newData;
       },
     );
 
@@ -460,11 +400,11 @@ export default function RequirementsTable() {
                 setEditingRequirement(false);
                 setShowSmallPopup(true);
               }}
-              disabled={row.scrumId === undefined}
+              disabled={row.scrumId === -1}
             >
-              {row.scrumId ? (
+              {row.scrumId !== -1 ? (
                 UseFormatForAssignReqTypeScrumId(
-                  row.requirementTypeId.name,
+                  row.requirementType.name,
                   row.scrumId,
                 )
               ) : (
@@ -493,7 +433,7 @@ export default function RequirementsTable() {
                 setEditingRequirement(false);
                 setShowSmallPopup(true);
               }}
-              disabled={!isGhost && row.scrumId === undefined}
+              disabled={!isGhost && row.scrumId === -1}
             >
               {row.name}
             </button>
@@ -503,19 +443,19 @@ export default function RequirementsTable() {
       description: {
         visible: false,
       },
-      priorityId: {
+      priority: {
         label: "Priority",
         width: 120,
         sortable: true,
         filterable: "list",
         filterValue(row) {
-          return row.priorityId?.name ?? "";
+          return row.priority?.name ?? "";
         },
         sorter(a, b) {
-          if (!a.priorityId && !b.priorityId) return 0;
-          if (!a.priorityId) return -1;
-          if (!b.priorityId) return 1;
-          return a.priorityId?.name.localeCompare(b.priorityId?.name);
+          if (!a.priority && !b.priority) return 0;
+          if (!a.priority) return -1;
+          if (!b.priority) return 1;
+          return a.priority?.name.localeCompare(b.priority?.name);
         },
         render(row, _, isGhost) {
           const handleGhostPriorityChange = (tag: Tag) => {
@@ -528,7 +468,7 @@ export default function RequirementsTable() {
                 if (req.id === row.id) {
                   return {
                     ...req,
-                    priorityId: tag,
+                    priorityId: tag.id ?? "",
                   };
                 }
                 return req;
@@ -539,7 +479,7 @@ export default function RequirementsTable() {
           return (
             <PriorityPicker
               disabled={permission < permissionNumbers.write}
-              priority={row.priorityId}
+              priority={row.priority}
               onChange={async (tag: Tag) => {
                 if (isGhost) {
                   handleGhostPriorityChange(tag);
@@ -554,7 +494,7 @@ export default function RequirementsTable() {
                 await handleEditRequirement(
                   {
                     ...row,
-                    priorityId: tag,
+                    priority: tag,
                   },
                   false,
                 );
@@ -563,34 +503,32 @@ export default function RequirementsTable() {
           );
         },
       },
-      requirementTypeId: {
+      requirementType: {
         label: "Req. Type",
         width: 220,
         sortable: true,
         filterable: "list",
         filterValue(row) {
-          return row.requirementTypeId?.name ?? "";
+          return row.requirementType?.name ?? "";
         },
         sorter(a, b) {
-          if (!a.requirementTypeId && !b.requirementTypeId) return 0;
-          if (!a.requirementTypeId) return -1;
-          if (!b.requirementTypeId) return 1;
-          return a.requirementTypeId?.name.localeCompare(
-            b.requirementTypeId?.name,
-          );
+          if (!a.requirementType && !b.requirementType) return 0;
+          if (!a.requirementType) return -1;
+          if (!b.requirementType) return 1;
+          return a.requirementType?.name.localeCompare(b.requirementType?.name);
         },
         render(row, _, isGhost) {
           const handleGhostReqTypeChange = (tag: Tag) => {
             updateGhostRow(row.id, (oldData) => ({
               ...oldData,
-              requirementTypeId: tag,
+              requirementType: tag,
             }));
             generatedRequirements.current = generatedRequirements.current?.map(
               (req) => {
                 if (req.id === row.id) {
                   return {
                     ...req,
-                    requirementTypeId: tag,
+                    requirementType: tag,
                   };
                 }
                 return req;
@@ -601,7 +539,7 @@ export default function RequirementsTable() {
           return (
             <RequirementTypePicker
               disabled={permission < permissionNumbers.write}
-              type={row.requirementTypeId}
+              type={row.requirementType}
               onChange={async (requirementTypeId) => {
                 if (isGhost) {
                   handleGhostReqTypeChange(requirementTypeId);
@@ -618,7 +556,7 @@ export default function RequirementsTable() {
                 await handleEditRequirement(
                   {
                     ...row,
-                    requirementTypeId: requirementTypeId,
+                    requirementType: requirementTypeId,
                   },
                   false,
                 );
@@ -627,20 +565,20 @@ export default function RequirementsTable() {
           );
         },
       },
-      requirementFocusId: {
+      requirementFocus: {
         label: "Req. Focus",
         width: 250,
         sortable: true,
         filterable: "list",
         filterValue(row) {
-          return row.requirementFocusId?.name ?? "";
+          return row.requirementFocus?.name ?? "";
         },
         sorter(a, b) {
-          if (!a.requirementFocusId && !b.requirementFocusId) return 0;
-          if (!a.requirementFocusId) return -1;
-          if (!b.requirementFocusId) return 1;
-          return a.requirementFocusId?.name.localeCompare(
-            b.requirementFocusId?.name,
+          if (!a.requirementFocus && !b.requirementFocus) return 0;
+          if (!a.requirementFocus) return -1;
+          if (!b.requirementFocus) return 1;
+          return a.requirementFocus?.name.localeCompare(
+            b.requirementFocus?.name,
           );
         },
         render(row, _, isGhost) {
@@ -654,7 +592,7 @@ export default function RequirementsTable() {
                 if (req.id === row.id) {
                   return {
                     ...req,
-                    requirementFocusId: tag,
+                    requirementFocus: tag,
                   };
                 }
                 return req;
@@ -665,7 +603,7 @@ export default function RequirementsTable() {
           return (
             <RequirementFocusPicker
               disabled={permission < permissionNumbers.write}
-              focus={row.requirementFocusId}
+              focus={row.requirementFocus}
               onChange={async (requirementFocusId) => {
                 if (isGhost) {
                   handleGhostFocusChange(requirementFocusId);
@@ -682,7 +620,7 @@ export default function RequirementsTable() {
                 await handleEditRequirement(
                   {
                     ...row,
-                    requirementFocusId: requirementFocusId,
+                    requirementFocus: requirementFocusId,
                   },
                   false,
                 );
@@ -697,9 +635,44 @@ export default function RequirementsTable() {
       ids: string[],
       callback: (del: boolean) => void,
     ) => {
-      const deleted = await deleteRequirements(ids);
-      callback(deleted);
-      return deleted;
+      const confirmMessage =
+        ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
+      if (
+        !(await confirm(
+          `Are you sure you want to ${confirmMessage}`,
+          "This action cannot be undone",
+          "Delete",
+        ))
+      ) {
+        callback(false);
+        return;
+      }
+      callback(true); // call the callback as soon as posible
+
+      const newData = requirementsData.filter((item) => !ids.includes(item.id));
+
+      await utils.requirements.getRequirementTable.cancel({
+        projectId: params.projectId as string,
+      });
+      utils.requirements.getRequirementTable.setData(
+        { projectId: params.projectId as string },
+        (prev) => {
+          if (!prev) return prev;
+          return newData;
+        },
+      );
+
+      //Deletes in database
+      await Promise.all(
+        ids.map((id) =>
+          deleteRequirement({
+            projectId: params.projectId as string,
+            requirementId: id,
+          }),
+        ),
+      );
+      await refetchRequirements();
+      return true;
     };
 
     return (
@@ -736,18 +709,18 @@ export default function RequirementsTable() {
       id: i.toString(),
     }));
 
-    const tableData = generatedData.map((req, i) => ({
+    const tableData: RequirementCol[] = generatedData.map((req, i) => ({
       id: i.toString(),
-      scrumId: undefined,
+      scrumId: -1,
       name: req.name,
       description: req.description,
-      priorityId: req.priorityId!,
-      requirementTypeId: req.requirementTypeId!,
-      requirementFocusId: req.requirementFocusId!,
+      priority: req.priority ?? noTag,
+      requirementType: req.requirementType ?? noTag,
+      requirementFocus: req.requirementFocus ?? noTag,
     }));
 
     // New requirement focus might have been created, so we need to invalidate the query
-    await utils.requirements.getRequirementFocusTags.invalidate({
+    await utils.requirements.getRequirementFocuses.invalidate({
       projectId: params.projectId as string,
     });
 
@@ -830,16 +803,16 @@ export default function RequirementsTable() {
             const {
               name,
               description,
-              priorityId,
-              requirementTypeId,
-              requirementFocusId,
+              priority,
+              requirementType,
+              requirementFocus,
             } = newRequirement;
             const allFields = [
               name,
               description,
-              priorityId,
-              requirementTypeId,
-              requirementFocusId,
+              priority,
+              requirementType,
+              requirementFocus,
             ];
             if (
               allFields.some((field) => field !== "" && field !== undefined)
@@ -861,9 +834,9 @@ export default function RequirementsTable() {
                 ? async () => {
                     const { name, description } = editForm;
                     const {
-                      priorityId,
-                      requirementTypeId,
-                      requirementFocusId,
+                      priority,
+                      requirementType,
+                      requirementFocus,
                       scrumId,
                     } = requirementEditedData;
 
@@ -880,9 +853,9 @@ export default function RequirementsTable() {
                         return;
                       }
                       if (
-                        !priorityId?.id ||
-                        !requirementTypeId?.id ||
-                        !requirementFocusId?.id
+                        !priority?.id ||
+                        !requirementType?.id ||
+                        !requirementFocus?.id
                       ) {
                         alert("Oops...", "All properties must have a value.", {
                           type: "error",
@@ -954,7 +927,7 @@ export default function RequirementsTable() {
                     {requirementEditedData.scrumId && (
                       <span>
                         {UseFormatForAssignReqTypeScrumId(
-                          requirementEditedData.requirementTypeId.name,
+                          requirementEditedData.requirementType.name,
                           requirementEditedData.scrumId,
                         )}
                         :{" "}
@@ -1094,11 +1067,11 @@ export default function RequirementsTable() {
                         <label className="font-semibold">Priority</label>
                         <PriorityPicker
                           disabled={permission < permissionNumbers.write}
-                          priority={newRequirement.priorityId}
+                          priority={newRequirement.priority}
                           onChange={async (priority) => {
                             setNewRequirement((prev) => ({
                               ...prev,
-                              priorityId: priority,
+                              priority: priority,
                             }));
                           }}
                         />
@@ -1107,11 +1080,11 @@ export default function RequirementsTable() {
                         <label className="font-semibold">Type</label>
                         <RequirementTypePicker
                           disabled={permission < permissionNumbers.write}
-                          type={newRequirement.requirementTypeId}
+                          type={newRequirement.requirementType}
                           onChange={async (type) => {
                             setNewRequirement((prev) => ({
                               ...prev,
-                              requirementTypeId: type,
+                              requirementType: type,
                             }));
                           }}
                         />
@@ -1120,11 +1093,11 @@ export default function RequirementsTable() {
                         <label className="font-semibold">Focus</label>
                         <RequirementFocusPicker
                           disabled={permission < permissionNumbers.write}
-                          focus={newRequirement.requirementFocusId}
+                          focus={newRequirement.requirementFocus}
                           onChange={async (focus) => {
                             setNewRequirement((prev) => ({
                               ...prev,
-                              requirementFocusId: focus,
+                              requirementFocus: focus,
                             }));
                           }}
                         />
@@ -1151,8 +1124,8 @@ export default function RequirementsTable() {
                       disabled={permission < permissionNumbers.write}
                       priority={
                         requirementEditedData
-                          ? requirementEditedData.priorityId
-                          : newRequirement.priorityId
+                          ? requirementEditedData.priority
+                          : newRequirement.priority
                       }
                       onChange={async (priority) => {
                         if (ghostRequirementEdited) {
@@ -1160,12 +1133,12 @@ export default function RequirementsTable() {
                             ghostRequirementEdited.id,
                             (oldData) => ({
                               ...oldData,
-                              priorityId: priority,
+                              priority: priority,
                             }),
                           );
                           setGhostRequirementEdited((prev) => ({
                             ...prev!,
-                            priorityId: priority,
+                            priority: priority,
                           }));
                           generatedRequirements.current =
                             generatedRequirements.current?.map((req) => {
@@ -1183,16 +1156,16 @@ export default function RequirementsTable() {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
-                            priorityId: priority,
+                            priority: priority,
                           }));
                         } else {
                           setRequirementEdited((prev) => ({
                             ...prev!,
-                            priorityId: priority,
+                            priority: priority,
                           }));
                           await handleEditRequirement({
                             ...requirementEdited,
-                            priorityId: priority,
+                            priority,
                           });
                         }
                       }}
@@ -1204,8 +1177,8 @@ export default function RequirementsTable() {
                       disabled={permission < permissionNumbers.write}
                       type={
                         requirementEditedData
-                          ? requirementEditedData.requirementTypeId
-                          : newRequirement.requirementTypeId
+                          ? requirementEditedData.requirementType
+                          : newRequirement.requirementType
                       }
                       onChange={async (type) => {
                         if (ghostRequirementEdited) {
@@ -1218,14 +1191,14 @@ export default function RequirementsTable() {
                           );
                           setGhostRequirementEdited((prev) => ({
                             ...prev!,
-                            requirementTypeId: type,
+                            requirementType: type,
                           }));
                           generatedRequirements.current =
                             generatedRequirements.current?.map((req) => {
                               if (req.id === ghostRequirementEdited.id) {
                                 return {
                                   ...req,
-                                  requirementTypeId: type,
+                                  requirementType: type,
                                 };
                               }
                               return req;
@@ -1236,16 +1209,16 @@ export default function RequirementsTable() {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
-                            requirementTypeId: type,
+                            requirementType: type,
                           }));
                         } else {
                           setRequirementEdited((prev) => ({
                             ...prev!,
-                            requirementTypeId: type,
+                            requirementType: type,
                           }));
                           await handleEditRequirement({
                             ...requirementEdited,
-                            requirementTypeId: type,
+                            requirementType: type,
                           });
                         }
                       }}
@@ -1257,8 +1230,8 @@ export default function RequirementsTable() {
                       disabled={permission < permissionNumbers.write}
                       focus={
                         requirementEditedData
-                          ? requirementEditedData.requirementFocusId
-                          : newRequirement.requirementFocusId
+                          ? requirementEditedData.requirementFocus
+                          : newRequirement.requirementFocus
                       }
                       onChange={async (focus) => {
                         if (ghostRequirementEdited) {
@@ -1266,19 +1239,19 @@ export default function RequirementsTable() {
                             ghostRequirementEdited.id,
                             (oldData) => ({
                               ...oldData,
-                              requirementFocusId: focus,
+                              requirementFocus: focus,
                             }),
                           );
                           setGhostRequirementEdited((prev) => ({
                             ...prev!,
-                            requirementFocusId: focus,
+                            requirementFocus: focus,
                           }));
                           generatedRequirements.current =
                             generatedRequirements.current?.map((req) => {
                               if (req.id === ghostRequirementEdited.id) {
                                 return {
                                   ...req,
-                                  requirementFocusId: focus,
+                                  requirementFocus: focus,
                                 };
                               }
                               return req;
@@ -1289,16 +1262,16 @@ export default function RequirementsTable() {
                         if (!requirementEdited) {
                           setNewRequirement((prev) => ({
                             ...prev,
-                            requirementFocusId: focus,
+                            requirementFocus: focus,
                           }));
                         } else {
                           setRequirementEdited((prev) => ({
                             ...prev!,
-                            requirementFocusId: focus,
+                            requirementFocus: focus,
                           }));
                           await handleEditRequirement({
                             ...requirementEdited,
-                            requirementFocusId: focus,
+                            requirementFocus: focus,
                           });
                         }
                       }}

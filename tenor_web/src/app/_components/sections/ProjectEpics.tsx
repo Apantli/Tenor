@@ -14,8 +14,10 @@ import Markdown from "react-markdown";
 import SecondaryButton from "../buttons/SecondaryButton";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import SearchBar from "../SearchBar";
+import { useParams } from "next/navigation";
 
-export const ProjectEpics = ({ projectId }: { projectId: string }) => {
+export const ProjectEpics = () => {
+  const { projectId } = useParams();
   const { mutateAsync: createEpic, isPending: creatingEpic } =
     api.epics.createOrModifyEpic.useMutation();
 
@@ -31,11 +33,11 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
   const [editEpic, setEditEpic] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-  const [selectedEpic, setSelectedEpic] = useState<number | null>(null);
+  const [selectedEpic, setSelectedEpic] = useState<string | null>(null);
 
-  const { data: epics } = api.epics.getProjectEpicsOverview.useQuery(
+  const { data: epics } = api.epics.getEpics.useQuery(
     {
-      projectId: projectId,
+      projectId: projectId as string,
     },
     { enabled: !!projectId },
   );
@@ -47,8 +49,8 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
 
   const { data: epic, isLoading: epicLoading } = api.epics.getEpic.useQuery(
     {
-      projectId: projectId,
-      epicId: selectedEpic ?? 0,
+      projectId: projectId as string,
+      epicId: selectedEpic ?? "",
     },
     {
       enabled: !!selectedEpic,
@@ -108,12 +110,14 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
 
     if (!creatingEpic) {
       await createEpic({
-        projectId: projectId,
-        name: newEpicName,
-        description: newEpicDescription,
-        scrumId: -1,
+        projectId: projectId as string,
+        epicData: {
+          name: newEpicName,
+          description: newEpicDescription,
+          scrumId: -1,
+        },
       });
-      await utils.epics.getProjectEpicsOverview.invalidate();
+      await utils.epics.getEpics.invalidate();
       handleCreateDismiss();
     }
   };
@@ -136,7 +140,7 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
         {filteredEpics?.map((epic) => (
           <div
             onClick={() => {
-              setSelectedEpic(epic.scrumId);
+              setSelectedEpic(epic.id);
               setShowEditPopup(true);
             }}
             key={epic.scrumId}
@@ -240,10 +244,13 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
                 return;
               }
               await createEpic({
-                projectId: projectId,
-                scrumId: epic?.scrumId,
-                name: editEpicName,
-                description: editEpicDescription,
+                projectId: projectId as string,
+                epicId: epic?.id,
+                epicData: {
+                  name: editEpicName,
+                  description: editEpicDescription,
+                  scrumId: epic?.scrumId,
+                },
               });
               await utils.epics.invalidate();
             }
@@ -281,11 +288,16 @@ export const ProjectEpics = ({ projectId }: { projectId: string }) => {
                 }
                 if (!deletingEpic) {
                   await deleteEpic({
-                    projectId: projectId,
-                    scrumId: epic?.scrumId,
-                    name: editEpicName,
-                    description: editEpicDescription,
-                    deleted: true,
+                    projectId: projectId as string,
+
+                    epicId: epic?.id,
+
+                    epicData: {
+                      scrumId: epic?.scrumId,
+                      name: editEpicName,
+                      description: editEpicDescription,
+                      deleted: true,
+                    },
                   });
                   await utils.epics.invalidate();
                   handleEditDismiss();

@@ -75,7 +75,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
                 },
               )}
             >
-              / {projectNameData?.projectName ?? ""}
+              / {projectNameData ?? ""}
             </span>
           )}
         </div>

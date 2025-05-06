@@ -8,14 +8,14 @@ import type {
   WithId,
 } from "./firebaseSchemas";
 import type {
-  ExistingEpicSchema,
+  EpicSchema,
   ExistingUserStorySchema,
   SprintSchema,
   UserStorySchema,
 } from "./zodFirebaseSchema";
 import type z from "zod";
 
-export type ExistingEpic = WithId<z.infer<typeof ExistingEpicSchema>>;
+export type ExistingEpic = WithId<z.infer<typeof EpicSchema>>;
 export type ExistingUserStory = WithId<z.infer<typeof ExistingUserStorySchema>>;
 
 export type UserStoryPreview = {
@@ -25,8 +25,8 @@ export type UserStoryPreview = {
 };
 
 export type UserPreview = {
-  uid: string;
   displayName: string;
+  email: string;
   photoURL: string;
 };
 
@@ -45,7 +45,7 @@ export type SprintPreview = {
 
 export type UserStoryDetail = {
   id: string;
-  scrumId?: number;
+  scrumId: number;
   name: string;
   description: string;
   acceptanceCriteria: string;
@@ -53,7 +53,7 @@ export type UserStoryDetail = {
   size?: Size;
   tags: Tag[];
   priority?: Tag;
-  status?: Tag; // It is a statusTag, but in the detail we don't need the detail info!
+  status?: StatusTag; // It is a statusTag, but in the detail we don't need the detail info!
   dependencies: UserStoryPreview[];
   requiredBy: UserStoryPreview[];
   sprint?: SprintPreview;
@@ -74,24 +74,23 @@ export type IssueDetail = {
   priority?: Tag;
   size?: Size;
   status?: StatusTag;
-  relatedUserStory?: ExistingUserStory;
+  relatedUserStory?: UserStoryPreview;
   tasks: TaskPreview[];
   sprint?: SprintPreview;
 };
 
 export type TaskDetail = {
   id: string;
-  scrumId?: number;
+  scrumId: number;
   name: string;
   description: string;
   status: StatusTag;
   size?: Size;
-  assignee?: UserPreview;
+  assignee?: WithId<UserPreview>;
   dueDate?: Date;
 };
 
 export type RoleDetail = {
-  id: string;
   label: string;
   settings: Permission; // settings
   performance: Permission; // performance

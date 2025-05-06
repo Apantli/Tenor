@@ -2,13 +2,15 @@
 
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
-import MemberTable, { TeamMember } from "~/app/_components/inputs/MemberTable";
+import MemberTable from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import RoleTable from "~/app/_components/sections/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
-import { Permission, Role } from "~/lib/types/firebaseSchemas";
+import { UserCol } from "~/lib/types/columnTypes";
+import { UserPreview } from "~/lib/types/detailSchemas";
+import { Permission, Role, WithId } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export default function ProjectUsers() {
@@ -45,17 +47,13 @@ export default function ProjectUsers() {
   });
   const { mutateAsync: updateRoleTabPermissions } =
     api.settings.updateRoleTabPermissions.useMutation();
-  const { mutateAsync: updateViewPerformance } =
-    api.settings.updateViewPerformance.useMutation();
-  const { mutateAsync: updateControlSprints } =
-    api.settings.updateControlSprints.useMutation();
 
   const utils = api.useUtils();
   const {
     data: teamMembers,
     isLoading: isLoadingUS,
     refetch: refetch,
-  } = api.users.getTeamMembers.useQuery({
+  } = api.users.getUserTable.useQuery({
     projectId: projectId as string,
   });
   const { data: roles, refetch: refetchRoles } =
@@ -63,16 +61,20 @@ export default function ProjectUsers() {
       projectId: projectId as string,
     });
 
-  const handleAddUser = async function (user: TeamMember) {
+  const handleAddUser = async function (user: WithId<UserPreview>) {
     if (!teamMembers) return;
     const newData = teamMembers;
-    newData.push(user);
+    const newTeamMember: UserCol = {
+      ...user,
+      roleId: emptyRole.id, // Ensure roleId is provided
+    };
+    newData.push(newTeamMember);
 
     // Uses optimistic update
-    await utils.users.getTeamMembers.cancel({
+    await utils.users.getUserTable.cancel({
       projectId: projectId as string,
     });
-    utils.users.getTeamMembers.setData(
+    utils.users.getUserTable.setData(
       { projectId: projectId as string },
       newData,
     );
@@ -90,7 +92,7 @@ export default function ProjectUsers() {
     //check if any of the ids belong to the owner
     ids = ids.filter((id) => {
       const user = teamMembers.find((user) => user.id === id);
-      if (user?.role === "owner") {
+      if (user?.roleId === "owner") {
         alert("Oops...", "You cannot remove the owner of the project.", {
           type: "error",
           duration: 5000,
@@ -102,10 +104,10 @@ export default function ProjectUsers() {
     const newData = teamMembers.filter((user) => !ids.includes(user.id));
 
     // Uses optimistic update
-    await utils.users.getTeamMembers.cancel({
+    await utils.users.getUserTable.cancel({
       projectId: projectId as string,
     });
-    utils.users.getTeamMembers.setData(
+    utils.users.getUserTable.setData(
       { projectId: projectId as string },
       newData,
     );
@@ -127,16 +129,16 @@ export default function ProjectUsers() {
     const newData = teamMembers;
     const index = newData.findIndex((user) => user.id === id);
     if (newData[index]) {
-      newData[index].role = role;
+      newData[index].roleId = role;
     } else {
       return;
     }
 
     // Uses optimistic update
-    await utils.users.getTeamMembers.cancel({
+    await utils.users.getUserTable.cancel({
       projectId: projectId as string,
     });
-    utils.users.getTeamMembers.setData(
+    utils.users.getUserTable.setData(
       { projectId: projectId as string },
       newData,
     );
@@ -209,70 +211,6 @@ export default function ProjectUsers() {
     await refetchRoles();
   };
 
-  const handleUpdateViewPerformance = async function (
-    roleId: string,
-    newValue: boolean,
-  ) {
-    if (!roles) return;
-    const newData = roles.map((role) =>
-      role.id === roleId
-        ? {
-            ...role,
-            canViewPerformance: newValue,
-          }
-        : role,
-    );
-
-    // Uses optimistic update
-    await utils.settings.getDetailedRoles.cancel({
-      projectId: projectId as string,
-    });
-    utils.settings.getDetailedRoles.setData(
-      { projectId: projectId as string },
-      newData,
-    );
-
-    // Update in database
-    await updateViewPerformance({
-      projectId: projectId as string,
-      roleId,
-      newValue,
-    });
-    await refetchRoles();
-  };
-
-  const handleUpdateControlSprints = async function (
-    roleId: string,
-    newValue: boolean,
-  ) {
-    if (!roles) return;
-    const newData = roles.map((role) =>
-      role.id === roleId
-        ? {
-            ...role,
-            canControlSprints: newValue,
-          }
-        : role,
-    );
-
-    // Uses optimistic update
-    await utils.settings.getDetailedRoles.cancel({
-      projectId: projectId as string,
-    });
-    utils.settings.getDetailedRoles.setData(
-      { projectId: projectId as string },
-      newData,
-    );
-
-    // Update in database
-    await updateControlSprints({
-      projectId: projectId as string,
-      roleId,
-      newValue,
-    });
-    await refetchRoles();
-  };
-
   return (
     <div className="flex h-full w-full flex-col">
       <div className="mb-2 flex flex-row justify-between">
@@ -316,8 +254,6 @@ export default function ProjectUsers() {
               handleRoleAdd={handleRoleAdd}
               handleRoleRemove={handleRoleRemove}
               handleEditTabPermission={handleEditTabPermission}
-              handleUpdateViewPerformance={handleUpdateViewPerformance}
-              handleUpdateControlSprints={handleUpdateControlSprints}
             ></RoleTable>
           )}
           {!roles && (

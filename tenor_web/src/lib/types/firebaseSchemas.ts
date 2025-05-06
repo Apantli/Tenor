@@ -160,7 +160,7 @@ export interface Role {
 
 export interface BasicInfo {
   scrumId: number;
-  name?: string;
+  name: string;
   description: string; // Markdown
   deleted: boolean;
 }
@@ -191,8 +191,8 @@ export type itemTypes = "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
-  dueDate: Date | null;
-  finishedDate: Date | null;
+  dueDate?: Date;
+  finishedDate?: Date;
   size: Size;
   itemId: string;
   itemType: itemTypes;

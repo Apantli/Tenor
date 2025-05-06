@@ -1,7 +1,31 @@
 import { z } from "zod";
 import { RoleDetail } from "./types/detailSchemas";
-import { Role } from "./types/firebaseSchemas";
+import { Role, Settings, Tag } from "./types/firebaseSchemas";
 import { Permission, RoleSchema } from "./types/zodFirebaseSchema";
+
+export const emptySettings: Settings = {
+  sprintDuration: 0,
+  maximumSprintStoryPoints: 0,
+  aiContext: {
+    text: "",
+    files: [],
+    links: [],
+  },
+  storyPointSizes: [
+    1, // XS
+    2, // S
+    3, // M
+    4, // L
+    5, // XL
+    6, // XXL
+  ],
+  // requirementFocusTags: [],
+  // requirementTypeTags: [],
+  // backlogTags: [],
+  // priorityTypes: [],
+  // statusTabs: [],
+  // roles: [],
+};
 
 export interface FlagsRequired {
   flags: (
@@ -158,3 +182,10 @@ export const defaultPriorityTypes = [
 
 export const defaultMaximumSprintStoryPoints = 300;
 export const defaultSprintDuration = 7;
+
+export const noTag: Tag = {
+  id: "unknown",
+  name: "Unknown",
+  color: "#CCCCCC",
+  deleted: false,
+};
