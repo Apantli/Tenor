@@ -229,7 +229,7 @@ export default function StatusTable() {
       deleted: status.deleted,
     })) ?? [];
 
-  const columns = {
+  const columns: TableColumns<StatusItem> = {
     id: { visible: false },
     order: {
       label: "Order",
@@ -289,7 +289,7 @@ export default function StatusTable() {
       ),
     },
     deleted: { visible: false },
-  } as TableColumns<StatusItem>;
+  };
 
   const extraOptions = [
     {

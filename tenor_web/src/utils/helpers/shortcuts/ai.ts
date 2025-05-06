@@ -1,15 +1,5 @@
-import { Firestore } from "firebase-admin/firestore";
-import {
-  ProjectSchema,
-  SettingsSchema,
-  TagSchema,
-} from "~/lib/types/zodFirebaseSchema";
-import {
-  getProject,
-  getProjectRef,
-  getSettings,
-  getSettingsRef,
-} from "./general";
+import type { Firestore } from "firebase-admin/firestore";
+import { getProject, getSettings } from "./general";
 
 export const getProjectContext = async (
   firestore: Firestore,

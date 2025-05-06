@@ -18,7 +18,7 @@ import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
 } from "~/lib/defaultProjectValues";
-import { Size } from "~/lib/types/firebaseSchemas";
+import type { Size } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 const maxInputNumber = 10000000000;

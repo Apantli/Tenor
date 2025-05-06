@@ -4,7 +4,7 @@ import React, {
   type ButtonHTMLAttributes,
   type ChangeEventHandler,
 } from "react";
-import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { Tag } from "~/lib/types/firebaseSchemas";
 import Dropdown, { DropdownButton, DropdownItem } from "./Dropdown";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";

@@ -193,7 +193,7 @@ export default function CreateItemTagPopup({
         name: "",
         color: generateRandomTagColor(),
       });
-    } catch (error) {
+    } catch {
       alert("Error", `Failed to create ${itemTagType}`, {
         type: "error",
         duration: 5000,

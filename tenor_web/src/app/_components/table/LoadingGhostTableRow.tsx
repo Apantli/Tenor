@@ -1,10 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import BubbleIcon from "@mui/icons-material/BubbleChart";
 import { cn } from "~/lib/utils";
-
 import {
-  filterVisibleColumns,
   type TableColumns,
   type TableOptions,
   type DeleteOptions,

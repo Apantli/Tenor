@@ -1,16 +1,12 @@
 import React from "react";
 import { cn } from "~/lib/utils";
 import AiIcon from "@mui/icons-material/AutoAwesome";
-import AcceptIcon from "@mui/icons-material/Check";
-import RejectIcon from "@mui/icons-material/Close";
-
 import {
   filterVisibleColumns,
   type TableColumns,
   type TableOptions,
   type DeleteOptions,
 } from "./Table";
-import PrimaryButton from "../buttons/PrimaryButton";
 
 interface GhostTableRowProps<I, T> {
   value: T;

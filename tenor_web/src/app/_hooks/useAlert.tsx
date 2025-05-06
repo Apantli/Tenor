@@ -11,7 +11,6 @@ import React, {
 } from "react";
 import type Alert from "../_components/AlertComponent";
 import AlertComponent from "../_components/AlertComponent";
-import { use } from "chai";
 
 interface AlertOptions {
   type: "success" | "error" | "warning" | "info";

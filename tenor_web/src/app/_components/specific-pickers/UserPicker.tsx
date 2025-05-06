@@ -6,8 +6,8 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
 import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
-import { UserPreview } from "~/lib/types/detailSchemas";
-import { WithId } from "~/lib/types/firebaseSchemas";
+import type { UserPreview } from "~/lib/types/detailSchemas";
+import type { WithId } from "~/lib/types/firebaseSchemas";
 
 interface EditableBoxProps {
   options: WithId<UserPreview>[];

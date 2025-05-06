@@ -29,7 +29,6 @@ import {
   deleteStartsWith,
 } from "~/utils/firebaseBucket";
 import {
-  ProjectSchema,
   ProjectSchemaCreator,
   SettingsSchema,
 } from "~/lib/types/zodFirebaseSchema";
@@ -50,22 +49,13 @@ import {
   getRolesRef,
   getSettingsRef,
 } from "~/utils/helpers/shortcuts/general";
-import { generalPermissions, settingsPermissions } from "~/lib/permission";
-import { settings } from ".eslintrc.cjs";
-import { get } from "node_modules/cypress/types/lodash";
-import {
-  getGlobalUserRef,
-  getUserRef,
-  getUsersRef,
-} from "~/utils/helpers/shortcuts/users";
+import { settingsPermissions } from "~/lib/permission";
+import { getGlobalUserRef, getUsersRef } from "~/utils/helpers/shortcuts/users";
 import {
   getPrioritiesRef,
   getStatusTypesRef,
 } from "~/utils/helpers/shortcuts/tags";
-import {
-  getRequirement,
-  getRequirementTypesRef,
-} from "~/utils/helpers/shortcuts/requirements";
+import { getRequirementTypesRef } from "~/utils/helpers/shortcuts/requirements";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",

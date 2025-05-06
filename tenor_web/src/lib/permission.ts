@@ -1,4 +1,4 @@
-import { FlagsRequired } from "~/lib/defaultProjectValues";
+import type { FlagsRequired } from "~/lib/defaultProjectValues";
 
 export const tagPermissions: FlagsRequired = {
   flags: ["settings", "backlog", "issues"],

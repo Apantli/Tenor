@@ -3,7 +3,7 @@ import { cn } from "~/lib/utils";
 import TagComponent from "../TagComponent";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
 import { accentColorByCardType } from "~/utils/helpers/colorUtils";
-import { KanbanCard } from "~/lib/types/kanbanTypes";
+import type { KanbanCard } from "~/lib/types/kanbanTypes";
 
 interface Props {
   item: KanbanCard;

@@ -9,16 +9,14 @@ import type {
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
-import { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
+import type { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
 import { getTasks } from "~/utils/helpers/shortcuts/tasks";
 import {
   getAutomaticStatusId,
   getBacklogTag,
-  getStatusTypeRef,
   getStatusTypes,
   getStatusTypesRef,
 } from "~/utils/helpers/shortcuts/tags";
-import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
 import { getUserStoriesRef } from "~/utils/helpers/shortcuts/userStories";
 import { getIssuesRef } from "~/utils/helpers/shortcuts/issues";
 

@@ -1,8 +1,7 @@
-import { clear, time } from "console";
 import React, { useEffect, useState } from "react";
 import useStutterLoading from "~/app/_hooks/useStutterLoading";
 import LoadingGhostTableRow from "./LoadingGhostTableRow";
-import { DeleteOptions, TableColumns, TableOptions } from "./Table";
+import type { DeleteOptions, TableColumns, TableOptions } from "./Table";
 import { cn } from "~/lib/utils";
 
 interface Props<I, T> {

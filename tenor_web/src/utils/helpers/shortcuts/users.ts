@@ -1,10 +1,10 @@
-import { Firestore } from "firebase-admin/firestore";
-import * as admin from "firebase-admin";
-import { UserPreview } from "~/lib/types/detailSchemas";
-import { WithId } from "~/lib/types/firebaseSchemas";
+import type { Firestore } from "firebase-admin/firestore";
+import type * as admin from "firebase-admin";
+import type { UserPreview } from "~/lib/types/detailSchemas";
+import type { WithId } from "~/lib/types/firebaseSchemas";
 import { getProjectRef } from "./general";
 import { TRPCError } from "@trpc/server";
-import { UserCol } from "~/lib/types/columnTypes";
+import type { UserCol } from "~/lib/types/columnTypes";
 
 /**
  * @function getGlobalUsersRef
@@ -115,7 +115,6 @@ export const getUsers = async (
 
   const users: WithId<UserPreview>[] = await Promise.all(
     usersSnapshot.docs.map(async (userDoc) => {
-      const userData = userDoc.data();
       const userId = userDoc.id;
       const firebaseUser = await admin.auth().getUser(userId);
       return {
@@ -152,7 +151,6 @@ export const getUser = async (
       message: "User not found",
     });
   }
-  const userData = userSnapshot.data();
   const firebaseUser = await admin.auth().getUser(userId);
   return {
     id: userSnapshot.id,

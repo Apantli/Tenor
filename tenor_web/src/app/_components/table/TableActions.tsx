@@ -20,6 +20,8 @@ interface TableActionsProps<I> {
 function TableActions<I extends string | number>({
   selection,
   setSelection,
+  // FIXME: This is not currently being used, but it might be useful in the future
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   extraOptions,
   deletable,
   onDelete,

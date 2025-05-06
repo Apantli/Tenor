@@ -36,7 +36,7 @@ import {
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import TertiaryButton from "../buttons/TertiaryButton";
 import { checkPermissions, emptyRole, noTag } from "~/lib/defaultProjectValues";
-import { RequirementCol } from "~/lib/types/columnTypes";
+import type { RequirementCol } from "~/lib/types/columnTypes";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -217,7 +217,7 @@ export default function RequirementsTable() {
       requirementId: requirement.id,
     });
 
-    const response = await createOrModifyRequirement({
+    await createOrModifyRequirement({
       projectId: projectId as string,
       requirementId: requirement.id,
       requirementData: newRequirement,

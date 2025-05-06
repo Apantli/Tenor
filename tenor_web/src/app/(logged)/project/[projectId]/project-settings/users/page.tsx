@@ -1,16 +1,16 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import RoleTable from "~/app/_components/sections/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
-import { UserCol } from "~/lib/types/columnTypes";
-import { UserPreview } from "~/lib/types/detailSchemas";
-import { Permission, Role, WithId } from "~/lib/types/firebaseSchemas";
+import { emptyRole } from "~/lib/defaultProjectValues";
+import type { UserCol } from "~/lib/types/columnTypes";
+import type { UserPreview } from "~/lib/types/detailSchemas";
+import type { Permission, WithId } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export default function ProjectUsers() {
@@ -30,7 +30,7 @@ export default function ProjectUsers() {
   // Roles
   const { mutateAsync: addRole } = api.settings.addRole.useMutation();
   const { mutateAsync: removeRole } = api.settings.removeRole.useMutation({
-    onError(error, variables, context) {
+    onError(error, variables) {
       // look for role with roleId
       const role =
         roles?.find((role) => role.id === variables.roleId)?.label ??
@@ -49,13 +49,10 @@ export default function ProjectUsers() {
     api.settings.updateRoleTabPermissions.useMutation();
 
   const utils = api.useUtils();
-  const {
-    data: teamMembers,
-    isLoading: isLoadingUS,
-    refetch: refetch,
-  } = api.users.getUserTable.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: teamMembers, refetch: refetch } =
+    api.users.getUserTable.useQuery({
+      projectId: projectId as string,
+    });
   const { data: roles, refetch: refetchRoles } =
     api.settings.getDetailedRoles.useQuery({
       projectId: projectId as string,

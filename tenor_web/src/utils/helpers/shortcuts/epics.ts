@@ -1,6 +1,6 @@
-import { Firestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
 import { getProjectRef } from "./general";
-import { Epic, WithId } from "~/lib/types/firebaseSchemas";
+import type { Epic, WithId } from "~/lib/types/firebaseSchemas";
 import { EpicOverviewSchema, EpicSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 

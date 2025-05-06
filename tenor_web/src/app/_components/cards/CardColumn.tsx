@@ -6,7 +6,7 @@ import useClickOutside from "~/app/_hooks/useClickOutside";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import { useDroppable } from "@dnd-kit/react";
-import { KanbanCard } from "~/lib/types/kanbanTypes";
+import type { KanbanCard } from "~/lib/types/kanbanTypes";
 
 interface Props {
   selection: Set<string>;

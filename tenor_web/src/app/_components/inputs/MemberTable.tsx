@@ -1,5 +1,5 @@
 "user client";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import Table, { type TableColumns } from "../table/Table";
@@ -12,9 +12,9 @@ import PillPickerComponent from "../PillPickerComponent";
 import SearchBar from "../SearchBar";
 import { emptyRole } from "~/lib/defaultProjectValues";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { UserPreview } from "~/lib/types/detailSchemas";
-import { UserCol } from "~/lib/types/columnTypes";
-import { WithId } from "~/lib/types/firebaseSchemas";
+import type { UserPreview } from "~/lib/types/detailSchemas";
+import type { UserCol } from "~/lib/types/columnTypes";
+import type { WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   label?: string;
@@ -42,7 +42,7 @@ export default function MemberTable({
   const [searchValue, setSearchValue] = useState("");
   const [tableSearchValue, setTableSearchValue] = useState("");
   const { alert } = useAlert();
-  const { data: users, isLoading } = api.users.getGlobalUsers.useQuery({
+  const { data: users } = api.users.getGlobalUsers.useQuery({
     filter: searchValue,
   });
 

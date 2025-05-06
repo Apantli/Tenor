@@ -2,7 +2,7 @@ import React from "react";
 import { cn } from "~/lib/utils";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CardColumn from "./CardColumn";
-import { KanbanCard } from "~/lib/types/kanbanTypes";
+import type { KanbanCard } from "~/lib/types/kanbanTypes";
 
 // WithId<BasicInfo> change into only needed info...
 

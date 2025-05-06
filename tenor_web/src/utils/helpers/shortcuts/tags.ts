@@ -1,11 +1,11 @@
-import { Firestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
 import {
   doingTagName,
   doneTagName,
   todoTagName,
 } from "~/lib/defaultProjectValues";
 import { getSettingsRef } from "./general";
-import { StatusTag, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { StatusTag, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import { getTasksFromItem } from "./tasks";

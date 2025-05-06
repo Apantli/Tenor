@@ -3,7 +3,6 @@ import { cn } from "~/lib/utils";
 import Dropdown, { DropdownButton } from "../Dropdown";
 import InputTextField from "./InputTextField";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import { props } from "node_modules/cypress/types/bluebird";
 
 export type TimeFrame = "Days" | "Weeks";
 export const timeframeMultiplier = {

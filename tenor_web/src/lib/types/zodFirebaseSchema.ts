@@ -1,5 +1,5 @@
 import type { Timestamp } from "firebase-admin/firestore";
-import { z, ZodTypeAny } from "zod";
+import { z } from "zod";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,

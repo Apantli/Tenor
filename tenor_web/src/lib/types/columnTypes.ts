@@ -1,5 +1,5 @@
-import { ExistingUserStory, UserPreview } from "./detailSchemas";
-import { Size, Sprint, StatusTag, Tag } from "./firebaseSchemas";
+import type { ExistingUserStory, UserPreview } from "./detailSchemas";
+import type { Size, Sprint, StatusTag, Tag } from "./firebaseSchemas";
 
 export interface UserStoryCol {
   id: string;

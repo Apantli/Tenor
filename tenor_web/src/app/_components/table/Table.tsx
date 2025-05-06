@@ -11,7 +11,6 @@ import TableRow from "./TableRow";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import useShiftKey from "~/app/_hooks/useShiftKey";
 import GhostTableRow from "./GhostTableRow";
-import LoadingGhostTableRow from "./LoadingGhostTableRow";
 import LoadingGhostTableRows from "./LoadingGhostTableRows";
 
 export interface VisibleColumn<T> {
