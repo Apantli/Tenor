@@ -14,6 +14,13 @@ describe("Requirements", () => {
     cy.get('[data-cy="requirements"]').click();
   });
 
+  it("TC010: Requirements pop up", () => {
+    cy.contains("Test Project").click();
+    cy.contains("Requirements").click();
+    cy.get(".gap-1 > .bg-app-primary").click();
+    cy.get('[data-cy="requirement-popup-footer"]').should("be.visible");
+  });
+
   it("TC012: Create a requirement", () => {
     cy.get('[data-cy="add-requirement-button"]').click();
     cy.get('[data-cy="requirement-name-input"]').type("Test Requirement");
@@ -40,6 +47,20 @@ describe("Requirements", () => {
 
     cy.reload();
     cy.contains("P1").should("exist");
+  });
+
+  it("TC014: Requirement edit", () => {
+    cy.get(":nth-child(3) > :nth-child(3) > .w-full").click();
+    cy.get(".justify-between.gap-2 > .flex > .text-3xl").click();
+    cy.get('[placeholder="Briefly describe the requirement..."]').click();
+    cy.get('[placeholder="Briefly describe the requirement..."]')
+      .clear()
+      .type("Test requirement edited", { force: true });
+    cy.get(".pr-9").click();
+    cy.get(".pr-9")
+      .clear()
+      .type("Test requirement description edited", { force: true });
+    cy.get(".shrink-0 > .flex").click();
   });
 
   it("TC009: Delete requirement", () => {

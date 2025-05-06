@@ -4,18 +4,20 @@ import type {
   TestTask,
 } from "cypress/fixtures/types";
 
-describe("Tasks", () => {
+let projectPath = "";
+
+describe("User Stories", () => {
   before(() => {
     cy.signIn("/");
     cy.createEmptyProject();
+    cy.url().then((url) => {
+      projectPath = url;
+    });
   });
 
   // Return to dashboard and select the project
   beforeEach(() => {
-    cy.signIn("/");
-    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
-      cy.get('[data-cy="project-list"]').find("li").contains(data.name).click();
-    });
+    cy.visit(projectPath);
     cy.get('[data-cy="userStories"]').click();
   });
 
@@ -66,5 +68,14 @@ describe("Tasks", () => {
         cy.contains(data.description).should("be.visible");
       });
     });
+  });
+
+  it("TC034: Delete task", () => {
+    cy.contains("US01").click();
+    cy.contains("TS01").click();
+    cy.contains("Delete task").click();
+    cy.get('[data-cy="confirm-button"] > .flex').click();
+
+    cy.contains("No tasks yet").should("exist");
   });
 });

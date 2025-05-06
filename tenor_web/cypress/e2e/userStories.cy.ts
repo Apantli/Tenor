@@ -47,9 +47,7 @@ describe("User Stories", () => {
           '[placeholder="Describe the work that needs to be done..."]',
         ).type(data.acceptanceCriteria);
         cy.get('[data-cy="primary-button"]').contains("Create story").click();
-      });
 
-      cy.get('[data-cy="popup"]').within(() => {
         cy.contains(data.title).should("be.visible");
       });
     });
@@ -57,9 +55,19 @@ describe("User Stories", () => {
 
   it("TC017: User story appears on table", () => {
     cy.fixture("TestUserStory").then((data: TestUserStory) => {
+      // FIXME: Check for the other fields
       cy.contains("US01").should("be.visible");
       cy.contains(data.title).should("be.visible");
       cy.contains("No Epic").should("be.visible");
+    });
+  });
+
+  it("TC018: Find User story", () => {
+    cy.fixture("TestUserStory").then((data: TestUserStory) => {
+      cy.get('[placeholder="Find a user story by title or Id..."]').type(
+        data.title,
+      );
+      cy.contains(data.title).should("be.visible");
     });
   });
 
@@ -78,20 +86,14 @@ describe("User Stories", () => {
     });
   });
 
-  it("TC018: Find User story", () => {
-      cy.fixture("TestUserStory").then((data: TestUserStory) => {
-          cy.get('[data-cy="primary-button"]').contains("+ New Story").click();
-          cy.get('[data-cy="popup"]').within(() => {
-            cy.get('[placeholder="Short summary of the story..."]').type(
-              "Non-important user story"
-            )
-            cy.get('[data-cy="primary-button"]').contains("Create story").click();
-          });
-          cy.wait(1000);
-          cy.get('[data-cy="popup-close-button"]').click();
-          cy.get('.pb-2 > :nth-child(1) > [data-cy="search-bar"]').type(data.title);
-          cy.contains(data.title).should("be.visible");
-      });
+  it("TC026: Change de title of a user story", () => {
+    cy.fixture("TestUserStory").then((data: TestUserStory) => {
+      cy.contains(data.title).click();
+      cy.get(".justify-between.gap-2 > .flex").click();
+      cy.get('[placeholder="Short summary of the story..."]')
+        .clear()
+        .type("Test story edited", { force: true });
+      cy.get('.shrink-0 > [data-cy="primary-button"]').click();
     });
-
+  });
 });
