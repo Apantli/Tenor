@@ -36,9 +36,10 @@
 //   }
 // }
 
+import type { TestProjectInfo } from "cypress/fixtures/types";
 import { initializeApp } from "firebase/app";
 import {
-  Auth,
+  type Auth,
   connectAuthEmulator,
   initializeAuth,
   indexedDBLocalPersistence,
@@ -116,3 +117,13 @@ Cypress.Commands.add(
     cy.visit(redirectPath);
   },
 );
+
+Cypress.Commands.add("createEmptyProject", () => {
+  cy.visit("/");
+  cy.get(".mr-10 > .justify-between > .flex").click();
+  cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
+    cy.get('[placeholder="What is your project called..."]').type(data.name);
+    cy.get(".header > .flex").click();
+    cy.contains(data.name).should("be.visible");
+  });
+});

@@ -5,7 +5,7 @@
  * This file defines the TRPC router and procedures for AI-powered features in the Tenor application.
  * It provides endpoints to generate text completions based on user prompts and context.
  *
- * The main procedure ({@link generateAutocompletion}) takes user messages and related context,
+ * The main procedure ({@link generateAutocompletionProcedure}) takes user messages and related context,
  * formats them into a prompt for an AI model, and returns both a brief description
  * of changes and an autocompletion response.
  *
@@ -36,19 +36,22 @@ export const parseContext = ({
 };
 
 /**
- * Creates an autocompletion using AI
+ * Creates an autocompletion using AI based on user messages and related context.
  *
  * @param input Object containing procedure parameters
  * Input object structure:
- * - `messages` — An array of message objects, each containing:
- *   - `role` — The role of the message sender (e.g., "user", "assistant")
- *   - `content` — The content of the message
- *   - `explanation` — An optional explanation of the message
- * - `relatedContext` — An object containing related context for the AI to consider
+ * - messages — An array of message objects, each containing:
+ *   - role — The role of the message sender (e.g., "user", "assistant")
+ *   - content — The content of the message
+ *   - explanation — An optional explanation of the message
+ * - relatedContext — An object containing related context for the AI to consider
+ *
  * @returns Object with AI explanation and its autocompletion.
+ *
+ * @http POST /api/trpc/ai.generateAutocompletion
  */
 
-export const generateAutocompletion = protectedProcedure
+export const generateAutocompletionProcedure = protectedProcedure
   .input(
     z.object({
       messages: z.array(
@@ -96,5 +99,5 @@ ${input.messages.map((message) => `"${message.role}": <content>"${message.conten
   });
 
 export const aiRouter = createTRPCRouter({
-  generateAutocompletion: generateAutocompletion,
+  generateAutocompletion: generateAutocompletionProcedure,
 });

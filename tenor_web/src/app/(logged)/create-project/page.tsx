@@ -247,7 +247,11 @@ export default function ProjectCreator() {
       <main className="m-6 p-4">
         <div className="header flex w-full justify-between pb-6">
           <h1 className="text-2xl font-semibold">Project Creator</h1>
-          <PrimaryButton onClick={handleCreateProject} loading={isPending}>
+          <PrimaryButton
+            onClick={handleCreateProject}
+            loading={isPending}
+            data-cy="create-project-button"
+          >
             Generate Project
           </PrimaryButton>
         </div>
@@ -264,6 +268,7 @@ export default function ProjectCreator() {
                   name="name"
                   placeholder="What is your project called..."
                   labelClassName="text-lg font-semibold"
+                  data-cy="project-name-input"
                 />
               </div>
 
@@ -290,6 +295,7 @@ export default function ProjectCreator() {
               onChange={handleChange}
               name="description"
               labelClassName="text-lg font-semibold"
+              data-cy="project-description-input"
             />
 
             {/* Member Table */}

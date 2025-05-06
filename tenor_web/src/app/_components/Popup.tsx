@@ -107,6 +107,7 @@ export default function Popup({
           )}
           style={{ zIndex: (zIndex ?? 100) + 1 }}
           ref={containerRef}
+          data-cy="popup"
         >
           <div className="grow justify-between gap-4 overflow-x-hidden overflow-y-hidden">
             <div className="flex h-full justify-between">
@@ -171,6 +172,7 @@ export default function Popup({
             className={cn("absolute right-5 top-3 text-3xl text-gray-600", {
               "top-5": !!reduceTopPadding,
             })}
+            data-cy="popup-close-button"
           >
             <CloseIcon fontSize="inherit" />
           </button>
@@ -321,6 +323,7 @@ export function SidebarPopup({
             <button
               onClick={dismiss}
               className="absolute right-5 top-3 text-3xl text-gray-600"
+              data-cy="popup-close-button"
             >
               <CloseIcon fontSize="inherit" />
             </button>

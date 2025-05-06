@@ -1,0 +1,5 @@
+{
+    "title": "Current bug in Tenor Web",
+    "description": "Something went wrong in X part of code",
+    "stepsToRecreate": "Open the app, click on the button, and see the error message."
+}

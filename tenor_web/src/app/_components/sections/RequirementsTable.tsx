@@ -773,6 +773,7 @@ export default function RequirementsTable() {
                   setNewRequirement(defaultRequirement);
                   setShowSmallPopup(true);
                 }}
+                data-cy="add-requirement-button"
               >
                 + Add Requirement
               </PrimaryButton>
@@ -943,7 +944,7 @@ export default function RequirementsTable() {
             </h1>
           }
           footer={
-            <div className="flex gap-2">
+            <div className="flex gap-2" data-cy="requirement-popup-footer">
               {requirementEditedData ? (
                 requirementEdited ? (
                   // FIXME add delete functionality (NEW PR)
@@ -1004,6 +1005,7 @@ export default function RequirementsTable() {
                     await handleCreateRequirement();
                   }}
                   loading={isPending}
+                  data-cy="create-requirement-button"
                 >
                   Create Requirement
                 </PrimaryButton>
@@ -1033,6 +1035,7 @@ export default function RequirementsTable() {
                   }}
                   name="name"
                   placeholder="Briefly describe the requirement..."
+                  data-cy="requirement-name-input"
                 />
                 <InputTextAreaField
                   label="Description"
@@ -1055,6 +1058,7 @@ export default function RequirementsTable() {
                   }
                   name="description"
                   placeholder="What is this requirement about..."
+                  data-cy="requirement-description-input"
                 />
                 {requirementEdited === null &&
                   ghostRequirementEdited === null && (

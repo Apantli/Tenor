@@ -196,6 +196,7 @@ export default function Dropdown({
           menuClassName,
         )}
         ref={dropdownRef}
+        data-cy="dropdown"
       >
         {childrenArray.map((option, i) => {
           return (

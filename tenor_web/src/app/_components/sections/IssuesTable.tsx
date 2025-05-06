@@ -129,6 +129,7 @@ export default function IssuesTable() {
                 setSelectedIS(row.id);
                 setShowDetail(true);
               }}
+              data-cy="issue-title-table"
             >
               {row.name}
             </button>
@@ -384,6 +385,7 @@ export default function IssuesTable() {
         multiselect
         deletable
         tableKey="issues-table"
+        data-cy="issues-table"
       />
     );
   };

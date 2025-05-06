@@ -215,6 +215,7 @@ export const ProjectEpics = () => {
         className="h-[400px] min-w-[500px]"
         editMode={editEpic}
         size="small"
+        data-cy="popup-detail-epic"
         title={
           <>
             <h1 className="mb-4 text-3xl">
