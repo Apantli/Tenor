@@ -119,7 +119,7 @@ export default function ProjectCreator() {
         if (member.id === id) {
           return {
             ...member,
-            role: role,
+            roleId: role,
           };
         }
         return member;

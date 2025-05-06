@@ -1,5 +1,5 @@
 import { Firestore } from "firebase-admin/firestore";
-import { Project, Size, WithId } from "~/lib/types/firebaseSchemas";
+import { Project, Role, Size, WithId } from "~/lib/types/firebaseSchemas";
 import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
 import { getPriotityRef } from "./tags";
 import { firestore } from "firebase-admin";
@@ -90,6 +90,18 @@ export const getRoleRef = (
   roleId: string,
 ) => {
   return getRolesRef(firestore, projectId).doc(roleId);
+};
+
+export const getRoles = async (firestore: Firestore, projectId: string) => {
+  const rolesRef = getRolesRef(firestore, projectId);
+  const rolesSnapshot = await rolesRef.get();
+  const roles: WithId<Role>[] = rolesSnapshot.docs.map((roleData) => {
+    return {
+      id: roleData.id,
+      ...roleData.data(),
+    } as WithId<Role>;
+  });
+  return roles;
 };
 
 export const getGenericBacklogItemContext = async (

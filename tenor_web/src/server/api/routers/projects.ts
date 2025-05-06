@@ -16,7 +16,11 @@ import type {
   User,
   Requirement,
 } from "~/lib/types/firebaseSchemas";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles } from "~/utils/helpers/filecontent";
 import {
@@ -38,6 +42,30 @@ import {
   defaultStatusTags,
   emptySettings,
 } from "~/lib/defaultProjectValues";
+import {
+  getProject,
+  getProjectRef,
+  getProjectsRef,
+  getRoles,
+  getRolesRef,
+  getSettingsRef,
+} from "~/utils/helpers/shortcuts/general";
+import { generalPermissions, settingsPermissions } from "~/lib/permission";
+import { settings } from ".eslintrc.cjs";
+import { get } from "node_modules/cypress/types/lodash";
+import {
+  getGlobalUserRef,
+  getUserRef,
+  getUsersRef,
+} from "~/utils/helpers/shortcuts/users";
+import {
+  getPrioritiesRef,
+  getStatusTypesRef,
+} from "~/utils/helpers/shortcuts/tags";
+import {
+  getRequirement,
+  getRequirementTypesRef,
+} from "~/utils/helpers/shortcuts/requirements";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -147,7 +175,7 @@ export const projectsRouter = createTRPCRouter({
   createProject: protectedProcedure
     .input(ProjectSchemaCreator.extend({ settings: SettingsSchema }))
     .mutation(async ({ ctx, input }) => {
-      const newProjectRef = ctx.firestore.collection("projects").doc();
+      const newProjectRef = getProjectsRef(ctx.firestore).doc();
 
       // FIXME: remove duplicated users from input.users
       // FIXME: get ids from input.users, use ids to add users to project
@@ -212,7 +240,7 @@ export const projectsRouter = createTRPCRouter({
         await newProjectRef.set(projectData);
 
         const userRefs = input.users.map((user) =>
-          ctx.firestore.collection("users").doc(user.userId),
+          getGlobalUserRef(ctx.firestore, user.userId),
         );
 
         await Promise.all(
@@ -224,15 +252,12 @@ export const projectsRouter = createTRPCRouter({
           ),
         );
         // FIXME: Create proper default settings in the project
-        await newProjectRef
-          .collection("settings")
-          .doc("settings")
-          .set(settings);
+        await getSettingsRef(ctx.firestore, newProjectRef.id).set(settings);
 
-        const userTypesCollection = newProjectRef
-          .collection("settings")
-          .doc("settings")
-          .collection("userTypes");
+        const userTypesCollection = getRolesRef(
+          ctx.firestore,
+          newProjectRef.id,
+        );
 
         // go over defaultRoleList and create roles
         const userTypesMap: Record<string, string> = {};
@@ -260,7 +285,7 @@ export const projectsRouter = createTRPCRouter({
           }
         });
 
-        const usersCollection = newProjectRef.collection("users");
+        const usersCollection = getUsersRef(ctx.firestore, newProjectRef.id);
 
         await Promise.all(
           users.map((user) =>
@@ -271,19 +296,21 @@ export const projectsRouter = createTRPCRouter({
           ),
         );
 
-        const priorityTypesCollection = newProjectRef
-          .collection("settings")
-          .doc("settings")
-          .collection("priorityTypes");
+        // Create default priority types
+        const priorityTypesCollection = getPrioritiesRef(
+          ctx.firestore,
+          newProjectRef.id,
+        );
 
         await Promise.all(
           defaultPriorityTypes.map((type) => priorityTypesCollection.add(type)),
         );
 
-        const requirementTypesCollection = newProjectRef
-          .collection("settings")
-          .doc("settings")
-          .collection("requirementTypes");
+        // Create default status types
+        const requirementTypesCollection = getRequirementTypesRef(
+          ctx.firestore,
+          newProjectRef.id,
+        );
 
         await Promise.all(
           defaultRequerimentTypes.map((type) =>
@@ -291,10 +318,11 @@ export const projectsRouter = createTRPCRouter({
           ),
         );
 
-        const statusCollection = newProjectRef
-          .collection("settings")
-          .doc("settings")
-          .collection("statusTypes");
+        // Create default status types
+        const statusCollection = getStatusTypesRef(
+          ctx.firestore,
+          newProjectRef.id,
+        );
 
         await Promise.all(
           defaultStatusTags.map((statusTag) => statusCollection.add(statusTag)),
@@ -310,12 +338,8 @@ export const projectsRouter = createTRPCRouter({
   getGeneralConfig: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ input, ctx }) => {
-      const project = await ctx.firestore
-        .collection("projects")
-        .doc(input.projectId)
-        .get();
-
-      return ProjectSchema.parse(project.data());
+      const { projectId } = input;
+      return await getProject(ctx.firestore, projectId);
     }),
 
   modifyGeneralConfig: protectedProcedure
@@ -328,10 +352,7 @@ export const projectsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const projectRef = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId);
-
+      const projectRef = getProjectRef(ctx.firestore, input.projectId);
       const projectData = (await projectRef.get()).data() as Project;
 
       // Modify logo only if it has changed
@@ -362,56 +383,30 @@ export const projectsRouter = createTRPCRouter({
         description: input.description,
         logo: input.logo,
       });
-
-      return { success: true };
     }),
-  deleteProject: protectedProcedure
+  deleteProject: roleRequiredProcedure(settingsPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const projectRef = ctx.firestore
-        .collection("projects")
-        .doc(input.projectId);
-
+      const { projectId } = input;
+      const projectRef = getProjectRef(ctx.firestore, projectId);
       await projectRef.update({
         deleted: true,
       });
-      return { success: true };
     }),
   getProjectName: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      const project = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .get();
-      const projectData = ProjectSchema.parse(project.data());
-      return { projectName: projectData.name };
+      return (await getProject(ctx.firestore, projectId)).name;
     }),
-
-  getUserTypes: protectedProcedure
+  getUserTypes: roleRequiredProcedure(settingsPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      const statusTypes = await ctx.firestore
-        .collection("projects")
-        .doc(projectId)
-        .collection("settings")
-        .doc("settings")
-        .collection("userTypes")
-        .select("label")
-        .where("deleted", "==", false)
-        .get();
-
-      const statusTypesData = statusTypes.docs.map((doc) => ({
-        id: doc.id,
-        label: doc.data().label as string,
-      }));
-
-      return statusTypesData;
+      return await getRoles(ctx.firestore, projectId);
     }),
 });
