@@ -63,8 +63,8 @@ export default function ProjectSprints() {
       projectId: projectId as string,
     });
 
-  let defaultSprintInitialDate: Date | null = null;
-  let defaultSprintEndDate: Date | null = null;
+  let defaultSprintInitialDate: Date | undefined = undefined;
+  let defaultSprintEndDate: Date | undefined = undefined;
   // update values once loaded
   useEffect(() => {
     if (
@@ -213,14 +213,17 @@ export default function ProjectSprints() {
 
   // New sprint variables
   const [newSprintDescription, setNewSprintDescription] = useState("");
-  const [newSprintStartDate, setNewSprintStartDate] = useState<Date | null>(
-    null,
+  const [newSprintStartDate, setNewSprintStartDate] = useState<
+    Date | undefined
+  >(undefined);
+  const [newSprintEndDate, setNewSprintEndDate] = useState<Date | undefined>(
+    undefined,
   );
-  const [newSprintEndDate, setNewSprintEndDate] = useState<Date | null>(null);
 
   const { alert } = useAlert();
   const handleCreateSprint = async () => {
-    if (newSprintStartDate === null || newSprintEndDate === null) return;
+    if (newSprintStartDate === undefined || newSprintEndDate === undefined)
+      return;
 
     // Validate dates
     if (newSprintStartDate >= newSprintEndDate) {
@@ -256,14 +259,16 @@ export default function ProjectSprints() {
 
     const response = await createSprint({
       projectId: projectId as string,
-      number: -1,
-      description: newSprintDescription,
-      startDate: Timestamp.fromDate(newSprintStartDate),
-      endDate: Timestamp.fromDate(newSprintEndDate),
-      // updatedData.dueDate ? Timestamp.fromDate(updatedData.dueDate) : null,
-      userStoryIds: [],
-      genericItemIds: [],
-      issueIds: [],
+      sprintData: {
+        number: -1,
+        description: newSprintDescription,
+        startDate: Timestamp.fromDate(newSprintStartDate),
+        endDate: Timestamp.fromDate(newSprintEndDate),
+        // updatedData.dueDate ? Timestamp.fromDate(updatedData.dueDate) : null,
+        userStoryIds: [],
+        genericItemIds: [],
+        issueIds: [],
+      },
     });
     await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
       projectId: projectId as string,

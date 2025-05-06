@@ -65,8 +65,14 @@ export const getSprints = async (firestore: Firestore, projectId: string) => {
     const sprint: WithId<Sprint> = {
       id: sprintData.id,
       ...sprintSchema,
-      startDate: sprintSchema.startDate.toDate(),
-      endDate: sprintSchema.endDate.toDate(),
+      startDate:
+        sprintSchema.startDate && "seconds" in sprintSchema.startDate
+          ? new Date(sprintSchema.startDate.seconds * 1000)
+          : sprintSchema.startDate,
+      endDate:
+        sprintSchema.endDate && "seconds" in sprintSchema.endDate
+          ? new Date(sprintSchema.endDate.seconds * 1000)
+          : sprintSchema.endDate,
     };
     return sprint;
   });
@@ -99,8 +105,14 @@ export const getSprint = async (
   const sprint: WithId<Sprint> = {
     id: sprintDoc.id,
     ...sprintSchema,
-    startDate: sprintSchema.startDate.toDate(),
-    endDate: sprintSchema.endDate.toDate(),
+    startDate:
+      sprintSchema.startDate && "seconds" in sprintSchema.startDate
+        ? new Date(sprintSchema.startDate.seconds * 1000)
+        : sprintSchema.startDate,
+    endDate:
+      sprintSchema.endDate && "seconds" in sprintSchema.endDate
+        ? new Date(sprintSchema.endDate.seconds * 1000)
+        : sprintSchema.endDate,
   };
 
   return sprint;

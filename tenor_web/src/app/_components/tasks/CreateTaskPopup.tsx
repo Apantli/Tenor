@@ -4,10 +4,7 @@ import React, { useEffect, useState } from "react";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
-import {
-  type Option,
-  UserPicker,
-} from "~/app/_components/specific-pickers/UserPicker";
+import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
@@ -89,9 +86,9 @@ export function CreateTaskForm({
   }, [todoStatusTag]);
 
   const [selectedAssignee, setSelectedAssignee] = useState<
-    Option | undefined
+    WithId<UserPreview> | undefined
   >();
-  const people: Option[] = users ?? [];
+  const people: WithId<UserPreview>[] = users ?? [];
 
   const handleCreateTask = async () => {
     if (createForm.name.trim() === "") {
@@ -205,8 +202,8 @@ export function CreateTaskForm({
                 assigneeId: person?.id?.toString() ?? undefined,
                 assignee: {
                   id: person?.id?.toString() ?? "",
-                  displayName: person?.user?.displayName ?? "",
-                  photoURL: person?.user?.photoURL ?? "",
+                  displayName: person?.displayName ?? "",
+                  photoURL: person?.photoURL ?? "",
                   email: "",
                 },
               });

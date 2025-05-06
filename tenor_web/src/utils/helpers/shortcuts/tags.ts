@@ -74,7 +74,7 @@ export const getPriority = async (
   priorityId: string,
 ) => {
   const tag = await getPriotityRef(firestore, projectId, priorityId).get();
-  return { id: tag.id, ...TagSchema.parse(tag.data()) } as Tag;
+  return { id: tag.id, ...TagSchema.parse(tag.data()) } as WithId<Tag>;
 };
 
 /**

@@ -129,11 +129,12 @@ export const getIssueTable = async (
   const issues = await getIssues(firestore, projectId);
   const issueCols: IssueCol[] = await Promise.all(
     issues.map(async (issue): Promise<IssueCol> => {
-      const priority: Tag =
-        (await getPriority(firestore, projectId, issue.priorityId)) ?? noTag;
+      const priority: WithId<Tag> | undefined = issue.priorityId
+        ? await getPriority(firestore, projectId, issue.priorityId)
+        : undefined;
       const issueCol: IssueCol = {
         ...issue,
-        priority,
+        priority: priority ?? noTag,
         tags: [],
         assignUsers: [],
       };
@@ -159,8 +160,9 @@ export const getIssueDetail = async (
 ) => {
   const issue = await getIssue(firestore, projectId, issueId);
 
-  const priority: Tag | undefined =
-    (await getPriority(firestore, projectId, issue.priorityId)) ?? undefined;
+  const priority: Tag | undefined = issue.priorityId
+    ? await getPriority(firestore, projectId, issue.priorityId)
+    : undefined;
 
   const status: StatusTag | undefined = issue.statusId
     ? await getStatusType(firestore, projectId, issue.statusId)
