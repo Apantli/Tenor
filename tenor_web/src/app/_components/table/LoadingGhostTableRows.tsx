@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import useStutterLoading from "~/app/_hooks/useStutterLoading";
 import LoadingGhostTableRow from "./LoadingGhostTableRow";
-import type { DeleteOptions, TableColumns, TableOptions } from "./Table";
+import type { DeleteOptions, TableOptions } from "./Table";
 import { cn } from "~/lib/utils";
 
-interface Props<I, T> {
-  columns: TableColumns<T>;
+interface Props<I> {
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
@@ -16,21 +15,16 @@ interface Props<I, T> {
   rowClassName?: string;
 }
 
-export default function LoadingGhostTableRows<
-  I extends string | number,
-  // eslint-disable-next-line
-  T extends Record<string, any> & { id: I },
->({
+export default function LoadingGhostTableRows<I extends string | number>({
   timeEstimate,
   ghostRows,
-  columns,
   multiselect,
   extraOptions,
   deletable,
   columnWidths,
   finishedLoading,
   rowClassName,
-}: Props<I, T>) {
+}: Props<I>) {
   const [progress, setProgress] = useState(0);
   const [hide, setHide] = useState(false);
 
@@ -67,7 +61,6 @@ export default function LoadingGhostTableRows<
         <LoadingGhostTableRow
           key={value}
           columnWidths={columnWidths}
-          columns={columns}
           extraOptions={extraOptions}
           deletable={deletable}
           multiselect={multiselect}

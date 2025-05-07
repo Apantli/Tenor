@@ -2,14 +2,9 @@ import React, { useEffect, useRef } from "react";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import BubbleIcon from "@mui/icons-material/BubbleChart";
 import { cn } from "~/lib/utils";
-import {
-  type TableColumns,
-  type TableOptions,
-  type DeleteOptions,
-} from "./Table";
+import { type TableOptions, type DeleteOptions } from "./Table";
 
-interface LoadingGhostTableRowProps<I, T> {
-  columns: TableColumns<T>;
+interface LoadingGhostTableRowProps<I> {
   multiselect?: boolean;
   extraOptions?: TableOptions<I>[];
   deletable?: boolean | DeleteOptions;
@@ -18,19 +13,14 @@ interface LoadingGhostTableRowProps<I, T> {
   className?: string;
 }
 
-function LoadingGhostTableRow<
-  I extends string | number,
-  // eslint-disable-next-line
-  T extends Record<string, any> & { id: I },
->({
-  columns,
+function LoadingGhostTableRow<I extends string | number>({
   multiselect,
   columnWidths,
   progress,
   className,
   extraOptions,
   deletable,
-}: LoadingGhostTableRowProps<I, T>) {
+}: LoadingGhostTableRowProps<I>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
