@@ -112,7 +112,7 @@ export default function ItemTagDetailPopup({
   }
 
   interface ModifyTagParams extends TagParams {
-    tag: {
+    tagData: {
       name: string;
       color: string;
       deleted: boolean;
@@ -351,7 +351,7 @@ export default function ItemTagDetailPopup({
 
     const modifyParams: ModifyTagParams = {
       ...params,
-      tag: {
+      tagData: {
         name: form.name,
         color: form.color,
         deleted: false,

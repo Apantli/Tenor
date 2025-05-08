@@ -136,12 +136,11 @@ export const getUserStoryDetail = async (
   projectId: string,
   userStoryId: string,
 ) => {
-  console.log("LOADING USER STORY DETAIL", userStoryId);
   const userStory = await getUserStory(firestore, projectId, userStoryId);
 
-  const priority: Tag | undefined =
-    (await getPriority(firestore, projectId, userStory.priorityId)) ??
-    undefined;
+  const priority: Tag | undefined = userStory.priorityId
+    ? await getPriority(firestore, projectId, userStory.priorityId)
+    : undefined;
 
   const epic: WithId<Epic> | undefined = userStory.epicId
     ? await getEpic(firestore, projectId, userStory.epicId)
@@ -207,9 +206,9 @@ export const getUserStoryTable = async (
   const userStories = await getUserStories(firestore, projectId);
   const userStoryCols: UserStoryCol[] = await Promise.all(
     userStories.map(async (userStory): Promise<UserStoryCol> => {
-      const priority: Tag =
-        (await getPriority(firestore, projectId, userStory.priorityId)) ??
-        noTag;
+      const priority: Tag = userStory.priorityId
+        ? await getPriority(firestore, projectId, userStory.priorityId)
+        : noTag;
 
       const epicScrumId: number | undefined = userStory.epicId
         ? (await getEpic(firestore, projectId, userStory.epicId)).scrumId
