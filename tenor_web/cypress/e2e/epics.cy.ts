@@ -29,16 +29,14 @@ describe("Epics", () => {
         );
         cy.get('[data-cy="primary-button"]').contains("Create epic").click();
       });
-      cy.wait(1000);
-      cy.get('[data-cy="primary-button"]').contains("+ New Epic").click();
+      cy.get('[data-cy="primary-button"]', { timeout: 5000 }).contains("+ New Epic").click();
       cy.get('[data-cy="popup"]').within(() => {
         cy.get('[placeholder="Briefly describe your epic..."]').type(
           "User Register",
         );
         cy.get('[data-cy="primary-button"]').contains("Create epic").click();
       });
-      cy.wait(1000);
-      cy.get('.mb-3 > .relative > [data-cy="search-bar"]').type("Login");
+      cy.get('.mb-3 > .relative > [data-cy="search-bar"]', {timeout: 5000 }).type("Login");
       cy.contains(data.title).should("be.visible");
       cy.get('.mb-3 > .relative > [data-cy="search-bar"]').clear();
       cy.get('.mb-3 > .relative > [data-cy="search-bar"]').type("Register");

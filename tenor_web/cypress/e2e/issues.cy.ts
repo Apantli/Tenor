@@ -49,7 +49,7 @@ describe("Issues", () => {
           )
           cy.get('[data-cy="primary-button"]').contains("Create Issue").click();
         });
-        cy.wait(1000);
+        cy.contains("Create Issue", { timeout: 10000 }).should("not.exist");
         cy.get('[data-cy="popup-close-button"]').click();
         cy.get('[data-cy="search-bar"]').type(data.title);
         cy.contains(data.title).should("be.visible");
