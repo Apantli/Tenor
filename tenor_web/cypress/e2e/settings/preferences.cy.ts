@@ -1,7 +1,6 @@
 import type { TestProjectInfo } from "cypress/fixtures/types";
 
 describe("Test Scrum preferences", () => {
-  // Create a project to view it
   before(() => {
     cy.signIn("/");
     cy.createEmptyProject();
@@ -28,13 +27,12 @@ describe("Test Scrum preferences", () => {
   });
 
   it("TC068: Modify maximum points", () => {
-    cy.get("[data-cy='maximum-sprint-story-points'").then(($input) => {
-      cy.wait(1000);
+    cy.get("[data-cy='maximum-sprint-story-points'", { timeout: 5000 }).then(($input) => {
       const currentValue = parseInt($input.val() as string) || 1;
       const newValue = currentValue + 1 > 365 ? 5 : currentValue + 1;
       cy.wrap($input).clear().type(newValue.toString());
       cy.get('[data-cy="primary-button"]').contains("Save").click();
-      cy.contains("Scrum settings have been updated").should("be.visible");
+      cy.contains("Scrum settings have been updated", { timeout: 5000 }).should("be.visible");
     });
   });
 });
