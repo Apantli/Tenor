@@ -1,8 +1,8 @@
-import { Firestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
 import { SprintSchema } from "~/lib/types/zodFirebaseSchema";
 import { getProjectRef } from "./general";
 import { TRPCError } from "@trpc/server";
-import { Sprint, WithId } from "~/lib/types/firebaseSchemas";
+import type { Sprint, WithId } from "~/lib/types/firebaseSchemas";
 
 /**
  * @function getSprintsRef

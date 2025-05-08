@@ -1,13 +1,12 @@
-import { Firestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
 import { getProjectRef } from "./general";
-import { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
+import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import { TaskSchema } from "~/lib/types/zodFirebaseSchema";
-import { getPriority, getStatusType, getTodoStatusTag } from "./tags";
-import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
-import * as admin from "firebase-admin";
-import { TaskCol } from "~/lib/types/columnTypes";
+import { getStatusType, getTodoStatusTag } from "./tags";
+import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
+import type * as admin from "firebase-admin";
+import type { TaskCol } from "~/lib/types/columnTypes";
 import { getGlobalUserPreview } from "./users";
-import { stat } from "fs";
 
 /**
  * @function getTasksRef

@@ -1,5 +1,5 @@
 import React from "react";
-import BaseButton, { BaseButtonProps } from "./BaseButton";
+import BaseButton, { type BaseButtonProps } from "./BaseButton";
 import { cn } from "~/lib/utils";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 
@@ -18,7 +18,7 @@ export default function AiButton({
   return (
     <BaseButton
       className={cn(
-        "hover:bg-app-hover-secondary flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-app-secondary p-2 px-4 text-white transition disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-app-secondary",
+        "flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-app-secondary p-2 px-4 text-white transition hover:bg-app-hover-secondary disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-app-secondary",
         className,
         {
           "cursor-not-allowed opacity-60 hover:bg-app-secondary":

@@ -1,4 +1,4 @@
-import { UserStoryCol } from "~/lib/types/columnTypes";
+import type { UserStoryCol } from "~/lib/types/columnTypes";
 import { getEpic, getEpicContext, getEpicsContext } from "./epics";
 import { noTag } from "~/lib/defaultProjectValues";
 import {
@@ -9,24 +9,22 @@ import {
   getStatusType,
   getBacklogTagsContext,
 } from "./tags";
-import {
+import type {
   Epic,
   Sprint,
   StatusTag,
   Tag,
-  Task,
   UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import { getGenericBacklogItemContext, getProjectRef } from "./general";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
-import { UserStoryDetail } from "~/lib/types/detailSchemas";
-import { Firestore } from "firebase-admin/firestore";
-import { getTask, getTaskProgress } from "./tasks";
+import type { UserStoryDetail } from "~/lib/types/detailSchemas";
+import type { Firestore } from "firebase-admin/firestore";
+import { getTaskProgress } from "./tasks";
 import { getSprint } from "./sprints";
-import { getRequirementContext, getRequirementsContext } from "./requirements";
-import { getProjectContext } from "./ai";
+import { getRequirementsContext } from "./requirements";
 
 /**
  * @function getUserStoriesRef

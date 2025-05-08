@@ -1,5 +1,5 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { getGlobalUserRef, getUserRef } from "~/utils/helpers/shortcuts/users";
+import { getGlobalUserRef } from "~/utils/helpers/shortcuts/users";
 
 interface UserWithFiles {
   files?: {

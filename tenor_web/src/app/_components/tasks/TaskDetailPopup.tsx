@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
-import Popup from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
@@ -11,23 +10,19 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import {
-  useFormatTaskScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
+import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SidebarPopup } from "../Popup";
 import { Timestamp } from "firebase/firestore";
-import { update } from "node_modules/cypress/types/lodash";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { UserPicker } from "../specific-pickers/UserPicker";
 import { DatePicker } from "../DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
-import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
+import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import PrimaryButton from "../buttons/PrimaryButton";
 import AiIcon from "@mui/icons-material/AutoAwesome";
-import { WithId } from "~/lib/types/firebaseSchemas";
+import type { WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   taskId: string;

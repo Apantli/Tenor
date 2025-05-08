@@ -28,10 +28,8 @@ import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import { acceptableTagColors } from "~/utils/helpers/colorUtils";
-import Dropdown from "~/app/_components/Dropdown";
-import { User } from "@supabase/supabase-js";
-import { UserCol } from "~/lib/types/columnTypes";
-import { UserPreview } from "~/lib/types/detailSchemas";
+import type { UserCol } from "~/lib/types/columnTypes";
+import type { UserPreview } from "~/lib/types/detailSchemas";
 
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {

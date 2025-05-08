@@ -7,12 +7,7 @@ import type {
   Tag,
   WithId,
 } from "./firebaseSchemas";
-import type {
-  EpicSchema,
-  ExistingUserStorySchema,
-  SprintSchema,
-  UserStorySchema,
-} from "./zodFirebaseSchema";
+import type { EpicSchema, ExistingUserStorySchema } from "./zodFirebaseSchema";
 import type z from "zod";
 
 export type ExistingEpic = WithId<z.infer<typeof EpicSchema>>;

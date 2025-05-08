@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { cn } from "~/lib/utils";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";

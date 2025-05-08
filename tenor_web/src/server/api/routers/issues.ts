@@ -10,13 +10,7 @@
 
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import {
-  IssueSchema,
-  SprintSchema,
-  TaskSchema,
-  UserStorySchema,
-} from "~/lib/types/zodFirebaseSchema";
-import type { IssueDetail } from "~/lib/types/detailSchemas";
+import { IssueSchema } from "~/lib/types/zodFirebaseSchema";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -31,8 +25,6 @@ import {
   getIssuesRef,
   getIssueTable,
 } from "~/utils/helpers/shortcuts/issues";
-import { getBacklogTag, getStatusType } from "~/utils/helpers/shortcuts/tags";
-import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
 
 export const issuesRouter = createTRPCRouter({
   /**
@@ -84,7 +76,7 @@ export const issuesRouter = createTRPCRouter({
           newIssue,
         );
         return { issueId: issue.id };
-      } catch (err) {
+      } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),

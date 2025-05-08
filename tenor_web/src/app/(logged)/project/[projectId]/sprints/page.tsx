@@ -257,7 +257,7 @@ export default function ProjectSprints() {
       }
     }
 
-    const response = await createSprint({
+    await createSprint({
       projectId: projectId as string,
       sprintData: {
         number: -1,

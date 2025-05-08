@@ -17,7 +17,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import z from "zod";
 import { fetchHTML } from "~/utils/webcontent";
-import { fetchMultipleFiles, fetchText } from "~/utils/helpers/filecontent";
+import { fetchMultipleFiles } from "~/utils/helpers/filecontent";
 import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import {
@@ -34,7 +34,7 @@ import {
   settingsPermissions,
   tagPermissions,
 } from "~/lib/permission";
-import {
+import type {
   Permission,
   StatusTag,
   Tag,
@@ -210,7 +210,6 @@ const settingsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, statusId } = input;
-      const statusTypesRef = getStatusTypesRef(ctx.firestore, projectId);
 
       await getStatusTypeRef(ctx.firestore, projectId, statusId).update({
         deleted: true,
@@ -363,8 +362,7 @@ const settingsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, label } = input;
       // add the role document to the roles collection
-      const projectSettingsRef = getSettingsRef(ctx.firestore, projectId);
-      const roleDoc = await getRolesRef(ctx.firestore, projectId).add({
+      await getRolesRef(ctx.firestore, projectId).add({
         ...emptyRole,
         id: undefined,
         label,

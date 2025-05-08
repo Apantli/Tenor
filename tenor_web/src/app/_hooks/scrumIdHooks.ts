@@ -1,6 +1,4 @@
 "use client";
-import { useParams } from "next/navigation";
-import { api } from "~/trpc/react";
 
 const calculatePaddingNeeded = (maxNumber: number) => {
   // Minimum padding is 2 digits
@@ -8,7 +6,6 @@ const calculatePaddingNeeded = (maxNumber: number) => {
 };
 
 export const useFormatUserStoryScrumId = () => {
-  const { projectId } = useParams();
   // FIXME: Id is not the counts, remove the 1
   return (scrumId: number) =>
     `US${String(scrumId).padStart(calculatePaddingNeeded(1), "0")}`;
@@ -30,15 +27,12 @@ export const useFormatSprintNumber = () => {
 };
 
 export const useFormatTaskScrumId = () => {
-  const { projectId } = useParams();
-
   // FIXME: Id is not the counts, remove the 1
   return (scrumId: number) =>
     `TS${String(scrumId).padStart(calculatePaddingNeeded(1), "0")}`;
 };
 
 export const useFormatIssueScrumId = () => {
-  const { projectId } = useParams();
   // FIXME: Id is not the counts, remove the 1
   return (issueId: number) =>
     `IS${String(issueId).padStart(calculatePaddingNeeded(1), "0")}`;

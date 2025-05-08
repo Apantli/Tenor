@@ -6,18 +6,14 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
-import type { Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
-import type {
-  ExistingUserStory,
-  UserStoryPreview,
-} from "~/lib/types/detailSchemas";
+import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
-import { User } from "firebase/auth";
 
 interface Props {
   showPopup: boolean;

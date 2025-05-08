@@ -1,11 +1,7 @@
 "use client";
 
-import React, { MutableRefObject, useEffect, useRef, useState } from "react";
-import type {
-  TaskDetail,
-  TaskPreview,
-  UserStoryDetailWithTasks,
-} from "~/lib/types/detailSchemas";
+import React, { useEffect, useState } from "react";
+import type { TaskDetail, TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
 import PrimaryButton from "../buttons/PrimaryButton";
@@ -14,17 +10,10 @@ import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
-import type {
-  WithId,
-  Tag,
-  BacklogItem,
-  StatusTag,
-} from "~/lib/types/firebaseSchemas";
+import type { BacklogItem, StatusTag } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import type { tasksRouter } from "~/server/api/routers/tasks";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import type { inferRouterOutputs } from "@trpc/server";
 import LoadingSpinner from "../LoadingSpinner";
 import {
   useInvalidateQueriesAllTasks,
@@ -36,7 +25,7 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "../Popup";
 import TaskDetailPopup from "../tasks/TaskDetailPopup";
-import { TaskCol } from "~/lib/types/columnTypes";
+import type { TaskCol } from "~/lib/types/columnTypes";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];
@@ -97,19 +86,16 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     projectId: projectId as string,
   });
 
-  const {
-    data: fetchedTasksTable,
-    refetch: refetchTasks,
-    isLoading,
-  } = api.tasks.getTaskTable.useQuery(
-    {
-      projectId: projectId as string,
-      itemId,
-    },
-    {
-      enabled: tasksData === undefined,
-    },
-  );
+  const { data: fetchedTasksTable, isLoading } =
+    api.tasks.getTaskTable.useQuery(
+      {
+        projectId: projectId as string,
+        itemId,
+      },
+      {
+        enabled: tasksData === undefined,
+      },
+    );
   const { mutateAsync: changeStatus } =
     api.tasks.changeTaskStatus.useMutation();
   const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
@@ -439,18 +425,17 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         itemId: itemId,
       });
 
-      const generatedTasksPreviews = accepted?.map((task) => ({
+      const generatedTasksPreviews: TaskCol[] = accepted?.map((task) => ({
         id: task.id,
         scrumId: undefined,
-        title: task.name,
+        name: task.name,
         status: task.status,
         assignee: task.assignee,
       }));
 
       utils.tasks.getTaskTable.setData(
         { projectId: projectId as string, itemId: itemId },
-        // tasksTableData?.concat(generatedTasksPreviews ?? []),
-        tasksTableData?.concat([]),
+        tasksTableData?.concat(generatedTasksPreviews ?? []),
       );
 
       // Add the tasks to the database

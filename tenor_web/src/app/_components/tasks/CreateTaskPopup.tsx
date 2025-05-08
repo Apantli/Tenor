@@ -10,12 +10,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import {
-  StatusTag,
-  WithId,
-  type Size,
-  type Tag,
-} from "~/lib/types/firebaseSchemas";
+import type { StatusTag, WithId, Size } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";

@@ -8,22 +8,14 @@
  * @category API
  */
 
-import { FieldPath, FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 import {
   createTRPCRouter,
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import {
-  BacklogItemSchema,
-  IssueSchema,
-  SprintInfoSchema,
-  SprintSchema,
-  TagSchema,
-  UserStorySchema,
-} from "~/lib/types/zodFirebaseSchema";
+import { BacklogItemSchema, SprintSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { timestampToDate } from "~/utils/helpers/parsers";
 import {
   getSprint,
   getSprintNewId,
@@ -34,7 +26,6 @@ import {
 import { sprintPermissions } from "~/lib/permission";
 import { getUserStories } from "~/utils/helpers/shortcuts/userStories";
 import { getIssues } from "~/utils/helpers/shortcuts/issues";
-import { get } from "node_modules/cypress/types/lodash";
 import { getBacklogTags } from "~/utils/helpers/shortcuts/tags";
 import { getProjectRef } from "~/utils/helpers/shortcuts/general";
 

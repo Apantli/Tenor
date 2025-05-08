@@ -1,9 +1,9 @@
-import { Firestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
 import { getProjectRef, getSettingsRef } from "./general";
-import { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
-import { RequirementCol } from "~/lib/types/columnTypes";
+import type { RequirementCol } from "~/lib/types/columnTypes";
 import { noTag } from "~/lib/defaultProjectValues";
 import { getPriority, getPriorityContext } from "./tags";
 import { getProjectContext } from "./ai";

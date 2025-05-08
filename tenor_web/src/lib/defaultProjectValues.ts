@@ -1,7 +1,6 @@
-import { z } from "zod";
-import { RoleDetail } from "./types/detailSchemas";
-import { Role, Settings, Tag } from "./types/firebaseSchemas";
-import { Permission, RoleSchema } from "./types/zodFirebaseSchema";
+import type { z } from "zod";
+import type { Role, Settings, Tag } from "./types/firebaseSchemas";
+import type { Permission, RoleSchema } from "./types/zodFirebaseSchema";
 
 export const emptySettings: Settings = {
   sprintDuration: 0,
@@ -160,7 +159,7 @@ export const defaultRequerimentTypes = [
     color: "#CD4EC0",
     deleted: false,
   },
-]
+];
 
 export const defaultPriorityTypes = [
   {
@@ -177,8 +176,8 @@ export const defaultPriorityTypes = [
     name: "P2",
     color: "#2c7817",
     deleted: false,
-  }
-]
+  },
+];
 
 export const defaultMaximumSprintStoryPoints = 300;
 export const defaultSprintDuration = 7;

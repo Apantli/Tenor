@@ -14,10 +14,10 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
 import { toBase64 } from "~/utils/helpers/base64";
-import { UserCol } from "~/lib/types/columnTypes";
+import type { UserCol } from "~/lib/types/columnTypes";
 import MemberTable from "~/app/_components/inputs/MemberTable";
-import { UserPreview } from "~/lib/types/detailSchemas";
-import { WithId } from "~/lib/types/firebaseSchemas";
+import type { UserPreview } from "~/lib/types/detailSchemas";
+import type { WithId } from "~/lib/types/firebaseSchemas";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();

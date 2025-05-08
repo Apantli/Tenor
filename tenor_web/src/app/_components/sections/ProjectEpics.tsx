@@ -12,7 +12,6 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
 import Markdown from "react-markdown";
 import SecondaryButton from "../buttons/SecondaryButton";
-import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import SearchBar from "../SearchBar";
 import { useParams } from "next/navigation";
 

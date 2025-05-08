@@ -9,11 +9,10 @@ import PrimaryButton from "../buttons/PrimaryButton";
 import InputTextField from "../inputs/InputTextField";
 import Table, { type TableColumns } from "../table/Table";
 import PillPickerComponent from "../PillPickerComponent";
-import { Checkbox } from "@mui/material";
 import {
   permissionItems,
   permissionLabels,
-  WithId,
+  type WithId,
 } from "~/lib/types/firebaseSchemas";
 import type { RoleDetail } from "~/lib/types/detailSchemas";
 import type { Permission } from "~/lib/types/zodFirebaseSchema";

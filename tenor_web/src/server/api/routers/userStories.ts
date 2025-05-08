@@ -10,12 +10,7 @@
 import { z } from "zod";
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import {
-  EpicSchema,
-  RequirementSchema,
-  TagSchema,
-  UserStorySchema,
-} from "~/lib/types/zodFirebaseSchema";
+import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import type {
   UserStoryDetail,
   UserStoryPreview,
@@ -23,7 +18,7 @@ import type {
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { FieldValue } from "firebase-admin/firestore";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
-import { Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
+import type { Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
 import {
   getUserStories,
   getUserStoriesRef,
@@ -35,16 +30,8 @@ import {
   getUserStoryTable,
 } from "~/utils/helpers/shortcuts/userStories";
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
-import {
-  getBacklogTag,
-  getPriority,
-  getStatusType,
-} from "~/utils/helpers/shortcuts/tags";
+import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
-import { getProjectContext } from "~/utils/helpers/shortcuts/ai";
-import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
-import { getRequirementContext } from "~/utils/helpers/shortcuts/requirements";
-import { UserCol, UserStoryCol } from "~/lib/types/columnTypes";
 
 export const userStoriesRouter = createTRPCRouter({
   /**

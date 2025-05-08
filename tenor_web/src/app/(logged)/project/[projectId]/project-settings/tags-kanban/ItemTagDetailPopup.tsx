@@ -105,8 +105,6 @@ export default function ItemTagDetailPopup({
     color: generateRandomTagColor(),
   });
 
-  const [colorChanged, setColorChanged] = useState(false);
-
   // TRPC
   interface TagParams {
     projectId: string;
@@ -262,7 +260,6 @@ export default function ItemTagDetailPopup({
   // HANDLES
   const handleDismiss = () => {
     setShowPopup(false);
-    setColorChanged(false);
   };
 
   useEffect(() => {
@@ -271,7 +268,6 @@ export default function ItemTagDetailPopup({
       name: tagDetail.name,
       color: tagDetail.color,
     });
-    setColorChanged(false);
   }, [tagDetail]);
 
   useEffect(() => {
@@ -402,12 +398,10 @@ export default function ItemTagDetailPopup({
 
     await invalidateQueriesAllTags(projectId as string);
     await refetch();
-    setColorChanged(false);
   };
 
   const handleColorChange = async (color: string) => {
     setForm({ ...form, color });
-    setColorChanged(true);
 
     if (!editMode && tagDetail && isValidTagDetail(tagDetail)) {
       const updatedData: TagDetail = {

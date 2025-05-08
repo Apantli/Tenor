@@ -4,7 +4,6 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown, { DropdownButton } from "./Dropdown";
-import Link from "next/link";
 import { type PropsWithChildren } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import useShiftKey from "../_hooks/useShiftKey";
@@ -29,7 +28,7 @@ export default function Navbar({ children }: PropsWithChildren) {
 
   return (
     <nav className="flex h-16 items-center justify-between bg-app-primary px-8">
-      <div className="flex items-center gap-8 text-white flex-grow">
+      <div className="flex flex-grow items-center gap-8 text-white">
         <InterceptedLink className="flex items-center" href="/">
           <img
             src={"/white_logo.png"}

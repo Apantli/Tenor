@@ -146,7 +146,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     });
   }
 
-  const onResizeMouseUp = (e: MouseEvent) => {
+  const onResizeMouseUp = () => {
     if (
       startXRef.current === undefined ||
       resizingIndexRef.current === undefined

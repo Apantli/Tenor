@@ -17,30 +17,22 @@ import {
   getRequirement,
   getRequirementContext,
   getRequirementFocus,
-  getRequirementFocusContext,
   getRequirementFocuses,
   getRequirementFocusesRef,
   getRequirementFocusRef,
   getRequirementNewId,
   getRequirementRef,
-  getRequirementsContext,
   getRequirementsRef,
   getRequirementTable,
   getRequirementType,
-  getRequirementTypeContext,
   getRequirementTypeRef,
   getRequirementTypes,
   getRequirementTypesRef,
 } from "~/utils/helpers/shortcuts/requirements";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
-import { getSettingsRef } from "~/utils/helpers/shortcuts/general";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
-import {
-  getPriorities,
-  getPriority,
-  getPriorityContext,
-} from "~/utils/helpers/shortcuts/tags";
-import { RequirementCol } from "~/lib/types/columnTypes";
+import { getPriority } from "~/utils/helpers/shortcuts/tags";
+import type { RequirementCol } from "~/lib/types/columnTypes";
 
 export const requirementsRouter = createTRPCRouter({
   getRequirementTypes: roleRequiredProcedure(tagPermissions, "read")

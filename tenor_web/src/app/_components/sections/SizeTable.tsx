@@ -1,5 +1,5 @@
-import Table, { TableColumns } from "../table/Table";
-import { Size } from "~/lib/types/firebaseSchemas";
+import Table, { type TableColumns } from "../table/Table";
+import type { Size } from "~/lib/types/firebaseSchemas";
 import InputTextField from "../inputs/InputTextField";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useState } from "react";

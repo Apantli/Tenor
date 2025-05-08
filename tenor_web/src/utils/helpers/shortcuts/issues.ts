@@ -1,17 +1,16 @@
-import { Firestore } from "firebase-admin/firestore";
+import type { Firestore } from "firebase-admin/firestore";
 import { getGenericBacklogItemContext, getProjectRef } from "./general";
-import {
+import type {
   Issue,
   Sprint,
   StatusTag,
   Tag,
-  Task,
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import { IssueSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
-import { IssueCol } from "~/lib/types/columnTypes";
-import { IssueDetail } from "~/lib/types/detailSchemas";
+import type { IssueCol } from "~/lib/types/columnTypes";
+import type { IssueDetail } from "~/lib/types/detailSchemas";
 import { noTag } from "~/lib/defaultProjectValues";
 import {
   getBacklogTag,
@@ -19,7 +18,6 @@ import {
   getPriority,
   getStatusType,
 } from "./tags";
-import { getTask } from "./tasks";
 import { getUserStory } from "./userStories";
 import { getSprint } from "./sprints";
 

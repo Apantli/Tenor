@@ -1,28 +1,15 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import SearchBar from "~/app/_components/SearchBar";
+import { useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
-import UserStoryCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
-import SprintCardColumn from "../sprints/SprintCardColumn";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { Timestamp } from "firebase/firestore";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
-import { DatePicker } from "~/app/_components/DatePicker";
-import {
-  useFormatTaskScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
-import type { sprintsRouter } from "~/server/api/routers/sprints";
-import type { inferRouterOutputs } from "@trpc/server";
-import { useAlert } from "~/app/_hooks/useAlert";
+import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";

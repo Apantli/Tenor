@@ -1,8 +1,7 @@
-import { Firestore } from "firebase-admin/firestore";
-import { Project, Role, Size, WithId } from "~/lib/types/firebaseSchemas";
+import type { Firestore } from "firebase-admin/firestore";
+import type { Role, Size, WithId } from "~/lib/types/firebaseSchemas";
 import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
-import { getPriority, getPriotityRef } from "./tags";
-import { firestore } from "firebase-admin";
+import { getPriority } from "./tags";
 import { getProjectContext } from "./ai";
 
 /**

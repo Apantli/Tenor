@@ -8,7 +8,7 @@ import {
   useFormatIssueScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
-import { KanbanCard } from "~/lib/types/kanbanTypes";
+import type { KanbanCard } from "~/lib/types/kanbanTypes";
 
 interface Props {
   backlogItems: inferRouterOutputs<

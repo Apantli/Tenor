@@ -1,13 +1,12 @@
 "use client";
 
 import Table, { type TableColumns } from "~/app/_components/table/Table";
-import type { Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { useRef, useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
-import type { userStoriesRouter } from "~/server/api/routers/userStories";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../Popup";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
@@ -32,7 +31,7 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
-import { UserStoryCol } from "~/lib/types/columnTypes";
+import type { UserStoryCol } from "~/lib/types/columnTypes";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 

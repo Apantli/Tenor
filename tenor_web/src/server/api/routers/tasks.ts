@@ -9,56 +9,29 @@
  */
 
 import { z } from "zod";
-import type { Size, StatusTag } from "~/lib/types/firebaseSchemas";
+import type { StatusTag } from "~/lib/types/firebaseSchemas";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import {
-  BacklogItemSchema,
-  EpicSchema,
-  IssueSchema,
-  TagSchema,
-  TaskSchema,
-  UserStorySchema,
-} from "~/lib/types/zodFirebaseSchema";
-import type { TaskDetail } from "~/lib/types/detailSchemas";
+import { BacklogItemSchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
-import { TaskCol } from "~/lib/types/columnTypes";
-import { timestampToDate } from "~/utils/helpers/parsers";
 import {
-  getTask,
   getTaskContextFromItem,
   getTaskDetail,
   getTaskNewId,
   getTaskRef,
-  getTasksFromItem,
   getTasksRef,
   getTaskTable,
 } from "~/utils/helpers/shortcuts/tasks";
 import {
   generateTaskContext,
   getGenericBacklogItemContext,
-  getSettingsRef,
 } from "~/utils/helpers/shortcuts/general";
 import {
-  getBacklogTagRef,
   getBacklogTagsContext,
-  getPriority,
-  getPriotityRef,
-  getStatusType,
   getTodoStatusTag,
 } from "~/utils/helpers/shortcuts/tags";
-import { get } from "node_modules/cypress/types/lodash";
-import { getProjectContext } from "~/utils/helpers/shortcuts/ai";
-import { getEpicContext, getEpicRef } from "~/utils/helpers/shortcuts/epics";
-import {
-  getUserStory,
-  getUserStoryContextSolo,
-  getUserStoryRef,
-} from "~/utils/helpers/shortcuts/userStories";
-import {
-  getIssue,
-  getIssueContextSolo,
-} from "~/utils/helpers/shortcuts/issues";
+import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
+import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
 
 export const tasksRouter = createTRPCRouter({
   /**

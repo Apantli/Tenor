@@ -1,6 +1,5 @@
 import type { inferRouterOutputs } from "@trpc/server";
 import React from "react";
-import UserStoryCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import { cn } from "~/lib/utils";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CheckAll from "@mui/icons-material/DoneAll";

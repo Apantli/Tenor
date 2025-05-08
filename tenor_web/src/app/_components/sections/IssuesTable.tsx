@@ -1,19 +1,16 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { usePopupVisibilityState } from "../Popup";
-import { ChangeEventHandler, useMemo, useState } from "react";
+import { type ChangeEventHandler, useState } from "react";
 import Table, { type TableColumns } from "../table/Table";
-import type { Size, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../specific-pickers/PriorityPicker";
 import { SizePillComponent } from "../specific-pickers/SizePillComponent";
 import UserStoryPicker from "../specific-pickers/UserStoryPicker";
-import type {
-  ExistingUserStory,
-  UserStoryPreview,
-} from "~/lib/types/detailSchemas";
+import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import PrimaryButton from "../buttons/PrimaryButton";
 import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
 import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
@@ -25,7 +22,7 @@ import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
-import { IssueCol } from "~/lib/types/columnTypes";
+import type { IssueCol } from "~/lib/types/columnTypes";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
