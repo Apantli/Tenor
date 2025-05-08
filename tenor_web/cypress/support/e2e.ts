@@ -17,7 +17,7 @@
 import "./commands";
 
 // Prevent failing the test due to uncaught exceptions
-Cypress.on("uncaught:exception", (err, runnable) => {
+Cypress.on("uncaught:exception", (err) => {
   console.log("Uncaught exception:", err);
   return false;
 });

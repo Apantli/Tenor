@@ -1,4 +1,4 @@
-import type { TestProjectInfo, TestEpic } from "cypress/fixtures/types";
+import type { TestEpic } from "cypress/fixtures/types";
 
 let projectPath = "";
 

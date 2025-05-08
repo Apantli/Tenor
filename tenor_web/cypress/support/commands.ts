@@ -48,7 +48,7 @@ import {
 let auth: Auth;
 function getAuth() {
   const app = initializeApp({
-    apiKey: Cypress.env("apiKey"),
+    apiKey: Cypress.env("apiKey") as string,
   });
   auth =
     auth ||
@@ -67,7 +67,7 @@ export function signInProgrammatically({
   email: string;
   password: string;
 }) {
-  return cy.window().then(async (win) => {
+  return cy.window().then(async () => {
     // Import Firebase modules in browser context
     const {
       getAuth,

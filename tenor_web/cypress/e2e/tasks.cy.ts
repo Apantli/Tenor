@@ -1,5 +1,4 @@
 import type {
-  TestProjectInfo,
   TestUserStory,
   TestTask,
 } from "cypress/fixtures/types";
