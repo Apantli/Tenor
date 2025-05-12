@@ -17,7 +17,7 @@ export default defineConfig({
     baseUrl: "http://localhost:3000",
     defaultCommandTimeout: 10000, // Increase default timeout
 
-    setupNodeEvents(on, config) {
+    setupNodeEvents(on) {
       if (!admin.apps.length) {
         admin.initializeApp({
           projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
@@ -25,7 +25,7 @@ export default defineConfig({
       }
 
       on("task", {
-        async createTestUser({ email, password, displayName }) {
+        async createTestUser({ email, password, displayName } : { email: string; password: string; displayName?: string }) {
           try {
             const existingUser = await admin
               .auth()
@@ -51,5 +51,6 @@ export default defineConfig({
         },
       });
     },
+    testIsolation: false,
   },
 });

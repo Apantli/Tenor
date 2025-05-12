@@ -118,6 +118,19 @@ Cypress.Commands.add(
   },
 );
 
+Cypress.Commands.add("navigateToSharedProject", (subPath = ""): Cypress.Chainable<null> => {
+  return cy.window().then((win) => {
+    const projectPath = win.localStorage.getItem('sharedProjectPath');
+    if (!projectPath) {
+      throw new Error("No shared project path found in localStorage. Make sure you ran the setup test first.");
+    }
+    const fullPath = `${projectPath}${subPath}`;
+    cy.visit(fullPath);
+  }).then(() => {
+    return cy.wrap(null);
+  });
+});
+
 Cypress.Commands.add("createEmptyProject", () => {
   cy.visit("/");
   cy.get(".mr-10 > .justify-between > .flex").click();

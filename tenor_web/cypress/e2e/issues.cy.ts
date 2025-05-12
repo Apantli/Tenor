@@ -1,17 +1,9 @@
-import type { TestProjectInfo, TestIssue } from "cypress/fixtures/types";
+import type { TestIssue } from "cypress/fixtures/types";
 
 describe("Issues", () => {
-  before(() => {
-    cy.signIn("/");
-    cy.createEmptyProject();
-  });
-
   // Return to dashboard and select the project
   beforeEach(() => {
-    cy.signIn("/");
-    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
-      cy.get('[data-cy="project-list"]').find("li").contains(data.name).click();
-    });
+    cy.navigateToSharedProject();
     cy.get('[data-cy="issues"]').click();
   });
 
