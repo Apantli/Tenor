@@ -5,7 +5,6 @@ import React from "react";
 import { api } from "~/trpc/react";
 import PillComponent from "../PillComponent";
 import type { Tag } from "~/lib/types/firebaseSchemas";
-import { cn } from "~/lib/utils";
 
 interface Props {
   type?: Tag;
@@ -19,12 +18,12 @@ export default function RequirementTypePicker({
   disabled,
 }: Props) {
   const { projectId } = useParams();
-  const { data: typeTags } = api.requirements.getRequirementTypeTags.useQuery({
+  const { data: typeTags } = api.requirements.getRequirementTypes.useQuery({
     projectId: projectId as string,
   });
 
   const { mutateAsync: createRequirementTypeTag } =
-    api.settings.createRequirementType.useMutation();
+    api.requirements.createOrModifyRequirementType.useMutation();
 
   return (
     <PillComponent
@@ -36,7 +35,7 @@ export default function RequirementTypePicker({
       addTag={async (tag) => {
         const newTag = await createRequirementTypeTag({
           projectId: projectId as string,
-          tag: tag,
+          tagData: tag,
         });
         typeTags?.push(newTag);
         return newTag;

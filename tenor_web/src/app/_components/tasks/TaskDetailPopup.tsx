@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
-import Popup from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
@@ -11,23 +10,19 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import {
-  useFormatTaskScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
+import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SidebarPopup } from "../Popup";
 import { Timestamp } from "firebase/firestore";
-import { update } from "node_modules/cypress/types/lodash";
 import StatusPicker from "../specific-pickers/StatusPicker";
-import { EditableBox } from "../EditableBox/EditableBox";
-import { Option } from "../EditableBox/EditableBox";
+import { UserPicker } from "../specific-pickers/UserPicker";
 import { DatePicker } from "../DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
-import { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
+import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import PrimaryButton from "../buttons/PrimaryButton";
 import AiIcon from "@mui/icons-material/AutoAwesome";
+import type { WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   taskId: string;
@@ -75,10 +70,10 @@ export default function TaskDetailPopup({
   const { mutateAsync: updateTask } = api.tasks.modifyTask.useMutation();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
-  const { data: users } = api.users.getUserListEditBox.useQuery({
+  const { data: users } = api.users.getUsers.useQuery({
     projectId: projectId as string,
   });
-  const people: Option[] = users ?? [];
+  const people: WithId<UserPreview>[] = users ?? [];
 
   const utils = api.useUtils();
 
@@ -128,7 +123,7 @@ export default function TaskDetailPopup({
     };
 
     if (taskData !== undefined || isGhost) {
-      updateTaskData?.({ ...updatedTask, id: taskId });
+      updateTaskData?.({ ...updatedTask, id: taskId, scrumId: -1 });
 
       return;
     }
@@ -160,10 +155,10 @@ export default function TaskDetailPopup({
         description: updatedData.description,
         statusId: updatedData.status?.id ?? "",
         size: updatedData.size,
-        assigneeId: updatedData.assignee?.uid ?? "",
+        assigneeId: updatedData.assignee?.id ?? "",
         dueDate: updatedData.dueDate
           ? Timestamp.fromDate(updatedData.dueDate)
-          : null,
+          : undefined,
       },
     });
 
@@ -308,22 +303,14 @@ export default function TaskDetailPopup({
             <label className="mb-1 block text-sm font-medium">
               Assigned to
             </label>
-            <EditableBox
+            <UserPicker
               options={people}
-              selectedOption={
-                taskDetail.assignee
-                  ? {
-                      id: taskDetail.assignee?.uid ?? "",
-                      name: taskDetail.assignee?.displayName ?? "",
-                      image: taskDetail.assignee?.photoURL,
-                      user: taskDetail.assignee,
-                    }
-                  : undefined
-              }
+              selectedOption={taskDetail.assignee}
               onChange={async (assignee) => {
+                console.log(assignee);
                 await handleSave({
                   ...taskDetail,
-                  assignee: assignee?.user as UserPreview | undefined,
+                  assignee: assignee,
                 });
               }}
               placeholder="Select a person"

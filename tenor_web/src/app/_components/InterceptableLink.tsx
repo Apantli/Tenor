@@ -1,10 +1,10 @@
 "use client";
 
 import Link, { type LinkProps } from "next/link";
-import {
+import type {
   AnchorHTMLAttributes,
   MouseEvent,
-  type PropsWithChildren,
+  PropsWithChildren,
 } from "react";
 import { useNavigationGuardContext } from "../_hooks/useNavigationGuard";
 import { useRouter } from "next/navigation";

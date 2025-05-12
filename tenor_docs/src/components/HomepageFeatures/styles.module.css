@@ -1,8 +1,64 @@
 .features {
   display: flex;
   align-items: center;
-  padding: 2rem 0;
+  padding: 3rem 0;
   width: 100%;
+  background: #000000;
+}
+
+.featuresHeading {
+  text-align: center;
+  margin-bottom: 3rem;
+  font-weight: 700;
+  color: var(--ifm-color-primary);
+}
+
+.featureCard {
+  height: 100%;
+  padding: 2rem;
+  border-radius: 8px;
+  background: #001c10;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  margin-bottom: 2rem;
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(8, 106, 114, 0.1);
+  border-color: var(--ifm-color-primary);
+}
+
+.featureIcon {
+  font-size: 3rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.featureContent {
+  flex: 1;
+}
+
+.featureTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--ifm-color-primary);
+  font-weight: 600;
+  text-align: center;
+}
+
+.featureContent p {
+  color: var(--ifm-font-color-base);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.cta {
+  text-align: center;
+  margin-top: 3rem;
 }
 
 .featureSvg {

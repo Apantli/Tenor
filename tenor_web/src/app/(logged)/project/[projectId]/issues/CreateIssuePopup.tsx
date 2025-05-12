@@ -7,7 +7,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
-import type { ExistingUserStory } from "~/lib/types/detailSchemas";
+import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
@@ -38,7 +38,7 @@ export default function CreateIssuePopup({
     tags: Tag[];
     priority?: Tag;
     size?: Size;
-    relatedUserStory?: ExistingUserStory;
+    relatedUserStory?: UserStoryPreview;
   }>({
     name: "",
     description: "",
@@ -80,7 +80,7 @@ export default function CreateIssuePopup({
         tagIds: createForm.tags
           .map((tag) => tag.id)
           .filter((val) => val !== undefined),
-        priorityId: createForm.priority?.id,
+        priorityId: createForm.priority?.id ?? "",
         size: createForm.size,
         relatedUserStoryId: createForm.relatedUserStory?.id ?? "", // FIXME
         stepsToRecreate: createForm.stepsToRecreate, // FIXME

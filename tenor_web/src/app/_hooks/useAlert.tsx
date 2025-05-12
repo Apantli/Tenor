@@ -45,6 +45,10 @@ export const AlertProvider = ({ children }: PropsWithChildren) => {
   const nextId = useRef(0);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    setAlertContextRef(alert);
+  }, []);
+
   const removeAlert = useCallback((id: number) => {
     setAlerts((prevAlerts) =>
       prevAlerts.map((alert) =>
@@ -136,3 +140,11 @@ export const useAlert = () => {
 
   return { alert: context.alert, predefinedAlerts };
 };
+
+let alertContextRef: AlertFunction | null = null;
+
+export const setAlertContextRef = (ctx: AlertFunction) => {
+  alertContextRef = ctx;
+};
+
+export const getAlertContextRef = () => alertContextRef;

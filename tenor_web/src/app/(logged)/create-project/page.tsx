@@ -6,19 +6,20 @@ import Tabbar from "~/app/_components/Tabbar";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import InputFileField from "~/app/_components/inputs/InputFileField";
-import MemberTable, {
-  type TeamMember,
-} from "~/app/_components/inputs/MemberTable";
 import LinkList from "~/app/_components/inputs/LinkList";
 import FileList from "~/app/_components/inputs/FileList";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { defaultRoleList } from "~/lib/defaultProjectValues";
 import { type Links } from "~/server/api/routers/settings";
 
-import { toBase64 } from "~/utils/base64";
+import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
+import { toBase64 } from "~/utils/helpers/base64";
+import type { UserCol } from "~/lib/types/columnTypes";
+import MemberTable from "~/app/_components/inputs/MemberTable";
+import type { UserPreview } from "~/lib/types/detailSchemas";
+import type { WithId } from "~/lib/types/firebaseSchemas";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();
@@ -75,7 +76,7 @@ export default function ProjectCreator() {
       logo: logoBase64Encoded ?? "",
       users: teamMembers.map((member) => ({
         userId: member.id,
-        roleId: member.role,
+        roleId: member.roleId,
       })),
       settings: {
         aiContext: {
@@ -107,12 +108,12 @@ export default function ProjectCreator() {
     context: "",
   });
 
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [teamMembers, setTeamMembers] = useState<UserCol[]>([]);
   const handleRemoveTeamMember = (id: (string | number)[]) => {
     setTeamMembers((prev) => prev.filter((member) => !id.includes(member.id)));
   };
-  const handleAddTeamMember = (user: TeamMember) => {
-    setTeamMembers((prev) => [...prev, user]);
+  const handleAddTeamMember = (user: WithId<UserPreview>) => {
+    setTeamMembers((prev) => [...prev, { ...user, roleId: emptyRole.id }]);
   };
   const handleEditMemberRole = (id: string, role: string) => {
     setTeamMembers((prev) =>
@@ -120,7 +121,7 @@ export default function ProjectCreator() {
         if (member.id === id) {
           return {
             ...member,
-            role: role,
+            roleId: role,
           };
         }
         return member;
@@ -248,7 +249,11 @@ export default function ProjectCreator() {
       <main className="m-6 p-4">
         <div className="header flex w-full justify-between pb-6">
           <h1 className="text-2xl font-semibold">Project Creator</h1>
-          <PrimaryButton onClick={handleCreateProject} loading={isPending}>
+          <PrimaryButton
+            onClick={handleCreateProject}
+            loading={isPending}
+            data-cy="create-project-button"
+          >
             Generate Project
           </PrimaryButton>
         </div>
@@ -265,6 +270,7 @@ export default function ProjectCreator() {
                   name="name"
                   placeholder="What is your project called..."
                   labelClassName="text-lg font-semibold"
+                  data-cy="project-name-input"
                 />
               </div>
 
@@ -291,6 +297,7 @@ export default function ProjectCreator() {
               onChange={handleChange}
               name="description"
               labelClassName="text-lg font-semibold"
+              data-cy="project-description-input"
             />
 
             {/* Member Table */}

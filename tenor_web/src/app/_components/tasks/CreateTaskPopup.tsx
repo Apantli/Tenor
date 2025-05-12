@@ -4,16 +4,13 @@ import React, { useEffect, useState } from "react";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { DatePicker } from "~/app/_components/DatePicker";
-import {
-  type Option,
-  EditableBox,
-} from "~/app/_components/EditableBox/EditableBox";
+import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import { StatusTag, type Size, type Tag } from "~/lib/types/firebaseSchemas";
+import type { StatusTag, WithId, Size } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
@@ -36,7 +33,7 @@ export function CreateTaskForm({
   const projectIdString = projectId as string;
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  const { data: users } = api.users.getUserListEditBox.useQuery({
+  const { data: users } = api.users.getUsers.useQuery({
     projectId: projectIdString,
   });
 
@@ -53,7 +50,7 @@ export function CreateTaskForm({
     description: string;
     status: StatusTag;
     assigneeId?: string;
-    assignee?: UserPreview;
+    assignee?: WithId<UserPreview>;
     size?: Size;
     dueDate?: Date;
   }>({
@@ -84,9 +81,9 @@ export function CreateTaskForm({
   }, [todoStatusTag]);
 
   const [selectedAssignee, setSelectedAssignee] = useState<
-    Option | undefined
+    WithId<UserPreview> | undefined
   >();
-  const people: Option[] = users ?? [];
+  const people: WithId<UserPreview>[] = users ?? [];
 
   const handleCreateTask = async () => {
     if (createForm.name.trim() === "") {
@@ -97,7 +94,7 @@ export function CreateTaskForm({
       return;
     }
 
-    let dueDate: Timestamp | null = null;
+    let dueDate: Timestamp | undefined = undefined;
     if (createForm.dueDate) {
       dueDate = Timestamp.fromDate(createForm.dueDate);
     }
@@ -113,6 +110,7 @@ export function CreateTaskForm({
         size: createForm.size,
         assignee: createForm.assignee,
         dueDate: createForm.dueDate,
+        scrumId: -1,
       });
       onTaskAdded?.(taskId);
       return;
@@ -189,7 +187,7 @@ export function CreateTaskForm({
 
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Assigned to</label>
-          <EditableBox
+          <UserPicker
             options={people}
             selectedOption={selectedAssignee}
             onChange={(person) => {
@@ -198,9 +196,10 @@ export function CreateTaskForm({
                 ...createForm,
                 assigneeId: person?.id?.toString() ?? undefined,
                 assignee: {
-                  uid: person?.user?.uid?.toString() ?? "",
-                  displayName: person?.user?.displayName ?? "",
-                  photoURL: person?.user?.photoURL ?? "",
+                  id: person?.id?.toString() ?? "",
+                  displayName: person?.displayName ?? "",
+                  photoURL: person?.photoURL ?? "",
+                  email: "",
                 },
               });
             }}

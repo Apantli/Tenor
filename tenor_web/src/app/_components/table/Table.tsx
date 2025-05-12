@@ -11,7 +11,6 @@ import TableRow from "./TableRow";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import useShiftKey from "~/app/_hooks/useShiftKey";
 import GhostTableRow from "./GhostTableRow";
-import LoadingGhostTableRow from "./LoadingGhostTableRow";
 import LoadingGhostTableRows from "./LoadingGhostTableRows";
 
 export interface VisibleColumn<T> {
@@ -379,7 +378,6 @@ function TableInternal<
           {!loadedGhosts && (ghostRows ?? 0) > 0 && (
             <LoadingGhostTableRows
               columnWidths={columnWidths}
-              columns={columns}
               finishedLoading={ghostData !== undefined && ghostData.length > 0}
               ghostRows={ghostRows ?? 0}
               deletable={deletable}
@@ -395,8 +393,6 @@ function TableInternal<
               value={value}
               columns={columns}
               multiselect={multiselect}
-              extraOptions={extraOptions}
-              deletable={deletable}
               columnWidths={columnWidths}
               onAccept={() => acceptGhost(value.id)}
               onReject={() => rejectGhost(value.id)}

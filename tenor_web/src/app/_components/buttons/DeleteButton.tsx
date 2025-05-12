@@ -27,6 +27,7 @@ export default function DeleteButton({
         },
         className,
       )}
+      data-cy="delete-button"
       {...props}
       disabled={loading ?? ("disabled" in props && props.disabled)}
     >

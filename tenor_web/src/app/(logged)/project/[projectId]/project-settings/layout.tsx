@@ -22,14 +22,9 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
   const { projectId } = useParams();
   const pathName = usePathname();
   const router = useRouter();
-  const tab = pathName.split("/").pop();
 
   const isModified = useRef(false);
   const confirm = useConfirmation();
-
-  const setIsModified = (value: boolean) => {
-    isModified.current = value;
-  };
 
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: projectId as string,

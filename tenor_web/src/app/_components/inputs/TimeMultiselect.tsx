@@ -28,7 +28,8 @@ export default function TimeMultiselect({
   timeFrame,
   onTimeNumberChange,
   onTimeFrameChange,
-}: Props) {
+  ...props
+}: Props & React.HTMLProps<HTMLDivElement>) {
   const id = useId();
   const timeframeOptions = ["Days", "Weeks"] as TimeFrame[];
 
@@ -61,6 +62,7 @@ export default function TimeMultiselect({
           inputMode="numeric"
           pattern="[0-9]*"
           disableAI={true}
+          {...props}
         />
         <Dropdown
           label={

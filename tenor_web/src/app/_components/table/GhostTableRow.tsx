@@ -1,23 +1,12 @@
 import React from "react";
 import { cn } from "~/lib/utils";
 import AiIcon from "@mui/icons-material/AutoAwesome";
-import AcceptIcon from "@mui/icons-material/Check";
-import RejectIcon from "@mui/icons-material/Close";
+import { filterVisibleColumns, type TableColumns } from "./Table";
 
-import {
-  filterVisibleColumns,
-  type TableColumns,
-  type TableOptions,
-  type DeleteOptions,
-} from "./Table";
-import PrimaryButton from "../buttons/PrimaryButton";
-
-interface GhostTableRowProps<I, T> {
+interface GhostTableRowProps<T> {
   value: T;
   columns: TableColumns<T>;
   multiselect?: boolean;
-  extraOptions?: TableOptions<I>[];
-  deletable?: boolean | DeleteOptions;
   columnWidths: number[];
   onAccept?: () => void;
   onReject?: () => void;
@@ -32,13 +21,11 @@ function GhostTableRow<
   value,
   columns,
   multiselect,
-  extraOptions,
-  deletable,
   columnWidths,
   onAccept,
   onReject,
   className,
-}: GhostTableRowProps<I, T>) {
+}: GhostTableRowProps<T>) {
   const columnEntries = React.useMemo(
     () => filterVisibleColumns(Object.entries(columns)),
     [columns],

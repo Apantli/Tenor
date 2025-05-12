@@ -1,0 +1,21 @@
+{
+  "name": "tenor",
+  "version": "1.0.0",
+  "description": "[![Build](https://github.com/Apantli/Tenor/actions/workflows/web-build.yml/badge.svg)](https://github.com/Apantli/Tenor/actions/workflows/web-build.yml) [![Cypress E2E](https://github.com/Apantli/Tenor/actions/workflows/cypress.yml/badge.svg)](https://github.com/Apantli/Tenor/actions/workflows/cypress.yml)",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Apantli/Tenor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Apantli/Tenor/issues"
+  },
+  "homepage": "https://github.com/Apantli/Tenor#readme",
+  "devDependencies": {
+    "firebase-tools": "^14.2.2"
+  }
+}

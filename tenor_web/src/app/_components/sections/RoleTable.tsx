@@ -9,14 +9,17 @@ import PrimaryButton from "../buttons/PrimaryButton";
 import InputTextField from "../inputs/InputTextField";
 import Table, { type TableColumns } from "../table/Table";
 import PillPickerComponent from "../PillPickerComponent";
-import { Checkbox } from "@mui/material";
-import { permissionItems, permissionLabels } from "~/lib/types/firebaseSchemas";
+import {
+  permissionItems,
+  permissionLabels,
+  type WithId,
+} from "~/lib/types/firebaseSchemas";
 import type { RoleDetail } from "~/lib/types/detailSchemas";
 import type { Permission } from "~/lib/types/zodFirebaseSchema";
 
 interface Props {
   label?: string;
-  roles: RoleDetail[];
+  roles: WithId<RoleDetail>[];
   handleRoleAdd: (label: string) => void;
   handleRoleRemove: (id: (string | number)[]) => void;
   handleEditTabPermission: (
@@ -24,8 +27,6 @@ interface Props {
     tabId: string,
     permission: Permission,
   ) => void;
-  handleUpdateViewPerformance: (id: string, newValue: boolean) => void;
-  handleUpdateControlSprints: (id: string, newValue: boolean) => void;
   className?: ClassNameValue;
   isSearchable?: boolean;
 }
@@ -38,15 +39,13 @@ export default function RoleTable({
   handleRoleAdd,
   handleRoleRemove,
   handleEditTabPermission,
-  handleUpdateViewPerformance,
-  handleUpdateControlSprints,
   isSearchable = false,
 }: Props) {
   const [tableSearchValue, setTableSearchValue] = useState("");
   const [role, setRole] = useState("");
 
   const defaultWidth = 100;
-  const columns: TableColumns<RoleDetail> = {
+  const columns: TableColumns<WithId<RoleDetail>> = {
     id: { visible: false },
     label: {
       label: "Name",

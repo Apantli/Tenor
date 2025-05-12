@@ -22,7 +22,7 @@ import {
   useInvalidateQueriesBacklogItems,
 } from "~/app/_hooks/invalidateHooks";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
-import type { KanbanCard } from "~/server/api/routers/kanban";
+import type { KanbanCard } from "~/lib/types/kanbanTypes";
 
 export default function ItemsKanban() {
   // GENERAL

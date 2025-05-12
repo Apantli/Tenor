@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+
 import { useParams, usePathname } from "next/navigation";
 import React, { type MouseEventHandler } from "react";
 import { cn } from "~/lib/utils";
@@ -59,7 +59,10 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
             href={projectPath + link}
             onClick={handleClick}
           >
-            {id === "overview" && mainPageName ? mainPageName : title}
+            <span data-cy={id}>
+              {id === "overview" && mainPageName ? mainPageName : title}
+            </span>
+
             {link === cutPathname && (
               <>
                 <div className="absolute -left-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[5px_5px_0_0_white]"></div>

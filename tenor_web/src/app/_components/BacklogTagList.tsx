@@ -6,7 +6,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";
-import { generateRandomTagColor } from "~/utils/colorUtils";
+import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 
 interface Props {
   tags: Tag[];
@@ -60,7 +60,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
     };
     const addedTag = await createTag({
       projectId: projectId as string,
-      tag: newTagValue,
+      tagData: newTagValue,
     });
     await refetch();
     setSearchValue("");
@@ -100,7 +100,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
                 <DropdownButton
                   onClick={() => handleTagClick(tag)}
                   className="flex max-w-52 items-center gap-2 border-b border-app-border px-2 py-2 last:border-none"
-                  key={tag.name}
+                  key={tag.id}
                 >
                   <Check
                     fontSize="inherit"
@@ -143,7 +143,7 @@ export default function BacklogTagList({ tags, onChange }: Props) {
             color={tag.color}
             onDelete={() => handleTagClick(tag)}
             expanded
-            key={tag.name}
+            key={tag.id}
           >
             {tag.name}
           </TagComponent>

@@ -6,6 +6,7 @@ import { TRPCClientError } from "@trpc/client";
 import { getAuth } from "firebase/auth";
 import SuperJSON from "superjson";
 import { trpcClient } from "./react";
+import { getAlertContextRef } from "~/app/_hooks/useAlert";
 
 // eslint-disable-next-line
 const isTRPCError = (error: any): error is TRPCClientError<any> => {
@@ -72,7 +73,15 @@ export const createQueryClient = () => {
 
           // eslint-disable-next-line
           if (isTRPCError(err) && err.data?.code === "FORBIDDEN") {
-            return false;
+            const alert = getAlertContextRef();
+            alert?.(
+              "Oops...",
+              "You don't have the permission to perform this action.",
+              {
+                type: "error",
+                duration: 5000,
+              },
+            );
           }
 
           if (failureCount > 3) {

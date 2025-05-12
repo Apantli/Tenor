@@ -18,14 +18,12 @@ export default function RequirementFocusPicker({
   disabled,
 }: Props) {
   const { projectId } = useParams();
-  const { data: focusTags } = api.requirements.getRequirementFocusTags.useQuery(
-    {
-      projectId: projectId as string,
-    },
-  );
+  const { data: focusTags } = api.requirements.getRequirementFocuses.useQuery({
+    projectId: projectId as string,
+  });
 
   const { mutateAsync: createRequirementTypeTag } =
-    api.settings.createRequirementFocus.useMutation();
+    api.requirements.createOrModifyRequirementFocus.useMutation();
 
   return (
     <PillComponent
@@ -37,7 +35,7 @@ export default function RequirementFocusPicker({
       addTag={async (tag) => {
         const newTag = await createRequirementTypeTag({
           projectId: projectId as string,
-          tag: tag,
+          tagData: tag,
         });
         focusTags?.push(newTag);
         return newTag;

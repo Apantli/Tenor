@@ -1,7 +1,6 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
-import { getTasksFromProject, getTasksFromItem } from "./tasks";
 import type {
   Issue,
   StatusTag,
@@ -9,142 +8,17 @@ import type {
   UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
-import { getBacklogTag, getProjectSettingsRef } from "./settings";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
+import type { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
+import { getTasks } from "~/utils/helpers/shortcuts/tasks";
 import {
-  doingTagName,
-  doneTagName,
-  todoTagName,
-} from "~/lib/defaultProjectValues";
-
-// Only information needed by the kanban board columns / selectable cards
-export interface KanbanCard {
-  id: string;
-  cardType: "US" | "IS" | "IT" | "TS"; // US = user story, IS = issue, IT = generic item, TS = task
-  scrumId: number;
-  name: string;
-  size: "XS" | "S" | "M" | "L" | "XL" | "XXL" | undefined;
-  tags: {
-    deleted: boolean;
-    id: string;
-    name: string;
-    color: string;
-  }[];
-  columnId: string;
-}
-
-export interface KanbanTaskCard extends KanbanCard {
-  cardType: "TS"; // TS = task
-  itemId: string;
-  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, IT = generic item
-}
-export interface KanbanItemCard extends KanbanCard {
-  cardType: "US" | "IS" | "IT"; // US = user story, IS = issue, IT = generic item
-}
-
-const getAllStatuses = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-) => {
-  const statusesRef = dbAdmin
-    .collection("projects")
-    .doc(projectId)
-    .collection("settings")
-    .doc("settings")
-    .collection("statusTypes")
-    .where("deleted", "==", false);
-
-  const snap = await statusesRef.get();
-
-  const docs = snap.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...doc.data(),
-    };
-  });
-
-  return docs as WithId<StatusTag>[];
-};
-
-// Get the status ID based on tasks for a backlog item with undefined status
-const getAutomaticStatusId = async (
-  dbAdmin: FirebaseFirestore.Firestore,
-  projectId: string,
-  itemId: string,
-  statusTags: WithId<StatusTag>[],
-) => {
-  // Get all tasks for this item
-  const tasks = await getTasksFromItem(dbAdmin, projectId, itemId);
-
-  // Rule 1: No tasks? Item is set to TODO
-  if (tasks.length === 0) {
-    // Find the "Todo" status tag
-    const todoStatus = statusTags.find(
-      (status) => status.name.toLowerCase() === todoTagName.toLowerCase(),
-    );
-    if (todoStatus) return todoStatus.id;
-
-    // If no "Todo" status exists, use the first status in order
-    const orderedStatuses = [...statusTags].sort(
-      (a, b) => a.orderIndex - b.orderIndex,
-    );
-    if (orderedStatuses.length > 0) {
-      const firstStatus = orderedStatuses[0] ?? { id: "" }; // Weird, but TypeScript needs this
-      return firstStatus.id;
-    } else {
-      return "";
-    }
-  }
-
-  // Rule 2: All tasks have the same status? The item takes that status
-  const taskStatusIds = tasks
-    .map((task) => task.statusId)
-    .filter((id) => id !== "");
-  if (
-    taskStatusIds.length > 0 &&
-    taskStatusIds.every((id) => id === taskStatusIds[0])
-  ) {
-    return taskStatusIds[0];
-  }
-
-  // Rule 3: All tasks are resolved? The item is set to Done
-  const doneStatusIds = statusTags
-    .filter((status) => status.marksTaskAsDone)
-    .map((status) => status.id);
-
-  if (
-    tasks.length > 0 &&
-    tasks.every(
-      (task) => task.statusId && doneStatusIds.includes(task.statusId),
-    )
-  ) {
-    // Find the "Done" status tag
-    const doneStatus = statusTags.find(
-      (status) => status.name.toLowerCase() === doneTagName.toLowerCase(),
-    );
-    if (doneStatus) return doneStatus.id;
-
-    // If no specific "Done" status exists, use the first status that marks tasks as done
-    return doneStatusIds.length > 0 ? doneStatusIds[0] : "";
-  }
-
-  // Rule 4: Otherwise, the item is set to Doing
-  const doingStatus = statusTags.find(
-    (status) => status.name.toLowerCase() === doingTagName.toLowerCase(),
-  );
-  if (doingStatus) return doingStatus.id;
-
-  // If no "Doing" status exists, use a middle status based on order index
-  const orderedStatuses = [...statusTags].sort(
-    (a, b) => a.orderIndex - b.orderIndex,
-  );
-  if (orderedStatuses.length > 0) {
-    const middleIndex = Math.floor((orderedStatuses.length - 1) / 2);
-    return (orderedStatuses[middleIndex] ?? { id: "" }).id;
-  }
-
-  return "";
-};
+  getAutomaticStatusId,
+  getBacklogTag,
+  getStatusTypes,
+  getStatusTypesRef,
+} from "~/utils/helpers/shortcuts/tags";
+import { getUserStoriesRef } from "~/utils/helpers/shortcuts/userStories";
+import { getIssuesRef } from "~/utils/helpers/shortcuts/issues";
 
 export const kanbanRouter = createTRPCRouter({
   getTasksForKanban: protectedProcedure
@@ -154,7 +28,7 @@ export const kanbanRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const tasks = await getTasksFromProject(ctx.firestore, input.projectId);
+      const tasks = await getTasks(ctx.firestore, input.projectId);
       const cardTasks = tasks.map((task) => {
         const {
           id,
@@ -180,7 +54,7 @@ export const kanbanRouter = createTRPCRouter({
         } as KanbanTaskCard;
       });
 
-      const activeColumns = await getAllStatuses(
+      const activeColumns = await getStatusTypes(
         ctx.firestore,
         input.projectId,
       );
@@ -213,12 +87,15 @@ export const kanbanRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       // Fetch user stories
       // FIXME: This view should only include items assigned to the current sprint
+      const { projectId } = input;
 
-      const userStoriesRef = ctx.firestore
-        .collection(`projects/${input.projectId}/userStories`)
-        .where("deleted", "==", false);
+      const userStoriesRef = getUserStoriesRef(ctx.firestore, projectId).where(
+        "deleted",
+        "==",
+        false,
+      );
       const userStoriesSnapshot = await userStoriesRef.get();
-      const settingsRef = getProjectSettingsRef(input.projectId, ctx.firestore);
+
       const memoTags = new Map<string, WithId<Tag>>();
       const userStories = await Promise.all(
         userStoriesSnapshot.docs.map(async (doc) => {
@@ -228,7 +105,7 @@ export const kanbanRouter = createTRPCRouter({
               if (memoTags.has(tagId)) {
                 return memoTags.get(tagId);
               }
-              const tag = await getBacklogTag(settingsRef, tagId);
+              const tag = await getBacklogTag(ctx.firestore, projectId, tagId);
               if (!tag) {
                 return null;
               }
@@ -250,9 +127,12 @@ export const kanbanRouter = createTRPCRouter({
       );
 
       // Fetch issues
-      const issuesRef = ctx.firestore
-        .collection(`projects/${input.projectId}/issues`)
-        .where("deleted", "==", false);
+      const issuesRef = getIssuesRef(ctx.firestore, projectId).where(
+        "deleted",
+        "==",
+        false,
+      );
+
       const issuesSnapshot = await issuesRef.get();
 
       const issues = await Promise.all(
@@ -263,7 +143,7 @@ export const kanbanRouter = createTRPCRouter({
               if (memoTags.has(tagId)) {
                 return memoTags.get(tagId);
               }
-              const tag = await getBacklogTag(settingsRef, tagId);
+              const tag = await getBacklogTag(ctx.firestore, projectId, tagId);
               if (!tag) {
                 return null;
               }
@@ -288,10 +168,7 @@ export const kanbanRouter = createTRPCRouter({
       const backlogItems = [...userStories, ...issues];
 
       // Get all statuses
-      const activeColumns = await getAllStatuses(
-        ctx.firestore,
-        input.projectId,
-      );
+      const activeColumns = await getStatusTypes(ctx.firestore, projectId);
 
       // Assign automatic status to items with undefined status
       const itemsWithStatus = await Promise.all(
@@ -299,7 +176,7 @@ export const kanbanRouter = createTRPCRouter({
           if (item.columnId === "") {
             const newCol = await getAutomaticStatusId(
               ctx.firestore,
-              input.projectId,
+              projectId,
               item.id,
               activeColumns,
             );
@@ -343,13 +220,7 @@ export const kanbanRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, name, color, marksTaskAsDone } = input;
-
-      const projectSettingsRef = getProjectSettingsRef(
-        projectId,
-        ctx.firestore,
-      );
-
-      const statusCollectionRef = projectSettingsRef.collection("statusTypes");
+      const statusCollectionRef = getStatusTypesRef(ctx.firestore, projectId);
 
       const statusTypes = await statusCollectionRef.get();
 
@@ -386,20 +257,24 @@ export const kanbanRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { projectId, itemId } = input;
-      const activeStatuses = await getAllStatuses(
+
+      const activeStatuses = await getStatusTypes(
         ctx.firestore,
         input.projectId,
       );
+
       const statusId = await getAutomaticStatusId(
         ctx.firestore,
         projectId,
         itemId,
         activeStatuses,
       );
+
       const status = activeStatuses.find((status) => status.id === statusId);
       if (!status) {
         throw new Error("Status not found");
       }
+
       return {
         id: status.id,
         name: status.name,

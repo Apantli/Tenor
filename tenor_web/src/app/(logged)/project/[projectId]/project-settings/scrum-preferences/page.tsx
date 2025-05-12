@@ -18,7 +18,7 @@ import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
 } from "~/lib/defaultProjectValues";
-import { Size } from "~/lib/types/firebaseSchemas";
+import type { Size } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 const maxInputNumber = 10000000000;
@@ -88,18 +88,18 @@ export default function ProjectScrumPreferences() {
   const [numberWarningShown, setNumberWarningShown] = useState(false);
 
   const hasBeenModified = () => {
-    
     if (!sprintDuration || !maximumSprintStoryPoints) {
       return false;
     }
 
-    const sizeChanged = sizeData.some((item, index) => 
-      item.value !== originalSizeData?.[index]?.value
+    const sizeChanged = sizeData.some(
+      (item, index) => item.value !== originalSizeData?.[index]?.value,
     );
 
     return (
       form.sprintDuration !== sprintDuration ||
-      form.maximumSprintStoryPoints !== maximumSprintStoryPoints || sizeChanged
+      form.maximumSprintStoryPoints !== maximumSprintStoryPoints ||
+      sizeChanged
     );
   };
 
@@ -248,29 +248,33 @@ export default function ProjectScrumPreferences() {
           {
             type: "error",
             duration: 5000,
-          }
+          },
         );
         return;
       }
       if (i > 0 && current && current.value <= (sizeData[i - 1]?.value ?? 0)) {
         alert(
           "Invalid order",
-          `${current.name} must be greater than or equal to ${(sizeData[i - 1]?.name ?? "previous size")}.`,
+          `${current.name} must be greater than or equal to ${sizeData[i - 1]?.name ?? "previous size"}.`,
           {
             type: "error",
             duration: 5000,
-          }
+          },
         );
         return;
       }
-      if(i <= sizeData.length - 1 && current && current.value > (sizeData[i + 1]?.value ?? maxInputSizeNumber)) {
+      if (
+        i <= sizeData.length - 1 &&
+        current &&
+        current.value > (sizeData[i + 1]?.value ?? maxInputSizeNumber)
+      ) {
         alert(
           "Invalid order",
-          `${(sizeData[i + 1]?.name ?? " size")} must be more than to ${current.name}.`,
+          `${sizeData[i + 1]?.name ?? " size"} must be more than to ${current.name}.`,
           {
             type: "error",
             duration: 5000,
-          }
+          },
         );
         return;
       }
@@ -349,6 +353,7 @@ export default function ProjectScrumPreferences() {
             onTimeNumberChange={handleTimeNumberChange}
             onTimeFrameChange={handleTimeFrameChange}
             label="Sprint duration"
+            data-cy="sprint-duration"
             labelClassName="text-lg font-semibold"
           />
 
@@ -362,12 +367,10 @@ export default function ProjectScrumPreferences() {
             onChange={(e) => {
               handleStoryPointsChange(e.target.value);
             }}
+            data-cy="maximum-sprint-story-points"
             disableAI={true}
           />
-          <SettingsSizeTable
-            sizeData={sizeData}
-            setSizeData={setSizeData}
-          />
+          <SettingsSizeTable sizeData={sizeData} setSizeData={setSizeData} />
         </>
       )}
       {settingFetchLoading && (

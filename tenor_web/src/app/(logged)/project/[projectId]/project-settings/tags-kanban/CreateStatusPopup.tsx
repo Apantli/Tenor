@@ -5,7 +5,7 @@ import Popup from "~/app/_components/Popup";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
-import { generateRandomTagColor } from "~/utils/colorUtils";
+import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
@@ -102,9 +102,13 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
 
     await createStatus({
       projectId: projectId as string,
-      name: form.name,
-      color: form.color,
-      marksTaskAsDone: form.marksTaskAsDone,
+      tagData: {
+        name: form.name,
+        color: form.color,
+        marksTaskAsDone: form.marksTaskAsDone,
+        deleted: false,
+        orderIndex: 0,
+      },
     });
 
     setShowPopup(false);
