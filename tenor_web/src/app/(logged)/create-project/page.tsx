@@ -65,11 +65,6 @@ export default function ProjectCreator() {
       });
     }
 
-    const finalLinks: { link: string; content: string | null }[] = [];
-    for (const link of links) {
-      finalLinks.push({ link: link.url, content: null });
-    }
-
     const response = await createProject({
       name: form.name,
       description: form.description,
@@ -82,7 +77,7 @@ export default function ProjectCreator() {
         aiContext: {
           text: form.context,
           files: filesBase64Encoded,
-          links: finalLinks,
+          links: links,
         },
       },
     });
@@ -195,10 +190,19 @@ export default function ProjectCreator() {
 
   const [links, setLinks] = useState<Links[]>([]);
   function handleLinkAdd(link: Links) {
-    setLinks((prev) => [...prev, link]);
+    // Check if the link already exists
+    if (links.some((l) => l.link === link.link)) {
+      alert("Link exists", "This link is already added to the context.", {
+        type: "warning",
+        duration: 3000,
+      });
+      return;
+    } else {
+      setLinks((prev) => [...prev, link]);
+    }
   }
   function handleLinkDelete(link: Links) {
-    setLinks((prev) => prev.filter((l) => l.url !== link.url));
+    setLinks((prev) => prev.filter((l) => l.link !== link.link));
   }
 
   const maxProjectNameLength = 100;

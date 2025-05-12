@@ -60,6 +60,12 @@ import {
   getSettingsRef,
 } from "~/utils/helpers/shortcuts/general";
 import { getUserRef } from "~/utils/helpers/shortcuts/users";
+import { TRPCError } from "@trpc/server";
+
+export interface Links {
+  link: string;
+  content: string | null;
+}
 
 const settingsRouter = createTRPCRouter({
   /**
@@ -483,9 +489,10 @@ const settingsRouter = createTRPCRouter({
       const projectSettingsRef = getSettingsRef(ctx.firestore, input.projectId);
       const settings = await projectSettingsRef.get();
       const settingsData = SettingsSchema.parse(settings.data());
-      const links: string[] = settingsData.aiContext.links.map(
-        (link) => link.link,
-      );
+      const links = settingsData.aiContext.links.map((link) => ({
+        link: link.link,
+        valid: link.content !== null,
+      }));
       return links;
     }),
 
@@ -547,12 +554,32 @@ const settingsRouter = createTRPCRouter({
 
       // FIXME: Use FieldValue.arrayUnion to update
       const newLinks = [...settingsData.aiContext.links, newLink];
-      await getSettingsRef(ctx.firestore, projectId).update({
-        aiContext: {
-          ...settingsData.aiContext,
-          links: newLinks,
-        },
-      });
+      try {
+        await getSettingsRef(ctx.firestore, projectId).update({
+          aiContext: {
+            ...settingsData.aiContext,
+            links: newLinks,
+          },
+        });
+      } catch {
+        const newLinks = [
+          ...settingsData.aiContext.links.filter(
+            (l) => l.link !== newLink.link,
+          ),
+          { link: newLink.link, content: null },
+        ];
+
+        await getSettingsRef(ctx.firestore, projectId).update({
+          aiContext: {
+            ...settingsData.aiContext,
+            links: newLinks,
+          },
+        });
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to add link ${link}`,
+        });
+      }
     }),
   removeLink: roleRequiredProcedure(settingsPermissions, "write")
     .input(

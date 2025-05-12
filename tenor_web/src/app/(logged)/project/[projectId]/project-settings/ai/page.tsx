@@ -54,7 +54,24 @@ export default function ProjectAIConfig() {
   }, [context]);
 
   // Add
-  const { mutateAsync: addLink } = api.settings.addLink.useMutation();
+  const { mutateAsync: addLink } = api.settings.addLink.useMutation({
+    onError: async (error) => {
+      alert("Error", error.message, { type: "error", duration: 5000 });
+      await utils.settings.getContextLinks.invalidate({
+        projectId: projectId as string,
+      });
+    },
+    onSuccess: async () => {
+      alert("Success", "Link added successfully.", {
+        type: "success",
+        duration: 5000,
+      });
+      await utils.settings.getContextLinks.invalidate({
+        projectId: projectId as string,
+      });
+    },
+    retry: 0,
+  });
   const { mutateAsync: addFiles } = api.settings.addFiles.useMutation();
   // Remove
   const { mutateAsync: removeLink } = api.settings.removeLink.useMutation();
@@ -66,8 +83,17 @@ export default function ProjectAIConfig() {
   // Link utils
   const handleAddLink = async (link: Links) => {
     if (!links) return;
+
+    if (links.some((l) => l.link === link.link)) {
+      alert("Link exists", "This link is already added to the context.", {
+        type: "warning",
+        duration: 3000,
+      });
+      return;
+    }
+
     const newData = links;
-    newData.push({ url: link.url, valid: true });
+    newData.push({ link: link.link, valid: true });
     // Uses optimistic update
     await utils.settings.getContextLinks.cancel({
       projectId: projectId as string,
@@ -79,20 +105,14 @@ export default function ProjectAIConfig() {
     // Add to database
     await addLink({
       projectId: projectId as string,
-      link: link.url,
-    });
-
-    await utils.settings.getContextLinks.invalidate({
-      projectId: projectId as string,
+      link: link.link,
     });
   };
 
   useEffect(() => {
     const invalidLinks = [];
-    let validLinks = 0;
     for (const link of links ?? []) {
       if (!link.valid) invalidLinks.push(link);
-      else validLinks++;
     }
     if (invalidLinks.length > 0) {
       const plural = invalidLinks.length > 1 ? "s" : "";
@@ -109,7 +129,7 @@ export default function ProjectAIConfig() {
 
   const handleRemoveLink = async (link: Links) => {
     if (!links) return;
-    const newData = links.filter((l) => l.url !== link.url);
+    const newData = links.filter((l) => l.link !== link.link);
     // Uses optimistic update
     await utils.settings.getContextLinks.cancel({
       projectId: projectId as string,
@@ -121,7 +141,7 @@ export default function ProjectAIConfig() {
     // Remove from database
     await removeLink({
       projectId: projectId as string,
-      link: link.url,
+      link: link.link,
     });
 
     await utils.settings.getContextLinks.invalidate({
@@ -247,16 +267,19 @@ export default function ProjectAIConfig() {
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
           <h1 className="mb-4 text-3xl font-semibold">AI Context</h1>
-          {(isModified() || isContextUpdatePending) && (
-            <PrimaryButton
-              onClick={async () => {
-                await handleUpdateText(newText);
-              }}
-              loading={isContextUpdatePending}
-            >
-              Save
-            </PrimaryButton>
-          )}
+          {(isModified() || isContextUpdatePending) &&
+            links &&
+            loadedFiles &&
+            !isLoading && (
+              <PrimaryButton
+                onClick={async () => {
+                  await handleUpdateText(newText);
+                }}
+                loading={isContextUpdatePending}
+              >
+                Save
+              </PrimaryButton>
+            )}
         </div>
       </div>
       {links && loadedFiles && !isLoading ? (
@@ -280,7 +303,10 @@ export default function ProjectAIConfig() {
           ></FileList>
           <LinkList
             label={"Context Links"}
-            links={links}
+            links={links.map((link) => ({
+              link: link.link,
+              content: link.valid ? "valid" : null,
+            }))}
             handleLinkAdd={handleAddLink}
             handleLinkRemove={handleRemoveLink}
           ></LinkList>

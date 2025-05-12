@@ -62,7 +62,7 @@ export default function TimeMultiselect({
           inputMode="numeric"
           pattern="[0-9]*"
           disableAI={true}
-          {...props}
+          {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
         />
         <Dropdown
           label={
