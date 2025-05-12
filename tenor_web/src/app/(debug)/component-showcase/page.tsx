@@ -684,7 +684,10 @@ function InputComponents() {
       />
       <LinkList
         label="Context Links"
-        links={links}
+        links={links.map((link) => ({
+          link: link,
+          content: "placeholder",
+        }))}
         handleLinkAdd={() => {
           console.log("File added");
         }}

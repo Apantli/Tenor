@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toBase64 } from "~/utils/helpers/base64";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import FileList from "~/app/_components/inputs/FileList";
@@ -12,6 +12,7 @@ import { api } from "~/trpc/react";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { type Links } from "~/server/api/routers/settings";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();
@@ -32,7 +33,6 @@ export default function ProjectAIConfig() {
   });
   const loadedFiles = useMemo(() => {
     const resultFiles: File[] = [];
-    console.log(resultFiles);
     if (files) {
       files.forEach((file) => {
         const dummyContent = new Uint8Array(file.size);
@@ -54,7 +54,24 @@ export default function ProjectAIConfig() {
   }, [context]);
 
   // Add
-  const { mutateAsync: addLink } = api.settings.addLink.useMutation();
+  const { mutateAsync: addLink } = api.settings.addLink.useMutation({
+    onError: async (error) => {
+      alert("Error", error.message, { type: "error", duration: 5000 });
+      await utils.settings.getContextLinks.invalidate({
+        projectId: projectId as string,
+      });
+    },
+    onSuccess: async () => {
+      alert("Success", "Link added successfully.", {
+        type: "success",
+        duration: 5000,
+      });
+      await utils.settings.getContextLinks.invalidate({
+        projectId: projectId as string,
+      });
+    },
+    retry: 0,
+  });
   const { mutateAsync: addFiles } = api.settings.addFiles.useMutation();
   // Remove
   const { mutateAsync: removeLink } = api.settings.removeLink.useMutation();
@@ -64,10 +81,19 @@ export default function ProjectAIConfig() {
     api.settings.updateTextContext.useMutation();
 
   // Link utils
-  const handleAddLink = async (link: string) => {
+  const handleAddLink = async (link: Links) => {
     if (!links) return;
+
+    if (links.some((l) => l.link === link.link)) {
+      alert("Link exists", "This link is already added to the context.", {
+        type: "warning",
+        duration: 3000,
+      });
+      return;
+    }
+
     const newData = links;
-    newData.push(link);
+    newData.push({ link: link.link, valid: true });
     // Uses optimistic update
     await utils.settings.getContextLinks.cancel({
       projectId: projectId as string,
@@ -79,22 +105,31 @@ export default function ProjectAIConfig() {
     // Add to database
     await addLink({
       projectId: projectId as string,
-      link: link,
-    });
-
-    await utils.settings.getContextLinks.invalidate({
-      projectId: projectId as string,
-    });
-
-    alert("Success", "A new link was added to your project AI context.", {
-      type: "success",
-      duration: 5000,
+      link: link.link,
     });
   };
 
-  const handleRemoveLink = async (link: string) => {
+  useEffect(() => {
+    const invalidLinks = [];
+    for (const link of links ?? []) {
+      if (!link.valid) invalidLinks.push(link);
+    }
+    if (invalidLinks.length > 0) {
+      const plural = invalidLinks.length > 1 ? "s" : "";
+      alert(
+        `Invalid link${plural}`,
+        `${invalidLinks.length} link${plural} ${plural ? "are" : "is"} invalid.`,
+        {
+          type: "warning",
+          duration: 5000,
+        },
+      );
+    }
+  }, [links]);
+
+  const handleRemoveLink = async (link: Links) => {
     if (!links) return;
-    const newData = links.filter((l) => l !== link);
+    const newData = links.filter((l) => l.link !== link.link);
     // Uses optimistic update
     await utils.settings.getContextLinks.cancel({
       projectId: projectId as string,
@@ -106,7 +141,7 @@ export default function ProjectAIConfig() {
     // Remove from database
     await removeLink({
       projectId: projectId as string,
-      link: link,
+      link: link.link,
     });
 
     await utils.settings.getContextLinks.invalidate({
@@ -232,16 +267,19 @@ export default function ProjectAIConfig() {
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
           <h1 className="mb-4 text-3xl font-semibold">AI Context</h1>
-          {(isModified() || isContextUpdatePending) && (
-            <PrimaryButton
-              onClick={async () => {
-                await handleUpdateText(newText);
-              }}
-              loading={isContextUpdatePending}
-            >
-              Save
-            </PrimaryButton>
-          )}
+          {(isModified() || isContextUpdatePending) &&
+            links &&
+            loadedFiles &&
+            !isLoading && (
+              <PrimaryButton
+                onClick={async () => {
+                  await handleUpdateText(newText);
+                }}
+                loading={isContextUpdatePending}
+              >
+                Save
+              </PrimaryButton>
+            )}
         </div>
       </div>
       {links && loadedFiles && !isLoading ? (
@@ -265,7 +303,10 @@ export default function ProjectAIConfig() {
           ></FileList>
           <LinkList
             label={"Context Links"}
-            links={links}
+            links={links.map((link) => ({
+              link: link.link,
+              content: link.valid ? "valid" : null,
+            }))}
             handleLinkAdd={handleAddLink}
             handleLinkRemove={handleRemoveLink}
           ></LinkList>

@@ -12,6 +12,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { type Links } from "~/server/api/routers/settings";
+
 import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
 import { toBase64 } from "~/utils/helpers/base64";
 import type { UserCol } from "~/lib/types/columnTypes";
@@ -63,11 +65,6 @@ export default function ProjectCreator() {
       });
     }
 
-    const finalLinks: { link: string; content: string | null }[] = [];
-    for (const link of links) {
-      finalLinks.push({ link, content: null });
-    }
-
     const response = await createProject({
       name: form.name,
       description: form.description,
@@ -80,7 +77,7 @@ export default function ProjectCreator() {
         aiContext: {
           text: form.context,
           files: filesBase64Encoded,
-          links: finalLinks,
+          links: links,
         },
       },
     });
@@ -191,12 +188,21 @@ export default function ProjectCreator() {
     setFiles((prev) => prev.filter((f) => f !== file));
   }
 
-  const [links, setLinks] = useState<string[]>([]);
-  function handleLinkAdd(link: string) {
-    setLinks((prev) => [...prev, link]);
+  const [links, setLinks] = useState<Links[]>([]);
+  function handleLinkAdd(link: Links) {
+    // Check if the link already exists
+    if (links.some((l) => l.link === link.link)) {
+      alert("Link exists", "This link is already added to the context.", {
+        type: "warning",
+        duration: 3000,
+      });
+      return;
+    } else {
+      setLinks((prev) => [...prev, link]);
+    }
   }
-  function handleLinkDelete(link: string) {
-    setLinks((prev) => prev.filter((l) => l !== link));
+  function handleLinkDelete(link: Links) {
+    setLinks((prev) => prev.filter((l) => l.link !== link.link));
   }
 
   const maxProjectNameLength = 100;

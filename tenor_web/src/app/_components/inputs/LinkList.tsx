@@ -1,23 +1,25 @@
-import React from "react";
+import React, { useRef } from "react";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import InsertLinkIcon from "@mui/icons-material/InsertLink";
+import LinkOffIcon from "@mui/icons-material/LinkOff";
 import PrimaryButton from "../buttons/PrimaryButton";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import InputTextField from "./InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CloseIcon from "@mui/icons-material/Cancel";
 
+import { type Links } from "~/server/api/routers/settings";
+
 interface Props {
   label: string;
-  links: string[];
-  handleLinkAdd: (link: string) => void;
-  handleLinkRemove: (link: string) => void;
+  links: Links[];
+  handleLinkAdd: (link: Links) => void;
+  handleLinkRemove: (link: Links) => void;
   className?: ClassNameValue;
   labelClassName?: string;
 }
 
-// FIXME: We need to improve a type checking for the links. You can just input "hey" and it will be added as a link
 export default function LinkList({
   label,
   className,
@@ -28,6 +30,8 @@ export default function LinkList({
 }: Props) {
   const [link, setLink] = React.useState("");
   const confirm = useConfirmation();
+  const insertLinkRef = useRef<HTMLInputElement>(null);
+
   return (
     <div className="w-full">
       <div className="flex items-center justify-between py-4">
@@ -39,6 +43,11 @@ export default function LinkList({
             <PrimaryButton
               asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
               className="flex max-h-[40px] items-center"
+              onClick={() => {
+                if (insertLinkRef.current) {
+                  insertLinkRef.current.focus();
+                }
+              }}
             >
               Add Context Link +
             </PrimaryButton>
@@ -46,6 +55,7 @@ export default function LinkList({
         >
           <DropdownItem>
             <InputTextField
+              ref={insertLinkRef}
               placeholder="https://example.com"
               value={link}
               onChange={(e) => {
@@ -59,7 +69,7 @@ export default function LinkList({
             className="flex items-center justify-between"
             onClick={() => {
               if (link.trim()) {
-                handleLinkAdd(link.trim());
+                handleLinkAdd({ link: link.trim(), content: "placeholder" });
                 setLink("");
               }
             }}
@@ -83,34 +93,38 @@ export default function LinkList({
           <li
             key={index}
             className="h-[100px] flex-shrink-0"
-            title={link}
+            title={link.link}
             onClick={async () => {
               if (
                 !(await confirm(
                   "Delete link?",
-                  `Removing "${link}". This action is not reversible.`,
+                  `Removing "${link.link}". This action is not reversible.`,
                   "Delete link",
                 ))
               ) {
                 return;
               }
-              handleLinkRemove(link);
+              handleLinkRemove({ link: link.link, content: link.content });
             }}
           >
             <span
-              title={link}
+              title={link.link}
               className="group relative flex cursor-pointer flex-col items-center text-gray-500 transition hover:text-gray-500/50"
               data-tooltip-id="tooltip"
-              data-tooltip-content={link}
+              data-tooltip-content={link.link}
             >
               <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center pb-4 text-[40px] text-app-fail/90 opacity-0 transition group-hover:opacity-100">
                 <CloseIcon fontSize="inherit" />
               </div>
-              <InsertLinkIcon style={{ fontSize: "4rem" }} />
+              {link.content ? (
+                <InsertLinkIcon style={{ fontSize: "4rem" }} />
+              ) : (
+                <LinkOffIcon style={{ fontSize: "4rem" }} />
+              )}
               <span className="mt-1 max-w-[80px] truncate text-center text-xs">
                 {
                   // remove the protocol from the link
-                  link.replace(/^(http:\/\/|https:\/\/)/, "")
+                  link.link.replace(/^(http:\/\/|https:\/\/)/, "")
                 }
               </span>
             </span>

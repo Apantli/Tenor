@@ -9,6 +9,7 @@ interface Props {
   containerClassName?: string;
   disableAI?: boolean;
   aiTitle?: string;
+  ref?: React.Ref<HTMLTextAreaElement>;
 }
 
 export default function InputTextAreaField({
@@ -20,6 +21,7 @@ export default function InputTextAreaField({
   disableAI,
   aiTitle,
   value,
+  ref,
   onChange,
   ...props
 }: Props & React.InputHTMLAttributes<HTMLTextAreaElement>) {
@@ -35,6 +37,7 @@ export default function InputTextAreaField({
       value={value as string}
       onChange={onChange as InputFieldProps["onChange"]}
       isTextArea
+      ref={ref}
       {...props}
     />
   );
