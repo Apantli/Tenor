@@ -275,10 +275,12 @@ export default function TaskDetailPopup({
       )}
       {!editMode && !isLoading && taskDetail && (
         <div className="flex flex-col gap-2">
-          <div className="mb-2 w-full">
-            <label className="mb-1 block text-sm font-medium">Notes</label>
-            <Markdown>{taskDetail.description}</Markdown>
-          </div>
+          {taskDetail.description != "" && (
+            <div className="mb-2 w-full">
+              <label className="mb-1 block text-sm font-medium">Notes</label>
+              <Markdown>{taskDetail.description}</Markdown>
+            </div>
+          )}
           <div className="mb-2 flex w-full gap-3">
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium">Status</label>

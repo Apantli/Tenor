@@ -71,6 +71,7 @@ interface TableProps<I, T> {
   emptyMessage?: string;
   tableKey: string; // Unique key for the table used for storing things like column widths
   rowClassName?: string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 function TableInternal<
@@ -94,6 +95,7 @@ function TableInternal<
   emptyMessage,
   tableKey,
   rowClassName,
+  scrollContainerRef,
 }: TableProps<I, T>) {
   // Make sure the tableKey exists
   if (!tableKey) {
@@ -108,7 +110,7 @@ function TableInternal<
   const [selection, setSelection] = useState<Set<I>>(new Set());
   const [resizing, setResizing] = useState(false);
   const [loadedGhosts, setLoadedGhosts] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const internalScrollContainerRef = useRef<HTMLDivElement>(null);
   const ghostDivRef = useRef<HTMLDivElement>(null);
   const lastSelectedIdRef = useRef<I>();
 
@@ -258,7 +260,7 @@ function TableInternal<
     setFilters({ ...filters });
   };
 
-  useClickOutside(scrollContainerRef, () => {
+  useClickOutside(internalScrollContainerRef, () => {
     lastSelectedIdRef.current = undefined;
   });
 
@@ -365,7 +367,7 @@ function TableInternal<
           setResizing={setResizing}
           resizing={resizing}
           tableKey={tableKey}
-          scrollContainerRef={scrollContainerRef}
+          scrollContainerRef={internalScrollContainerRef}
           ghostRowContainerRef={ghostDivRef}
           showGhostActions={ghostData !== undefined && ghostData.length > 0}
           acceptAllGhosts={acceptAllGhosts}
@@ -403,8 +405,9 @@ function TableInternal<
             />
           ))}
         </div>
-        {filteredData.map((value) => (
+        {filteredData.map((value, index) => (
           <TableRow
+            rowIndex={index}
             key={value.id}
             value={value}
             columns={columns}
@@ -415,7 +418,7 @@ function TableInternal<
             extraOptions={extraOptions}
             deletable={deletable}
             onDelete={onDelete}
-            scrollContainerRef={scrollContainerRef}
+            scrollContainerRef={internalScrollContainerRef}
             columnWidths={columnWidths}
             className={rowClassName}
           />

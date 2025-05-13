@@ -39,6 +39,7 @@ interface Props<T extends BacklogItemWithTasks> {
   setSelectedGhostTask: (taskId: string) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
   taskIdToOpenImmediately?: string;
+  fetchedTasks?: TaskCol[];
   itemData?: T;
   updateTaskData?: (
     taskId: string,
@@ -47,6 +48,7 @@ interface Props<T extends BacklogItemWithTasks> {
   setTaskData?: (data: TaskDetail[] | undefined) => void;
   selectedGhostTaskId?: string;
   setItemData?: (data: T | undefined) => void;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 // TODO: Update this to invalidate for backlog items also
@@ -56,12 +58,14 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
   itemType,
   setShowAddTaskPopup,
   setUnsavedTasks,
+  fetchedTasks,
   taskIdToOpenImmediately,
   itemData,
   updateTaskData,
   setTaskData,
   selectedGhostTaskId,
   setItemData,
+  scrollContainerRef,
 }: Props<T>) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const [taskToOpen, setTaskToOpen] = useState(taskIdToOpenImmediately);
@@ -94,6 +98,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       },
       {
         enabled: tasksData === undefined,
+        initialData: fetchedTasks,
       },
     );
   const { mutateAsync: changeStatus } =
@@ -595,6 +600,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
           </div>
         ) : (
           <Table
+            scrollContainerRef={scrollContainerRef}
             tableKey="tasks"
             data={filteredTasks}
             columns={taskColumns}

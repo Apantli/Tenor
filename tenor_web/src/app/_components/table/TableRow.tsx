@@ -24,6 +24,7 @@ interface TableRowProps<I, T> {
   scrollContainerRef: React.RefObject<HTMLDivElement>;
   columnWidths: number[];
   className?: string;
+  rowIndex?: number;
 }
 
 function TableRow<
@@ -43,6 +44,7 @@ function TableRow<
   scrollContainerRef,
   columnWidths,
   className,
+  rowIndex,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
@@ -73,7 +75,7 @@ function TableRow<
         },
         className,
       )}
-      style={{ gridTemplateColumns }}
+      style={{ gridTemplateColumns, zIndex: 1000 - (rowIndex ?? 0) }}
     >
       {multiselect && (
         <InputCheckbox
@@ -103,7 +105,7 @@ function TableRow<
                 • • •
               </span>
             }
-            className="flex h-full w-full items-center justify-end text-sm font-semibold transition"
+            className="sticky right-4 flex h-full w-full items-center justify-end text-sm font-semibold transition"
             menuClassName="font-normal whitespace-nowrap"
             scrollContainer={scrollContainerRef}
           >

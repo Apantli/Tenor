@@ -232,7 +232,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
 
   return (
     <div
-      className="group sticky top-0 z-[60] grid h-8 min-w-fit items-center gap-3 border-b border-app-border bg-white pl-2"
+      className="group sticky top-0 z-[60] grid h-8 min-w-fit shrink-0 items-center gap-3 border-b border-app-border bg-white pl-2"
       style={{ gridTemplateColumns }}
     >
       {multiselect && (

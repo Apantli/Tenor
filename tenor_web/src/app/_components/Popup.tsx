@@ -89,7 +89,7 @@ export default function Popup({
               "opacity-70": popIn && show,
             },
           )}
-          style={{ zIndex: zIndex ?? 100 }}
+          style={{ zIndex: zIndex ?? 100000 }}
           onClick={() => {
             if (!disablePassiveDismiss) dismiss();
           }}
@@ -105,7 +105,7 @@ export default function Popup({
             },
             className,
           )}
-          style={{ zIndex: (zIndex ?? 100) + 1 }}
+          style={{ zIndex: (zIndex ?? 100000) + 1 }}
           ref={containerRef}
           data-cy="popup"
         >

@@ -20,6 +20,8 @@ import {
 } from "./tags";
 import { getUserStory } from "./userStories";
 import { getSprint } from "./sprints";
+import type * as admin from "firebase-admin";
+import { getTaskTable } from "./tasks";
 
 /**
  * @function getIssuesRef
@@ -152,6 +154,7 @@ export const getIssueTable = async (
  * @returns {Promise<IssueDetail>} The detailed issue object
  */
 export const getIssueDetail = async (
+  admin: admin.app.App,
   firestore: Firestore,
   projectId: string,
   issueId: string,
@@ -180,11 +183,7 @@ export const getIssueDetail = async (
     ? await getSprint(firestore, projectId, issue.sprintId)
     : undefined;
 
-  //   const tasks: WithId<Task>[] = await Promise.all(
-  //     issue.taskIds.map(async (taskId) => {
-  //       return await getTask(firestore, projectId, taskId);
-  //     }),
-  //   );
+  const tasks = await getTaskTable(admin, firestore, projectId, issueId);
 
   const userStoryDetail: IssueDetail = {
     ...issue,
@@ -194,7 +193,7 @@ export const getIssueDetail = async (
     tags,
     relatedUserStory,
     completed: false,
-    tasks: [],
+    tasks,
   };
 
   return userStoryDetail;

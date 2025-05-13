@@ -513,6 +513,7 @@ export default function UserStoryDetailPopup({
           <TasksTable
             itemId={userStoryId}
             itemType="US"
+            fetchedTasks={userStoryDetail.tasks}
             setSelectedGhostTask={setSelectedGhostTaskId}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             selectedGhostTaskId={selectedGhostTaskId}
