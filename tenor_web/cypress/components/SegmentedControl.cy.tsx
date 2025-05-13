@@ -1,4 +1,4 @@
-import { SegmentedControl } from "../SegmentedControl";
+import { SegmentedControl } from "../../src/app/_components/SegmentedControl";
 import { mount } from "cypress/react";
 
 describe("SegmentedControl", () => {
