@@ -25,7 +25,7 @@ export default function CollapsableSearchBar({
   });
 
   return (
-    <div className="relative flex w-full" ref={ref}>
+    <div className="relative flex w-full" ref={ref} data-cy="collapsable-search-bar">
       <input
         ref={inputRef}
         type="text"
@@ -38,6 +38,7 @@ export default function CollapsableSearchBar({
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
         placeholder="Search..."
+        data-cy="collapsable-search-bar"
       />
       <button
         onClick={() => {
@@ -50,6 +51,7 @@ export default function CollapsableSearchBar({
             "left-2 translate-x-0": expanded,
           },
         )}
+        data-cy="collapsable-search-bar-icon"
       >
         <SearchIcon className="text-gray-600" />
       </button>
@@ -64,6 +66,7 @@ export default function CollapsableSearchBar({
           setSearchText("");
           setExpanded(false);
         }}
+        data-cy="collapsable-search-bar-close"
       >
         &times;
       </button>

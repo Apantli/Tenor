@@ -13,6 +13,7 @@ export default defineConfig({
     EMAIL: "test@mail.com",
     PASSWORD: "123456",
   },
+
   e2e: {
     baseUrl: "http://localhost:3000",
     defaultCommandTimeout: 10000, // Increase default timeout
@@ -50,6 +51,13 @@ export default defineConfig({
           }
         },
       });
+    },
+  },
+
+  component: {
+    devServer: {
+      framework: "next",
+      bundler: "webpack",
     },
   },
 });
