@@ -48,6 +48,7 @@ function TableRow<
   className,
   ghostsShown,
   disableSelection,
+  rowIndex,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = useMemo(
@@ -81,7 +82,7 @@ function TableRow<
         },
         className,
       )}
-      style={{ gridTemplateColumns }}
+      style={{ gridTemplateColumns, zIndex: 1000 - (rowIndex ?? 0) }}
     >
       {multiselect && (
         <InputCheckbox
