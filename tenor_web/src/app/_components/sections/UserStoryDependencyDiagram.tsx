@@ -19,10 +19,14 @@ import { api } from "~/trpc/react";
 import "@xyflow/react/dist/style.css";
 import { useParams } from "next/navigation";
 import { nodeTypes } from "~/lib/types/reactFlowTypes";
+import { useInvalidateQueriesUserStoriesDetails } from "~/app/_hooks/invalidateHooks";
 
 export default function UserStoryDependencyDiagram() {
   // #region Hooks
   const { projectId } = useParams();
+  const utils = api.useUtils();
+  const invalidateQueriesUserStoriesDetails =
+    useInvalidateQueriesUserStoriesDetails();
 
   // #endregion
   // #region TRPC
@@ -30,6 +34,9 @@ export default function UserStoryDependencyDiagram() {
     api.userStories.getUserStoryDependencies.useQuery({
       projectId: projectId as string,
     });
+
+  const { mutateAsync: updateUserStoryDependencies } =
+    api.userStories.updateUserStoryDependencies.useMutation();
 
   // #endregion
   // #region FLOW UTILITY
@@ -47,11 +54,41 @@ export default function UserStoryDependencyDiagram() {
     }
   }, [dependencyData]);
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges],
-  );
+  const onConnect = useCallback(async (params: Connection) => {
+    // Cancel ongoing queries for this user story data
+    await utils.userStories.getUserStoryDependencies.cancel({
+      projectId: projectId as string,
+    });
+
+    // Optimistically update the query data
+    utils.userStories.getUserStoryDependencies.setData(
+      {
+        projectId: projectId as string,
+      },
+      (oldData) => {
+        if (!oldData) return oldData;
+        const newEdges = addEdge(params, oldData.edges);
+        return {
+          ...oldData,
+          edges: newEdges,
+        };
+      },
+    );
+
+    await updateUserStoryDependencies({
+      projectId: projectId as string,
+      sourceId: params.source,
+      targetId: params.target,
+    });
+
+    // Make other places refetch the data
+    await invalidateQueriesUserStoriesDetails(projectId as string, [
+      params.source,
+      params.target,
+    ]);
+  }, []);
   // #endregion
+
   return (
     <div style={{ width: "80vw", height: "80vh" }}>
       {isLoadingDependencies && (

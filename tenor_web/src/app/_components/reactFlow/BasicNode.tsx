@@ -24,6 +24,8 @@ interface Props {
   };
 }
 
+const handleSize = "8px";
+
 export default function BasicNode({
   data: {
     id,
@@ -45,15 +47,20 @@ export default function BasicNode({
 
   return (
     <>
-      <Handle type="target" position={Position.Right} id="L" />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="L"
+        style={{ width: handleSize, height: handleSize }}
+      />
       <div className="min-h-10 w-56 rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800">
         {/* TODO: Fix this to work for epic node design (see figma) */}
         <div className="flex flex-row items-center justify-between px-2 text-sm">
           <span className="flex grow-[1]">
             {formatAnyScrumId(scrumId, nodeType)}
           </span>
-          <DeleteOutlineIcon fontSize="small" />
           <EditIcon fontSize="small" />
+          <DeleteOutlineIcon fontSize="small" />
         </div>
         <hr className="mb-2 mt-1 border-t border-slate-400" />
         <div className="line-clamp-2 px-2 text-lg">{title}</div>
@@ -64,7 +71,13 @@ export default function BasicNode({
           )}
         ></div>
       </div>
-      <Handle type="source" position={Position.Left} id="R" />
+      {/* TODO: Add custom styling */}
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="R"
+        style={{ width: handleSize, height: handleSize }}
+      />
     </>
   );
 }

@@ -65,6 +65,9 @@ export const useInvalidateQueriesAllUserStories = () => {
 export const useInvalidateQueriesUserStoriesDetails = () => {
   const utils = api.useUtils();
   return async (projectId: string, userStoryIds: string[]) => {
+    await utils.userStories.getUserStoryDependencies.invalidate({
+      projectId: projectId,
+    });
     await Promise.all(
       userStoryIds.map(async (userStoryId) => {
         await utils.userStories.getUserStoryDetail.invalidate({

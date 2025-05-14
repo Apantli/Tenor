@@ -434,6 +434,45 @@ export const userStoriesRouter = createTRPCRouter({
       return parsedData;
     }),
 
+  /**
+   * @function updateUserStoryDependencies
+   * @description Updates the dependency relationship between two user stories.
+   * @param {string} projectId - The ID of the project to which the user stories belong.
+   * @param {string} sourceId - The ID of the user story that will depend on the target.
+   * @param {string} targetId - The ID of the user story that will be a dependency.
+   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
+   */
+  updateUserStoryDependencies: roleRequiredProcedure(
+    backlogPermissions,
+    "write",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        sourceId: z.string(),
+        targetId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, sourceId, targetId } = input;
+
+      // Get references to both user stories
+      const sourceRef = getUserStoryRef(ctx.firestore, projectId, sourceId);
+      const targetRef = getUserStoryRef(ctx.firestore, projectId, targetId);
+
+      // Update the source user story to add the target as a dependency
+      await sourceRef.update({
+        dependencyIds: FieldValue.arrayUnion(targetId),
+      });
+
+      // Update the target user story to add the source as requiring it
+      await targetRef.update({
+        requiredByIds: FieldValue.arrayUnion(sourceId),
+      });
+
+      return { success: true };
+    }),
+
   getUserStoryDependencies: roleRequiredProcedure(backlogPermissions, "read")
     .input(
       z.object({
@@ -446,13 +485,13 @@ export const userStoriesRouter = createTRPCRouter({
 
       // Create nodes for each user story with a grid layout
       const nodes: Node[] = userStories.map((userStory, index) => {
-        const row = Math.floor(index / 3); // 3 nodes per row
-        const col = index % 3;
+        // const row = Math.floor(index / 3); // 3 nodes per row
+        // const col = index % 3;
         return {
           id: userStory.id,
           position: {
-            x: col * 300 + 100, // Horizontal spacing
-            y: row * 200 + 100, // Vertical spacing
+            x: 0, // Horizontal spacing
+            y: 0, // Vertical spacing
           },
           data: {
             id: userStory.scrumId,
@@ -470,8 +509,8 @@ export const userStoriesRouter = createTRPCRouter({
           id: `${userStory.id}-${dependencyId}`,
           source: userStory.id,
           target: dependencyId,
-          animated: true,
-          type: "default", // Types can be "default", "straight", "step", "smoothstep", or "simplebezier"
+          // animated: true,
+          // type: "default", // Types can be "default", "straight", "step", "smoothstep", or "simplebezier"
         })),
       );
 
