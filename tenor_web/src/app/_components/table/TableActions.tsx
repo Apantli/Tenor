@@ -3,8 +3,6 @@ import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import { cn } from "~/lib/utils";
 
 import { type DeleteOptions, type TableOptions } from "./Table";
-import AcceptIcon from "@mui/icons-material/Check";
-import RejectIcon from "@mui/icons-material/Close";
 
 interface TableActionsProps<I> {
   selection: Set<I>;

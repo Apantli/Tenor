@@ -397,11 +397,8 @@ function TableInternal<
         >
           {!loadedGhosts && (ghostRows ?? 0) > 0 && (
             <LoadingGhostTableRows
-              columnWidths={columnWidths}
               finishedLoading={ghostData !== undefined && ghostData.length > 0}
               ghostRows={ghostRows ?? 0}
-              deletable={deletable}
-              extraOptions={extraOptions}
               multiselect={multiselect}
               timeEstimate={ghostLoadingEstimation}
               rowClassName={rowClassName}

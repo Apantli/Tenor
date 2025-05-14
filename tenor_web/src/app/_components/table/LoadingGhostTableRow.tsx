@@ -6,9 +6,6 @@ import { type TableOptions, type DeleteOptions } from "./Table";
 
 interface LoadingGhostTableRowProps<I> {
   multiselect?: boolean;
-  extraOptions?: TableOptions<I>[];
-  deletable?: boolean | DeleteOptions;
-  columnWidths: number[];
   progress: number;
   className?: string;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
@@ -16,19 +13,11 @@ interface LoadingGhostTableRowProps<I> {
 
 function LoadingGhostTableRow<I extends string | number>({
   multiselect,
-  columnWidths,
   progress,
   className,
-  extraOptions,
-  deletable,
   scrollContainerRef,
 }: LoadingGhostTableRowProps<I>) {
-  const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const gridTemplateColumns = (multiselect ? "20px " : "") + " 40px 1fr";
-
-  const bgRef = useRef<HTMLDivElement>(null);
-  // columnWidths.map((width) => `${width}px`).join(" ") +
-  // (showThreeDots ? ` 1fr 50px` : "");
 
   const width = scrollContainerRef?.current?.clientWidth;
 

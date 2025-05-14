@@ -7,9 +7,6 @@ import useAfterResize from "~/app/_hooks/useAfterResize";
 
 interface Props<I> {
   multiselect?: boolean;
-  extraOptions?: TableOptions<I>[];
-  deletable?: boolean | DeleteOptions;
-  columnWidths: number[];
   timeEstimate?: number;
   ghostRows: number;
   finishedLoading: boolean;
@@ -21,9 +18,6 @@ export default function LoadingGhostTableRows<I extends string | number>({
   timeEstimate,
   ghostRows,
   multiselect,
-  extraOptions,
-  deletable,
-  columnWidths,
   finishedLoading,
   rowClassName,
   scrollContainerRef,
@@ -75,9 +69,6 @@ export default function LoadingGhostTableRows<I extends string | number>({
       {ghostRowIds.map((value) => (
         <LoadingGhostTableRow
           key={value}
-          columnWidths={columnWidths}
-          extraOptions={extraOptions}
-          deletable={deletable}
           multiselect={multiselect}
           progress={progress}
           className={rowClassName}
