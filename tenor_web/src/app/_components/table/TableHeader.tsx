@@ -44,6 +44,7 @@ interface TableHeaderProps<I, T> {
   showGhostActions?: boolean;
   acceptAllGhosts?: () => void;
   rejectAllGhosts?: () => void;
+  disableSelection?: boolean;
 }
 
 // eslint-disable-next-line
@@ -73,6 +74,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   showGhostActions,
   acceptAllGhosts,
   rejectAllGhosts,
+  disableSelection,
 }: TableHeaderProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = React.useMemo(
@@ -247,6 +249,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
             selection.size == filteredData.length && filteredData.length > 0
           }
           onChange={toggleSelectAll}
+          disabled={disableSelection}
         />
       )}
       {columnEntries.map(([key, column], index) => (

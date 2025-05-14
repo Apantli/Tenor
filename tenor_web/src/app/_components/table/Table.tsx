@@ -269,12 +269,17 @@ function TableInternal<
 
   useEffect(() => {
     // Triggers when ghost rows are shown
-    if (showGhostRows && ghostDivRef.current) {
-      if (internalScrollContainerRef.current) {
-        internalScrollContainerRef.current.scrollLeft = 0;
-      }
+    if (
+      showGhostRows &&
+      ghostDivRef.current &&
+      internalScrollContainerRef.current
+    ) {
+      setSelection(new Set());
+      internalScrollContainerRef.current.scrollLeft = 0;
+      internalScrollContainerRef.current.style.overflowX = "hidden";
       const height = ghostDivRef.current?.getBoundingClientRect().height;
       ghostDivRef.current.style.height = "0px";
+      ghostDivRef.current.style.overflowY = "hidden";
 
       // Wait for the next frame to set the height
       requestAnimationFrame(() => {
@@ -286,6 +291,8 @@ function TableInternal<
       const onTransitionEnd = () => {
         if (!ghostDivRef.current) return;
         ghostDivRef.current.style.height = "auto";
+        ghostDivRef.current.style.overflowY = "visible";
+        internalScrollContainerRef.current!.style.overflowX = "auto";
       };
 
       ghostDivRef.current.addEventListener("transitionend", onTransitionEnd);
@@ -346,12 +353,9 @@ function TableInternal<
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
-        className={cn(
-          "flex h-full flex-col overflow-x-auto overflow-y-hidden",
-          {
-            "overflow-x-hidden": showGhostRows && !loadedGhosts,
-          },
-        )}
+        className={cn("flex h-full flex-col overflow-x-auto overflow-y-auto", {
+          // "overflow-x-hidden": showGhostRows && !loadedGhosts,
+        })}
         ref={internalScrollContainerRef}
       >
         <TableHeader
@@ -380,11 +384,14 @@ function TableInternal<
           showGhostActions={ghostData !== undefined && ghostData.length > 0}
           acceptAllGhosts={acceptAllGhosts}
           rejectAllGhosts={rejectAllGhosts}
+          disableSelection={
+            (ghostRows ?? 0) > 0 ||
+            (ghostData !== undefined && ghostData.length > 0)
+          }
         />
         <div
           className={cn(
-            "relative z-10 shrink-0 overflow-y-hidden overflow-x-visible opacity-0 transition-[height,opacity] duration-500",
-            { "overflow-visible": loadedGhosts },
+            "relative z-10 shrink-0 overflow-y-hidden opacity-0 transition-[height,opacity] duration-500",
           )}
           ref={ghostDivRef}
         >
@@ -432,6 +439,10 @@ function TableInternal<
             onDelete={onDelete}
             scrollContainerRef={
               scrollContainerRef ?? internalScrollContainerRef
+            }
+            disableSelection={
+              (ghostRows ?? 0) > 0 ||
+              (ghostData !== undefined && ghostData.length > 0)
             }
             columnWidths={columnWidths}
             className={rowClassName}

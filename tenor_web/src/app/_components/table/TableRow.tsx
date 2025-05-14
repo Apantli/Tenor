@@ -26,6 +26,7 @@ interface TableRowProps<I, T> {
   className?: string;
   rowIndex?: number;
   ghostsShown?: boolean;
+  disableSelection?: boolean;
 }
 
 function TableRow<
@@ -46,6 +47,7 @@ function TableRow<
   columnWidths,
   className,
   ghostsShown,
+  disableSelection,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = useMemo(
@@ -86,6 +88,7 @@ function TableRow<
         <InputCheckbox
           checked={selection.has(value.id)}
           onChange={() => toggleSelect(value.id)}
+          disabled={disableSelection}
         />
       )}
       {columnEntries.map(([key, column]) => (
