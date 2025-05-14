@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import useStutterLoading from "~/app/_hooks/useStutterLoading";
 import LoadingGhostTableRow from "./LoadingGhostTableRow";
-import type { DeleteOptions, TableOptions } from "./Table";
 import { cn } from "~/lib/utils";
 import useAfterResize from "~/app/_hooks/useAfterResize";
 
-interface Props<I> {
+interface Props {
   multiselect?: boolean;
   timeEstimate?: number;
   ghostRows: number;
@@ -14,14 +13,14 @@ interface Props<I> {
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
-export default function LoadingGhostTableRows<I extends string | number>({
+export default function LoadingGhostTableRows({
   timeEstimate,
   ghostRows,
   multiselect,
   finishedLoading,
   rowClassName,
   scrollContainerRef,
-}: Props<I>) {
+}: Props) {
   const [progress, setProgress] = useState(0);
   const [hide, setHide] = useState(false);
   const [width, setWidth] = useState<number | null>(null);

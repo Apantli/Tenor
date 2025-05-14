@@ -2,21 +2,20 @@ import React, { useEffect, useRef } from "react";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import BubbleIcon from "@mui/icons-material/BubbleChart";
 import { cn } from "~/lib/utils";
-import { type TableOptions, type DeleteOptions } from "./Table";
 
-interface LoadingGhostTableRowProps<I> {
+interface LoadingGhostTableRowProps<> {
   multiselect?: boolean;
   progress: number;
   className?: string;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
-function LoadingGhostTableRow<I extends string | number>({
+function LoadingGhostTableRow({
   multiselect,
   progress,
   className,
   scrollContainerRef,
-}: LoadingGhostTableRowProps<I>) {
+}: LoadingGhostTableRowProps) {
   const gridTemplateColumns = (multiselect ? "20px " : "") + " 40px 1fr";
 
   const width = scrollContainerRef?.current?.clientWidth;
