@@ -270,6 +270,9 @@ function TableInternal<
   useEffect(() => {
     // Triggers when ghost rows are shown
     if (showGhostRows && ghostDivRef.current) {
+      if (internalScrollContainerRef.current) {
+        internalScrollContainerRef.current.scrollLeft = 0;
+      }
       const height = ghostDivRef.current?.getBoundingClientRect().height;
       ghostDivRef.current.style.height = "0px";
 
@@ -343,7 +346,12 @@ function TableInternal<
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
-        className="flex h-full flex-col overflow-x-auto"
+        className={cn(
+          "flex h-full flex-col overflow-x-auto overflow-y-hidden",
+          {
+            "overflow-x-hidden": showGhostRows && !loadedGhosts,
+          },
+        )}
         ref={internalScrollContainerRef}
       >
         <TableHeader
@@ -374,7 +382,10 @@ function TableInternal<
           rejectAllGhosts={rejectAllGhosts}
         />
         <div
-          className="relative z-10 shrink-0 opacity-0 transition-[height,opacity] duration-500"
+          className={cn(
+            "relative z-10 shrink-0 overflow-y-hidden overflow-x-visible opacity-0 transition-[height,opacity] duration-500",
+            { "overflow-visible": loadedGhosts },
+          )}
           ref={ghostDivRef}
         >
           {!loadedGhosts && (ghostRows ?? 0) > 0 && (
@@ -387,6 +398,7 @@ function TableInternal<
               multiselect={multiselect}
               timeEstimate={ghostLoadingEstimation}
               rowClassName={rowClassName}
+              scrollContainerRef={internalScrollContainerRef}
             />
           )}
           {ghostData?.map((value) => (
@@ -418,7 +430,9 @@ function TableInternal<
             extraOptions={extraOptions}
             deletable={deletable}
             onDelete={onDelete}
-            scrollContainerRef={internalScrollContainerRef}
+            scrollContainerRef={
+              scrollContainerRef ?? internalScrollContainerRef
+            }
             columnWidths={columnWidths}
             className={rowClassName}
             ghostsShown={ghostData !== undefined && ghostData.length > 0}

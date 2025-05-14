@@ -11,6 +11,7 @@ interface LoadingGhostTableRowProps<I> {
   columnWidths: number[];
   progress: number;
   className?: string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 function LoadingGhostTableRow<I extends string | number>({
@@ -20,12 +21,13 @@ function LoadingGhostTableRow<I extends string | number>({
   className,
   extraOptions,
   deletable,
+  scrollContainerRef,
 }: LoadingGhostTableRowProps<I>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
-  const gridTemplateColumns =
-    (multiselect ? "20px " : "") +
-    columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr 50px` : "");
+  const gridTemplateColumns = (multiselect ? "20px " : "") + " 40px 1fr";
+  const bgRef = useRef<HTMLDivElement>(null);
+  // columnWidths.map((width) => `${width}px`).join(" ") +
+  // (showThreeDots ? ` 1fr 50px` : "");
 
   const randomStarPosition = () => {
     const x = Math.random() * -window.innerWidth;
@@ -78,7 +80,7 @@ function LoadingGhostTableRow<I extends string | number>({
   return (
     <div
       className={cn(
-        "sticky left-0 grid min-w-fit origin-top items-center gap-3 overflow-hidden rounded-lg border-b border-white bg-app-secondary p-2 transition-all",
+        "relative grid min-w-fit origin-top items-center gap-3 overflow-hidden rounded-lg border-b border-white bg-app-secondary p-2 transition-all",
         className,
       )}
       style={{ gridTemplateColumns }}

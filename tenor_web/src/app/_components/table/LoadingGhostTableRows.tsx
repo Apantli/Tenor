@@ -13,6 +13,7 @@ interface Props<I> {
   ghostRows: number;
   finishedLoading: boolean;
   rowClassName?: string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 export default function LoadingGhostTableRows<I extends string | number>({
@@ -24,6 +25,7 @@ export default function LoadingGhostTableRows<I extends string | number>({
   columnWidths,
   finishedLoading,
   rowClassName,
+  scrollContainerRef,
 }: Props<I>) {
   const [progress, setProgress] = useState(0);
   const [hide, setHide] = useState(false);
@@ -66,6 +68,7 @@ export default function LoadingGhostTableRows<I extends string | number>({
           multiselect={multiselect}
           progress={progress}
           className={rowClassName}
+          scrollContainerRef={scrollContainerRef}
         />
       ))}
     </div>

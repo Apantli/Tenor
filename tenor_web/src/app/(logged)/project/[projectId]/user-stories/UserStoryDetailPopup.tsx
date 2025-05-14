@@ -71,6 +71,7 @@ export default function UserStoryDetailPopup({
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const [unsavedTasks, setUnsavedTasks] = useState(false);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   const {
     data: fetchedUserStory,
@@ -485,7 +486,7 @@ export default function UserStoryDetailPopup({
         </>
       )}
       {!editMode && !isLoading && userStoryDetail && (
-        <div className="overflow-hidden">
+        <div className="overflow-hidden" ref={scrollContainerRef}>
           <div className="markdown-content overflow-hidden text-lg">
             <Markdown>{userStoryDetail.description}</Markdown>
           </div>
@@ -511,6 +512,7 @@ export default function UserStoryDetailPopup({
           )}
 
           <TasksTable
+            scrollContainerRef={scrollContainerRef}
             itemId={userStoryId}
             itemType="US"
             fetchedTasks={userStoryDetail.tasks}

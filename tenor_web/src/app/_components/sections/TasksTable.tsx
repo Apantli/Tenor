@@ -593,7 +593,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         </div>
       </div>
 
-      <div className="mt-4 w-full max-w-full overflow-hidden">
+      <div className="mt-4 w-full max-w-full overflow-x-hidden">
         {tasksTableData === undefined || isLoading ? (
           <div className="mt-8 flex h-full w-full items-center justify-center">
             <LoadingSpinner color="primary" />
@@ -604,7 +604,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             tableKey="tasks"
             data={filteredTasks}
             columns={taskColumns}
-            className="font-sm max-w-[min(678px,100vw-320px)] overflow-hidden"
+            className="font-sm max-w-[min(678px,100vw-320px)] overflow-x-hidden"
             multiselect
             deletable
             onDelete={handleTaskDelete}
