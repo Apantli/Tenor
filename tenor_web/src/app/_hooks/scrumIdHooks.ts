@@ -37,3 +37,27 @@ export const useFormatIssueScrumId = () => {
   return (issueId: number) =>
     `IS${String(issueId).padStart(calculatePaddingNeeded(1), "0")}`;
 };
+
+export const useFormatAnyScrumId = () => {
+  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatEpicScrumId = useFormatEpicScrumId();
+  const formatTaskScrumId = useFormatTaskScrumId();
+  const formatIssueScrumId = useFormatIssueScrumId();
+
+  return (scrumId: number, type: string) => {
+    console.log("scrumId", scrumId);
+    console.log("type", type);
+    switch (type) {
+      case "US":
+        return formatUserStoryScrumId(scrumId);
+      case "EP":
+        return formatEpicScrumId(scrumId);
+      case "TS":
+        return formatTaskScrumId(scrumId);
+      case "IS":
+        return formatIssueScrumId(scrumId);
+      default:
+        return String(scrumId);
+    }
+  };
+};

@@ -32,6 +32,7 @@ import {
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
 import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
+import type { Edge, Node } from "@xyflow/react";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -431,5 +432,52 @@ export const userStoriesRouter = createTRPCRouter({
       );
 
       return parsedData;
+    }),
+
+  getUserStoryDependencies: roleRequiredProcedure(backlogPermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const userStories = await getUserStories(ctx.firestore, projectId);
+
+      // Create nodes for each user story with a grid layout
+      const nodes: Node[] = userStories.map((userStory, index) => {
+        const row = Math.floor(index / 3); // 3 nodes per row
+        const col = index % 3;
+        return {
+          id: userStory.id,
+          position: {
+            x: col * 300 + 100, // Horizontal spacing
+            y: row * 200 + 100, // Vertical spacing
+          },
+          data: {
+            id: userStory.scrumId,
+            title: userStory.name,
+            scrumId: userStory.scrumId,
+            nodeType: "US", // one of KanbanCard["cardType"]
+          },
+          type: "basic", // see nodeTypes
+        };
+      });
+
+      // Create edges for dependencies
+      const edges: Edge[] = userStories.flatMap((userStory) =>
+        userStory.dependencyIds.map((dependencyId) => ({
+          id: `${userStory.id}-${dependencyId}`,
+          source: userStory.id,
+          target: dependencyId,
+          animated: true,
+          type: "default", // Types can be "default", "straight", "step", "smoothstep", or "simplebezier"
+        })),
+      );
+
+      return {
+        nodes,
+        edges,
+      };
     }),
 });
