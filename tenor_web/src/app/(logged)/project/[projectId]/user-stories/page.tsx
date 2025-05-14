@@ -5,6 +5,7 @@ import UserStoryDependencyDiagram from "~/app/_components/sections/UserStoryDepe
 import UserStoryTable from "~/app/_components/sections/UserStoryTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
+import { ReactFlowProvider } from "@xyflow/react";
 
 export default function ProjectUserStories() {
   const [selectedView, setSelectedView] = useState("table");
@@ -27,7 +28,9 @@ export default function ProjectUserStories() {
           <UserStoryTable />
         </div>
       ) : (
-        <UserStoryDependencyDiagram />
+        <ReactFlowProvider>
+          <UserStoryDependencyDiagram />
+        </ReactFlowProvider>
       )}
     </div>
   );

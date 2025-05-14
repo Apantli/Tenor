@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useCallback, useEffect } from "react";
+import "@xyflow/react/dist/style.css";
+import { useParams } from "next/navigation";
+import { nodeTypes } from "~/lib/types/reactFlowTypes";
 import {
   ReactFlow,
   MiniMap,
@@ -13,13 +16,16 @@ import {
   type Edge,
   type Node,
   BackgroundVariant,
+  useReactFlow,
+  Panel,
 } from "@xyflow/react";
 import { api } from "~/trpc/react";
-
-import "@xyflow/react/dist/style.css";
-import { useParams } from "next/navigation";
-import { nodeTypes } from "~/lib/types/reactFlowTypes";
 import { useInvalidateQueriesUserStoriesDetails } from "~/app/_hooks/invalidateHooks";
+import {
+  getLayoutedElements,
+  saveNodePositionsToLocalStorage,
+} from "~/utils/reactFlow";
+import SecondaryButton from "../buttons/SecondaryButton";
 
 export default function UserStoryDependencyDiagram() {
   // #region Hooks
@@ -27,6 +33,7 @@ export default function UserStoryDependencyDiagram() {
   const utils = api.useUtils();
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
+  const { fitView } = useReactFlow();
 
   // #endregion
   // #region TRPC
@@ -39,6 +46,7 @@ export default function UserStoryDependencyDiagram() {
     api.userStories.updateUserStoryDependencies.useMutation();
 
   // #endregion
+
   // #region FLOW UTILITY
   const [nodes, setNodes, onNodesChange] = useNodesState(
     dependencyData?.nodes ?? [],
@@ -46,13 +54,57 @@ export default function UserStoryDependencyDiagram() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     dependencyData?.edges ?? [],
   );
+  const [initialLayoutDone, setInitialLayoutDone] = React.useState(
+    localStorage.getItem("initialLayoutDone") === "true",
+  );
+
+  // Save node positions to localStorage whenever they change
+  const handleNodesChange = useCallback(
+    (changes: Parameters<typeof onNodesChange>[0]) => {
+      onNodesChange(changes);
+      // Save positions of all nodes to localStorage
+      saveNodePositionsToLocalStorage(projectId as string, nodes);
+    },
+    [nodes, projectId, onNodesChange],
+  );
 
   useEffect(() => {
     if (dependencyData) {
-      setNodes(dependencyData.nodes);
+      // Load saved positions from localStorage
+      const savedPositions = localStorage.getItem(
+        `nodePositions:${projectId as string}`,
+      );
+      let nodesWithPositions = [...dependencyData.nodes];
+
+      if (savedPositions) {
+        const positions = JSON.parse(savedPositions) as Record<
+          string,
+          { x: number; y: number }
+        >;
+        nodesWithPositions = nodesWithPositions.map((node) => {
+          const savedPosition = positions[node.id];
+          if (savedPosition) {
+            return {
+              ...node,
+              position: savedPosition,
+            };
+          }
+          return node;
+        });
+      }
+
+      setNodes(nodesWithPositions);
       setEdges(dependencyData.edges);
     }
-  }, [dependencyData]);
+  }, [dependencyData, projectId]);
+
+  useEffect(() => {
+    if (!initialLayoutDone && nodes.length > 0 && nodes[0]?.measured) {
+      localStorage.setItem("initialLayoutDone", "true");
+      setInitialLayoutDone(true);
+      onLayout();
+    }
+  }, [nodes]);
 
   const onConnect = useCallback(async (params: Connection) => {
     // Cancel ongoing queries for this user story data
@@ -87,7 +139,26 @@ export default function UserStoryDependencyDiagram() {
       params.target,
     ]);
   }, []);
+
+  const onLayout = useCallback(
+    (forcedNodes?: Node[], forcedEdges?: Edge[]) => {
+      const layouted = getLayoutedElements(
+        forcedNodes ?? nodes,
+        forcedEdges ?? edges,
+      );
+
+      setNodes([...layouted.nodes]);
+      setEdges([...layouted.edges]);
+
+      saveNodePositionsToLocalStorage(projectId as string, layouted.nodes);
+
+      void fitView();
+    },
+    [nodes, edges, projectId],
+  );
   // #endregion
+
+  // TODO: verify no cyclic dependencies
 
   return (
     <div style={{ width: "80vw", height: "80vh" }}>
@@ -111,14 +182,20 @@ export default function UserStoryDependencyDiagram() {
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
+          onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+          fitView
         >
           <Controls />
           <MiniMap />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+          <Panel position="top-right">
+            <SecondaryButton onClick={() => onLayout()} className={"bg-white"}>
+              Layout
+            </SecondaryButton>
+          </Panel>
         </ReactFlow>
       )}
     </div>

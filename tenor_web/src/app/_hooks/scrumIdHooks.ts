@@ -45,8 +45,6 @@ export const useFormatAnyScrumId = () => {
   const formatIssueScrumId = useFormatIssueScrumId();
 
   return (scrumId: number, type: string) => {
-    console.log("scrumId", scrumId);
-    console.log("type", type);
     switch (type) {
       case "US":
         return formatUserStoryScrumId(scrumId);

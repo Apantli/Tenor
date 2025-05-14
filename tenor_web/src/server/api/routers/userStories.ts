@@ -33,6 +33,7 @@ import { getEpic } from "~/utils/helpers/shortcuts/epics";
 import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import type { Edge, Node } from "@xyflow/react";
+import { getLayoutedElements } from "~/utils/reactFlow";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -484,9 +485,7 @@ export const userStoriesRouter = createTRPCRouter({
       const userStories = await getUserStories(ctx.firestore, projectId);
 
       // Create nodes for each user story with a grid layout
-      const nodes: Node[] = userStories.map((userStory, index) => {
-        // const row = Math.floor(index / 3); // 3 nodes per row
-        // const col = index % 3;
+      const nodes: Node[] = userStories.map((userStory) => {
         return {
           id: userStory.id,
           position: {
@@ -514,9 +513,7 @@ export const userStoriesRouter = createTRPCRouter({
         })),
       );
 
-      return {
-        nodes,
-        edges,
-      };
+      const layoutedElements = getLayoutedElements(nodes, edges);
+      return layoutedElements;
     }),
 });
