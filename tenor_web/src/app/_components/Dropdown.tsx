@@ -24,6 +24,7 @@ interface Props {
   onClose?: () => void;
   disabled?: boolean;
   close?: boolean;
+  setOpenState?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function useCloseDropdown() {
@@ -49,6 +50,7 @@ export default function Dropdown({
   onClose,
   disabled,
   close,
+  setOpenState,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDirection, setOpenDirection] = useState<
@@ -67,6 +69,7 @@ export default function Dropdown({
   useEffect(() => {
     if (close) {
       setIsOpen(false);
+      setOpenState?.(false);
       onClose?.();
     }
   }, [close]);
@@ -75,6 +78,7 @@ export default function Dropdown({
   useClickOutside(ref, () => {
     if (isOpen) {
       setIsOpen(false);
+      setOpenState?.(false);
       onClose?.();
     }
   });
@@ -105,6 +109,7 @@ export default function Dropdown({
       setOpenDirection(positionDropdown(1));
     } else {
       setIsOpen(false);
+      setOpenState?.(false);
       onClose?.();
     }
   }, scrollContainer);
@@ -122,6 +127,7 @@ export default function Dropdown({
       onClose?.();
     }
     setIsOpen(!isOpen);
+    setOpenState?.(!isOpen);
   };
 
   function positionDropdown(multiplier: number) {
@@ -184,7 +190,7 @@ export default function Dropdown({
       </button>
       <div
         className={cn(
-          "pointer-events-none fixed z-[200] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
+          "pointer-events-none fixed z-[1001] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
           {
             "pointer-events-auto translate-y-0 scale-x-100 scale-y-100 opacity-100":
               !!isOpen,
@@ -205,6 +211,7 @@ export default function Dropdown({
               className="border-b border-app-border text-base last:border-none"
               onClick={() => {
                 setIsOpen(false);
+                setOpenState?.(false);
                 onClose?.();
               }}
             >

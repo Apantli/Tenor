@@ -107,7 +107,7 @@ export default function AiGeneratorDropdown({
             </p>
             <div className="flex w-full items-center gap-2">
               <button
-                className="flex-1 rounded-md bg-red-500 p-2 text-white"
+                className="flex-1 rounded-md bg-app-fail p-2 text-white transition hover:bg-app-hover-fail"
                 onClick={() => {
                   onRejectAll?.();
                   // closeDropdown();
@@ -116,7 +116,7 @@ export default function AiGeneratorDropdown({
                 Reject All
               </button>
               <button
-                className="flex-1 rounded-md bg-app-secondary p-2 text-white"
+                className="flex-1 rounded-md bg-app-secondary p-2 text-white transition hover:bg-app-hover-secondary"
                 onClick={() => {
                   onAcceptAll?.();
                   // closeDropdown();

@@ -33,12 +33,12 @@ function GhostTableRow<
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    ` 1fr 110px`;
+    ` 1fr 120px`;
 
   return (
     <div
       className={cn(
-        "z-0 grid min-w-fit origin-top items-center gap-3 border-b border-app-border bg-slate-100/80 py-2 pl-2 text-gray-800 transition",
+        "z-0 grid min-w-fit origin-top items-center gap-3 border-b border-app-border bg-slate-100/80 pl-2 text-gray-800 transition",
         className,
       )}
       style={{ gridTemplateColumns }}
@@ -67,7 +67,7 @@ function GhostTableRow<
         );
       })}
       <div></div> {/* 1fr */}
-      <div className="flex items-center justify-end gap-2 pr-3 text-app-primary">
+      <div className="sticky right-0 flex h-10 w-full items-center justify-end gap-2 pr-3 text-app-primary">
         <button
           className="p-1 text-sm text-app-text underline underline-offset-4"
           onClick={onReject}
@@ -80,6 +80,8 @@ function GhostTableRow<
         >
           Accept
         </button>
+        <div className="bg-slate-100/80_ absolute left-0 top-0 -z-10 h-full w-full bg-slate-100"></div>
+        <div className="absolute left-[-20px] top-0 -z-10 h-full w-[20px] bg-gradient-to-r from-transparent to-slate-100"></div>
       </div>
     </div>
   );

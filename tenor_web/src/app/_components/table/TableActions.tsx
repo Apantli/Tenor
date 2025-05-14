@@ -32,29 +32,14 @@ function TableActions<I extends string | number>({
   return (
     <div
       className={cn(
-        "pointer-events-none flex items-center justify-end gap-2 pr-3 opacity-0 transition",
+        "pointer-events-none flex w-full items-center justify-end gap-2 opacity-0 transition",
         {
           "pointer-events-auto opacity-100":
             selection.size > 0 || showGhostActions,
         },
       )}
     >
-      {/* Multiselect editable options, not used yet */}
-      {/* {selection.size > 0 &&
-        extraOptions?.map((option, i) => (
-          <button
-            key={i}
-            data-tooltip-id="tooltip"
-            data-tooltip-content={`${option.label} selected (${selection.size})`}
-            data-tooltip-place="top-start"
-            data-tooltip-hidden={selection.size === 0}
-            className="text-gray-500 transition hover:text-app-primary"
-            onClick={() => option.action(Array.from(selection))}
-          >
-            {option.icon}
-          </button>
-        ))} */}
-      {deletable === true && selection.size > 0 && (
+      {!showGhostActions && deletable === true && selection.size > 0 && (
         <button
           data-tooltip-id="tooltip"
           data-tooltip-content={`Delete selected (${selection.size})`}
@@ -72,7 +57,8 @@ function TableActions<I extends string | number>({
           <DeleteIcon />
         </button>
       )}
-      {selection.size > 0 &&
+      {!showGhostActions &&
+        selection.size > 0 &&
         deletable &&
         typeof deletable === "object" &&
         "deleteText" in deletable && (
@@ -94,22 +80,22 @@ function TableActions<I extends string | number>({
           </button>
         )}
       {showGhostActions && (
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <button
+            className="rounded-md bg-app-fail p-1 text-sm text-white transition hover:bg-app-hover-fail"
+            onClick={onRejectAllGhosts}
             data-tooltip-id="tooltip"
             data-tooltip-content="Reject all"
-            className="text-gray-500 transition hover:text-app-fail"
-            onClick={onRejectAllGhosts}
           >
-            <RejectIcon fontSize="small" />
+            Reject
           </button>
           <button
+            className="rounded-md bg-app-secondary p-1 text-sm text-white transition hover:bg-app-hover-secondary"
+            onClick={onAcceptAllGhosts}
             data-tooltip-id="tooltip"
             data-tooltip-content="Accept all"
-            className="text-gray-500 transition hover:text-app-primary"
-            onClick={onAcceptAllGhosts}
           >
-            <AcceptIcon fontSize="small" />
+            Accept
           </button>
         </div>
       )}

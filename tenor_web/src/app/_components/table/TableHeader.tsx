@@ -83,11 +83,13 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   const [temporaryColumnWidths, setTemporaryColumnWidths] =
     useState<number[]>(columnWidths);
   const columnWidthsRef = useRef<number[]>(columnWidths);
+  const headerRef = useRef<HTMLDivElement>(null);
 
+  const addedSpace = showGhostActions ? "120px" : "50px";
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr 110px` : "");
+    (showThreeDots ? ` 1fr ${addedSpace}` : "");
 
   const startXRef = useRef<number>();
   const startWidthRef = useRef<number>();
@@ -115,7 +117,8 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     if (
       startXRef.current === undefined ||
       resizingIndexRef.current === undefined ||
-      startWidthRef.current === undefined
+      startWidthRef.current === undefined ||
+      headerRef.current === null
     )
       return;
     setResizing(true);
@@ -136,7 +139,8 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     const newTemplateColumns =
       (multiselect ? "20px " : "") +
       newColumnWidths.map((width) => `${width}px`).join(" ") +
-      (showThreeDots ? ` 1fr 110px` : "");
+      (showThreeDots ? ` 1fr ${addedSpace}` : "");
+    console.log(addedSpace);
 
     scrollContainerRef.current?.childNodes.forEach((child) => {
       (child as HTMLElement).style.gridTemplateColumns = newTemplateColumns;
@@ -175,7 +179,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       window.removeEventListener("mouseup", onResizeMouseUp);
       window.removeEventListener("mousemove", onResizeMouseMove);
     };
-  }, []);
+  }, [showGhostActions]);
 
   const shiftClick = useShiftKey();
 
@@ -188,6 +192,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   };
 
   const setFullWidth = (index: number) => {
+    if (headerRef.current === null) return;
     const newColumnWidths = [...temporaryColumnWidths];
     if (shiftClick) {
       columnEntries.forEach(([key, column], i) => {
@@ -205,7 +210,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
     const newTemplateColumns =
       (multiselect ? "20px " : "") +
       newColumnWidths.map((width) => `${width}px`).join(" ") +
-      (showThreeDots ? ` 1fr 110px` : "");
+      (showThreeDots ? ` 1fr ${addedSpace}` : "");
 
     scrollContainerRef.current?.childNodes.forEach((child) => {
       const element = child as HTMLElement;
@@ -232,8 +237,9 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
 
   return (
     <div
-      className="group sticky top-0 z-[60] grid h-8 min-w-fit shrink-0 items-center gap-3 border-b border-app-border bg-white pl-2"
+      className="group sticky top-0 z-[60] grid h-12 min-w-fit shrink-0 items-center gap-3 border-b border-app-border bg-white pl-2"
       style={{ gridTemplateColumns }}
+      ref={headerRef}
     >
       {multiselect && (
         <InputCheckbox
@@ -361,16 +367,20 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       {showThreeDots && (
         <>
           <div></div>
-          <TableActions
-            selection={selection}
-            setSelection={setSelection}
-            extraOptions={extraOptions}
-            deletable={deletable}
-            onDelete={onDelete}
-            showGhostActions={showGhostActions}
-            onAcceptAllGhosts={acceptAllGhosts}
-            onRejectAllGhosts={rejectAllGhosts}
-          />
+          <div className="sticky right-0 flex h-full w-full items-center bg-red-500 pr-3">
+            <TableActions
+              selection={selection}
+              setSelection={setSelection}
+              extraOptions={extraOptions}
+              deletable={deletable}
+              onDelete={onDelete}
+              showGhostActions={showGhostActions}
+              onAcceptAllGhosts={acceptAllGhosts}
+              onRejectAllGhosts={rejectAllGhosts}
+            />
+            <div className="absolute left-0 top-0 -z-10 h-full w-full bg-white"></div>
+            <div className="absolute left-[-20px] top-0 -z-10 h-full w-[20px] bg-gradient-to-r from-transparent to-white"></div>
+          </div>
         </>
       )}
     </div>

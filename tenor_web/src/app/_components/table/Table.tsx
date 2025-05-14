@@ -344,7 +344,7 @@ function TableInternal<
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
         className="flex h-full flex-col overflow-x-auto"
-        ref={scrollContainerRef}
+        ref={internalScrollContainerRef}
       >
         <TableHeader
           columns={columns}
@@ -374,7 +374,7 @@ function TableInternal<
           rejectAllGhosts={rejectAllGhosts}
         />
         <div
-          className="relative min-w-fit shrink-0 overflow-hidden opacity-0 transition-[height,opacity] duration-500"
+          className="relative z-10 shrink-0 opacity-0 transition-[height,opacity] duration-500"
           ref={ghostDivRef}
         >
           {!loadedGhosts && (ghostRows ?? 0) > 0 && (
@@ -421,6 +421,7 @@ function TableInternal<
             scrollContainerRef={internalScrollContainerRef}
             columnWidths={columnWidths}
             className={rowClassName}
+            ghostsShown={ghostData !== undefined && ghostData.length > 0}
           />
         ))}
         {filteredData.length === 0 && !showGhostRows && emptyMessage && (
@@ -433,7 +434,7 @@ function TableInternal<
   );
 }
 
-// This is a workaround to prevent server-side rendering issues (because we access localstorage in the component)
+// This is a workaround to  event server-side rendering issues (because we access localstorage in the component)
 const Table = dynamic(() => Promise.resolve(TableInternal), {
   ssr: false,
 }) as typeof TableInternal;

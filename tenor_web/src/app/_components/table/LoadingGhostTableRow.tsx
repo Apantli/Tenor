@@ -25,7 +25,7 @@ function LoadingGhostTableRow<I extends string | number>({
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr 110px` : "");
+    (showThreeDots ? ` 1fr 50px` : "");
 
   const randomStarPosition = () => {
     const x = Math.random() * -window.innerWidth;
@@ -78,7 +78,7 @@ function LoadingGhostTableRow<I extends string | number>({
   return (
     <div
       className={cn(
-        "relative grid min-w-fit origin-top items-center gap-3 overflow-hidden rounded-lg border-b border-white bg-app-secondary p-2 transition-all",
+        "sticky left-0 grid min-w-fit origin-top items-center gap-3 overflow-hidden rounded-lg border-b border-white bg-app-secondary p-2 transition-all",
         className,
       )}
       style={{ gridTemplateColumns }}
