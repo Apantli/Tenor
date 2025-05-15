@@ -12,7 +12,6 @@ import { type ClassNameValue } from "tailwind-merge";
 import useWindowResize from "../_hooks/useWindowResize";
 import useAfterScroll from "../_hooks/useAfterScroll";
 import BaseButton, { type BaseButtonProps } from "./buttons/BaseButton";
-import { usePopupContainer } from "./Popup";
 import Portal from "./Portal";
 
 interface Props {
@@ -60,8 +59,6 @@ export default function Dropdown({
   const ref = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const startScrollPos = useRef<number | null>(null);
-
-  const popupContainer = usePopupContainer();
 
   const childrenArray = Array.isArray(children)
     ? children.filter((c) => !!c)

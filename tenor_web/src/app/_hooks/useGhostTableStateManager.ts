@@ -1,5 +1,4 @@
 import { useState } from "react";
-import useConfirmation from "./useConfirmation";
 
 export type GhostTableStateManager<
   // eslint-disable-next-line
@@ -17,8 +16,6 @@ export default function useGhostTableStateManager<
 ) {
   const [ghostData, setGhostData] = useState<T[] | undefined>();
   const [ghostRows, setGhostRows] = useState<number | undefined>();
-
-  const confirm = useConfirmation();
 
   const onAccept = async (ids: I[]) => {
     const newGhostData = ghostData?.filter((ghost) => !ids.includes(ghost.id));
