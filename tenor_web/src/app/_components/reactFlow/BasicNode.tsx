@@ -2,42 +2,30 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { accentColorByCardType } from "~/utils/helpers/colorUtils";
-import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
+import type { basicNodeData } from "~/lib/types/reactFlowTypes";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow
-  data: {
-    id: string;
-    scrumId: number;
-    nodeType: KanbanCard["cardType"];
-    title: string;
-    content: string;
-    showDeleteButton: boolean;
-    onDelete: () => void;
-    showEditButton: boolean;
-    onEdit: () => void;
-    collapsible: boolean;
-  };
+  data: basicNodeData;
 }
 
 const handleSize = "8px";
 
 export default function BasicNode({
   data: {
-    id,
+    // id,
     scrumId,
     nodeType,
     title,
-    content,
     showDeleteButton,
-    onDelete,
+    // onDelete,
     showEditButton,
-    onEdit,
-    collapsible,
+    // onEdit,
+    // collapsible,
   },
 }: Props) {
   const formatAnyScrumId = useFormatAnyScrumId();
@@ -59,8 +47,8 @@ export default function BasicNode({
           <span className="flex grow-[1]">
             {formatAnyScrumId(scrumId, nodeType)}
           </span>
-          <EditIcon fontSize="small" />
-          <DeleteOutlineIcon fontSize="small" />
+          {showEditButton && <EditIcon fontSize="small" />}
+          {showDeleteButton && <DeleteOutlineIcon fontSize="small" />}
         </div>
         <hr className="mb-2 mt-1 border-t border-slate-400" />
         <div className="line-clamp-2 px-2 text-lg">{title}</div>

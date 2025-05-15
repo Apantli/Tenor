@@ -33,7 +33,6 @@ import { getEpic } from "~/utils/helpers/shortcuts/epics";
 import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import type { Edge, Node } from "@xyflow/react";
-import { getLayoutedElements } from "~/utils/reactFlow";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -489,15 +488,18 @@ export const userStoriesRouter = createTRPCRouter({
         return {
           id: userStory.id,
           position: {
-            x: 0, // Horizontal spacing
-            y: 0, // Vertical spacing
-          },
+            x: 0,
+            y: 0,
+          }, // Position is updated in the frontend because it needs nodes' real size
           data: {
-            id: userStory.scrumId,
+            id: userStory.id,
             title: userStory.name,
             scrumId: userStory.scrumId,
             nodeType: "US", // one of KanbanCard["cardType"]
-          },
+            showDeleteButton: true,
+            showEditButton: true,
+            collapsible: false,
+          }, // See BasicNodeData
           type: "basic", // see nodeTypes
         };
       });
@@ -513,7 +515,6 @@ export const userStoriesRouter = createTRPCRouter({
         })),
       );
 
-      const layoutedElements = getLayoutedElements(nodes, edges);
-      return layoutedElements;
+      return { nodes, edges };
     }),
 });
