@@ -156,7 +156,7 @@ function TableRow<
             </Dropdown>
             <div
               className={cn(
-                "absolute left-0 top-0 -z-10 h-full w-full bg-white",
+                "absolute right-0 top-0 -z-10 h-full w-[45px] bg-white",
                 {
                   "bg-gray-100": isSelected,
                 },
@@ -164,7 +164,7 @@ function TableRow<
             ></div>
             <div
               className={cn(
-                "absolute left-[-20px] top-0 -z-10 h-full w-[20px] bg-gradient-to-r from-transparent to-white",
+                "absolute right-[45px] top-0 -z-10 h-full w-[20px] bg-gradient-to-r from-transparent to-white",
                 {
                   "to-gray-100": isSelected,
                 },
