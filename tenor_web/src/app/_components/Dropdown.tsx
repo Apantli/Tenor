@@ -13,6 +13,7 @@ import useWindowResize from "../_hooks/useWindowResize";
 import useAfterScroll from "../_hooks/useAfterScroll";
 import BaseButton, { type BaseButtonProps } from "./buttons/BaseButton";
 import { usePopupContainer } from "./Popup";
+import Portal from "./Portal";
 
 interface Props {
   label: React.ReactNode;
@@ -75,7 +76,7 @@ export default function Dropdown({
   }, [close]);
 
   // Used to close the menu when the user clicks outside of it
-  useClickOutside(ref, () => {
+  useClickOutside([ref, dropdownRef], () => {
     if (isOpen) {
       setIsOpen(false);
       setOpenState?.(false);
@@ -135,7 +136,6 @@ export default function Dropdown({
 
     const triggerRect = ref.current.getBoundingClientRect();
     const dropdownRect = dropdownRef.current.getBoundingClientRect();
-    const popupRect = popupContainer?.current?.getBoundingClientRect();
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -143,34 +143,34 @@ export default function Dropdown({
     const dropdownWidth = dropdownRect.width * multiplier;
     const dropdownHeight = dropdownRect.height * multiplier;
 
-    let top = triggerRect.bottom - (popupRect?.top ?? 0); // Align to the bottom of the trigger
-    const realTop = triggerRect.bottom;
-    let left = triggerRect.right - dropdownWidth - (popupRect?.left ?? 0); // Align to the right of the trigger
-    const realLeft = triggerRect.right - dropdownWidth;
+    // Initial position — bottom-right of trigger (relative to viewport)
+    let top = triggerRect.bottom + window.scrollY;
+    let left = triggerRect.right - dropdownWidth + window.scrollX;
 
     let vertAlignment = "top";
     let horiAlignment = "right";
 
-    // Check if dropdown goes off-screen vertically
-    if (realTop + dropdownHeight > viewportHeight) {
-      top = triggerRect.top - dropdownHeight - (popupRect?.top ?? 0); // Position above trigger
+    // Adjust vertically if dropdown overflows the viewport
+    if (top + dropdownHeight > viewportHeight + window.scrollY) {
+      top = triggerRect.top - dropdownHeight + window.scrollY;
       vertAlignment = "bottom";
     }
 
-    // Check if dropdown goes off-screen horizontally
+    // Adjust horizontally if dropdown overflows the viewport
     if (left < 0) {
-      // Check if left edge is off-screen
-      left = 0; // Align to left edge of viewport
-    } else if (realLeft + dropdownWidth > viewportWidth) {
-      left = viewportWidth - dropdownWidth; // align to right edge of viewport.
+      left = 0;
+      horiAlignment = "left";
+    } else if (left + dropdownWidth > viewportWidth + window.scrollX) {
+      left = viewportWidth - dropdownWidth + window.scrollX;
       horiAlignment = "left";
     }
 
-    // Apply the calculated positions
-    dropdownRef.current.style.top = top + "px";
-    dropdownRef.current.style.left = left + "px";
+    // Apply styles
+    dropdownRef.current.style.top = `${top}px`;
+    dropdownRef.current.style.left = `${left}px`;
+    dropdownRef.current.style.position = "absolute"; // or "fixed" if you're using fixed positioning
 
-    return (vertAlignment + "-" + horiAlignment) as
+    return `${vertAlignment}-${horiAlignment}` as
       | "top-right"
       | "top-left"
       | "bottom-right"
@@ -188,38 +188,40 @@ export default function Dropdown({
       <button onClick={toggleOpen} className="w-full" disabled={!!disabled}>
         {label}
       </button>
-      <div
-        className={cn(
-          "pointer-events-none fixed z-[1001] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
-          {
-            "pointer-events-auto translate-y-0 scale-x-100 scale-y-100 opacity-100":
-              !!isOpen,
-            "origin-top-right": openDirection === "top-right",
-            "origin-top-left": openDirection === "top-left",
-            "origin-bottom-right": openDirection === "bottom-right",
-            "origin-bottom-left": openDirection === "bottom-left",
-          },
-          menuClassName,
-        )}
-        ref={dropdownRef}
-        data-cy="dropdown"
-      >
-        {childrenArray.map((option, i) => {
-          return (
-            <div
-              key={i}
-              className="border-b border-app-border text-base last:border-none"
-              onClick={() => {
-                setIsOpen(false);
-                setOpenState?.(false);
-                onClose?.();
-              }}
-            >
-              {option}
-            </div>
-          );
-        })}
-      </div>
+      <Portal>
+        <div
+          className={cn(
+            "pointer-events-none fixed z-[350000] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
+            {
+              "pointer-events-auto translate-y-0 scale-x-100 scale-y-100 opacity-100":
+                !!isOpen,
+              "origin-top-right": openDirection === "top-right",
+              "origin-top-left": openDirection === "top-left",
+              "origin-bottom-right": openDirection === "bottom-right",
+              "origin-bottom-left": openDirection === "bottom-left",
+            },
+            menuClassName,
+          )}
+          ref={dropdownRef}
+          data-cy="dropdown"
+        >
+          {childrenArray.map((option, i) => {
+            return (
+              <div
+                key={i}
+                className="border-b border-app-border text-base last:border-none"
+                onClick={() => {
+                  setIsOpen(false);
+                  setOpenState?.(false);
+                  onClose?.();
+                }}
+              >
+                {option}
+              </div>
+            );
+          })}
+        </div>
+      </Portal>
     </div>
   );
 }

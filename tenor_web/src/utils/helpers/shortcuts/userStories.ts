@@ -26,6 +26,7 @@ import { getTaskProgress, getTaskTable } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
 import type * as admin from "firebase-admin";
+import { getProjectContext } from "./ai";
 
 /**
  * @function getUserStoriesRef
@@ -264,7 +265,7 @@ export const getUserStoryContext = async (
     prioritiesContext,
     backlogContext,
   ] = await Promise.all([
-    getUserStoriesContext(firestore, projectId),
+    getProjectContext(firestore, projectId),
     getEpicsContext(firestore, projectId),
     getRequirementsContext(firestore, projectId),
     getUserStoriesContext(firestore, projectId),

@@ -8,7 +8,7 @@ export default function TooltipClientWrapper({ children }: PropsWithChildren) {
   return (
     <>
       {children}
-      <Tooltip id="tooltip" style={{ zIndex: 300000 }} />
+      <Tooltip id="tooltip" style={{ zIndex: 400000 }} />
     </>
   );
 }
