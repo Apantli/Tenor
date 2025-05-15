@@ -12,6 +12,7 @@ import useClickOutside from "~/app/_hooks/useClickOutside";
 import useShiftKey from "~/app/_hooks/useShiftKey";
 import GhostTableRow from "./GhostTableRow";
 import LoadingGhostTableRows from "./LoadingGhostTableRows";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export interface VisibleColumn<T> {
   label: string;
@@ -191,6 +192,7 @@ function TableInternal<
   };
 
   const shiftClick = useShiftKey();
+  const confirm = useConfirmation();
 
   const toggleSelect = (id: I) => {
     const newSelection = new Set(selection);
@@ -323,7 +325,16 @@ function TableInternal<
     setLoadedGhosts(false);
   };
 
-  const rejectAllGhosts = () => {
+  const rejectAllGhosts = async () => {
+    if (
+      !(await confirm(
+        "Are you sure?",
+        "You are about to reject all generated items. This action cannot be undone.",
+        "Reject all",
+        "Keep editing",
+      ))
+    )
+      return;
     if (rejectGhosts && ghostData) {
       rejectGhosts(ghostData.map((row) => row.id));
     }

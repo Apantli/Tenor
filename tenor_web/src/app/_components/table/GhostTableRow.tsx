@@ -75,7 +75,7 @@ function GhostTableRow<
           Reject
         </button>
         <button
-          className="rounded-md bg-app-secondary p-1 text-sm text-white"
+          className="rounded-md bg-app-secondary p-1 text-sm text-white transition hover:bg-app-hover-secondary"
           onClick={onAccept}
         >
           Accept
