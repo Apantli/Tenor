@@ -107,14 +107,14 @@ function TableRow<
       {showThreeDots && (
         <>
           <div></div>
-          <div className="sticky right-0 flex h-10 w-full items-center justify-end pr-3">
+          <div className="pointer-events-none sticky right-0 flex h-10 w-full items-center justify-end pr-3">
             <Dropdown
               label={
                 <span className="flex w-full items-center justify-center px-1 font-bold text-app-light">
                   • • •
                 </span>
               }
-              className="flex h-full items-center justify-end text-sm font-semibold transition"
+              className="pointer-events-auto flex h-full items-center justify-end text-sm font-semibold transition"
               menuClassName="font-normal whitespace-nowrap"
               scrollContainer={scrollContainerRef}
               setOpenState={setDropdownOpen}
