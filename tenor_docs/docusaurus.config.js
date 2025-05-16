@@ -89,19 +89,23 @@ const config = {
         items: [
           {
             type: "docSidebar",
-            sidebarId: "tutorialSidebar",
+            sidebarId: "mainSidebar",
             position: "left",
             label: "Documentation",
+            // activeBasePath: "docs",
+            activeBaseRegex: "^/docs/(?!ai-features|architecture)",
           },
           {
-            to: "/docs/ai-features",
+            to: "/ai-features",
             label: "AI Features",
             position: "left",
+            activeBasePath: "ai-features",
           },
           {
-            to: "/docs/architecture",
+            to: "/architecture",
             label: "Architecture",
             position: "left",
+            activeBasePath: "architecture",
           },
           // {
           //   to: "/blog",
