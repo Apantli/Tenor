@@ -6,5 +6,6 @@ namespace Cypress {
     ): void;
     createEmptyProject(): void;
     navigateToSharedProject(subPath?: string): Chainable<null>;
+    ensureSharedProjectExists(): Chainable<string>;
   }
 }

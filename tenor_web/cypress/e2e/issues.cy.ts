@@ -1,9 +1,16 @@
 import type { TestIssue } from "cypress/fixtures/types";
 
+let projectPath = "";
+
 describe("Issues", () => {
-  // Return to dashboard and select the project
+  before(() => {
+    cy.ensureSharedProjectExists().then((url) => {
+      projectPath = url;
+    });
+  });
+
   beforeEach(() => {
-    cy.navigateToSharedProject();
+    cy.visit(projectPath);
     cy.get('[data-cy="issues"]').click();
   });
 

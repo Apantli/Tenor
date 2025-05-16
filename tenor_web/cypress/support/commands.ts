@@ -140,3 +140,21 @@ Cypress.Commands.add("createEmptyProject", () => {
     cy.contains(data.name).should("be.visible");
   });
 });
+
+Cypress.Commands.add("ensureSharedProjectExists", (): Cypress.Chainable<string> => {
+  return cy.window().then((win) => {
+    const existingProjectPath = win.localStorage.getItem('sharedProjectPath');
+    
+    if (existingProjectPath) {
+      return cy.wrap(existingProjectPath);
+    } else {
+      cy.signIn("/");
+      cy.createEmptyProject();
+      
+      return cy.url().then((url: string) => {
+        win.localStorage.setItem('sharedProjectPath', url);
+        return url;
+      });
+    }
+  });
+});
