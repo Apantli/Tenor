@@ -1,5 +1,5 @@
 import PillComponent from "~/app/_components/PillComponent";
-import { mount } from "@cypress/react";
+import { mount } from "cypress/react";
 import { useState } from "react";
 
 type Tag = {
