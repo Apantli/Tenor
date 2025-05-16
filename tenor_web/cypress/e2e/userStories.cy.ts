@@ -1,17 +1,14 @@
-import type { TestProjectInfo, TestUserStory } from "cypress/fixtures/types";
+import type { TestUserStory } from "cypress/fixtures/types";
 
 let projectPath = "";
 
 describe("User Stories", () => {
   before(() => {
-    cy.signIn("/");
-    cy.createEmptyProject();
-    cy.url().then((url) => {
+    cy.ensureSharedProjectExists().then((url) => {
       projectPath = url;
     });
   });
 
-  // Return to dashboard and select the project
   beforeEach(() => {
     cy.visit(projectPath);
     cy.get('[data-cy="userStories"]').click();
@@ -22,14 +19,11 @@ describe("User Stories", () => {
   });
 
   it("TC029: Create empty user story", () => {
-    cy.fixture("TestUserStory").then((data: TestUserStory) => {
-      cy.get('[data-cy="primary-button"]').contains("+ New Story").click();
-      cy.get('[data-cy="primary-button"]').contains("Create story").click();
+    cy.get('[data-cy="primary-button"]').contains("+ New Story").click();
+    cy.get('[data-cy="primary-button"]').contains("Create story").click();
 
-      cy.contains("Please enter a name for the user story.").should(
-        "be.visible",
-      );
-    });
+    cy.contains("Please enter a name for the user story.").should(
+        "be.visible");
   });
 
   it("TC031: Create user story", () => {

@@ -1,19 +1,17 @@
-import type { TestProjectInfo, TestEpic } from "cypress/fixtures/types";
+import type { TestEpic } from "cypress/fixtures/types";
 
 let projectPath = "";
 
 describe("Epics", () => {
+
   before(() => {
-    cy.signIn("/");
-    cy.createEmptyProject();
-    cy.url().then((url) => {
+    cy.ensureSharedProjectExists().then((url) => {
       projectPath = url;
     });
   });
 
-  // Return to dashboard and select the project
   beforeEach(() => {
-    cy.visit(projectPath);
+    cy.visit(projectPath)
     cy.get('[data-cy="userStories"]').click();
   });
 
