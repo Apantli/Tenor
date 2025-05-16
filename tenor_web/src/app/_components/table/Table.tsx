@@ -73,6 +73,7 @@ interface TableProps<I, T> {
   tableKey: string; // Unique key for the table used for storing things like column widths
   rowClassName?: string;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
+  scrollContainerClassName?: string;
 }
 
 function TableInternal<
@@ -97,6 +98,7 @@ function TableInternal<
   tableKey,
   rowClassName,
   scrollContainerRef,
+  scrollContainerClassName,
 }: TableProps<I, T>) {
   // Make sure the tableKey exists
   if (!tableKey) {
@@ -364,9 +366,10 @@ function TableInternal<
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
-        className={cn("flex h-full flex-col overflow-x-auto overflow-y-auto", {
-          // "overflow-x-hidden": showGhostRows && !loadedGhosts,
-        })}
+        className={cn(
+          "flex h-full flex-col overflow-x-auto overflow-y-auto",
+          scrollContainerClassName,
+        )}
         ref={internalScrollContainerRef}
       >
         <TableHeader

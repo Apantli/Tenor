@@ -604,7 +604,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             tableKey="tasks"
             data={filteredTasks}
             columns={taskColumns}
-            className="font-sm max-w-[min(678px,100vw-320px)] overflow-x-hidden"
+            className="font-sm min-y-fit max-w-[min(678px,100vw-320px)]"
+            scrollContainerClassName="overflow-y-hidden"
             multiselect
             deletable
             onDelete={handleTaskDelete}
