@@ -43,6 +43,7 @@ describe("Pills", () => {
 
     return (
       <PillComponent
+        data-cy="pill"
         currentTag={tag2}
         allTags={tags}
         callBack={dropdownCallback2}
@@ -56,5 +57,7 @@ describe("Pills", () => {
     mount(<TestComponent />);
     cy.get('[data-cy="pill"]').should("exist");
     cy.get('[data-cy="pill"]').contains("Test Pill").should("exist");
+    cy.get('.max-h-40 > :nth-child(1)').should("exist");
+    cy.get('.max-h-40 > :nth-child(1)').contains("Green").should("exist");
   });
 });
