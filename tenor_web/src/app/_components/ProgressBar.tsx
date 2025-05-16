@@ -13,7 +13,15 @@ function ProgressBar({
   emptyBarColor: string,
   displayValue: string }) 
   {
-  const percentage = ((value - min) / (max - min)) * 100;
+
+  let percentage;
+
+  if (min < 0 || max <= min || value < min || value > max) {
+    percentage = 0;
+  } else {
+    percentage = (((value - min) / (max - min)) * 100).toFixed(0)
+  }
+  
   const customStyles = {
     backgroundColor: progressBarColor,
     emptyBarColor: emptyBarColor,
@@ -27,7 +35,7 @@ function ProgressBar({
         style={{ width: `${percentage}%`, backgroundColor: customStyles.backgroundColor}}
       ></div>
       <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-start">
-        <span className="text-white px-4">{customStyles.displayValue} {percentage}%</span>
+        <span className="text-white px-5">{percentage}% {customStyles.displayValue}</span>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
-import ProgressStatusBar from "~/app/_components/ProjectStatus";
 import { useParams } from "next/navigation";
+import ProjectStatus from "~/app/_components/ProjectStatus";
 
 export default function ProjectOverview() {
 
@@ -9,15 +9,12 @@ export default function ProjectOverview() {
   const projectId = params.projectId as string;
 
   return (
-    <div className="-m-5 w-full">
-      <ProgressStatusBar
-        projectId={projectId}
-      />
-      {/* <img
-        src="/overview_mockup.png"
-        alt=""
-        className="mx-auto w-[calc(100vw-200px)]"
-      /> */}
+    <div className="">
+      <div className="flex w-2/4 flex-col gap-5 border-2 border-[#BECAD4] rounded-lg p-5">
+        <ProjectStatus
+          projectId={projectId}
+        />
+      </div>
     </div>
   );
 }
