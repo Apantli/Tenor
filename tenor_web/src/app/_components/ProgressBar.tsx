@@ -1,5 +1,3 @@
-
-
 function ProgressBar({ 
   min, 
   max, 

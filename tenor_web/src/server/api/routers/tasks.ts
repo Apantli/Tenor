@@ -19,6 +19,7 @@ import {
   getTaskDetail,
   getTaskNewId,
   getTaskRef,
+  getTasks,
   getTasksRef,
   getTaskTable,
 } from "~/utils/helpers/shortcuts/tasks";
@@ -339,4 +340,17 @@ ${tagContext}\n\n`;
         status: todoTag as StatusTag,
       }));
     }),
+
+  /**
+   * @procedure getTasks
+   * @description Retrieves tasks for a specific project
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @returns {Array} Array of tasks for the specified project
+   */
+  getTasks: protectedProcedure
+    .input(z.object({ projectId: z.string()}))
+    .query(async ({ ctx, input }) => {
+      return await getTasks(ctx.firestore, input.projectId);
+    })
 });
