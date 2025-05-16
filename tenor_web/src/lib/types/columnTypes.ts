@@ -58,7 +58,7 @@ export interface IssueCol {
   scrumId: number;
   name: string;
   description: string;
-  priority: Tag;
+  priority?: Tag;
   relatedUserStory?: ExistingUserStory;
   tags: Tag[];
   stepsToRecreate?: string;

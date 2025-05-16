@@ -11,7 +11,6 @@ import { IssueSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import type { IssueCol } from "~/lib/types/columnTypes";
 import type { IssueDetail } from "~/lib/types/detailSchemas";
-import { noTag } from "~/lib/defaultProjectValues";
 import {
   getBacklogTag,
   getBacklogTagsContext,
@@ -129,12 +128,12 @@ export const getIssueTable = async (
   const issues = await getIssues(firestore, projectId);
   const issueCols: IssueCol[] = await Promise.all(
     issues.map(async (issue): Promise<IssueCol> => {
-      const priority: WithId<Tag> | undefined = issue.priorityId
+      const priority: Tag | undefined = issue.priorityId
         ? await getPriority(firestore, projectId, issue.priorityId)
         : undefined;
       const issueCol: IssueCol = {
         ...issue,
-        priority: priority ?? noTag,
+        priority: priority,
         tags: [],
         assignUsers: [],
       };
