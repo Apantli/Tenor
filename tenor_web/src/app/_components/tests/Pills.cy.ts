@@ -1,15 +1,54 @@
 import PillComponent from "~/app/_components/PillComponent";
 import { mount } from "@cypress/react";
+import { useState } from "react";
+
+type Tag = {
+  name: string;
+  color: string;
+  deleted: boolean;
+};
 
 describe("Pills", () => {
-  const PillTestComponent = () => {
+  
+  const TestComponent = () => {
+
+    const tags = [
+      {
+        name: "Green",
+        color: "#009719",
+        deleted: false,
+      },
+      {
+        name: "Pink",
+        color: "#CD4EC0",
+        deleted: false,
+      },
+      {
+        name: "Blue",
+        color: "#0737E3",
+        deleted: false,
+      },
+    ];
+
+    const [tag, setTag] = useState(tags[0] as Tag);
+    const [tag2, setTag2] = useState(tags[1] as Tag);
+  
+    const dropdownCallback = async (tag: Tag) => {
+      setTag(tag);
+    };
+    const dropdownCallback2 = async (tag: Tag) => {
+      setTag2(tag);
+    };
+    
+
     return (
-    <PillComponent
-      allTags={[{ name: "Test Pill", color: "#333333", deleted: false }]}
-      className="test-class"
-      currentTag={{ name: "Test Pill", color: "#333333", deleted: false }}
-    />
-    )
+      <PillComponent
+        currentTag={tag2}
+        allTags={tags}
+        callBack={dropdownCallback2}
+        labelClassName="w-64"
+      />
+    );
   }
 
   it("TC001: Pill component", () => {
