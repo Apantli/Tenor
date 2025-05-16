@@ -14,7 +14,7 @@ describe("Buttons", () => {
   it("Test Secondary Button", () => {
     mount(
       <SecondaryButton onClick={() => {}} className="w-40">
-        Primary Button
+        Secondary Button
       </SecondaryButton>,
     );
     cy.get("button").should("have.text", "Primary Button");
