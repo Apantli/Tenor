@@ -48,11 +48,12 @@ describe("Pills", () => {
         callBack={dropdownCallback2}
         labelClassName="w-64"
       />
+
     );
   }
 
   it("TC001: Pill component", () => {
-    mount(<PillTestComponent />);
+    mount(<TestComponent />);
     cy.get('[data-cy="pill"]').should("exist");
     cy.get('[data-cy="pill"]').contains("Test Pill").should("exist");
   });
