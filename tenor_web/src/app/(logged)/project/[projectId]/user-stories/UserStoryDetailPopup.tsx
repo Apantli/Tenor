@@ -12,7 +12,7 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import DependencyList from "./DependencyList";
 import TasksTable, {
@@ -267,6 +267,8 @@ export default function UserStoryDetailPopup({
     );
   };
 
+  const router = useRouter();
+
   return (
     <Popup
       show={showDetail}
@@ -289,6 +291,7 @@ export default function UserStoryDetailPopup({
           );
           if (!confirmation) return;
         }
+        router.push("/project/" + (projectId as string) + "/user-stories");
         setShowDetail(false);
       }}
       size="large"

@@ -44,6 +44,7 @@ export default function Popup({
   saveText = "Save",
 }: Props & PropsWithChildren) {
   const [popIn, setPopIn] = useState(false);
+  // const [sidebarOpen, setSidebarOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -146,7 +147,7 @@ export default function Popup({
               {sidebar !== undefined && (
                 <div
                   className={cn(
-                    "ml-3 h-full shrink-0 overflow-y-auto border-l border-app-border px-3 pb-3 pl-5 pt-12",
+                    "ml-3 h-full w-0 shrink-0 overflow-y-auto border-l border-app-border px-3 pb-3 pl-5 pt-12",
                     sidebarClassName,
                   )}
                 >
