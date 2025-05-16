@@ -9,9 +9,7 @@ type Tag = {
 };
 
 describe("Pills", () => {
-  
   const TestComponent = () => {
-
     const tags = [
       {
         name: "Green",
@@ -32,32 +30,36 @@ describe("Pills", () => {
 
     const [tag, setTag] = useState(tags[0] as Tag);
     const [tag2, setTag2] = useState(tags[1] as Tag);
-  
+
     const dropdownCallback = async (tag: Tag) => {
       setTag(tag);
     };
     const dropdownCallback2 = async (tag: Tag) => {
       setTag2(tag);
     };
-    
 
     return (
-      <PillComponent
-        data-cy="pill"
-        currentTag={tag2}
-        allTags={tags}
-        callBack={dropdownCallback2}
-        labelClassName="w-64"
-      />
-
+      <div data-cy="pill">
+        <PillComponent
+          currentTag={tag2}
+          allTags={tags}
+          callBack={dropdownCallback2}
+          labelClassName="w-64"
+        />
+      </div>
     );
-  }
+  };
 
   it("TC001: Pill component", () => {
     mount(<TestComponent />);
     cy.get('[data-cy="pill"]').should("exist");
-    cy.get('[data-cy="pill"]').contains("Test Pill").should("exist");
-    cy.get('.max-h-40 > :nth-child(1)').should("exist");
-    cy.get('.max-h-40 > :nth-child(1)').contains("Green").should("exist");
+    cy.get('[data-cy="pill"]').contains("Pink").should("exist");
+    cy.get('[data-cy="pill"]').click();
+    cy.get(".max-h-40 > :nth-child(1)").should("exist");
+    cy.get(".max-h-40 > :nth-child(1)").contains("Green").should("exist");
+    cy.get(".max-h-40 > :nth-child(1)").click();
+    cy.get(".relative > :nth-child(1) > .flex > .truncate")
+      .contains("Green")
+      .should("exist");
   });
 });
