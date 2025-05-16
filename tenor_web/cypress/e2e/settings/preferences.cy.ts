@@ -7,7 +7,6 @@ describe("Test Scrum preferences", () => {
     });
   });
   
-
   beforeEach(() => {
     cy.visit(projectPath);
     cy.get('[data-cy="settings"]').click();
