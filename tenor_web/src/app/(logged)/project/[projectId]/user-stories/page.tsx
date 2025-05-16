@@ -12,12 +12,12 @@ export default function ProjectUserStories() {
   const viewOptions = ["List", "Dependency Tree"];
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col">
       <SegmentedControl
         options={viewOptions}
         selectedOption={selectedView}
         onChange={setSelectedView}
-        className="w-1/4 self-end"
+        className="w-1/4 min-w-96 self-end"
       />
 
       {selectedView === "List" ? (

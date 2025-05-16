@@ -442,10 +442,7 @@ export const userStoriesRouter = createTRPCRouter({
    * @param {string} targetId - The ID of the user story that will be a dependency.
    * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
    */
-  updateUserStoryDependencies: roleRequiredProcedure(
-    backlogPermissions,
-    "write",
-  )
+  addUserStoryDependencies: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -468,6 +465,42 @@ export const userStoriesRouter = createTRPCRouter({
       // Update the target user story to add the source as requiring it
       await targetRef.update({
         requiredByIds: FieldValue.arrayUnion(sourceId),
+      });
+
+      return { success: true };
+    }),
+
+  /**
+   * @function deleteUserStoryDependencies
+   * @description Updates the dependency relationship by removing a dependency between two user stories.
+   * @param {string} projectId - The ID of the project to which the user stories belong.
+   * @param {string} sourceId - The ID of the user story that will no longer depend on the target.
+   * @param {string} targetId - The ID of the user story that will no longer be a dependency.
+   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
+   */
+  deleteUserStoryDependencies: roleRequiredProcedure(backlogPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        sourceId: z.string(),
+        targetId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, sourceId, targetId } = input;
+
+      // Get references to both user stories
+      const sourceRef = getUserStoryRef(ctx.firestore, projectId, sourceId);
+      const targetRef = getUserStoryRef(ctx.firestore, projectId, targetId);
+
+      // Update the source user story to remove the target from dependencies
+      await sourceRef.update({
+        dependencyIds: FieldValue.arrayRemove(targetId),
+      });
+
+      // Update the target user story to remove the source from requiredBy
+      await targetRef.update({
+        requiredByIds: FieldValue.arrayRemove(sourceId),
       });
 
       return { success: true };

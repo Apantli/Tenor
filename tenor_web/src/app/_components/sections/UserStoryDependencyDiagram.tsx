@@ -43,8 +43,10 @@ export default function UserStoryDependencyTree() {
     });
 
   const { mutateAsync: updateUserStoryDependencies } =
-    api.userStories.updateUserStoryDependencies.useMutation();
+    api.userStories.addUserStoryDependencies.useMutation();
 
+  const { mutateAsync: deleteUserStoryDependencies } =
+    api.userStories.deleteUserStoryDependencies.useMutation();
   // #endregion
 
   // #region FLOW UTILITY
@@ -107,6 +109,7 @@ export default function UserStoryDependencyTree() {
   }, [nodes]);
 
   const onConnect = useCallback(async (params: Connection) => {
+    return;
     // Cancel ongoing queries for this user story data
     await utils.userStories.getUserStoryDependencies.cancel({
       projectId: projectId as string,
@@ -156,6 +159,58 @@ export default function UserStoryDependencyTree() {
     },
     [nodes, edges, projectId],
   );
+
+  const onEdgeDelete = useCallback(
+    async (targetEdges: Edge[]) => {
+      // Cancel ongoing queries for this user story data
+      await utils.userStories.getUserStoryDependencies.cancel({
+        projectId: projectId as string,
+      });
+
+      // Optimistically update the query data
+      utils.userStories.getUserStoryDependencies.setData(
+        {
+          projectId: projectId as string,
+        },
+        (oldData) => {
+          if (!oldData) return oldData;
+          const newEdges = oldData.edges.filter(
+            (edge) => !targetEdges.some((t) => t.id === edge.id),
+          );
+          return {
+            ...oldData,
+            edges: newEdges,
+          };
+        },
+      );
+
+      // Delete each dependency in the backend
+      for (const edge of targetEdges) {
+        await deleteUserStoryDependencies({
+          projectId: projectId as string,
+          sourceId: edge.source,
+          targetId: edge.target,
+        });
+      }
+
+      // Make other places refetch the data
+      await invalidateQueriesUserStoriesDetails(
+        projectId as string,
+        Array.from(
+          new Set([
+            ...targetEdges.map((edge) => edge.source),
+            ...targetEdges.map((edge) => edge.target),
+          ]),
+        ),
+      );
+    },
+    [
+      projectId,
+      utils,
+      deleteUserStoryDependencies,
+      invalidateQueriesUserStoriesDetails,
+    ],
+  );
   // #endregion
 
   // TODO: verify no cyclic dependencies
@@ -185,6 +240,7 @@ export default function UserStoryDependencyTree() {
           onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onEdgesDelete={onEdgeDelete}
           nodeTypes={nodeTypes}
           fitView
         >
