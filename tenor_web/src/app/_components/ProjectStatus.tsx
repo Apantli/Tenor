@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '~/trpc/react';
 import ProgressBar from './ProgressBar';
+import AssignUsersList from './specific-pickers/AssignUsersList';
 
 function ProjectStatus({projectId}: {projectId: string}) {
 
@@ -11,13 +12,6 @@ function ProjectStatus({projectId}: {projectId: string}) {
 
   const {data: tasks, isLoading} = api.tasks.getTasks.useQuery({ projectId });
   const {data: statuses, isLoading: isLoadingStatus} = api.settings.getStatusTypes.useQuery({ projectId });
-
-  //1. Need to call all the tasks from the project
-  //2. Then filter the tasks by their status, if the task is deleted, then ignore it
-  //3. Then filter the tasks by their status, if the task is completed, make a counter
-  //4. Then take the counter and divide it by the total number of tasks
-  //5. Then multiply it by 100 to get the percentage
-  //6. Then set the progress to the percentage
 
   useEffect(() => {
     const calculateProgress = async () => {
@@ -77,7 +71,10 @@ function ProjectStatus({projectId}: {projectId: string}) {
         taskCount={taskCount}
         completedCount={completedCount}
       />
-      <RemaniningTimePeriod projectId={projectId} />
+      <div className="flex items-center gap-2 justify-between">
+        <ProjectCollaborators projectId={projectId} />
+        <RemaniningTimePeriod projectId={projectId} />
+      </div>
     </>
   )
 }
@@ -87,7 +84,6 @@ function ActiveSprint ({projectId}: {projectId: string}) {
   const {data: sprints, isLoading: isLoadingSprint} = api.sprints.getProjectSprintsOverview.useQuery({ projectId });
 
   const sprintId = ActiveSprint?.currentSprintId;
-
   const sprint = sprints?.find((sprint) => sprint.number.toString() === sprintId);
 
   if (isLoading || isLoadingSprint) {
@@ -138,11 +134,11 @@ function RemaniningTimePeriod ({projectId}: {projectId: string}) {
       const days = remainingDays % 7;
 
       const parts = [];
-      if (months > 0) parts.push(`${months} months${months !== 1 ? 'es' : ''}`);
-      if (weeks > 0) parts.push(`${weeks} weeks${weeks !== 1 ? 's' : ''}`);
-      if (days > 0) parts.push(`${days} days${days !== 1 ? 's' : ''}`);
+      if (months > 0) parts.push(`${months} month${months !== 1 ? 'es' : ''}`);
+      if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`);
+      if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
 
-      message = `On track • ${parts.join(', ')} left.`;
+      message = `${parts.join(', ')} left.`;
     }
   }
 
@@ -153,7 +149,7 @@ function RemaniningTimePeriod ({projectId}: {projectId: string}) {
   return (
     <>
       {message && (
-        <p className="text-sm text-gray-600">{message}</p>
+        <p className="text-m font-semibold text-[#656B71]"><span className='text-[#086A72]'>On track •</span> {message}</p>
       )}
     </>
   )
@@ -183,6 +179,25 @@ function ProgressStatusBar({
         displayValue={displayValue}
       />
     </div>
+  )
+}
+
+function ProjectCollaborators({projectId}: {projectId: string}) {
+  const {data: projectCollaborators, isLoading} = api.users.getUsers.useQuery({ projectId });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  // Map projectCollaborators to the User type expected by AssignUsersList
+  const mappedUsers = projectCollaborators?.map((u) => ({
+    uid: u.id ?? u.id, // Use 'id' or fallback to 'uid' if available
+    displayName: u.displayName,
+    photoURL: u.photoURL,
+  }));
+
+  return (
+    <AssignUsersList users={mappedUsers} />
   )
 }
 
