@@ -427,7 +427,7 @@ export const userStoriesRouter = createTRPCRouter({
             dependencies,
             epic,
             priority,
-            scrumId: 0,
+            scrumId: -1,
             tags,
           };
 

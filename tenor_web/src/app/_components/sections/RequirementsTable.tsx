@@ -919,15 +919,13 @@ export default function RequirementsTable() {
               <strong>
                 {requirementEditedData ? (
                   <h1 className="font-semibold">
-                    {requirementEditedData.scrumId && (
-                      <span>
-                        {UseFormatForAssignReqTypeScrumId(
-                          requirementEditedData.requirementType.name,
-                          requirementEditedData.scrumId,
-                        )}
-                        :{" "}
-                      </span>
-                    )}
+                    <span>
+                      {UseFormatForAssignReqTypeScrumId(
+                        requirementEditedData.requirementType.name,
+                        requirementEditedData.scrumId,
+                      )}
+                      :{" "}
+                    </span>
                     <span className="font-normal">
                       {requirementEditedData.name}
                     </span>

@@ -574,7 +574,7 @@ export default function UserStoryTable() {
 
     const tableData = generatedData.map((data, i) => ({
       id: i.toString(),
-      scrumId: undefined,
+      scrumId: -1,
       name: data.name,
       epicScrumId: data.epic?.scrumId,
       priority: data.priority,

@@ -393,7 +393,7 @@ export default function UserStoryDetailPopup({
       }
       footer={
         !isLoading &&
-        (userStoryDetail?.scrumId !== undefined ? (
+        (userStoryDetail?.scrumId !== -1 ? (
           <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
         ) : (
           <div className="flex items-center gap-2">
@@ -402,10 +402,38 @@ export default function UserStoryDetailPopup({
               data-tooltip-id="tooltip"
               data-tooltip-content="This is a generated task. It will not get saved until you accept it."
             />
-            <TertiaryButton onClick={onReject}>Reject</TertiaryButton>
+            <TertiaryButton
+              onClick={async () => {
+                if (unsavedTasks) {
+                  const confirmation = await confirm(
+                    "Are you sure?",
+                    "You have unsaved AI generated tasks. By rejecting this story, you will lose them as well.",
+                    "Reject story",
+                    "Keep editing",
+                  );
+                  if (!confirmation) return;
+                  setUnsavedTasks(false);
+                  onReject?.();
+                }
+              }}
+            >
+              Reject
+            </TertiaryButton>
             <PrimaryButton
               className="bg-app-secondary hover:bg-app-hover-secondary"
-              onClick={onAccept}
+              onClick={async () => {
+                if (unsavedTasks) {
+                  const confirmation = await confirm(
+                    "Are you sure?",
+                    "You have unsaved AI generated tasks. To save them, please accept them first.",
+                    "Discard tasks",
+                    "Keep editing",
+                  );
+                  if (!confirmation) return;
+                  setUnsavedTasks(false);
+                  onAccept?.();
+                }
+              }}
             >
               Accept
             </PrimaryButton>
@@ -417,11 +445,9 @@ export default function UserStoryDetailPopup({
           {!isLoading && userStoryDetail && (
             <h1 className="mb-4 items-center text-3xl">
               <span className="font-bold">
-                {userStoryDetail.scrumId && (
-                  <span className="pr-2">
-                    {formatUserStoryScrumId(userStoryDetail.scrumId)}:
-                  </span>
-                )}
+                <span className="pr-2">
+                  {formatUserStoryScrumId(userStoryDetail.scrumId)}:
+                </span>
               </span>
               <span className="">{userStoryDetail.name}</span>
             </h1>

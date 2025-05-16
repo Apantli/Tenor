@@ -8,7 +8,9 @@ const calculatePaddingNeeded = (maxNumber: number) => {
 export const useFormatUserStoryScrumId = () => {
   // FIXME: Id is not the counts, remove the 1
   return (scrumId: number) =>
-    `US${String(scrumId).padStart(calculatePaddingNeeded(1), "0")}`;
+    scrumId === -1
+      ? "US"
+      : `US${String(scrumId).padStart(calculatePaddingNeeded(1), "0")}`;
 };
 
 export const useFormatEpicScrumId = () => {
@@ -29,11 +31,15 @@ export const useFormatSprintNumber = () => {
 export const useFormatTaskScrumId = () => {
   // FIXME: Id is not the counts, remove the 1
   return (scrumId: number) =>
-    `TS${String(scrumId).padStart(calculatePaddingNeeded(1), "0")}`;
+    scrumId === -1
+      ? "TS"
+      : `TS${String(scrumId).padStart(calculatePaddingNeeded(1), "0")}`;
 };
 
 export const useFormatIssueScrumId = () => {
   // FIXME: Id is not the counts, remove the 1
   return (issueId: number) =>
-    `IS${String(issueId).padStart(calculatePaddingNeeded(1), "0")}`;
+    issueId === -1
+      ? "IS"
+      : `IS${String(issueId).padStart(calculatePaddingNeeded(1), "0")}`;
 };

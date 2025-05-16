@@ -218,7 +218,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       render(row, _, isGhost) {
         return (
           <>
-            {tasksData !== undefined && !row.scrumId ? (
+            {tasksData !== undefined && row.scrumId === -1 ? (
               <TagIcon
                 className="text-app-text"
                 data-tooltip-id="tooltip"

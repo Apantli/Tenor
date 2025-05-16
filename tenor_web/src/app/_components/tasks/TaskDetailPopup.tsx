@@ -227,11 +227,9 @@ export default function TaskDetailPopup({
         <>
           {!isLoading && taskDetail && (
             <h1 className="mb-4 items-center text-3xl">
-              {taskDetail.scrumId && (
-                <span className="font-bold">
-                  {formatTaskScrumId(taskDetail.scrumId)}:{" "}
-                </span>
-              )}
+              <span className="font-bold">
+                {formatTaskScrumId(taskDetail.scrumId)}:{" "}
+              </span>
               <span>{taskDetail.name}</span>
             </h1>
           )}
