@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import Dropdown, { DropdownButton } from "../Dropdown";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import { cn } from "~/lib/utils";
@@ -59,7 +59,6 @@ function TableRow<
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
     (showThreeDots ? ` 1fr ${addedSpace}` : "");
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleDelete = async () => {
     onDelete?.([value.id], (del) => {
@@ -82,7 +81,7 @@ function TableRow<
         },
         className,
       )}
-      style={{ gridTemplateColumns, zIndex: dropdownOpen ? 1000 : "auto" }}
+      style={{ gridTemplateColumns }}
     >
       {multiselect && (
         <InputCheckbox
@@ -117,7 +116,6 @@ function TableRow<
               className="pointer-events-auto flex h-full items-center justify-end text-sm font-semibold transition"
               menuClassName="font-normal whitespace-nowrap"
               scrollContainer={scrollContainerRef}
-              setOpenState={setDropdownOpen}
             >
               {extraOptions?.map((option, i) => (
                 <DropdownButton

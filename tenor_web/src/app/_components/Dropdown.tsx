@@ -188,7 +188,7 @@ export default function Dropdown({
       <Portal>
         <div
           className={cn(
-            "pointer-events-none fixed z-[350000] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
+            "pointer-events-none fixed z-[400000] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
             {
               "pointer-events-auto translate-y-0 scale-x-100 scale-y-100 opacity-100":
                 !!isOpen,
