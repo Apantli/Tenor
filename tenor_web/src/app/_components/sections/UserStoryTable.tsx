@@ -88,9 +88,13 @@ export default function UserStoryTable() {
 
   const userStoryData = filteredData.sort((a, b) => {
     // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
-    if (a.scrumId === undefined && b.scrumId === undefined) return 0;
-    if (a.scrumId === undefined) return -1;
-    if (b.scrumId === undefined) return 1;
+    if (
+      (a.scrumId === undefined || a.scrumId === -1) &&
+      (b.scrumId === undefined || b.scrumId === -1)
+    )
+      return 0;
+    if (a.scrumId === undefined || a.scrumId === -1) return -1;
+    if (b.scrumId === undefined || b.scrumId === -1) return 1;
 
     return a.scrumId < b.scrumId ? 1 : -1;
   });
@@ -242,10 +246,10 @@ export default function UserStoryTable() {
                 setSelectedUS(row.id);
                 setShowDetail(true);
               }}
-              disabled={row.scrumId === undefined}
+              disabled={row.scrumId === -1}
             >
-              {row.scrumId ? (
-                formatUserStoryScrumId(row.scrumId)
+              {row.scrumId !== -1 ? (
+                formatUserStoryScrumId(row.scrumId ?? -1)
               ) : (
                 <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
               )}
@@ -272,7 +276,7 @@ export default function UserStoryTable() {
                 }
                 setShowDetail(true);
               }}
-              disabled={!isGhost && row.scrumId === undefined}
+              disabled={!isGhost && row.scrumId === -1}
             >
               {row.name}
             </button>
