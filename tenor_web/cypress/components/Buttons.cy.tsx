@@ -17,6 +17,6 @@ describe("Buttons", () => {
         Secondary Button
       </SecondaryButton>,
     );
-    cy.get("button").should("have.text", "Primary Button");
+    cy.get("button").should("have.text", "Secondary Button");
   });
 });
