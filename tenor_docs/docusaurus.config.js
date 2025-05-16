@@ -76,9 +76,9 @@ const config = {
       // Replace with your project's social card
       image: "img/docusaurus-social-card.jpg",
       colorMode: {
-        defaultMode: "dark",
-        disableSwitch: true,
-        respectPrefersColorScheme: false,
+        defaultMode: "light",
+        disableSwitch: false,
+        respectPrefersColorScheme: true,
       },
       navbar: {
         title: "Tenor Docs",

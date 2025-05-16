@@ -48,6 +48,16 @@
   --ifm-color-emphasis-300: #becad4;
 }
 
+/* Button styles for light mode */
+.button--secondary {
+  background-color: #13918a;
+  color: white;
+}
+
+.button--secondary:hover {
+  background-color: #1b6963;
+}
+
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme="dark"] {
   --ifm-color-primary: #13918a;
@@ -68,4 +78,13 @@
   --ifm-footer-background-color: #011a0e;
 
   --docusaurus-highlighted-code-line-bg: rgba(19, 145, 138, 0.3);
+
+  /* Dark mode button styles */
+  --ifm-button-color: #ffffff;
+}
+
+/* Dark mode specific button overrides */
+html[data-theme="dark"] .button--primary,
+html[data-theme="dark"] .button--secondary {
+  color: #ffffff;
 }
