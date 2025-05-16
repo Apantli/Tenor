@@ -193,7 +193,7 @@ export default function UserStoryDependencyTree() {
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
             <SecondaryButton onClick={() => onLayout()} className={"bg-white"}>
-              Layout
+              Organize nodes
             </SecondaryButton>
           </Panel>
         </ReactFlow>

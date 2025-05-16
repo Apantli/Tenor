@@ -43,7 +43,7 @@ export default function BasicNode({
       />
       <div className="min-h-10 w-56 rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800">
         {/* TODO: Fix this to work for epic node design (see figma) */}
-        <div className="flex flex-row items-center justify-between px-2 text-sm">
+        <div className="flex flex-row items-center justify-between px-2 text-xs">
           <span className="flex grow-[1]">
             {formatAnyScrumId(scrumId, nodeType)}
           </span>
@@ -51,7 +51,7 @@ export default function BasicNode({
           {showDeleteButton && <DeleteOutlineIcon fontSize="small" />}
         </div>
         <hr className="mb-2 mt-1 border-t border-slate-400" />
-        <div className="line-clamp-2 px-2 text-lg">{title}</div>
+        <div className="line-clamp-2 px-2 text-xs">{title}</div>
         <div
           className={cn(
             "absolute bottom-0 left-0 h-2 w-full rounded-b-lg",

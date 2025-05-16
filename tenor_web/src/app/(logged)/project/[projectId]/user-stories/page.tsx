@@ -17,7 +17,7 @@ export default function ProjectUserStories() {
         options={viewOptions}
         selectedOption={selectedView}
         onChange={setSelectedView}
-        className="w-1/4 justify-end"
+        className="w-1/4 self-end"
       />
 
       {selectedView === "List" ? (
