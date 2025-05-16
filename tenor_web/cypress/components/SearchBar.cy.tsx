@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import SearchBar from "~/app/_components/SearchBar";
 
-describe("Search", () => {
+describe("Search bar", () => {
   const searchValue = "";
 
   const TestComponent = () => {
@@ -16,7 +16,7 @@ describe("Search", () => {
     );
   };
 
-  it("Typing behavior", () => {
+  it("Typing", () => {
     cy.mount(<TestComponent />);
     cy.get("[data-cy=search-bar]").should("be.visible");
     cy.get("[data-cy=search-bar]").type("name");
