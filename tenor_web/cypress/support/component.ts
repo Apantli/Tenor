@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+/* eslint-disable @typescript-eslint/no-namespace */
+>>>>>>> origin/main
 // ***********************************************************
 // This example support/component.ts is processed and
 // loaded automatically before your test files.
@@ -14,10 +18,16 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
+<<<<<<< HEAD
 import './commands'
 
 import { mount } from 'cypress/react'
 import "../../src/styles/globals.css"
+=======
+import "./commands";
+import "../../src/styles/globals.css";
+import { mount } from "cypress/react";
+>>>>>>> origin/main
 
 // Augment the Cypress namespace to include type definitions for
 // your custom command.
@@ -26,12 +36,23 @@ import "../../src/styles/globals.css"
 declare global {
   namespace Cypress {
     interface Chainable {
+<<<<<<< HEAD
       mount: typeof mount
+=======
+      mount: typeof mount;
+>>>>>>> origin/main
     }
   }
 }
 
+<<<<<<< HEAD
 Cypress.Commands.add('mount', mount)
 
 // Example use:
 // cy.mount(<MyComponent />)
+=======
+Cypress.Commands.add("mount", mount);
+
+// Example use:
+// cy.mount(<MyComponent />)
+>>>>>>> origin/main
