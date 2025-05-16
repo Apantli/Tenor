@@ -27,7 +27,7 @@ import {
 } from "~/utils/reactFlow";
 import SecondaryButton from "../buttons/SecondaryButton";
 
-export default function UserStoryDependencyDiagram() {
+export default function UserStoryDependencyTree() {
   // #region Hooks
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -161,7 +161,7 @@ export default function UserStoryDependencyDiagram() {
   // TODO: verify no cyclic dependencies
 
   return (
-    <div style={{ width: "80vw", height: "80vh" }}>
+    <div style={{ width: "100%", height: "75vh" }}>
       {isLoadingDependencies && (
         <div className="flex h-full w-full items-center justify-center">
           <p className="text-2xl font-bold text-gray-500">
