@@ -81,6 +81,16 @@
   margin-top: 3rem;
 }
 
+.cta a.button {
+  color: #ffffff !important;
+  background-color: #086a72 !important; /* Match other primary buttons */
+  border: none !important; /* Remove the border */
+}
+
+.cta a.button:hover {
+  background-color: #064a50 !important;
+}
+
 .featureSvg {
   height: 200px;
   width: 200px;
