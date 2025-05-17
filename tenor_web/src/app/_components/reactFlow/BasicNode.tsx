@@ -14,7 +14,15 @@ interface Props {
 }
 
 const handleSize = "8px";
+const handleWhiteCircleStyle = {
+  width: handleSize,
+  height: handleSize,
+  backgroundColor: "white",
+  border: "1px solid #555",
+  borderRadius: "50%",
+};
 
+// TODO: Add a prop to choose the handle style for each side
 export default function BasicNode({
   data: {
     // id,
@@ -38,8 +46,7 @@ export default function BasicNode({
       <Handle
         type="source"
         position={Position.Right}
-        id="L"
-        style={{ width: handleSize, height: handleSize }}
+        style={handleWhiteCircleStyle}
       />
       <div className="min-h-10 w-56 rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800">
         {/* TODO: Fix this to work for epic node design (see figma) */}
@@ -59,12 +66,10 @@ export default function BasicNode({
           )}
         ></div>
       </div>
-      {/* TODO: Add custom styling */}
       <Handle
         type="target"
         position={Position.Left}
-        id="R"
-        style={{ width: handleSize, height: handleSize }}
+        style={handleWhiteCircleStyle}
       />
     </>
   );

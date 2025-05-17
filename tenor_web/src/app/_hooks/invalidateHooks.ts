@@ -59,6 +59,9 @@ export const useInvalidateQueriesAllUserStories = () => {
     await utils.kanban.getBacklogItemsForKanban.invalidate({
       projectId: projectId,
     });
+    await utils.userStories.getUserStoryDependencies.invalidate({
+      projectId: projectId,
+    });
   };
 };
 

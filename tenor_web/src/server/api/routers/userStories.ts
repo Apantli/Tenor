@@ -514,7 +514,7 @@ export const userStoriesRouter = createTRPCRouter({
           id: userStory.id,
           position: {
             x: 0,
-            y: 0,
+            y: -100,
           }, // Position is updated in the frontend because it needs nodes' real size
           data: {
             id: userStory.id,

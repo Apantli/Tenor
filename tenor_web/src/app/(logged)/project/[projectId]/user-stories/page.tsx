@@ -13,12 +13,17 @@ export default function ProjectUserStories() {
 
   return (
     <div className="flex w-full flex-col">
-      <SegmentedControl
-        options={viewOptions}
-        selectedOption={selectedView}
-        onChange={setSelectedView}
-        className="w-1/4 min-w-96 self-end"
-      />
+      <div className="flex w-full flex-row items-center justify-between self-end">
+        {selectedView != "List" && (
+          <h1 className="text-3xl font-semibold">User Stories</h1>
+        )}
+        <SegmentedControl
+          options={viewOptions}
+          selectedOption={selectedView}
+          onChange={setSelectedView}
+          className="ml-auto w-1/4 min-w-96"
+        />
+      </div>
 
       {selectedView === "List" ? (
         <div className="flex w-full flex-row gap-4">

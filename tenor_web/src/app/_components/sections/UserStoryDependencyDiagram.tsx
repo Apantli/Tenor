@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import { nodeTypes } from "~/lib/types/reactFlowTypes";
 import {
   ReactFlow,
-  MiniMap,
   Controls,
   Background,
   useNodesState,
@@ -26,6 +25,9 @@ import {
   saveNodePositionsToLocalStorage,
 } from "~/utils/reactFlow";
 import SecondaryButton from "../buttons/SecondaryButton";
+import NoteAddIcon from "@mui/icons-material/NoteAdd";
+
+const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 
 export default function UserStoryDependencyTree() {
   // #region Hooks
@@ -57,7 +59,8 @@ export default function UserStoryDependencyTree() {
     dependencyData?.edges ?? [],
   );
   const [initialLayoutDone, setInitialLayoutDone] = React.useState(
-    localStorage.getItem("initialLayoutDone") === "true",
+    localStorage.getItem((projectId as string) + ":initialLayoutDone") ===
+      "true",
   );
 
   // Save node positions to localStorage whenever they change
@@ -102,7 +105,10 @@ export default function UserStoryDependencyTree() {
 
   useEffect(() => {
     if (!initialLayoutDone && nodes.length > 0 && nodes[0]?.measured) {
-      localStorage.setItem("initialLayoutDone", "true");
+      localStorage.setItem(
+        (projectId as string) + ":initialLayoutDone",
+        "true",
+      );
       setInitialLayoutDone(true);
       onLayout();
     }
@@ -154,7 +160,7 @@ export default function UserStoryDependencyTree() {
 
       saveNodePositionsToLocalStorage(projectId as string, layouted.nodes);
 
-      void fitView();
+      void fitView(fitViewOptions);
     },
     [nodes, edges, projectId],
   );
@@ -215,7 +221,7 @@ export default function UserStoryDependencyTree() {
   // TODO: verify no cyclic dependencies
 
   return (
-    <div style={{ width: "100%", height: "75vh" }}>
+    <div className="mt-3 h-[75vh] w-full">
       {isLoadingDependencies && (
         <div className="flex h-full w-full items-center justify-center">
           <p className="text-2xl font-bold text-gray-500">
@@ -224,11 +230,15 @@ export default function UserStoryDependencyTree() {
         </div>
       )}
       {!isLoadingDependencies && dependencyData?.nodes.length == 0 && (
-        <div>
-          <p className="text-2xl font-bold text-gray-500">
-            No dependencies found.
-          </p>
-          TODO: FIX THIS
+        <div className="flex h-full w-full items-center justify-center">
+          <div className="flex flex-col items-center gap-5">
+            <span className="-mb-8 text-[100px] text-gray-500">
+              <NoteAddIcon fontSize="inherit" />
+            </span>
+            <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+              No user stories yet
+            </h1>
+          </div>
         </div>
       )}
 
@@ -242,9 +252,9 @@ export default function UserStoryDependencyTree() {
           onEdgesDelete={onEdgeDelete}
           nodeTypes={nodeTypes}
           fitView
+          fitViewOptions={{ ...fitViewOptions, duration: 0 }}
         >
-          <Controls />
-          <MiniMap />
+          <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
             <SecondaryButton onClick={() => onLayout()} className={"bg-white"}>
