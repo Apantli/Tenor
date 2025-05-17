@@ -24,7 +24,6 @@ interface TableRowProps<I, T> {
   scrollContainerRef: React.RefObject<HTMLDivElement>;
   columnWidths: number[];
   className?: string;
-  rowIndex?: number;
   ghostsShown?: boolean;
   disableSelection?: boolean;
 }
@@ -48,7 +47,6 @@ function TableRow<
   className,
   ghostsShown,
   disableSelection,
-  rowIndex,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
   const columnEntries = useMemo(

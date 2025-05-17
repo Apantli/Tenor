@@ -437,9 +437,8 @@ function TableInternal<
             />
           ))}
         </div>
-        {filteredData.map((value, index) => (
+        {filteredData.map((value) => (
           <TableRow
-            rowIndex={index}
             key={value.id}
             value={value}
             columns={columns}
