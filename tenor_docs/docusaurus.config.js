@@ -121,7 +121,7 @@ const config = {
               },
               {
                 label: "Architecture",
-                to: "/docs/architecture",
+                to: "/architecture",
               },
               {
                 label: "User Interface",
@@ -134,7 +134,7 @@ const config = {
             items: [
               {
                 label: "AI Features",
-                to: "/docs/ai-features",
+                to: "/ai-features",
               },
               {
                 label: "Roles & Permissions",
