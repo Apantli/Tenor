@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Dropdown, { DropdownButton } from "../Dropdown";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import { cn } from "~/lib/utils";
@@ -24,6 +24,9 @@ interface TableRowProps<I, T> {
   scrollContainerRef: React.RefObject<HTMLDivElement>;
   columnWidths: number[];
   className?: string;
+  rowIndex?: number;
+  ghostsShown?: boolean;
+  disableSelection?: boolean;
 }
 
 function TableRow<
@@ -43,16 +46,19 @@ function TableRow<
   scrollContainerRef,
   columnWidths,
   className,
+  ghostsShown,
+  disableSelection,
 }: TableRowProps<I, T>) {
   const showThreeDots = extraOptions !== undefined || deletable !== undefined;
-  const columnEntries = React.useMemo(
+  const columnEntries = useMemo(
     () => filterVisibleColumns(Object.entries(columns)),
     [columns],
   );
+  const addedSpace = ghostsShown ? "120px" : "50px";
   const gridTemplateColumns =
     (multiselect ? "20px " : "") +
     columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr 110px` : "");
+    (showThreeDots ? ` 1fr ${addedSpace}` : "");
 
   const handleDelete = async () => {
     onDelete?.([value.id], (del) => {
@@ -64,12 +70,14 @@ function TableRow<
     });
   };
 
+  const isSelected = selection.has(value.id);
+
   return (
     <div
       className={cn(
-        "grid min-w-fit items-center gap-3 border-b border-app-border p-2 transition",
+        "grid min-w-fit items-center gap-3 border-b border-app-border pl-2",
         {
-          "bg-gray-100": selection.has(value.id),
+          "bg-gray-100": isSelected,
         },
         className,
       )}
@@ -79,10 +87,11 @@ function TableRow<
         <InputCheckbox
           checked={selection.has(value.id)}
           onChange={() => toggleSelect(value.id)}
+          disabled={disableSelection}
         />
       )}
       {columnEntries.map(([key, column]) => (
-        <div key={key} className="w-full truncate">
+        <div key={key} className="w-full truncate py-2">
           {column.render
             ? column.render(
                 value,
@@ -97,49 +106,69 @@ function TableRow<
       {showThreeDots && (
         <>
           <div></div>
-          <Dropdown
-            label={
-              <span className="flex w-full items-center justify-end pr-3 font-bold text-app-light">
-                • • •
-              </span>
-            }
-            className="flex h-full w-full items-center justify-end text-sm font-semibold transition"
-            menuClassName="font-normal whitespace-nowrap"
-            scrollContainer={scrollContainerRef}
-          >
-            {extraOptions?.map((option, i) => (
-              <DropdownButton
-                key={i}
-                className="flex items-center justify-between gap-8"
-                onClick={() => option.action([value.id])}
-              >
-                <span>{option.label}</span>
-                {option.icon}
-              </DropdownButton>
-            ))}
-            {deletable === true && (
-              <DropdownButton
-                className="flex items-center justify-between gap-8"
-                onClick={handleDelete}
-              >
-                <span className="text-app-fail">Delete</span>
-                <DeleteIcon htmlColor="red" />
-              </DropdownButton>
-            )}
-            {deletable &&
-              typeof deletable === "object" &&
-              "deleteText" in deletable && (
+          <div className="pointer-events-none sticky right-0 flex h-10 w-full items-center justify-end pr-3">
+            <Dropdown
+              label={
+                <span className="flex w-full items-center justify-center px-1 font-bold text-app-light">
+                  • • •
+                </span>
+              }
+              className="pointer-events-auto flex h-full items-center justify-end text-sm font-semibold transition"
+              menuClassName="font-normal whitespace-nowrap"
+              scrollContainer={scrollContainerRef}
+            >
+              {extraOptions?.map((option, i) => (
+                <DropdownButton
+                  key={i}
+                  className="flex items-center justify-between gap-8"
+                  onClick={() => option.action([value.id])}
+                >
+                  <span>{option.label}</span>
+                  {option.icon}
+                </DropdownButton>
+              ))}
+              {deletable === true && (
                 <DropdownButton
                   className="flex items-center justify-between gap-8"
                   onClick={handleDelete}
                 >
-                  <span className="text-app-fail">{deletable.deleteText}</span>
-                  <span className="text-app-fail">
-                    {deletable.deleteIcon ?? <DeleteIcon />}
-                  </span>
+                  <span className="text-app-fail">Delete</span>
+                  <DeleteIcon htmlColor="red" />
                 </DropdownButton>
               )}
-          </Dropdown>
+              {deletable &&
+                typeof deletable === "object" &&
+                "deleteText" in deletable && (
+                  <DropdownButton
+                    className="flex items-center justify-between gap-8"
+                    onClick={handleDelete}
+                  >
+                    <span className="text-app-fail">
+                      {deletable.deleteText}
+                    </span>
+                    <span className="text-app-fail">
+                      {deletable.deleteIcon ?? <DeleteIcon />}
+                    </span>
+                  </DropdownButton>
+                )}
+            </Dropdown>
+            <div
+              className={cn(
+                "absolute right-0 top-0 -z-10 h-full w-[45px] bg-white",
+                {
+                  "bg-gray-100": isSelected,
+                },
+              )}
+            ></div>
+            <div
+              className={cn(
+                "absolute right-[45px] top-0 -z-10 h-full w-[20px] bg-gradient-to-r from-transparent to-white",
+                {
+                  "to-gray-100": isSelected,
+                },
+              )}
+            ></div>
+          </div>
         </>
       )}
     </div>

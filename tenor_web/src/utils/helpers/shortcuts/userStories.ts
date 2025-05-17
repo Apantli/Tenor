@@ -1,4 +1,4 @@
-import type { UserStoryCol } from "~/lib/types/columnTypes";
+import type { TaskCol, UserStoryCol } from "~/lib/types/columnTypes";
 import { getEpic, getEpicContext, getEpicsContext } from "./epics";
 import { noTag } from "~/lib/defaultProjectValues";
 import {
@@ -22,9 +22,11 @@ import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import type { UserStoryDetail } from "~/lib/types/detailSchemas";
 import type { Firestore } from "firebase-admin/firestore";
-import { getTaskProgress } from "./tasks";
+import { getTaskProgress, getTaskTable } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
+import type * as admin from "firebase-admin";
+import { getProjectContext } from "./ai";
 
 /**
  * @function getUserStoriesRef
@@ -132,6 +134,7 @@ export const getUserStory = async (
  * @returns {Promise<UserStoryDetail>} The user story detail object
  */
 export const getUserStoryDetail = async (
+  admin: admin.app.App,
   firestore: Firestore,
   projectId: string,
   userStoryId: string,
@@ -172,13 +175,9 @@ export const getUserStoryDetail = async (
     ? await getSprint(firestore, projectId, userStory.sprintId)
     : undefined;
 
-  //   const tasks: WithId<Task>[] = await Promise.all(
-  //     userStory.taskIds.map(async (taskId) => {
-  //       return await getTask(firestore, projectId, taskId);
-  //     }),
-  //   );
+  const tasks = await getTaskTable(admin, firestore, projectId, userStory.id);
 
-  const userStoryDetail: WithId<UserStoryDetail> = {
+  const userStoryDetail: WithId<UserStoryDetail> & { tasks: TaskCol[] } = {
     ...userStory,
     sprint,
     priority,
@@ -187,6 +186,7 @@ export const getUserStoryDetail = async (
     tags,
     dependencies,
     requiredBy,
+    tasks,
   };
 
   return userStoryDetail;
@@ -265,7 +265,7 @@ export const getUserStoryContext = async (
     prioritiesContext,
     backlogContext,
   ] = await Promise.all([
-    getUserStoriesContext(firestore, projectId),
+    getProjectContext(firestore, projectId),
     getEpicsContext(firestore, projectId),
     getRequirementsContext(firestore, projectId),
     getUserStoriesContext(firestore, projectId),

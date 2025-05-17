@@ -44,3 +44,7 @@ yarn-error.log*
 
 # idea files
 .idea
+
+# Cypress byproducts
+cypress/screenshots/
+cypress/downloads/

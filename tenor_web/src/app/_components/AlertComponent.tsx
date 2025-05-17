@@ -86,6 +86,7 @@ export default function AlertComponent({
       })}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      data-cy="alert-component"
     >
       <div className="flex w-96 flex-col gap-1 rounded-lg border-2 border-app-border bg-white px-6 pb-5 pt-4 shadow-xl">
         <h1

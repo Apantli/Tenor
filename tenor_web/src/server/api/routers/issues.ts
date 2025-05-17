@@ -92,7 +92,12 @@ export const issuesRouter = createTRPCRouter({
     .input(z.object({ issueId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId, issueId } = input;
-      return await getIssueDetail(ctx.firestore, projectId, issueId);
+      return await getIssueDetail(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        projectId,
+        issueId,
+      );
     }),
 
   /**
