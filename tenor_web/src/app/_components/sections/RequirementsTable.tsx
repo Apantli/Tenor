@@ -79,10 +79,6 @@ export default function RequirementsTable() {
   }, [requirementEdited, ghostRequirementEdited]);
 
   //Hooks
-  const params = useParams();
-  const [requirementsData, setRequirementsData] = useState<RequirementCol[]>(
-    [],
-  );
   const generatedRequirements =
     useRef<
       WithId<
@@ -92,28 +88,25 @@ export default function RequirementsTable() {
       >[]
     >();
 
+  const setRequirementsData = (
+    updater: (
+      oldData: RequirementCol[] | undefined,
+    ) => RequirementCol[] | undefined,
+  ) => {
+    utils.requirements.getRequirementTable.cancel({
+      projectId: projectId as string,
+    });
+    utils.requirements.getRequirementTable.setData(
+      {
+        projectId: projectId as string,
+      },
+      updater,
+    );
+  };
+
   const [searchValue, setSearchValue] = useState("");
   const invalidateAllRequirements = useInvalidateQueriesAllRequirements();
   const invalidateRequirementDetails = useInvalidateQueriesRequirementDetails();
-
-  useEffect(() => {
-    if (selectedReq == "") {
-      setShowSmallPopup(false);
-      setRequirementEdited(null);
-      setGhostRequirementEdited(null);
-    }
-    if (selectedReq && requirementsData) {
-      const requirement = requirementsData.find(
-        (req) => req.id === selectedReq,
-      );
-      if (requirement) {
-        setRequirementEdited(requirement);
-        setGhostRequirementEdited(null);
-        setEditingRequirement(false);
-        return;
-      }
-    }
-  }, [selectedReq, requirementsData]);
 
   // New requirement values
   const defaultRequirement = {
@@ -138,7 +131,7 @@ export default function RequirementsTable() {
 
   const { alert } = useAlert();
   const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: params.projectId as string,
+    projectId: projectId as string,
   });
   const permission: Permission = useMemo(() => {
     return checkPermissions(
@@ -253,44 +246,58 @@ export default function RequirementsTable() {
 
   // TRPC
   const {
-    data: requirements,
+    data: requirementsData,
     isLoading: isLoadingRequirements,
     refetch: refetchRequirements,
   } = api.requirements.getRequirementTable.useQuery({
-    projectId: params.projectId as string,
+    projectId: projectId as string,
   });
 
+  const query = searchValue.toLowerCase();
+  const filteredRequirements = requirementsData
+    ?.filter((requirement) => {
+      const name = requirement.name?.toLowerCase() ?? "";
+      const description = requirement.description.toLowerCase();
+
+      // Asegúrate de que este hook devuelve un string consistente
+      const formattedScrumText = UseFormatForAssignReqTypeScrumId(
+        requirement.requirementType.name,
+        requirement.scrumId,
+      ).toLowerCase();
+
+      return (
+        name.includes(query) ||
+        description.includes(query) ||
+        formattedScrumText.includes(query)
+      );
+    })
+    .sort((a, b) => {
+      // Flipped to show the latest requirements first (also makes AI generated ones appear at the top after getting accepted)
+      if (a.scrumId === -1 && b.scrumId === -1) return 0;
+      if (a.scrumId === -1) return -1;
+      if (b.scrumId === -1) return 1;
+
+      return a.scrumId < b.scrumId ? 1 : -1;
+    });
+
   useEffect(() => {
-    if (requirements) {
-      const query = searchValue.toLowerCase();
-      const filtered = requirements
-        .filter((requirement) => {
-          const name = requirement.name?.toLowerCase() ?? "";
-          const description = requirement.description.toLowerCase();
-
-          // Asegúrate de que este hook devuelve un string consistente
-          const formattedScrumText = UseFormatForAssignReqTypeScrumId(
-            requirement.requirementType.name,
-            requirement.scrumId,
-          ).toLowerCase();
-
-          return (
-            name.includes(query) ||
-            description.includes(query) ||
-            formattedScrumText.includes(query)
-          );
-        })
-        .sort((a, b) => {
-          // Flipped to show the latest requirements first (also makes AI generated ones appear at the top after getting accepted)
-          if (a.scrumId === -1 && b.scrumId === -1) return 0;
-          if (a.scrumId === -1) return -1;
-          if (b.scrumId === -1) return 1;
-
-          return a.scrumId < b.scrumId ? 1 : -1;
-        });
-      setRequirementsData(filtered);
+    if (selectedReq == "") {
+      setShowSmallPopup(false);
+      setRequirementEdited(null);
+      setGhostRequirementEdited(null);
     }
-  }, [requirements, searchValue]);
+    if (selectedReq && requirementsData) {
+      const requirement = requirementsData.find(
+        (req) => req.id === selectedReq,
+      );
+      if (requirement) {
+        setRequirementEdited(requirement);
+        setGhostRequirementEdited(null);
+        setEditingRequirement(false);
+        return;
+      }
+    }
+  }, [selectedReq, requirementsData]);
 
   const {
     beginLoading,
@@ -315,11 +322,11 @@ export default function RequirementsTable() {
       );
 
       await utils.requirements.getRequirementTable.cancel({
-        projectId: params.projectId as string,
+        projectId: projectId as string,
       });
 
       utils.requirements.getRequirementTable.setData(
-        { projectId: params.projectId as string },
+        { projectId: projectId as string },
         (oldData) => {
           if (!oldData) return oldData;
           return oldData.concat(acceptedRows ?? []);
@@ -329,7 +336,7 @@ export default function RequirementsTable() {
       // Add the new requirements to the database
       for (const req of accepted.reverse()) {
         await createOrModifyRequirement({
-          projectId: params.projectId as string,
+          projectId: projectId as string,
           requirementData: {
             ...req,
             scrumId: 0,
@@ -365,13 +372,13 @@ export default function RequirementsTable() {
       return false;
     }
 
-    const newData = requirementsData.filter((item) => !ids.includes(item.id));
+    const newData = requirementsData?.filter((item) => !ids.includes(item.id));
 
     await utils.requirements.getRequirementTable.cancel({
-      projectId: params.projectId as string,
+      projectId: projectId as string,
     });
     utils.requirements.getRequirementTable.setData(
-      { projectId: params.projectId as string },
+      { projectId: projectId as string },
       (prev) => {
         if (!prev) return prev;
         return newData;
@@ -381,7 +388,7 @@ export default function RequirementsTable() {
     await Promise.all(
       ids.map((id) =>
         deleteRequirement({
-          projectId: params.projectId as string,
+          projectId: projectId as string,
           requirementId: id,
         }),
       ),
@@ -391,7 +398,7 @@ export default function RequirementsTable() {
   };
 
   const table = useMemo(() => {
-    if (requirements == undefined || isLoadingRequirements) {
+    if (filteredRequirements == undefined || isLoadingRequirements) {
       return (
         <div className="flex h-full w-full flex-1 items-start justify-center p-10">
           <LoadingSpinner color="primary" />
@@ -510,10 +517,11 @@ export default function RequirementsTable() {
                   return;
                 }
 
-                setRequirementsData((prevData) =>
-                  prevData.map((item) =>
-                    item.id === row.id ? { ...item, priorityId: tag } : item,
-                  ),
+                setRequirementsData(
+                  (prevData) =>
+                    prevData?.map((item) =>
+                      item.id === row.id ? { ...item, priority: tag } : item,
+                    ) ?? [],
                 );
                 await handleEditRequirement(
                   {
@@ -564,23 +572,24 @@ export default function RequirementsTable() {
             <RequirementTypePicker
               disabled={permission < permissionNumbers.write}
               type={row.requirementType}
-              onChange={async (requirementTypeId) => {
+              onChange={async (requirementType) => {
                 if (isGhost) {
-                  handleGhostReqTypeChange(requirementTypeId);
+                  handleGhostReqTypeChange(requirementType);
                   return;
                 }
 
-                setRequirementsData((prevData) =>
-                  prevData.map((item) =>
-                    item.id === row.id
-                      ? { ...item, requirementTypeId: requirementTypeId }
-                      : item,
-                  ),
+                setRequirementsData(
+                  (prevData) =>
+                    prevData?.map((item) =>
+                      item.id === row.id
+                        ? { ...item, requirementType: requirementType }
+                        : item,
+                    ) ?? [],
                 );
                 await handleEditRequirement(
                   {
                     ...row,
-                    requirementType: requirementTypeId,
+                    requirementType: requirementType,
                   },
                   false,
                 );
@@ -628,23 +637,24 @@ export default function RequirementsTable() {
             <RequirementFocusPicker
               disabled={permission < permissionNumbers.write}
               focus={row.requirementFocus}
-              onChange={async (requirementFocusId) => {
+              onChange={async (requirementFocus) => {
                 if (isGhost) {
-                  handleGhostFocusChange(requirementFocusId);
+                  handleGhostFocusChange(requirementFocus);
                   return;
                 }
 
-                setRequirementsData((prevData) =>
-                  prevData.map((item) =>
-                    item.id === row.id
-                      ? { ...item, requirementFocusId: requirementFocusId }
-                      : item,
-                  ),
+                setRequirementsData(
+                  (prevData) =>
+                    prevData?.map((item) =>
+                      item.id === row.id
+                        ? { ...item, requirementFocus: requirementFocus }
+                        : item,
+                    ) ?? [],
                 );
                 await handleEditRequirement(
                   {
                     ...row,
-                    requirementFocus: requirementFocusId,
+                    requirementFocus: requirementFocus,
                   },
                   false,
                 );
@@ -673,13 +683,15 @@ export default function RequirementsTable() {
       }
       callback(true); // call the callback as soon as posible
 
-      const newData = requirementsData.filter((item) => !ids.includes(item.id));
+      const newData = requirementsData?.filter(
+        (item) => !ids.includes(item.id),
+      );
 
       await utils.requirements.getRequirementTable.cancel({
-        projectId: params.projectId as string,
+        projectId: projectId as string,
       });
       utils.requirements.getRequirementTable.setData(
-        { projectId: params.projectId as string },
+        { projectId: projectId as string },
         (prev) => {
           if (!prev) return prev;
           return newData;
@@ -690,7 +702,7 @@ export default function RequirementsTable() {
       await Promise.all(
         ids.map((id) =>
           deleteRequirement({
-            projectId: params.projectId as string,
+            projectId: projectId as string,
             requirementId: id,
           }),
         ),
@@ -702,7 +714,7 @@ export default function RequirementsTable() {
     return (
       <Table
         className={cn("w-full", heightOfContent)}
-        data={requirementsData}
+        data={requirementsData ?? []}
         columns={tableColumns}
         onDelete={handleDelete}
         emptyMessage="No requirements found"
@@ -724,7 +736,7 @@ export default function RequirementsTable() {
     beginLoading(amount);
 
     const generatedData = await generateRequirements({
-      projectId: params.projectId as string,
+      projectId: projectId as string,
       amount,
       prompt,
     });
@@ -745,7 +757,7 @@ export default function RequirementsTable() {
 
     // New requirement focus might have been created, so we need to invalidate the query
     await utils.requirements.getRequirementFocuses.invalidate({
-      projectId: params.projectId as string,
+      projectId: projectId as string,
     });
 
     finishLoading(tableData);
