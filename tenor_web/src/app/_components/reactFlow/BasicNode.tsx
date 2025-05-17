@@ -59,20 +59,30 @@ export default function BasicNode({
         position={Position.Right}
         style={handleWhiteCircleStyle}
       />
-      <div
-        className="min-h-10 w-56 cursor-pointer rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800 hover:border-blue-500"
-        onClick={handleClick}
-      >
-        {/* TODO: Fix this to work for epic node design (see figma) */}
+      <div className="min-h-10 w-56 rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800">
         <div className="flex flex-row items-center justify-between px-2 text-xs">
-          <span className="flex grow-[1]">
+          <button
+            className="flex grow-[1] underline-offset-4 hover:text-app-primary hover:underline"
+            onClick={handleClick}
+          >
             {formatAnyScrumId(scrumId, nodeType)}
-          </span>
-          {showEditButton && <EditIcon fontSize="small" />}
+          </button>
+          {showEditButton && (
+            <EditIcon
+              fontSize="small"
+              className="cursor-pointer hover:text-app-primary"
+              onClick={handleClick}
+            />
+          )}
           {showDeleteButton && <DeleteOutlineIcon fontSize="small" />}
         </div>
         <hr className="mb-2 mt-1 border-t border-slate-400" />
-        <div className="line-clamp-2 px-2 text-xs">{title}</div>
+        <div
+          className="line-clamp-2 cursor-pointer truncate px-2 text-left text-xs underline-offset-4 hover:text-app-primary hover:underline"
+          onClick={handleClick}
+        >
+          {title}
+        </div>
         <div
           className={cn(
             "absolute bottom-0 left-0 h-2 w-full rounded-b-lg",
