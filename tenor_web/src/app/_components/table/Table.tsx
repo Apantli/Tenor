@@ -395,7 +395,9 @@ function TableInternal<
           tableKey={tableKey}
           scrollContainerRef={internalScrollContainerRef}
           ghostRowContainerRef={ghostDivRef}
-          showGhostActions={ghostData !== undefined && ghostData.length > 0}
+          showGhostActions={
+            ghostData !== undefined && ghostData.length > 0 && loadedGhosts
+          }
           acceptAllGhosts={acceptAllGhosts}
           rejectAllGhosts={rejectAllGhosts}
           disableSelection={
