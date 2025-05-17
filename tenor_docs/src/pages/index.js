@@ -28,7 +28,6 @@ function HomepageHeader() {
               <Link
                 className="button button--secondary button--lg"
                 to="/docs/architecture"
-                style={{ color: "white" }}
               >
                 View Architecture
               </Link>

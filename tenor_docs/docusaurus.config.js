@@ -73,12 +73,11 @@ const config = {
   themeConfig:
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Replace with your project's social card
       image: "img/docusaurus-social-card.jpg",
       colorMode: {
-        defaultMode: "dark",
-        disableSwitch: true,
-        respectPrefersColorScheme: false,
+        defaultMode: "light",
+        disableSwitch: false,
+        respectPrefersColorScheme: true,
       },
       navbar: {
         title: "Tenor Docs",
@@ -89,27 +88,22 @@ const config = {
         items: [
           {
             type: "docSidebar",
-            sidebarId: "tutorialSidebar",
+            sidebarId: "mainSidebar",
             position: "left",
             label: "Documentation",
           },
           {
-            to: "/docs/ai-features",
+            to: "/ai-features",
             label: "AI Features",
             position: "left",
           },
           {
-            to: "/docs/architecture",
+            to: "/architecture",
             label: "Architecture",
             position: "left",
           },
-          // {
-          //   to: "/blog",
-          //   label: "Updates",
-          //   position: "left",
-          // },
           {
-            href: "https://github.com/Apantli",
+            href: "https://github.com/Apantli/Tenor",
             label: "GitHub",
             position: "right",
           },
