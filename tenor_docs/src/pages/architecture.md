@@ -11,11 +11,11 @@ This document provides an overview of Tenor's architectural design and technical
 Tenor follows a modern web application architecture with a React-based frontend and Firebase backend:
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│                 │     │                 │     │                 │
-│  Client (Next.js)│ ←→  │    Firebase    │ ←→  │  External APIs  │
-│                 │     │                 │     │                 │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│                 │    │                 │    │                 │
+│ Client (Next.js)│ ←→ │    Firebase     │ ←→ │  External APIs  │
+│                 │    │                 │    │                 │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
 ### Frontend Architecture
