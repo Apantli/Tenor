@@ -23,6 +23,8 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 export default function ItemsKanban() {
   // GENERAL
@@ -52,9 +54,13 @@ export default function ItemsKanban() {
     null,
   );
 
-  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  const { setParam } = useSearchParam();
+  const [renderDetail, showDetail, setShowDetail, detailItemId] =
+    useQueryIdForPopup("id");
+  const setDetailItemId = (id: string) => {
+    setParam("id", id);
+  };
   // Detail item and parent
-  const [detailItemId, setDetailItemId] = useState("");
   const detailItem = itemsAndColumnsData?.cardItems[detailItemId];
   const detailItemType = detailItem?.cardType;
 

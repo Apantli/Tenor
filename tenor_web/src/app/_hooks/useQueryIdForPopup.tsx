@@ -16,9 +16,10 @@ export default function useQueryIdForPopup(paramName: string) {
       setId(paramValue);
     } else {
       setShowDetail(false);
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         setId("");
       }, 500);
+      return () => clearTimeout(timeout);
     }
     setManualShow(false);
   }, [paramValue]);

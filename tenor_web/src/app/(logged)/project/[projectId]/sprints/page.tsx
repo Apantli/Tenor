@@ -31,6 +31,8 @@ import {
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -42,6 +44,7 @@ const noSprintId = "noSprintId";
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
+  const { setParam } = useSearchParam();
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();
   const invalidateQueriesBacklogItemDetails =
@@ -281,8 +284,8 @@ export default function ProjectSprints() {
     setShowSmallPopup(false);
   };
 
-  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
-  const [detailItemId, setDetailItemId] = useState("");
+  const [renderDetail, showDetail, setShowDetail, detailItemId] =
+    useQueryIdForPopup("id");
 
   // Check if all unassigned items are selected
   const allUnassignedSelected = filteredUnassignedItems.every((itemId) =>
@@ -577,7 +580,7 @@ export default function ProjectSprints() {
               isLoading={isLoading}
               selection={selectedItems}
               setSelection={setSelectedItems}
-              setDetailId={setDetailItemId}
+              setDetailId={(id) => setParam("id", id)}
               setShowDetail={setShowDetail}
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
@@ -671,7 +674,7 @@ export default function ProjectSprints() {
                   key={column.sprint.id}
                   selectedItems={selectedItems}
                   setSelectedItems={setSelectedItems}
-                  setDetailItemId={setDetailItemId}
+                  setDetailItemId={(id) => setParam("id", id)}
                   setShowDetail={setShowDetail}
                 />
               ))}

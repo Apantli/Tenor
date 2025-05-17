@@ -20,6 +20,8 @@ import {
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 export default function TasksKanban() {
   // GENERAL
@@ -45,10 +47,14 @@ export default function TasksKanban() {
     null,
   );
 
-  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  const { setParam } = useSearchParam();
+  const [renderDetail, showDetail, setShowDetail, detailItemId] =
+    useQueryIdForPopup("id");
   // Detail item and parent
-  const [detailItemId, setDetaiItemId] = useState("");
-  const detailItem = tasksAndColumnsData?.cardTasks[detailItemId];
+  const detailItem =
+    detailItemId !== ""
+      ? tasksAndColumnsData?.cardTasks[detailItemId]
+      : undefined;
   const detailItemType = detailItem?.itemType;
   const detailParentItemId = detailItem?.itemId;
 
@@ -222,7 +228,7 @@ export default function TasksKanban() {
                   key={column.id}
                   selectedItems={selectedTasks}
                   setSelectedItems={setSelectedTasks}
-                  setDetailItemId={setDetaiItemId}
+                  setDetailItemId={(id) => setParam("id", id)}
                   setShowDetail={setShowDetail}
                   renderCard={(item) => (
                     <ItemCardRender

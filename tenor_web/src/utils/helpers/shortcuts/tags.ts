@@ -50,7 +50,7 @@ export const getPriorities = async (
 ) => {
   const prioritiesRef = getPrioritiesRef(firestore, projectId)
     .where("deleted", "==", false)
-    .orderBy("name", "desc");
+    .orderBy("name", "asc");
   const prioritiesSnapshot = await prioritiesRef.get();
   const priorities: WithId<Tag>[] = prioritiesSnapshot.docs.map((doc) => {
     return {

@@ -12,7 +12,7 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import DependencyList from "./DependencyList";
 import TasksTable, {
@@ -39,6 +39,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
+import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 interface Props {
   userStoryId: string;
@@ -64,6 +65,7 @@ export default function UserStoryDetailPopup({
   onReject,
 }: Props) {
   const { projectId } = useParams();
+  const { resetParam } = useSearchParam();
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
@@ -131,9 +133,32 @@ export default function UserStoryDetailPopup({
     }
   }, [userStoryDetail, editMode]);
 
+  const dismissPopup = async () => {
+    if (editMode && isModified()) {
+      const confirmation = await confirm(
+        "Are you sure?",
+        "Your changes will be discarded.",
+        "Discard changes",
+        "Keep Editing",
+      );
+      if (!confirmation) return;
+    }
+    if (unsavedTasks) {
+      const confirmation = await confirm(
+        "Are you sure?",
+        "You have unsaved AI generated tasks. To save them, please accept them first.",
+        "Discard",
+        "Keep editing",
+      );
+      if (!confirmation) return;
+    }
+    resetParam("id");
+    setShowDetail(false);
+  };
+
   useEffect(() => {
     if (error) {
-      setShowDetail(false);
+      void dismissPopup();
       predefinedAlerts.unexpectedError();
     }
   }, [error]);
@@ -237,7 +262,7 @@ export default function UserStoryDetailPopup({
       });
       await invalidateQueriesAllUserStories(projectId as string);
       await invalidateQueriesAllTasks(projectId as string);
-      setShowDetail(false);
+      await dismissPopup();
     }
   };
 
@@ -267,33 +292,10 @@ export default function UserStoryDetailPopup({
     );
   };
 
-  const router = useRouter();
-
   return (
     <Popup
       show={showDetail}
-      dismiss={async () => {
-        if (editMode && isModified()) {
-          const confirmation = await confirm(
-            "Are you sure?",
-            "Your changes will be discarded.",
-            "Discard changes",
-            "Keep Editing",
-          );
-          if (!confirmation) return;
-        }
-        if (unsavedTasks) {
-          const confirmation = await confirm(
-            "Are you sure?",
-            "You have unsaved AI generated tasks. To save them, please accept them first.",
-            "Discard",
-            "Keep editing",
-          );
-          if (!confirmation) return;
-        }
-        router.push("/project/" + (projectId as string) + "/user-stories");
-        setShowDetail(false);
-      }}
+      dismiss={dismissPopup}
       size="large"
       sidebarClassName="basis-[210px]"
       sidebar={

@@ -108,7 +108,6 @@ export default function CardColumn({
             }}
             onClick={() => {
               setDetailId(cardInfo.id);
-              setShowDetail(true);
             }}
           >
             {renderCard(cardInfo)}

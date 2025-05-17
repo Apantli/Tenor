@@ -33,6 +33,7 @@ import {
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
+import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 interface Props {
   issueId: string;
@@ -48,6 +49,8 @@ export default function IssueDetailPopup({
   taskIdToOpenImmediately,
 }: Props) {
   const { projectId } = useParams();
+
+  const { resetParam } = useSearchParam();
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -95,9 +98,23 @@ export default function IssueDetailPopup({
 
   const confirm = useConfirmation();
 
+  const dismissPopup = async () => {
+    if (editMode && isModified()) {
+      const confirmation = await confirm(
+        "Are you sure?",
+        "Your changes will be discarded.",
+        "Discard changes",
+        "Keep Editing",
+      );
+      if (!confirmation) return;
+    }
+    setShowDetail(false);
+    resetParam("id");
+  };
+
   useEffect(() => {
     if (error) {
-      setShowDetail(false);
+      void dismissPopup();
       predefinedAlerts.unexpectedError();
     }
   }, [error]);
@@ -174,7 +191,7 @@ export default function IssueDetailPopup({
       await invalidateQueriesAllIssues(projectId as string);
       await invalidateQueriesAllTasks(projectId as string);
 
-      setShowDetail(false);
+      await dismissPopup();
     }
   };
   const showAutomaticDetails = () => {
@@ -184,18 +201,7 @@ export default function IssueDetailPopup({
   return (
     <Popup
       show={showDetail}
-      dismiss={async () => {
-        if (editMode && isModified()) {
-          const confirmation = await confirm(
-            "Are you sure?",
-            "Your changes will be discarded.",
-            "Discard changes",
-            "Keep Editing",
-          );
-          if (!confirmation) return;
-        }
-        setShowDetail(false);
-      }}
+      dismiss={dismissPopup}
       size="large"
       sidebarClassName="basis-[210px]"
       sidebar={

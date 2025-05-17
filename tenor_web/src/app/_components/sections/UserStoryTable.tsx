@@ -4,7 +4,7 @@ import Table, { type TableColumns } from "~/app/_components/table/Table";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import { useRef, useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { cn } from "~/lib/utils";
@@ -33,7 +33,7 @@ import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
 import type { UserStoryCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import Link from "next/link";
+import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -46,7 +46,8 @@ export default function UserStoryTable() {
   const [renderNewStory, showNewStory, setShowNewStory] =
     usePopupVisibilityState();
   const [renderDetail, showDetail, setShowDetail, selectedUS] =
-    useQueryIdForPopup("us");
+    useQueryIdForPopup("id");
+  const { setParam } = useSearchParam();
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatEpicScrumId = useFormatEpicScrumId();
@@ -241,25 +242,22 @@ export default function UserStoryTable() {
         sortable: true,
         render(row) {
           return (
-            <Link
-              className={cn(
-                "flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline",
-                {
-                  "opacity-70 hover:text-app-text hover:no-underline":
-                    row.scrumId === -1,
-                },
-              )}
+            <button
+              className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 setSelectedGhostUS("");
+                if (row.scrumId !== -1) {
+                  setParam("id", row.id);
+                }
               }}
-              href={row.scrumId !== -1 ? `?us=${row.id}` : ""}
+              disabled={row.scrumId === -1}
             >
               {row.scrumId !== -1 ? (
                 formatUserStoryScrumId(row.scrumId ?? -1)
               ) : (
                 <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
               )}
-            </Link>
+            </button>
           );
         },
         hiddenOnGhost: true,
@@ -270,26 +268,21 @@ export default function UserStoryTable() {
         sortable: true,
         render(row, _, isGhost) {
           return (
-            <Link
-              className={cn(
-                "flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline",
-                {
-                  "opacity-70 hover:text-app-text hover:no-underline":
-                    row.scrumId === -1 && !isGhost,
-                },
-              )}
+            <button
+              className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 if (isGhost) {
                   setSelectedGhostUS(row.id);
                   setShowDetail(true);
                 } else {
                   setSelectedGhostUS("");
+                  setParam("id", row.id);
                 }
               }}
-              href={row.scrumId !== -1 ? `?us=${row.id}` : ""}
+              disabled={row.scrumId === -1}
             >
               {row.name}
-            </Link>
+            </button>
           );
         },
       },
@@ -561,13 +554,11 @@ export default function UserStoryTable() {
     );
   };
 
-  const router = useRouter();
-
   const onUserStoryAdded = async (userStoryId: string) => {
     await invalidateQueriesAllUserStories(projectId as string);
     setShowNewStory(false);
     setSelectedGhostUS("");
-    router.push("?us=" + userStoryId);
+    setParam("id", userStoryId);
   };
 
   const { mutateAsync: generateStories } =
