@@ -131,11 +131,30 @@ export const getIssueTable = async (
       const priority: Tag | undefined = issue.priorityId
         ? await getPriority(firestore, projectId, issue.priorityId)
         : undefined;
+
+      let relatedUserStory;
+      if (issue.relatedUserStoryId) {
+        relatedUserStory = await getUserStory(
+          firestore,
+          projectId,
+          issue.relatedUserStoryId,
+        );
+      }
+
       const issueCol: IssueCol = {
         ...issue,
         priority: priority,
         tags: [],
         assignUsers: [],
+        relatedUserStory: relatedUserStory
+          ? {
+              id: relatedUserStory?.id,
+              name: relatedUserStory?.name,
+              scrumId: relatedUserStory?.scrumId,
+              description: relatedUserStory?.description,
+              deleted: relatedUserStory?.deleted,
+            }
+          : undefined,
       };
 
       return issueCol;
