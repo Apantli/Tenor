@@ -33,24 +33,21 @@ import {
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
-import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 interface Props {
   issueId: string;
   showDetail: boolean;
-  setShowDetail: (show: boolean) => void;
+  setDetailId: (id: string) => void;
   taskIdToOpenImmediately?: string;
 }
 
 export default function IssueDetailPopup({
   issueId,
   showDetail,
-  setShowDetail,
+  setDetailId,
   taskIdToOpenImmediately,
 }: Props) {
   const { projectId } = useParams();
-
-  const { resetParam } = useSearchParam();
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -108,8 +105,7 @@ export default function IssueDetailPopup({
       );
       if (!confirmation) return;
     }
-    setShowDetail(false);
-    resetParam("id");
+    setDetailId("");
   };
 
   useEffect(() => {

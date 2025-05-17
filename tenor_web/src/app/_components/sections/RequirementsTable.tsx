@@ -47,8 +47,13 @@ export default function RequirementsTable() {
   const { setParam, resetParam } = useSearchParam();
 
   const utils = api.useUtils();
-  const [renderSmallPopup, showSmallPopup, setShowSmallPopup, selectedReq] =
-    useQueryIdForPopup("id");
+  const [
+    renderSmallPopup,
+    showSmallPopup,
+    selectedReq,
+    setSelectedReq,
+    setShowSmallPopup,
+  ] = useQueryIdForPopup("id");
   const [requirementEdited, setRequirementEdited] =
     useState<RequirementCol | null>(null);
   const [ghostRequirementEdited, setGhostRequirementEdited] =

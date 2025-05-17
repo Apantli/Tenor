@@ -24,7 +24,6 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import type { IssueCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -33,10 +32,9 @@ export default function IssuesTable() {
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
 
-  const { setParam } = useSearchParam();
   const [renderNewIssue, showNewIssue, setShowNewIssue] =
     usePopupVisibilityState();
-  const [renderDetail, showDetail, setShowDetail, selectedIS] =
+  const [renderDetail, showDetail, selectedIS, setSelectedIS] =
     useQueryIdForPopup("id");
 
   const formatIssueScrumId = useFormatIssueScrumId();
@@ -50,7 +48,7 @@ export default function IssuesTable() {
     await invalidateQueriesAllIssues(projectId as string);
     await invalidateQueriesIssueDetails(projectId as string, [issueId]);
     setShowNewIssue(false);
-    setParam("id", issueId);
+    setSelectedIS(issueId);
   };
 
   // TRPC
@@ -107,7 +105,7 @@ export default function IssuesTable() {
             <button
               className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
-                setParam("id", row.id);
+                setSelectedIS(row.id);
               }}
             >
               {formatIssueScrumId(row.scrumId)}
@@ -124,7 +122,7 @@ export default function IssuesTable() {
             <button
               className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
-                setParam("id", row.id);
+                setSelectedIS(row.id);
               }}
               data-cy="issue-title-table"
             >
@@ -410,7 +408,7 @@ export default function IssuesTable() {
       {renderDetail && (
         <IssueDetailPopup
           showDetail={showDetail}
-          setShowDetail={setShowDetail}
+          setDetailId={setSelectedIS}
           issueId={selectedIS}
         />
       )}

@@ -44,8 +44,7 @@ import { useSearchParam } from "~/app/_hooks/useSearchParam";
 interface Props {
   userStoryId: string;
   showDetail: boolean;
-  setShowDetail: (show: boolean) => void;
-  setUserStoryId?: (userStoryId: string) => void;
+  setUserStoryId: (userStoryId: string) => void;
   taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
   userStoryData?: UserStoryDetailWithTasks;
   setUserStoryData?: (data: UserStoryDetailWithTasks | undefined) => void;
@@ -56,7 +55,6 @@ interface Props {
 export default function UserStoryDetailPopup({
   userStoryId,
   showDetail,
-  setShowDetail,
   setUserStoryId,
   taskIdToOpenImmediately,
   userStoryData,
@@ -65,7 +63,6 @@ export default function UserStoryDetailPopup({
   onReject,
 }: Props) {
   const { projectId } = useParams();
-  const { resetParam } = useSearchParam();
   const confirm = useConfirmation();
   const utils = api.useUtils();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
@@ -114,11 +111,10 @@ export default function UserStoryDetailPopup({
   const formatSprintNumber = useFormatSprintNumber();
 
   const changeVisibleUserStory = async (userStoryId: string) => {
-    setShowDetail(false);
+    setUserStoryId("");
     setTimeout(() => {
-      setUserStoryId?.(userStoryId);
-      setShowDetail(true);
-    }, 300);
+      setUserStoryId(userStoryId);
+    }, 550);
   };
 
   useEffect(() => {
@@ -152,12 +148,12 @@ export default function UserStoryDetailPopup({
       );
       if (!confirmation) return;
     }
-    resetParam("id");
-    setShowDetail(false);
+    setUserStoryId("");
   };
 
   useEffect(() => {
     if (error) {
+      console.log(error);
       void dismissPopup();
       predefinedAlerts.unexpectedError();
     }
@@ -417,9 +413,9 @@ export default function UserStoryDetailPopup({
                     "Keep editing",
                   );
                   if (!confirmation) return;
-                  setUnsavedTasks(false);
-                  onReject?.();
                 }
+                setUnsavedTasks(false);
+                onReject?.();
               }}
             >
               Reject
@@ -435,9 +431,9 @@ export default function UserStoryDetailPopup({
                     "Keep editing",
                   );
                   if (!confirmation) return;
-                  setUnsavedTasks(false);
-                  onAccept?.();
                 }
+                setUnsavedTasks(false);
+                onAccept?.();
               }}
             >
               Accept

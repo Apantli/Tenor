@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
@@ -24,7 +23,6 @@ import {
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 export default function ItemsKanban() {
   // GENERAL
@@ -54,12 +52,13 @@ export default function ItemsKanban() {
     null,
   );
 
-  const { setParam } = useSearchParam();
-  const [renderDetail, showDetail, setShowDetail, detailItemId] =
-    useQueryIdForPopup("id");
-  const setDetailItemId = (id: string) => {
-    setParam("id", id);
-  };
+  const [
+    renderDetail,
+    showDetail,
+    detailItemId,
+    setDetailItemId,
+    setShowDetail,
+  ] = useQueryIdForPopup("id");
   // Detail item and parent
   const detailItem = itemsAndColumnsData?.cardItems[detailItemId];
   const detailItemType = detailItem?.cardType;
@@ -336,12 +335,13 @@ export default function ItemsKanban() {
           setShowDetail={setShowDetail}
           showDetail={showDetail}
           userStoryId={detailItemId}
+          setUserStoryId={setDetailItemId}
         />
       )}
 
       {renderDetail && detailItemType === "IS" && (
         <IssueDetailPopup
-          setShowDetail={setShowDetail}
+          setDetailId={setDetailItemId}
           showDetail={showDetail}
           issueId={detailItemId}
         />

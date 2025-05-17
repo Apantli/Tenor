@@ -4,6 +4,7 @@ import { useEffect, useState, type PropsWithChildren, useRef } from "react";
 import { cn } from "~/lib/utils";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import CloseSidebarIcon from "@mui/icons-material/LastPage";
 import { type ClassNameValue } from "tailwind-merge";
 import PrimaryButton from "./buttons/PrimaryButton";
 
@@ -198,6 +199,7 @@ export const usePopupVisibilityState = () => {
 interface SidebarPopupProps {
   show: boolean;
   dismiss: () => void;
+  afterDismissWithCloseButton?: () => void;
   disablePassiveDismiss?: boolean;
   title?: React.ReactNode;
   footer?: React.ReactNode;
@@ -211,6 +213,7 @@ export function SidebarPopup({
   children,
   show,
   dismiss,
+  afterDismissWithCloseButton,
   disablePassiveDismiss,
   title,
   footer,
@@ -305,11 +308,19 @@ export function SidebarPopup({
             )}
           </div>
           <button
-            onClick={dismiss}
+            onClick={async () => {
+              await dismiss();
+              afterDismissWithCloseButton?.();
+            }}
             className="absolute right-5 top-3 text-3xl text-gray-600"
             data-cy="popup-close-button"
           >
-            <CloseIcon fontSize="inherit" />
+            {afterDismissWithCloseButton !== undefined && (
+              <CloseIcon fontSize="inherit" />
+            )}
+            {afterDismissWithCloseButton === undefined && (
+              <CloseSidebarIcon fontSize="inherit" />
+            )}
           </button>
         </div>
       </div>

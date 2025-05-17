@@ -635,6 +635,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             showDetail={showTaskDetail}
             setShowDetail={setShowTaskDetail}
             isGhost={selectedGhostTaskId !== ""}
+            closeAllPopupsOnDismiss={taskIdToOpenImmediately !== undefined}
             taskData={
               selectedGhostTask ??
               itemData?.tasks.find((task) => task.id === selectedTaskId)
@@ -681,9 +682,11 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             }}
             onReject={() => {
               if (selectedGhostTaskId && selectedGhostTaskId !== "") {
-                onReject([selectedGhostTaskId]);
                 setShowTaskDetail(false);
-                setTimeout(() => setSelectedGhostTask(""), 300);
+                setTimeout(() => {
+                  onReject([selectedGhostTaskId]);
+                  setSelectedGhostTask("");
+                }, 300);
               }
             }}
           />

@@ -30,7 +30,11 @@ import {
   getUserStoryTable,
 } from "~/utils/helpers/shortcuts/userStories";
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
-import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
+import {
+  getBacklogTag,
+  getPriority,
+  getPriorityByNameOrId,
+} from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 
 export const userStoriesRouter = createTRPCRouter({
@@ -354,15 +358,23 @@ export const userStoriesRouter = createTRPCRouter({
         prompt,
       );
 
+      console.log("Complete prompt:", completePrompt);
+
       const data = await askAiToGenerate(
         completePrompt,
         z.array(UserStorySchema.omit({ scrumId: true, deleted: true })),
       );
 
+      console.log("Generated data:", data);
+
       const parsedData: UserStoryDetail[] = await Promise.all(
         data.map(async (userStory) => {
           const priority = userStory.priorityId
-            ? await getPriority(ctx.firestore, projectId, userStory.priorityId)
+            ? await getPriorityByNameOrId(
+                ctx.firestore,
+                projectId,
+                userStory.priorityId, // Assuming priorityId is either a name or an ID
+              )
             : undefined;
 
           const epic = userStory.epicId

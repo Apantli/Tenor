@@ -45,9 +45,8 @@ export default function UserStoryTable() {
   const [selectedGhostUS, setSelectedGhostUS] = useState("");
   const [renderNewStory, showNewStory, setShowNewStory] =
     usePopupVisibilityState();
-  const [renderDetail, showDetail, setShowDetail, selectedUS] =
+  const [renderDetail, showDetail, selectedUS, setUserStoryId, setShowDetail] =
     useQueryIdForPopup("id");
-  const { setParam } = useSearchParam();
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatEpicScrumId = useFormatEpicScrumId();
@@ -247,7 +246,7 @@ export default function UserStoryTable() {
               onClick={() => {
                 setSelectedGhostUS("");
                 if (row.scrumId !== -1) {
-                  setParam("id", row.id);
+                  setUserStoryId(row.id);
                 }
               }}
               disabled={row.scrumId === -1}
@@ -276,10 +275,10 @@ export default function UserStoryTable() {
                   setShowDetail(true);
                 } else {
                   setSelectedGhostUS("");
-                  setParam("id", row.id);
+                  setUserStoryId(row.id);
                 }
               }}
-              disabled={row.scrumId === -1}
+              disabled={row.scrumId === -1 && !isGhost}
             >
               {row.name}
             </button>
@@ -558,7 +557,7 @@ export default function UserStoryTable() {
     await invalidateQueriesAllUserStories(projectId as string);
     setShowNewStory(false);
     setSelectedGhostUS("");
-    setParam("id", userStoryId);
+    setUserStoryId(userStoryId);
   };
 
   const { mutateAsync: generateStories } =
@@ -623,15 +622,21 @@ export default function UserStoryTable() {
         {renderDetail && (
           <UserStoryDetailPopup
             showDetail={showDetail}
-            setShowDetail={setShowDetail}
             userStoryId={selectedUS}
             userStoryData={
-              selectedGhostUS !== undefined
+              selectedGhostUS !== ""
                 ? generatedUserStories.current?.find(
                     (it) => it.id === selectedGhostUS,
                   )
                 : undefined
             }
+            setUserStoryId={(newId) => {
+              setUserStoryId(newId);
+              if (newId === "" && selectedGhostUS !== "") {
+                setShowDetail(false);
+                setTimeout(() => setSelectedGhostUS(""), 300);
+              }
+            }}
             setUserStoryData={(updatedDetail) => {
               if (!selectedGhostUS || !updatedDetail) return;
               updateGhostRow(selectedGhostUS, (oldData) => ({
@@ -658,9 +663,11 @@ export default function UserStoryTable() {
               await onAccept([selectedGhostUS]);
             }}
             onReject={() => {
-              onReject([selectedGhostUS]);
-              setSelectedGhostUS("");
-              setTimeout(() => setSelectedGhostUS(""), 300);
+              setShowDetail(false);
+              setTimeout(() => {
+                onReject([selectedGhostUS]);
+                setSelectedGhostUS("");
+              }, 300);
             }}
           />
         )}

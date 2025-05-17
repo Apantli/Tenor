@@ -78,6 +78,36 @@ export const getPriority = async (
 };
 
 /**
+ * @function getPriorityByNameOrId
+ * @description Retrieves a priority tag from the priorityTypes collection based on its name or ID (useful when dealing with AI output)
+ * @param {FirebaseFirestore.DocumentReference} settingsRef - Reference to the settings document
+ * @param {string} priorityIdentifier - The ID or name of the priority tag to retrieve
+ * @returns {Promise<Tag | undefined>} The priority tag object or undefined if not found
+ */
+export const getPriorityByNameOrId = async (
+  firestore: Firestore,
+  projectId: string,
+  priorityId: string,
+) => {
+  const tag = await getPriotityRef(firestore, projectId, priorityId).get();
+  if (tag.exists) {
+    return { id: tag.id, ...TagSchema.parse(tag.data()) } as WithId<Tag>;
+  } else {
+    const tagByName = await getPrioritiesRef(firestore, projectId)
+      .where("name", "==", priorityId)
+      .limit(1)
+      .get();
+    if (tagByName.empty || tagByName.docs.length !== 1) {
+      return undefined;
+    }
+    return {
+      id: tagByName.docs[0]!.id,
+      ...TagSchema.parse(tagByName.docs[0]!.data()),
+    } as WithId<Tag>;
+  }
+};
+
+/**
  * @function getStatusTypesRef
  * @description Gets a reference to the status types collection for a specific project
  * @param firestore A Firestore instance
