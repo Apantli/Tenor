@@ -259,7 +259,7 @@ export default function RequirementsTable() {
       const name = requirement.name?.toLowerCase() ?? "";
       const description = requirement.description.toLowerCase();
 
-      // Asegúrate de que este hook devuelve un string consistente
+      // Make sure the scrumId is formatted consistently
       const formattedScrumText = UseFormatForAssignReqTypeScrumId(
         requirement.requirementType.name,
         requirement.scrumId,
