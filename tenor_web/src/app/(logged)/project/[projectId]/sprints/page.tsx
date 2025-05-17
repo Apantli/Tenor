@@ -284,7 +284,7 @@ export default function ProjectSprints() {
     setShowSmallPopup(false);
   };
 
-  const [renderDetail, showDetail, setShowDetail, detailItemId] =
+  const [renderDetail, showDetail, detailItemId, setDetailItemId] =
     useQueryIdForPopup("id");
 
   // Check if all unassigned items are selected
@@ -580,8 +580,7 @@ export default function ProjectSprints() {
               isLoading={isLoading}
               selection={selectedItems}
               setSelection={setSelectedItems}
-              setDetailId={(id) => setParam("id", id)}
-              setShowDetail={setShowDetail}
+              setDetailId={setDetailItemId}
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
                   <span className="text-xl font-medium">Unassigned items</span>
@@ -674,8 +673,7 @@ export default function ProjectSprints() {
                   key={column.sprint.id}
                   selectedItems={selectedItems}
                   setSelectedItems={setSelectedItems}
-                  setDetailItemId={(id) => setParam("id", id)}
-                  setShowDetail={setShowDetail}
+                  setDetailItemId={setDetailItemId}
                 />
               ))}
             </div>
@@ -710,7 +708,7 @@ export default function ProjectSprints() {
       {renderDetail &&
         backlogItemsBySprint?.backlogItems[detailItemId]?.itemType === "US" && (
           <UserStoryDetailPopup
-            setShowDetail={setShowDetail}
+            setUserStoryId={setDetailItemId}
             showDetail={showDetail}
             userStoryId={detailItemId}
           />
@@ -718,7 +716,7 @@ export default function ProjectSprints() {
       {renderDetail &&
         backlogItemsBySprint?.backlogItems[detailItemId]?.itemType === "IS" && (
           <IssueDetailPopup
-            setShowDetail={setShowDetail}
+            setDetailId={setDetailItemId}
             showDetail={showDetail}
             issueId={detailItemId}
           />

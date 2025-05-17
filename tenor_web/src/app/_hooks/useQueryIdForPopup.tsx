@@ -32,13 +32,12 @@ export default function useQueryIdForPopup(paramName: string) {
   useEffect(() => {
     if (!mount) {
       setMount(true);
-      return;
     }
     setManualShow(false);
     if (paramValue) {
       setShowDetail(true);
       setId(paramValue);
-    } else {
+    } else if (mount) {
       setShowDetail(false);
       const timeout = setTimeout(() => {
         setId("");
