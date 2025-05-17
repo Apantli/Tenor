@@ -7,11 +7,18 @@ import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
 import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
-import type { basicNodeData } from "~/lib/types/reactFlowTypes";
+import type { BasicNodeData } from "~/lib/types/reactFlowTypes";
+import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
+import { useParams } from "next/navigation";
+import {
+  useInvalidateQueriesAllTasks,
+  useInvalidateQueriesBacklogItems,
+} from "~/app/_hooks/invalidateHooks";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow
-  data: basicNodeData;
+  data: BasicNodeData;
   id?: string;
 }
 
@@ -27,30 +34,63 @@ const handleWhiteCircleStyle = {
 // TODO: Add a prop to choose the handle style for each side
 export default function BasicNode({
   data: {
-    // id,
     scrumId,
-    nodeType,
+    itemType,
     title,
     showDeleteButton,
-    // onDelete,
     showEditButton,
-    // onEdit,
+    parentId,
     // collapsible,
   },
   id,
 }: Props) {
-  const formatAnyScrumId = useFormatAnyScrumId();
+  // #region Hooks
+  const { projectId } = useParams();
+  const confirm = useConfirmation();
   const { setSelectedId, setShowDetail } = useSelectedNode();
 
-  const accentColor =
-    accentColorByCardType[nodeType as keyof typeof accentColorByCardType];
+  const formatAnyScrumId = useFormatAnyScrumId();
+  const deleteItemByType = useDeleteItemByType();
+  const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
+  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks(); // Using different hook for tasks because they need parentId
 
-  const handleClick = () => {
+  // #endregion
+
+  // #region Handlers
+  const handleDetailClick = () => {
     if (id) {
       setSelectedId(id);
       setShowDetail(true);
     }
   };
+
+  const handleDeleteClick = async () => {
+    if (!id) return;
+    const confirmation = await confirm(
+      "Are you sure you want to delete " +
+        formatAnyScrumId(scrumId, itemType) +
+        "?",
+      "This action cannot be undone.",
+      "Delete",
+      "Cancel",
+    );
+    if (!confirmation) {
+      return;
+    }
+    await deleteItemByType(projectId as string, itemType, id);
+    if (parentId && itemType === "TS") {
+      await invalidateQueriesAllTasks(projectId as string, [parentId]);
+    }
+    if (itemType === "US" || itemType === "EP") {
+      await invalidateQueriesBacklogItems(projectId as string, itemType);
+    }
+  };
+  // #endregion
+
+  // #region General
+  const accentColor =
+    accentColorByCardType[itemType as keyof typeof accentColorByCardType];
+  // #endregion
 
   return (
     <>
@@ -63,23 +103,29 @@ export default function BasicNode({
         <div className="flex flex-row items-center justify-between px-2 text-xs">
           <button
             className="flex grow-[1] underline-offset-4 hover:text-app-primary hover:underline"
-            onClick={handleClick}
+            onClick={handleDetailClick}
           >
-            {formatAnyScrumId(scrumId, nodeType)}
+            {formatAnyScrumId(scrumId, itemType)}
           </button>
           {showEditButton && (
             <EditIcon
               fontSize="small"
               className="cursor-pointer hover:text-app-primary"
-              onClick={handleClick}
+              onClick={handleDetailClick}
             />
           )}
-          {showDeleteButton && <DeleteOutlineIcon fontSize="small" />}
+          {showDeleteButton && (
+            <DeleteOutlineIcon
+              fontSize="small"
+              className="cursor-pointer hover:text-app-primary"
+              onClick={handleDeleteClick}
+            />
+          )}
         </div>
         <hr className="mb-2 mt-1 border-t border-slate-400" />
         <div
           className="line-clamp-2 cursor-pointer truncate px-2 text-left text-xs underline-offset-4 hover:text-app-primary hover:underline"
-          onClick={handleClick}
+          onClick={handleDetailClick}
         >
           {title}
         </div>

@@ -251,8 +251,46 @@ export const userStoriesRouter = createTRPCRouter({
         projectId,
         userStoryId,
       );
+
+      // Get the user story to get its dependencies and required by relationships
+      const userStory = await getUserStory(
+        ctx.firestore,
+        projectId,
+        userStoryId,
+      );
+
+      // Remove this user story from all dependencies' requiredBy arrays
+      await Promise.all(
+        userStory.dependencyIds.map(async (dependencyId) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            dependencyId,
+            userStoryId,
+            "remove",
+            "requiredByIds",
+          );
+        }),
+      );
+
+      // Remove this user story from all requiredBy's dependency arrays
+      await Promise.all(
+        userStory.requiredByIds.map(async (requiredById) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            requiredById,
+            userStoryId,
+            "remove",
+            "dependencyIds",
+          );
+        }),
+      );
+
+      // Mark the user story as deleted
       await userStoryRef.update({ deleted: true });
 
+      // Delete associated tasks
       const tasksSnapshot = await getTasksRef(ctx.firestore, projectId)
         .where("deleted", "==", false)
         .where("itemType", "==", "US")
@@ -520,11 +558,11 @@ export const userStoriesRouter = createTRPCRouter({
             id: userStory.id,
             title: userStory.name,
             scrumId: userStory.scrumId,
-            nodeType: "US", // one of KanbanCard["cardType"]
+            itemType: "US",
             showDeleteButton: true,
             showEditButton: true,
             collapsible: false,
-          }, // See BasicNodeData
+          }, // See BasicNodeData for properties
           type: "basic", // see nodeTypes
         };
       });

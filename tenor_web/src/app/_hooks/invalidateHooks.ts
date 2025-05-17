@@ -47,6 +47,15 @@ export const useInvalidateQueriesTaskDetails = () => {
   };
 };
 
+export const useInvalidateQueriesAllEpics = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.epics.getEpics.invalidate({
+      projectId: projectId,
+    });
+  };
+};
+
 export const useInvalidateQueriesAllUserStories = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
@@ -150,30 +159,39 @@ export const useInvalidateQueriesIssueDetails = () => {
 export const useInvalidateQueriesBacklogItems = () => {
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
+  const invalidateQueriesAllEpics = useInvalidateQueriesAllEpics();
 
-  return async (projectId: string, itemType: itemTypes) => {
-    if (itemType === "US") {
-      await invalidateQueriesAllUserStories(projectId);
-    } else if (itemType === "IS") {
-      await invalidateQueriesAllIssues(projectId);
+  return async (projectId: string, itemType: itemTypes | "EP") => {
+    switch (itemType) {
+      case "US":
+        await invalidateQueriesAllUserStories(projectId);
+        break;
+      case "EP":
+        await invalidateQueriesAllEpics(projectId);
+        break;
+      case "IS":
+        await invalidateQueriesAllIssues(projectId);
+        break;
     }
-    // TODO: Add one for general backlog items
+    // TODO: Add one for general backlog items, when they are implemented
   };
 };
 
 interface CondenseItem {
   itemId: string;
-  itemType: itemTypes;
+  itemType: itemTypes | "TS";
 }
 
 export const useInvalidateQueriesBacklogItemDetails = () => {
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   return async (projectId: string, item: CondenseItem[]) => {
     const userStories = item.filter((i) => i.itemType === "US");
     const issues = item.filter((i) => i.itemType === "IS");
+    const tasks = item.filter((i) => i.itemType === "TS");
 
     await invalidateQueriesUserStoriesDetails(
       projectId,
@@ -183,6 +201,11 @@ export const useInvalidateQueriesBacklogItemDetails = () => {
     await invalidateQueriesIssueDetails(
       projectId,
       issues.map((i) => i.itemId),
+    );
+
+    await invalidateQueriesTaskDetails(
+      projectId,
+      tasks.map((i) => i.itemId),
     );
   };
 };

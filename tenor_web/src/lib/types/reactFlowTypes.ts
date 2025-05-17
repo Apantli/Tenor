@@ -1,18 +1,15 @@
 import BasicNode from "~/app/_components/reactFlow/BasicNode";
-import type { KanbanCard } from "~/lib/types/kanbanTypes";
 
 export const nodeTypes = {
   basic: BasicNode,
 };
 
-export interface basicNodeData {
-  id: string;
+export interface BasicNodeData {
   scrumId: number;
-  nodeType: KanbanCard["cardType"];
+  itemType: "US" | "EP" | "TS";
   title: string;
   showDeleteButton?: boolean;
-  onDelete?: () => void;
   showEditButton?: boolean;
-  onEdit?: () => void;
   collapsible: boolean;
+  parentId?: string; // Only for tasks
 }
