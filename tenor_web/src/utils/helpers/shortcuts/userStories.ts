@@ -25,6 +25,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import { getTaskProgress } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
+import { FieldValue } from "firebase-admin/firestore";
 
 /**
  * @function getUserStoriesRef
@@ -336,4 +337,33 @@ ${itemContext}
 ${epicContext}
 ${tagContext}\n
 `;
+};
+
+export const updateDependency = (
+  firestore: Firestore,
+  projectId: string,
+  userStoryId: string,
+  otherUserStoryId: string,
+  operation: "add" | "remove",
+  field: "requiredByIds" | "dependencyIds",
+) => {
+  const updateRef = getUserStoryRef(firestore, projectId, userStoryId);
+  if (operation === "add") {
+    return updateRef.update({
+      [field]: FieldValue.arrayUnion(otherUserStoryId),
+    });
+  } else {
+    return updateRef.update({
+      [field]: FieldValue.arrayRemove(otherUserStoryId),
+    });
+  }
+};
+
+export const getUserStoryDependencyAdjacencyListRef = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  return getProjectRef(firestore, projectId)
+    .collection("settings")
+    .doc("dependencyAdjacencyList");
 };

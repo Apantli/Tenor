@@ -109,7 +109,6 @@ export default function UserStoryDependencyTree() {
   }, [nodes]);
 
   const onConnect = useCallback(async (params: Connection) => {
-    return;
     // Cancel ongoing queries for this user story data
     await utils.userStories.getUserStoryDependencies.cancel({
       projectId: projectId as string,

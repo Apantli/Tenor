@@ -28,6 +28,7 @@ import {
   getUserStoryNewId,
   getUserStoryRef,
   getUserStoryTable,
+  updateDependency,
 } from "~/utils/helpers/shortcuts/userStories";
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
 import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
@@ -168,32 +169,12 @@ export const userStoriesRouter = createTRPCRouter({
         (req) => !userStoryData.requiredByIds.includes(req),
       );
 
-      const updateDependency = (
-        userStoryId: string,
-        otherUserStoryId: string,
-        operation: "add" | "remove",
-        field: "requiredByIds" | "dependencyIds",
-      ) => {
-        const updateRef = getUserStoryRef(
-          ctx.firestore,
-          projectId,
-          userStoryId,
-        );
-        if (operation === "add") {
-          return updateRef.update({
-            [field]: FieldValue.arrayUnion(otherUserStoryId),
-          });
-        } else {
-          return updateRef.update({
-            [field]: FieldValue.arrayRemove(otherUserStoryId),
-          });
-        }
-      };
-
       // Update the related user stories
       await Promise.all(
         addedDependencies.map(async (dependencyId) => {
           await updateDependency(
+            ctx.firestore,
+            projectId,
             dependencyId,
             userStoryId,
             "add",
@@ -204,6 +185,8 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         removedDependencies.map(async (dependencyId) => {
           await updateDependency(
+            ctx.firestore,
+            projectId,
             dependencyId,
             userStoryId,
             "remove",
@@ -214,6 +197,8 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         addedRequiredBy.map(async (requiredById) => {
           await updateDependency(
+            ctx.firestore,
+            projectId,
             requiredById,
             userStoryId,
             "add",
@@ -224,6 +209,8 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         removedRequiredBy.map(async (requiredById) => {
           await updateDependency(
+            ctx.firestore,
+            projectId,
             requiredById,
             userStoryId,
             "remove",
@@ -452,21 +439,22 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, sourceId, targetId } = input;
-
-      // Get references to both user stories
-      const sourceRef = getUserStoryRef(ctx.firestore, projectId, sourceId);
-      const targetRef = getUserStoryRef(ctx.firestore, projectId, targetId);
-
-      // Update the source user story to add the target as a dependency
-      await sourceRef.update({
-        dependencyIds: FieldValue.arrayUnion(targetId),
-      });
-
-      // Update the target user story to add the source as requiring it
-      await targetRef.update({
-        requiredByIds: FieldValue.arrayUnion(sourceId),
-      });
-
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        sourceId,
+        targetId,
+        "add",
+        "dependencyIds",
+      );
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        targetId,
+        sourceId,
+        "add",
+        "requiredByIds",
+      );
       return { success: true };
     }),
 
@@ -478,7 +466,10 @@ export const userStoriesRouter = createTRPCRouter({
    * @param {string} targetId - The ID of the user story that will no longer be a dependency.
    * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
    */
-  deleteUserStoryDependencies: roleRequiredProcedure(backlogPermissions, "write")
+  deleteUserStoryDependencies: roleRequiredProcedure(
+    backlogPermissions,
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -488,21 +479,22 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, sourceId, targetId } = input;
-
-      // Get references to both user stories
-      const sourceRef = getUserStoryRef(ctx.firestore, projectId, sourceId);
-      const targetRef = getUserStoryRef(ctx.firestore, projectId, targetId);
-
-      // Update the source user story to remove the target from dependencies
-      await sourceRef.update({
-        dependencyIds: FieldValue.arrayRemove(targetId),
-      });
-
-      // Update the target user story to remove the source from requiredBy
-      await targetRef.update({
-        requiredByIds: FieldValue.arrayRemove(sourceId),
-      });
-
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        sourceId,
+        targetId,
+        "remove",
+        "dependencyIds",
+      );
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        targetId,
+        sourceId,
+        "remove",
+        "requiredByIds",
+      );
       return { success: true };
     }),
 
