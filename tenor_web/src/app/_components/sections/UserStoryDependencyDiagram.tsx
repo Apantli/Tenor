@@ -216,6 +216,17 @@ export default function UserStoryDependencyTree() {
       invalidateQueriesUserStoriesDetails,
     ],
   );
+
+  // Do layout next time if there are no nodes
+  useEffect(() => {
+    if (!isLoadingDependencies && dependencyData?.nodes.length == 0) {
+      localStorage.setItem(
+        (projectId as string) + ":initialLayoutDone",
+        "false",
+      );
+    }
+  }, [isLoadingDependencies, dependencyData]);
+
   // #endregion
 
   // TODO: verify no cyclic dependencies
