@@ -49,11 +49,6 @@ export default function useQueryIdForPopup(paramName: string) {
   const setShowManually = (show: boolean) => {
     setShowDetail(show);
     setManualShow(true);
-    if (!show) {
-      setTimeout(() => {
-        setManualShow(false);
-      }, 500);
-    }
   };
 
   const setValue = (newValue: string) => {
