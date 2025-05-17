@@ -30,6 +30,7 @@ export default async function RootLayout({
             </TooltipClientWrapper>
           </NavigationGuardProvider>
         </TRPCReactProvider>
+        <div id="portal-root" />
       </body>
     </html>
   );

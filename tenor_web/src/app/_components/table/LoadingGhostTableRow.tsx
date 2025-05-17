@@ -2,30 +2,23 @@ import React, { useEffect, useRef } from "react";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import BubbleIcon from "@mui/icons-material/BubbleChart";
 import { cn } from "~/lib/utils";
-import { type TableOptions, type DeleteOptions } from "./Table";
 
-interface LoadingGhostTableRowProps<I> {
+interface LoadingGhostTableRowProps<> {
   multiselect?: boolean;
-  extraOptions?: TableOptions<I>[];
-  deletable?: boolean | DeleteOptions;
-  columnWidths: number[];
   progress: number;
   className?: string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
-function LoadingGhostTableRow<I extends string | number>({
+function LoadingGhostTableRow({
   multiselect,
-  columnWidths,
   progress,
   className,
-  extraOptions,
-  deletable,
-}: LoadingGhostTableRowProps<I>) {
-  const showThreeDots = extraOptions !== undefined || deletable !== undefined;
-  const gridTemplateColumns =
-    (multiselect ? "20px " : "") +
-    columnWidths.map((width) => `${width}px`).join(" ") +
-    (showThreeDots ? ` 1fr 110px` : "");
+  scrollContainerRef,
+}: LoadingGhostTableRowProps) {
+  const gridTemplateColumns = (multiselect ? "20px " : "") + " 40px 1fr";
+
+  const width = scrollContainerRef?.current?.clientWidth;
 
   const randomStarPosition = () => {
     const x = Math.random() * -window.innerWidth;
@@ -78,10 +71,10 @@ function LoadingGhostTableRow<I extends string | number>({
   return (
     <div
       className={cn(
-        "relative grid min-w-fit origin-top items-center gap-3 overflow-hidden rounded-lg border-b border-white bg-app-secondary p-2 transition-all",
+        "sticky left-0 grid min-w-fit origin-top items-center gap-3 overflow-hidden rounded-lg border-b border-white bg-app-secondary p-2 transition-all",
         className,
       )}
-      style={{ gridTemplateColumns }}
+      style={{ gridTemplateColumns, width: width ? `${width}px` : "100%" }}
     >
       <div
         className="pointer-events-none absolute left-0 top-0 z-0 h-full overflow-hidden bg-app-primary transition-all duration-500 ease-in-out"
