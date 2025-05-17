@@ -153,7 +153,6 @@ export default function UserStoryDetailPopup({
 
   useEffect(() => {
     if (error) {
-      console.log(error);
       void dismissPopup();
       predefinedAlerts.unexpectedError();
     }

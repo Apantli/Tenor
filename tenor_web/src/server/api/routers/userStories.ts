@@ -134,7 +134,6 @@ export const userStoriesRouter = createTRPCRouter({
           ...userStoryData,
         } as WithId<UserStory>;
       } catch (err) {
-        console.log("Error creating user story:", err);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
@@ -358,14 +357,10 @@ export const userStoriesRouter = createTRPCRouter({
         prompt,
       );
 
-      console.log("Complete prompt:", completePrompt);
-
       const data = await askAiToGenerate(
         completePrompt,
         z.array(UserStorySchema.omit({ scrumId: true, deleted: true })),
       );
-
-      console.log("Generated data:", data);
 
       const parsedData: UserStoryDetail[] = await Promise.all(
         data.map(async (userStory) => {

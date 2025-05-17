@@ -58,7 +58,6 @@ export const tasksRouter = createTRPCRouter({
         });
         return { success: true, taskId: task.id };
       } catch (err) {
-        console.log("Error creating task story:", err);
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),

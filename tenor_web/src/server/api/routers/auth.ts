@@ -4,7 +4,7 @@
  * @packageDocumentation
  * This file defines the TRPC router and procedures for authentication in the Tenor application.
  * It provides endpoints to handle user login, logout, session management, and verification.
- * 
+ *
  * The router includes procedures for:
  * - User login with Firebase authentication and optional GitHub integration
  * - User logout and token revocation
@@ -91,7 +91,6 @@ export const loginProcedure = publicProcedure
 
       return { success: true };
     } catch (err) {
-      console.log(err);
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
   });
@@ -171,7 +170,6 @@ export const refreshSessionProcedure = publicProcedure
 
       return { success: true };
     } catch (error) {
-      console.log("Token refresh error: ", error);
       cookie.set("token", "", {
         httpOnly: true,
         secure: env.NODE_ENV === "production",

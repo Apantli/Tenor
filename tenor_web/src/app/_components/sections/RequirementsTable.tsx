@@ -193,7 +193,6 @@ export default function RequirementsTable() {
     setNewRequirement(defaultRequirement);
 
     setShowSmallPopup(false);
-    console.log(response);
   };
 
   const handleEditRequirement = async (
@@ -266,7 +265,6 @@ export default function RequirementsTable() {
   useEffect(() => {
     if (requirements) {
       const query = searchValue.toLowerCase();
-      console.log("Query: ", requirements);
       const filtered = requirements
         .filter((requirement) => {
           const name = requirement.name?.toLowerCase() ?? "";

@@ -59,7 +59,6 @@ export default function useQueryIdForPopup(paramName: string) {
   const setValue = (newValue: string) => {
     if (newValue === "") {
       resetParam(paramName);
-      console.log("resetParam", paramName);
     } else {
       setParam(paramName, newValue);
     }

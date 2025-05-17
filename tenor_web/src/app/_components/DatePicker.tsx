@@ -21,7 +21,6 @@ export function DatePicker({
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const formatDate = (date: Date): string => {
-    console.log("Formatting date:", date);
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
