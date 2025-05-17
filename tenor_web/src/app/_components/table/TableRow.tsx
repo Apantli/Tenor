@@ -82,7 +82,7 @@ function TableRow<
         },
         className,
       )}
-      style={{ gridTemplateColumns, zIndex: 1000 - (rowIndex ?? 0) }}
+      style={{ gridTemplateColumns }}
     >
       {multiselect && (
         <InputCheckbox
