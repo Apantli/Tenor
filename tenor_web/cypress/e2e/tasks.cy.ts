@@ -1,5 +1,4 @@
 import type {
-  TestProjectInfo,
   TestUserStory,
   TestTask,
 } from "cypress/fixtures/types";
@@ -8,14 +7,11 @@ let projectPath = "";
 
 describe("User Stories", () => {
   before(() => {
-    cy.signIn("/");
-    cy.createEmptyProject();
-    cy.url().then((url) => {
+    cy.ensureSharedProjectExists().then((url) => {
       projectPath = url;
     });
   });
 
-  // Return to dashboard and select the project
   beforeEach(() => {
     cy.visit(projectPath);
     cy.get('[data-cy="userStories"]').click();

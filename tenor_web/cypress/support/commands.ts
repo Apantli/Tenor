@@ -48,7 +48,7 @@ import {
 let auth: Auth;
 function getAuth() {
   const app = initializeApp({
-    apiKey: Cypress.env("apiKey"),
+    apiKey: Cypress.env("apiKey") as string,
   });
   auth =
     auth ||
@@ -67,7 +67,7 @@ export function signInProgrammatically({
   email: string;
   password: string;
 }) {
-  return cy.window().then(async (win) => {
+  return cy.window().then(async () => {
     // Import Firebase modules in browser context
     const {
       getAuth,
@@ -118,6 +118,19 @@ Cypress.Commands.add(
   },
 );
 
+Cypress.Commands.add("navigateToSharedProject", (subPath = ""): Cypress.Chainable<null> => {
+  return cy.window().then((win) => {
+    const projectPath = win.localStorage.getItem('sharedProjectPath');
+    if (!projectPath) {
+      throw new Error("No shared project path found in localStorage. Make sure you ran the setup test first.");
+    }
+    const fullPath = `${projectPath}${subPath}`;
+    cy.visit(fullPath);
+  }).then(() => {
+    return cy.wrap(null);
+  });
+});
+
 Cypress.Commands.add("createEmptyProject", () => {
   cy.visit("/");
   cy.get(".mr-10 > .justify-between > .flex").click();
@@ -125,5 +138,23 @@ Cypress.Commands.add("createEmptyProject", () => {
     cy.get('[placeholder="What is your project called..."]').type(data.name);
     cy.get(".header > .flex").click();
     cy.contains(data.name).should("be.visible");
+  });
+});
+
+Cypress.Commands.add("ensureSharedProjectExists", (): Cypress.Chainable<string> => {
+  return cy.window().then((win) => {
+    const existingProjectPath = win.localStorage.getItem('sharedProjectPath');
+    
+    if (existingProjectPath) {
+      return cy.wrap(existingProjectPath);
+    } else {
+      cy.signIn("/");
+      cy.createEmptyProject();
+      
+      return cy.url().then((url: string) => {
+        win.localStorage.setItem('sharedProjectPath', url);
+        return url;
+      });
+    }
   });
 });
