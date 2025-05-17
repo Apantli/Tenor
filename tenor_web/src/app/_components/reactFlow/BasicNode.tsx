@@ -6,11 +6,13 @@ import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/Edit";
+import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
 import type { basicNodeData } from "~/lib/types/reactFlowTypes";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow
   data: basicNodeData;
+  id?: string;
 }
 
 const handleSize = "8px";
@@ -35,11 +37,20 @@ export default function BasicNode({
     // onEdit,
     // collapsible,
   },
+  id,
 }: Props) {
   const formatAnyScrumId = useFormatAnyScrumId();
+  const { setSelectedId, setShowDetail } = useSelectedNode();
 
   const accentColor =
     accentColorByCardType[nodeType as keyof typeof accentColorByCardType];
+
+  const handleClick = () => {
+    if (id) {
+      setSelectedId(id);
+      setShowDetail(true);
+    }
+  };
 
   return (
     <>
@@ -48,7 +59,10 @@ export default function BasicNode({
         position={Position.Right}
         style={handleWhiteCircleStyle}
       />
-      <div className="min-h-10 w-56 rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800">
+      <div
+        className="min-h-10 w-56 cursor-pointer rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800 hover:border-blue-500"
+        onClick={handleClick}
+      >
         {/* TODO: Fix this to work for epic node design (see figma) */}
         <div className="flex flex-row items-center justify-between px-2 text-xs">
           <span className="flex grow-[1]">

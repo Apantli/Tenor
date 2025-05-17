@@ -26,6 +26,8 @@ import {
 } from "~/utils/reactFlow";
 import SecondaryButton from "../buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
+import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
+import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 
@@ -36,8 +38,14 @@ export default function UserStoryDependencyTree() {
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const { fitView } = useReactFlow();
-
+  const {
+    selectedId,
+    setSelectedId: _setSelectedId,
+    showDetail,
+    setShowDetail,
+  } = useSelectedNode();
   // #endregion
+
   // #region TRPC
   const { data: dependencyData, isLoading: isLoadingDependencies } =
     api.userStories.getUserStoryDependencies.useQuery({
@@ -273,6 +281,14 @@ export default function UserStoryDependencyTree() {
             </SecondaryButton>
           </Panel>
         </ReactFlow>
+      )}
+
+      {showDetail && (
+        <UserStoryDetailPopup
+          showDetail={showDetail}
+          setShowDetail={setShowDetail}
+          userStoryId={selectedId}
+        />
       )}
     </div>
   );
