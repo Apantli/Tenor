@@ -535,8 +535,6 @@ export const userStoriesRouter = createTRPCRouter({
           id: `${userStory.id}-${dependencyId}`,
           source: userStory.id,
           target: dependencyId,
-          // animated: true,
-          // type: "default", // Types can be "default", "straight", "step", "smoothstep", or "simplebezier"
         })),
       );
 

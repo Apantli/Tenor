@@ -358,12 +358,3 @@ export const updateDependency = (
     });
   }
 };
-
-export const getUserStoryDependencyAdjacencyListRef = async (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  return getProjectRef(firestore, projectId)
-    .collection("settings")
-    .doc("dependencyAdjacencyList");
-};
