@@ -304,16 +304,19 @@ export const getRequirementTable = async (
           requirement.requirementTypeId,
         )) ?? noTag;
 
-      const requirementFocus: Tag =
-        (await getRequirementFocus(
-          firestore,
-          projectId,
-          requirement.requirementFocusId,
-        )) ?? noTag;
+      const requirementFocus: Tag | undefined =
+        requirement.requirementFocusId !== ""
+          ? await getRequirementFocus(
+              firestore,
+              projectId,
+              requirement.requirementFocusId,
+            )
+          : undefined;
 
-      const priority: Tag =
-        (await getPriority(firestore, projectId, requirement.priorityId)) ??
-        noTag;
+      const priority: Tag | undefined =
+        requirement.priorityId !== ""
+          ? await getPriority(firestore, projectId, requirement.priorityId)
+          : undefined;
 
       const requirementCol: RequirementCol = {
         ...requirement,

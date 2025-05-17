@@ -158,33 +158,38 @@ export default function RequirementsTable() {
 
   const handleCreateRequirement = async () => {
     if (!newRequirement.name) {
-      alert("Oops...", "Requirement Name must have a value.", {
+      alert("Oops...", "The requirement must have a name.", {
         type: "error",
         duration: 5000, // time in ms (5 seconds)
       });
-      return;
     }
 
     if (
-      !newRequirement.priority?.id ||
-      !newRequirement.requirementType?.id ||
-      !newRequirement.requirementFocus?.id
+      !newRequirement.requirementType ||
+      newRequirement.requirementType.id === undefined
     ) {
-      alert("Oops...", "All Properties must have a value.", {
+      alert("Oops...", "The requirement must have a type.", {
         type: "error",
         duration: 5000, // time in ms (5 seconds)
       });
+    }
+
+    if (
+      !newRequirement.name ||
+      !newRequirement.requirementType ||
+      newRequirement.requirementType.id === undefined
+    ) {
       return;
     }
 
-    const response = await createOrModifyRequirement({
+    await createOrModifyRequirement({
       projectId: projectId as string,
       requirementData: {
         ...newRequirement,
         scrumId: -1,
-        priorityId: newRequirement.priority.id,
+        priorityId: newRequirement.priority?.id ?? "",
         requirementTypeId: newRequirement.requirementType.id,
-        requirementFocusId: newRequirement.requirementFocus.id,
+        requirementFocusId: newRequirement.requirementFocus?.id ?? "",
       },
     });
 
@@ -204,14 +209,7 @@ export default function RequirementsTable() {
       requirement;
     if (checkValues) {
       if (!name) {
-        alert("Oops...", "Requirement name must have a value.", {
-          type: "error",
-          duration: 5000, // time in ms (5 seconds)
-        });
-        return;
-      }
-      if (!priority?.id || !requirementType?.id || !requirementFocus?.id) {
-        alert("Oops...", "All properties must have a value.", {
+        alert("Oops...", "Requirement must have a name.", {
           type: "error",
           duration: 5000, // time in ms (5 seconds)
         });
@@ -228,9 +226,9 @@ export default function RequirementsTable() {
       projectId: projectId as string,
       name,
       description,
-      priorityId: priority.id ?? "",
+      priorityId: priority?.id ?? "",
       requirementTypeId: requirementType.id ?? "",
-      requirementFocusId: requirementFocus.id ?? "",
+      requirementFocusId: requirementFocus?.id ?? "",
       scrumId: scrumId,
       deleted: false,
     };
@@ -320,7 +318,6 @@ export default function RequirementsTable() {
         projectId: params.projectId as string,
       });
 
-      // FIXME: I'm a little confused how the data is being stored here, might have issues with some of the tags
       utils.requirements.getRequirementTable.setData(
         { projectId: params.projectId as string },
         (oldData) => {
@@ -336,9 +333,9 @@ export default function RequirementsTable() {
           requirementData: {
             ...req,
             scrumId: 0,
-            priorityId: req.priority.id ?? "",
+            priorityId: req.priority?.id ?? "",
             requirementTypeId: req.requirementType.id ?? "",
-            requirementFocusId: req.requirementFocus.id ?? "",
+            requirementFocusId: req.requirementFocus?.id ?? "",
           },
         });
       }
@@ -663,11 +660,11 @@ export default function RequirementsTable() {
       callback: (del: boolean) => void,
     ) => {
       const confirmMessage =
-        ids.length > 1 ? "Delete requirements?" : "Delete requirement?";
+        ids.length > 1 ? "delete requirements?" : "delete requirement?";
       if (
         !(await confirm(
           `Are you sure you want to ${confirmMessage}`,
-          "This action cannot be undone",
+          "This action cannot be undone.",
           "Delete",
         ))
       ) {
@@ -865,22 +862,7 @@ export default function RequirementsTable() {
                       requirementEditedData;
                     if (editingRequirement) {
                       if (!name) {
-                        alert(
-                          "Oops...",
-                          "Requirement name must have a value.",
-                          {
-                            type: "error",
-                            duration: 5000, // time in ms (5 seconds)
-                          },
-                        );
-                        return;
-                      }
-                      if (
-                        !priority?.id ||
-                        !requirementType?.id ||
-                        !requirementFocus?.id
-                      ) {
-                        alert("Oops...", "All properties must have a value.", {
+                        alert("Oops...", "The requirement must have a name.", {
                           type: "error",
                           duration: 5000, // time in ms (5 seconds)
                         });
