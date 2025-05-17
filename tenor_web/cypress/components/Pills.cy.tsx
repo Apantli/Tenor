@@ -28,12 +28,7 @@ describe("Pills", () => {
       },
     ];
 
-    const [tag, setTag] = useState(tags[0] as Tag);
     const [tag2, setTag2] = useState(tags[1] as Tag);
-
-    const dropdownCallback = async (tag: Tag) => {
-      setTag(tag);
-    };
     const dropdownCallback2 = async (tag: Tag) => {
       setTag2(tag);
     };
