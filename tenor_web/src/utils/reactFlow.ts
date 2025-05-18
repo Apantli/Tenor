@@ -36,16 +36,23 @@ export const getLayoutedElements = (
   };
 };
 
-export const saveNodePositionsToLocalStorage = (
+export const saveFlowToLocalStorage = (
   projectId: string,
-  nodes: Node[],
+  flow: {
+    nodes: Node[];
+    edges: Edge[];
+    viewport: { x: number; y: number; zoom: number };
+  },
 ) => {
-  const positions = nodes.reduce(
-    (acc, node) => {
-      acc[node.id] = { x: node.position.x, y: node.position.y };
-      return acc;
-    },
-    {} as Record<string, { x: number; y: number }>,
-  );
-  localStorage.setItem(`nodePositions:${projectId}`, JSON.stringify(positions));
+  localStorage.setItem(`flow:${projectId}`, JSON.stringify(flow));
+};
+
+export const loadFlowFromLocalStorage = (projectId: string) => {
+  const flowString = localStorage.getItem(`flow:${projectId}`);
+  if (!flowString) return null;
+  return JSON.parse(flowString) as {
+    nodes: Node[];
+    edges: Edge[];
+    viewport: { x: number; y: number; zoom: number };
+  };
 };

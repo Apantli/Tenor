@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "@xyflow/react/dist/style.css";
 import { useParams } from "next/navigation";
 import { edgeTypes, nodeTypes } from "~/lib/types/reactFlowTypes";
@@ -23,7 +23,8 @@ import { api } from "~/trpc/react";
 import { useInvalidateQueriesUserStoriesDetails } from "~/app/_hooks/invalidateHooks";
 import {
   getLayoutedElements,
-  saveNodePositionsToLocalStorage,
+  loadFlowFromLocalStorage,
+  saveFlowToLocalStorage,
 } from "~/utils/reactFlow";
 import SecondaryButton from "../buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
@@ -38,7 +39,10 @@ export default function UserStoryDependencyTree() {
   const utils = api.useUtils();
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
-  const { fitView } = useReactFlow();
+  const { fitView, setViewport } = useReactFlow();
+  const [rfInstance, setRfInstance] = useState<ReturnType<
+    typeof useReactFlow
+  > | null>(null);
   const {
     selectedId,
     setSelectedId: _setSelectedId,
@@ -67,22 +71,33 @@ export default function UserStoryDependencyTree() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     dependencyData?.edges ?? [],
   );
-  const [showEdgeLabels, setShowEdgeLabels] = React.useState(
+  const [showEdgeLabels, setShowEdgeLabels] = useState(
     localStorage.getItem((projectId as string) + ":showEdgeLabels") === "true",
   );
-  const [initialLayoutDone, setInitialLayoutDone] = React.useState(
+  const [initialLayoutDone, setInitialLayoutDone] = useState(
     localStorage.getItem((projectId as string) + ":initialLayoutDone") ===
       "true",
   );
+  const defaultViewport = loadFlowFromLocalStorage(
+    projectId as string,
+  )?.viewport;
+
+  // Save flow state including node positions and zoom to localStorage
+  const saveFlow = useCallback(() => {
+    if (rfInstance) {
+      const flow = rfInstance.toObject();
+      saveFlowToLocalStorage(projectId as string, flow);
+    }
+  }, [rfInstance, projectId]);
 
   // Save node positions to localStorage whenever they change
   const handleNodesChange = useCallback(
     (changes: Parameters<typeof onNodesChange>[0]) => {
       onNodesChange(changes);
-      // Save positions of all nodes to localStorage
-      saveNodePositionsToLocalStorage(projectId as string, nodes);
+      // Save flow after nodes change
+      saveFlow();
     },
-    [nodes, projectId, onNodesChange],
+    [onNodesChange, saveFlow],
   );
 
   const handleEdgeLabelChange = useCallback(
@@ -114,23 +129,19 @@ export default function UserStoryDependencyTree() {
 
   useEffect(() => {
     if (dependencyData) {
-      // Load saved positions from localStorage
-      const savedPositions = localStorage.getItem(
-        `nodePositions:${projectId as string}`,
-      );
+      // Load saved flow state from localStorage
+      const savedFlow = loadFlowFromLocalStorage(projectId as string);
       let nodesWithPositions = [...dependencyData.nodes];
 
-      if (savedPositions) {
-        const positions = JSON.parse(savedPositions) as Record<
-          string,
-          { x: number; y: number }
-        >;
+      if (savedFlow) {
+        // Map positions from saved flow to current nodes
+        const savedNodes = savedFlow.nodes;
         nodesWithPositions = nodesWithPositions.map((node) => {
-          const savedPosition = positions[node.id];
-          if (savedPosition) {
+          const savedNode = savedNodes.find((n) => n.id === node.id);
+          if (savedNode) {
             return {
               ...node,
-              position: savedPosition,
+              position: savedNode.position,
             };
           }
           return node;
@@ -145,7 +156,7 @@ export default function UserStoryDependencyTree() {
       );
       setEdges(updatedEdges);
     }
-  }, [dependencyData, projectId]);
+  }, [dependencyData, projectId, setViewport]);
 
   useEffect(() => {
     if (!initialLayoutDone && nodes.length > 0 && nodes[0]?.measured) {
@@ -203,11 +214,14 @@ export default function UserStoryDependencyTree() {
       setNodes([...layouted.nodes]);
       setEdges([...layouted.edges]);
 
-      saveNodePositionsToLocalStorage(projectId as string, layouted.nodes);
+      // Save flow after layout
+      setTimeout(() => {
+        saveFlow();
+      }, 0);
 
       void fitView(fitViewOptions);
     },
-    [nodes, edges, projectId],
+    [nodes, edges, showEdgeLabels, fitView, saveFlow],
   );
 
   const onEdgeDelete = useCallback(
@@ -262,6 +276,14 @@ export default function UserStoryDependencyTree() {
     ],
   );
 
+  // Handle viewport changes (pan/zoom)
+  const onMove = useCallback(() => {
+    if (rfInstance) {
+      const flow = rfInstance.toObject();
+      saveFlowToLocalStorage(projectId as string, flow);
+    }
+  }, [rfInstance, projectId]);
+
   // Do layout next time if there are no nodes
   useEffect(() => {
     if (!isLoadingDependencies && dependencyData?.nodes.length == 0) {
@@ -304,12 +326,13 @@ export default function UserStoryDependencyTree() {
           edges={edges}
           onNodesChange={handleNodesChange}
           onEdgesChange={onEdgesChange}
+          onMove={onMove}
           onConnect={onConnect}
           onEdgesDelete={onEdgeDelete}
+          onInit={setRfInstance}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
-          fitView
-          fitViewOptions={{ ...fitViewOptions, duration: 0 }}
+          defaultViewport={defaultViewport}
         >
           <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
@@ -325,7 +348,7 @@ export default function UserStoryDependencyTree() {
                 onClick={handleShowLabels}
                 className={"bg-white"}
               >
-                Show labels
+                Toggle labels
               </SecondaryButton>
               {/* TODO Add icons */}
             </div>
