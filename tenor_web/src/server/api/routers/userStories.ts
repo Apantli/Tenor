@@ -28,6 +28,7 @@ import {
   getUserStoryNewId,
   getUserStoryRef,
   getUserStoryTable,
+  hasDependencyCycle,
   updateDependency,
 } from "~/utils/helpers/shortcuts/userStories";
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
@@ -97,10 +98,25 @@ export const userStoriesRouter = createTRPCRouter({
           ...userStoryDataRaw,
           scrumId: await getUserStoryNewId(ctx.firestore, projectId),
         });
+
+        const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
+          {
+            id: "this is a new user story", // id to avoid collision
+            dependencyIds: userStoryData.dependencyIds,
+          },
+        ]);
+        if (hasCycle) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cyclic dependency detected.",
+          });
+        }
+
         const userStory = await getUserStoriesRef(ctx.firestore, projectId).add(
           userStoryData,
         );
 
+        // TODO: Implement dependency check to prevent cyclic dependencies. Maybe only allow adding dependencies 1 by 1
         // Add dependency references
         await Promise.all(
           input.userStoryData.dependencyIds.map(async (dependencyId) => {
@@ -168,6 +184,29 @@ export const userStoriesRouter = createTRPCRouter({
       const removedRequiredBy = oldUserStoryData.requiredByIds.filter(
         (req) => !userStoryData.requiredByIds.includes(req),
       );
+
+      // Since one change is made at a time one these (thanks for that UI),
+      // we only check if there's a cycle by adding the new dependencies (which are also the same as inverted requiredBy)
+      const newDependencies = [
+        ...addedDependencies.flatMap((dep) => [
+          { sourceId: userStoryId, targetId: dep },
+        ]),
+        ...addedRequiredBy.flatMap((req) => [
+          { sourceId: req, targetId: userStoryId },
+        ]),
+      ];
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        undefined,
+        newDependencies,
+      );
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cyclic dependency detected.",
+        });
+      }
 
       // Update the related user stories
       await Promise.all(
@@ -487,6 +526,20 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, sourceId, targetId } = input;
+
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        undefined,
+        [{ sourceId, targetId }],
+      );
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Cyclic dependency detected.",
+        });
+      }
+
       await updateDependency(
         ctx.firestore,
         projectId,
