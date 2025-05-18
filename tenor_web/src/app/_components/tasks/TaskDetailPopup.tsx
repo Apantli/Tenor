@@ -208,7 +208,11 @@ export default function TaskDetailPopup({
         setShowDetail(false);
       }}
       afterDismissWithCloseButton={
-        closeAllPopupsOnDismiss ? () => resetParam("ts") : undefined
+        closeAllPopupsOnDismiss
+          ? () => {
+              resetParam("ts");
+            }
+          : undefined
       }
       footer={
         !isLoading &&

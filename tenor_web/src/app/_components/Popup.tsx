@@ -7,6 +7,7 @@ import EditIcon from "@mui/icons-material/EditOutlined";
 import CloseSidebarIcon from "@mui/icons-material/LastPage";
 import { type ClassNameValue } from "tailwind-merge";
 import PrimaryButton from "./buttons/PrimaryButton";
+import { useSearchParam } from "../_hooks/useSearchParam";
 
 interface Props {
   show: boolean;
@@ -225,6 +226,7 @@ export function SidebarPopup({
   const [slideIn, setSlideIn] = useState(false);
   const [fullyVisible, setFullyVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { getParam } = useSearchParam();
 
   useEffect(() => {
     if (show) {
@@ -315,10 +317,10 @@ export function SidebarPopup({
             className="absolute right-5 top-3 text-3xl text-gray-600"
             data-cy="popup-close-button"
           >
-            {afterDismissWithCloseButton !== undefined && (
+            {afterDismissWithCloseButton !== undefined && getParam("ts") && (
               <CloseIcon fontSize="inherit" />
             )}
-            {afterDismissWithCloseButton === undefined && (
+            {(afterDismissWithCloseButton === undefined || !getParam("ts")) && (
               <CloseSidebarIcon fontSize="inherit" />
             )}
           </button>
