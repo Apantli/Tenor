@@ -202,6 +202,7 @@ export default function IssueDetailPopup({
   return (
     <Popup
       setSidebarOpen={setSidebarOpen}
+      scrollRef={scrollContainerRef}
       show={showDetail}
       dismiss={dismissPopup}
       size="large"

@@ -291,6 +291,7 @@ export default function UserStoryDetailPopup({
 
   return (
     <Popup
+      scrollRef={scrollContainerRef}
       setSidebarOpen={setSidebarOpen}
       show={showDetail}
       dismiss={dismissPopup}
@@ -515,7 +516,7 @@ export default function UserStoryDetailPopup({
         </>
       )}
       {!editMode && !isLoading && userStoryDetail && (
-        <div className="overflow-hidden" ref={scrollContainerRef}>
+        <div className="overflow-hidden">
           <div className="markdown-content overflow-hidden text-lg">
             <Markdown>{userStoryDetail.description}</Markdown>
           </div>

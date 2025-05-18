@@ -28,6 +28,7 @@ interface Props {
   className?: string;
   saveText?: string;
   setSidebarOpen?: (open: boolean) => void;
+  scrollRef?: React.RefObject<HTMLDivElement>;
 }
 
 export default function Popup({
@@ -48,6 +49,7 @@ export default function Popup({
   className,
   saveText = "Save",
   setSidebarOpen,
+  scrollRef,
 }: Props & PropsWithChildren) {
   const [popIn, setPopIn] = useState(false);
   // const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -152,7 +154,9 @@ export default function Popup({
                         </div>
                       )}
                     </div>
-                    <div className="flex-1 overflow-y-auto">{children}</div>
+                    <div className="flex-1 overflow-y-auto" ref={scrollRef}>
+                      {children}
+                    </div>
                   </div>
                 </div>
 
