@@ -64,7 +64,7 @@ export default function ProfilePicture({
       <img
         src={user.photoURL}
         alt=""
-        className={cn("h-8 w-8 rounded-full", pictureClassName)}
+        className={cn("h-8 w-8 rounded-full", className, pictureClassName)}
         data-tooltip-id="tooltip"
         data-tooltip-content={user?.displayName}
         data-tooltip-place="top-start"
@@ -83,6 +83,7 @@ export default function ProfilePicture({
         className={cn(
           "flex h-8 w-8 min-w-8 cursor-default select-none items-center justify-center rounded-full font-bold text-white",
           className,
+          pictureClassName,
         )}
         style={{
           background: `linear-gradient(to top, #${darkHexCode}, #${hexCode})`,
