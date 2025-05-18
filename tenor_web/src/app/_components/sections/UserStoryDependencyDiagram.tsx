@@ -127,48 +127,6 @@ export default function UserStoryDependencyTree() {
     setShowEdgeLabels(!showEdgeLabels);
   };
 
-  useEffect(() => {
-    if (dependencyData) {
-      // Load saved flow state from localStorage
-      const savedFlow = loadFlowFromLocalStorage(projectId as string);
-      let nodesWithPositions = [...dependencyData.nodes];
-
-      if (savedFlow) {
-        // Map positions from saved flow to current nodes
-        const savedNodes = savedFlow.nodes;
-        nodesWithPositions = nodesWithPositions.map((node) => {
-          const savedNode = savedNodes.find((n) => n.id === node.id);
-          if (savedNode) {
-            return {
-              ...node,
-              position: savedNode.position,
-            };
-          }
-          return node;
-        });
-      }
-
-      setNodes(nodesWithPositions);
-
-      const updatedEdges = handleEdgeLabelChange(
-        dependencyData.edges,
-        showEdgeLabels,
-      );
-      setEdges(updatedEdges);
-    }
-  }, [dependencyData, projectId, setViewport]);
-
-  useEffect(() => {
-    if (!initialLayoutDone && nodes.length > 0 && nodes[0]?.measured) {
-      localStorage.setItem(
-        (projectId as string) + ":initialLayoutDone",
-        "true",
-      );
-      setInitialLayoutDone(true);
-      onLayout();
-    }
-  }, [nodes]);
-
   const onConnect = useCallback(async (params: Connection) => {
     // Cancel ongoing queries for this user story data
     await utils.userStories.getUserStoryDependencies.cancel({
@@ -283,6 +241,50 @@ export default function UserStoryDependencyTree() {
       saveFlowToLocalStorage(projectId as string, flow);
     }
   }, [rfInstance, projectId]);
+
+  // Put nodes in the same positions as in the saved flow
+  useEffect(() => {
+    if (dependencyData) {
+      // Load saved flow state from localStorage
+      const savedFlow = loadFlowFromLocalStorage(projectId as string);
+      let nodesWithPositions = [...dependencyData.nodes];
+
+      if (savedFlow) {
+        // Map positions from saved flow to current nodes
+        const savedNodes = savedFlow.nodes;
+        nodesWithPositions = nodesWithPositions.map((node) => {
+          const savedNode = savedNodes.find((n) => n.id === node.id);
+          if (savedNode) {
+            return {
+              ...node,
+              position: savedNode.position,
+            };
+          }
+          return node;
+        });
+      }
+
+      setNodes(nodesWithPositions);
+
+      const updatedEdges = handleEdgeLabelChange(
+        dependencyData.edges,
+        showEdgeLabels,
+      );
+      setEdges(updatedEdges);
+    }
+  }, [dependencyData, projectId, setViewport]);
+
+  // Trigger layout if the user has not interacted with the diagram yet
+  useEffect(() => {
+    if (!initialLayoutDone && nodes.length > 0 && nodes[0]?.measured) {
+      localStorage.setItem(
+        (projectId as string) + ":initialLayoutDone",
+        "true",
+      );
+      setInitialLayoutDone(true);
+      onLayout();
+    }
+  }, [nodes]);
 
   // Do layout next time if there are no nodes
   useEffect(() => {
