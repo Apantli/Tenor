@@ -713,7 +713,7 @@ export default function RequirementsTable() {
     return (
       <Table
         className={cn("w-full", heightOfContent)}
-        data={requirementsData ?? []}
+        data={filteredRequirements ?? []}
         columns={tableColumns}
         onDelete={handleDelete}
         emptyMessage="No requirements found"
@@ -729,7 +729,7 @@ export default function RequirementsTable() {
         rowClassName="h-12"
       />
     );
-  }, [requirementsData, isLoadingRequirements, ghostData, ghostRows]);
+  }, [filteredRequirements, isLoadingRequirements, ghostData, ghostRows]);
 
   const handleGenerate = async (amount: number, prompt: string) => {
     beginLoading(amount);
