@@ -9,7 +9,9 @@ import { ReactFlowProvider } from "@xyflow/react";
 import { SelectedNodeProvider } from "~/app/_hooks/useSelectedNode";
 
 export default function ProjectUserStories() {
-  const [selectedView, setSelectedView] = useState("List");
+  const [selectedView, setSelectedView] = useState(
+    localStorage.getItem("user-stories-view") ?? "List",
+  );
   const viewOptions = ["List", "Dependency Tree"];
 
   return (
@@ -21,7 +23,10 @@ export default function ProjectUserStories() {
         <SegmentedControl
           options={viewOptions}
           selectedOption={selectedView}
-          onChange={setSelectedView}
+          onChange={(value) => {
+            setSelectedView(value);
+            localStorage.setItem("user-stories-view", value);
+          }}
           className="ml-auto w-1/4 min-w-96"
         />
       </div>
