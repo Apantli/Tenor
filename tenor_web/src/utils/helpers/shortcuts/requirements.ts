@@ -346,7 +346,13 @@ export const getRequirementsContext = async (
   const requirements = await getRequirementTable(firestore, projectId);
   let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
   requirements.forEach((requirement) => {
-    requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priority.name}\n- typeId: ${requirement.requirementType.name}\n- focus: ${requirement.requirementFocus.name}\n\n`;
+    const priorityContext = requirement.priority
+      ? `\n- priorityId: ${requirement.priority.name}\n`
+      : "";
+    const focusContext = requirement.requirementFocus
+      ? `\n- focus: ${requirement.requirementFocus.name}\n`
+      : "";
+    requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}${priorityContext}\n- typeId: ${requirement.requirementType.name}${focusContext}\n\n`;
   });
   return requirementsContext;
 };
