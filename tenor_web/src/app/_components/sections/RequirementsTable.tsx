@@ -282,7 +282,6 @@ export default function RequirementsTable() {
 
   useEffect(() => {
     if (selectedReq == "") {
-      setShowSmallPopup(false);
       setRequirementEdited(null);
       setGhostRequirementEdited(null);
     }
@@ -788,6 +787,25 @@ export default function RequirementsTable() {
 
   const requirementEditedData = requirementEdited ?? ghostRequirementEdited;
 
+  let requirementSaved = false;
+  if (requirementEditedData === null) {
+    requirementSaved =
+      newRequirement.name === "" &&
+      newRequirement.description === "" &&
+      newRequirement.priority === undefined &&
+      newRequirement.requirementType === undefined &&
+      newRequirement.requirementFocus === undefined;
+  } else {
+    const originalData = {
+      name: requirementEditedData?.name ?? defaultRequirement.name,
+      description:
+        requirementEditedData?.description ?? defaultRequirement.description,
+    };
+    requirementSaved =
+      editForm.name === originalData.name &&
+      editForm.description === originalData.description;
+  }
+
   return (
     <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
       <div className="mb-3 flex w-full flex-col justify-between">
@@ -834,25 +852,9 @@ export default function RequirementsTable() {
           reduceTopPadding={requirementEditedData === null}
           size="small"
           className="h-[700px] w-[600px]"
-          disablePassiveDismiss
+          disablePassiveDismiss={!requirementSaved}
           dismiss={async () => {
-            const {
-              name,
-              description,
-              priority,
-              requirementType,
-              requirementFocus,
-            } = newRequirement;
-            const allFields = [
-              name,
-              description,
-              priority,
-              requirementType,
-              requirementFocus,
-            ];
-            if (
-              allFields.some((field) => field !== "" && field !== undefined)
-            ) {
+            if (!requirementSaved) {
               const confirmation = await confirm(
                 "Are you sure?",
                 "Your changes will be discarded.",
