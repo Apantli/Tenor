@@ -31,10 +31,7 @@ import {
 } from "~/utils/helpers/shortcuts/requirements";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
-import {
-  getPriority,
-  getPriorityByNameOrId,
-} from "~/utils/helpers/shortcuts/tags";
+import { getPriorityByNameOrId } from "~/utils/helpers/shortcuts/tags";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 
 export const requirementsRouter = createTRPCRouter({

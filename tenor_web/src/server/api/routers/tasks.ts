@@ -57,7 +57,7 @@ export const tasksRouter = createTRPCRouter({
           scrumId: await getTaskNewId(ctx.firestore, input.projectId),
         });
         return { success: true, taskId: task.id };
-      } catch (err) {
+      } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),

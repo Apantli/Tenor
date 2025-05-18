@@ -1,5 +1,5 @@
 import { usePopupVisibilityState } from "../_components/Popup";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParam } from "./useSearchParam";
 import { useSearchParams } from "next/navigation";
 

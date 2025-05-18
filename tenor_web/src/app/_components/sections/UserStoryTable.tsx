@@ -33,7 +33,6 @@ import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
 import type { UserStoryCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 

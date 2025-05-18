@@ -1,10 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
@@ -32,8 +31,6 @@ export default function TasksKanban() {
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
-
-  const forcedUserStoryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // TRPC
   const { data: tasksAndColumnsData, isLoading } =
@@ -248,7 +245,6 @@ export default function TasksKanban() {
                   selectedItems={selectedTasks}
                   setSelectedItems={setSelectedTasks}
                   setDetailItemId={setDetailItemId}
-                  setShowDetail={setShowDetail}
                   renderCard={(item) => (
                     <ItemCardRender
                       item={item}

@@ -1,4 +1,4 @@
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   permissionNumbers,
@@ -10,7 +10,7 @@ import type { requirementsRouter } from "~/server/api/routers/requirements";
 import { api } from "~/trpc/react";
 import Table, { type TableColumns } from "../table/Table";
 import { cn } from "~/lib/utils";
-import Popup, { usePopupVisibilityState } from "../Popup";
+import Popup from "../Popup";
 import PrimaryButton from "../buttons/PrimaryButton";
 import InputTextField from "../inputs/InputTextField";
 import InputTextAreaField from "../inputs/InputTextAreaField";
@@ -47,13 +47,8 @@ export default function RequirementsTable() {
   const { setParam, resetParam } = useSearchParam();
 
   const utils = api.useUtils();
-  const [
-    renderSmallPopup,
-    showSmallPopup,
-    selectedReq,
-    setSelectedReq,
-    setShowSmallPopup,
-  ] = useQueryIdForPopup("id");
+  const [renderSmallPopup, showSmallPopup, selectedReq, , setShowSmallPopup] =
+    useQueryIdForPopup("id");
   const [requirementEdited, setRequirementEdited] =
     useState<RequirementCol | null>(null);
   const [ghostRequirementEdited, setGhostRequirementEdited] =
@@ -88,12 +83,12 @@ export default function RequirementsTable() {
       >[]
     >();
 
-  const setRequirementsData = (
+  const setRequirementsData = async (
     updater: (
       oldData: RequirementCol[] | undefined,
     ) => RequirementCol[] | undefined,
   ) => {
-    utils.requirements.getRequirementTable.cancel({
+    await utils.requirements.getRequirementTable.cancel({
       projectId: projectId as string,
     });
     utils.requirements.getRequirementTable.setData(
@@ -157,10 +152,7 @@ export default function RequirementsTable() {
       });
     }
 
-    if (
-      !newRequirement.requirementType ||
-      newRequirement.requirementType.id === undefined
-    ) {
+    if (newRequirement.requirementType?.id === undefined) {
       alert("Oops...", "The requirement must have a type.", {
         type: "error",
         duration: 5000, // time in ms (5 seconds)
@@ -169,8 +161,7 @@ export default function RequirementsTable() {
 
     if (
       !newRequirement.name ||
-      !newRequirement.requirementType ||
-      newRequirement.requirementType.id === undefined
+      newRequirement.requirementType?.id === undefined
     ) {
       return;
     }
@@ -516,7 +507,7 @@ export default function RequirementsTable() {
                   return;
                 }
 
-                setRequirementsData(
+                await setRequirementsData(
                   (prevData) =>
                     prevData?.map((item) =>
                       item.id === row.id ? { ...item, priority: tag } : item,
@@ -577,7 +568,7 @@ export default function RequirementsTable() {
                   return;
                 }
 
-                setRequirementsData(
+                await setRequirementsData(
                   (prevData) =>
                     prevData?.map((item) =>
                       item.id === row.id
@@ -642,7 +633,7 @@ export default function RequirementsTable() {
                   return;
                 }
 
-                setRequirementsData(
+                await setRequirementsData(
                   (prevData) =>
                     prevData?.map((item) =>
                       item.id === row.id
@@ -872,8 +863,6 @@ export default function RequirementsTable() {
               : requirementEditedData !== null
                 ? async () => {
                     const { name } = editForm;
-                    const { priority, requirementType, requirementFocus } =
-                      requirementEditedData;
                     if (editingRequirement) {
                       if (!name) {
                         alert("Oops...", "The requirement must have a name.", {

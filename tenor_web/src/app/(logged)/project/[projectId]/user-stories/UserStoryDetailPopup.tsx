@@ -39,7 +39,6 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
-import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 interface Props {
   userStoryId: string;

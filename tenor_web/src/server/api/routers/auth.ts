@@ -90,7 +90,7 @@ export const loginProcedure = publicProcedure
       }
 
       return { success: true };
-    } catch (err) {
+    } catch {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
   });
@@ -169,7 +169,7 @@ export const refreshSessionProcedure = publicProcedure
       });
 
       return { success: true };
-    } catch (error) {
+    } catch {
       cookie.set("token", "", {
         httpOnly: true,
         secure: env.NODE_ENV === "production",

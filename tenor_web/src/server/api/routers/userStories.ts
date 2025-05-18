@@ -32,7 +32,6 @@ import {
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
 import {
   getBacklogTag,
-  getPriority,
   getPriorityByNameOrId,
 } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
@@ -133,7 +132,7 @@ export const userStoriesRouter = createTRPCRouter({
           id: userStory.id,
           ...userStoryData,
         } as WithId<UserStory>;
-      } catch (err) {
+      } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),

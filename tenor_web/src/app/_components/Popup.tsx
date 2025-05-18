@@ -198,7 +198,7 @@ export const usePopupVisibilityState = () => {
 
 interface SidebarPopupProps {
   show: boolean;
-  dismiss: () => void;
+  dismiss: () => void | Promise<void>;
   afterDismissWithCloseButton?: () => void;
   disablePassiveDismiss?: boolean;
   title?: React.ReactNode;
@@ -258,8 +258,8 @@ export function SidebarPopup({
               "opacity-30": show && slideIn,
             },
           )}
-          onClick={(e) => {
-            if (!disablePassiveDismiss) dismiss();
+          onClick={async (e) => {
+            if (!disablePassiveDismiss) await dismiss();
             e.stopPropagation();
           }}
         ></div>

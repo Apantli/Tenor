@@ -32,7 +32,6 @@ import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -44,7 +43,6 @@ const noSprintId = "noSprintId";
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
-  const { setParam } = useSearchParam();
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();
   const invalidateQueriesBacklogItemDetails =
