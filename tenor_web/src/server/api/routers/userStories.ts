@@ -259,6 +259,11 @@ export const userStoriesRouter = createTRPCRouter({
         userStoryId,
       );
 
+      const modifiedUserStories = userStory.dependencyIds.concat(
+        userStory.requiredByIds,
+        userStoryId,
+      );
+
       // Remove this user story from all dependencies' requiredBy arrays
       await Promise.all(
         userStory.dependencyIds.map(async (dependencyId) => {
@@ -303,6 +308,11 @@ export const userStoriesRouter = createTRPCRouter({
         batch.update(task.ref, { deleted: true });
       });
       await batch.commit();
+
+      return {
+        success: true,
+        updatedUserStoryIds: modifiedUserStories,
+      };
     }),
   /**
    * @function modifyUserStoryTags

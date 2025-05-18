@@ -230,12 +230,16 @@ export default function UserStoryDetailPopup({
         "Cancel",
       )
     ) {
-      await deleteUserStory({
+      const { updatedUserStoryIds } = await deleteUserStory({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
       await invalidateQueriesAllUserStories(projectId as string);
       await invalidateQueriesAllTasks(projectId as string);
+      await invalidateQueriesUserStoriesDetails(
+        projectId as string,
+        updatedUserStoryIds, // for example, if you delete a user story, all its dependencies will be updated
+      );
       setShowDetail(false);
     }
   };

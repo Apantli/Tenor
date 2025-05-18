@@ -10,10 +10,6 @@ import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
 import type { BasicNodeData } from "~/lib/types/reactFlowTypes";
 import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
 import { useParams } from "next/navigation";
-import {
-  useInvalidateQueriesAllTasks,
-  useInvalidateQueriesBacklogItems,
-} from "~/app/_hooks/invalidateHooks";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 
 interface Props {
@@ -51,8 +47,6 @@ export default function BasicNode({
 
   const formatAnyScrumId = useFormatAnyScrumId();
   const deleteItemByType = useDeleteItemByType();
-  const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
-  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks(); // Using different hook for tasks because they need parentId
 
   // #endregion
 
@@ -77,13 +71,8 @@ export default function BasicNode({
     if (!confirmation) {
       return;
     }
-    await deleteItemByType(projectId as string, itemType, id);
-    if (parentId && itemType === "TS") {
-      await invalidateQueriesAllTasks(projectId as string, [parentId]);
-    }
-    if (itemType === "US" || itemType === "EP") {
-      await invalidateQueriesBacklogItems(projectId as string, itemType);
-    }
+    // Invalidation is made inside the deleteItemByType function
+    await deleteItemByType(projectId as string, itemType, id, parentId);
   };
   // #endregion
 
