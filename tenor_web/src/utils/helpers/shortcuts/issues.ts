@@ -20,7 +20,8 @@ import {
 import { getUserStory } from "./userStories";
 import { getSprint } from "./sprints";
 import type * as admin from "firebase-admin";
-import { getTaskTable } from "./tasks";
+import { getTasksFromItem, getTaskTable } from "./tasks";
+import { getUser } from "./users";
 
 /**
  * @function getIssuesRef
@@ -122,6 +123,7 @@ export const getIssue = async (
  * @returns {Promise<IssueCol[]>} An array of issue objects formatted for display in a table
  */
 export const getIssueTable = async (
+  admin: admin.app.App,
   firestore: Firestore,
   projectId: string,
 ) => {
@@ -132,7 +134,7 @@ export const getIssueTable = async (
         ? await getPriority(firestore, projectId, issue.priorityId)
         : undefined;
 
-      let relatedUserStory;
+      let relatedUserStory = undefined;
       if (issue.relatedUserStoryId) {
         relatedUserStory = await getUserStory(
           firestore,
@@ -141,11 +143,27 @@ export const getIssueTable = async (
         );
       }
 
+      const tasks = await getTasksFromItem(firestore, projectId, issue.id);
+      const userIds = tasks
+        .map((task) => task.assigneeId)
+        .filter((id) => id !== "");
+      const uniqueUserIds = Array.from(new Set(userIds));
+      const assignedUsers = await Promise.all(
+        uniqueUserIds.map(async (userId) => {
+          const user = await getUser(admin, firestore, projectId, userId);
+          return {
+            uid: user.id,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+          };
+        }),
+      );
+
       const issueCol: IssueCol = {
         ...issue,
         priority: priority,
         tags: [],
-        assignUsers: [],
+        assignUsers: assignedUsers,
         relatedUserStory: relatedUserStory
           ? {
               id: relatedUserStory?.id,

@@ -36,7 +36,11 @@ export const issuesRouter = createTRPCRouter({
   getIssueTable: roleRequiredProcedure(issuePermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await getIssueTable(ctx.firestore, input.projectId);
+      return await getIssueTable(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        input.projectId,
+      );
     }),
   /**
    * @function getIssue
