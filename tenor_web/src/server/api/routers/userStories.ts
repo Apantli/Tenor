@@ -574,6 +574,7 @@ export const userStoriesRouter = createTRPCRouter({
             collapsible: false,
           }, // See BasicNodeData for properties
           type: "basic", // see nodeTypes
+          deletable: false,
         };
       });
 
