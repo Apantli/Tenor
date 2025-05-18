@@ -26,6 +26,7 @@ import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "../Popup";
 import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import type { TaskCol } from "~/lib/types/columnTypes";
+import { cn } from "~/lib/utils";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];
@@ -49,6 +50,7 @@ interface Props<T extends BacklogItemWithTasks> {
   selectedGhostTaskId?: string;
   setItemData?: (data: T | undefined) => void;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
+  sidebarOpen: boolean;
 }
 
 // TODO: Update this to invalidate for backlog items also
@@ -66,6 +68,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
   selectedGhostTaskId,
   setItemData,
   scrollContainerRef,
+  sidebarOpen,
 }: Props<T>) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const [taskToOpen, setTaskToOpen] = useState(taskIdToOpenImmediately);
@@ -608,7 +611,9 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             tableKey="tasks"
             data={filteredTasks}
             columns={taskColumns}
-            className="font-sm min-y-fit max-w-[min(678px,100vw-320px)]"
+            className={cn("font-sm min-y-fit max-w-[min(678px,100vw-320px)]", {
+              "max-w-[min(900px,100vw-90px)]": !sidebarOpen,
+            })}
             scrollContainerClassName="overflow-y-hidden"
             multiselect
             deletable
