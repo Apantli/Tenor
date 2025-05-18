@@ -186,12 +186,15 @@ export const userStoriesRouter = createTRPCRouter({
           { sourceId: req, targetId: userStoryId },
         ]),
       ];
-      const hasCycle = await hasDependencyCycle(
-        ctx.firestore,
-        projectId,
-        undefined,
-        newDependencies,
-      );
+      let hasCycle = false;
+      if (newDependencies.length > 0) {
+        hasCycle = await hasDependencyCycle(
+          ctx.firestore,
+          projectId,
+          undefined,
+          newDependencies,
+        );
+      }
       if (hasCycle) {
         throw new TRPCError({
           code: "BAD_REQUEST",
