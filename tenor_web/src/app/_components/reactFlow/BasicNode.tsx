@@ -18,7 +18,7 @@ interface Props {
   id?: string;
 }
 
-const handleSize = "8px";
+const handleSize = "0px";
 const handleWhiteCircleStyle = {
   width: handleSize,
   height: handleSize,

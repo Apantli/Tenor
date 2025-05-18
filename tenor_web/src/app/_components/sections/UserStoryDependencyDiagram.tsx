@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect } from "react";
 import "@xyflow/react/dist/style.css";
 import { useParams } from "next/navigation";
-import { nodeTypes } from "~/lib/types/reactFlowTypes";
+import { edgeTypes, nodeTypes } from "~/lib/types/reactFlowTypes";
 import {
   ReactFlow,
   Controls,
@@ -17,6 +17,7 @@ import {
   BackgroundVariant,
   useReactFlow,
   Panel,
+  MarkerType,
 } from "@xyflow/react";
 import { api } from "~/trpc/react";
 import { useInvalidateQueriesUserStoriesDetails } from "~/app/_hooks/invalidateHooks";
@@ -107,7 +108,16 @@ export default function UserStoryDependencyTree() {
       }
 
       setNodes(nodesWithPositions);
-      setEdges(dependencyData.edges);
+
+      const updatedEdges = dependencyData.edges.map((edge) => ({
+        ...edge,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+        },
+      }));
+      setEdges(updatedEdges);
     }
   }, [dependencyData, projectId]);
 
@@ -270,6 +280,7 @@ export default function UserStoryDependencyTree() {
           onConnect={onConnect}
           onEdgesDelete={onEdgeDelete}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           fitViewOptions={{ ...fitViewOptions, duration: 0 }}
         >

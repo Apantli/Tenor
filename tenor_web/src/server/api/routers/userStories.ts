@@ -33,7 +33,7 @@ import {
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
 import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
-import type { Edge, Node } from "@xyflow/react";
+import { MarkerType, type Edge, type Node } from "@xyflow/react";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -584,8 +584,13 @@ export const userStoriesRouter = createTRPCRouter({
           id: `${userStory.id}-${dependencyId}`,
           source: userStory.id,
           target: dependencyId,
+          // type: "dependency", // see edgeTypes
+          markerEnd: { type: MarkerType.ArrowClosed, width: 10000 },
         })),
       );
+
+      console.log("Edges:", edges);
+      console.log(MarkerType.ArrowClosed);
 
       return { nodes, edges };
     }),
