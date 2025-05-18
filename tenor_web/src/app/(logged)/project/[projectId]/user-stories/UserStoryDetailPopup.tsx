@@ -39,6 +39,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
+import { TRPCClientError } from "@trpc/client";
 
 interface Props {
   userStoryId: string;
@@ -89,7 +90,7 @@ export default function UserStoryDetailPopup({
 
   const userStoryDetail = userStoryData ?? fetchedUserStory;
 
-  const { mutateAsync: updateUserStory } =
+  const { mutateAsync: modifyUserStory } =
     api.userStories.modifyUserStory.useMutation();
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
@@ -203,18 +204,30 @@ export default function UserStoryDetailPopup({
       },
     );
 
-    const { updatedUserStoryIds } = await updateUserStory({
-      projectId: projectId as string,
-      userStoryId: userStoryId,
-      userStoryData: updatedUserStory,
-    });
+    try {
+      const { updatedUserStoryIds } = await modifyUserStory({
+        projectId: projectId as string,
+        userStoryId: userStoryId,
+        userStoryData: updatedUserStory,
+      });
 
-    // Make other places refetch the data
-    await invalidateQueriesAllUserStories(projectId as string);
-    await invalidateQueriesUserStoriesDetails(
-      projectId as string,
-      updatedUserStoryIds,
-    );
+      // Make other places refetch the data
+      await invalidateQueriesAllUserStories(projectId as string);
+      await invalidateQueriesUserStoriesDetails(
+        projectId as string,
+        updatedUserStoryIds,
+      );
+    } catch (error) {
+      if (
+        error instanceof TRPCClientError &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        error.data?.code === "BAD_REQUEST"
+      ) {
+        predefinedAlerts.cyclicDependency();
+      }
+      await refetch();
+      return;
+    }
 
     if (!editMode || saveEditForm) {
       await refetch();

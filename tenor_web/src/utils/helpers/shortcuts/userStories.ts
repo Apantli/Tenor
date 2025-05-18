@@ -361,7 +361,8 @@ export const updateDependency = (
 
 interface DependenciesWithId {
   id: string;
-  dependencyIds: string[];
+  dependencyIds?: string[];
+  requiredByIds?: string[];
 }
 
 /**
@@ -415,17 +416,13 @@ const constructAdjacencyList = (
 ): Map<string, string[]> => {
   const adj = new Map<string, string[]>();
 
-  // Initialize adjacency list with empty arrays for all user stories
-  userStories.forEach((us) => {
-    adj.set(us.id, []);
-  });
-
   // Add dependencies from existing user stories
   userStories.forEach((us) => {
-    us.dependencyIds.forEach((depId) => {
-      const deps = adj.get(us.id) ?? [];
-      deps.push(depId);
-      adj.set(us.id, deps);
+    adj.set(us.id, [...(us.dependencyIds ?? [])]);
+    us.requiredByIds?.forEach((reqId) => {
+      const reqs = adj.get(reqId) ?? [];
+      reqs.push(us.id);
+      adj.set(reqId, reqs);
     });
   });
 
@@ -433,15 +430,17 @@ const constructAdjacencyList = (
   if (newUserStories) {
     newUserStories.forEach((us) => {
       adj.set(us.id, [...(us.dependencyIds ?? [])]);
+      us.requiredByIds?.forEach((reqId) => {
+        const reqs = adj.get(reqId) ?? [];
+        reqs.push(us.id);
+        adj.set(reqId, reqs);
+      });
     });
   }
 
   // Add new dependencies if provided
   if (newDependencies) {
     newDependencies.forEach(({ sourceId, targetId }) => {
-      if (!adj.has(sourceId)) {
-        adj.set(sourceId, []);
-      }
       const deps = adj.get(sourceId) ?? [];
       if (!deps.includes(targetId)) {
         deps.push(targetId);

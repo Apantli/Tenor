@@ -141,6 +141,7 @@ export default function UserStoryTable() {
 
       // Add the user stories to the database
       for (const userStory of accepted.reverse()) {
+        // TODO: Verify for circular dependencies in ghosts
         const { id: userStoryId } = await createUserStory({
           projectId: projectId as string,
           userStoryData: {

@@ -92,60 +92,51 @@ export const userStoriesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      try {
-        const { projectId, userStoryData: userStoryDataRaw } = input;
-        const userStoryData = UserStorySchema.parse({
-          ...userStoryDataRaw,
-          scrumId: await getUserStoryNewId(ctx.firestore, projectId),
+      const { projectId, userStoryData: userStoryDataRaw } = input;
+      const userStoryData = UserStorySchema.parse({
+        ...userStoryDataRaw,
+        scrumId: await getUserStoryNewId(ctx.firestore, projectId),
+      });
+
+      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
+        {
+          id: "this is a new user story", // id to avoid collision
+          dependencyIds: userStoryData.dependencyIds,
+        },
+      ]);
+
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
         });
-
-        const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
-          {
-            id: "this is a new user story", // id to avoid collision
-            dependencyIds: userStoryData.dependencyIds,
-          },
-        ]);
-        if (hasCycle) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Cyclic dependency detected.",
-          });
-        }
-
-        const userStory = await getUserStoriesRef(ctx.firestore, projectId).add(
-          userStoryData,
-        );
-
-        // TODO: Implement dependency check to prevent cyclic dependencies. Maybe only allow adding dependencies 1 by 1
-        // Add dependency references
-        await Promise.all(
-          input.userStoryData.dependencyIds.map(async (dependencyId) => {
-            await getUserStoryRef(
-              ctx.firestore,
-              projectId,
-              dependencyId,
-            ).update({ requiredByIds: FieldValue.arrayUnion(userStory.id) });
-          }),
-        );
-        // Add requiredBy references
-        await Promise.all(
-          input.userStoryData.requiredByIds.map(async (requiredById) => {
-            await getUserStoryRef(
-              ctx.firestore,
-              projectId,
-              requiredById,
-            ).update({ dependencyIds: FieldValue.arrayUnion(userStory.id) });
-          }),
-        );
-
-        return {
-          id: userStory.id,
-          ...userStoryData,
-        } as WithId<UserStory>;
-      } catch (err) {
-        console.log("Error creating user story:", err);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
+
+      const userStory = await getUserStoriesRef(ctx.firestore, projectId).add(
+        userStoryData,
+      );
+
+      // Add dependency references
+      await Promise.all(
+        input.userStoryData.dependencyIds.map(async (dependencyId) => {
+          await getUserStoryRef(ctx.firestore, projectId, dependencyId).update({
+            requiredByIds: FieldValue.arrayUnion(userStory.id),
+          });
+        }),
+      );
+      // Add requiredBy references
+      await Promise.all(
+        input.userStoryData.requiredByIds.map(async (requiredById) => {
+          await getUserStoryRef(ctx.firestore, projectId, requiredById).update({
+            dependencyIds: FieldValue.arrayUnion(userStory.id),
+          });
+        }),
+      );
+
+      return {
+        id: userStory.id,
+        ...userStoryData,
+      } as WithId<UserStory>;
     }),
   /**
    * @function modifyUserStory
@@ -204,7 +195,7 @@ export const userStoriesRouter = createTRPCRouter({
       if (hasCycle) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Cyclic dependency detected.",
+          message: "Circular dependency detected.",
         });
       }
 
@@ -440,6 +431,7 @@ export const userStoriesRouter = createTRPCRouter({
             : undefined;
 
           // Check the related user stories exist and are valid
+          // TODO: Implement cycle detection here, help Luis Amado!
           const dependencies: WithId<UserStoryPreview>[] = (
             await Promise.all(
               userStory.dependencyIds.map(async (dependencyId) => {
@@ -536,7 +528,7 @@ export const userStoriesRouter = createTRPCRouter({
       if (hasCycle) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Cyclic dependency detected.",
+          message: "Circular dependency detected.",
         });
       }
 

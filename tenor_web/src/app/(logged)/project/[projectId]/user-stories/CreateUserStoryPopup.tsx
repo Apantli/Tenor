@@ -16,6 +16,7 @@ import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillCo
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
+import { TRPCClientError } from "@trpc/client";
 
 interface Props {
   showPopup: boolean;
@@ -58,7 +59,7 @@ export default function CreateUserStoryPopup({
   });
 
   const confirm = useConfirmation();
-  const { alert } = useAlert();
+  const { alert, predefinedAlerts } = useAlert();
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -111,6 +112,14 @@ export default function CreateUserStoryPopup({
       // Close the popup
       setShowPopup(false);
     } catch (error) {
+      if (
+        error instanceof TRPCClientError &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        error.data?.code === "BAD_REQUEST"
+      ) {
+        predefinedAlerts.cyclicDependency();
+        return;
+      }
       alert("Error", "Failed to create user story. Please try again.", {
         type: "error",
         duration: 5000,

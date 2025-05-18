@@ -30,12 +30,15 @@ import SecondaryButton from "../buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
 import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
+import { TRPCClientError } from "@trpc/client";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 
 export default function UserStoryDependencyTree() {
   // #region Hooks
   const { projectId } = useParams();
+  const { predefinedAlerts } = useAlert();
   const utils = api.useUtils();
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
@@ -52,12 +55,15 @@ export default function UserStoryDependencyTree() {
   // #endregion
 
   // #region TRPC
-  const { data: dependencyData, isLoading: isLoadingDependencies } =
-    api.userStories.getUserStoryDependencies.useQuery({
-      projectId: projectId as string,
-    });
+  const {
+    data: dependencyData,
+    isLoading: isLoadingDependencies,
+    refetch: refetchDependencies,
+  } = api.userStories.getUserStoryDependencies.useQuery({
+    projectId: projectId as string,
+  });
 
-  const { mutateAsync: updateUserStoryDependencies } =
+  const { mutateAsync: addUserStoryDependencies } =
     api.userStories.addUserStoryDependencies.useMutation();
 
   const { mutateAsync: deleteUserStoryDependencies } =
@@ -148,11 +154,23 @@ export default function UserStoryDependencyTree() {
       },
     );
 
-    await updateUserStoryDependencies({
-      projectId: projectId as string,
-      sourceId: params.source,
-      targetId: params.target,
-    });
+    try {
+      await addUserStoryDependencies({
+        projectId: projectId as string,
+        sourceId: params.source,
+        targetId: params.target,
+      });
+    } catch (error) {
+      if (
+        error instanceof TRPCClientError &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        error.data?.code === "BAD_REQUEST"
+      ) {
+        predefinedAlerts.cyclicDependency();
+        await refetchDependencies();
+        return;
+      }
+    }
 
     // Make other places refetch the data
     await invalidateQueriesUserStoriesDetails(projectId as string, [
@@ -297,8 +315,6 @@ export default function UserStoryDependencyTree() {
   }, [isLoadingDependencies, dependencyData]);
 
   // #endregion
-
-  // TODO: verify no cyclic dependencies
 
   return (
     <div className="mt-3 h-[calc(100vh-200px)] w-full">
