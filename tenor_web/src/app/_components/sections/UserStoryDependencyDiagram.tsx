@@ -250,7 +250,7 @@ export default function UserStoryDependencyTree() {
   // TODO: verify no cyclic dependencies
 
   return (
-    <div className="mt-3 h-[75vh] w-full">
+    <div className="mt-3 h-[calc(100vh-200px)] w-full">
       {isLoadingDependencies && (
         <div className="flex h-full w-full items-center justify-center">
           <p className="text-2xl font-bold text-gray-500">
