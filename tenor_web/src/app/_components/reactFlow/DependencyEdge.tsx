@@ -14,6 +14,7 @@ export default function DependencyEdge({
   sourcePosition,
   targetPosition,
   markerEnd,
+  label,
 }: EdgeProps) {
   const edgePathParams = {
     sourceX,
@@ -33,16 +34,18 @@ export default function DependencyEdge({
         markerEnd={markerEnd}
         onSelect={() => console.log("selected")}
       />
-      <EdgeLabelRenderer>
-        <div
-          className="pointer-events-all nodrag nopan absolute origin-center rounded bg-gray-100 px-2 py-1 text-center text-xs"
-          style={{
-            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-          }}
-        >
-          Needs
-        </div>
-      </EdgeLabelRenderer>
+      {label !== "" && (
+        <EdgeLabelRenderer>
+          <div
+            className="pointer-events-all nodrag nopan absolute origin-center rounded bg-gray-100 px-2 py-1 text-center text-xs"
+            style={{
+              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            }}
+          >
+            {label}
+          </div>
+        </EdgeLabelRenderer>
+      )}
     </>
   );
 }

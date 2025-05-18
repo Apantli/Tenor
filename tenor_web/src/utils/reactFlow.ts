@@ -1,7 +1,11 @@
 import Dagre from "@dagrejs/dagre";
 import { type Edge, type Node } from "@xyflow/react";
 
-export const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+export const getLayoutedElements = (
+  nodes: Node[],
+  edges: Edge[],
+  considerLabelSpace = false,
+) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
   g.setGraph({ rankdir: "LR" });
 
@@ -16,12 +20,14 @@ export const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
 
   Dagre.layout(g);
 
+  const xMultiplier = considerLabelSpace ? 1.2 : 1;
+
   return {
     nodes: nodes.map((node) => {
       const position = g.node(node.id);
       // We are shifting the dagre node position (anchor=center center) to the top left
       // so it matches the React Flow node anchor point (top left).
-      const x = (position.x - (node.measured?.width ?? 0) / 2) * 1.2;
+      const x = (position.x - (node.measured?.width ?? 0) / 2) * xMultiplier;
       const y = position.y - (node.measured?.height ?? 0) / 2;
 
       return { ...node, position: { x, y } };

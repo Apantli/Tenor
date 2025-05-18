@@ -67,6 +67,9 @@ export default function UserStoryDependencyTree() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     dependencyData?.edges ?? [],
   );
+  const [showEdgeLabels, setShowEdgeLabels] = React.useState(
+    localStorage.getItem((projectId as string) + ":showEdgeLabels") === "true",
+  );
   const [initialLayoutDone, setInitialLayoutDone] = React.useState(
     localStorage.getItem((projectId as string) + ":initialLayoutDone") ===
       "true",
@@ -81,6 +84,33 @@ export default function UserStoryDependencyTree() {
     },
     [nodes, projectId, onNodesChange],
   );
+
+  const handleEdgeLabelChange = useCallback(
+    (edges: Edge[], showEdgeLabels: boolean) => {
+      const updatedEdges = edges.map((edge) => ({
+        ...edge,
+        markerEnd: {
+          type: MarkerType.ArrowClosed,
+          width: 20,
+          height: 20,
+        },
+        label: showEdgeLabels ? "Needs" : "",
+      }));
+      return updatedEdges;
+    },
+    [showEdgeLabels],
+  );
+
+  const handleShowLabels = () => {
+    // Not updating first and then passing the parameter due to react delay in updating useState
+    const updatedEdges = handleEdgeLabelChange(edges, !showEdgeLabels);
+    setEdges(updatedEdges);
+    localStorage.setItem(
+      (projectId as string) + ":showEdgeLabels",
+      !showEdgeLabels ? "true" : "false",
+    );
+    setShowEdgeLabels(!showEdgeLabels);
+  };
 
   useEffect(() => {
     if (dependencyData) {
@@ -109,14 +139,10 @@ export default function UserStoryDependencyTree() {
 
       setNodes(nodesWithPositions);
 
-      const updatedEdges = dependencyData.edges.map((edge) => ({
-        ...edge,
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-          width: 20,
-          height: 20,
-        },
-      }));
+      const updatedEdges = handleEdgeLabelChange(
+        dependencyData.edges,
+        showEdgeLabels,
+      );
       setEdges(updatedEdges);
     }
   }, [dependencyData, projectId]);
@@ -171,6 +197,7 @@ export default function UserStoryDependencyTree() {
       const layouted = getLayoutedElements(
         forcedNodes ?? nodes,
         forcedEdges ?? edges,
+        showEdgeLabels,
       );
 
       setNodes([...layouted.nodes]);
@@ -287,9 +314,21 @@ export default function UserStoryDependencyTree() {
           <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
-            <SecondaryButton onClick={() => onLayout()} className={"bg-white"}>
-              Organize nodes
-            </SecondaryButton>
+            <div className="flex flex-row gap-2">
+              <SecondaryButton
+                onClick={() => onLayout()}
+                className={"bg-white"}
+              >
+                Organize nodes
+              </SecondaryButton>
+              <SecondaryButton
+                onClick={handleShowLabels}
+                className={"bg-white"}
+              >
+                Show labels
+              </SecondaryButton>
+              {/* TODO Add icons */}
+            </div>
           </Panel>
         </ReactFlow>
       )}
