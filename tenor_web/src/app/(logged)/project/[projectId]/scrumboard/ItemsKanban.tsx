@@ -332,7 +332,6 @@ export default function ItemsKanban() {
 
       {renderDetail && detailItemType === "US" && (
         <UserStoryDetailPopup
-          setShowDetail={setShowDetail}
           showDetail={showDetail}
           userStoryId={detailItemId}
           setUserStoryId={setDetailItemId}
