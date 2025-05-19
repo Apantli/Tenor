@@ -19,7 +19,6 @@ import {
   getTaskDetail,
   getTaskNewId,
   getTaskRef,
-  getTasks,
   getTasksRef,
   getTaskTable,
 } from "~/utils/helpers/shortcuts/tasks";
