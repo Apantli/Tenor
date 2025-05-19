@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { api } from '~/trpc/react';
 import ProgressBar from './ProgressBar';
 import AssignUsersList from './specific-pickers/AssignUsersList';
+import LoadingSpinner from './LoadingSpinner';
 
 function ProjectStatus({projectId}: {projectId: string}) {
 
@@ -34,7 +35,7 @@ function ProjectStatus({projectId}: {projectId: string}) {
   const taskCount = activeTasks.length;
 
   if (isLoading || isLoadingStatus) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner color="primary" />;
   }
   
   return (
@@ -59,15 +60,28 @@ function ActiveSprint ({projectId}: {projectId: string}) {
   const sprintId = ActiveSprint?.currentSprintId;
   const sprint = sprints?.find((sprint) => sprint.number.toString() === sprintId);
 
+  let sprintTitle = "";
+  if (sprint) {
+    if (sprint.description === "") {
+      sprintTitle = "Sprint " + sprint.number;
+    } else {
+      sprintTitle = "Sprint " + sprint.number + ": " + sprint.description;
+    }
+  } else {
+    sprintTitle = "No active sprint";
+  }
+
   if (isLoading || isLoadingSprint) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner color="primary" />;
   }
 
   return (
     <div className="flex flex-col gap-2">
       <h2 className="text-lg font-bold">Status</h2>
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold truncate whitespace-nowrap overflow-hidden max-w-[90%]">Sprint {sprintId}: {sprint?.description} </span>
+        <span className="text-lg font-semibold truncate whitespace-nowrap overflow-hidden max-w-[90%]">
+          {sprintTitle}
+        </span>
       </div>
     </div>
   )
@@ -116,13 +130,13 @@ function RemaniningTimePeriod ({projectId}: {projectId: string}) {
   }
 
   if (isLoading || isLoadingSprint) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner color="primary" />;
   }
   
   return (
     <>
       {message && (
-        <p className="text-m font-semibold text-gray-500"><span className='text-overview-text-color'>On track •</span> {message}</p>
+        <p className="text-m font-semibold text-gray-500"><span className='text-app-primary'>On track •</span> {message}</p>
       )}
     </>
   )
@@ -159,7 +173,7 @@ function ProjectCollaborators({projectId}: {projectId: string}) {
   const {data: projectCollaborators, isLoading} = api.users.getUsers.useQuery({ projectId });
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner color="primary" />;
   }
 
   // Map projectCollaborators to the User type expected by AssignUsersList
