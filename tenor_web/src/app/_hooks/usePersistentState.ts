@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 function usePersistentState<T>(initialValue: T, key: string) {
   const fullKey = `persistent_value:${key}`;
