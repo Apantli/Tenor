@@ -26,7 +26,7 @@ import { getTaskProgress } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
 import { FieldValue } from "firebase-admin/firestore";
-import type { DependenciesWithId } from "~/lib/types/userStoriesUtilsTypes";
+import type { DependenciesWithId } from "~/lib/types/userStoriesUtilTypes";
 
 /**
  * @function getUserStoriesRef
