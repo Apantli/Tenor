@@ -145,13 +145,10 @@ export const userStoriesRouter = createTRPCRouter({
         }),
       );
 
-        return {
-          id: userStory.id,
-          ...userStoryData,
-        } as WithId<UserStory>;
-      } catch {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      }
+      return {
+        id: userStory.id,
+        ...userStoryData,
+      } as WithId<UserStory>;
     }),
   /**
    * @function modifyUserStory
