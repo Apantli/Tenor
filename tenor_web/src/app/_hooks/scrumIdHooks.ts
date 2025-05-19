@@ -44,7 +44,7 @@ export const useFormatAnyScrumId = () => {
   const formatTaskScrumId = useFormatTaskScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();
 
-  return (scrumId: number, type: string) => {
+  return (scrumId: number, type: "US" | "EP" | "TS" | "IS") => {
     switch (type) {
       case "US":
         return formatUserStoryScrumId(scrumId);
@@ -54,8 +54,6 @@ export const useFormatAnyScrumId = () => {
         return formatTaskScrumId(scrumId);
       case "IS":
         return formatIssueScrumId(scrumId);
-      default:
-        return String(scrumId);
     }
   };
 };

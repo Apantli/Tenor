@@ -343,18 +343,18 @@ export const updateDependency = (
   firestore: Firestore,
   projectId: string,
   userStoryId: string,
-  otherUserStoryId: string,
+  relatedUserStoryId: string,
   operation: "add" | "remove",
   field: "requiredByIds" | "dependencyIds",
 ) => {
   const updateRef = getUserStoryRef(firestore, projectId, userStoryId);
   if (operation === "add") {
     return updateRef.update({
-      [field]: FieldValue.arrayUnion(otherUserStoryId),
+      [field]: FieldValue.arrayUnion(relatedUserStoryId),
     });
   } else {
     return updateRef.update({
-      [field]: FieldValue.arrayRemove(otherUserStoryId),
+      [field]: FieldValue.arrayRemove(relatedUserStoryId),
     });
   }
 };
