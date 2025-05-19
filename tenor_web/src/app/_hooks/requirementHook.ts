@@ -3,11 +3,12 @@ export const UseFormatForAssignReqTypeScrumId = (
   scrumId: number,
 ) => {
   // Takes the first letter of each word, uppercases it, and adds the scrumId
-  const prefix = reqType
-    .split(" ")
-    .filter((word) => word.length > 0)
-    .map((word) => word[0]?.toUpperCase())
-    .join("");
+  const prefix =
+    reqType
+      .split(" ")
+      .filter((word) => word.length > 0)
+      .map((word) => word[0]?.toUpperCase())
+      .join("") + "R";
 
   return scrumId === -1
     ? prefix
