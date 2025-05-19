@@ -6,7 +6,7 @@ import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/EditOutlined";
-import type { BasicNodeData } from "~/lib/types/reactFlowTypes";
+import type { VisualBasicNodeData } from "~/lib/types/reactFlowTypes";
 import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
 import { useParams } from "next/navigation";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -14,7 +14,7 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow
-  data: BasicNodeData;
+  data: VisualBasicNodeData;
   id?: string;
 }
 
