@@ -56,7 +56,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
 
   const handleCreateStatus = async () => {
     if (form.name === "") {
-      alert("Oops", "Please enter a name for the status.", {
+      alert("Oops...", "Please enter a name for the status.", {
         type: "error",
         duration: 5000,
       });
