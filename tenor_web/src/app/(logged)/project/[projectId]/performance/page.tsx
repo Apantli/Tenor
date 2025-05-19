@@ -12,10 +12,9 @@ import {
   SampleData,
   PerformanceChart,
 } from "~/app/_components/charts/PerformanceChart";
+import { MemberDetailsCard } from "~/app/_components/cards/MemberdetailsCard";
 import { twMerge } from "tailwind-merge";
-import type { UserPreview } from "~/lib/types/detailSchemas";
-import type { WithId } from "~/lib/types/firebaseSchemas";
-
+import type { UserCol } from "~/lib/types/columnTypes";
 type ScrumboardSections = "Week" | "Month" | "Sprint";
 
 export default function ProjectPerformance() {
@@ -31,12 +30,11 @@ export default function ProjectPerformance() {
   const [section, setSection] = useState<ScrumboardSections>("Week");
   const [searchValue, setSearchValue] = useState("");
 
-  const [selectedMember, setSelectedMember] =
-    useState<WithId<UserPreview> | null>(null);
+  const [selectedMember, setSelectedMember] = useState<UserCol | null>(null);
 
   return (
-    <div className="overflow-hiddenpt-0 flex h-full w-full flex-col justify-between gap-x-32 md:flex-row">
-      <div className="flex w-full flex-col items-baseline gap-3 pb-4">
+    <div className="flex h-full w-full flex-1 flex-col gap-x-32 overflow-hidden pt-0 md:flex-row">
+      <div className="flex w-[50vw] flex-col items-baseline gap-3 pb-4">
         <div className="flex w-full flex-row justify-between">
           <h1 className="grow-[1] text-3xl font-semibold">Team Performance</h1>
           <div className="min-w-[300px]">
@@ -57,13 +55,17 @@ export default function ProjectPerformance() {
         />
         <MemberList
           searchValue={searchValue}
-          timeInterval={section}
+          // timeInterval={section}
           setSelectedMember={setSelectedMember}
           selectedMember={selectedMember}
         />
       </div>
       {selectedMember ? (
-        <MemberDetails member={selectedMember} timeInterval={section} />
+        <MemberDetailsCard
+          member={selectedMember}
+          // timeInterval={section}
+          setSelectedMember={setSelectedMember}
+        />
       ) : (
         <ProductivityCard
           issues={issuesData}
@@ -76,51 +78,25 @@ export default function ProjectPerformance() {
   );
 }
 
-const MemberDetails = ({
-  member,
-  timeInterval,
-}: {
-  member: WithId<UserPreview>;
-  timeInterval: string;
-}) => {
-  return (
-    <div className="flex flex-col">
-      <div className="flex flex-row gap-3">
-        <ProfilePicture
-          user={member}
-          hideTooltip
-          pictureClassName="h-20 w-20 mx-5 my-auto"
-        />
-        <div className="flex flex-col justify-start overflow-hidden pl-4 pr-4">
-          <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold">
-            {member.displayName}
-          </h3>
-          <p className="line-clamp-2 text-base">{member.email}</p>
-        </div>
-      </div>
-      <PerformanceChart data={SampleData} actions={false} />
-    </div>
-  );
-};
-
 const MemberList = ({
   searchValue,
-  timeInterval,
+  // timeInterval,
   setSelectedMember,
   selectedMember,
 }: {
   searchValue: string;
-  timeInterval: string;
-  setSelectedMember: (member: WithId<UserPreview> | null) => void;
-  selectedMember: WithId<UserPreview> | null;
+  // timeInterval: string;
+  setSelectedMember: (member: UserCol | null) => void;
+  selectedMember: UserCol | null;
 }) => {
   const { projectId } = useParams();
   const projectIdString = projectId as string;
+
   const {
     data: members,
     isLoading,
     error,
-  } = api.users.getUsers.useQuery({
+  } = api.users.getUserTable.useQuery({
     projectId: projectIdString,
   });
 
@@ -158,7 +134,13 @@ const MemberList = ({
                 selectedMember?.id === member.id ? "bg-gray-100" : "",
               )}
               key={member.id}
-              onClick={() => setSelectedMember(member)}
+              onClick={() => {
+                if (selectedMember?.id === member.id) {
+                  setSelectedMember(null);
+                } else {
+                  setSelectedMember(member);
+                }
+              }}
             >
               <ProfilePicture
                 user={member}
@@ -166,10 +148,10 @@ const MemberList = ({
                 pictureClassName="h-20 w-20 mx-5 my-auto"
               />
               <div className="flex flex-col justify-start overflow-hidden pl-4 pr-4">
-                <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold">
+                <h3 className="my-auto w-[150px] truncate text-xl font-semibold">
                   {member.displayName}
                 </h3>
-                <p className="line-clamp-2 text-base">{member.email}</p>
+                {/* <p className="line-clamp-2 text-base">{member.email}</p> */}
               </div>
               <PerformanceChart
                 data={SampleData}
