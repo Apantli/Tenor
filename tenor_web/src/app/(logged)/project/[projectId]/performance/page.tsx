@@ -15,19 +15,14 @@ import {
 import { MemberDetailsCard } from "~/app/_components/cards/MemberdetailsCard";
 import { twMerge } from "tailwind-merge";
 import type { UserCol } from "~/lib/types/columnTypes";
-type ScrumboardSections = "Week" | "Month" | "Sprint";
+import type { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
+import type z from "zod";
 
 export default function ProjectPerformance() {
-  const issuesData = {
-    completed: 75,
-    total: 100,
-  };
-  const userStoriesData = {
-    completed: 200,
-    total: 200,
-  };
-
-  const [section, setSection] = useState<ScrumboardSections>("Week");
+  const { projectId } = useParams();
+  const projectIdString = projectId as string;
+  const [section, setSection] =
+    useState<z.infer<typeof PerformanceTime>>("Week");
   const [searchValue, setSearchValue] = useState("");
 
   const [selectedMember, setSelectedMember] = useState<UserCol | null>(null);
@@ -42,8 +37,8 @@ export default function ProjectPerformance() {
               options={["Week", "Month", "Sprint"]}
               selectedOption={section}
               onChange={(value) => {
-                setSection(value as ScrumboardSections);
-                localStorage.setItem("scrumboard-section", value);
+                setSection(value as z.infer<typeof PerformanceTime>);
+                localStorage.setItem("performance-section", value);
               }}
             />
           </div>
@@ -54,6 +49,7 @@ export default function ProjectPerformance() {
           handleUpdateSearch={(e) => setSearchValue(e.target.value)}
         />
         <MemberList
+          projectId={projectIdString}
           searchValue={searchValue}
           // timeInterval={section}
           setSelectedMember={setSelectedMember}
@@ -67,12 +63,7 @@ export default function ProjectPerformance() {
           setSelectedMember={setSelectedMember}
         />
       ) : (
-        <ProductivityCard
-          issues={issuesData}
-          lastUpdated="Today"
-          sprint={4}
-          userStories={userStoriesData}
-        />
+        <ProductivityCard projectId={projectIdString} time={section} />
       )}
     </div>
   );
@@ -80,24 +71,23 @@ export default function ProjectPerformance() {
 
 const MemberList = ({
   searchValue,
+  projectId,
   // timeInterval,
   setSelectedMember,
   selectedMember,
 }: {
+  projectId: string;
   searchValue: string;
   // timeInterval: string;
   setSelectedMember: (member: UserCol | null) => void;
   selectedMember: UserCol | null;
 }) => {
-  const { projectId } = useParams();
-  const projectIdString = projectId as string;
-
   const {
     data: members,
     isLoading,
     error,
   } = api.users.getUserTable.useQuery({
-    projectId: projectIdString,
+    projectId: projectId,
   });
 
   if (isLoading) {

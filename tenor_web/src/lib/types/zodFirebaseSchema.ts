@@ -1,4 +1,4 @@
-import type { Timestamp } from "firebase-admin/firestore";
+import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
 import {
   defaultMaximumSprintStoryPoints,
@@ -74,6 +74,9 @@ export const BasicInfoSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string(),
   deleted: z.boolean().default(false),
+  createdAt: TimestampType.default(() =>
+    Timestamp.fromDate(new Date()),
+  ).optional(),
 });
 
 export const SizeSchema = z.enum(["XS", "S", "M", "L", "XL", "XXL"]);
@@ -295,3 +298,5 @@ export const ProjectSchemaCreator = z.object({
     )
     .default([]),
 });
+
+export const PerformanceTime = z.enum(["Week", "Month", "Sprint"]);

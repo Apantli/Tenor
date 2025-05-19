@@ -9,7 +9,7 @@
  */
 
 import { TRPCError } from "@trpc/server";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type {
   Project,
   WithId,
@@ -66,6 +66,7 @@ export const emptyRequeriment = (): Requirement => ({
   size: "M",
   scrumId: 0,
   deleted: false,
+  createdAt: Timestamp.now(),
 });
 
 export const createEmptyProject = (): Project => {

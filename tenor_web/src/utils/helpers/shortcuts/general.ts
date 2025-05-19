@@ -76,6 +76,21 @@ export const getRolesRef = (firestore: Firestore, projectId: string) => {
 };
 
 /**
+ * @function getPerformanceRef
+ * @description Gets a reference to the project's performance subcollection
+ * @param {string} projectId - The ID of the project
+ * @param {Firestore} firestore - The Firestore instance
+ * @returns {FirebaseFirestore.CollectionReference} A reference to the performance subcollection
+ */
+export const getPerformanceRef = (firestore: Firestore, projectId: string) => {
+  return getProjectRef(firestore, projectId).collection("performance");
+};
+
+export const getProductivityRef = (firestore: Firestore, projectId: string) => {
+  return getPerformanceRef(firestore, projectId).doc("productivity");
+};
+
+/**
  * @function getRoleRef
  * @description Gets a reference to a specific project role document
  * @param {string} projectId - The ID of the project

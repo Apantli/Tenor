@@ -20,6 +20,7 @@ import {
 } from "./tags";
 import { getUserStory } from "./userStories";
 import { getSprint } from "./sprints";
+import admin from "firebase-admin";
 
 /**
  * @function getIssuesRef
@@ -76,6 +77,24 @@ export const getIssues = async (firestore: Firestore, projectId: string) => {
   const issuesRef = getIssuesRef(firestore, projectId)
     .where("deleted", "==", false)
     .orderBy("scrumId", "desc");
+  const issuesSnapshot = await issuesRef.get();
+  const issues: WithId<Issue>[] = issuesSnapshot.docs.map((doc) => {
+    return {
+      id: doc.id,
+      ...IssueSchema.parse(doc.data()),
+    } as WithId<Issue>;
+  });
+  return issues;
+};
+
+export const getIssuesAfter = async (
+  firestore: Firestore,
+  projectId: string,
+  date: Date,
+) => {
+  const issuesRef = getIssuesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(date));
   const issuesSnapshot = await issuesRef.get();
   const issues: WithId<Issue>[] = issuesSnapshot.docs.map((doc) => {
     return {

@@ -25,6 +25,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import { getTaskProgress } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
+import admin from "firebase-admin";
 
 /**
  * @function getUserStoriesRef
@@ -84,6 +85,34 @@ export const getUserStories = async (
   const userStoriesRef = getUserStoriesRef(firestore, projectId)
     .where("deleted", "==", false)
     .orderBy("scrumId", "desc");
+  const userStoriesSnapshot = await userStoriesRef.get();
+  const userStories: WithId<UserStory>[] = userStoriesSnapshot.docs.map(
+    (doc) => {
+      return {
+        id: doc.id,
+        ...UserStorySchema.parse(doc.data()),
+      } as WithId<UserStory>;
+    },
+  );
+  return userStories;
+};
+
+/**
+ * @function getUserStoriesAfter
+ * @description Retrieves all non-deleted user stories after a specified date
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve user stories from
+ * @param {Date} date - The date to filter user stories
+ * @returns {Promise<WithId<UserStory>[]>} An array of user story objects with their IDs
+ */
+export const getUserStoriesAfter = async (
+  firestore: Firestore,
+  projectId: string,
+  date: Date,
+) => {
+  const userStoriesRef = getUserStoriesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(date));
   const userStoriesSnapshot = await userStoriesRef.get();
   const userStories: WithId<UserStory>[] = userStoriesSnapshot.docs.map(
     (doc) => {
