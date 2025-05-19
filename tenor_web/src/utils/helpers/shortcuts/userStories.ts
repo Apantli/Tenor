@@ -26,6 +26,7 @@ import { getTaskProgress } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
 import { FieldValue } from "firebase-admin/firestore";
+import type { DependenciesWithId } from "~/lib/types/userStoriesUtilsTypes";
 
 /**
  * @function getUserStoriesRef
@@ -359,46 +360,42 @@ export const updateDependency = (
   }
 };
 
-interface DependenciesWithId {
-  id: string;
-  dependencyIds?: string[];
-  requiredByIds?: string[];
-}
-
 /**
  * Helper function to perform DFS and detect cycle in user story dependencies
- * @param adj Adjacency list representation of the dependency graph
- * @param u Current user story ID being checked
- * @param visited Map to track visited nodes
- * @param recStack Map to track nodes in current recursion stack
+ * @param adjacencyList Adjacency list representation of the dependency graph
+ * @param userStoryId Current user story ID being checked
+ * @param visitedUserStories Map to track visited nodes
+ * @param recursionPathVisited Map to track nodes in current recursion stack
  * @returns {boolean} True if a cycle is detected, false otherwise
  */
 const isCyclicUtil = (
-  adj: Map<string, string[]>,
-  u: string,
-  visited: Map<string, boolean>,
-  recStack: Map<string, boolean>,
+  adjacencyList: Map<string, string[]>,
+  userStoryId: string,
+  visitedUserStories: Map<string, boolean>,
+  recursionPathVisited: Map<string, boolean>,
 ): boolean => {
   // If node is already in the recursion stack, cycle detected
-  if (recStack.get(u)) return true;
+  if (recursionPathVisited.get(userStoryId)) return true;
 
   // If node is already visited and not in recStack, no need to check again
-  if (visited.get(u)) return false;
+  if (visitedUserStories.get(userStoryId)) return false;
 
   // Mark the node as visited and add it to the recursion stack
-  visited.set(u, true);
-  recStack.set(u, true);
+  visitedUserStories.set(userStoryId, true);
+  recursionPathVisited.set(userStoryId, true);
 
   // Recur for all neighbors (dependencies) of the current node
-  const neighbors = adj.get(u) ?? [];
+  const neighbors = adjacencyList.get(userStoryId) ?? [];
   for (const v of neighbors) {
-    if (isCyclicUtil(adj, v, visited, recStack)) {
+    if (
+      isCyclicUtil(adjacencyList, v, visitedUserStories, recursionPathVisited)
+    ) {
       return true; // If any path leads to a cycle, return true
     }
   }
 
   // Backtrack: remove the node from recursion stack
-  recStack.set(u, false);
+  recursionPathVisited.set(userStoryId, false);
   return false;
 };
 
