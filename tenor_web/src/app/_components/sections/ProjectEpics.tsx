@@ -154,14 +154,14 @@ export const ProjectEpics = () => {
           </PrimaryButton>
         )}
       </h1>
-      <div className="mb-3 flex flex-row justify-between gap-1 border-b-2 pb-3">
+      <div className="flex flex-row justify-between gap-1 border-b-2 pb-3">
         <SearchBar
           searchValue={searchText}
           handleUpdateSearch={(e) => setSearchText(e.target.value)}
           placeholder="Search epics"
         ></SearchBar>
       </div>
-      <div className="flex h-[calc(100vh-230px)] flex-col gap-4 overflow-y-auto">
+      <div className="flex h-[calc(100vh-230px)] flex-col overflow-y-auto">
         {!isLoading && epics?.length === 0 && (
           <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
             <div className="flex flex-col items-center gap-5">
@@ -191,7 +191,7 @@ export const ProjectEpics = () => {
               setShowEditPopup(true);
             }}
             key={epic.scrumId}
-            className="border-b-2 pb-3 hover:cursor-pointer"
+            className="border-b-2 px-3 py-3 transition hover:cursor-pointer hover:bg-gray-100"
           >
             <div className="flex flex-col gap-y-2">
               <h3 className="text-xl font-semibold">

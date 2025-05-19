@@ -35,7 +35,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     const metaTab = [
       "ai",
       "users",
-      "tags-kanban",
+      "tags-scrumboard",
       "scrum-preferences",
     ].includes(tab)
       ? tabsMetaInformation.settings

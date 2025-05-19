@@ -293,8 +293,8 @@ export default function ItemTagTable({ itemTagType }: Props) {
   return (
     <div>
       <div className="flex flex-col gap-4">
-        <div className="flex max-w-[750px] items-center justify-between gap-4">
-          <div className="w-[700px]">
+        <div className="flex w-full items-center justify-between gap-4">
+          <div className="w-full">
             <SearchBar
               placeholder={currentConfig.searchPlaceholder}
               searchValue={searchValue}
@@ -311,14 +311,14 @@ export default function ItemTagTable({ itemTagType }: Props) {
           )}
         </div>
 
-        <div className="max-w-[750px]">
+        <div className="w-full">
           {isLoadingTags ? (
             <div className="mt-8 flex h-full w-full items-center justify-center">
               <LoadingSpinner color="primary" />
             </div>
           ) : (
             <Table
-              className={`w-full ${
+              className={`w-[calc(100vw-524px)] ${
                 tableData.length > 5 ? "max-h-[280px] overflow-auto" : ""
               }`}
               data={tableData}

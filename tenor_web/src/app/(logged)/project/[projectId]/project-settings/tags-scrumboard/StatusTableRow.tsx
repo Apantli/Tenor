@@ -60,7 +60,6 @@ export default function StatusTableRow({
       <td className="cursor-grab px-2" {...attributes} {...listeners}>
         <DragIndicatorIcon fontSize="small" className="text-gray-400" />
       </td>
-      <td className="px-3 py-2">{item.order}</td>
       <td className="px-3 py-2">
         <button
           className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
