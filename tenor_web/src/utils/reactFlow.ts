@@ -49,7 +49,7 @@ export const getLayoutedElements = (
 
 /**
  * @function saveFlowToLocalStorage
- * @description Saves the current flow state to localStorage for persistence.
+ * @description Saves the current flow state to localStorage for persistence. For example, when the user refreshes the page, the nodes they moved and their positions will be maintained.
  * @param {string} projectId - The ID of the project to save the flow for.
  * @param {Object} flow - The flow state to save.
  * @param {Node[]} flow.nodes - The nodes in the flow.
