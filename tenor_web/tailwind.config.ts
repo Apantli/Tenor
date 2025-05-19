@@ -26,6 +26,8 @@ export default {
 
         "sprint-column-background": "#F1F2F4",
         "sprint-column-background-hovered": "#e6e7eb",
+
+        "overview-text-color": "#086A72",
       },
     },
   },

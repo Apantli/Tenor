@@ -1,64 +1,37 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { api } from '~/trpc/react';
 import ProgressBar from './ProgressBar';
 import AssignUsersList from './specific-pickers/AssignUsersList';
 
 function ProjectStatus({projectId}: {projectId: string}) {
 
-  const [completedCount, setCompletedCount] = useState(0);
-  const [taskCount, setTaskCount] = useState(0);
-
-  const {data: tasks, isLoading} = api.tasks.getTasks.useQuery({ projectId });
-  const {data: statuses, isLoading: isLoadingStatus} = api.settings.getStatusTypes.useQuery({ projectId });
+  const {data: tasks, isLoading, refetch: refetchTasks} = api.tasks.getTasks.useQuery({ projectId }, {enabled: false});
+  const {data: statuses, isLoading: isLoadingStatus, refetch: refetchStatuses} = api.settings.getStatusTypes.useQuery({ projectId}, {enabled: false});
 
   useEffect(() => {
-    const calculateProgress = async () => {
+    const fetchData = async () => {
       try {
-        if (!tasks || tasks.length === 0) {
-          setCompletedCount(0);
-          setTaskCount(0);
-          console.log("No tasks found for this project.");
-          return;
-        }
-
-        console.log("Tasks:", tasks);
-
-        // Ignore deleted tasks
-        const activeTasks = (tasks).filter((task) => task.deleted !== true);
-
-        if (activeTasks.length === 0) {
-          setCompletedCount(0);
-          setTaskCount(0);
-          console.log("No active tasks.");
-          return;
-        }
-
-        const statusMap = statuses
-          ? Object.fromEntries(
-              statuses.map((status) => [status.id, status.marksTaskAsDone])
-            )
-          : {};
-
-        let completedCount = 0;
-
-        for (const task of activeTasks) {
-          if (statusMap[task.statusId]) {
-            completedCount++;
-          }
-        }
-
-        setCompletedCount(completedCount);
-        setTaskCount(activeTasks.length);
-        const percentage = ((completedCount / activeTasks.length) * 100).toFixed(1);
-        console.log(`Progress: ${completedCount}/${activeTasks.length} (${percentage}%)`);}
-      catch (error) {
-        console.error("Error calculating progress:", error);
+        await refetchTasks();
+        await refetchStatuses();
+      } catch (error) {
+        console.error('Failed to fetch tasks', error);
       }
     };
-    void calculateProgress();
-  }, [tasks, projectId]);
+    void fetchData();
+  }, [refetchTasks, refetchStatuses]);
+
+  const activeTasks = tasks?.filter((task) => task.deleted !== true) ?? [];
+
+  const statusMap = statuses
+    ? Object.fromEntries(statuses.map((status) => [status.id, status.marksTaskAsDone])) : {};
+
+  const completedCount = activeTasks.reduce((count, task) => {
+    return statusMap[task.statusId] ? count + 1 : count;
+  }, 0);
+
+  const taskCount = activeTasks.length;
 
   if (isLoading || isLoadingStatus) {
     return <div>Loading...</div>;
@@ -127,14 +100,14 @@ function RemaniningTimePeriod ({projectId}: {projectId: string}) {
 
   if (remainingDays !== null) {
     if (remainingDays <= 0) {
-      message = "El sprint ha finalizado.";
+      message = "The sprint is complete.";
     } else {
       const months = Math.floor(remainingDays / 30);
       const weeks = Math.floor((remainingDays % 30) / 7);
       const days = remainingDays % 7;
 
       const parts = [];
-      if (months > 0) parts.push(`${months} month${months !== 1 ? 'es' : ''}`);
+      if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
       if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`);
       if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
 
@@ -149,7 +122,7 @@ function RemaniningTimePeriod ({projectId}: {projectId: string}) {
   return (
     <>
       {message && (
-        <p className="text-m font-semibold text-[#656B71]"><span className='text-[#086A72]'>On track •</span> {message}</p>
+        <p className="text-m font-semibold text-gray-500"><span className='text-overview-text-color'>On track •</span> {message}</p>
       )}
     </>
   )
@@ -165,7 +138,7 @@ function ProgressStatusBar({
 
   const displayValue = `of tasks completed`;
   const progressBarColor = '#13918A';
-  const emptyBarColor = '#D4DDE4';
+  const emptyBarColor = '#B1B8BE';
 
   return (
     // contianer of the project status
