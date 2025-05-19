@@ -87,7 +87,7 @@ export default function SelectableCard({
       }}
       {...props}
     >
-      <div className="absolute left-[-1px] top-[-1px] h-[calc(100%+2px)] w-[calc(100%+2px)] overflow-hidden rounded-lg border border-transparent">
+      <div className="pointer-events-none absolute left-[-1px] top-[-1px] h-[calc(100%+2px)] w-[calc(100%+2px)] overflow-hidden rounded-lg border border-transparent">
         <div
           className={cn("absolute bottom-0 left-0 h-2 w-full", accentColor)}
         ></div>
