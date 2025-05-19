@@ -224,4 +224,19 @@ export const issuesRouter = createTRPCRouter({
       };
       await issueRef.update(updatedIssueData);
     }),
+
+  /**
+   * @function getIssueCount
+   * @description Retrieves the number of issues inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of issues in the project.
+   */
+  getIssueCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const issuesRef = getIssuesRef(ctx.firestore, projectId);
+      const countSnapshot = await issuesRef.count().get();
+      return countSnapshot.data().count;
+    }),
 });

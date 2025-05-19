@@ -24,6 +24,7 @@ import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
+  useFormatTaskScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
@@ -70,6 +71,8 @@ export default function UserStoryDetailPopup({
     useInvalidateQueriesUserStoriesDetails();
   const [unsavedTasks, setUnsavedTasks] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
 
   const {
     data: fetchedUserStory,

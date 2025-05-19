@@ -8,7 +8,11 @@
  * @category API
  */
 import { z } from "zod";
-import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  roleRequiredProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import type {
@@ -442,5 +446,20 @@ export const userStoriesRouter = createTRPCRouter({
       );
 
       return parsedData;
+    }),
+
+  /**
+   * @function getUserStoryCount
+   * @description Retrieves the number of user stories inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of user stories in the project.
+   */
+  getUserStoryCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const userStoriesRef = getUserStoriesRef(ctx.firestore, projectId);
+      const countSnapshot = await userStoriesRef.count().get();
+      return countSnapshot.data().count;
     }),
 });

@@ -338,4 +338,19 @@ ${tagContext}\n\n`;
         status: todoTag as StatusTag,
       }));
     }),
+
+  /**
+   * @function getTaskCount
+   * @description Retrieves the number of tasks inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of tasks in the project.
+   */
+  getTaskCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const tasksRef = getTasksRef(ctx.firestore, projectId);
+      const countSnapshot = await tasksRef.count().get();
+      return countSnapshot.data().count;
+    }),
 });

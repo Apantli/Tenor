@@ -21,6 +21,7 @@ import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
   useFormatIssueScrumId,
+  useFormatTaskScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
@@ -79,6 +80,7 @@ export default function IssueDetailPopup({
   const { predefinedAlerts } = useAlert();
   const formatIssueScrumId = useFormatIssueScrumId();
   const formatSprintNumber = useFormatSprintNumber();
+  useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
