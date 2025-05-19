@@ -29,11 +29,11 @@ import {
 import SecondaryButton from "../buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
-import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
 import { TRPCClientError } from "@trpc/client";
 import { useAlert } from "~/app/_hooks/useAlert";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 
@@ -48,12 +48,8 @@ export default function UserStoryDependencyTree() {
   const [rfInstance, setRfInstance] = useState<ReturnType<
     typeof useReactFlow
   > | null>(null);
-  const {
-    selectedId,
-    setSelectedId: _setSelectedId,
-    showDetail,
-    setShowDetail,
-  } = useSelectedNode();
+  const [renderDetail, showDetail, detailItemId, setDetailItemId] =
+    useQueryIdForPopup("id");
   // #endregion
 
   // #region TRPC
@@ -378,11 +374,11 @@ export default function UserStoryDependencyTree() {
         </ReactFlow>
       )}
 
-      {showDetail && (
+      {renderDetail && (
         <UserStoryDetailPopup
           showDetail={showDetail}
-          setShowDetail={setShowDetail}
-          userStoryId={selectedId}
+          userStoryId={detailItemId}
+          setUserStoryId={setDetailItemId}
         />
       )}
     </div>

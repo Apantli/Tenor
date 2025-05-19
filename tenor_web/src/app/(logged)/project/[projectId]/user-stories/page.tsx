@@ -6,7 +6,6 @@ import UserStoryTable from "~/app/_components/sections/UserStoryTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
-import { SelectedNodeProvider } from "~/app/_hooks/useSelectedNode";
 
 export default function ProjectUserStories() {
   const [selectedView, setSelectedView] = useState(
@@ -40,9 +39,7 @@ export default function ProjectUserStories() {
         </div>
       ) : (
         <ReactFlowProvider>
-          <SelectedNodeProvider>
-            <UserStoryDependencyTree />
-          </SelectedNodeProvider>
+          <UserStoryDependencyTree />
         </ReactFlowProvider>
       )}
     </div>

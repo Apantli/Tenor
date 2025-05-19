@@ -6,11 +6,11 @@ import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import EditIcon from "@mui/icons-material/EditOutlined";
-import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
 import type { BasicNodeData } from "~/lib/types/reactFlowTypes";
 import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
 import { useParams } from "next/navigation";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow
@@ -43,7 +43,7 @@ export default function BasicNode({
   // #region Hooks
   const { projectId } = useParams();
   const confirm = useConfirmation();
-  const { setSelectedId, setShowDetail } = useSelectedNode();
+  const [, , , setDetailItemId] = useQueryIdForPopup("id");
 
   const formatAnyScrumId = useFormatAnyScrumId();
   const deleteItemByType = useDeleteItemByType();
@@ -53,8 +53,7 @@ export default function BasicNode({
   // #region Handlers
   const handleDetailClick = () => {
     if (id) {
-      setSelectedId(id);
-      setShowDetail(true);
+      setDetailItemId(id);
     }
   };
 
