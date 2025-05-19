@@ -54,6 +54,12 @@ export const tabsMetaInformation = {
     enabled: true,
     flags: ["settings"],
   },
+  sprintReview:{
+    title: "Sprint Review",
+    link: "/sprint-review",
+    enabled: true,
+    flags: ["sprints"],
+  }
 };
 export const tabs = [
   "overview",
@@ -65,6 +71,7 @@ export const tabs = [
   "calendar",
   "performance",
   "settings",
+  "sprintReview",
 ];
 export const tabsToLinks = {
   requirements: "requirements",
@@ -75,4 +82,5 @@ export const tabsToLinks = {
   calendar: "calendar",
   performance: "performance",
   "project-settings": "settings",
+  "sprint-review": "sprintReview",
 };
