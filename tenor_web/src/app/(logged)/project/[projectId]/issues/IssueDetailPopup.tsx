@@ -34,6 +34,7 @@ import {
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
+import usePersistentState from "~/app/_hooks/usePersistentState";
 
 interface Props {
   issueId: string;
@@ -49,6 +50,7 @@ export default function IssueDetailPopup({
   taskIdToOpenImmediately,
 }: Props) {
   const { projectId } = useParams();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -71,7 +73,10 @@ export default function IssueDetailPopup({
     description: "",
     stepsToRecreate: "",
   });
-  const [showStepsToRecreate, setShowStepsToRecreate] = useState(false);
+  const [showStepsToRecreate, setShowStepsToRecreate] = usePersistentState(
+    false,
+    "stepsToRecreate",
+  );
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
 
@@ -198,6 +203,8 @@ export default function IssueDetailPopup({
 
   return (
     <Popup
+      setSidebarOpen={setSidebarOpen}
+      scrollRef={scrollContainerRef}
       show={showDetail}
       dismiss={dismissPopup}
       size="large"
@@ -368,6 +375,7 @@ export default function IssueDetailPopup({
           )}
 
           <TasksTable
+            sidebarOpen={sidebarOpen}
             scrollContainerRef={scrollContainerRef}
             fetchedTasks={issueDetail.tasks}
             itemId={issueId}
