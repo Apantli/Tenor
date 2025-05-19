@@ -22,5 +22,4 @@ export interface BasicNodeData {
 // This are the props that are passed to the BasicNode component. This is what the frontend needs to know to display the nodes.
 export interface VisualBasicNodeData extends BasicNodeData {
   showDeleteButton?: boolean;
-  showEditButton?: boolean;
 }

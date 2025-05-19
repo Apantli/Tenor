@@ -5,7 +5,6 @@ import { accentColorByCardType } from "~/utils/helpers/colorUtils";
 import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/EditOutlined";
 import type { VisualBasicNodeData } from "~/lib/types/reactFlowTypes";
 import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
 import { useParams } from "next/navigation";
@@ -27,17 +26,8 @@ const handleWhiteCircleStyle = {
   borderRadius: "50%",
 };
 
-// TODO: Add a prop to choose the handle style for each side
 export default function BasicNode({
-  data: {
-    scrumId,
-    itemType,
-    title,
-    showDeleteButton,
-    showEditButton,
-    parentId,
-    // collapsible,
-  },
+  data: { scrumId, itemType, title, showDeleteButton, parentId },
   id,
 }: Props) {
   // #region Hooks
@@ -95,13 +85,6 @@ export default function BasicNode({
           >
             {formatAnyScrumId(scrumId, itemType)}
           </button>
-          {showEditButton && (
-            <EditIcon
-              fontSize="small"
-              className="cursor-pointer hover:text-app-primary"
-              onClick={handleDetailClick}
-            />
-          )}
           {showDeleteButton && (
             <DeleteOutlineIcon
               fontSize="small"
