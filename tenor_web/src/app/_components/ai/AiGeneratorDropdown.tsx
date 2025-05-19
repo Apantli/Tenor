@@ -3,6 +3,7 @@ import Dropdown, { DropdownItem, useCloseDropdown } from "../Dropdown";
 import AiButton from "../buttons/AiButton";
 import FloatingLabelInput from "../FloatingLabelInput";
 import { cn } from "~/lib/utils";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 interface Props {
   singularLabel: string;
@@ -28,6 +29,8 @@ export default function AiGeneratorDropdown({
   const [generationAmount, setGenerationAmount] = useState<number | null>(3);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const [close, closeDropdown] = useCloseDropdown();
+
+  const confirm = useConfirmation();
 
   const handleGenerate = () => {
     closeDropdown();
@@ -107,16 +110,25 @@ export default function AiGeneratorDropdown({
             </p>
             <div className="flex w-full items-center gap-2">
               <button
-                className="flex-1 rounded-md bg-red-500 p-2 text-white"
-                onClick={() => {
+                className="flex-1 rounded-md bg-app-fail p-2 text-white transition hover:bg-app-hover-fail"
+                onClick={async () => {
+                  closeDropdown();
+                  if (
+                    !(await confirm(
+                      "Are you sure?",
+                      "You are about to reject all generated items. This action cannot be undone.",
+                      "Reject all",
+                      "Keep editing",
+                    ))
+                  )
+                    return;
                   onRejectAll?.();
-                  // closeDropdown();
                 }}
               >
                 Reject All
               </button>
               <button
-                className="flex-1 rounded-md bg-app-secondary p-2 text-white"
+                className="flex-1 rounded-md bg-app-secondary p-2 text-white transition hover:bg-app-hover-secondary"
                 onClick={() => {
                   onAcceptAll?.();
                   // closeDropdown();

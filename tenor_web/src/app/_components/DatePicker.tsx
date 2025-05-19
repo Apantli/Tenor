@@ -21,7 +21,6 @@ export function DatePicker({
   const dateInputRef = useRef<HTMLInputElement>(null);
 
   const formatDate = (date: Date): string => {
-    console.log("Formatting date:", date);
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -50,7 +49,11 @@ export function DatePicker({
   };
 
   return (
-    <div className={cn("relative", className)} onClick={openDatePicker}>
+    <div
+      data-cy="datepicker"
+      className={cn("relative", className)}
+      onClick={openDatePicker}
+    >
       <div className="flex h-12 cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
         <CalendarMonthIcon className="mr-2 h-5 w-5 cursor-pointer text-gray-700" />
         <div className="flex flex-grow items-center">

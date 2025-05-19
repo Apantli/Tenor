@@ -48,6 +48,48 @@
   --ifm-color-emphasis-300: #becad4;
 }
 
+/* Button styles for light mode */
+.button--secondary {
+  background-color: #13918a;
+  color: white !important;
+  border: none !important; /* Remove the border */
+}
+
+.button--secondary:hover {
+  background-color: #1b6963;
+  color: white !important;
+}
+
+/* Make primary button use the same color in both modes */
+.button--primary {
+  background-color: #086a72 !important; /* Force same color in all modes */
+  color: white !important;
+  border: none !important; /* Remove the border */
+}
+
+.button--primary:hover {
+  background-color: #064a50 !important;
+  color: white !important;
+}
+
+/* Generic button styling for consistent colors */
+a.button--primary,
+a.button--secondary,
+.cta a.button {
+  color: white !important;
+}
+
+/* Global button border removal for all buttons */
+.button {
+  border: none !important;
+}
+
+/* Fix for any button that might still have borders */
+html[data-theme="dark"] .button,
+html[data-theme="light"] .button {
+  border: none !important;
+}
+
 /* For readability concerns, you should choose a lighter palette in dark mode. */
 [data-theme="dark"] {
   --ifm-color-primary: #13918a;
@@ -68,4 +110,22 @@
   --ifm-footer-background-color: #011a0e;
 
   --docusaurus-highlighted-code-line-bg: rgba(19, 145, 138, 0.3);
+
+  /* Dark mode button styles */
+  --ifm-button-color: #ffffff;
+}
+
+/* Dark mode specific button overrides */
+html[data-theme="dark"] .button--primary,
+html[data-theme="dark"] .button--secondary {
+  color: #ffffff;
+}
+
+/* Override dark mode primary button color to match light mode */
+html[data-theme="dark"] .button--primary {
+  background-color: #086a72 !important; /* Keep same color as light mode */
+}
+
+html[data-theme="dark"] .button--primary:hover {
+  background-color: #064a50 !important;
 }

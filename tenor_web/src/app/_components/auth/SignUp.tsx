@@ -82,7 +82,6 @@ export default function SignUp() {
       }
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
-        console.log(err.code);
         switch (err.code) {
           case "auth/weak-password":
             setError({

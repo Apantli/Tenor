@@ -12,6 +12,7 @@ import useClickOutside from "~/app/_hooks/useClickOutside";
 import useShiftKey from "~/app/_hooks/useShiftKey";
 import GhostTableRow from "./GhostTableRow";
 import LoadingGhostTableRows from "./LoadingGhostTableRows";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export interface VisibleColumn<T> {
   label: string;
@@ -71,6 +72,8 @@ interface TableProps<I, T> {
   emptyMessage?: string;
   tableKey: string; // Unique key for the table used for storing things like column widths
   rowClassName?: string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
+  scrollContainerClassName?: string;
 }
 
 function TableInternal<
@@ -94,6 +97,8 @@ function TableInternal<
   emptyMessage,
   tableKey,
   rowClassName,
+  scrollContainerRef,
+  scrollContainerClassName,
 }: TableProps<I, T>) {
   // Make sure the tableKey exists
   if (!tableKey) {
@@ -108,7 +113,7 @@ function TableInternal<
   const [selection, setSelection] = useState<Set<I>>(new Set());
   const [resizing, setResizing] = useState(false);
   const [loadedGhosts, setLoadedGhosts] = useState(false);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const internalScrollContainerRef = useRef<HTMLDivElement>(null);
   const ghostDivRef = useRef<HTMLDivElement>(null);
   const lastSelectedIdRef = useRef<I>();
 
@@ -189,6 +194,7 @@ function TableInternal<
   };
 
   const shiftClick = useShiftKey();
+  const confirm = useConfirmation();
 
   const toggleSelect = (id: I) => {
     const newSelection = new Set(selection);
@@ -258,7 +264,7 @@ function TableInternal<
     setFilters({ ...filters });
   };
 
-  useClickOutside(scrollContainerRef, () => {
+  useClickOutside(internalScrollContainerRef, () => {
     lastSelectedIdRef.current = undefined;
   });
 
@@ -267,9 +273,17 @@ function TableInternal<
 
   useEffect(() => {
     // Triggers when ghost rows are shown
-    if (showGhostRows && ghostDivRef.current) {
+    if (
+      showGhostRows &&
+      ghostDivRef.current &&
+      internalScrollContainerRef.current
+    ) {
+      setSelection(new Set());
+      internalScrollContainerRef.current.scrollLeft = 0;
+      internalScrollContainerRef.current.style.overflowX = "hidden";
       const height = ghostDivRef.current?.getBoundingClientRect().height;
       ghostDivRef.current.style.height = "0px";
+      ghostDivRef.current.style.overflowY = "hidden";
 
       // Wait for the next frame to set the height
       requestAnimationFrame(() => {
@@ -281,6 +295,8 @@ function TableInternal<
       const onTransitionEnd = () => {
         if (!ghostDivRef.current) return;
         ghostDivRef.current.style.height = "auto";
+        ghostDivRef.current.style.overflowY = "visible";
+        internalScrollContainerRef.current!.style.overflowX = "auto";
       };
 
       ghostDivRef.current.addEventListener("transitionend", onTransitionEnd);
@@ -311,7 +327,16 @@ function TableInternal<
     setLoadedGhosts(false);
   };
 
-  const rejectAllGhosts = () => {
+  const rejectAllGhosts = async () => {
+    if (
+      !(await confirm(
+        "Are you sure?",
+        "You are about to reject all generated items. This action cannot be undone.",
+        "Reject all",
+        "Keep editing",
+      ))
+    )
+      return;
     if (rejectGhosts && ghostData) {
       rejectGhosts(ghostData.map((row) => row.id));
     }
@@ -341,8 +366,11 @@ function TableInternal<
   return (
     <div className={cn("w-full overflow-x-hidden", className)}>
       <div
-        className="flex h-full flex-col overflow-x-auto"
-        ref={scrollContainerRef}
+        className={cn(
+          "flex h-full flex-col overflow-x-auto overflow-y-auto",
+          scrollContainerClassName,
+        )}
+        ref={internalScrollContainerRef}
       >
         <TableHeader
           columns={columns}
@@ -365,26 +393,32 @@ function TableInternal<
           setResizing={setResizing}
           resizing={resizing}
           tableKey={tableKey}
-          scrollContainerRef={scrollContainerRef}
+          scrollContainerRef={internalScrollContainerRef}
           ghostRowContainerRef={ghostDivRef}
-          showGhostActions={ghostData !== undefined && ghostData.length > 0}
+          showGhostActions={
+            ghostData !== undefined && ghostData.length > 0 && loadedGhosts
+          }
           acceptAllGhosts={acceptAllGhosts}
           rejectAllGhosts={rejectAllGhosts}
+          disableSelection={
+            (ghostRows ?? 0) > 0 ||
+            (ghostData !== undefined && ghostData.length > 0)
+          }
         />
         <div
-          className="relative min-w-fit shrink-0 overflow-hidden opacity-0 transition-[height,opacity] duration-500"
+          className={cn(
+            "relative z-10 shrink-0 overflow-y-hidden opacity-0 transition-[height,opacity] duration-500",
+          )}
           ref={ghostDivRef}
         >
           {!loadedGhosts && (ghostRows ?? 0) > 0 && (
             <LoadingGhostTableRows
-              columnWidths={columnWidths}
               finishedLoading={ghostData !== undefined && ghostData.length > 0}
               ghostRows={ghostRows ?? 0}
-              deletable={deletable}
-              extraOptions={extraOptions}
               multiselect={multiselect}
               timeEstimate={ghostLoadingEstimation}
               rowClassName={rowClassName}
+              scrollContainerRef={internalScrollContainerRef}
             />
           )}
           {ghostData?.map((value) => (
@@ -415,13 +449,20 @@ function TableInternal<
             extraOptions={extraOptions}
             deletable={deletable}
             onDelete={onDelete}
-            scrollContainerRef={scrollContainerRef}
+            scrollContainerRef={
+              scrollContainerRef ?? internalScrollContainerRef
+            }
+            disableSelection={
+              (ghostRows ?? 0) > 0 ||
+              (ghostData !== undefined && ghostData.length > 0)
+            }
             columnWidths={columnWidths}
             className={rowClassName}
+            ghostsShown={ghostData !== undefined && ghostData.length > 0}
           />
         ))}
         {filteredData.length === 0 && !showGhostRows && emptyMessage && (
-          <div className="flex w-full items-center justify-center border-b border-app-border p-3 text-gray-500">
+          <div className="sticky left-0 flex items-center justify-center border-b border-app-border p-3 text-gray-500">
             <span className="text-base">{emptyMessage}</span>
           </div>
         )}
@@ -430,7 +471,7 @@ function TableInternal<
   );
 }
 
-// This is a workaround to prevent server-side rendering issues (because we access localstorage in the component)
+// This is a workaround to  event server-side rendering issues (because we access localstorage in the component)
 const Table = dynamic(() => Promise.resolve(TableInternal), {
   ssr: false,
 }) as typeof TableInternal;

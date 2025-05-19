@@ -64,7 +64,6 @@ export default function SignIn() {
       }
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
-        console.log(err.code);
         switch (err.code) {
           case "auth/invalid-email":
             setError({ ...newError, email: "Enter a valid email" });

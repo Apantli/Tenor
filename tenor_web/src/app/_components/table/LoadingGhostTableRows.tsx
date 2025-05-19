@@ -1,32 +1,29 @@
 import React, { useEffect, useState } from "react";
 import useStutterLoading from "~/app/_hooks/useStutterLoading";
 import LoadingGhostTableRow from "./LoadingGhostTableRow";
-import type { DeleteOptions, TableOptions } from "./Table";
 import { cn } from "~/lib/utils";
+import useAfterResize from "~/app/_hooks/useAfterResize";
 
-interface Props<I> {
+interface Props {
   multiselect?: boolean;
-  extraOptions?: TableOptions<I>[];
-  deletable?: boolean | DeleteOptions;
-  columnWidths: number[];
   timeEstimate?: number;
   ghostRows: number;
   finishedLoading: boolean;
   rowClassName?: string;
+  scrollContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
-export default function LoadingGhostTableRows<I extends string | number>({
+export default function LoadingGhostTableRows({
   timeEstimate,
   ghostRows,
   multiselect,
-  extraOptions,
-  deletable,
-  columnWidths,
   finishedLoading,
   rowClassName,
-}: Props<I>) {
+  scrollContainerRef,
+}: Props) {
   const [progress, setProgress] = useState(0);
   const [hide, setHide] = useState(false);
+  const [width, setWidth] = useState<number | null>(null);
 
   const finishLoading = useStutterLoading({
     duration: timeEstimate ?? 2000,
@@ -47,6 +44,14 @@ export default function LoadingGhostTableRows<I extends string | number>({
     }
   }, [finishedLoading]);
 
+  useEffect(() => {
+    setWidth(scrollContainerRef?.current?.children[0]?.clientWidth ?? null);
+  }, [scrollContainerRef?.current?.children[0]?.clientWidth]);
+
+  useAfterResize(() => {
+    setWidth(scrollContainerRef?.current?.children[0]?.clientWidth ?? null);
+  });
+
   const ghostRowIds = Array.from({ length: ghostRows }, (_, index) => index);
 
   return (
@@ -56,16 +61,17 @@ export default function LoadingGhostTableRows<I extends string | number>({
         "pointer-events-none absolute left-0 top-0 z-10 h-full w-full":
           finishedLoading,
       })}
+      style={{
+        width: width ? `${width}px` : "100%",
+      }}
     >
       {ghostRowIds.map((value) => (
         <LoadingGhostTableRow
           key={value}
-          columnWidths={columnWidths}
-          extraOptions={extraOptions}
-          deletable={deletable}
           multiselect={multiselect}
           progress={progress}
           className={rowClassName}
+          scrollContainerRef={scrollContainerRef}
         />
       ))}
     </div>

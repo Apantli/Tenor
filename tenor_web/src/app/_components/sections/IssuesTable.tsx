@@ -23,6 +23,7 @@ import {
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 import type { IssueCol } from "~/lib/types/columnTypes";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -31,10 +32,10 @@ export default function IssuesTable() {
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
 
-  const [selectedIS, setSelectedIS] = useState<string>("");
   const [renderNewIssue, showNewIssue, setShowNewIssue] =
     usePopupVisibilityState();
-  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  const [renderDetail, showDetail, selectedIS, setSelectedIS] =
+    useQueryIdForPopup("id");
 
   const formatIssueScrumId = useFormatIssueScrumId();
 
@@ -48,7 +49,6 @@ export default function IssuesTable() {
     await invalidateQueriesIssueDetails(projectId as string, [issueId]);
     setShowNewIssue(false);
     setSelectedIS(issueId);
-    setShowDetail(true);
   };
 
   // TRPC
@@ -106,7 +106,6 @@ export default function IssuesTable() {
               className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
                 setSelectedIS(row.id);
-                setShowDetail(true);
               }}
             >
               {formatIssueScrumId(row.scrumId)}
@@ -124,7 +123,6 @@ export default function IssuesTable() {
               className="truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
               onClick={() => {
                 setSelectedIS(row.id);
-                setShowDetail(true);
               }}
               data-cy="issue-title-table"
             >
@@ -410,7 +408,7 @@ export default function IssuesTable() {
       {renderDetail && (
         <IssueDetailPopup
           showDetail={showDetail}
-          setShowDetail={setShowDetail}
+          setDetailId={setSelectedIS}
           issueId={selectedIS}
         />
       )}

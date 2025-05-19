@@ -31,7 +31,7 @@ import {
 } from "~/utils/helpers/shortcuts/requirements";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
-import { getPriority } from "~/utils/helpers/shortcuts/tags";
+import { getPriorityByNameOrId } from "~/utils/helpers/shortcuts/tags";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 
 export const requirementsRouter = createTRPCRouter({
@@ -272,7 +272,11 @@ export const requirementsRouter = createTRPCRouter({
       const parsedRequirements: RequirementCol[] = await Promise.all(
         generatedRequirements.map(async (req) => {
           const priority = req.priorityId
-            ? await getPriority(ctx.firestore, projectId, req.priorityId)
+            ? await getPriorityByNameOrId(
+                ctx.firestore,
+                projectId,
+                req.priorityId, // Assuming this is a name or ID because the AI is dumb and doesn't always return the ID
+              )
             : undefined;
 
           const requirementType = req.requirementTypeId
