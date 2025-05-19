@@ -79,12 +79,13 @@ export default function UserStoryDependencyTree() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     dependencyData?.edges ?? [],
   );
-  const [showEdgeLabels, setShowEdgeLabels] = useState(
-    localStorage.getItem((projectId as string) + ":showEdgeLabels") === "true",
+  const [showEdgeLabels, setShowEdgeLabels] = useState<boolean>(
+    (localStorage.getItem((projectId as string) + ":showEdgeLabels") ??
+      "true") === "true",
   );
   const [initialLayoutDone, setInitialLayoutDone] = useState(
-    localStorage.getItem((projectId as string) + ":initialLayoutDone") ===
-      "true",
+    (localStorage.getItem((projectId as string) + ":initialLayoutDone") ??
+      "true") === "true",
   );
   const defaultViewport = loadFlowFromLocalStorage(
     projectId as string,
