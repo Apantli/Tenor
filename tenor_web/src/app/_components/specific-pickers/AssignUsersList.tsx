@@ -23,7 +23,7 @@ export default function AssignUsersList({ users }: Props) {
   });
 
   return (
-    <div className="marginLef relative flex gap-2">
+    <div className="relative flex gap-2">
       {selectedUsers.map((user, index) => (
         <ProfilePicture
           key={user.uid}

@@ -963,7 +963,6 @@ export default function RequirementsTable() {
                 <div className="flex gap-2" data-cy="requirement-popup-footer">
                   {requirementEditedData ? (
                     requirementEdited ? (
-                      // FIXME add delete functionality (NEW PR)
                       permission < permissionNumbers.write ? null : (
                         <DeleteButton
                           onClick={async () => {
