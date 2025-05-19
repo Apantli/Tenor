@@ -11,7 +11,6 @@ import { IssueSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import type { IssueCol } from "~/lib/types/columnTypes";
 import type { IssueDetail } from "~/lib/types/detailSchemas";
-import { noTag } from "~/lib/defaultProjectValues";
 import {
   getBacklogTag,
   getBacklogTagsContext,
@@ -21,7 +20,8 @@ import {
 import { getUserStory } from "./userStories";
 import { getSprint } from "./sprints";
 import type * as admin from "firebase-admin";
-import { getTaskTable } from "./tasks";
+import { getTasksFromItem, getTaskTable } from "./tasks";
+import { getUser } from "./users";
 
 /**
  * @function getIssuesRef
@@ -123,20 +123,56 @@ export const getIssue = async (
  * @returns {Promise<IssueCol[]>} An array of issue objects formatted for display in a table
  */
 export const getIssueTable = async (
+  admin: admin.app.App,
   firestore: Firestore,
   projectId: string,
 ) => {
   const issues = await getIssues(firestore, projectId);
   const issueCols: IssueCol[] = await Promise.all(
     issues.map(async (issue): Promise<IssueCol> => {
-      const priority: WithId<Tag> | undefined = issue.priorityId
+      const priority: Tag | undefined = issue.priorityId
         ? await getPriority(firestore, projectId, issue.priorityId)
         : undefined;
+
+      let relatedUserStory = undefined;
+      if (issue.relatedUserStoryId) {
+        relatedUserStory = await getUserStory(
+          firestore,
+          projectId,
+          issue.relatedUserStoryId,
+        );
+      }
+
+      const tasks = await getTasksFromItem(firestore, projectId, issue.id);
+      const userIds = tasks
+        .map((task) => task.assigneeId)
+        .filter((id) => id !== "");
+      const uniqueUserIds = Array.from(new Set(userIds));
+      const assignedUsers = await Promise.all(
+        uniqueUserIds.map(async (userId) => {
+          const user = await getUser(admin, firestore, projectId, userId);
+          return {
+            uid: user.id,
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+          };
+        }),
+      );
+
       const issueCol: IssueCol = {
         ...issue,
-        priority: priority ?? noTag,
+        priority: priority,
         tags: [],
-        assignUsers: [],
+        assignUsers: assignedUsers,
+        relatedUserStory: relatedUserStory
+          ? {
+              id: relatedUserStory?.id,
+              name: relatedUserStory?.name,
+              scrumId: relatedUserStory?.scrumId,
+              description: relatedUserStory?.description,
+              deleted: relatedUserStory?.deleted,
+            }
+          : undefined,
       };
 
       return issueCol;

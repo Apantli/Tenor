@@ -4,8 +4,10 @@ import { useEffect, useState, type PropsWithChildren, useRef } from "react";
 import { cn } from "~/lib/utils";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import CloseSidebarIcon from "@mui/icons-material/LastPage";
 import { type ClassNameValue } from "tailwind-merge";
 import PrimaryButton from "./buttons/PrimaryButton";
+import { useSearchParam } from "../_hooks/useSearchParam";
 
 interface Props {
   show: boolean;
@@ -44,6 +46,7 @@ export default function Popup({
   saveText = "Save",
 }: Props & PropsWithChildren) {
   const [popIn, setPopIn] = useState(false);
+  // const [sidebarOpen, setSidebarOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -146,7 +149,7 @@ export default function Popup({
               {sidebar !== undefined && (
                 <div
                   className={cn(
-                    "ml-3 h-full shrink-0 overflow-y-auto border-l border-app-border px-3 pb-3 pl-5 pt-12",
+                    "ml-3 h-full w-0 shrink-0 overflow-y-auto border-l border-app-border px-3 pb-3 pl-5 pt-12",
                     sidebarClassName,
                   )}
                 >
@@ -196,7 +199,8 @@ export const usePopupVisibilityState = () => {
 
 interface SidebarPopupProps {
   show: boolean;
-  dismiss: () => void;
+  dismiss: () => void | Promise<void>;
+  afterDismissWithCloseButton?: () => void;
   disablePassiveDismiss?: boolean;
   title?: React.ReactNode;
   footer?: React.ReactNode;
@@ -210,6 +214,7 @@ export function SidebarPopup({
   children,
   show,
   dismiss,
+  afterDismissWithCloseButton,
   disablePassiveDismiss,
   title,
   footer,
@@ -221,6 +226,7 @@ export function SidebarPopup({
   const [slideIn, setSlideIn] = useState(false);
   const [fullyVisible, setFullyVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { getParam } = useSearchParam();
 
   useEffect(() => {
     if (show) {
@@ -254,8 +260,8 @@ export function SidebarPopup({
               "opacity-30": show && slideIn,
             },
           )}
-          onClick={(e) => {
-            if (!disablePassiveDismiss) dismiss();
+          onClick={async (e) => {
+            if (!disablePassiveDismiss) await dismiss();
             e.stopPropagation();
           }}
         ></div>
@@ -304,11 +310,19 @@ export function SidebarPopup({
             )}
           </div>
           <button
-            onClick={dismiss}
+            onClick={async () => {
+              await dismiss();
+              afterDismissWithCloseButton?.();
+            }}
             className="absolute right-5 top-3 text-3xl text-gray-600"
             data-cy="popup-close-button"
           >
-            <CloseIcon fontSize="inherit" />
+            {afterDismissWithCloseButton !== undefined && getParam("ts") && (
+              <CloseIcon fontSize="inherit" />
+            )}
+            {(afterDismissWithCloseButton === undefined || !getParam("ts")) && (
+              <CloseSidebarIcon fontSize="inherit" />
+            )}
           </button>
         </div>
       </div>

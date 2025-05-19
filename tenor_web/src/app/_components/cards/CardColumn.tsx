@@ -12,7 +12,6 @@ interface Props {
   selection: Set<string>;
   setSelection: (newSelection: Set<string>) => void;
   setDetailId: (detailId: string) => void;
-  setShowDetail: (showDetail: boolean) => void;
   header?: React.ReactNode;
   className: ClassNameValue;
 
@@ -28,7 +27,6 @@ export default function CardColumn({
   selection,
   setSelection,
   setDetailId,
-  setShowDetail,
   cards,
   renderCard,
   isLoading,
@@ -108,7 +106,6 @@ export default function CardColumn({
             }}
             onClick={() => {
               setDetailId(cardInfo.id);
-              setShowDetail(true);
             }}
           >
             {renderCard(cardInfo)}

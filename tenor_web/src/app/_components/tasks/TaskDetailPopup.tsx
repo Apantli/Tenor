@@ -23,6 +23,7 @@ import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import PrimaryButton from "../buttons/PrimaryButton";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import type { WithId } from "~/lib/types/firebaseSchemas";
+import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 interface Props {
   taskId: string;
@@ -34,6 +35,7 @@ interface Props {
   isGhost?: boolean;
   onAccept?: () => void;
   onReject?: () => void;
+  closeAllPopupsOnDismiss?: boolean;
 }
 
 export default function TaskDetailPopup({
@@ -46,6 +48,7 @@ export default function TaskDetailPopup({
   isGhost,
   onAccept,
   onReject,
+  closeAllPopupsOnDismiss,
 }: Props) {
   const { projectId } = useParams();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
@@ -187,6 +190,8 @@ export default function TaskDetailPopup({
     }
   };
 
+  const { resetParam } = useSearchParam();
+
   return (
     <SidebarPopup
       show={showDetail}
@@ -202,6 +207,13 @@ export default function TaskDetailPopup({
         }
         setShowDetail(false);
       }}
+      afterDismissWithCloseButton={
+        closeAllPopupsOnDismiss
+          ? () => {
+              resetParam("ts");
+            }
+          : undefined
+      }
       footer={
         !isLoading &&
         (!isGhost ? (
@@ -227,11 +239,9 @@ export default function TaskDetailPopup({
         <>
           {!isLoading && taskDetail && (
             <h1 className="mb-4 items-center text-3xl">
-              {taskDetail.scrumId && (
-                <span className="font-bold">
-                  {formatTaskScrumId(taskDetail.scrumId)}:{" "}
-                </span>
-              )}
+              <span className="font-bold">
+                {formatTaskScrumId(taskDetail.scrumId)}:{" "}
+              </span>
               <span>{taskDetail.name}</span>
             </h1>
           )}

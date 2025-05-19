@@ -47,9 +47,9 @@ export interface RequirementCol {
   id: string;
   name: string;
   description: string;
-  priority: Tag;
+  priority?: Tag;
   requirementType: Tag;
-  requirementFocus: Tag;
+  requirementFocus?: Tag;
   scrumId: number;
 }
 
@@ -58,7 +58,7 @@ export interface IssueCol {
   scrumId: number;
   name: string;
   description: string;
-  priority: Tag;
+  priority?: Tag;
   relatedUserStory?: ExistingUserStory;
   tags: Tag[];
   stepsToRecreate?: string;

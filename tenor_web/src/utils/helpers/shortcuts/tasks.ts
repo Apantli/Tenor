@@ -57,7 +57,9 @@ export const getTaskNewId = async (firestore: Firestore, projectId: string) => {
  * @returns {Promise<WithId<Task>[]>} An array of task objects with their IDs
  */
 export const getTasks = async (firestore: Firestore, projectId: string) => {
-  const tasksRef = getTasksRef(firestore, projectId).orderBy("scrumId");
+  const tasksRef = getTasksRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .orderBy("scrumId");
 
   const tasksSnapshot = await tasksRef.get();
   const tasks: WithId<Task>[] = tasksSnapshot.docs.map((doc) => {

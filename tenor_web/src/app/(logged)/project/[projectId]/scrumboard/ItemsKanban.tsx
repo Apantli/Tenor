@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
@@ -23,6 +22,7 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 export default function ItemsKanban() {
   // GENERAL
@@ -52,9 +52,9 @@ export default function ItemsKanban() {
     null,
   );
 
-  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  const [renderDetail, showDetail, detailItemId, setDetailItemId] =
+    useQueryIdForPopup("id");
   // Detail item and parent
-  const [detailItemId, setDetailItemId] = useState("");
   const detailItem = itemsAndColumnsData?.cardItems[detailItemId];
   const detailItemType = detailItem?.cardType;
 
@@ -263,7 +263,6 @@ export default function ItemsKanban() {
                   selectedItems={selectedItems}
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetailItemId}
-                  setShowDetail={setShowDetail}
                   renderCard={(item: KanbanCard) => {
                     const formatter = getCorrectFormatter(item.cardType);
                     return (
@@ -327,15 +326,15 @@ export default function ItemsKanban() {
 
       {renderDetail && detailItemType === "US" && (
         <UserStoryDetailPopup
-          setShowDetail={setShowDetail}
           showDetail={showDetail}
           userStoryId={detailItemId}
+          setUserStoryId={setDetailItemId}
         />
       )}
 
       {renderDetail && detailItemType === "IS" && (
         <IssueDetailPopup
-          setShowDetail={setShowDetail}
+          setDetailId={setDetailItemId}
           showDetail={showDetail}
           issueId={detailItemId}
         />

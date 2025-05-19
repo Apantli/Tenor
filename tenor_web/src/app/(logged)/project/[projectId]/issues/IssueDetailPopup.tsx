@@ -21,6 +21,7 @@ import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
   useFormatIssueScrumId,
+  useFormatTaskScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
@@ -37,14 +38,14 @@ import HelpIcon from "@mui/icons-material/Help";
 interface Props {
   issueId: string;
   showDetail: boolean;
-  setShowDetail: (show: boolean) => void;
+  setDetailId: (id: string) => void;
   taskIdToOpenImmediately?: string;
 }
 
 export default function IssueDetailPopup({
   issueId,
   showDetail,
-  setShowDetail,
+  setDetailId,
   taskIdToOpenImmediately,
 }: Props) {
   const { projectId } = useParams();
@@ -79,6 +80,7 @@ export default function IssueDetailPopup({
   const { predefinedAlerts } = useAlert();
   const formatIssueScrumId = useFormatIssueScrumId();
   const formatSprintNumber = useFormatSprintNumber();
+  useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
@@ -95,9 +97,22 @@ export default function IssueDetailPopup({
 
   const confirm = useConfirmation();
 
+  const dismissPopup = async () => {
+    if (editMode && isModified()) {
+      const confirmation = await confirm(
+        "Are you sure?",
+        "Your changes will be discarded.",
+        "Discard changes",
+        "Keep Editing",
+      );
+      if (!confirmation) return;
+    }
+    setDetailId("");
+  };
+
   useEffect(() => {
     if (error) {
-      setShowDetail(false);
+      void dismissPopup();
       predefinedAlerts.unexpectedError();
     }
   }, [error]);
@@ -174,7 +189,7 @@ export default function IssueDetailPopup({
       await invalidateQueriesAllIssues(projectId as string);
       await invalidateQueriesAllTasks(projectId as string);
 
-      setShowDetail(false);
+      await dismissPopup();
     }
   };
   const showAutomaticDetails = () => {
@@ -184,18 +199,7 @@ export default function IssueDetailPopup({
   return (
     <Popup
       show={showDetail}
-      dismiss={async () => {
-        if (editMode && isModified()) {
-          const confirmation = await confirm(
-            "Are you sure?",
-            "Your changes will be discarded.",
-            "Discard changes",
-            "Keep Editing",
-          );
-          if (!confirmation) return;
-        }
-        setShowDetail(false);
-      }}
+      dismiss={dismissPopup}
       size="large"
       sidebarClassName="basis-[210px]"
       sidebar={

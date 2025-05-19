@@ -142,7 +142,6 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
       (multiselect ? "20px " : "") +
       newColumnWidths.map((width) => `${width}px`).join(" ") +
       (showThreeDots ? ` 1fr ${addedSpace}` : "");
-    console.log(addedSpace);
 
     scrollContainerRef.current?.childNodes.forEach((child) => {
       (child as HTMLElement).style.gridTemplateColumns = newTemplateColumns;
