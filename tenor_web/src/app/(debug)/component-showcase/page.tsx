@@ -32,6 +32,16 @@ import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import ProgressBar  from "~/app/_components/ProgressBar";
 
+// Z index documentation:
+// 0-1000: Default z-index range for most elements (feel free to contribute to the documentation)
+//   10: Ghost table rows
+//   60: Sticky table header
+// 100000: Used for popups
+// 200000: Used for confirmation popups
+// 300000: Used for alerts
+// 400000: Used for dropdowns
+// 500000: Used for tooltips
+
 // This file is to showcase how to use the components available in Tenor
 export default function ComponentShowcasePage() {
   return (

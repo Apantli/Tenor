@@ -49,6 +49,8 @@ export default function IssueDetailPopup({
 }: Props) {
   const { projectId } = useParams();
 
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
   const {
     data: issueDetail,
     isLoading,
@@ -362,6 +364,8 @@ export default function IssueDetailPopup({
           )}
 
           <TasksTable
+            scrollContainerRef={scrollContainerRef}
+            fetchedTasks={issueDetail.tasks}
             itemId={issueId}
             itemType="IS"
             setSelectedGhostTask={setSelectedGhostTaskId}

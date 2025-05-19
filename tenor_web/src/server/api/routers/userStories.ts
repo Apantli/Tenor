@@ -70,7 +70,12 @@ export const userStoriesRouter = createTRPCRouter({
     .input(z.object({ userStoryId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { userStoryId, projectId } = input;
-      return await getUserStoryDetail(ctx.firestore, projectId, userStoryId);
+      return await getUserStoryDetail(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        projectId,
+        userStoryId,
+      );
     }),
 
   /**

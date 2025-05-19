@@ -2,9 +2,7 @@ let projectPath = "";
 
 describe("Requirements", () => {
   before(() => {
-    cy.signIn("/");
-    cy.createEmptyProject();
-    cy.url().then((url) => {
+    cy.ensureSharedProjectExists().then((url) => {
       projectPath = url;
     });
   });
