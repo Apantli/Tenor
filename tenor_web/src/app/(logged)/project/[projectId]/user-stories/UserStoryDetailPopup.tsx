@@ -111,9 +111,9 @@ export default function UserStoryDetailPopup({
     );
   }, [role]);
 
-  const { mutateAsync: modifyUserStory } =
+  const { mutateAsync: modifyUserStory, isPending } =
     api.userStories.modifyUserStory.useMutation();
-  const { mutateAsync: deleteUserStory } =
+  const { mutateAsync: deleteUserStory, isPending: isDeleting } =
     api.userStories.deleteUserStory.useMutation();
 
   const [editMode, setEditMode] = useState(false);
@@ -130,7 +130,7 @@ export default function UserStoryDetailPopup({
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const { predefinedAlerts } = useAlert();
+  const { alert, predefinedAlerts } = useAlert();
   const formatSprintNumber = useFormatSprintNumber();
 
   const changeVisibleUserStory = async (userStoryId: string) => {
@@ -206,7 +206,7 @@ export default function UserStoryDetailPopup({
     // This means we're editing a ghost user story, so it should be treated differently
     if (userStoryData !== undefined) {
       setUserStoryData?.({ ...finalData, tasks: userStoryData.tasks });
-      return;
+      return true;
     }
 
     const updatedUserStory = {
@@ -276,6 +276,7 @@ export default function UserStoryDetailPopup({
     if (!editMode || saveEditForm) {
       await refetch();
     }
+    return true;
   };
 
   const handleDelete = async () => {
@@ -444,7 +445,9 @@ export default function UserStoryDetailPopup({
         !isLoading &&
         permission >= permissionNumbers.write &&
         (userStoryDetail?.scrumId !== -1 ? (
-          <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
+          <DeleteButton onClick={handleDelete} loading={isDeleting}>
+            Delete story
+          </DeleteButton>
         ) : (
           <div className="flex items-center gap-2">
             <AiIcon
@@ -511,6 +514,7 @@ export default function UserStoryDetailPopup({
             : editMode
           : undefined
       }
+      saving={isPending}
       setEditMode={async (isEditing) => {
         if (unsavedTasks) {
           const confirmation = await confirm(
@@ -522,6 +526,7 @@ export default function UserStoryDetailPopup({
           if (!confirmation) return;
           setUnsavedTasks(false);
         }
+
         setEditMode(isEditing);
 
         if (!userStoryDetail) return;
@@ -532,6 +537,14 @@ export default function UserStoryDetailPopup({
             description: editForm.description,
             acceptanceCriteria: editForm.acceptanceCriteria,
           };
+          if (updatedData.name === "") {
+            setEditMode(true);
+            alert("Oops", "Please enter a name for the user story.", {
+              type: "error",
+              duration: 5000,
+            });
+            return;
+          }
           await handleSave(updatedData, true); // Pass true to save the edit form
         }
       }}

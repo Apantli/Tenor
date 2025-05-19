@@ -131,7 +131,7 @@ export default function PillComponent({
         </DropdownItem>
       )}
       <div className="w-52 whitespace-nowrap text-left">
-        <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg">
+        <div className="flex max-h-48 flex-col overflow-y-auto rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}
           {addTag === undefined && filteredTags.length == 0 && (
             <span className="w-full px-2 py-1 text-sm text-gray-500">

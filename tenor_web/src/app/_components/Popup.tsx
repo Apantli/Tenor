@@ -20,6 +20,7 @@ interface Props {
   disablePassiveDismiss?: boolean;
   sidebar?: React.ReactNode;
   sidebarClassName?: ClassNameValue;
+  footerClassName?: ClassNameValue;
   editMode?: boolean;
   setEditMode?: (edit: boolean) => void;
   saving?: boolean;
@@ -45,6 +46,7 @@ export default function Popup({
   saving,
   reduceTopPadding,
   sidebarClassName,
+  footerClassName,
   zIndex,
   className,
   saveText = "Save",
@@ -161,7 +163,14 @@ export default function Popup({
                 </div>
 
                 {footer !== undefined && editMode !== true && (
-                  <div className="ml-auto mt-3 shrink-0 grow-0">{footer}</div>
+                  <div
+                    className={cn(
+                      "ml-auto mt-3 shrink-0 grow-0",
+                      footerClassName,
+                    )}
+                  >
+                    {footer}
+                  </div>
                 )}
               </div>
               {sidebar !== undefined && showSidebar && (
