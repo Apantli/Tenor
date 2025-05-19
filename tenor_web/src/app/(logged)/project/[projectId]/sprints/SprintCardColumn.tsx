@@ -8,6 +8,8 @@ import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { type BacklogItems } from "./page";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
+import EditSprintPopup from "./EditSprintPopup";
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
@@ -34,6 +36,9 @@ export default function SprintCardColumn({
   const allSelected =
     column.backlogItemIds.length > 0 &&
     column.backlogItemIds.every((itemId) => selectedItems.has(itemId));
+
+  const [renderEditPopup, showEditPopup, setShowEditPopup] =
+    usePopupVisibilityState();
 
   const toggleSelectAll = () => {
     const newSelection = new Set(selectedItems);
@@ -101,7 +106,9 @@ export default function SprintCardColumn({
                     )}
                   </button>
                   <Dropdown label={"• • •"}>
-                    <DropdownButton>Edit sprint</DropdownButton>
+                    <DropdownButton onClick={() => setShowEditPopup(true)}>
+                      Edit sprint
+                    </DropdownButton>
                   </Dropdown>
                 </div>
               )}
@@ -130,6 +137,12 @@ export default function SprintCardColumn({
           Move to sprint
         </PrimaryButton>
       </div>
+      {renderEditPopup && (
+        <EditSprintPopup
+          showPopup={showEditPopup}
+          setShowPopup={setShowEditPopup}
+        />
+      )}
     </div>
   );
 }
