@@ -5,7 +5,7 @@ import { accentColorByCardType } from "~/utils/helpers/colorUtils";
 import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import EditIcon from "@mui/icons-material/Edit";
+import EditIcon from "@mui/icons-material/EditOutlined";
 import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
 import type { BasicNodeData } from "~/lib/types/reactFlowTypes";
 import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";

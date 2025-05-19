@@ -32,6 +32,8 @@ import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-storie
 import { useSelectedNode } from "~/app/_hooks/useSelectedNode";
 import { TRPCClientError } from "@trpc/client";
 import { useAlert } from "~/app/_hooks/useAlert";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 
@@ -360,15 +362,16 @@ export default function UserStoryDependencyTree() {
                 onClick={() => onLayout()}
                 className={"bg-white"}
               >
+                <SwapVertOutlinedIcon />
                 Organize nodes
               </SecondaryButton>
               <SecondaryButton
                 onClick={handleShowLabels}
                 className={"bg-white"}
               >
+                <InfoOutlinedIcon />
                 Toggle labels
               </SecondaryButton>
-              {/* TODO Add icons */}
             </div>
           </Panel>
         </ReactFlow>

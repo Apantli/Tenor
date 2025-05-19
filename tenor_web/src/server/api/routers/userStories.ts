@@ -34,7 +34,7 @@ import {
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
 import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
-import { type Edge, type Node } from "@xyflow/react";
+import type { Edge, Node } from "@xyflow/react";
 
 export const userStoriesRouter = createTRPCRouter({
   /**

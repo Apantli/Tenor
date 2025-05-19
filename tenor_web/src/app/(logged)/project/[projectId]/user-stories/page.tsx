@@ -1,7 +1,7 @@
 "use client";
 
 import { ProjectEpics } from "~/app/_components/sections/ProjectEpics";
-import UserStoryDependencyTree from "~/app/_components/sections/UserStoryDependencyDiagram";
+import UserStoryDependencyTree from "~/app/_components/sections/UserStoryDependencyTree";
 import UserStoryTable from "~/app/_components/sections/UserStoryTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
