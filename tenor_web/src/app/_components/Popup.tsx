@@ -132,7 +132,7 @@ export default function Popup({
                       "pr-0": sidebar === undefined || !showSidebar,
                     })}
                   >
-                    <div className="flex justify-between gap-2">
+                    <div className="wrap-properly flex justify-between gap-2">
                       {title !== undefined && title}
                       {title === undefined && <div></div>}
                       {editMode === false && (
