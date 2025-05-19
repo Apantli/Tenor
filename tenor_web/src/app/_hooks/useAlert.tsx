@@ -106,7 +106,7 @@ export const AlertProvider = ({ children }: PropsWithChildren) => {
     <AlertContext.Provider value={{ alert, alerts, removeAlert }}>
       {children}
       <div
-        className="fixed bottom-0 right-0 z-[1000] flex max-h-screen flex-col gap-3 overflow-y-auto p-5"
+        className="fixed bottom-0 right-0 z-[300000] flex max-h-screen flex-col gap-3 overflow-y-auto p-5"
         ref={containerRef}
       >
         {alerts.map((alertItem) => (

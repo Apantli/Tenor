@@ -1,18 +1,13 @@
 "use client";
 
-import {
-  useEffect,
-  useState,
-  type PropsWithChildren,
-  createContext,
-  useRef,
-  useContext,
-} from "react";
+import { useEffect, useState, type PropsWithChildren, useRef } from "react";
 import { cn } from "~/lib/utils";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import CloseSidebarIcon from "@mui/icons-material/LastPage";
 import { type ClassNameValue } from "tailwind-merge";
 import PrimaryButton from "./buttons/PrimaryButton";
+import { useSearchParam } from "../_hooks/useSearchParam";
 
 interface Props {
   show: boolean;
@@ -31,10 +26,6 @@ interface Props {
   className?: string;
   saveText?: string;
 }
-
-const PopupContext = createContext<React.RefObject<HTMLDivElement> | null>(
-  null,
-);
 
 export default function Popup({
   show,
@@ -55,6 +46,7 @@ export default function Popup({
   saveText = "Save",
 }: Props & PropsWithChildren) {
   const [popIn, setPopIn] = useState(false);
+  // const [sidebarOpen, setSidebarOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -81,7 +73,7 @@ export default function Popup({
 
   return (
     (show || popIn) && (
-      <PopupContext.Provider value={containerRef}>
+      <>
         <div
           className={cn(
             "fixed left-0 top-0 h-screen w-screen bg-black opacity-0 transition duration-200",
@@ -89,7 +81,7 @@ export default function Popup({
               "opacity-70": popIn && show,
             },
           )}
-          style={{ zIndex: zIndex ?? 100 }}
+          style={{ zIndex: zIndex ?? 100000 }}
           onClick={() => {
             if (!disablePassiveDismiss) dismiss();
           }}
@@ -105,7 +97,7 @@ export default function Popup({
             },
             className,
           )}
-          style={{ zIndex: (zIndex ?? 100) + 1 }}
+          style={{ zIndex: (zIndex ?? 100000) + 1 }}
           ref={containerRef}
           data-cy="popup"
         >
@@ -157,7 +149,7 @@ export default function Popup({
               {sidebar !== undefined && (
                 <div
                   className={cn(
-                    "ml-3 h-full shrink-0 overflow-y-auto border-l border-app-border px-3 pb-3 pl-5 pt-12",
+                    "ml-3 h-full w-0 shrink-0 overflow-y-auto border-l border-app-border px-3 pb-3 pl-5 pt-12",
                     sidebarClassName,
                   )}
                 >
@@ -177,7 +169,7 @@ export default function Popup({
             <CloseIcon fontSize="inherit" />
           </button>
         </div>
-      </PopupContext.Provider>
+      </>
     )
   );
 }
@@ -205,14 +197,10 @@ export const usePopupVisibilityState = () => {
   return [isVisible, showInternal, setShow] as const;
 };
 
-export const usePopupContainer = () => {
-  const context = useContext(PopupContext);
-  return context;
-};
-
 interface SidebarPopupProps {
   show: boolean;
-  dismiss: () => void;
+  dismiss: () => void | Promise<void>;
+  afterDismissWithCloseButton?: () => void;
   disablePassiveDismiss?: boolean;
   title?: React.ReactNode;
   footer?: React.ReactNode;
@@ -226,6 +214,7 @@ export function SidebarPopup({
   children,
   show,
   dismiss,
+  afterDismissWithCloseButton,
   disablePassiveDismiss,
   title,
   footer,
@@ -237,6 +226,7 @@ export function SidebarPopup({
   const [slideIn, setSlideIn] = useState(false);
   const [fullyVisible, setFullyVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { getParam } = useSearchParam();
 
   useEffect(() => {
     if (show) {
@@ -255,81 +245,87 @@ export function SidebarPopup({
 
   return (
     (show || slideIn) && (
-      <PopupContext.Provider value={containerRef}>
+      <div
+        className={cn(
+          "fixed left-1/2 top-1/2 z-[61] flex h-[700px] max-h-[calc(100vh-40px)] w-[956px] max-w-[calc(100vw-40px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl",
+          {
+            "overflow-visible": fullyVisible,
+          },
+        )}
+      >
         <div
           className={cn(
-            "fixed left-1/2 top-1/2 z-[61] flex h-[700px] max-h-[calc(100vh-40px)] w-[956px] max-w-[calc(100vw-40px)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl",
+            "fixed left-0 top-0 z-[62] h-full w-full rounded-2xl bg-black opacity-0 transition duration-200",
             {
-              "overflow-visible": fullyVisible,
+              "opacity-30": show && slideIn,
             },
           )}
+          onClick={async (e) => {
+            if (!disablePassiveDismiss) await dismiss();
+            e.stopPropagation();
+          }}
+        ></div>
+        <div
+          className={cn(
+            "fixed right-0 top-0 z-[63] h-full w-[478px] translate-x-full rounded-r-2xl bg-white p-5 pt-12 transition duration-200",
+            {
+              "translate-x-0": show && slideIn,
+            },
+          )}
+          ref={containerRef}
         >
-          <div
-            className={cn(
-              "fixed left-0 top-0 z-[62] h-full w-full rounded-2xl bg-black opacity-0 transition duration-200",
-              {
-                "opacity-30": show && slideIn,
-              },
-            )}
-            onClick={(e) => {
-              if (!disablePassiveDismiss) dismiss();
-              e.stopPropagation();
-            }}
-          ></div>
-          <div
-            className={cn(
-              "fixed right-0 top-0 z-[63] h-full w-[478px] translate-x-full rounded-r-2xl bg-white p-5 pt-12 transition duration-200",
-              {
-                "translate-x-0": show && slideIn,
-              },
-            )}
-            ref={containerRef}
-          >
-            <div className="flex h-full grow flex-col justify-between pt-0">
-              <div className="flex flex-1 shrink grow justify-between overflow-y-hidden">
-                <div className="flex flex-1 flex-col overflow-hidden p-2">
-                  <div className="flex justify-between gap-2">
-                    {title !== undefined && title}
-                    {title === undefined && <div></div>}
-                    {editMode === false && (
-                      <div className="flex shrink-0 flex-col gap-2">
-                        <button
-                          className="text-3xl text-gray-600"
-                          onClick={() => setEditMode?.(true)}
-                        >
-                          <EditIcon fontSize="inherit" />
-                        </button>
-                      </div>
-                    )}
-                    {editMode === true && (
-                      <div className="flex shrink-0 flex-col gap-2">
-                        <PrimaryButton
-                          onClick={() => setEditMode?.(false)}
-                          loading={saving}
-                        >
-                          {saveText}
-                        </PrimaryButton>
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-1 overflow-y-auto">{children}</div>
+          <div className="flex h-full grow flex-col justify-between pt-0">
+            <div className="flex flex-1 shrink grow justify-between overflow-y-hidden">
+              <div className="flex flex-1 flex-col overflow-hidden p-2">
+                <div className="flex justify-between gap-2">
+                  {title !== undefined && title}
+                  {title === undefined && <div></div>}
+                  {editMode === false && (
+                    <div className="flex shrink-0 flex-col gap-2">
+                      <button
+                        className="text-3xl text-gray-600"
+                        onClick={() => setEditMode?.(true)}
+                      >
+                        <EditIcon fontSize="inherit" />
+                      </button>
+                    </div>
+                  )}
+                  {editMode === true && (
+                    <div className="flex shrink-0 flex-col gap-2">
+                      <PrimaryButton
+                        onClick={() => setEditMode?.(false)}
+                        loading={saving}
+                      >
+                        {saveText}
+                      </PrimaryButton>
+                    </div>
+                  )}
                 </div>
+                <div className="flex-1 overflow-y-auto">{children}</div>
               </div>
-
-              {footer !== undefined && editMode !== true && (
-                <div className="ml-auto mt-3 shrink-0 grow-0">{footer}</div>
-              )}
             </div>
-            <button
-              onClick={dismiss}
-              className="absolute right-5 top-3 text-3xl text-gray-600"
-              data-cy="popup-close-button"
-            >
-              <CloseIcon fontSize="inherit" />
-            </button>
+
+            {footer !== undefined && editMode !== true && (
+              <div className="ml-auto mt-3 shrink-0 grow-0">{footer}</div>
+            )}
           </div>
+          <button
+            onClick={async () => {
+              await dismiss();
+              afterDismissWithCloseButton?.();
+            }}
+            className="absolute right-5 top-3 text-3xl text-gray-600"
+            data-cy="popup-close-button"
+          >
+            {afterDismissWithCloseButton !== undefined && getParam("ts") && (
+              <CloseIcon fontSize="inherit" />
+            )}
+            {(afterDismissWithCloseButton === undefined || !getParam("ts")) && (
+              <CloseSidebarIcon fontSize="inherit" />
+            )}
+          </button>
         </div>
-      </PopupContext.Provider>
+      </div>
     )
   );
 }

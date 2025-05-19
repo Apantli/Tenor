@@ -27,7 +27,6 @@ export default function InterceptedLink({
     e.preventDefault();
 
     if (await shouldBlock()) {
-      console.log("Blocking navigation");
       e.preventDefault();
     } else {
       router.push(href as string);

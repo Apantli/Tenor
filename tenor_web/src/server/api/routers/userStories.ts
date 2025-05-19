@@ -8,7 +8,11 @@
  * @category API
  */
 import { z } from "zod";
-import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  roleRequiredProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import type {
@@ -32,7 +36,10 @@ import {
   updateDependency,
 } from "~/utils/helpers/shortcuts/userStories";
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
-import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
+import {
+  getBacklogTag,
+  getPriorityByNameOrId,
+} from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import type { Edge, Node } from "@xyflow/react";
 
@@ -73,7 +80,12 @@ export const userStoriesRouter = createTRPCRouter({
     .input(z.object({ userStoryId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { userStoryId, projectId } = input;
-      return await getUserStoryDetail(ctx.firestore, projectId, userStoryId);
+      return await getUserStoryDetail(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        projectId,
+        userStoryId,
+      );
     }),
 
   /**
@@ -133,10 +145,13 @@ export const userStoriesRouter = createTRPCRouter({
         }),
       );
 
-      return {
-        id: userStory.id,
-        ...userStoryData,
-      } as WithId<UserStory>;
+        return {
+          id: userStory.id,
+          ...userStoryData,
+        } as WithId<UserStory>;
+      } catch {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      }
     }),
   /**
    * @function modifyUserStory
@@ -426,7 +441,11 @@ export const userStoriesRouter = createTRPCRouter({
       const parsedData: UserStoryDetail[] = await Promise.all(
         data.map(async (userStory) => {
           const priority = userStory.priorityId
-            ? await getPriority(ctx.firestore, projectId, userStory.priorityId)
+            ? await getPriorityByNameOrId(
+                ctx.firestore,
+                projectId,
+                userStory.priorityId, // Assuming priorityId is either a name or an ID
+              )
             : undefined;
 
           const epic = userStory.epicId
@@ -491,7 +510,7 @@ export const userStoriesRouter = createTRPCRouter({
             dependencies,
             epic,
             priority,
-            scrumId: 0,
+            scrumId: -1,
             tags,
           };
 
@@ -520,6 +539,21 @@ export const userStoriesRouter = createTRPCRouter({
       }
 
       return parsedData;
+    }),
+
+  /**
+   * @function getUserStoryCount
+   * @description Retrieves the number of user stories inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of user stories in the project.
+   */
+  getUserStoryCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const userStoriesRef = getUserStoriesRef(ctx.firestore, projectId);
+      const countSnapshot = await userStoriesRef.count().get();
+      return countSnapshot.data().count;
     }),
 
   /**

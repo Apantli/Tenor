@@ -77,7 +77,7 @@ export const ConfirmationProvider = ({ children }: PropsWithChildren) => {
         show={showConfirmation}
         dismiss={() => handleResolve(false)}
         reduceTopPadding
-        zIndex={2000}
+        zIndex={200000}
         footer={
           <div className="flex gap-2">
             <SecondaryButton

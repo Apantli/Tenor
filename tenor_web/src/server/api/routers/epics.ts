@@ -79,6 +79,21 @@ export const epicsRouter = createTRPCRouter({
     }),
 
   /**
+   * @function getEpicCount
+   * @description Retrieves the number of epics inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of epics in the project.
+   */
+  getEpicCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const epicsRef = getEpicsRef(ctx.firestore, projectId);
+      const countSnapshot = await epicsRef.count().get();
+      return countSnapshot.data().count;
+    }),
+
+  /**
    * @function deleteEpic
    * @description Marks an epic as deleted in the database.
    * @param {string} projectId - The ID of the project.

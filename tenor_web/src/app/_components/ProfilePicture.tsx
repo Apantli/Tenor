@@ -10,6 +10,7 @@ interface Props {
     | User
     | UserRecord
     | { displayName?: string; photoURL?: string; uid?: string }
+    | { displayName?: string; photoURL?: string; id?: string }
     | null;
   hideTooltip?: boolean;
   className?: ClassNameValue;
@@ -63,7 +64,7 @@ export default function ProfilePicture({
       <img
         src={user.photoURL}
         alt=""
-        className={cn("h-8 w-8 rounded-full", pictureClassName)}
+        className={cn("h-8 w-8 rounded-full", className, pictureClassName)}
         data-tooltip-id="tooltip"
         data-tooltip-content={user?.displayName}
         data-tooltip-place="top-start"
@@ -71,12 +72,18 @@ export default function ProfilePicture({
       />
     );
   } else {
-    const { hexCode, darkHexCode } = getUserGradient(user?.uid ?? "");
+    let uid = "0";
+    if (user) {
+      if ("uid" in user) uid = user.uid ?? "0";
+      else if ("id" in user) uid = user.id ?? "0";
+    }
+    const { hexCode, darkHexCode } = getUserGradient(uid);
     return (
       <div
         className={cn(
-          "flex h-8 w-8 min-w-8 items-center justify-center rounded-full font-bold text-white",
+          "flex h-8 w-8 min-w-8 cursor-default select-none items-center justify-center rounded-full font-bold text-white",
           className,
+          pictureClassName,
         )}
         style={{
           background: `linear-gradient(to top, #${darkHexCode}, #${hexCode})`,

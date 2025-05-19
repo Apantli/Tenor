@@ -304,16 +304,19 @@ export const getRequirementTable = async (
           requirement.requirementTypeId,
         )) ?? noTag;
 
-      const requirementFocus: Tag =
-        (await getRequirementFocus(
-          firestore,
-          projectId,
-          requirement.requirementFocusId,
-        )) ?? noTag;
+      const requirementFocus: Tag | undefined =
+        requirement.requirementFocusId !== ""
+          ? await getRequirementFocus(
+              firestore,
+              projectId,
+              requirement.requirementFocusId,
+            )
+          : undefined;
 
-      const priority: Tag =
-        (await getPriority(firestore, projectId, requirement.priorityId)) ??
-        noTag;
+      const priority: Tag | undefined =
+        requirement.priorityId !== ""
+          ? await getPriority(firestore, projectId, requirement.priorityId)
+          : undefined;
 
       const requirementCol: RequirementCol = {
         ...requirement,
@@ -343,7 +346,13 @@ export const getRequirementsContext = async (
   const requirements = await getRequirementTable(firestore, projectId);
   let requirementsContext = "# EXISTING REQUIREMENTS\n\n";
   requirements.forEach((requirement) => {
-    requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}\n- priorityId: ${requirement.priority.name}\n- typeId: ${requirement.requirementType.name}\n- focus: ${requirement.requirementFocus.name}\n\n`;
+    const priorityContext = requirement.priority
+      ? `\n- priorityId: ${requirement.priority.name}\n`
+      : "";
+    const focusContext = requirement.requirementFocus
+      ? `\n- focus: ${requirement.requirementFocus.name}\n`
+      : "";
+    requirementsContext += `- id: ${requirement.id}\n- name: ${requirement.name}\n- description: ${requirement.description}${priorityContext}\n- typeId: ${requirement.requirementType.name}${focusContext}\n\n`;
   });
   return requirementsContext;
 };
@@ -410,7 +419,7 @@ ${requirementTypesContext}
 
 ${passedInPrompt}
 
-Generate ${amount} requirements for the mentioned software project. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). Be extremely vague with the requirement focus so that it can apply to multiple requirements. Do NOT tie the requirement focus too tightly with the functionality. For example, a good requirement focus would be 'Core functionality', 'Security', 'Performance', or it could be related to the type of application such as 'Website', 'Mobile app', etc... For the requirement type, always use one of the available types. When creating the requirement description, make sure to use statistics if possible and if appropriate, and make sure they are as realistic as possible. Don't make the requirement description too long, maximum 4 sentences.
+Generate ${amount} requirements for the mentioned software project. Do NOT include any identifier in the name like "Requirement 1", just use a normal title. For the requirement focus, use one of the available focus types, or create a new one if it makes sense, just give it a short name (maximum 3 words). Be extremely vague with the requirement focus so that it can apply to multiple requirements. Do NOT tie the requirement focus too tightly with the functionality. For example, a good requirement focus would be 'Core functionality', 'Security', 'Performance', or it could be related to the type of application such as 'Website', 'Mobile app', etc... For the requirement type, always use one of the available types. When creating the requirement description, make sure to use statistics if possible and if appropriate, and make sure they are as realistic as possible. Don't make the requirement description too long, maximum 4 sentences. For the priorityId, use the id one of the provided priorities, DO NOT use the name like "P0". Prioritize functional requirements over non-functional ones, unless the user specifies otherwise or there are already too many functional requirements.
 `;
   // ---------------------------------------------
 
