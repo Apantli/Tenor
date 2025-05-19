@@ -582,9 +582,15 @@ export default function UserStoryDetailPopup({
       )}
       {!editMode && !isLoading && userStoryDetail && (
         <div className="overflow-hidden">
-          <div className="markdown-content overflow-hidden text-lg">
-            <Markdown>{userStoryDetail.description}</Markdown>
-          </div>
+          {userStoryDetail.description === "" ? (
+            <p className="text-lg italic text-gray-500">
+              No description provided.
+            </p>
+          ) : (
+            <div className="markdown-content overflow-hidden text-lg">
+              <Markdown>{userStoryDetail.description}</Markdown>
+            </div>
+          )}
 
           {userStoryDetail.acceptanceCriteria !== "" && (
             <>

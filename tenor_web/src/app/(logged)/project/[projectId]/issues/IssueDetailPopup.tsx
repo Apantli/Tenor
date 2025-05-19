@@ -392,9 +392,15 @@ export default function IssueDetailPopup({
       )}
       {!editMode && !isLoading && issueDetail && (
         <div className="overflow-hidden">
-          <div className="markdown-content overflow-hidden text-lg">
-            <Markdown>{issueDetail.description}</Markdown>
-          </div>
+          {issueDetail.description === "" ? (
+            <p className="text-lg italic text-gray-500">
+              No description provided.
+            </p>
+          ) : (
+            <div className="markdown-content overflow-hidden text-lg">
+              <Markdown>{issueDetail.description}</Markdown>
+            </div>
+          )}
 
           {issueDetail.stepsToRecreate !== "" && (
             <>
