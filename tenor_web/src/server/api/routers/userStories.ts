@@ -434,7 +434,6 @@ export const userStoriesRouter = createTRPCRouter({
             : undefined;
 
           // Check the related user stories exist and are valid
-          // TODO: Implement cycle detection here, help Luis Amado!
           const dependencies: WithId<UserStoryPreview>[] = (
             await Promise.all(
               userStory.dependencyIds.map(async (dependencyId) => {
@@ -499,6 +498,26 @@ export const userStoriesRouter = createTRPCRouter({
           return newUserStory;
         }),
       );
+
+      // Check if there is a cycle with the generated user stories
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        parsedData.map((userStory) => ({
+          id: "temp" + userStory.id, // add temp to avoid collision, just in case
+          dependencyIds: userStory.dependencies.map((dep) => dep.id),
+          requiredByIds: userStory.requiredBy.map((req) => req.id),
+        })),
+      );
+
+      if (hasCycle) {
+        const parsedDataWithoutDependencies = parsedData.map((userStory) => ({
+          ...userStory,
+          dependencies: [],
+          requiredBy: [],
+        }));
+        return parsedDataWithoutDependencies;
+      }
 
       return parsedData;
     }),
