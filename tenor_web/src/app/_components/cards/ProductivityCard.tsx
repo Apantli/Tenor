@@ -33,10 +33,10 @@ export const ProductivityCard = ({
   const issuesStrokeDasharray = `${(issuesPercent / 100) * c2} ${c2}`;
 
   return (
-    <div className="flex h-full flex-col rounded-md border-2 p-4">
+    <div className="box-content flex h-[400px] w-[700px] min-w-[600px] flex-col rounded-md border-2 p-4">
       <h1 className="mb-6 border-b-2 pb-4 text-3xl font-bold">Productivity</h1>
 
-      <div className="flex flex-col items-center gap-8 rounded-lg bg-white p-8 md:flex-row">
+      <div className="flex flex-col items-center gap-8 rounded-lg bg-white p-4 md:flex-row">
         <div className="relative h-64 w-64">
           {/* Background circles */}
           <svg
@@ -69,7 +69,7 @@ export const ProductivityCard = ({
               cy="100"
               r={radius + 10}
               fill="none"
-              stroke="#9eca9e"
+              stroke="#88BB87"
               strokeWidth="10"
               strokeDasharray={userStoriesStrokeDasharray}
               strokeDashoffset={0}
@@ -83,7 +83,7 @@ export const ProductivityCard = ({
               cy="100"
               r={radius - 10}
               fill="none"
-              stroke="#144814"
+              stroke="#184723"
               strokeWidth="10"
               strokeDasharray={issuesStrokeDasharray}
               strokeDashoffset={0}
@@ -99,7 +99,7 @@ export const ProductivityCard = ({
           <div className="flex flex-col gap-4">
             {/* User Stories */}
             <div className="flex items-center gap-3 text-gray-500">
-              <div className="h-4 w-4 rounded-full bg-[#9eca9e]"></div>
+              <div className="h-4 w-4 rounded-full bg-[#88BB87]"></div>
               <span className="text-lg">
                 User Stories {userStoriesPercent}%
               </span>
@@ -107,13 +107,13 @@ export const ProductivityCard = ({
 
             {/* Issues */}
             <div className="flex items-center gap-3 text-gray-500">
-              <div className="h-4 w-4 rounded-full bg-[#144814]"></div>
+              <div className="h-4 w-4 rounded-full bg-[#184723]"></div>
               <span className="text-lg">Issues {issuesPercent}%</span>
             </div>
           </div>
         </div>
       </div>
-      <div className="mx-auto mt-10 text-gray-500">
+      <div className="mx-auto text-gray-500">
         Updated {lastUpdated} - Sprint {sprint}
       </div>
     </div>
