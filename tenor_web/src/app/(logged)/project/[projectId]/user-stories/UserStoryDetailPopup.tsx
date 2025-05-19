@@ -206,7 +206,7 @@ export default function UserStoryDetailPopup({
     // This means we're editing a ghost user story, so it should be treated differently
     if (userStoryData !== undefined) {
       setUserStoryData?.({ ...finalData, tasks: userStoryData.tasks });
-      return;
+      return true;
     }
 
     const updatedUserStory = {
@@ -248,7 +248,7 @@ export default function UserStoryDetailPopup({
     );
 
     try {
-      const { updatedUserStoryIds } = await modifyUserStory({
+      const { updatedUserStoryIds } = await updateUserStory({
         projectId: projectId as string,
         userStoryId: userStoryId,
         userStoryData: updatedUserStory,
