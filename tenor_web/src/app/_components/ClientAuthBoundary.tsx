@@ -23,7 +23,6 @@ export default function ClientAuthBoundary({ children }: PropsWithChildren) {
         await refreshSession({ token });
         setRefreshed(true);
       } catch {
-        console.log("failed to refresh token");
         router.push("/login");
       }
 

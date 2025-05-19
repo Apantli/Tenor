@@ -1,6 +1,5 @@
 import type { TaskCol, UserStoryCol } from "~/lib/types/columnTypes";
 import { getEpic, getEpicContext, getEpicsContext } from "./epics";
-import { noTag } from "~/lib/defaultProjectValues";
 import {
   getBacklogTag,
   getBacklogContext,
@@ -206,9 +205,9 @@ export const getUserStoryTable = async (
   const userStories = await getUserStories(firestore, projectId);
   const userStoryCols: UserStoryCol[] = await Promise.all(
     userStories.map(async (userStory): Promise<UserStoryCol> => {
-      const priority: Tag = userStory.priorityId
+      const priority: Tag | undefined = userStory.priorityId
         ? await getPriority(firestore, projectId, userStory.priorityId)
-        : noTag;
+        : undefined;
 
       const epicScrumId: number | undefined = userStory.epicId
         ? (await getEpic(firestore, projectId, userStory.epicId)).scrumId

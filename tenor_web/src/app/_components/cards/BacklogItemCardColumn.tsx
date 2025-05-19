@@ -17,7 +17,6 @@ interface Props {
   selection: Set<string>;
   setSelection: (newSelection: Set<string>) => void;
   setDetailId: (detailId: string) => void;
-  setShowDetail: (showDetail: boolean) => void;
   isLoading?: boolean;
   header?: React.ReactNode;
   className?: ClassNameValue;
@@ -30,7 +29,6 @@ export default function BacklogItemCardColumn({
   selection,
   setSelection,
   setDetailId,
-  setShowDetail,
   isLoading,
   header,
   className,
@@ -58,7 +56,6 @@ export default function BacklogItemCardColumn({
       selection={selection}
       setSelection={setSelection}
       setDetailId={setDetailId}
-      setShowDetail={setShowDetail}
       isLoading={isLoading}
       header={header}
       className={className}

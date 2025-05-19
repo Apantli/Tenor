@@ -35,7 +35,7 @@ export default function PillComponent({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const noneSelectedTag = {
-    name: "",
+    name: "None",
     color: "#333333",
     deleted: false,
   };
@@ -122,7 +122,9 @@ export default function PillComponent({
             ref={inputRef}
             type="text"
             className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
-            placeholder={addTag === null ? "Search..." : "Search or create..."}
+            placeholder={
+              addTag === undefined ? "Search..." : "Search or create..."
+            }
             value={searchValue}
             onChange={handleUpdateSearch}
           />
@@ -131,7 +133,7 @@ export default function PillComponent({
       <div className="w-52 whitespace-nowrap text-left">
         <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg">
           {filteredTags.map((tag) => createOptionPill(tag))}
-          {addTag === null && filteredTags.length == 0 && (
+          {addTag === undefined && filteredTags.length == 0 && (
             <span className="w-full px-2 py-1 text-sm text-gray-500">
               No items found
             </span>

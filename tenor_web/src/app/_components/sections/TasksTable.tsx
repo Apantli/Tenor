@@ -149,9 +149,13 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     })
     .sort((a, b) => {
       // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
-      if (a.scrumId === undefined && b.scrumId === undefined) return 0;
-      if (a.scrumId === undefined) return -1;
-      if (b.scrumId === undefined) return 1;
+      if (
+        (a.scrumId === undefined || a.scrumId === -1) &&
+        (b.scrumId === undefined || b.scrumId === -1)
+      )
+        return 0;
+      if (a.scrumId === undefined || a.scrumId === -1) return -1;
+      if (b.scrumId === undefined || b.scrumId === -1) return 1;
 
       return a.scrumId < b.scrumId ? 1 : -1;
     });
@@ -218,7 +222,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       render(row, _, isGhost) {
         return (
           <>
-            {tasksData !== undefined && !row.scrumId ? (
+            {tasksData !== undefined && row.scrumId === -1 ? (
               <TagIcon
                 className="text-app-text"
                 data-tooltip-id="tooltip"
@@ -631,6 +635,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             showDetail={showTaskDetail}
             setShowDetail={setShowTaskDetail}
             isGhost={selectedGhostTaskId !== ""}
+            closeAllPopupsOnDismiss={taskIdToOpenImmediately !== undefined}
             taskData={
               selectedGhostTask ??
               itemData?.tasks.find((task) => task.id === selectedTaskId)
@@ -677,9 +682,11 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             }}
             onReject={() => {
               if (selectedGhostTaskId && selectedGhostTaskId !== "") {
-                onReject([selectedGhostTaskId]);
                 setShowTaskDetail(false);
-                setTimeout(() => setSelectedGhostTask(""), 300);
+                setTimeout(() => {
+                  onReject([selectedGhostTaskId]);
+                  setSelectedGhostTask("");
+                }, 300);
               }
             }}
           />
