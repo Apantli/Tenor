@@ -100,7 +100,7 @@ export const ProjectEpics = () => {
 
   const handleCreateEpic = async () => {
     if (newEpicName === "") {
-      alert("Oops", "Please enter a name for the epic.", {
+      alert("Oops...", "Please enter a name for the epic.", {
         type: "error",
         duration: 5000,
       });
@@ -236,7 +236,7 @@ export const ProjectEpics = () => {
           if (epic?.scrumId) {
             if (!creatingEpic) {
               if (editEpicName === "") {
-                alert("Oops", "Please enter a name for the epic.", {
+                alert("Oops...", "Please enter a name for the epic.", {
                   type: "error",
                   duration: 5000,
                 });

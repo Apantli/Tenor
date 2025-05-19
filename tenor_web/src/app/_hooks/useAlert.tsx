@@ -138,8 +138,8 @@ export const useAlert = () => {
       ),
     cyclicDependency: () =>
       context.alert(
-        "Oops, circular dependency detected",
-        "Please modify the dependencies to avoid a circular dependency",
+        "Oops...",
+        "You created dependency cycle. Change reverted.",
         {
           type: "error",
           duration: 10000,

@@ -75,7 +75,7 @@ export default function CreateUserStoryPopup({
 
   const handleCreateUserStory = async () => {
     if (createForm.name === "") {
-      alert("Oops", "Please enter a name for the user story.", {
+      alert("Oops...", "Please enter a name for the user story.", {
         type: "error",
         duration: 5000,
       });

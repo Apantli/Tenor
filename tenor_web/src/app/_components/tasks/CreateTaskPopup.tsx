@@ -87,7 +87,7 @@ export function CreateTaskForm({
 
   const handleCreateTask = async () => {
     if (createForm.name.trim() === "") {
-      alert("Oops", "Please enter a name for the task.", {
+      alert("Oops...", "Please enter a name for the task.", {
         type: "error",
         duration: 5000,
       });

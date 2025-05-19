@@ -59,7 +59,7 @@ export default function CreateKanbanListPopup({
 
   const handleCreateList = async () => {
     if (form.name === "") {
-      alert("Oops", "Please enter a name for the list.", {
+      alert("Oops...", "Please enter a name for the list.", {
         type: "error",
         duration: 5000,
       });
