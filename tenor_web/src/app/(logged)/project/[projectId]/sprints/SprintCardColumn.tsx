@@ -19,6 +19,7 @@ interface Props {
   setShowDetail: (showDetail: boolean) => void;
   assignSelectionToSprint: (sprintId: string) => Promise<void>;
   lastDraggedBacklogItemId: string | null;
+  disabled?: boolean;
 }
 
 export default function SprintCardColumn({
@@ -30,6 +31,7 @@ export default function SprintCardColumn({
   setShowDetail,
   assignSelectionToSprint,
   lastDraggedBacklogItemId,
+  disabled = false,
 }: Props) {
   const allSelected =
     column.backlogItemIds.length > 0 &&
@@ -68,6 +70,7 @@ export default function SprintCardColumn({
       key={column.sprint.id}
     >
       <BacklogItemCardColumn
+        disabled={disabled}
         lastDraggedBacklogItemId={lastDraggedBacklogItemId}
         dndId={column.sprint.id}
         backlogItems={
@@ -86,23 +89,25 @@ export default function SprintCardColumn({
               <h1 className="text-2xl font-medium">
                 Sprint {column.sprint.number}
               </h1>
-              <div className="flex gap-2">
-                <button
-                  className={cn("rounded-lg px-1 text-app-text transition", {
-                    "text-app-secondary": allSelected,
-                  })}
-                  onClick={toggleSelectAll}
-                >
-                  {allSelected ? (
-                    <CheckNone fontSize="small" />
-                  ) : (
-                    <CheckAll fontSize="small" />
-                  )}
-                </button>
-                <Dropdown label={"• • •"}>
-                  <DropdownButton>Edit sprint</DropdownButton>
-                </Dropdown>
-              </div>
+              {!disabled && (
+                <div className="flex gap-2">
+                  <button
+                    className={cn("rounded-lg px-1 text-app-text transition", {
+                      "text-app-secondary": allSelected,
+                    })}
+                    onClick={toggleSelectAll}
+                  >
+                    {allSelected ? (
+                      <CheckNone fontSize="small" />
+                    ) : (
+                      <CheckAll fontSize="small" />
+                    )}
+                  </button>
+                  <Dropdown label={"• • •"}>
+                    <DropdownButton>Edit sprint</DropdownButton>
+                  </Dropdown>
+                </div>
+              )}
             </div>
             <span className="mb-4 text-lg text-gray-600">
               {dateFormatter.format(column.sprint.startDate)} -{" "}

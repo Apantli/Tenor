@@ -400,7 +400,7 @@ export default function IssuesTable() {
         columns={tableColumns}
         onDelete={handleDelete}
         emptyMessage="No issues found"
-        multiselect
+        multiselect={permission >= permissionNumbers.write}
         deletable={permission >= permissionNumbers.write}
         tableKey="issues-table"
         data-cy="issues-table"

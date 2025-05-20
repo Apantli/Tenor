@@ -57,6 +57,7 @@ export default function TimeMultiselect({
       )}
       <div id={id} className={cn("flex w-full gap-3", containerClassName)}>
         <InputTextField
+          disabled={disabled}
           value={timeNumber}
           onChange={(e) => handleTimeNumberChange(e.target.value)}
           containerClassName="w-3/4"

@@ -559,6 +559,7 @@ export default function ProjectSprints() {
     <>
       <DragDropProvider
         onDragEnd={async (event) => {
+          if (permission < permissionNumbers.write) return;
           const { operation, canceled } = event;
           const { source, target } = operation;
 
@@ -587,6 +588,7 @@ export default function ProjectSprints() {
             </div>
 
             <BacklogItemCardColumn
+              disabled={permission < permissionNumbers.write}
               lastDraggedBacklogItemId={lastDraggedBacklogItemId}
               dndId={noSprintId}
               backlogItems={
@@ -602,20 +604,25 @@ export default function ProjectSprints() {
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
                   <span className="text-xl font-medium">Unassigned items</span>
-                  <button
-                    className={cn("rounded-lg px-1 text-app-text transition", {
-                      "text-app-secondary":
-                        filteredUnassignedItems.length > 0 &&
-                        allUnassignedSelected,
-                    })}
-                    onClick={toggleSelectAllUnassigned}
-                  >
-                    {allUnassignedSelected ? (
-                      <CheckNone fontSize="small" />
-                    ) : (
-                      <CheckAll fontSize="small" />
-                    )}
-                  </button>
+                  {permission >= permissionNumbers.write && (
+                    <button
+                      className={cn(
+                        "rounded-lg px-1 text-app-text transition",
+                        {
+                          "text-app-secondary":
+                            filteredUnassignedItems.length > 0 &&
+                            allUnassignedSelected,
+                        },
+                      )}
+                      onClick={toggleSelectAllUnassigned}
+                    >
+                      {allUnassignedSelected ? (
+                        <CheckNone fontSize="small" />
+                      ) : (
+                        <CheckAll fontSize="small" />
+                      )}
+                    </button>
+                  )}
                 </div>
               }
             />
@@ -688,6 +695,7 @@ export default function ProjectSprints() {
               )}
               {filteredSprints.map((column) => (
                 <SprintCardColumn
+                  disabled={permission < permissionNumbers.write}
                   lastDraggedBacklogItemId={lastDraggedBacklogItemId}
                   assignSelectionToSprint={assignSelectionToSprint}
                   column={column}
