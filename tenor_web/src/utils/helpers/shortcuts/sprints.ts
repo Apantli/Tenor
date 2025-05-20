@@ -79,6 +79,20 @@ export const getSprints = async (firestore: Firestore, projectId: string) => {
   return sprints;
 };
 
+export const getCurrentSprint = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const sprints = await getSprints(firestore, projectId);
+  const now = new Date();
+  return sprints.find((sprint) => {
+    return (
+      sprint.startDate.getTime() <= now.getTime() &&
+      sprint.endDate.getTime() >= now.getTime()
+    );
+  });
+};
+
 /**
  * @function getSprint
  * @description Retrieves a sprint from the Firestore database

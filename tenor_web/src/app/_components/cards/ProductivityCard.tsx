@@ -19,11 +19,14 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
   const {
     data: stats,
     isLoading,
-    // error,
-  } = api.performance.getProductivity.useQuery({
-    projectId: projectId,
-    time: time,
-  });
+    error,
+  } = api.performance.getProductivity.useQuery(
+    {
+      projectId: projectId,
+      time: time,
+    },
+    { retry: 0 },
+  );
   const {
     mutateAsync: recomputeProductivity,
     isPending,
@@ -33,6 +36,17 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
       // Handle success, e.g., show a toast notification
       alert("Success", "Productivity has been refetched.", {
         type: "success",
+        duration: 5000,
+      });
+      await utils.performance.getProductivity.invalidate({
+        projectId: projectId,
+        time: time,
+      });
+    },
+    onError: async (error) => {
+      // Handle success, e.g., show a toast notification
+      alert("Alert", error.message, {
+        type: "warning",
         duration: 5000,
       });
       await utils.performance.getProductivity.invalidate({
@@ -76,61 +90,65 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-8 rounded-lg bg-white p-4 md:flex-row">
-          <div className="relative h-64 w-64">
-            {/* Background circles */}
-            <svg
-              className="absolute left-0 top-0 h-full w-full"
-              viewBox="0 0 200 200"
-            >
-              {/* User Stories background */}
-              <circle
-                cx="100"
-                cy="100"
-                r={radius + 10}
-                fill="none"
-                stroke="#f0f0f4"
-                strokeWidth="10"
-              />
+          {error?.message ? (
+            <p>{error.message}</p>
+          ) : (
+            <div className="relative h-64 w-64">
+              {/* Background circles */}
+              <svg
+                className="absolute left-0 top-0 h-full w-full"
+                viewBox="0 0 200 200"
+              >
+                {/* User Stories background */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r={radius + 10}
+                  fill="none"
+                  stroke="#f0f0f4"
+                  strokeWidth="10"
+                />
 
-              {/* Issues background */}
-              <circle
-                cx="100"
-                cy="100"
-                r={radius - 10}
-                fill="none"
-                stroke="#f0f0f4"
-                strokeWidth="10"
-              />
+                {/* Issues background */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r={radius - 10}
+                  fill="none"
+                  stroke="#f0f0f4"
+                  strokeWidth="10"
+                />
 
-              {/* User Stories */}
-              <circle
-                cx="100"
-                cy="100"
-                r={radius + 10}
-                fill="none"
-                stroke="#88BB87"
-                strokeWidth="10"
-                strokeDasharray={userStoriesStrokeDasharray}
-                strokeDashoffset={0}
-                strokeLinecap="round"
-                transform="rotate(-90 100 100)"
-              />
+                {/* User Stories */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r={radius + 10}
+                  fill="none"
+                  stroke="#88BB87"
+                  strokeWidth="10"
+                  strokeDasharray={userStoriesStrokeDasharray}
+                  strokeDashoffset={0}
+                  strokeLinecap="round"
+                  transform="rotate(-90 100 100)"
+                />
 
-              {/* Issues */}
-              <circle
-                cx="100"
-                cy="100"
-                r={radius - 10}
-                fill="none"
-                stroke="#184723"
-                strokeWidth="10"
-                strokeDasharray={issuesStrokeDasharray}
-                strokeDashoffset={0}
-                strokeLinecap="round"
-                transform="rotate(-90 100 100)"
-              />
-            </svg>
-          </div>
+                {/* Issues */}
+                <circle
+                  cx="100"
+                  cy="100"
+                  r={radius - 10}
+                  fill="none"
+                  stroke="#184723"
+                  strokeWidth="10"
+                  strokeDasharray={issuesStrokeDasharray}
+                  strokeDashoffset={0}
+                  strokeLinecap="round"
+                  transform="rotate(-90 100 100)"
+                />
+              </svg>
+            </div>
+          )}
 
           <div className="flex flex-col">
             <h2 className="mb-6 text-xl font-semibold">Completed</h2>

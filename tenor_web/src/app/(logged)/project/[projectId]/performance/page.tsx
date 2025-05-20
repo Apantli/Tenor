@@ -82,11 +82,7 @@ const MemberList = ({
   setSelectedMember: (member: UserCol | null) => void;
   selectedMember: UserCol | null;
 }) => {
-  const {
-    data: members,
-    isLoading,
-    error,
-  } = api.users.getUserTable.useQuery({
+  const { data: members, isLoading } = api.users.getUserTable.useQuery({
     projectId: projectId,
   });
 
@@ -97,10 +93,6 @@ const MemberList = ({
         <p className="text-lg font-semibold">Loading team members...</p>
       </div>
     );
-  }
-
-  if (error?.data?.code == "UNAUTHORIZED") {
-    return <p>Log in to view this information</p>;
   }
 
   const filteredMembers = members?.filter((member) => {

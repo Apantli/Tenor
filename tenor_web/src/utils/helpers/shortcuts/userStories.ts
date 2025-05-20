@@ -519,3 +519,32 @@ export const hasDependencyCycle = async (
 
   return false; // No cycle detected
 };
+
+/**
+ * @function getSprintUserStories
+ * @description Retrieves all non-deleted user stories associated with a specific project and sprint
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve user stories from
+ * @param {string} sprintId - The ID of the sprint to retrieve user stories from
+ * @returns {Promise<WithId<UserStory>[]>} An array of user story objects with their IDs
+ */
+export const getSprintUserStories = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  const userStoriesRef = getUserStoriesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("sprintId", "==", sprintId);
+
+  const userStoriesSnapshot = await userStoriesRef.get();
+  const userStories: WithId<UserStory>[] = userStoriesSnapshot.docs.map(
+    (doc) => {
+      return {
+        id: doc.id,
+        ...UserStorySchema.parse(doc.data()),
+      } as WithId<UserStory>;
+    },
+  );
+  return userStories;
+};

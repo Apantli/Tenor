@@ -13,12 +13,25 @@ import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { performancePermissions } from "~/lib/permission";
 import { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import { getProductivityRef } from "~/utils/helpers/shortcuts/general";
-import type { Productivity } from "~/lib/types/firebaseSchemas";
-import { getUserStoriesAfter } from "~/utils/helpers/shortcuts/userStories";
-import { getIssuesAfter } from "~/utils/helpers/shortcuts/issues";
+import type {
+  Issue,
+  Productivity,
+  UserStory,
+  WithId,
+} from "~/lib/types/firebaseSchemas";
+import {
+  getSprintUserStories,
+  getUserStoriesAfter,
+} from "~/utils/helpers/shortcuts/userStories";
+import {
+  getIssuesAfter,
+  getSprintIssues,
+} from "~/utils/helpers/shortcuts/issues";
 import { Timestamp } from "firebase-admin/firestore";
 
 import { getStatusTypes } from "~/utils/helpers/shortcuts/tags";
+import { getCurrentSprint } from "~/utils/helpers/shortcuts/sprints";
+import { TRPCError } from "@trpc/server";
 
 const shouldRecompute = ({
   data,
@@ -132,26 +145,44 @@ const computePerformanceTime = async (
     .filter((statusType) => statusType.marksTaskAsDone == true)
     .map((statusType) => statusType.id);
 
-  const afterDate = new Date();
+  // Compute the time if needed
+  let afterDate = null;
+  let userStories: WithId<UserStory>[] = [];
+  let issues: WithId<Issue>[] = [];
+
   if (time === "Week") {
+    afterDate = new Date();
     afterDate.setDate(afterDate.getDate() - 7);
   } else if (time === "Month") {
+    afterDate = new Date();
     afterDate.setMonth(afterDate.getMonth() - 1);
-  } else {
-    afterDate.setDate(afterDate.getDate() - 7);
   }
 
-  // Recompute productivity data
-  const userStories = await getUserStoriesAfter(
-    ctx.firestore,
-    projectId,
-    afterDate,
-  );
+  if (afterDate) {
+    userStories = await getUserStoriesAfter(
+      ctx.firestore,
+      projectId,
+      afterDate,
+    );
+    issues = await getIssuesAfter(ctx.firestore, projectId, afterDate);
+  } else {
+    const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
+    if (!currentSprint) {
+      throw new TRPCError({ code: "NOT_FOUND", message: "No active sprint" });
+    }
+    userStories = await getSprintUserStories(
+      ctx.firestore,
+      projectId,
+      currentSprint.id,
+    );
+    issues = await getSprintIssues(ctx.firestore, projectId, currentSprint.id);
+  }
 
+  // Fetch completed items
   const completedUserStories = userStories.filter((userStory) =>
     completedStatusTypes.includes(userStory.statusId),
   );
-  const issues = await getIssuesAfter(ctx.firestore, projectId, afterDate);
+
   const completedIssues = issues.filter((issue) =>
     completedStatusTypes.includes(issue.statusId),
   );

@@ -41,11 +41,7 @@ const CreateNewProject = () => {
 };
 
 function ProjectList() {
-  const {
-    data: projects,
-    isLoading,
-    error,
-  } = api.projects.listProjects.useQuery();
+  const { data: projects, isLoading } = api.projects.listProjects.useQuery();
   const [searchValue, setSearchValue] = useState("");
 
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -69,10 +65,6 @@ function ProjectList() {
         <p className="text-lg font-semibold">Loading your projects...</p>
       </div>
     );
-  }
-
-  if (error?.data?.code == "UNAUTHORIZED") {
-    return <p>Log in to view this information</p>;
   }
 
   const filteredProjects = projects?.filter((project) => {

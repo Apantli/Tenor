@@ -105,6 +105,24 @@ export const getIssuesAfter = async (
   });
   return issues;
 };
+export const getSprintIssues = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  const issuesRef = getIssuesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("sprintId", "==", sprintId);
+
+  const issuesSnapshot = await issuesRef.get();
+  const issues: WithId<Issue>[] = issuesSnapshot.docs.map((doc) => {
+    return {
+      id: doc.id,
+      ...IssueSchema.parse(doc.data()),
+    } as WithId<Issue>;
+  });
+  return issues;
+};
 
 /**
  * @function getIssue
