@@ -42,7 +42,7 @@ export default function useGhostTableStateManager<
     }
   };
 
-  const onRejectAll = () => {
+  const onRejectAll = async () => {
     if (!ghostData) return;
     const ids = ghostData.map((ghost) => ghost.id);
     onReject(ids);

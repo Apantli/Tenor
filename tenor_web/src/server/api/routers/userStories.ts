@@ -8,7 +8,11 @@
  * @category API
  */
 import { z } from "zod";
-import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  roleRequiredProcedure,
+  protectedProcedure,
+} from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import type {
@@ -28,10 +32,16 @@ import {
   getUserStoryNewId,
   getUserStoryRef,
   getUserStoryTable,
+  hasDependencyCycle,
+  updateDependency,
 } from "~/utils/helpers/shortcuts/userStories";
 import { getEpic } from "~/utils/helpers/shortcuts/epics";
-import { getBacklogTag, getPriority } from "~/utils/helpers/shortcuts/tags";
+import {
+  getBacklogTag,
+  getPriorityByNameOrId,
+} from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
+import type { Edge, Node } from "@xyflow/react";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -70,7 +80,12 @@ export const userStoriesRouter = createTRPCRouter({
     .input(z.object({ userStoryId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { userStoryId, projectId } = input;
-      return await getUserStoryDetail(ctx.firestore, projectId, userStoryId);
+      return await getUserStoryDetail(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        projectId,
+        userStoryId,
+      );
     }),
 
   /**
@@ -89,45 +104,51 @@ export const userStoriesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      try {
-        const { projectId, userStoryData: userStoryDataRaw } = input;
-        const userStoryData = UserStorySchema.parse({
-          ...userStoryDataRaw,
-          scrumId: await getUserStoryNewId(ctx.firestore, projectId),
+      const { projectId, userStoryData: userStoryDataRaw } = input;
+      const userStoryData = UserStorySchema.parse({
+        ...userStoryDataRaw,
+        scrumId: await getUserStoryNewId(ctx.firestore, projectId),
+      });
+
+      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
+        {
+          id: "this is a new user story", // id to avoid collision
+          dependencyIds: userStoryData.dependencyIds,
+        },
+      ]);
+
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
         });
-        const userStory = await getUserStoriesRef(ctx.firestore, projectId).add(
-          userStoryData,
-        );
-
-        // Add dependency references
-        await Promise.all(
-          input.userStoryData.dependencyIds.map(async (dependencyId) => {
-            await getUserStoryRef(
-              ctx.firestore,
-              projectId,
-              dependencyId,
-            ).update({ requiredByIds: FieldValue.arrayUnion(userStory.id) });
-          }),
-        );
-        // Add requiredBy references
-        await Promise.all(
-          input.userStoryData.requiredByIds.map(async (requiredById) => {
-            await getUserStoryRef(
-              ctx.firestore,
-              projectId,
-              requiredById,
-            ).update({ dependencyIds: FieldValue.arrayUnion(userStory.id) });
-          }),
-        );
-
-        return {
-          id: userStory.id,
-          ...userStoryData,
-        } as WithId<UserStory>;
-      } catch (err) {
-        console.log("Error creating user story:", err);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
+
+      const userStory = await getUserStoriesRef(ctx.firestore, projectId).add(
+        userStoryData,
+      );
+
+      // Add dependency references
+      await Promise.all(
+        input.userStoryData.dependencyIds.map(async (dependencyId) => {
+          await getUserStoryRef(ctx.firestore, projectId, dependencyId).update({
+            requiredByIds: FieldValue.arrayUnion(userStory.id),
+          });
+        }),
+      );
+      // Add requiredBy references
+      await Promise.all(
+        input.userStoryData.requiredByIds.map(async (requiredById) => {
+          await getUserStoryRef(ctx.firestore, projectId, requiredById).update({
+            dependencyIds: FieldValue.arrayUnion(userStory.id),
+          });
+        }),
+      );
+
+      return {
+        id: userStory.id,
+        ...userStoryData,
+      } as WithId<UserStory>;
     }),
   /**
    * @function modifyUserStory
@@ -167,32 +188,38 @@ export const userStoriesRouter = createTRPCRouter({
         (req) => !userStoryData.requiredByIds.includes(req),
       );
 
-      const updateDependency = (
-        userStoryId: string,
-        otherUserStoryId: string,
-        operation: "add" | "remove",
-        field: "requiredByIds" | "dependencyIds",
-      ) => {
-        const updateRef = getUserStoryRef(
+      // Since one change is made at a time one these (thanks for that UI),
+      // we only check if there's a cycle by adding the new dependencies (which are also the same as inverted requiredBy)
+      const newDependencies = [
+        ...addedDependencies.flatMap((dep) => [
+          { sourceId: userStoryId, targetId: dep },
+        ]),
+        ...addedRequiredBy.flatMap((req) => [
+          { sourceId: req, targetId: userStoryId },
+        ]),
+      ];
+      let hasCycle = false;
+      if (newDependencies.length > 0) {
+        hasCycle = await hasDependencyCycle(
           ctx.firestore,
           projectId,
-          userStoryId,
+          undefined,
+          newDependencies,
         );
-        if (operation === "add") {
-          return updateRef.update({
-            [field]: FieldValue.arrayUnion(otherUserStoryId),
-          });
-        } else {
-          return updateRef.update({
-            [field]: FieldValue.arrayRemove(otherUserStoryId),
-          });
-        }
-      };
+      }
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
+        });
+      }
 
       // Update the related user stories
       await Promise.all(
         addedDependencies.map(async (dependencyId) => {
           await updateDependency(
+            ctx.firestore,
+            projectId,
             dependencyId,
             userStoryId,
             "add",
@@ -203,6 +230,8 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         removedDependencies.map(async (dependencyId) => {
           await updateDependency(
+            ctx.firestore,
+            projectId,
             dependencyId,
             userStoryId,
             "remove",
@@ -213,6 +242,8 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         addedRequiredBy.map(async (requiredById) => {
           await updateDependency(
+            ctx.firestore,
+            projectId,
             requiredById,
             userStoryId,
             "add",
@@ -223,6 +254,8 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         removedRequiredBy.map(async (requiredById) => {
           await updateDependency(
+            ctx.firestore,
+            projectId,
             requiredById,
             userStoryId,
             "remove",
@@ -263,8 +296,51 @@ export const userStoriesRouter = createTRPCRouter({
         projectId,
         userStoryId,
       );
+
+      // Get the user story to get its dependencies and required by relationships
+      const userStory = await getUserStory(
+        ctx.firestore,
+        projectId,
+        userStoryId,
+      );
+
+      const modifiedUserStories = userStory.dependencyIds.concat(
+        userStory.requiredByIds,
+        userStoryId,
+      );
+
+      // Remove this user story from all dependencies' requiredBy arrays
+      await Promise.all(
+        userStory.dependencyIds.map(async (dependencyId) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            dependencyId,
+            userStoryId,
+            "remove",
+            "requiredByIds",
+          );
+        }),
+      );
+
+      // Remove this user story from all requiredBy's dependency arrays
+      await Promise.all(
+        userStory.requiredByIds.map(async (requiredById) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            requiredById,
+            userStoryId,
+            "remove",
+            "dependencyIds",
+          );
+        }),
+      );
+
+      // Mark the user story as deleted
       await userStoryRef.update({ deleted: true });
 
+      // Delete associated tasks
       const tasksSnapshot = await getTasksRef(ctx.firestore, projectId)
         .where("deleted", "==", false)
         .where("itemType", "==", "US")
@@ -277,6 +353,11 @@ export const userStoriesRouter = createTRPCRouter({
         batch.update(task.ref, { deleted: true });
       });
       await batch.commit();
+
+      return {
+        success: true,
+        updatedUserStoryIds: modifiedUserStories,
+      };
     }),
   /**
    * @function modifyUserStoryTags
@@ -357,7 +438,11 @@ export const userStoriesRouter = createTRPCRouter({
       const parsedData: UserStoryDetail[] = await Promise.all(
         data.map(async (userStory) => {
           const priority = userStory.priorityId
-            ? await getPriority(ctx.firestore, projectId, userStory.priorityId)
+            ? await getPriorityByNameOrId(
+                ctx.firestore,
+                projectId,
+                userStory.priorityId, // Assuming priorityId is either a name or an ID
+              )
             : undefined;
 
           const epic = userStory.epicId
@@ -422,7 +507,7 @@ export const userStoriesRouter = createTRPCRouter({
             dependencies,
             epic,
             priority,
-            scrumId: 0,
+            scrumId: -1,
             tags,
           };
 
@@ -430,6 +515,177 @@ export const userStoriesRouter = createTRPCRouter({
         }),
       );
 
+      // Check if there is a cycle with the generated user stories
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        parsedData.map((userStory) => ({
+          id: "temp" + userStory.id, // add temp to avoid collision, just in case
+          dependencyIds: userStory.dependencies.map((dep) => dep.id),
+          requiredByIds: userStory.requiredBy.map((req) => req.id),
+        })),
+      );
+
+      if (hasCycle) {
+        const parsedDataWithoutDependencies = parsedData.map((userStory) => ({
+          ...userStory,
+          dependencies: [],
+          requiredBy: [],
+        }));
+        return parsedDataWithoutDependencies;
+      }
+
       return parsedData;
+    }),
+
+  /**
+   * @function getUserStoryCount
+   * @description Retrieves the number of user stories inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of user stories in the project.
+   */
+  getUserStoryCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const userStoriesRef = getUserStoriesRef(ctx.firestore, projectId);
+      const countSnapshot = await userStoriesRef.count().get();
+      return countSnapshot.data().count;
+    }),
+
+  /**
+   * @function updateUserStoryDependencies
+   * @description Updates the dependency relationship between two user stories.
+   * @param {string} projectId - The ID of the project to which the user stories belong.
+   * @param {string} sourceId - The ID of the user story that will depend on the target.
+   * @param {string} targetId - The ID of the user story that will be a dependency.
+   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
+   */
+  addUserStoryDependencies: roleRequiredProcedure(backlogPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        sourceId: z.string(),
+        targetId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, sourceId, targetId } = input;
+
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        undefined,
+        [{ sourceId, targetId }],
+      );
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
+        });
+      }
+
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        sourceId,
+        targetId,
+        "add",
+        "dependencyIds",
+      );
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        targetId,
+        sourceId,
+        "add",
+        "requiredByIds",
+      );
+      return { success: true };
+    }),
+
+  /**
+   * @function deleteUserStoryDependencies
+   * @description Updates the dependency relationship by removing a dependency between two user stories.
+   * @param {string} projectId - The ID of the project to which the user stories belong.
+   * @param {string} sourceId - The ID of the user story that will no longer depend on the target.
+   * @param {string} targetId - The ID of the user story that will no longer be a dependency.
+   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
+   */
+  deleteUserStoryDependencies: roleRequiredProcedure(
+    backlogPermissions,
+    "write",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        sourceId: z.string(),
+        targetId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, sourceId, targetId } = input;
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        sourceId,
+        targetId,
+        "remove",
+        "dependencyIds",
+      );
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        targetId,
+        sourceId,
+        "remove",
+        "requiredByIds",
+      );
+      return { success: true };
+    }),
+
+  getUserStoryDependencies: roleRequiredProcedure(backlogPermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const userStories = await getUserStories(ctx.firestore, projectId);
+
+      // Create nodes for each user story with a grid layout
+      const nodes: Node[] = userStories.map((userStory) => {
+        return {
+          id: userStory.id,
+          position: {
+            x: 0,
+            y: -100,
+          }, // Position is updated in the frontend because it needs nodes' real size
+          data: {
+            id: userStory.id,
+            title: userStory.name,
+            scrumId: userStory.scrumId,
+            itemType: "US",
+            showDeleteButton: true,
+            showEditButton: true,
+            collapsible: false,
+          }, // See BasicNodeData for properties
+          type: "basic", // see nodeTypes
+          deletable: false,
+        };
+      });
+
+      // Create edges for dependencies
+      const edges: Edge[] = userStories.flatMap((userStory) =>
+        userStory.dependencyIds.map((dependencyId) => ({
+          id: `${userStory.id}-${dependencyId}`,
+          source: userStory.id,
+          target: dependencyId,
+          type: "dependency", // see edgeTypes
+        })),
+      );
+
+      return { nodes, edges };
     }),
 });

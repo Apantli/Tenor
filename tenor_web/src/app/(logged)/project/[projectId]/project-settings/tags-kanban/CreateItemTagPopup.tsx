@@ -114,7 +114,7 @@ export default function CreateItemTagPopup({
 
   const handleCreateTag = async () => {
     if (form.name === "") {
-      alert("Oops", currentConfig.errorEmptyName, {
+      alert("Oops...", currentConfig.errorEmptyName, {
         type: "error",
         duration: 5000,
       });

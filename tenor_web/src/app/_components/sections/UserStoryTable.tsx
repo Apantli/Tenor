@@ -32,6 +32,7 @@ import {
 import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
 import type { UserStoryCol } from "~/lib/types/columnTypes";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -40,11 +41,11 @@ export default function UserStoryTable() {
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
 
-  const [selectedUS, setSelectedUS] = useState<string>("");
   const [selectedGhostUS, setSelectedGhostUS] = useState("");
-  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
   const [renderNewStory, showNewStory, setShowNewStory] =
     usePopupVisibilityState();
+  const [renderDetail, showDetail, selectedUS, setUserStoryId, setShowDetail] =
+    useQueryIdForPopup("id");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatEpicScrumId = useFormatEpicScrumId();
@@ -88,9 +89,13 @@ export default function UserStoryTable() {
 
   const userStoryData = filteredData.sort((a, b) => {
     // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
-    if (a.scrumId === undefined && b.scrumId === undefined) return 0;
-    if (a.scrumId === undefined) return -1;
-    if (b.scrumId === undefined) return 1;
+    if (
+      (a.scrumId === undefined || a.scrumId === -1) &&
+      (b.scrumId === undefined || b.scrumId === -1)
+    )
+      return 0;
+    if (a.scrumId === undefined || a.scrumId === -1) return -1;
+    if (b.scrumId === undefined || b.scrumId === -1) return 1;
 
     return a.scrumId < b.scrumId ? 1 : -1;
   });
@@ -141,6 +146,7 @@ export default function UserStoryTable() {
 
       // Add the user stories to the database
       for (const userStory of accepted.reverse()) {
+        // TODO: Verify for circular dependencies in ghosts
         const { id: userStoryId } = await createUserStory({
           projectId: projectId as string,
           userStoryData: {
@@ -239,13 +245,14 @@ export default function UserStoryTable() {
               className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 setSelectedGhostUS("");
-                setSelectedUS(row.id);
-                setShowDetail(true);
+                if (row.scrumId !== -1) {
+                  setUserStoryId(row.id);
+                }
               }}
-              disabled={row.scrumId === undefined}
+              disabled={row.scrumId === -1}
             >
-              {row.scrumId ? (
-                formatUserStoryScrumId(row.scrumId)
+              {row.scrumId !== -1 ? (
+                formatUserStoryScrumId(row.scrumId ?? -1)
               ) : (
                 <div className="h-6 w-[calc(100%-40px)] animate-pulse rounded-md bg-slate-500/50"></div>
               )}
@@ -261,18 +268,17 @@ export default function UserStoryTable() {
         render(row, _, isGhost) {
           return (
             <button
-              className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
+              className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 if (isGhost) {
                   setSelectedGhostUS(row.id);
-                  setSelectedUS("");
+                  setShowDetail(true);
                 } else {
                   setSelectedGhostUS("");
-                  setSelectedUS(row.id);
+                  setUserStoryId(row.id);
                 }
-                setShowDetail(true);
               }}
-              disabled={!isGhost && row.scrumId === undefined}
+              disabled={row.scrumId === -1 && !isGhost}
             >
               {row.name}
             </button>
@@ -551,8 +557,7 @@ export default function UserStoryTable() {
     await invalidateQueriesAllUserStories(projectId as string);
     setShowNewStory(false);
     setSelectedGhostUS("");
-    setSelectedUS(userStoryId);
-    setShowDetail(true);
+    setUserStoryId(userStoryId);
   };
 
   const { mutateAsync: generateStories } =
@@ -574,7 +579,7 @@ export default function UserStoryTable() {
 
     const tableData = generatedData.map((data, i) => ({
       id: i.toString(),
-      scrumId: undefined,
+      scrumId: -1,
       name: data.name,
       epicScrumId: data.epic?.scrumId,
       priority: data.priority,
@@ -583,6 +588,7 @@ export default function UserStoryTable() {
       taskProgress: [0, 0] as [number, number],
     }));
 
+    // TODO: Re-add this
     finishLoading(tableData);
   };
 
@@ -616,15 +622,21 @@ export default function UserStoryTable() {
         {renderDetail && (
           <UserStoryDetailPopup
             showDetail={showDetail}
-            setShowDetail={setShowDetail}
             userStoryId={selectedUS}
             userStoryData={
-              selectedGhostUS !== undefined
+              selectedGhostUS !== ""
                 ? generatedUserStories.current?.find(
                     (it) => it.id === selectedGhostUS,
                   )
                 : undefined
             }
+            setUserStoryId={(newId) => {
+              setUserStoryId(newId);
+              if (newId === "" && selectedGhostUS !== "") {
+                setShowDetail(false);
+                setTimeout(() => setSelectedGhostUS(""), 300);
+              }
+            }}
             setUserStoryData={(updatedDetail) => {
               if (!selectedGhostUS || !updatedDetail) return;
               updateGhostRow(selectedGhostUS, (oldData) => ({
@@ -651,9 +663,11 @@ export default function UserStoryTable() {
               await onAccept([selectedGhostUS]);
             }}
             onReject={() => {
-              onReject([selectedGhostUS]);
-              setSelectedGhostUS("");
-              setTimeout(() => setSelectedGhostUS(""), 300);
+              setShowDetail(false);
+              setTimeout(() => {
+                onReject([selectedGhostUS]);
+                setSelectedGhostUS("");
+              }, 300);
             }}
           />
         )}

@@ -7,9 +7,15 @@ interface Props {
   className?: ClassNameValue;
   checked: boolean;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
 }
 
-export default function InputCheckbox({ className, checked, onChange }: Props) {
+export default function InputCheckbox({
+  className,
+  checked,
+  onChange,
+  disabled,
+}: Props) {
   return (
     <div
       className={cn(
@@ -17,10 +23,12 @@ export default function InputCheckbox({ className, checked, onChange }: Props) {
         {
           "border-app-hover-primary bg-app-primary hover:bg-app-hover-primary":
             checked,
+          "cursor-not-allowed bg-white opacity-50 hover:bg-white": disabled,
         },
         className,
       )}
       onClick={(e) => {
+        if (!!disabled) return;
         e.stopPropagation();
         onChange(!checked);
       }}

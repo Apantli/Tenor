@@ -1,18 +1,17 @@
-import type { TestProjectInfo } from "cypress/fixtures/types";
+let projectPath = "";
 
 describe("Test Scrum preferences", () => {
   before(() => {
-    cy.signIn("/");
-    cy.createEmptyProject();
-  });
-
-  beforeEach(() => {
-    cy.signIn("/");
-    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
-      cy.contains(data.name).click();
-      cy.contains("Project Settings").click();
-      cy.contains("Scrum Preferences").click();
+    cy.ensureSharedProjectExists().then((url) => {
+      projectPath = url;
     });
+  });
+  
+  beforeEach(() => {
+    cy.visit(projectPath);
+    cy.get('[data-cy="settings"]').click();
+    cy.contains("Scrum Preferences").click();
+    ;
   });
 
   it("TC067: Modify sprint duration", () => {

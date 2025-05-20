@@ -36,7 +36,11 @@ export const issuesRouter = createTRPCRouter({
   getIssueTable: roleRequiredProcedure(issuePermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      return await getIssueTable(ctx.firestore, input.projectId);
+      return await getIssueTable(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        input.projectId,
+      );
     }),
   /**
    * @function getIssue
@@ -92,7 +96,12 @@ export const issuesRouter = createTRPCRouter({
     .input(z.object({ issueId: z.string(), projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId, issueId } = input;
-      return await getIssueDetail(ctx.firestore, projectId, issueId);
+      return await getIssueDetail(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        projectId,
+        issueId,
+      );
     }),
 
   /**
@@ -214,5 +223,20 @@ export const issuesRouter = createTRPCRouter({
         relatedUserStoryId: relatedUserStoryId,
       };
       await issueRef.update(updatedIssueData);
+    }),
+
+  /**
+   * @function getIssueCount
+   * @description Retrieves the number of issues inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of issues in the project.
+   */
+  getIssueCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const issuesRef = getIssuesRef(ctx.firestore, projectId);
+      const countSnapshot = await issuesRef.count().get();
+      return countSnapshot.data().count;
     }),
 });

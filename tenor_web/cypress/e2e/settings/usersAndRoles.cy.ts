@@ -1,17 +1,15 @@
-import type { TestProjectInfo } from "cypress/fixtures/types";
 
+let projectPath = "";
 describe("Settings: Users and roles", () => {
   before(() => {
-    cy.signIn("/");
-    cy.createEmptyProject();
+    cy.ensureSharedProjectExists().then((url) => {
+      projectPath = url;
+    });
   });
 
   // Return to dashboard and select the project
   beforeEach(() => {
-    cy.signIn("/");
-    cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
-      cy.get('[data-cy="project-list"]').find("li").contains(data.name).click();
-    });
+    cy.visit(projectPath);
     cy.get('[data-cy="settings"]').click();
     cy.contains("Users & Permissions").click();
   });
