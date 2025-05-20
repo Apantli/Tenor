@@ -12,15 +12,15 @@ export default function ProjectSprintReview() {
   const userName = user?.displayName ?? "Usuario";
 
   return (
-    <div className="flex h-full flex-col justify-start overflow-hidden">
+    <div className="flex h-full flex-col justify-start overflow-y-auto">
       <h1 className="text-3xl font-semibold">Sprint Review</h1>
       <p className="mb-5 text-gray-600">
         Congratulations on finishing another sprint! Let&apos;s take a look at
         how it went.
       </p>
 
-      <div className="flex h-[calc(100%-80px)] gap-6">
-        <div className="flex h-full w-1/2 flex-col rounded-lg border border-app-border bg-white p-6 shadow-sm">
+      <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row">
+        <div className="flex w-full flex-col rounded-lg border border-app-border bg-white p-6 shadow-sm lg:w-1/2">
           <h2 className="mb-4 text-2xl font-semibold">Team Progress</h2>
           <div className="mb-6">
             <p className="mb-2 font-medium">90% of user stories completed</p>
@@ -55,7 +55,7 @@ export default function ProjectSprintReview() {
           </div>
         </div>
 
-        <div className="h-full w-1/2">
+        <div className="h-full w-full lg:w-1/2">
           <HappinessForm />
         </div>
       </div>
