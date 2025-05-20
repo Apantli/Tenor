@@ -1,7 +1,7 @@
 "use client";
 import { createClassFromSpec, type VisualizationSpec } from "react-vega";
 import React from "react";
-import { twMerge } from "tailwind-merge";
+import { cn } from "~/lib/utils";
 
 export const SampleContributionData = [
   { category: "Tasks", value: 40 },
@@ -81,7 +81,7 @@ export const ContributionPieChart = ({
   className = "",
 }: ContributionPieChartProps) => {
   return (
-    <div className={twMerge("flex flex-col", className)}>
+    <div className={cn("flex flex-col", className)}>
       <PieChartComponent data={{ table: data }} actions={false} />
     </div>
   );

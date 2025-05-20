@@ -24,7 +24,7 @@ export const MemberDetailsCard = ({
         className="ml-auto text-gray-500"
         fontSize="large"
       />
-      <div className="mt- flex flex-row gap-3">
+      <div className="flex flex-row gap-3">
         <ProfilePicture
           user={member}
           hideTooltip

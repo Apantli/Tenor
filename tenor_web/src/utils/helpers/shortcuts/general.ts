@@ -86,6 +86,13 @@ export const getPerformanceRef = (firestore: Firestore, projectId: string) => {
   return getProjectRef(firestore, projectId).collection("performance");
 };
 
+/**
+ * @function getProductivityRef
+ * @description Gets a reference to the project's productivity doc
+ * @param {string} projectId - The ID of the project
+ * @param {Firestore} firestore - The Firestore instance
+ * @returns {FirebaseFirestore.CollectionReference} A reference to the productivity document
+ */
 export const getProductivityRef = (firestore: Firestore, projectId: string) => {
   return getPerformanceRef(firestore, projectId).doc("productivity");
 };

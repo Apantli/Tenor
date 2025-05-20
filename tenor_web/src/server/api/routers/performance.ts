@@ -90,6 +90,7 @@ export const performanceRouter = createTRPCRouter({
     .query(async ({ ctx }) => {
       const useruid = ctx.session.user.uid;
       console.log("useruid", useruid);
+      // TODO: compute and return user contributions
       return [];
       // return projects;
     }),

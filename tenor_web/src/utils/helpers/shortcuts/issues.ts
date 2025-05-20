@@ -88,6 +88,14 @@ export const getIssues = async (firestore: Firestore, projectId: string) => {
   return issues;
 };
 
+/**
+ * @function getIssuesAfter
+ * @description Retrieves all non-deleted issues associated with a specific project after a specified date
+ * @param {Firestore} firestore - The Firestore database instance
+ * @param {string} projectId - The ID of the project to retrieve issues from
+ * @param {Date} date - The date to filter issues by. Issues created after this date will be returned
+ * @returns {Promise<WithId<Issue>[]>} An array of issue objects with their IDs
+ */
 export const getIssuesAfter = async (
   firestore: Firestore,
   projectId: string,
@@ -105,6 +113,15 @@ export const getIssuesAfter = async (
   });
   return issues;
 };
+
+/**
+ * @function getSprintIssues
+ * @description Retrieves all non-deleted issues associated with a specific sprint withing a project
+ * @param {Firestore} firestore - The Firestore database instance
+ * @param {string} projectId - The ID of the project to retrieve issues from
+ * @param {string} sprintId - The ID of the sprint
+ * @returns {Promise<WithId<Issue>[]>} An array of issue objects with their IDs
+ */
 export const getSprintIssues = async (
   firestore: Firestore,
   projectId: string,
