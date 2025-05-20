@@ -10,6 +10,7 @@ interface DatePickerProps {
   selectedDate?: Date | undefined;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function DatePicker({
@@ -17,6 +18,7 @@ export function DatePicker({
   selectedDate = undefined,
   className,
   placeholder = "No date",
+  disabled = false,
 }: DatePickerProps) {
   const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -44,7 +46,7 @@ export function DatePicker({
   };
 
   const openDatePicker = () => {
-    if (dateInputRef.current) {
+    if (!disabled && dateInputRef.current) {
       dateInputRef.current.showPicker();
     }
   };
@@ -59,9 +61,14 @@ export function DatePicker({
         <CalendarMonthIcon className="mr-2 h-5 w-5 cursor-pointer text-gray-700" />
         <div className="flex flex-grow items-center">
           <div className="cursor-pointer font-medium text-gray-700">
-            {selectedDate ? formatDate(selectedDate) : placeholder}
+            {selectedDate
+              ? formatDate(selectedDate)
+              : disabled
+                ? "None"
+                : placeholder}
           </div>
           <input
+            disabled={disabled}
             ref={dateInputRef}
             type="date"
             className="absolute h-0 w-0 opacity-0"
@@ -74,7 +81,7 @@ export function DatePicker({
             onClick={handleClear}
             className="ml-2 text-gray-500 transition-colors hover:text-gray-700"
           >
-            <CloseIcon className="h-5 w-5" />
+            {!disabled && <CloseIcon className="h-5 w-5" />}
           </button>
         )}
       </div>

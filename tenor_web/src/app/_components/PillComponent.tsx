@@ -35,7 +35,7 @@ export default function PillComponent({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const noneSelectedTag = {
-    name: "",
+    name: "None",
     color: "#333333",
     deleted: false,
   };

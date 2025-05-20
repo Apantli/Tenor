@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
@@ -31,6 +31,11 @@ import {
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -42,6 +47,19 @@ const noSprintId = "noSprintId";
 
 export default function ProjectSprints() {
   const { projectId } = useParams();
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
+
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();
   const invalidateQueriesBacklogItemDetails =
@@ -555,7 +573,9 @@ export default function ProjectSprints() {
           <div className="relative flex h-full w-[407px] min-w-[407px] flex-col gap-0 overflow-hidden border-r-2 pr-5">
             <div className="flex w-full justify-between pb-2">
               <h1 className="text-3xl font-semibold">Product Backlog</h1>
-              <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
+              {permission >= permissionNumbers.write && (
+                <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
+              )}
             </div>
 
             <div className="flex w-full items-center gap-3 pb-4">
@@ -628,13 +648,15 @@ export default function ProjectSprints() {
                     placeholder="Find a sprint or item by title or id..."
                   />
                 </div>
-                <PrimaryButton
-                  onClick={() => {
-                    setShowSmallPopup(true);
-                  }}
-                >
-                  + Add Sprint
-                </PrimaryButton>
+                {permission >= permissionNumbers.write && (
+                  <PrimaryButton
+                    onClick={() => {
+                      setShowSmallPopup(true);
+                    }}
+                  >
+                    + Add Sprint
+                  </PrimaryButton>
+                )}
               </div>
             </div>
             <div className="flex w-full flex-1 gap-4 overflow-x-auto">
@@ -652,13 +674,15 @@ export default function ProjectSprints() {
                     <h1 className="mb-5 text-3xl font-semibold text-gray-500">
                       No sprints yet
                     </h1>
-                    <PrimaryButton
-                      onClick={() => {
-                        setShowSmallPopup(true);
-                      }}
-                    >
-                      Create your first sprint
-                    </PrimaryButton>
+                    {permission >= permissionNumbers.write && (
+                      <PrimaryButton
+                        onClick={() => {
+                          setShowSmallPopup(true);
+                        }}
+                      >
+                        Create your first sprint
+                      </PrimaryButton>
+                    )}
                   </div>
                 </div>
               )}

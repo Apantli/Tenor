@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { TaskDetail, TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
@@ -10,7 +10,12 @@ import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
-import type { BacklogItem, StatusTag } from "~/lib/types/firebaseSchemas";
+import {
+  permissionNumbers,
+  type BacklogItem,
+  type Permission,
+  type StatusTag,
+} from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
@@ -26,6 +31,7 @@ import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "../Popup";
 import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import type { TaskCol } from "~/lib/types/columnTypes";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];
@@ -81,6 +87,19 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
   const [selectedTaskId, setSelectedTaskId] = useState<string | undefined>(
     undefined,
   );
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    console.log("role", role);
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
@@ -298,6 +317,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         };
         return (
           <StatusPicker
+            disabled={permission < permissionNumbers.write}
             status={row.status}
             onChange={async (status) => {
               if (isGhost) {
@@ -576,20 +596,22 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
               setSearchText={setTaskSearchText}
             />
           )}
-          <div className="flex items-center gap-1">
-            <PrimaryButton onClick={() => setShowAddTaskPopup(true)}>
-              + Add task
-            </PrimaryButton>
-            <AiGeneratorDropdown
-              singularLabel="task"
-              pluralLabel="tasks"
-              disabled={generating}
-              onGenerate={handleGenerateTasks}
-              alreadyGenerated={(ghostData?.length ?? 0) > 0}
-              onAcceptAll={onAcceptAll}
-              onRejectAll={onRejectAll}
-            />
-          </div>
+          {permission >= permissionNumbers.write && (
+            <div className="flex items-center gap-1">
+              <PrimaryButton onClick={() => setShowAddTaskPopup(true)}>
+                + Add task
+              </PrimaryButton>
+              <AiGeneratorDropdown
+                singularLabel="task"
+                pluralLabel="tasks"
+                disabled={generating}
+                onGenerate={handleGenerateTasks}
+                alreadyGenerated={(ghostData?.length ?? 0) > 0}
+                onAcceptAll={onAcceptAll}
+                onRejectAll={onRejectAll}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -606,8 +628,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             columns={taskColumns}
             className="font-sm min-y-fit max-w-[min(678px,100vw-320px)]"
             scrollContainerClassName="overflow-y-hidden"
-            multiselect
-            deletable
+            multiselect={permission >= permissionNumbers.write}
+            deletable={permission >= permissionNumbers.write}
             onDelete={handleTaskDelete}
             emptyMessage={
               transformedTasks.length > 0 ? "No tasks found" : "No tasks yet"

@@ -1,9 +1,14 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { usePopupVisibilityState } from "../Popup";
-import { type ChangeEventHandler, useState } from "react";
+import { type ChangeEventHandler, useMemo, useState } from "react";
 import Table, { type TableColumns } from "../table/Table";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import {
+  permissionNumbers,
+  type Permission,
+  type Size,
+  type Tag,
+} from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
@@ -23,6 +28,7 @@ import {
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 import type { IssueCol } from "~/lib/types/columnTypes";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -30,6 +36,18 @@ export default function IssuesTable() {
   // Hooks
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["issues"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   const [selectedIS, setSelectedIS] = useState<string>("");
   const [renderNewIssue, showNewIssue, setShowNewIssue] =
@@ -189,6 +207,7 @@ export default function IssuesTable() {
 
           return (
             <PriorityPicker
+              disabled={permission < permissionNumbers.write}
               priority={row.priority}
               onChange={handlePriorityChange}
             />
@@ -245,6 +264,7 @@ export default function IssuesTable() {
           };
           return (
             <UserStoryPicker
+              disabled={permission < permissionNumbers.write}
               userStory={row.relatedUserStory}
               onChange={async (userStory) => {
                 await handleUserStoryChange(row, userStory);
@@ -309,6 +329,7 @@ export default function IssuesTable() {
 
           return (
             <SizePillComponent
+              disabled={permission < permissionNumbers.write}
               currentSize={row.size}
               callback={handleSizeChange}
             />
@@ -380,7 +401,7 @@ export default function IssuesTable() {
         onDelete={handleDelete}
         emptyMessage="No issues found"
         multiselect
-        deletable
+        deletable={permission >= permissionNumbers.write}
         tableKey="issues-table"
         data-cy="issues-table"
       />
@@ -399,9 +420,11 @@ export default function IssuesTable() {
               handleUpdateSearch={handleUpdateSearch}
             />
           </div>
-          <PrimaryButton onClick={() => setShowNewIssue(true)}>
-            + New Issue
-          </PrimaryButton>
+          {permission >= permissionNumbers.write && (
+            <PrimaryButton onClick={() => setShowNewIssue(true)}>
+              + New Issue
+            </PrimaryButton>
+          )}
         </div>
       </div>
 

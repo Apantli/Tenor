@@ -10,9 +10,14 @@ import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 interface Props {
   userStory?: UserStoryPreview;
   onChange: (userStory?: UserStoryPreview) => void;
+  disabled?: boolean;
 }
 
-export default function UserStoryPicker({ userStory, onChange }: Props) {
+export default function UserStoryPicker({
+  userStory,
+  onChange,
+  disabled,
+}: Props) {
   const { projectId } = useParams();
 
   const { data: userStories } = api.userStories.getUserStories.useQuery({
@@ -27,12 +32,13 @@ export default function UserStoryPicker({ userStory, onChange }: Props) {
 
   const userStoryToItem = (userStory?: UserStoryPreview) => ({
     id: userStory?.scrumId.toString() ?? "",
-    label: userStory?.name ?? "Choose user story",
+    label: userStory?.name ?? (disabled ? "None" : "Choose user story"),
     prefix: userStory ? getUserStoryId(userStory) : undefined,
   });
 
   return (
     <PillPickerComponent
+      disabled={disabled}
       label="Select a user story"
       emptyLabel="No user stories available"
       selectedItem={userStoryToItem(userStory)}

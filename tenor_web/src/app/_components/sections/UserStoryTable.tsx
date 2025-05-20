@@ -1,8 +1,13 @@
 "use client";
 
 import Table, { type TableColumns } from "~/app/_components/table/Table";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
-import { useRef, useState, type ChangeEventHandler } from "react";
+import {
+  type Permission,
+  permissionNumbers,
+  type Size,
+  type Tag,
+} from "~/lib/types/firebaseSchemas";
+import { useMemo, useRef, useState, type ChangeEventHandler } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -32,6 +37,7 @@ import {
 import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
 import type { UserStoryCol } from "~/lib/types/columnTypes";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -58,6 +64,17 @@ export default function UserStoryTable() {
 
   // TRPC
   const utils = api.useUtils();
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
   const {
     data: userStories,
     isLoading: isLoadingUS,
@@ -365,6 +382,7 @@ export default function UserStoryTable() {
 
           return (
             <PriorityPicker
+              disabled={permission < permissionNumbers.write}
               priority={row.priority}
               onChange={
                 isGhost ? handleGhostPriorityChange : handlePriorityChange
@@ -449,6 +467,7 @@ export default function UserStoryTable() {
 
           return (
             <SizePillComponent
+              disabled={permission < permissionNumbers.write}
               currentSize={row.size}
               callback={isGhost ? handleGhostSizeChange : handleSizeChange}
             />
@@ -533,8 +552,8 @@ export default function UserStoryTable() {
         data={userStoryData}
         columns={tableColumns}
         onDelete={handleDelete}
-        multiselect
-        deletable
+        multiselect={permission >= permissionNumbers.write}
+        deletable={permission >= permissionNumbers.write}
         tableKey="user-stories-table"
         ghostData={ghostData}
         ghostRows={ghostRows}
@@ -598,18 +617,22 @@ export default function UserStoryTable() {
             handleUpdateSearch={handleUpdateSearch}
             placeholder="Find a user story by title or Id..."
           ></SearchBar>
-          <PrimaryButton onClick={() => setShowNewStory(true)}>
-            + New Story
-          </PrimaryButton>
-          <AiGeneratorDropdown
-            singularLabel="story"
-            pluralLabel="stories"
-            onGenerate={generateUserStories}
-            disabled={generating}
-            alreadyGenerated={(ghostData?.length ?? 0) > 0}
-            onAcceptAll={onAcceptAll}
-            onRejectAll={onRejectAll}
-          />
+          {permission >= permissionNumbers.write && (
+            <div className="flex items-center gap-1">
+              <PrimaryButton onClick={() => setShowNewStory(true)}>
+                + New Story
+              </PrimaryButton>
+              <AiGeneratorDropdown
+                singularLabel="story"
+                pluralLabel="stories"
+                onGenerate={generateUserStories}
+                disabled={generating}
+                alreadyGenerated={(ghostData?.length ?? 0) > 0}
+                onAcceptAll={onAcceptAll}
+                onRejectAll={onRejectAll}
+              />
+            </div>
+          )}
         </div>
 
         {getTable()}
