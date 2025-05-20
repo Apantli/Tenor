@@ -314,16 +314,8 @@ export default function StatusDetailPopup({
               disabled={disabled}
               checked={form.marksTaskAsDone}
               onChange={(value) => setForm({ ...form, marksTaskAsDone: value })}
-              className="mb-1 mr-2 cursor-pointer"
+              className={`m-0 ${!disabled ? "cursor-pointer" : "cursor-default"}`}
             />
-            {/* <button
-              disabled={disabled}
-              onClick={() =>
-                setForm({ ...form, marksTaskAsDone: !form.marksTaskAsDone })
-              }
-            >
-              Marks tasks as resolved
-            </button> */}
             <HelpIcon
               className="ml-[3px] text-gray-500"
               data-tooltip-id="tooltip"
@@ -352,7 +344,7 @@ export default function StatusDetailPopup({
               disabled={disabled}
               checked={form.marksTaskAsDone}
               onChange={(value) => setForm({ ...form, marksTaskAsDone: value })}
-              className="mb-1 mr-2 cursor-pointer"
+              className={`mb-1 mr-2 ${!disabled ? "cursor-pointer" : "cursor-default"}`}
             />
             <button
               disabled={disabled}

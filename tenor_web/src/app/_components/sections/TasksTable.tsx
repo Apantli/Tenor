@@ -95,7 +95,6 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     projectId: projectId as string,
   });
   const permission: Permission = useMemo(() => {
-    console.log("role", role);
     return checkPermissions(
       {
         flags: ["backlog"],

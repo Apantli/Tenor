@@ -56,8 +56,18 @@ export function DatePicker({
       className={cn("relative", className)}
       onClick={openDatePicker}
     >
-      <div className="flex h-12 cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
-        <CalendarMonthIcon className="mr-2 h-5 w-5 cursor-pointer text-gray-700" />
+      <div
+        className={cn(
+          "flex h-12 items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
+          !disabled && "cursor-pointer hover:bg-gray-200",
+        )}
+      >
+        <CalendarMonthIcon
+          className={cn(
+            "mr-2 h-5 w-5 text-gray-700",
+            !disabled && "cursor-pointer",
+          )}
+        />
         <div className="flex flex-grow items-center">
           <div className="cursor-pointer font-medium text-gray-700">
             {selectedDate

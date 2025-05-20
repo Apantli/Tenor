@@ -84,7 +84,7 @@ export default function StatusTableRow({
               disabled={disabled}
               checked={item.markTaskAsDone}
               onChange={onToggleDone}
-              className="m-0 cursor-pointer"
+              className={`m-0 ${!disabled ? "cursor-pointer" : "cursor-default"}`}
             />
           </div>
         </div>

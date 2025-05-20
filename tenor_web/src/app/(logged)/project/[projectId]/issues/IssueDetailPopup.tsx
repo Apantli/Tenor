@@ -63,7 +63,6 @@ export default function IssueDetailPopup({
     projectId: projectId as string,
   });
   const permission: Permission = useMemo(() => {
-    console.log("role", role);
     return checkPermissions(
       {
         flags: ["issues"],

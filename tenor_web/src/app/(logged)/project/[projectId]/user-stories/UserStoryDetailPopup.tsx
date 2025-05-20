@@ -266,7 +266,6 @@ export default function UserStoryDetailPopup({
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         error.data?.code === "BAD_REQUEST"
       ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         predefinedAlerts.cyclicDependency();
       }
       await refetch();

@@ -45,7 +45,12 @@ export function UserPicker({
 
   const renderDropdownLabel = () => {
     return (
-      <div className="relative flex h-12 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
+      <div
+        className={cn(
+          "relative flex h-12 w-full items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
+          !disabled && "cursor-pointer hover:bg-gray-200",
+        )}
+      >
         {selectedOption ? (
           <>
             <div className="flex flex-grow items-center gap-2">

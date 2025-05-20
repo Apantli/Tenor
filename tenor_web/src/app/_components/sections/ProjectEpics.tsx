@@ -165,13 +165,15 @@ export const ProjectEpics = () => {
               <h1 className="mb-5 text-3xl font-semibold text-gray-500">
                 No epics yet
               </h1>
-              <PrimaryButton
-                onClick={() => {
-                  setShowSmallPopup(true);
-                }}
-              >
-                Create your first epic
-              </PrimaryButton>
+              {permission >= permissionNumbers.write && (
+                <PrimaryButton
+                  onClick={() => {
+                    setShowSmallPopup(true);
+                  }}
+                >
+                  Create your first epic
+                </PrimaryButton>
+              )}
             </div>
           </div>
         )}
