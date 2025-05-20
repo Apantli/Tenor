@@ -150,6 +150,7 @@ export default function DependencyList({
           )
           .map((userStory) => (
             <TagComponent
+              disabled={disabled}
               key={userStory.id}
               onDelete={() =>
                 onChange(userStories.filter((us) => !areEqual(us, userStory)))

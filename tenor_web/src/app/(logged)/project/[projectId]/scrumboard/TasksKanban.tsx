@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
@@ -20,6 +20,11 @@ import {
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export default function TasksKanban() {
   // GENERAL
@@ -35,6 +40,17 @@ export default function TasksKanban() {
     api.kanban.getTasksForKanban.useQuery({
       projectId: projectId as string,
     });
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   const { mutateAsync: changeStatus } =
     api.tasks.changeTaskStatus.useMutation();
@@ -172,6 +188,7 @@ export default function TasksKanban() {
     <>
       <DragDropProvider
         onDragEnd={async (event) => {
+          if (permission < permissionNumbers.write) return;
           const { operation, canceled } = event;
           const { source, target } = operation;
 
@@ -215,6 +232,7 @@ export default function TasksKanban() {
 
               return (
                 <AssignableCardColumn
+                  disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}
                   column={renamedColumn}
@@ -226,6 +244,7 @@ export default function TasksKanban() {
                   setShowDetail={setShowDetail}
                   renderCard={(item) => (
                     <ItemCardRender
+                      disabled={permission < permissionNumbers.write}
                       item={item}
                       scrumIdFormatter={formatTaskScrumId}
                     />
@@ -234,26 +253,35 @@ export default function TasksKanban() {
                     <div className="flex flex-col items-start pr-1">
                       <div className="flex w-full justify-between">
                         <h1 className="text-2xl font-medium">{column.name}</h1>
-                        <div className="flex gap-2">
-                          <button
-                            className={cn(
-                              "rounded-lg px-1 text-app-text transition",
-                              {
-                                "text-app-secondary": allSelected,
-                              },
-                            )}
-                            onClick={toggleSelectAll}
-                          >
-                            {allSelected ? (
-                              <CheckNone fontSize="small" />
-                            ) : (
-                              <CheckAll fontSize="small" />
-                            )}
-                          </button>
-                          <Dropdown label={"• • •"}>
-                            <DropdownButton>Edit status</DropdownButton>
-                          </Dropdown>
-                        </div>
+                        {permission >= permissionNumbers.write && (
+                          <div className="flex gap-2">
+                            <button
+                              className="rounded-lg px-1 text-app-text transition"
+                              onClick={() => assignSelectionToColumn(column.id)}
+                            >
+                              Assign
+                            </button>
+
+                            <button
+                              className={cn(
+                                "rounded-lg px-1 text-app-text transition",
+                                {
+                                  "text-app-secondary": allSelected,
+                                },
+                              )}
+                              onClick={toggleSelectAll}
+                            >
+                              {allSelected ? (
+                                <CheckNone fontSize="small" />
+                              ) : (
+                                <CheckAll fontSize="small" />
+                              )}
+                            </button>
+                            <Dropdown label={"• • •"}>
+                              <DropdownButton>Edit status</DropdownButton>
+                            </Dropdown>
+                          </div>
+                        )}
                       </div>
                       <hr className="my-2 w-full border border-app-border" />
                     </div>

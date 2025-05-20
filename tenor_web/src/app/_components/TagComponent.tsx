@@ -7,6 +7,7 @@ interface Props {
   reducedPadding?: boolean;
   expanded?: boolean;
   onClick?: () => void;
+  disabled?: boolean;
 }
 export default function TagComponent({
   color,
@@ -16,6 +17,7 @@ export default function TagComponent({
   expanded,
   onClick,
   className,
+  disabled = false,
   ...props
 }: Props & PropsWithChildren & React.HTMLAttributes<HTMLDivElement>) {
   return (
@@ -29,7 +31,7 @@ export default function TagComponent({
           "cursor-pointer transition hover:bg-app-hover-border":
             onClick !== undefined,
           "transition has-[button:hover]:border-app-fail has-[button:hover]:bg-white has-[button:hover]:text-app-fail":
-            onDelete !== undefined,
+            onDelete !== undefined && !disabled,
         },
         className,
       )}
@@ -42,7 +44,7 @@ export default function TagComponent({
       onClick={onClick}
     >
       <span className="w-full truncate text-center">{children}</span>
-      {onDelete !== undefined && (
+      {onDelete !== undefined && !disabled && (
         <button
           className="mb-[3px] flex h-8 items-center text-2xl font-thin"
           onClick={(e) => {
