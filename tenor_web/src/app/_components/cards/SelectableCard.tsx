@@ -27,7 +27,7 @@ export default function SelectableCard({
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
   const { ref: setNodeRef, isDragging } = useDraggable({
     id: dndId,
-    disabled: selected || showCheckbox, // Don't allow dragging if selection in progress
+    disabled: disabled || selected || showCheckbox, // Don't allow dragging if selection in progress
   });
   const [highlightDropped, setHighlightDropped] = React.useState(false);
   const [isDropping, setIsDropping] = React.useState(
