@@ -32,6 +32,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
     isPending,
     // error,
   } = api.performance.recomputeProductivity.useMutation({
+    retry: 0,
     onSuccess: async () => {
       // Handle success, e.g., show a toast notification
       alert("Success", "Productivity has been refetched.", {
@@ -45,7 +46,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
     },
     onError: async (error) => {
       // Handle success, e.g., show a toast notification
-      alert("Alert", error.message, {
+      alert("Couldn't refetch Productivity", error.message, {
         type: "warning",
         duration: 5000,
       });
@@ -91,7 +92,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
       ) : (
         <div className="flex flex-col items-center gap-8 rounded-lg bg-white p-4 md:flex-row">
           {error?.message ? (
-            <p>{error.message}</p>
+            <p className="text-xl text-gray-500">{error.message}</p>
           ) : (
             <div className="relative h-64 w-64">
               {/* Background circles */}
@@ -150,24 +151,26 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
             </div>
           )}
 
-          <div className="flex flex-col">
-            <h2 className="mb-6 text-xl font-semibold">Completed</h2>
+          {!error && (
+            <div className="flex flex-col">
+              <h2 className="mb-6 text-xl font-semibold">Completed</h2>
 
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 text-gray-500">
-                <div className="h-4 w-4 rounded-full bg-[#88BB87]"></div>
-                <span className="text-lg">
-                  User Stories {userStoriesPercent}%
-                </span>
-              </div>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3 text-gray-500">
+                  <div className="h-4 w-4 rounded-full bg-[#88BB87]"></div>
+                  <span className="text-lg">
+                    User Stories {userStoriesPercent}%
+                  </span>
+                </div>
 
-              {/* Issues */}
-              <div className="flex items-center gap-3 text-gray-500">
-                <div className="h-4 w-4 rounded-full bg-[#184723]"></div>
-                <span className="text-lg">Issues {issuesPercent}%</span>
+                {/* Issues */}
+                <div className="flex items-center gap-3 text-gray-500">
+                  <div className="h-4 w-4 rounded-full bg-[#184723]"></div>
+                  <span className="text-lg">Issues {issuesPercent}%</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
       {stats?.fetchDate && (
@@ -175,6 +178,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
           {!isPending && (
             <RefreshIcon
               onClick={async () => {
+                if (isPending) return;
                 await recomputeProductivity({
                   projectId: projectId,
                   time: time,

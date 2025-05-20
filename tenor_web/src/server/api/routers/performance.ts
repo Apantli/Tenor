@@ -169,7 +169,10 @@ const computePerformanceTime = async (
   } else {
     const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
     if (!currentSprint) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "No active sprint" });
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No productivity data available, there is no active sprint.",
+      });
     }
     userStories = await getSprintUserStories(
       ctx.firestore,
