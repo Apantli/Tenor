@@ -19,7 +19,7 @@ import {
 } from "./tags";
 import { getUserStory } from "./userStories";
 import { getSprint } from "./sprints";
-import type * as admin from "firebase-admin";
+import admin from "firebase-admin";
 import { getTasksFromItem, getTaskTable } from "./tasks";
 import { getUser } from "./users";
 
@@ -78,6 +78,59 @@ export const getIssues = async (firestore: Firestore, projectId: string) => {
   const issuesRef = getIssuesRef(firestore, projectId)
     .where("deleted", "==", false)
     .orderBy("scrumId", "desc");
+  const issuesSnapshot = await issuesRef.get();
+  const issues: WithId<Issue>[] = issuesSnapshot.docs.map((doc) => {
+    return {
+      id: doc.id,
+      ...IssueSchema.parse(doc.data()),
+    } as WithId<Issue>;
+  });
+  return issues;
+};
+
+/**
+ * @function getIssuesAfter
+ * @description Retrieves all non-deleted issues associated with a specific project after a specified date
+ * @param {Firestore} firestore - The Firestore database instance
+ * @param {string} projectId - The ID of the project to retrieve issues from
+ * @param {Date} date - The date to filter issues by. Issues created after this date will be returned
+ * @returns {Promise<WithId<Issue>[]>} An array of issue objects with their IDs
+ */
+export const getIssuesAfter = async (
+  firestore: Firestore,
+  projectId: string,
+  date: Date,
+) => {
+  const issuesRef = getIssuesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(date));
+  const issuesSnapshot = await issuesRef.get();
+  const issues: WithId<Issue>[] = issuesSnapshot.docs.map((doc) => {
+    return {
+      id: doc.id,
+      ...IssueSchema.parse(doc.data()),
+    } as WithId<Issue>;
+  });
+  return issues;
+};
+
+/**
+ * @function getSprintIssues
+ * @description Retrieves all non-deleted issues associated with a specific sprint withing a project
+ * @param {Firestore} firestore - The Firestore database instance
+ * @param {string} projectId - The ID of the project to retrieve issues from
+ * @param {string} sprintId - The ID of the sprint
+ * @returns {Promise<WithId<Issue>[]>} An array of issue objects with their IDs
+ */
+export const getSprintIssues = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  const issuesRef = getIssuesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("sprintId", "==", sprintId);
+
   const issuesSnapshot = await issuesRef.get();
   const issues: WithId<Issue>[] = issuesSnapshot.docs.map((doc) => {
     return {

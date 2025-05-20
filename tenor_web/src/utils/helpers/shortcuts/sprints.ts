@@ -80,6 +80,27 @@ export const getSprints = async (firestore: Firestore, projectId: string) => {
 };
 
 /**
+ * @function getCurrentSprint
+ * @description Retrieves the current active sprint for a specific project
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve the sprint from
+ * @returns {Promise<WithId<Sprint>>} An object representing the current sprint with its ID
+ */
+export const getCurrentSprint = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const sprints = await getSprints(firestore, projectId);
+  const now = new Date();
+  return sprints.find((sprint) => {
+    return (
+      sprint.startDate.getTime() <= now.getTime() &&
+      sprint.endDate.getTime() >= now.getTime()
+    );
+  });
+};
+
+/**
  * @function getSprint
  * @description Retrieves a sprint from the Firestore database
  * @param firestore
