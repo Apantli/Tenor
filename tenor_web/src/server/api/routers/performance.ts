@@ -105,6 +105,7 @@ const recomputePerformance = async (
       projectId,
       time,
     );
+
     productivityData.cached = productivityData.cached.filter(
       (cached) => cached.time !== time,
     );
@@ -152,7 +153,7 @@ const computePerformanceTime = async (
   );
   const issues = await getIssuesAfter(ctx.firestore, projectId, afterDate);
   const completedIssues = issues.filter((issue) =>
-    completedStatusTypes.includes(issue.id),
+    completedStatusTypes.includes(issue.statusId),
   );
 
   return {
