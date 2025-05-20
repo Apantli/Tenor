@@ -18,10 +18,12 @@ import { getUserStoriesAfter } from "~/utils/helpers/shortcuts/userStories";
 import { getIssuesAfter } from "~/utils/helpers/shortcuts/issues";
 import { Timestamp } from "firebase-admin/firestore";
 
+import { getStatusTypes } from "~/utils/helpers/shortcuts/tags";
+
 const shouldRecompute = ({
   data,
   time,
-  refreshHours = 0.0,
+  refreshHours = 24,
 }: {
   data: Productivity | undefined;
   time: string;
@@ -44,68 +46,30 @@ const shouldRecompute = ({
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
-    .input(z.object({ projectId: z.string(), time: PerformanceTime }))
+    .input(
+      z.object({
+        projectId: z.string(),
+        time: PerformanceTime,
+      }),
+    )
     .query(async ({ ctx, input }) => {
-      // Fetch productivity data from the database
-      let productivityData = (
-        await getProductivityRef(ctx.firestore, input.projectId).get()
-      ).data() as Productivity | undefined;
-
-      if (!productivityData) {
-        productivityData = {
-          cached: [],
-        };
-      }
-
-      if (shouldRecompute({ data: productivityData, time: input.time })) {
-        const afterDate = new Date();
-        if (input.time === "Week") {
-          afterDate.setDate(afterDate.getDate() - 7);
-        } else if (input.time === "Month") {
-          afterDate.setMonth(afterDate.getMonth() - 1);
-        } else {
-          afterDate.setDate(afterDate.getDate() - 7);
-        }
-        // Recompute productivity data
-        const userStories = await getUserStoriesAfter(
-          ctx.firestore,
-          input.projectId,
-          afterDate,
-        );
-
-        console.log("userStories", userStories);
-        const completedUserStories = userStories.filter(
-          (userStory) => userStory.complete == true,
-        );
-        const issues = await getIssuesAfter(
-          ctx.firestore,
-          input.projectId,
-          afterDate,
-        );
-        const completedIssues = issues.filter(
-          (issue) => issue.complete == true,
-        );
-
-        productivityData.cached = productivityData.cached.filter(
-          (cached) => cached.time !== input.time,
-        );
-        productivityData.cached.push({
-          userStoryCompleted: completedUserStories.length,
-          userStoryTotal: userStories.length,
-          fetchDate: Timestamp.now(),
-          time: input.time,
-          issueCompleted: completedIssues.length,
-          issueTotal: issues.length,
-        });
-        await getProductivityRef(ctx.firestore, input.projectId).set(
-          productivityData,
-        );
-      }
-
-      const cacheTarget = productivityData?.cached.find(
-        (cached) => cached.time === input.time,
+      return await recomputePerformance(
+        ctx,
+        input.projectId,
+        input.time,
+        false,
       );
-      return cacheTarget;
+    }),
+
+  recomputeProductivity: roleRequiredProcedure(performancePermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+        time: PerformanceTime,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await recomputePerformance(ctx, input.projectId, input.time, true);
     }),
 
   getUserContributions: roleRequiredProcedure(performancePermissions, "read")
@@ -117,3 +81,86 @@ export const performanceRouter = createTRPCRouter({
       // return projects;
     }),
 });
+
+const recomputePerformance = async (
+  ctx: { firestore: FirebaseFirestore.Firestore },
+  projectId: string,
+  time: string,
+  recompute = false,
+) => {
+  // Fetch productivity data from the database
+  let productivityData = (
+    await getProductivityRef(ctx.firestore, projectId).get()
+  ).data() as Productivity | undefined;
+
+  if (!productivityData) {
+    productivityData = {
+      cached: [],
+    };
+  }
+
+  if (recompute || shouldRecompute({ data: productivityData, time: time })) {
+    const newProductivityData = await computePerformanceTime(
+      ctx,
+      projectId,
+      time,
+    );
+    productivityData.cached = productivityData.cached.filter(
+      (cached) => cached.time !== time,
+    );
+    productivityData.cached.push(newProductivityData);
+    await getProductivityRef(ctx.firestore, projectId).set(productivityData);
+  }
+
+  const cacheTarget = productivityData?.cached.find(
+    (cached) => cached.time === time,
+  );
+
+  return cacheTarget;
+};
+
+const computePerformanceTime = async (
+  ctx: { firestore: FirebaseFirestore.Firestore },
+  projectId: string,
+  time: string,
+) => {
+  // Get which status types are completed
+  const statusTypes = await getStatusTypes(ctx.firestore, projectId);
+
+  const completedStatusTypes = statusTypes
+    .filter((statusType) => statusType.marksTaskAsDone == true)
+    .map((statusType) => statusType.id);
+
+  const afterDate = new Date();
+  if (time === "Week") {
+    afterDate.setDate(afterDate.getDate() - 7);
+  } else if (time === "Month") {
+    afterDate.setMonth(afterDate.getMonth() - 1);
+  } else {
+    afterDate.setDate(afterDate.getDate() - 7);
+  }
+
+  // Recompute productivity data
+  const userStories = await getUserStoriesAfter(
+    ctx.firestore,
+    projectId,
+    afterDate,
+  );
+
+  const completedUserStories = userStories.filter((userStory) =>
+    completedStatusTypes.includes(userStory.statusId),
+  );
+  const issues = await getIssuesAfter(ctx.firestore, projectId, afterDate);
+  const completedIssues = issues.filter((issue) =>
+    completedStatusTypes.includes(issue.id),
+  );
+
+  return {
+    userStoryCompleted: completedUserStories.length,
+    userStoryTotal: userStories.length,
+    fetchDate: Timestamp.now(),
+    time: PerformanceTime.parse(time),
+    issueCompleted: completedIssues.length,
+    issueTotal: issues.length,
+  };
+};

@@ -10,8 +10,8 @@ import type {
 import type { EpicSchema, ExistingUserStorySchema } from "./zodFirebaseSchema";
 import type z from "zod";
 
-export type ExistingEpic = WithId<z.infer<typeof EpicSchema>>;
-export type ExistingUserStory = WithId<z.infer<typeof ExistingUserStorySchema>>;
+export type ExistingEpic = WithId<z.input<typeof EpicSchema>>;
+export type ExistingUserStory = WithId<z.input<typeof ExistingUserStorySchema>>;
 
 export type UserStoryPreview = {
   id: string;

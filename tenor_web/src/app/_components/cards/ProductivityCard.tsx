@@ -4,6 +4,8 @@ import type { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { timestampToDate } from "~/utils/helpers/parsers";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface PerformanceData {
   time: z.infer<typeof PerformanceTime>;
@@ -11,6 +13,9 @@ interface PerformanceData {
 }
 
 export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
+  const { alert } = useAlert();
+  const utils = api.useUtils();
+
   const {
     data: stats,
     isLoading,
@@ -19,6 +24,23 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
     projectId: projectId,
     time: time,
   });
+  const {
+    mutateAsync: recomputeProductivity,
+    isPending,
+    // error,
+  } = api.performance.recomputeProductivity.useMutation({
+    onSuccess: async () => {
+      // Handle success, e.g., show a toast notification
+      alert("Success", "Productivity has been refetched.", {
+        type: "success",
+        duration: 5000,
+      });
+      await utils.performance.getProductivity.invalidate({
+        projectId: projectId,
+        time: time,
+      });
+    },
+  });
 
   const radius = 70;
 
@@ -26,8 +48,6 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
   const r2 = radius - 10; // Radius for issues
   const c1 = 2 * Math.PI * r1;
   const c2 = 2 * Math.PI * r2;
-
-  console.log("ProductivityCard stats.fetchDate", stats?.fetchDate);
 
   const userStoriesPercent =
     stats?.userStoryTotal === 0
@@ -46,9 +66,6 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
 
   const userStoriesStrokeDasharray = `${(userStoriesPercent / 100) * c1} ${c1}`;
   const issuesStrokeDasharray = `${(issuesPercent / 100) * c2} ${c2}`;
-
-  console.log("stats", stats);
-
   return (
     <div className="box-content flex h-[400px] w-[700px] min-w-[600px] flex-col rounded-md border-2 p-4">
       <h1 className="mb-6 border-b-2 pb-4 text-3xl font-bold">Productivity</h1>
@@ -65,7 +82,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
               className="absolute left-0 top-0 h-full w-full"
               viewBox="0 0 200 200"
             >
-              {/* Outer light gray circle (background) */}
+              {/* User Stories background */}
               <circle
                 cx="100"
                 cy="100"
@@ -75,7 +92,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
                 strokeWidth="10"
               />
 
-              {/* Inner light gray circle (background) */}
+              {/* Issues background */}
               <circle
                 cx="100"
                 cy="100"
@@ -85,7 +102,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
                 strokeWidth="10"
               />
 
-              {/* Outer circle - User Stories progress */}
+              {/* User Stories */}
               <circle
                 cx="100"
                 cy="100"
@@ -99,7 +116,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
                 transform="rotate(-90 100 100)"
               />
 
-              {/* Inner circle - Issues progress */}
+              {/* Issues */}
               <circle
                 cx="100"
                 cy="100"
@@ -119,7 +136,6 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
             <h2 className="mb-6 text-xl font-semibold">Completed</h2>
 
             <div className="flex flex-col gap-4">
-              {/* User Stories */}
               <div className="flex items-center gap-3 text-gray-500">
                 <div className="h-4 w-4 rounded-full bg-[#88BB87]"></div>
                 <span className="text-lg">
@@ -136,10 +152,30 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
           </div>
         </div>
       )}
-      <div className="mx-auto text-gray-500">
-        {stats?.fetchDate &&
-          `Updated ${timestampToDate(stats.fetchDate).toLocaleString()}`}
-      </div>
+      {stats?.fetchDate && (
+        <div className="mx-auto flex flex-row gap-2 text-gray-500">
+          {!isPending && (
+            <RefreshIcon
+              onClick={async () => {
+                await recomputeProductivity({
+                  projectId: projectId,
+                  time: time,
+                });
+              }}
+              className=""
+            />
+          )}
+
+          {isPending ? (
+            <>
+              <LoadingSpinner />
+              <p className="font-semibold">Refreshing Productivity</p>
+            </>
+          ) : (
+            <p>Updated {timestampToDate(stats.fetchDate).toLocaleString()}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

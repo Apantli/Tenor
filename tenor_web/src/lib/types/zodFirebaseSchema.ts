@@ -74,9 +74,7 @@ export const BasicInfoSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string(),
   deleted: z.boolean().default(false),
-  createdAt: TimestampType.default(() =>
-    Timestamp.fromDate(new Date()),
-  ).optional(),
+  createdAt: TimestampType.default(() => Timestamp.fromDate(new Date())),
 });
 
 export const SizeSchema = z.enum(["XS", "S", "M", "L", "XL", "XXL"]);
