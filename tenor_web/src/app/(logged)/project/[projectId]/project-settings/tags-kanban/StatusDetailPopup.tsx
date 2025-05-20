@@ -19,12 +19,14 @@ interface Props {
   showPopup: boolean;
   statusId: string;
   setShowPopup: (show: boolean) => void;
+  disabled?: boolean;
 }
 
 export default function StatusDetailPopup({
   showPopup,
   setShowPopup,
   statusId,
+  disabled = false,
 }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
@@ -250,7 +252,8 @@ export default function StatusDetailPopup({
         handleDismiss();
       }}
       footer={
-        !isLoading && (
+        !isLoading &&
+        !disabled && (
           <DeleteButton onClick={handleDelete}>Delete Status</DeleteButton>
         )
       }
@@ -269,7 +272,7 @@ export default function StatusDetailPopup({
           )}
         </>
       }
-      editMode={isLoading ? undefined : editMode}
+      editMode={!disabled ? (isLoading ? undefined : editMode) : undefined}
       setEditMode={async (isEditing) => {
         setEditMode(isEditing);
         if (!statusDetail) return;
@@ -308,17 +311,19 @@ export default function StatusDetailPopup({
           </div>
           <div className="mt-2 flex items-baseline">
             <InputCheckbox
+              disabled={disabled}
               checked={form.marksTaskAsDone}
               onChange={(value) => setForm({ ...form, marksTaskAsDone: value })}
               className="mb-1 mr-2 cursor-pointer"
             />
-            <button
+            {/* <button
+              disabled={disabled}
               onClick={() =>
                 setForm({ ...form, marksTaskAsDone: !form.marksTaskAsDone })
               }
             >
               Marks tasks as resolved
-            </button>
+            </button> */}
             <HelpIcon
               className="ml-[3px] text-gray-500"
               data-tooltip-id="tooltip"
@@ -344,11 +349,13 @@ export default function StatusDetailPopup({
           </div>
           <div className="mt-2 flex items-baseline">
             <InputCheckbox
+              disabled={disabled}
               checked={form.marksTaskAsDone}
               onChange={(value) => setForm({ ...form, marksTaskAsDone: value })}
               className="mb-1 mr-2 cursor-pointer"
             />
             <button
+              disabled={disabled}
               onClick={() =>
                 setForm({ ...form, marksTaskAsDone: !form.marksTaskAsDone })
               }

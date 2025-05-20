@@ -25,6 +25,7 @@ interface Props {
   tagId: string;
   setShowPopup: (show: boolean) => void;
   itemTagType: "ReqFocus" | "BacklogTag" | "ReqType";
+  disabled?: boolean;
 }
 
 interface TagTypeConfig {
@@ -45,6 +46,7 @@ export default function ItemTagDetailPopup({
   setShowPopup,
   tagId,
   itemTagType,
+  disabled = false,
 }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
@@ -450,7 +452,8 @@ export default function ItemTagDetailPopup({
         handleDismiss();
       }}
       footer={
-        !isLoading && (
+        !isLoading &&
+        !disabled && (
           <DeleteButton onClick={handleDelete}>
             {currentConfig.deleteButtonText}
           </DeleteButton>
@@ -474,7 +477,7 @@ export default function ItemTagDetailPopup({
           )}
         </>
       }
-      editMode={isLoading ? undefined : editMode}
+      editMode={!disabled ? (isLoading ? undefined : editMode) : undefined}
       setEditMode={async (isEditing) => {
         setEditMode(isEditing);
         if (!tagDetail || !isValidTagDetail(tagDetail)) return;

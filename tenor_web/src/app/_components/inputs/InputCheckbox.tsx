@@ -21,9 +21,9 @@ export default function InputCheckbox({
       className={cn(
         "flex h-4 w-4 items-center justify-center rounded-sm border border-app-border text-xs transition hover:bg-app-hover-border",
         {
+          "cursor-not-allowed bg-white opacity-50 hover:bg-white": disabled,
           "border-app-hover-primary bg-app-primary hover:bg-app-hover-primary":
             checked,
-          "cursor-not-allowed bg-white opacity-50 hover:bg-white": disabled,
         },
         className,
       )}

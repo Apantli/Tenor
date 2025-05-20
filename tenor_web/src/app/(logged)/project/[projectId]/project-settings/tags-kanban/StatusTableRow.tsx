@@ -22,6 +22,7 @@ interface StatusTableRowProps {
   onDelete: () => void;
   onToggleDone: () => void;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
+  disabled?: boolean;
 }
 
 export default function StatusTableRow({
@@ -30,6 +31,7 @@ export default function StatusTableRow({
   onDelete,
   onToggleDone,
   scrollContainerRef,
+  disabled = false,
 }: StatusTableRowProps) {
   const {
     attributes,
@@ -79,6 +81,7 @@ export default function StatusTableRow({
             style={{ margin: "0 auto" }}
           >
             <InputCheckbox
+              disabled={disabled}
               checked={item.markTaskAsDone}
               onChange={onToggleDone}
               className="m-0 cursor-pointer"
@@ -87,31 +90,33 @@ export default function StatusTableRow({
         </div>
       </td>
       <td className="px-3 py-2 text-right">
-        <Dropdown
-          label={
-            <span className="flex w-full items-center justify-end pr-3 font-bold text-app-light">
-              • • •
-            </span>
-          }
-          className="flex h-full w-full items-center justify-end text-sm font-semibold transition"
-          menuClassName="font-normal whitespace-nowrap z-50"
-          scrollContainer={scrollContainerRef}
-        >
-          <DropdownButton
-            className="flex items-center justify-between gap-8"
-            onClick={onEdit}
+        {!disabled && (
+          <Dropdown
+            label={
+              <span className="flex w-full items-center justify-end pr-3 font-bold text-app-light">
+                • • •
+              </span>
+            }
+            className="flex h-full w-full items-center justify-end text-sm font-semibold transition"
+            menuClassName="font-normal whitespace-nowrap z-50"
+            scrollContainer={scrollContainerRef}
           >
-            <span>Edit</span>
-            <EditIcon fontSize="small" />
-          </DropdownButton>
-          <DropdownButton
-            className="flex items-center justify-between gap-8"
-            onClick={onDelete}
-          >
-            <span className="text-red-500">Delete</span>
-            <DeleteOutlineIcon className="text-red-500" />
-          </DropdownButton>
-        </Dropdown>
+            <DropdownButton
+              className="flex items-center justify-between gap-8"
+              onClick={onEdit}
+            >
+              <span>Edit</span>
+              <EditIcon fontSize="small" />
+            </DropdownButton>
+            <DropdownButton
+              className="flex items-center justify-between gap-8"
+              onClick={onDelete}
+            >
+              <span className="text-red-500">Delete</span>
+              <DeleteOutlineIcon className="text-red-500" />
+            </DropdownButton>
+          </Dropdown>
+        )}
       </td>
     </tr>
   );

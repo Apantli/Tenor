@@ -16,8 +16,10 @@ const maxInputSizeNumber = 1000;
 export default function SettingsSizeTable({
   sizeData,
   setSizeData,
+  disabled = false,
 }: {
   sizeData: SizeCol[];
+  disabled?: boolean;
   setSizeData: React.Dispatch<React.SetStateAction<SizeCol[]>>;
 }) {
   //Hook
@@ -80,6 +82,7 @@ export default function SettingsSizeTable({
       render(row) {
         return (
           <InputTextField
+            disabled={disabled}
             type="text"
             labelClassName="text-lg font-semibold"
             inputMode="numeric"
