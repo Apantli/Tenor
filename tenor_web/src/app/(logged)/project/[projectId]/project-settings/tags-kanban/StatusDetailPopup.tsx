@@ -95,7 +95,7 @@ export default function StatusDetailPopup({
 
   const handleSave = async (updatedData: NonNullable<typeof statusDetail>) => {
     if (form.name === "") {
-      alert("Oops", "Please enter a name for the status.", {
+      alert("Oops...", "Please enter a name for the status.", {
         type: "error",
         duration: 5000,
       });

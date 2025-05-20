@@ -8,7 +8,7 @@ import CreateItemTagPopup from "./CreateItemTagPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import ItemTagDetailPopup from "./ItemTagDetailPopup";
-import EditIcon from "@mui/icons-material/Edit";
+import EditIcon from "@mui/icons-material/EditOutlined";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";

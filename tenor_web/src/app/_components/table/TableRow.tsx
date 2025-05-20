@@ -24,7 +24,6 @@ interface TableRowProps<I, T> {
   scrollContainerRef: React.RefObject<HTMLDivElement>;
   columnWidths: number[];
   className?: string;
-  rowIndex?: number;
   ghostsShown?: boolean;
   disableSelection?: boolean;
 }

@@ -36,6 +36,7 @@ import {
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -299,8 +300,8 @@ export default function ProjectSprints() {
     setShowSmallPopup(false);
   };
 
-  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
-  const [detailItemId, setDetailItemId] = useState("");
+  const [renderDetail, showDetail, detailItemId, setDetailItemId] =
+    useQueryIdForPopup("id");
 
   // Check if all unassigned items are selected
   const allUnassignedSelected = filteredUnassignedItems.every((itemId) =>
@@ -600,7 +601,6 @@ export default function ProjectSprints() {
               selection={selectedItems}
               setSelection={setSelectedItems}
               setDetailId={setDetailItemId}
-              setShowDetail={setShowDetail}
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
                   <span className="text-xl font-medium">Unassigned items</span>
@@ -704,7 +704,6 @@ export default function ProjectSprints() {
                   selectedItems={selectedItems}
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetailItemId}
-                  setShowDetail={setShowDetail}
                 />
               ))}
             </div>
@@ -739,7 +738,7 @@ export default function ProjectSprints() {
       {renderDetail &&
         backlogItemsBySprint?.backlogItems[detailItemId]?.itemType === "US" && (
           <UserStoryDetailPopup
-            setShowDetail={setShowDetail}
+            setUserStoryId={setDetailItemId}
             showDetail={showDetail}
             userStoryId={detailItemId}
           />
@@ -747,7 +746,7 @@ export default function ProjectSprints() {
       {renderDetail &&
         backlogItemsBySprint?.backlogItems[detailItemId]?.itemType === "IS" && (
           <IssueDetailPopup
-            setShowDetail={setShowDetail}
+            setDetailId={setDetailItemId}
             showDetail={showDetail}
             issueId={detailItemId}
           />

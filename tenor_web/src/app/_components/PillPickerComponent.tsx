@@ -92,34 +92,34 @@ export default function PillPickerComponent({
           />
         </DropdownItem>
       )}
-      {allowClear && searchValue === "" && (
-        <DropdownButton
-          onClick={() => onChange({ id: "", label: "" })}
-          className="flex w-full items-center gap-2 border-b border-app-border p-2 last:border-none"
-        >
-          <Check
-            fontSize="inherit"
-            className={cn({ "opacity-0": selectedItem.id !== "" })}
-          ></Check>
-          <div className="flex flex-col justify-start gap-0">
-            <span className="w-full truncate">Unassigned</span>
-          </div>
-        </DropdownButton>
-      )}
       {filteredItems.length > 0 && (
         <div className="whitespate-nowrap w-52 text-left">
-          <div className="flex max-h-40 w-full flex-col overflow-y-auto rounded-b-lg">
+          <div className="flex max-h-40 w-full flex-col overflow-y-auto overflow-x-hidden rounded-b-lg">
+            {allowClear && searchValue === "" && (
+              <DropdownButton
+                onClick={() => onChange({ id: "", label: "" })}
+                className="flex w-full items-center gap-2 border-b border-app-border p-2 last:border-none"
+              >
+                <Check
+                  fontSize="inherit"
+                  className={cn({ "opacity-0": selectedItem.id !== "" })}
+                ></Check>
+                <div className="flex flex-col justify-start gap-0">
+                  <span className="w-full truncate">Unassigned</span>
+                </div>
+              </DropdownButton>
+            )}
             {filteredItems.map((item) => (
               <DropdownButton
                 onClick={() => onChange(item)}
-                className="flex w-full items-center gap-2 border-b border-app-border p-2 last:border-none"
+                className="flex h-12 w-full items-center gap-2 border-b border-app-border p-2 last:border-none"
                 key={item.id}
               >
                 <Check
                   fontSize="inherit"
                   className={cn({ "opacity-0": item.id !== selectedItem.id })}
                 ></Check>
-                <div className="flex flex-col justify-start gap-0">
+                <div className="flex flex-col justify-start gap-0 overflow-x-hidden">
                   {item.prefix !== undefined && (
                     <span className="w-full truncate text-xs font-semibold">
                       {item.prefix}:

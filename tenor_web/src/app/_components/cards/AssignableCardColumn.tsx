@@ -17,7 +17,6 @@ interface Props {
   selectedItems: Set<string>;
   setSelectedItems: (newSelection: Set<string>) => void;
   setDetailItemId: (detailId: string) => void;
-  setShowDetail: (showDetail: boolean) => void;
   assignSelectionToColumn: (columnId: string) => Promise<void>;
   lastDraggedItemId: string | null;
   renderCard: (item: KanbanCard) => React.ReactNode;
@@ -31,7 +30,6 @@ export default function AssignableCardColumn({
   selectedItems,
   setSelectedItems,
   setDetailItemId,
-  setShowDetail,
   assignSelectionToColumn,
   lastDraggedItemId,
   renderCard,
@@ -61,7 +59,6 @@ export default function AssignableCardColumn({
         selection={selectedItems}
         setSelection={setSelectedItems}
         setDetailId={setDetailItemId}
-        setShowDetail={setShowDetail}
         renderCard={renderCard}
         header={header}
         className={cn({ "pb-10": availableToBeAssignedTo })}

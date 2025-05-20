@@ -136,6 +136,15 @@ export const useAlert = () => {
         "There was an unexpected error. Please try again",
         { type: "error", duration: 7000 },
       ),
+    cyclicDependency: () =>
+      context.alert(
+        "Oops...",
+        "You created dependency cycle. Change reverted.",
+        {
+          type: "error",
+          duration: 10000,
+        },
+      ),
   };
 
   return { alert: context.alert, predefinedAlerts };

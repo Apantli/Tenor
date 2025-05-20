@@ -241,14 +241,14 @@ export default function ProjectScrumPreferences() {
   const handleSave = async () => {
     if (isUpdatePending) return;
     if (form.sprintDuration < 1 || form.sprintDuration > 365) {
-      alert("Oops", "Sprint duration must be between 1 and 365 total days", {
+      alert("Oops...", "Sprint duration must be between 1 and 365 total days", {
         type: "error",
         duration: 5000,
       });
       return;
     }
     if (form.maximumSprintStoryPoints < 1) {
-      alert("Oops", "Maximum sprint story points must be greater than 0", {
+      alert("Oops...", "Maximum sprint story points must be greater than 0", {
         type: "error",
         duration: 5000,
       });

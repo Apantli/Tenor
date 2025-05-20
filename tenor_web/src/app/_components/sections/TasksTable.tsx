@@ -32,6 +32,7 @@ import { usePopupVisibilityState } from "../Popup";
 import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import type { TaskCol } from "~/lib/types/columnTypes";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { cn } from "~/lib/utils";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];
@@ -55,6 +56,7 @@ interface Props<T extends BacklogItemWithTasks> {
   selectedGhostTaskId?: string;
   setItemData?: (data: T | undefined) => void;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
+  sidebarOpen: boolean;
 }
 
 // TODO: Update this to invalidate for backlog items also
@@ -72,6 +74,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
   selectedGhostTaskId,
   setItemData,
   scrollContainerRef,
+  sidebarOpen,
 }: Props<T>) {
   const [taskSearchText, setTaskSearchText] = useState("");
   const [taskToOpen, setTaskToOpen] = useState(taskIdToOpenImmediately);
@@ -168,9 +171,13 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     })
     .sort((a, b) => {
       // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
-      if (a.scrumId === undefined && b.scrumId === undefined) return 0;
-      if (a.scrumId === undefined) return -1;
-      if (b.scrumId === undefined) return 1;
+      if (
+        (a.scrumId === undefined || a.scrumId === -1) &&
+        (b.scrumId === undefined || b.scrumId === -1)
+      )
+        return 0;
+      if (a.scrumId === undefined || a.scrumId === -1) return -1;
+      if (b.scrumId === undefined || b.scrumId === -1) return 1;
 
       return a.scrumId < b.scrumId ? 1 : -1;
     });
@@ -237,7 +244,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       render(row, _, isGhost) {
         return (
           <>
-            {tasksData !== undefined && !row.scrumId ? (
+            {tasksData !== undefined && row.scrumId === -1 ? (
               <TagIcon
                 className="text-app-text"
                 data-tooltip-id="tooltip"
@@ -626,7 +633,9 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             tableKey="tasks"
             data={filteredTasks}
             columns={taskColumns}
-            className="font-sm min-y-fit max-w-[min(678px,100vw-320px)]"
+            className={cn("font-sm min-y-fit max-w-[min(678px,100vw-320px)]", {
+              "max-w-[min(900px,100vw-90px)]": !sidebarOpen,
+            })}
             scrollContainerClassName="overflow-y-hidden"
             multiselect={permission >= permissionNumbers.write}
             deletable={permission >= permissionNumbers.write}
@@ -653,6 +662,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             showDetail={showTaskDetail}
             setShowDetail={setShowTaskDetail}
             isGhost={selectedGhostTaskId !== ""}
+            closeAllPopupsOnDismiss={taskIdToOpenImmediately !== undefined}
             taskData={
               selectedGhostTask ??
               itemData?.tasks.find((task) => task.id === selectedTaskId)
@@ -699,9 +709,11 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             }}
             onReject={() => {
               if (selectedGhostTaskId && selectedGhostTaskId !== "") {
-                onReject([selectedGhostTaskId]);
                 setShowTaskDetail(false);
-                setTimeout(() => setSelectedGhostTask(""), 300);
+                setTimeout(() => {
+                  onReject([selectedGhostTaskId]);
+                  setSelectedGhostTask("");
+                }, 300);
               }
             }}
           />

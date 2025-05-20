@@ -395,7 +395,9 @@ function TableInternal<
           tableKey={tableKey}
           scrollContainerRef={internalScrollContainerRef}
           ghostRowContainerRef={ghostDivRef}
-          showGhostActions={ghostData !== undefined && ghostData.length > 0}
+          showGhostActions={
+            ghostData !== undefined && ghostData.length > 0 && loadedGhosts
+          }
           acceptAllGhosts={acceptAllGhosts}
           rejectAllGhosts={rejectAllGhosts}
           disableSelection={
@@ -435,9 +437,8 @@ function TableInternal<
             />
           ))}
         </div>
-        {filteredData.map((value, index) => (
+        {filteredData.map((value) => (
           <TableRow
-            rowIndex={index}
             key={value.id}
             value={value}
             columns={columns}
@@ -461,7 +462,7 @@ function TableInternal<
           />
         ))}
         {filteredData.length === 0 && !showGhostRows && emptyMessage && (
-          <div className="flex w-full items-center justify-center border-b border-app-border p-3 text-gray-500">
+          <div className="sticky left-0 flex items-center justify-center border-b border-app-border p-3 text-gray-500">
             <span className="text-base">{emptyMessage}</span>
           </div>
         )}

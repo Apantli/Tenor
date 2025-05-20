@@ -1,10 +1,9 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
@@ -25,6 +24,9 @@ import {
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import useQueryIdForPopup, {
+  useQueryId,
+} from "~/app/_hooks/useQueryIdForPopup";
 
 export default function TasksKanban() {
   // GENERAL
@@ -61,12 +63,32 @@ export default function TasksKanban() {
     null,
   );
 
-  const [renderDetail, showDetail, setShowDetail] = usePopupVisibilityState();
+  const [forcedDetailParentUserStoryId, setForcedDetailParentUserStoryId] =
+    useQueryId("id");
+
+  const [
+    renderDetail,
+    showDetail,
+    detailItemId,
+    setDetailItemId,
+    setShowDetail,
+  ] = useQueryIdForPopup("ts");
   // Detail item and parent
-  const [detailItemId, setDetaiItemId] = useState("");
-  const detailItem = tasksAndColumnsData?.cardTasks[detailItemId];
-  const detailItemType = detailItem?.itemType;
-  const detailParentItemId = detailItem?.itemId;
+  const detailItem =
+    detailItemId !== ""
+      ? tasksAndColumnsData?.cardTasks[detailItemId]
+      : undefined;
+  const detailItemType = forcedDetailParentUserStoryId
+    ? "US"
+    : detailItem?.itemType;
+  const detailParentItemId =
+    forcedDetailParentUserStoryId ?? detailItem?.itemId;
+
+  useEffect(() => {
+    if (forcedDetailParentUserStoryId) {
+      setShowDetail(true);
+    }
+  }, [forcedDetailParentUserStoryId]);
 
   // UTILITY
   let updateOperationsInProgress = 0;
@@ -240,8 +262,7 @@ export default function TasksKanban() {
                   key={column.id}
                   selectedItems={selectedTasks}
                   setSelectedItems={setSelectedTasks}
-                  setDetailItemId={setDetaiItemId}
-                  setShowDetail={setShowDetail}
+                  setDetailItemId={setDetailItemId}
                   renderCard={(item) => (
                     <ItemCardRender
                       disabled={permission < permissionNumbers.write}
@@ -311,7 +332,21 @@ export default function TasksKanban() {
 
       {renderDetail && detailItemType === "US" && detailParentItemId && (
         <UserStoryDetailPopup
-          setShowDetail={setShowDetail}
+          setUserStoryId={(newId) => {
+            if (newId === "") {
+              setDetailItemId("");
+              if (forcedDetailParentUserStoryId) {
+                setShowDetail(false);
+                setTimeout(() => {
+                  setForcedDetailParentUserStoryId("");
+                  // setShowDetail(false);
+                }, 500);
+              }
+            } else {
+              // User wants to open a new user story (like by clicking on a link in the dependency list)
+              setForcedDetailParentUserStoryId(newId);
+            }
+          }}
           showDetail={showDetail}
           userStoryId={detailParentItemId}
           taskIdToOpenImmediately={detailItemId}
@@ -320,7 +355,7 @@ export default function TasksKanban() {
 
       {renderDetail && detailItemType === "IS" && detailParentItemId && (
         <IssueDetailPopup
-          setShowDetail={setShowDetail}
+          setDetailId={setDetailItemId}
           showDetail={showDetail}
           issueId={detailParentItemId}
           taskIdToOpenImmediately={detailItemId}

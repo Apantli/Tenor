@@ -16,7 +16,6 @@ interface Props {
   selectedItems: Set<string>;
   setSelectedItems: (newSelection: Set<string>) => void;
   setDetailItemId: (detailId: string) => void;
-  setShowDetail: (showDetail: boolean) => void;
   assignSelectionToSprint: (sprintId: string) => Promise<void>;
   lastDraggedBacklogItemId: string | null;
   disabled?: boolean;
@@ -28,7 +27,6 @@ export default function SprintCardColumn({
   selectedItems,
   setSelectedItems,
   setDetailItemId,
-  setShowDetail,
   assignSelectionToSprint,
   lastDraggedBacklogItemId,
   disabled = false,
@@ -81,7 +79,6 @@ export default function SprintCardColumn({
         selection={selectedItems}
         setSelection={setSelectedItems}
         setDetailId={setDetailItemId}
-        setShowDetail={setShowDetail}
         className={cn({ "pb-10": availableToBeAssignedTo })}
         header={
           <div className="flex flex-col items-start pr-1">

@@ -19,6 +19,7 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
+import NoEpicsIcon from "@mui/icons-material/FormatListBulleted";
 
 export const ProjectEpics = () => {
   const { projectId } = useParams();
@@ -51,7 +52,7 @@ export const ProjectEpics = () => {
 
   const [selectedEpic, setSelectedEpic] = useState<string | null>(null);
 
-  const { data: epics } = api.epics.getEpics.useQuery(
+  const { data: epics, isLoading } = api.epics.getEpics.useQuery(
     {
       projectId: projectId as string,
     },
@@ -117,7 +118,7 @@ export const ProjectEpics = () => {
 
   const handleCreateEpic = async () => {
     if (newEpicName === "") {
-      alert("Oops", "Please enter a name for the epic.", {
+      alert("Oops...", "Please enter a name for the epic.", {
         type: "error",
         duration: 5000,
       });
@@ -155,6 +156,25 @@ export const ProjectEpics = () => {
         ></SearchBar>
       </div>
       <div className="flex h-[calc(100vh-230px)] flex-col gap-4 overflow-y-auto">
+        {!isLoading && epics?.length === 0 && (
+          <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
+            <div className="flex flex-col items-center gap-5">
+              <span className="-mb-10 text-[100px] text-gray-500">
+                <NoEpicsIcon fontSize="inherit" />
+              </span>
+              <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+                No epics yet
+              </h1>
+              <PrimaryButton
+                onClick={() => {
+                  setShowSmallPopup(true);
+                }}
+              >
+                Create your first epic
+              </PrimaryButton>
+            </div>
+          </div>
+        )}
         {filteredEpics?.map((epic) => (
           <div
             onClick={() => {
@@ -255,7 +275,7 @@ export const ProjectEpics = () => {
           if (epic?.scrumId) {
             if (!creatingEpic) {
               if (editEpicName === "") {
-                alert("Oops", "Please enter a name for the epic.", {
+                alert("Oops...", "Please enter a name for the epic.", {
                   type: "error",
                   duration: 5000,
                 });

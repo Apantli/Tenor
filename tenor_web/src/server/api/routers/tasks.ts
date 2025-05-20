@@ -57,8 +57,7 @@ export const tasksRouter = createTRPCRouter({
           scrumId: await getTaskNewId(ctx.firestore, input.projectId),
         });
         return { success: true, taskId: task.id };
-      } catch (err) {
-        console.log("Error creating task story:", err);
+      } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
     }),
@@ -338,5 +337,20 @@ ${tagContext}\n\n`;
         ...task,
         status: todoTag as StatusTag,
       }));
+    }),
+
+  /**
+   * @function getTaskCount
+   * @description Retrieves the number of tasks inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of tasks in the project.
+   */
+  getTaskCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const tasksRef = getTasksRef(ctx.firestore, projectId);
+      const countSnapshot = await tasksRef.count().get();
+      return countSnapshot.data().count;
     }),
 });

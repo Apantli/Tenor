@@ -118,14 +118,14 @@ const fetchUserProjects = async (
     const querySnapshot = await usersCollection.where("uid", "==", uid).get(); // Use dbAdmin.collection.where
 
     if (querySnapshot.empty) {
-      console.log("No matching documents.");
+      // No user found
       return [];
     }
 
     const userData = querySnapshot.docs[0]?.data() as User;
 
     if (!userData.projectIds || userData.projectIds.length === 0) {
-      console.log("No projects assigned for user", uid);
+      // No projects assigned for user
       return [];
     }
 

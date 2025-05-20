@@ -30,7 +30,7 @@ export default function StatusPicker({
   const automaticTag = {
     id: "",
     name: "Automatic",
-    color: "#000000",
+    color: "#333333",
     deleted: false,
     orderIndex: -1,
     marksTaskAsDone: false,
