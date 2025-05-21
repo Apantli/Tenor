@@ -609,14 +609,6 @@ export const userStoriesRouter = createTRPCRouter({
    * @function deleteUserStoryDependencies
    * @description Updates the dependency relationship by removing a dependency between two user stories.
    * @param {string} projectId - The ID of the project to which the user stories belong.
-   * @param {string} sourceId - The ID of the user story that will no longer depend on the target.
-   * @param {string} targetId - The ID of the user story that will no longer be a dependency.
-   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
-   */
-  /**
-   * @function deleteUserStoryDependencies
-   * @description Updates the dependency relationship by removing a dependency between two user stories.
-   * @param {string} projectId - The ID of the project to which the user stories belong.
    * @param {string} parentUsId - The ID of the user story that will no longer depend on the target.
    * @param {string} dependencyUsId - The ID of the user story that will no longer be a dependency.
    * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
