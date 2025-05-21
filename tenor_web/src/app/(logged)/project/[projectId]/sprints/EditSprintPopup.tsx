@@ -74,7 +74,7 @@ export default function EditSprintPopup({
   const showReorderedAlert = () => {
     alert(
       "Your sprint numbers have been updated",
-      "After deleting the sprint, the sprint numbers changed to be in order.",
+      "After editing the sprint dates, the sprint numbers changed to be in order.",
       {
         type: "success",
         duration: 8000,
@@ -173,7 +173,7 @@ export default function EditSprintPopup({
               <PrimaryButton
                 onClick={handleUpdateSprint}
                 loading={isModifying}
-                disabled={!changesMade}
+                disabled={!changesMade || isModifying}
               >
                 Save changes
               </PrimaryButton>

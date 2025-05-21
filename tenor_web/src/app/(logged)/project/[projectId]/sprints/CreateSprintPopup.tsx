@@ -178,6 +178,7 @@ export default function CreateSprintPopup({
               await handleCreateSprint();
             }}
             loading={isPending}
+            disabled={isPending}
           >
             Create Sprint
           </PrimaryButton>
