@@ -337,6 +337,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
               multiselect={permission >= permissionNumbers.write}
               emptyMessage={currentConfig.emptyMessage}
               tableKey={`${itemTagType.toLowerCase()}-table`}
+              rowClassName="h-12"
             />
           )}
         </div>

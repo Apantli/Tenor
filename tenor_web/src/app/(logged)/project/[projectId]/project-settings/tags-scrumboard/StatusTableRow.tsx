@@ -53,7 +53,7 @@ export default function StatusTableRow({
     <tr
       ref={setNodeRef}
       style={style}
-      className={`hover:bg-app-hover border-b border-app-border ${
+      className={`hover:bg-app-hover h-12 border-b border-app-border ${
         isDragging ? "bg-app-hover" : ""
       }`}
     >
