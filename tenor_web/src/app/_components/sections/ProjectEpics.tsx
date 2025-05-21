@@ -123,56 +123,58 @@ export const ProjectEpics = () => {
   };
   return (
     <>
-      <h1 className="flex justify-between pb-2">
-        <span className="text-3xl font-semibold">Epics</span>
-        <PrimaryButton onClick={() => setShowSmallPopup(true)}>
-          + New Epic
-        </PrimaryButton>
-      </h1>
-      <div className="mb-3 flex flex-row justify-between gap-1 border-b-2 pb-3">
-        <SearchBar
-          searchValue={searchText}
-          handleUpdateSearch={(e) => setSearchText(e.target.value)}
-          placeholder="Search epics"
-        ></SearchBar>
-      </div>
-      <div className="flex h-[calc(100vh-230px)] flex-col gap-4 overflow-y-auto">
-        {!isLoading && epics?.length === 0 && (
-          <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
-            <div className="flex flex-col items-center gap-5">
-              <span className="-mb-10 text-[100px] text-gray-500">
-                <NoEpicsIcon fontSize="inherit" />
-              </span>
-              <h1 className="mb-5 text-3xl font-semibold text-gray-500">
-                No epics yet
-              </h1>
-              <PrimaryButton
-                onClick={() => {
-                  setShowSmallPopup(true);
-                }}
-              >
-                Create your first epic
-              </PrimaryButton>
+      <div className="flex flex-col gap-5">
+        <div className="flex justify-between">
+          <h1 className="text-3xl font-semibold">Epics</h1>
+          <PrimaryButton onClick={() => setShowSmallPopup(true)}>
+            + New Epic
+          </PrimaryButton>
+        </div>
+        <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
+          <SearchBar
+            searchValue={searchText}
+            handleUpdateSearch={(e) => setSearchText(e.target.value)}
+            placeholder="Search epics"
+          ></SearchBar>
+        </div>
+        <div className="flex h-[calc(100vh-230px)] flex-col gap-4 overflow-y-auto">
+          {!isLoading && epics?.length === 0 && (
+            <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
+              <div className="flex flex-col items-center gap-5">
+                <span className="-mb-10 text-[100px] text-gray-500">
+                  <NoEpicsIcon fontSize="inherit" />
+                </span>
+                <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+                  No epics yet
+                </h1>
+                <PrimaryButton
+                  onClick={() => {
+                    setShowSmallPopup(true);
+                  }}
+                >
+                  Create your first epic
+                </PrimaryButton>
+              </div>
             </div>
-          </div>
-        )}
-        {filteredEpics?.map((epic) => (
-          <div
-            onClick={() => {
-              setSelectedEpic(epic.id);
-              setShowEditPopup(true);
-            }}
-            key={epic.scrumId}
-            className="border-b-2 pb-3 hover:cursor-pointer"
-          >
-            <div className="flex flex-col gap-y-2">
-              <h3 className="text-xl font-semibold">
-                {formatEpicScrumId(epic.scrumId)}
-              </h3>
-              <p className="text-xl">{epic.name}</p>
+          )}
+          {filteredEpics?.map((epic) => (
+            <div
+              onClick={() => {
+                setSelectedEpic(epic.id);
+                setShowEditPopup(true);
+              }}
+              key={epic.scrumId}
+              className="border-b-2 pb-4 hover:cursor-pointer"
+            >
+              <div className="flex flex-col gap-y-2">
+                <h3 className="text-xl font-semibold">
+                  {formatEpicScrumId(epic.scrumId)}
+                </h3>
+                <p className="text-xl">{epic.name}</p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Popup to create epic */}

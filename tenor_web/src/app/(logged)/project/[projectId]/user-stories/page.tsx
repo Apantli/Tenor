@@ -27,7 +27,7 @@ export default function ProjectUserStories() {
       )}
 
       <div className="flex flex-1 flex-col items-start gap-3">
-        <div className="flex w-full flex-row items-center justify-between self-end">
+        <div className="flex w-full flex-row items-start justify-between self-end">
           <h1 className="text-3xl font-semibold">User Stories</h1>
           <SegmentedControl
             options={segmentedControlOptions}
