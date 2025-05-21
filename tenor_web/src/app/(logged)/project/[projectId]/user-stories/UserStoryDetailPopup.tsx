@@ -40,6 +40,8 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
+import { TRPCClientError } from "@trpc/client";
+import usePersistentState from "~/app/_hooks/usePersistentState";
 
 interface Props {
   userStoryId: string;
@@ -71,6 +73,7 @@ export default function UserStoryDetailPopup({
     useInvalidateQueriesUserStoriesDetails();
   const [unsavedTasks, setUnsavedTasks] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
 
@@ -91,7 +94,7 @@ export default function UserStoryDetailPopup({
 
   const userStoryDetail = userStoryData ?? fetchedUserStory;
 
-  const { mutateAsync: updateUserStory } =
+  const { mutateAsync: modifyUserStory } =
     api.userStories.modifyUserStory.useMutation();
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
@@ -102,7 +105,8 @@ export default function UserStoryDetailPopup({
     description: "",
     acceptanceCriteria: "",
   });
-  const [showAcceptanceCriteria, setShowAcceptanceCriteria] = useState(false);
+  const [showAcceptanceCriteria, setShowAcceptanceCriteria] =
+    usePersistentState(false, "acceptanceCriteria");
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
 
@@ -226,18 +230,31 @@ export default function UserStoryDetailPopup({
       },
     );
 
-    const { updatedUserStoryIds } = await updateUserStory({
-      projectId: projectId as string,
-      userStoryId: userStoryId,
-      userStoryData: updatedUserStory,
-    });
+    try {
+      const { updatedUserStoryIds } = await modifyUserStory({
+        projectId: projectId as string,
+        userStoryId: userStoryId,
+        userStoryData: updatedUserStory,
+      });
 
-    // Make other places refetch the data
-    await invalidateQueriesAllUserStories(projectId as string);
-    await invalidateQueriesUserStoriesDetails(
-      projectId as string,
-      updatedUserStoryIds,
-    );
+      // Make other places refetch the data
+      await invalidateQueriesAllUserStories(projectId as string);
+      await invalidateQueriesUserStoriesDetails(
+        projectId as string,
+        updatedUserStoryIds,
+      );
+    } catch (error) {
+      if (
+        error instanceof TRPCClientError &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        error.data?.code === "BAD_REQUEST"
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        predefinedAlerts.cyclicDependency();
+      }
+      await refetch();
+      return;
+    }
 
     if (!editMode || saveEditForm) {
       await refetch();
@@ -253,12 +270,16 @@ export default function UserStoryDetailPopup({
         "Cancel",
       )
     ) {
-      await deleteUserStory({
+      const { updatedUserStoryIds } = await deleteUserStory({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
       await invalidateQueriesAllUserStories(projectId as string);
       await invalidateQueriesAllTasks(projectId as string);
+      await invalidateQueriesUserStoriesDetails(
+        projectId as string,
+        updatedUserStoryIds, // for example, if you delete a user story, all its dependencies will be updated
+      );
       await dismissPopup();
     }
   };
@@ -291,6 +312,8 @@ export default function UserStoryDetailPopup({
 
   return (
     <Popup
+      scrollRef={scrollContainerRef}
+      setSidebarOpen={setSidebarOpen}
       show={showDetail}
       dismiss={dismissPopup}
       size="large"
@@ -514,7 +537,7 @@ export default function UserStoryDetailPopup({
         </>
       )}
       {!editMode && !isLoading && userStoryDetail && (
-        <div className="overflow-hidden" ref={scrollContainerRef}>
+        <div className="overflow-hidden">
           <div className="markdown-content overflow-hidden text-lg">
             <Markdown>{userStoryDetail.description}</Markdown>
           </div>
@@ -540,6 +563,7 @@ export default function UserStoryDetailPopup({
           )}
 
           <TasksTable
+            sidebarOpen={sidebarOpen}
             scrollContainerRef={scrollContainerRef}
             itemId={userStoryId}
             itemType="US"

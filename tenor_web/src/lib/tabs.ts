@@ -45,7 +45,7 @@ export const tabsMetaInformation = {
   performance: {
     title: "Performance",
     link: "/performance",
-    enabled: false,
+    enabled: true,
     flags: ["performance"],
   },
   settings: {

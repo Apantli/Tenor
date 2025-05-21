@@ -65,7 +65,7 @@ export default function CreateIssuePopup({
 
   const handleCreateIssue = async () => {
     if (createForm.name === "") {
-      alert("Oops", "Please enter a name for the Issue.", {
+      alert("Oops...", "Please enter a name for the Issue.", {
         type: "error",
         duration: 5000,
       });

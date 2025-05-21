@@ -24,8 +24,10 @@ import type { Firestore } from "firebase-admin/firestore";
 import { getTaskProgress, getTaskTable } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
-import type * as admin from "firebase-admin";
+import admin from "firebase-admin";
 import { getProjectContext } from "./ai";
+import { FieldValue } from "firebase-admin/firestore";
+import type { DependenciesWithId } from "~/lib/types/userStoriesUtilTypes";
 
 /**
  * @function getUserStoriesRef
@@ -85,6 +87,34 @@ export const getUserStories = async (
   const userStoriesRef = getUserStoriesRef(firestore, projectId)
     .where("deleted", "==", false)
     .orderBy("scrumId", "desc");
+  const userStoriesSnapshot = await userStoriesRef.get();
+  const userStories: WithId<UserStory>[] = userStoriesSnapshot.docs.map(
+    (doc) => {
+      return {
+        id: doc.id,
+        ...UserStorySchema.parse(doc.data()),
+      } as WithId<UserStory>;
+    },
+  );
+  return userStories;
+};
+
+/**
+ * @function getUserStoriesAfter
+ * @description Retrieves all non-deleted user stories after a specified date
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve user stories from
+ * @param {Date} date - The date to filter user stories
+ * @returns {Promise<WithId<UserStory>[]>} An array of user story objects with their IDs
+ */
+export const getUserStoriesAfter = async (
+  firestore: Firestore,
+  projectId: string,
+  date: Date,
+) => {
+  const userStoriesRef = getUserStoriesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("createdAt", ">=", admin.firestore.Timestamp.fromDate(date));
   const userStoriesSnapshot = await userStoriesRef.get();
   const userStories: WithId<UserStory>[] = userStoriesSnapshot.docs.map(
     (doc) => {
@@ -335,4 +365,186 @@ ${itemContext}
 ${epicContext}
 ${tagContext}\n
 `;
+};
+
+export const updateDependency = (
+  firestore: Firestore,
+  projectId: string,
+  userStoryId: string,
+  relatedUserStoryId: string,
+  operation: "add" | "remove",
+  field: "requiredByIds" | "dependencyIds",
+) => {
+  const updateRef = getUserStoryRef(firestore, projectId, userStoryId);
+  if (operation === "add") {
+    return updateRef.update({
+      [field]: FieldValue.arrayUnion(relatedUserStoryId),
+    });
+  } else {
+    return updateRef.update({
+      [field]: FieldValue.arrayRemove(relatedUserStoryId),
+    });
+  }
+};
+
+/**
+ * Helper function to perform DFS and detect cycle in user story dependencies
+ * @param adjacencyList Adjacency list representation of the dependency graph
+ * @param userStoryId Current user story ID being checked
+ * @param visitedUserStories Map to track visited nodes
+ * @param recursionPathVisited Map to track nodes in current recursion stack
+ * @returns {boolean} True if a cycle is detected, false otherwise
+ */
+const isCyclicUtil = (
+  adjacencyList: Map<string, string[]>,
+  userStoryId: string,
+  visitedUserStories: Map<string, boolean>,
+  recursionPathVisited: Map<string, boolean>,
+): boolean => {
+  // If node is already in the recursion stack, cycle detected
+  if (recursionPathVisited.get(userStoryId)) return true;
+
+  // If node is already visited and not in recStack, no need to check again
+  if (visitedUserStories.get(userStoryId)) return false;
+
+  // Mark the node as visited and add it to the recursion stack
+  visitedUserStories.set(userStoryId, true);
+  recursionPathVisited.set(userStoryId, true);
+
+  // Recur for all neighbors (dependencies) of the current node
+  const neighbors = adjacencyList.get(userStoryId) ?? [];
+  for (const v of neighbors) {
+    if (
+      isCyclicUtil(adjacencyList, v, visitedUserStories, recursionPathVisited)
+    ) {
+      return true; // If any path leads to a cycle, return true
+    }
+  }
+
+  // Backtrack: remove the node from recursion stack
+  recursionPathVisited.set(userStoryId, false);
+  return false;
+};
+
+/**
+ * Function to construct adjacency list from user stories
+ * @param userStories Array of user stories
+ * @param newUserStories Optional array of new user stories to include in the graph
+ * @param newDependencies Optional array of new dependencies to include in the graph
+ * @returns Map representing the adjacency list
+ */
+const constructAdjacencyList = (
+  userStories: DependenciesWithId[],
+  newUserStories?: DependenciesWithId[],
+  newDependencies?: Array<{ sourceId: string; targetId: string }>,
+): Map<string, string[]> => {
+  const adj = new Map<string, string[]>();
+
+  // Add dependencies from existing user stories
+  userStories.forEach((us) => {
+    adj.set(us.id, [...(us.dependencyIds ?? [])]);
+    us.requiredByIds?.forEach((reqId) => {
+      const reqs = adj.get(reqId) ?? [];
+      reqs.push(us.id);
+      adj.set(reqId, reqs);
+    });
+  });
+
+  // Add new user stories if provided
+  if (newUserStories) {
+    newUserStories.forEach((us) => {
+      adj.set(us.id, [...(us.dependencyIds ?? [])]);
+      us.requiredByIds?.forEach((reqId) => {
+        const reqs = adj.get(reqId) ?? [];
+        reqs.push(us.id);
+        adj.set(reqId, reqs);
+      });
+    });
+  }
+
+  // Add new dependencies if provided
+  if (newDependencies) {
+    newDependencies.forEach(({ sourceId, targetId }) => {
+      const deps = adj.get(sourceId) ?? [];
+      if (!deps.includes(targetId)) {
+        deps.push(targetId);
+        adj.set(sourceId, deps);
+      }
+    });
+  }
+
+  return adj;
+};
+
+/**
+ * Checks if there is a cycle in the dependencies between user stories
+ * @param firestore Firestore instance
+ * @param projectId Project ID
+ * @param newUserStories Optional array of new user stories to include in cycle detection
+ * @param newDependencies Optional array of new dependencies to include in cycle detection
+ * @returns {Promise<boolean>} True if a cycle is detected, false otherwise
+ */
+export const hasDependencyCycle = async (
+  firestore: Firestore,
+  projectId: string,
+  newUserStories?: DependenciesWithId[],
+  newDependencies?: Array<{ sourceId: string; targetId: string }>,
+): Promise<boolean> => {
+  // Get all user stories
+  const userStories = await getUserStories(firestore, projectId);
+
+  // Construct adjacency list
+  const adj = constructAdjacencyList(
+    userStories,
+    newUserStories,
+    newDependencies,
+  );
+
+  // Initialize visited and recursion stack maps
+  const visited = new Map<string, boolean>();
+  const recStack = new Map<string, boolean>();
+
+  // Initialize all nodes as not visited
+  adj.forEach((_, id) => {
+    visited.set(id, false);
+    recStack.set(id, false);
+  });
+
+  // Check each user story (for disconnected components)
+  for (const [id] of adj) {
+    if (!visited.get(id) && isCyclicUtil(adj, id, visited, recStack)) {
+      return true; // Cycle found
+    }
+  }
+
+  return false; // No cycle detected
+};
+
+/**
+ * @function getSprintUserStories
+ * @description Retrieves all non-deleted user stories associated with a specific project and sprint
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project to retrieve user stories from
+ * @param {string} sprintId - The ID of the sprint to retrieve user stories from
+ * @returns {Promise<WithId<UserStory>[]>} An array of user story objects with their IDs
+ */
+export const getSprintUserStories = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  const userStoriesRef = getUserStoriesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("sprintId", "==", sprintId);
+
+  const userStoriesSnapshot = await userStoriesRef.get();
+  const userStories: WithId<UserStory>[] = userStoriesSnapshot.docs.map(
+    (doc) => {
+      return {
+        id: doc.id,
+        ...UserStorySchema.parse(doc.data()),
+      } as WithId<UserStory>;
+    },
+  );
+  return userStories;
 };
