@@ -53,6 +53,7 @@ export default function ProjectPerformance() {
       {selectedMember ? (
         <MemberDetailsCard
           member={selectedMember}
+          projectId={projectIdString}
           // timeInterval={section}
           setSelectedMember={setSelectedMember}
         />

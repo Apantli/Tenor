@@ -1,3 +1,5 @@
+"use client";
+
 import ProfilePicture from "~/app/_components/ProfilePicture";
 
 import {
@@ -7,16 +9,31 @@ import {
 } from "~/app/_components/charts/ContributionPieChart";
 import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
+import { api } from "~/trpc/react";
+import { emptyRole } from "~/lib/defaultProjectValues";
 
 export const MemberDetailsCard = ({
   member,
   // timeInterval,
+  projectId,
   setSelectedMember,
 }: {
   member: UserCol;
+  projectId: string;
   // timeInterval: string;
   setSelectedMember: (member: UserCol | null) => void;
 }) => {
+  const { data: roles, isLoading } = api.projects.getUserTypes.useQuery({
+    projectId: projectId,
+  });
+
+  let roleString =
+    roles?.find((role) => role.id === member.roleId)?.label ?? emptyRole.label;
+
+  if (member.roleId === "owner") {
+    roleString = "Owner";
+  }
+
   return (
     <div className="flex w-[700px] min-w-[600px] flex-col gap-y-4 rounded-md border-2 p-4">
       <CrossIcon
@@ -28,14 +45,14 @@ export const MemberDetailsCard = ({
         <ProfilePicture
           user={member}
           hideTooltip
-          pictureClassName="h-32 w-32 ml-5 my-auto"
+          pictureClassName="h-32 w-32 ml-5 my-auto text-5xl"
         />
         <div className="my-auto flex flex-col justify-start overflow-hidden pl-4 pr-4">
           <h3 className="my-[7px] max-w-[500px] truncate text-2xl font-semibold">
             {member.displayName}
           </h3>
           <p className="line-clamp-2 text-xl capitalize text-gray-500">
-            {member.roleId == "none" ? "No role" : member.roleId}
+            {isLoading ? "Loading..." : roleString}
           </p>
         </div>
       </div>
