@@ -181,7 +181,7 @@ export default function HappinessForm({
         <div className="flex flex-col gap-5">
           <div>
             <InputTextAreaField
-              label="1. How do you feel about your current role and responsibilities?"
+              label="1. How do you feel about your current role and responsibilities within the project?"
               placeholder="Write 2 to 3 sentences answering the question..."
               value={responses.roleFeeling}
               onChange={(e) => handleChange(e, "roleFeeling")}
@@ -201,7 +201,7 @@ export default function HappinessForm({
           </div>
           <div>
             <InputTextAreaField
-              label="3. What are your suggestions for improvement for the next sprint?"
+              label="3. What are your suggestions for improvement for the next sprint and what would make you happier?"
               placeholder="Write 2 to 3 sentences answering the question..."
               value={responses.improvementSuggestion}
               onChange={(e) => handleChange(e, "improvementSuggestion")}
