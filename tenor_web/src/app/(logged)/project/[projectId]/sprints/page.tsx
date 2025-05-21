@@ -427,6 +427,8 @@ export default function ProjectSprints() {
     setLastDraggedBacklogItemId(null);
   }, [sprintSearchValue]);
 
+  const permission = useGetPermission({ flags: ["sprints"] });
+
   return (
     <>
       <DragDropProvider
