@@ -6,14 +6,34 @@ import UserStoryTable from "~/app/_components/sections/UserStoryTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 const segmentedControlOptions = ["List", "Dependency Tree"];
 
 export default function ProjectUserStories() {
+  const confirm = useConfirmation();
+
   const [selectedView, setSelectedView] = useState(
     localStorage.getItem("user-stories-view") ?? segmentedControlOptions[0],
   );
-  const onSegmentedControlChange = (value: string) => {
+  const [allowSegmentedControlChange, setAllowSegmentedControlChange] =
+    useState(true);
+
+  const onSegmentedControlChange = async (value: string) => {
+    // Do not proceed if the user has unsaved changes
+    // and the user has not confirmed to discard them
+    if (
+      !allowSegmentedControlChange &&
+      !(await confirm(
+        "Are you sure?",
+        "You have unsaved AI generated user stories. To save them, please accept them first.",
+        "Discard",
+        "Keep editing",
+      ))
+    ) {
+      return;
+    }
+    setAllowSegmentedControlChange(true);
     setSelectedView(value);
     localStorage.setItem("user-stories-view", value);
   };
@@ -37,7 +57,11 @@ export default function ProjectUserStories() {
           />
         </div>
 
-        {selectedView === "List" && <UserStoryTable />}
+        {selectedView === "List" && (
+          <UserStoryTable
+            setAllowSegmentedControlChange={setAllowSegmentedControlChange}
+          />
+        )}
 
         {selectedView === "Dependency Tree" && (
           <ReactFlowProvider>

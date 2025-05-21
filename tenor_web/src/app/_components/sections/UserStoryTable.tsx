@@ -7,7 +7,13 @@ import {
   type Size,
   type Tag,
 } from "~/lib/types/firebaseSchemas";
-import { useMemo, useRef, useState, type ChangeEventHandler } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEventHandler,
+} from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -42,7 +48,13 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
-export default function UserStoryTable() {
+interface Props {
+  setAllowSegmentedControlChange: (value: boolean) => void;
+}
+
+export default function UserStoryTable({
+  setAllowSegmentedControlChange,
+}: Props) {
   // #region Hooks
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
@@ -140,7 +152,7 @@ export default function UserStoryTable() {
         }
       }
 
-      await refetchUS();
+      await invalidateQueriesAllUserStories(projectId as string);
     },
     (removedIds) => {
       const newGeneratedUserStories = generatedUserStories.current?.filter(
@@ -176,13 +188,10 @@ export default function UserStoryTable() {
 
   // #region TRPC
   const utils = api.useUtils();
-  const {
-    data: userStories,
-    isLoading: isLoadingUS,
-    refetch: refetchUS,
-  } = api.userStories.getUserStoryTable.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: userStories, isLoading: isLoadingUS } =
+    api.userStories.getUserStoryTable.useQuery({
+      projectId: projectId as string,
+    });
   const { mutateAsync: updateUserStoryTags } =
     api.userStories.modifyUserStoryTags.useMutation();
   const { mutateAsync: deleteUserStory } =
@@ -604,6 +613,12 @@ export default function UserStoryTable() {
       />
     );
   };
+
+  useEffect(() => {
+    setAllowSegmentedControlChange(
+      !(generating || (generatedUserStories.current?.length ?? 0) > 0),
+    );
+  }, [generating, generatedUserStories.current?.length]);
   // #endregion
 
   return (
