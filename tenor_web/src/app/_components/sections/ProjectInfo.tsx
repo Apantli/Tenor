@@ -11,7 +11,11 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
   const [showDescription, setShowDescription] = useState(false);
   
   const projectTitle = project?.name ?? "Project Name";
-  const projectDescription = project?.description ?? "Project Description";
+  let projectDescription = project?.description ?? "Project Description";
+  // Check if the description is empty or undefined
+  if (!projectDescription || projectDescription === "undefined") {
+    projectDescription = "No description available.";
+  }
 
   // Define the length of the preview text
   const previewLength = 255;
