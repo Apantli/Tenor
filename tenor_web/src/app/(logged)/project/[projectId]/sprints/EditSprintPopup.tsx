@@ -71,17 +71,6 @@ export default function EditSprintPopup({
     }
   }, [sprintData]);
 
-  const showReorderedAlert = () => {
-    alert(
-      "Your sprint numbers have been updated",
-      "After editing the sprint dates, the sprint numbers changed to be in order.",
-      {
-        type: "success",
-        duration: 8000,
-      },
-    );
-  };
-
   const handleUpdateSprint = async () => {
     if (!sprintData) return;
 
@@ -114,7 +103,14 @@ export default function EditSprintPopup({
       },
     });
     if (result.reorderedSprints) {
-      showReorderedAlert();
+      alert(
+        "Sprint updated",
+        "The remaining sprints have been renumbered to stay in order.",
+        {
+          type: "success",
+          duration: 8000,
+        },
+      );
     }
     setShowPopup(false);
     await invalidateQueriesSingleSprint(projectId as string, sprintData.id);
@@ -137,7 +133,14 @@ export default function EditSprintPopup({
         sprintId: sprintData.id,
       });
       if (result.reorderedSprints) {
-        showReorderedAlert();
+        alert(
+          "Sprint deleted",
+          "The remaining sprints have been renumbered to stay in order.",
+          {
+            type: "success",
+            duration: 8000,
+          },
+        );
       }
       setShowPopup(false);
       await invalidateQueriesAllSprints(projectId as string);
