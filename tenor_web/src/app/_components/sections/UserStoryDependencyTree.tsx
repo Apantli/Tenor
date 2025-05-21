@@ -333,7 +333,7 @@ export default function UserStoryDependencyTree() {
   // #endregion
 
   return (
-    <div className="mt-3 h-[calc(100vh-200px)] w-full">
+    <div className="mt-3 h-[calc(100vh-250px)] w-full">
       {isLoadingDependencies && (
         <div className="flex h-full w-full items-center justify-center">
           <p className="text-2xl font-bold text-gray-500">

@@ -37,7 +37,7 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function UserStoryTable() {
-  // Hooks
+  // #region Hooks
   const { projectId } = useParams();
   const [searchValue, setSearchValue] = useState("");
 
@@ -57,63 +57,8 @@ export default function UserStoryTable() {
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  // TRPC
-  const utils = api.useUtils();
-  const {
-    data: userStories,
-    isLoading: isLoadingUS,
-    refetch: refetchUS,
-  } = api.userStories.getUserStoryTable.useQuery({
-    projectId: projectId as string,
-  });
-  const { mutateAsync: updateUserStoryTags } =
-    api.userStories.modifyUserStoryTags.useMutation();
-  const { mutateAsync: deleteUserStory } =
-    api.userStories.deleteUserStory.useMutation();
-  const { mutateAsync: createUserStory } =
-    api.userStories.createUserStory.useMutation();
-  const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
-
-  // Handles
-  const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setSearchValue(e.target.value);
-  };
-
-  const filteredData = (userStories ?? []).filter((userStory) => {
-    const lowerSearchValue = searchValue.toLowerCase();
-    return (
-      userStory.name.toLowerCase().includes(lowerSearchValue) ||
-      formatUserStoryScrumId(userStory.scrumId!).includes(lowerSearchValue)
-    );
-  });
-
-  const userStoryData = filteredData.sort((a, b) => {
-    // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
-    if (
-      (a.scrumId === undefined || a.scrumId === -1) &&
-      (b.scrumId === undefined || b.scrumId === -1)
-    )
-      return 0;
-    if (a.scrumId === undefined || a.scrumId === -1) return -1;
-    if (b.scrumId === undefined || b.scrumId === -1) return 1;
-
-    return a.scrumId < b.scrumId ? 1 : -1;
-  });
-
+  // For the ghost US
   const generatedUserStories = useRef<UserStoryDetailWithTasks[]>();
-
-  useNavigationGuard(async () => {
-    if ((generatedUserStories?.current?.length ?? 0) > 0) {
-      return !(await confirm(
-        "Are you sure?",
-        "You have unsaved AI generated user stories. To save them, please accept them first.",
-        "Discard",
-        "Keep editing",
-      ));
-    }
-    return false;
-  });
-
   const {
     onAccept,
     onAcceptAll,
@@ -221,7 +166,138 @@ export default function UserStoryTable() {
     generating || (generatedUserStories.current?.length ?? 0) > 0,
     "Are you sure you want to leave? You have unsaved AI generated user stories. To save them, please accept them first.",
   );
+  // #endregion
 
+  // #region TRPC
+  const utils = api.useUtils();
+  const {
+    data: userStories,
+    isLoading: isLoadingUS,
+    refetch: refetchUS,
+  } = api.userStories.getUserStoryTable.useQuery({
+    projectId: projectId as string,
+  });
+  const { mutateAsync: updateUserStoryTags } =
+    api.userStories.modifyUserStoryTags.useMutation();
+  const { mutateAsync: deleteUserStory } =
+    api.userStories.deleteUserStory.useMutation();
+  const { mutateAsync: createUserStory } =
+    api.userStories.createUserStory.useMutation();
+  const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
+  const { mutateAsync: generateStories } =
+    api.userStories.generateUserStories.useMutation();
+
+  // #endregion
+
+  // #region Handles
+  const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
+    setSearchValue(e.target.value);
+  };
+
+  const handleDelete = async (
+    ids: string[],
+    callback: (del: boolean) => void,
+  ) => {
+    const confirmMessage = ids.length > 1 ? "user stories" : "user story";
+    if (
+      !(await confirm(
+        `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
+        "This action is not reversible.",
+        `Delete ${confirmMessage}`,
+      ))
+    ) {
+      callback(false);
+      return;
+    }
+    callback(true); // call the callback as soon as possible
+
+    const newData = userStoryData.filter(
+      (userStory) => !ids.includes(userStory.id),
+    );
+
+    // Uses optimistic update to update the size of the user story
+    await utils.userStories.getUserStoryTable.cancel({
+      projectId: projectId as string,
+    });
+    utils.userStories.getUserStoryTable.setData(
+      { projectId: projectId as string },
+      newData,
+    );
+
+    // Deletes in database
+    await Promise.all(
+      ids.map((id) =>
+        deleteUserStory({
+          projectId: projectId as string,
+          userStoryId: id,
+        }),
+      ),
+    );
+    await invalidateQueriesAllTasks(projectId as string);
+    await invalidateQueriesAllUserStories(projectId as string);
+    return true;
+  };
+
+  const filteredData = (userStories ?? []).filter((userStory) => {
+    const lowerSearchValue = searchValue.toLowerCase();
+    return (
+      userStory.name.toLowerCase().includes(lowerSearchValue) ||
+      formatUserStoryScrumId(userStory.scrumId!).includes(lowerSearchValue)
+    );
+  });
+
+  const userStoryData = filteredData.sort((a, b) => {
+    // Flipped to show the latest user stories first (also makes AI generated ones appear at the top after getting accepted)
+    if (
+      (a.scrumId === undefined || a.scrumId === -1) &&
+      (b.scrumId === undefined || b.scrumId === -1)
+    )
+      return 0;
+    if (a.scrumId === undefined || a.scrumId === -1) return -1;
+    if (b.scrumId === undefined || b.scrumId === -1) return 1;
+
+    return a.scrumId < b.scrumId ? 1 : -1;
+  });
+
+  const onUserStoryAdded = async (userStoryId: string) => {
+    await invalidateQueriesAllUserStories(projectId as string);
+    setShowNewStory(false);
+    setSelectedGhostUS("");
+    setUserStoryId(userStoryId);
+  };
+
+  const generateUserStories = async (amount: number, prompt: string) => {
+    beginLoading(amount);
+
+    const generatedData = await generateStories({
+      amount,
+      prompt,
+      projectId: projectId as string,
+    });
+    generatedUserStories.current = generatedData.map((story, i) => ({
+      ...story,
+      id: i.toString(),
+      tasks: [],
+    }));
+
+    const tableData = generatedData.map((data, i) => ({
+      id: i.toString(),
+      scrumId: -1,
+      name: data.name,
+      epicScrumId: data.epic?.scrumId,
+      priority: data.priority,
+      size: data.size ?? "M",
+      sprintNumber: undefined,
+      taskProgress: [0, 0] as [number, number],
+    }));
+
+    // TODO: Re-add this
+    finishLoading(tableData);
+  };
+
+  // #endregion
+
+  // #region Utils
   // Function to get the US table or message instead
   const getTable = () => {
     if (userStories == undefined || isLoadingUS) {
@@ -488,50 +564,6 @@ export default function UserStoryTable() {
       },
     };
 
-    const handleDelete = async (
-      ids: string[],
-      callback: (del: boolean) => void,
-    ) => {
-      const confirmMessage = ids.length > 1 ? "user stories" : "user story";
-      if (
-        !(await confirm(
-          `Are you sure you want to delete ${ids.length == 1 ? "this " + confirmMessage : ids.length + " " + confirmMessage}?`,
-          "This action is not reversible.",
-          `Delete ${confirmMessage}`,
-        ))
-      ) {
-        callback(false);
-        return;
-      }
-      callback(true); // call the callback as soon as possible
-
-      const newData = userStoryData.filter(
-        (userStory) => !ids.includes(userStory.id),
-      );
-
-      // Uses optimistic update to update the size of the user story
-      await utils.userStories.getUserStoryTable.cancel({
-        projectId: projectId as string,
-      });
-      utils.userStories.getUserStoryTable.setData(
-        { projectId: projectId as string },
-        newData,
-      );
-
-      // Deletes in database
-      await Promise.all(
-        ids.map((id) =>
-          deleteUserStory({
-            projectId: projectId as string,
-            userStoryId: id,
-          }),
-        ),
-      );
-      await invalidateQueriesAllTasks(projectId as string);
-      await invalidateQueriesAllUserStories(projectId as string);
-      return true;
-    };
-
     return (
       <Table
         emptyMessage="No user stories found"
@@ -552,134 +584,92 @@ export default function UserStoryTable() {
       />
     );
   };
-
-  const onUserStoryAdded = async (userStoryId: string) => {
-    await invalidateQueriesAllUserStories(projectId as string);
-    setShowNewStory(false);
-    setSelectedGhostUS("");
-    setUserStoryId(userStoryId);
-  };
-
-  const { mutateAsync: generateStories } =
-    api.userStories.generateUserStories.useMutation();
-
-  const generateUserStories = async (amount: number, prompt: string) => {
-    beginLoading(amount);
-
-    const generatedData = await generateStories({
-      amount,
-      prompt,
-      projectId: projectId as string,
-    });
-    generatedUserStories.current = generatedData.map((story, i) => ({
-      ...story,
-      id: i.toString(),
-      tasks: [],
-    }));
-
-    const tableData = generatedData.map((data, i) => ({
-      id: i.toString(),
-      scrumId: -1,
-      name: data.name,
-      epicScrumId: data.epic?.scrumId,
-      priority: data.priority,
-      size: data.size ?? "M",
-      sprintNumber: undefined,
-      taskProgress: [0, 0] as [number, number],
-    }));
-
-    // TODO: Re-add this
-    finishLoading(tableData);
-  };
+  // #endregion
 
   return (
     <>
-      <div className="flex flex-1 flex-col items-start gap-3">
-        <h1 className="text-3xl font-semibold">User Stories</h1>
+      <div className="flex w-full items-center gap-1 pb-2">
+        <SearchBar
+          searchValue={searchValue}
+          handleUpdateSearch={handleUpdateSearch}
+          placeholder="Find a user story by title or Id..."
+        ></SearchBar>
+        <PrimaryButton onClick={() => setShowNewStory(true)}>
+          + New Story
+        </PrimaryButton>
+        <AiGeneratorDropdown
+          singularLabel="story"
+          pluralLabel="stories"
+          onGenerate={generateUserStories}
+          disabled={generating}
+          alreadyGenerated={(ghostData?.length ?? 0) > 0}
+          onAcceptAll={onAcceptAll}
+          onRejectAll={onRejectAll}
+        />
+      </div>
 
-        <div className="flex w-full items-center gap-1 pb-2">
-          <SearchBar
-            searchValue={searchValue}
-            handleUpdateSearch={handleUpdateSearch}
-            placeholder="Find a user story by title or Id..."
-          ></SearchBar>
-          <PrimaryButton onClick={() => setShowNewStory(true)}>
-            + New Story
-          </PrimaryButton>
-          <AiGeneratorDropdown
-            singularLabel="story"
-            pluralLabel="stories"
-            onGenerate={generateUserStories}
-            disabled={generating}
-            alreadyGenerated={(ghostData?.length ?? 0) > 0}
-            onAcceptAll={onAcceptAll}
-            onRejectAll={onRejectAll}
-          />
-        </div>
+      {getTable()}
 
-        {getTable()}
-
-        {renderDetail && (
-          <UserStoryDetailPopup
-            showDetail={showDetail}
-            userStoryId={selectedUS}
-            userStoryData={
-              selectedGhostUS !== ""
-                ? generatedUserStories.current?.find(
-                    (it) => it.id === selectedGhostUS,
-                  )
-                : undefined
-            }
-            setUserStoryId={(newId) => {
-              setUserStoryId(newId);
-              if (newId === "" && selectedGhostUS !== "") {
-                setShowDetail(false);
-                setTimeout(() => setSelectedGhostUS(""), 300);
-              }
-            }}
-            setUserStoryData={(updatedDetail) => {
-              if (!selectedGhostUS || !updatedDetail) return;
-              updateGhostRow(selectedGhostUS, (oldData) => ({
-                ...oldData,
-                title: updatedDetail.name,
-                description: updatedDetail.description,
-                epicScrumId: updatedDetail.epic?.scrumId,
-                priority: updatedDetail.priority,
-                size: updatedDetail.size ?? "M",
-                taskProgress: [0, updatedDetail.tasks.length],
-              }));
-              generatedUserStories.current = generatedUserStories.current?.map(
-                (story) => {
-                  if (story.id === selectedGhostUS) {
-                    return updatedDetail;
-                  }
-                  return story;
-                },
-              );
-            }}
-            onAccept={async () => {
+      {renderDetail && (
+        <UserStoryDetailPopup
+          showDetail={showDetail}
+          userStoryId={selectedUS}
+          userStoryData={
+            selectedGhostUS !== ""
+              ? generatedUserStories.current?.find(
+                  (it) => it.id === selectedGhostUS,
+                )
+              : undefined
+          }
+          setUserStoryId={(newId) => {
+            setUserStoryId(newId);
+            if (newId === "" && selectedGhostUS !== "") {
               setShowDetail(false);
               setTimeout(() => setSelectedGhostUS(""), 300);
-              await onAccept([selectedGhostUS]);
-            }}
-            onReject={() => {
-              setShowDetail(false);
-              setTimeout(() => {
-                onReject([selectedGhostUS]);
-                setSelectedGhostUS("");
-              }, 300);
-            }}
-          />
-        )}
+            }
+          }}
+          setUserStoryData={(updatedDetail) => {
+            if (!selectedGhostUS || !updatedDetail) return;
+            updateGhostRow(selectedGhostUS, (oldData) => ({
+              ...oldData,
+              title: updatedDetail.name,
+              description: updatedDetail.description,
+              epicScrumId: updatedDetail.epic?.scrumId,
+              priority: updatedDetail.priority,
+              size: updatedDetail.size ?? "M",
+              taskProgress: [0, updatedDetail.tasks.length],
+            }));
+            generatedUserStories.current = generatedUserStories.current?.map(
+              (story) => {
+                if (story.id === selectedGhostUS) {
+                  return updatedDetail;
+                }
+                return story;
+              },
+            );
+          }}
+          onAccept={async () => {
+            setShowDetail(false);
+            setTimeout(() => setSelectedGhostUS(""), 300);
+            await onAccept([selectedGhostUS]);
+          }}
+          onReject={() => {
+            setShowDetail(false);
+            setTimeout(() => {
+              onReject([selectedGhostUS]);
+              setSelectedGhostUS("");
+            }, 300);
+          }}
+        />
+      )}
 
-        {renderNewStory && (
-          <CreateUserStoryPopup
-            onUserStoryAdded={onUserStoryAdded}
-            showPopup={showNewStory}
-            setShowPopup={setShowNewStory}
-          />
-        )}
-      </div>
+      {renderNewStory && (
+        <CreateUserStoryPopup
+          onUserStoryAdded={onUserStoryAdded}
+          showPopup={showNewStory}
+          setShowPopup={setShowNewStory}
+        />
+      )}
     </>
   );
 }
