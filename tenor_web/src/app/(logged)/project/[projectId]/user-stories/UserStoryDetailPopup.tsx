@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
@@ -40,6 +40,11 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 
@@ -93,6 +98,18 @@ export default function UserStoryDetailPopup({
   );
 
   const userStoryDetail = userStoryData ?? fetchedUserStory;
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   const { mutateAsync: modifyUserStory } =
     api.userStories.modifyUserStory.useMutation();
@@ -325,6 +342,7 @@ export default function UserStoryDetailPopup({
               <>
                 <h3 className="text-lg font-semibold">Epic</h3>
                 <EpicPicker
+                  disabled={permission < permissionNumbers.write}
                   epic={userStoryDetail?.epic}
                   onChange={async (epic) => {
                     await handleSave({ ...userStoryDetail, epic });
@@ -335,6 +353,7 @@ export default function UserStoryDetailPopup({
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Priority</h3>
                     <PriorityPicker
+                      disabled={permission < permissionNumbers.write}
                       priority={userStoryDetail.priority}
                       onChange={async (priority) => {
                         await handleSave({ ...userStoryDetail, priority });
@@ -344,6 +363,7 @@ export default function UserStoryDetailPopup({
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePillComponent
+                      disabled={permission < permissionNumbers.write}
                       currentSize={userStoryDetail.size}
                       callback={async (size) => {
                         await handleSave({ ...userStoryDetail, size });
@@ -368,6 +388,7 @@ export default function UserStoryDetailPopup({
                       )}
                     </div>
                     <StatusPicker
+                      disabled={permission < permissionNumbers.write}
                       status={userStoryDetail.status}
                       onChange={async (status) => {
                         await handleSave({ ...userStoryDetail, status });
@@ -381,6 +402,7 @@ export default function UserStoryDetailPopup({
                 )}
 
                 <BacklogTagList
+                  disabled={permission < permissionNumbers.write}
                   tags={userStoryDetail.tags}
                   onChange={async (tags) => {
                     await handleSave({ ...userStoryDetail, tags });
@@ -393,6 +415,7 @@ export default function UserStoryDetailPopup({
                 </h3>
 
                 <DependencyList
+                  disabled={permission < permissionNumbers.write}
                   label="Dependencies"
                   userStoryId={userStoryDetail.id}
                   userStories={userStoryDetail.dependencies}
@@ -403,6 +426,7 @@ export default function UserStoryDetailPopup({
                 />
 
                 <DependencyList
+                  disabled={permission < permissionNumbers.write}
                   label="Required by"
                   userStoryId={userStoryDetail.id}
                   userStories={userStoryDetail.requiredBy}
@@ -418,6 +442,7 @@ export default function UserStoryDetailPopup({
       }
       footer={
         !isLoading &&
+        permission >= permissionNumbers.write &&
         (userStoryDetail?.scrumId !== -1 ? (
           <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
         ) : (
@@ -479,7 +504,13 @@ export default function UserStoryDetailPopup({
           )}
         </>
       }
-      editMode={isLoading ? undefined : editMode}
+      editMode={
+        permission >= permissionNumbers.write
+          ? isLoading
+            ? undefined
+            : editMode
+          : undefined
+      }
       setEditMode={async (isEditing) => {
         if (unsavedTasks) {
           const confirmation = await confirm(

@@ -22,6 +22,7 @@ interface Props {
   hideSearch?: boolean;
   label?: string;
   emptyLabel?: string;
+  disabled?: boolean;
 }
 
 export default function PillPickerComponent({
@@ -33,6 +34,7 @@ export default function PillPickerComponent({
   hideSearch,
   label = "Select an item",
   emptyLabel = "No items available",
+  disabled = false,
 }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -67,11 +69,14 @@ export default function PillPickerComponent({
             )}
             {selectedItem.label}
           </span>
-          <span className="text-app-primary">
-            <ArrowDropDownIcon />
-          </span>
+          {!disabled && (
+            <span className="text-app-primary">
+              <ArrowDropDownIcon />
+            </span>
+          )}
         </div>
       }
+      disabled={disabled}
       onOpen={() => inputRef.current?.focus()}
     >
       {!hideSearch && (

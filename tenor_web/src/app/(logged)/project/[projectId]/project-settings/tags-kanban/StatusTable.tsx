@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import SearchBar from "~/app/_components/SearchBar";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
@@ -32,9 +32,25 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import StatusTableRow from "./StatusTableRow";
+import {
+  permissionNumbers,
+  type Permission,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export default function StatusTable() {
   const { projectId } = useParams();
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["settings"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
   const utils = api.useUtils();
   const [searchValue, setSearchValue] = useState("");
   const [renderNewStatus, showNewStatus, setShowNewStatus] =
@@ -307,11 +323,13 @@ export default function StatusTable() {
           </thead>
           <tbody>
             <SortableContext
+              disabled={permission < permissionNumbers.write}
               items={tableData.map((item) => item.id)}
               strategy={verticalListSortingStrategy}
             >
               {tableData.map((item) => (
                 <StatusTableRow
+                  disabled={permission < permissionNumbers.write}
                   key={item.id}
                   item={item}
                   onEdit={() => handleModifyStatus(item.id)}
@@ -340,12 +358,14 @@ export default function StatusTable() {
               handleUpdateSearch={(e) => setSearchValue(e.target.value)}
             />
           </div>
-          <PrimaryButton
-            onClick={() => setShowNewStatus(true)}
-            className="whitespace-nowrap"
-          >
-            + Add status
-          </PrimaryButton>
+          {permission >= permissionNumbers.write && (
+            <PrimaryButton
+              onClick={() => setShowNewStatus(true)}
+              className="whitespace-nowrap"
+            >
+              + Add status
+            </PrimaryButton>
+          )}
         </div>
 
         <div className="max-w-[750px]">{renderTable()}</div>
@@ -361,6 +381,7 @@ export default function StatusTable() {
 
       {renderDetailStatus && (
         <StatusDetailPopup
+          disabled={permission < permissionNumbers.write}
           showPopup={showDetailStatus}
           setShowPopup={setShowDetailStatus}
           statusId={selectedStatusId}
