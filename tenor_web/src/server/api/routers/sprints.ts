@@ -59,7 +59,13 @@ export const sprintsRouter = createTRPCRouter({
 
       sprintData.number = await getSprintNewId(ctx.firestore, projectId);
       await getSprintsRef(ctx.firestore, projectId).add(sprintData);
-      return { success: true, reorderedSprints: false };
+
+      const didReorderSprints = await updateSprintNumberOrder(
+        ctx.firestore,
+        projectId,
+      );
+
+      return { success: true, reorderedSprints: didReorderSprints };
     }),
 
   modifySprint: roleRequiredProcedure(sprintPermissions, "write")

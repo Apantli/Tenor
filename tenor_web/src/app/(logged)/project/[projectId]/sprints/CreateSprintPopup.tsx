@@ -7,6 +7,7 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import Popup from "~/app/_components/Popup";
 import { type AlertFunction, useAlert } from "~/app/_hooks/useAlert";
 import { api } from "~/trpc/react";
+import { showReorderAlert } from "./EditSprintPopup";
 
 export interface SprintDates {
   id: string;
@@ -140,7 +141,7 @@ export default function CreateSprintPopup({
       return;
     }
 
-    await createSprint({
+    const response = await createSprint({
       projectId: projectId as string,
       sprintData: {
         number: -1,
@@ -153,6 +154,10 @@ export default function CreateSprintPopup({
         issueIds: [],
       },
     });
+    if (response.reorderedSprints) {
+      showReorderAlert(alert);
+    }
+
     await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
       projectId: projectId as string,
     });
