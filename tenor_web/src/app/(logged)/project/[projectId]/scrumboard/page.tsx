@@ -6,15 +6,34 @@ import { usePopupVisibilityState } from "~/app/_components/Popup";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import { useParams } from "next/navigation";
 import CreateKanbanListPopup from "./CreateKanbanListPopup";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import ItemsKanban from "./ItemsKanban";
+import {
+  permissionNumbers,
+  type Permission,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { api } from "~/trpc/react";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
 
 export default function ProjectKanban() {
   const { projectId } = useParams();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+
+  // TRPC
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   // REACT
   const [renderNewList, showNewList, setShowNewList] =
@@ -44,9 +63,11 @@ export default function ProjectKanban() {
             }}
           />
         </div>
-        <PrimaryButton onClick={() => setShowNewList(true)}>
-          + Add list
-        </PrimaryButton>
+        {permission >= permissionNumbers.write && (
+          <PrimaryButton onClick={() => setShowNewList(true)}>
+            + Add list
+          </PrimaryButton>
+        )}
       </div>
 
       {section === "Tasks" && <TasksKanban></TasksKanban>}

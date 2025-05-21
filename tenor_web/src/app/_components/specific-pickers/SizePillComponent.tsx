@@ -6,6 +6,7 @@ interface Props {
   currentSize?: Size;
   callback: (size: Size) => void;
   className?: string;
+  disabled?: boolean;
 }
 
 export const sizeToColor: Record<Size, string> = {
@@ -17,7 +18,12 @@ export const sizeToColor: Record<Size, string> = {
   XXL: "#8E44AD", // Purple
 };
 
-export function SizePillComponent({ currentSize, callback, className }: Props) {
+export function SizePillComponent({
+  currentSize,
+  callback,
+  className,
+  disabled,
+}: Props) {
   const sizeTags: Tag[] = [
     { name: "XS", color: sizeToColor.XS, deleted: false }, // Light Blue
     { name: "S", color: sizeToColor.S, deleted: false }, // Green
@@ -49,6 +55,7 @@ export function SizePillComponent({ currentSize, callback, className }: Props) {
 
   return (
     <PillComponent
+      disabled={disabled}
       allTags={sizeTags}
       currentTag={currentTag}
       callBack={(tag) => callback(tag.name as Size)}

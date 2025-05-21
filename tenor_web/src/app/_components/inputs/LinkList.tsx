@@ -18,6 +18,7 @@ interface Props {
   handleLinkRemove: (link: Links) => void;
   className?: ClassNameValue;
   labelClassName?: string;
+  disabled?: boolean;
 }
 
 export default function LinkList({
@@ -27,6 +28,7 @@ export default function LinkList({
   handleLinkRemove,
   links,
   labelClassName,
+  disabled = false,
 }: Props) {
   const [link, setLink] = React.useState("");
   const confirm = useConfirmation();
@@ -38,45 +40,47 @@ export default function LinkList({
         <label className={cn("text-lg font-semibold", labelClassName)}>
           {label}
         </label>
-        <Dropdown
-          label={
-            <PrimaryButton
-              asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
-              className="flex max-h-[40px] items-center"
+        {!disabled && (
+          <Dropdown
+            label={
+              <PrimaryButton
+                asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
+                className="flex max-h-[40px] items-center"
+                onClick={() => {
+                  if (insertLinkRef.current) {
+                    insertLinkRef.current.focus();
+                  }
+                }}
+              >
+                Add Context Link +
+              </PrimaryButton>
+            }
+          >
+            <DropdownItem>
+              <InputTextField
+                ref={insertLinkRef}
+                placeholder="https://example.com"
+                value={link}
+                onChange={(e) => {
+                  setLink(e.target.value);
+                }}
+                disableAI
+              />
+            </DropdownItem>
+
+            <DropdownButton
+              className="flex items-center justify-between"
               onClick={() => {
-                if (insertLinkRef.current) {
-                  insertLinkRef.current.focus();
+                if (link.trim()) {
+                  handleLinkAdd({ link: link.trim(), content: "placeholder" });
+                  setLink("");
                 }
               }}
             >
-              Add Context Link +
-            </PrimaryButton>
-          }
-        >
-          <DropdownItem>
-            <InputTextField
-              ref={insertLinkRef}
-              placeholder="https://example.com"
-              value={link}
-              onChange={(e) => {
-                setLink(e.target.value);
-              }}
-              disableAI
-            />
-          </DropdownItem>
-
-          <DropdownButton
-            className="flex items-center justify-between"
-            onClick={() => {
-              if (link.trim()) {
-                handleLinkAdd({ link: link.trim(), content: "placeholder" });
-                setLink("");
-              }
-            }}
-          >
-            <span>Add Link</span>
-          </DropdownButton>
-        </Dropdown>
+              <span>Add Link</span>
+            </DropdownButton>
+          </Dropdown>
+        )}
       </div>
       <ul
         className={cn(
@@ -95,6 +99,7 @@ export default function LinkList({
             className="h-[100px] flex-shrink-0"
             title={link.link}
             onClick={async () => {
+              if (disabled) return;
               if (
                 !(await confirm(
                   "Delete link?",
@@ -109,13 +114,18 @@ export default function LinkList({
           >
             <span
               title={link.link}
-              className="group relative flex cursor-pointer flex-col items-center text-gray-500 transition hover:text-gray-500/50"
+              className={cn(
+                "group relative flex cursor-pointer flex-col items-center text-gray-500 transition",
+                disabled ? "" : "hover:text-gray-500/50",
+              )}
               data-tooltip-id="tooltip"
               data-tooltip-content={link.link}
             >
-              <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center pb-4 text-[40px] text-app-fail/90 opacity-0 transition group-hover:opacity-100">
-                <CloseIcon fontSize="inherit" />
-              </div>
+              {!disabled && (
+                <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center pb-4 text-[40px] text-app-fail/90 opacity-0 transition group-hover:opacity-100">
+                  <CloseIcon fontSize="inherit" />
+                </div>
+              )}
               {link.content ? (
                 <InsertLinkIcon style={{ fontSize: "4rem" }} />
               ) : (

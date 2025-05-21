@@ -20,6 +20,7 @@ interface Props {
   userStoryId?: string;
   label: string;
   onClick?: (userStoryId: string) => void;
+  disabled?: boolean;
 }
 
 export default function DependencyList({
@@ -28,6 +29,7 @@ export default function DependencyList({
   label,
   userStoryId,
   onClick,
+  disabled = false,
 }: Props) {
   const [showAll, setShowAll] = useState(false);
 
@@ -84,7 +86,7 @@ export default function DependencyList({
           )}
         </h3>
         <Dropdown
-          label={<span className="text-2xl">+</span>}
+          label={!disabled && <span className="text-2xl">+</span>}
           onOpen={() => inputRef.current?.focus()}
         >
           <DropdownItem className="flex w-52 flex-col">
@@ -148,6 +150,7 @@ export default function DependencyList({
           )
           .map((userStory) => (
             <TagComponent
+              disabled={disabled}
               key={userStory.id}
               onDelete={() =>
                 onChange(userStories.filter((us) => !areEqual(us, userStory)))

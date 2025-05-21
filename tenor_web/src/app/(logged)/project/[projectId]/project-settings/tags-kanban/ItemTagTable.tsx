@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import SearchBar from "~/app/_components/SearchBar";
 import CreateItemTagPopup from "./CreateItemTagPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
@@ -14,6 +14,11 @@ import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 interface TagTableConfig {
   title: string;
@@ -30,6 +35,17 @@ interface Props {
 
 export default function ItemTagTable({ itemTagType }: Props) {
   const { projectId } = useParams();
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["settings"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
   const utils = api.useUtils();
   const [searchValue, setSearchValue] = useState("");
   const [renderNewTag, showNewTag, setShowNewTag] = usePopupVisibilityState();
@@ -285,12 +301,14 @@ export default function ItemTagTable({ itemTagType }: Props) {
               handleUpdateSearch={(e) => setSearchValue(e.target.value)}
             />
           </div>
-          <PrimaryButton
-            onClick={() => setShowNewTag(true)}
-            className="whitespace-nowrap"
-          >
-            {currentConfig.addButtonText}
-          </PrimaryButton>
+          {permission >= permissionNumbers.write && (
+            <PrimaryButton
+              onClick={() => setShowNewTag(true)}
+              className="whitespace-nowrap"
+            >
+              {currentConfig.addButtonText}
+            </PrimaryButton>
+          )}
         </div>
 
         <div className="max-w-[750px]">
@@ -305,8 +323,10 @@ export default function ItemTagTable({ itemTagType }: Props) {
               }`}
               data={tableData}
               columns={columns}
-              extraOptions={extraOptions}
-              deletable={true}
+              extraOptions={
+                permission >= permissionNumbers.write ? extraOptions : undefined
+              }
+              deletable={permission >= permissionNumbers.write}
               onDelete={(ids, callback) => {
                 if (ids.length > 0) {
                   void handleDeleteTag(ids, callback);
@@ -314,7 +334,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
                   callback(false);
                 }
               }}
-              multiselect={true}
+              multiselect={permission >= permissionNumbers.write}
               emptyMessage={currentConfig.emptyMessage}
               tableKey={`${itemTagType.toLowerCase()}-table`}
             />
@@ -333,6 +353,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
 
       {renderDetailTag && (
         <ItemTagDetailPopup
+          disabled={permission < permissionNumbers.write}
           showPopup={showDetailTag}
           setShowPopup={setShowDetailTag}
           tagId={selectedTagId}

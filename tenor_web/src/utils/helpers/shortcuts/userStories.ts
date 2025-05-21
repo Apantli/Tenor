@@ -1,4 +1,4 @@
-import type { TaskCol, UserStoryCol } from "~/lib/types/columnTypes";
+import type { UserStoryCol } from "~/lib/types/columnTypes";
 import { getEpic, getEpicContext, getEpicsContext } from "./epics";
 import {
   getBacklogTag,
@@ -19,7 +19,7 @@ import type {
 import { getGenericBacklogItemContext, getProjectRef } from "./general";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
-import type { UserStoryDetail } from "~/lib/types/detailSchemas";
+import type { TaskPreview, UserStoryDetail } from "~/lib/types/detailSchemas";
 import type { Firestore } from "firebase-admin/firestore";
 import { getTaskProgress, getTaskTable } from "./tasks";
 import { getSprint } from "./sprints";
@@ -206,7 +206,7 @@ export const getUserStoryDetail = async (
 
   const tasks = await getTaskTable(admin, firestore, projectId, userStory.id);
 
-  const userStoryDetail: WithId<UserStoryDetail> & { tasks: TaskCol[] } = {
+  const userStoryDetail: WithId<UserStoryDetail> & { tasks: TaskPreview[] } = {
     ...userStory,
     sprint,
     priority,

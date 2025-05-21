@@ -21,6 +21,7 @@ interface Props {
   lastDraggedItemId: string | null;
   renderCard: (item: KanbanCard) => React.ReactNode;
   header: React.ReactNode;
+  disabled?: boolean;
 }
 
 export default function AssignableCardColumn({
@@ -33,6 +34,7 @@ export default function AssignableCardColumn({
   lastDraggedItemId,
   renderCard,
   header,
+  disabled = false,
 }: Props) {
   // Check there's selected items and none of them are in this column
   const availableToBeAssignedTo =
@@ -48,6 +50,7 @@ export default function AssignableCardColumn({
       key={column.id}
     >
       <CardColumn
+        disabled={disabled}
         cards={
           column.itemIds
             .map((itemId) => items[itemId])
@@ -70,12 +73,14 @@ export default function AssignableCardColumn({
           },
         )}
       >
-        <PrimaryButton
-          className="w-full"
-          onClick={() => assignSelectionToColumn(column.id)}
-        >
-          Move to column
-        </PrimaryButton>
+        {!disabled && (
+          <PrimaryButton
+            className="w-full"
+            onClick={() => assignSelectionToColumn(column.id)}
+          >
+            Move to column
+          </PrimaryButton>
+        )}
       </div>
     </div>
   );
