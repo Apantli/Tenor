@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "@xyflow/react/dist/style.css";
 import { useParams } from "next/navigation";
 import { edgeTypes, nodeTypes } from "~/lib/types/reactFlowTypes";
@@ -34,6 +34,11 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import {
+  permissionNumbers,
+  type Permission,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 
@@ -66,6 +71,18 @@ export default function UserStoryDependencyTree() {
 
   const { mutateAsync: deleteUserStoryDependencies } =
     api.userStories.deleteUserStoryDependencies.useMutation();
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
   // #endregion
 
   // #region FLOW UTILITY
@@ -350,6 +367,8 @@ export default function UserStoryDependencyTree() {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultViewport={defaultViewport}
+          nodesConnectable={permission >= permissionNumbers.write}
+          elementsSelectable={permission >= permissionNumbers.write}
         >
           <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
