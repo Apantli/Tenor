@@ -14,6 +14,7 @@ import { issuesRouter } from "./routers/issues";
 import { requirementsRouter } from "./routers/requirements";
 import { kanbanRouter } from "./routers/kanban";
 import { aiRouter } from "./routers/ai";
+import { sprintReviewsRouter } from "./routers/sprintReviews";
 
 /**
  * This is the primary router for your server.
@@ -32,6 +33,7 @@ export const appRouter = createTRPCRouter({
   users: userRouter,
   settings: settingsRouter,
   sprints: sprintsRouter,
+  sprintReviews: sprintReviewsRouter,
   tasks: tasksRouter,
   issues: issuesRouter,
   kanban: kanbanRouter,
