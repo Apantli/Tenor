@@ -1,16 +1,20 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import RoleTable from "~/app/_components/sections/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { emptyRole } from "~/lib/defaultProjectValues";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
-import type { Permission, WithId } from "~/lib/types/firebaseSchemas";
+import {
+  permissionNumbers,
+  type Permission,
+  type WithId,
+} from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export default function ProjectUsers() {
@@ -20,6 +24,18 @@ export default function ProjectUsers() {
   const { data: userTypes } = api.projects.getUserTypes.useQuery({
     projectId: projectId as string,
   });
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["settings"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   // Users
   const { mutateAsync: addTeamMember } = api.users.addUser.useMutation();
@@ -224,6 +240,7 @@ export default function ProjectUsers() {
         <>
           {teamMembers && userTypes && roles && (
             <MemberTable
+              disabled={permission < permissionNumbers.write}
               label={undefined}
               teamMembers={teamMembers}
               handleMemberAdd={handleAddUser}
@@ -246,6 +263,7 @@ export default function ProjectUsers() {
         <>
           {roles && (
             <RoleTable
+              disabled={permission < permissionNumbers.write}
               isSearchable={true}
               roles={roles}
               handleRoleAdd={handleRoleAdd}

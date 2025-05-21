@@ -26,6 +26,7 @@ interface Props {
   roleList: { id: string; label: string }[];
   isSearchable?: boolean;
   labelClassName?: string;
+  disabled?: boolean;
 }
 
 export default function MemberTable({
@@ -38,6 +39,7 @@ export default function MemberTable({
   roleList,
   labelClassName,
   isSearchable = false,
+  disabled = false,
 }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const [tableSearchValue, setTableSearchValue] = useState("");
@@ -77,6 +79,7 @@ export default function MemberTable({
       render(row) {
         return (
           <PillPickerComponent
+            disabled={disabled}
             className="w-full text-sm"
             hideSearch
             selectedItem={
@@ -133,9 +136,11 @@ export default function MemberTable({
         )}
         <Dropdown
           label={
-            <PrimaryButton className="flex items-center" asSpan>
-              + Add Member
-            </PrimaryButton>
+            !disabled && (
+              <PrimaryButton className="flex items-center" asSpan>
+                + Add Member
+              </PrimaryButton>
+            )
           }
         >
           <DropdownItem>
@@ -182,10 +187,8 @@ export default function MemberTable({
         className="w-full"
         data={filteredTeamMembers} // filter tableSearchValue by name or email
         columns={columns}
-        multiselect
-        deletable={{
-          deleteText: "Remove",
-        }}
+        multiselect={!disabled}
+        deletable={!disabled}
         onDelete={(ids) => handleMemberRemove(ids)}
         tableKey="team-member-table"
       />

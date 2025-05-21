@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Markdown from "react-markdown";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
@@ -22,7 +22,12 @@ import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import PrimaryButton from "../buttons/PrimaryButton";
 import AiIcon from "@mui/icons-material/AutoAwesome";
-import type { WithId } from "~/lib/types/firebaseSchemas";
+import {
+  permissionNumbers,
+  type Permission,
+  type WithId,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
 
 interface Props {
@@ -67,6 +72,18 @@ export default function TaskDetailPopup({
       enabled: taskData === undefined,
     },
   );
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   const taskDetail = taskData ?? fetchedTask;
 
@@ -216,6 +233,7 @@ export default function TaskDetailPopup({
       }
       footer={
         !isLoading &&
+        permission >= permissionNumbers.write &&
         (!isGhost ? (
           <DeleteButton onClick={handleDelete}>Delete task</DeleteButton>
         ) : (
@@ -247,7 +265,13 @@ export default function TaskDetailPopup({
           )}
         </>
       }
-      editMode={isLoading ? undefined : editMode}
+      editMode={
+        permission >= permissionNumbers.write
+          ? isLoading
+            ? undefined
+            : editMode
+          : undefined
+      }
       setEditMode={async (isEditing) => {
         setEditMode(isEditing);
 
@@ -295,6 +319,7 @@ export default function TaskDetailPopup({
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium">Status</label>
               <StatusPicker
+                disabled={permission < permissionNumbers.write}
                 status={taskDetail.status}
                 onChange={async (status) => {
                   await handleSave({ ...taskDetail, status });
@@ -304,6 +329,7 @@ export default function TaskDetailPopup({
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium">Size</label>
               <SizePillComponent
+                disabled={permission < permissionNumbers.write}
                 currentSize={taskDetail.size}
                 callback={async (size) => {
                   await handleSave({ ...taskDetail, size });
@@ -316,6 +342,7 @@ export default function TaskDetailPopup({
               Assigned to
             </label>
             <UserPicker
+              disabled={permission < permissionNumbers.write}
               options={people}
               selectedOption={taskDetail.assignee}
               onChange={async (assignee) => {
@@ -332,6 +359,7 @@ export default function TaskDetailPopup({
           <div className="mb-2">
             <label className="mb-1 block text-sm font-medium">Due Date</label>
             <DatePicker
+              disabled={permission < permissionNumbers.write}
               selectedDate={taskDetail.dueDate}
               onChange={async (dueDate) => {
                 await handleSave({

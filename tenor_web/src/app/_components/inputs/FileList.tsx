@@ -17,6 +17,7 @@ interface Props {
   handleFileAdd: (files: File[]) => void;
   handleFileRemove: (file: File) => void;
   labelClassName?: string;
+  disabled?: boolean;
 }
 
 export default function FileList({
@@ -27,6 +28,7 @@ export default function FileList({
   handleFileAdd,
   handleFileRemove,
   labelClassName,
+  disabled = false,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -55,12 +57,14 @@ export default function FileList({
         </div>
 
         <div>
-          <PrimaryButton
-            onClick={openFilePicker}
-            className="flex max-h-[40px] items-center"
-          >
-            Add Context File +
-          </PrimaryButton>
+          {!disabled && (
+            <PrimaryButton
+              onClick={openFilePicker}
+              className="flex max-h-[40px] items-center"
+            >
+              Add Context File +
+            </PrimaryButton>
+          )}
 
           <input
             type="file"
@@ -108,6 +112,7 @@ export default function FileList({
             key={index}
             className="h-[100px] flex-shrink-0"
             onClick={async () => {
+              if (disabled) return;
               if (
                 !(await confirm(
                   "Are you sure you want to remove a file?",
@@ -121,13 +126,18 @@ export default function FileList({
             }}
           >
             <span
-              className="group relative flex cursor-pointer flex-col items-center text-gray-500 transition hover:text-gray-500/50"
+              className={cn(
+                "group relative flex cursor-pointer flex-col items-center text-gray-500 transition",
+                disabled ? "" : "hover:text-gray-500/50",
+              )}
               data-tooltip-id="tooltip"
               data-tooltip-content={file.name}
             >
-              <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center pb-4 text-[40px] text-app-fail/90 opacity-0 transition group-hover:opacity-100">
-                <CloseIcon fontSize="inherit" />
-              </div>
+              {!disabled && (
+                <div className="absolute left-0 top-0 flex h-full w-full items-center justify-center pb-4 text-[40px] text-app-fail/90 opacity-0 transition group-hover:opacity-100">
+                  <CloseIcon fontSize="inherit" />
+                </div>
+              )}
               {/* Load Icon based on file type */}
               {file.type === "application/pdf" ? (
                 <PictureAsPdfIcon style={{ fontSize: "4rem" }} />

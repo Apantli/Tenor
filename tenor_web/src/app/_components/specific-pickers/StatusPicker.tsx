@@ -12,6 +12,7 @@ interface Props {
   onChange: (status: StatusTag) => void;
   className?: string;
   showAutomaticStatus?: boolean;
+  disabled?: boolean;
 }
 
 export default function StatusPicker({
@@ -19,6 +20,7 @@ export default function StatusPicker({
   onChange,
   className,
   showAutomaticStatus = false,
+  disabled,
 }: Props) {
   const { projectId } = useParams();
   const { data: statusValues } = api.settings.getStatusTypes.useQuery({
@@ -48,6 +50,7 @@ export default function StatusPicker({
 
   return (
     <PillComponent
+      disabled={disabled}
       currentTag={currentStatus}
       allTags={statusValuesWithAuto ?? []}
       callBack={(tag) =>
