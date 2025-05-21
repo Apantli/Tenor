@@ -105,7 +105,11 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       },
     );
   const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
+    api.tasks.changeTaskStatus.useMutation({
+        onSuccess: async () => {
+      await utils.tasks.getTasks.invalidate({ projectId: projectId as string }); // <-- Invalidate all tasks
+    },
+  });
   const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
   const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
 

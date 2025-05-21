@@ -39,7 +39,11 @@ export default function TasksKanban() {
     });
 
   const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
+    api.tasks.changeTaskStatus.useMutation({
+        onSuccess:async () => {
+      await utils.tasks.getTasks.invalidate({ projectId: projectId as string }); // <-- Invalidate all tasks
+    },
+  });
 
   // REACT
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());

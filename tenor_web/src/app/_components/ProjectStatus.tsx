@@ -1,64 +1,72 @@
 "use client";
-
-import { useEffect } from 'react';
 import { api } from '~/trpc/react';
 import ProgressBar from './ProgressBar';
 import AssignUsersList from './specific-pickers/AssignUsersList';
 import LoadingSpinner from './LoadingSpinner';
 
+interface StatusType {
+  id: string;
+  name: string;
+  marksTaskAsDone: boolean;
+}
+
 function ProjectStatus({projectId}: {projectId: string}) {
+  const {data: tasks, isLoading: isLoadingTasks } = api.tasks.getTasks.useQuery({ projectId });
+  const {data: statuses, isLoading: isLoadingStatus } = api.settings.getStatusTypes.useQuery({ projectId});
+  const {data: issues } = api.issues.getAllIssues.useQuery({ projectId });
+  const {data: userStory } = api.userStories.getUserStories.useQuery({ projectId });
+  const {data: currentSpring, isPending} = api.sprints.getActiveSprint.useQuery({ projectId });
 
-  const {data: tasks, isLoading, refetch: refetchTasks} = api.tasks.getTasks.useQuery({ projectId }, {enabled: false});
-  const {data: statuses, isLoading: isLoadingStatus, refetch: refetchStatuses} = api.settings.getStatusTypes.useQuery({ projectId}, {enabled: false});
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        await refetchTasks();
-        await refetchStatuses();
-      } catch (error) {
-        console.error('Failed to fetch tasks', error);
-      }
-    };
-    void fetchData();
-  }, [refetchTasks, refetchStatuses]);
-
+  // First filter the tasks, issues and US to get the active ones
   const activeTasks = tasks?.filter((task) => task.deleted !== true) ?? [];
+  const activeIssues = issues?.filter((issue) => issue.deleted !== true) ?? [];
+  const activeUserStories = userStory?.filter((us) => us.deleted !== true) ?? [];
 
-  const statusMap = statuses
-    ? Object.fromEntries(statuses.map((status) => [status.id, status.marksTaskAsDone])) : {};
+  const sprintIssuesIds = new Set(activeIssues.filter((issue) => issue.sprintId === currentSpring?.id).map((issue) => issue.id));
 
-  const completedCount = activeTasks.reduce((count, task) => {
-    return statusMap[task.statusId] ? count + 1 : count;
-  }, 0);
+  const sprintUserStoriesIds = new Set(activeUserStories.filter((us) => us.sprintId === currentSpring?.id).map((us) => us.id));
+  
+  const filteredTasks = activeTasks.filter(task =>
+    sprintIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId)
+  );
 
-  const taskCount = activeTasks.length;
+  // Get the statuses
+  const statusMap = statuses?.reduce((acc, status) => {
+    acc[status.id] = status;
+    return acc;
+  }, {} as Record<string, StatusType>) ?? {};
 
-  if (isLoading || isLoadingStatus) {
+  // Get the completed tasks
+  const completedTasks = filteredTasks.filter(task => 
+    statusMap[task.statusId]?.marksTaskAsDone === true
+  );
+
+  if (isLoadingTasks || isLoadingStatus || isPending) {
     return <LoadingSpinner color="primary" />;
   }
   
   return (
     <>
-      <ActiveSprint projectId={projectId} />
+      <ActiveSprint projectId={projectId} currentSprintId={currentSpring?.id} />
       <ProgressStatusBar
-        taskCount={taskCount}
-        completedCount={completedCount}
+        taskCount={filteredTasks.length ?? 0}
+        completedCount={completedTasks.length ?? 0}
       />
       <div className="flex items-center gap-2 justify-between">
         <ProjectCollaborators projectId={projectId} />
-        <RemaniningTimePeriod projectId={projectId} />
+        <RemaniningTimePeriod projectId={projectId} currentSprintId={currentSpring?.id} />
       </div>
     </>
   )
 }
 
-function ActiveSprint ({projectId}: {projectId: string}) {
-  const {data: ActiveSprint, isLoading} = api.projects.getGeneralConfig.useQuery({ projectId });
-  const {data: sprints, isLoading: isLoadingSprint} = api.sprints.getProjectSprintsOverview.useQuery({ projectId });
-
-  const sprintId = ActiveSprint?.currentSprintId;
-  const sprint = sprints?.find((sprint) => sprint.number.toString() === sprintId);
+function ActiveSprint({ projectId, currentSprintId }: { projectId: string; currentSprintId?: string }) {
+  // Only fetch sprint if currentSprintId is provided
+  const shouldFetchSprint = !!currentSprintId;
+  const { data: sprint, isLoading: isLoadingSprint } = api.sprints.getSprint.useQuery(
+    {projectId, sprintId: currentSprintId!},
+    { enabled: shouldFetchSprint }
+  );
 
   let sprintTitle = "";
   if (sprint) {
@@ -71,7 +79,7 @@ function ActiveSprint ({projectId}: {projectId: string}) {
     sprintTitle = "No active sprint";
   }
 
-  if (isLoading || isLoadingSprint) {
+  if (isLoadingSprint) {
     return <LoadingSpinner color="primary" />;
   }
 
@@ -84,22 +92,27 @@ function ActiveSprint ({projectId}: {projectId: string}) {
         </span>
       </div>
     </div>
-  )
+  );
 }
 
-function RemaniningTimePeriod ({projectId}: {projectId: string}) {
-  const {data: activeSprintConfig, isLoading} = api.projects.getGeneralConfig.useQuery({ projectId });
+function RemaniningTimePeriod ({projectId, currentSprintId}: {projectId: string; currentSprintId?: string}) {
+  // Only fetch sprint if currentSprintId is provided
+  const shouldFetchSprint = !!currentSprintId;
+  const { data: sprint, isLoading } = api.sprints.getSprint.useQuery(
+    {projectId, sprintId: currentSprintId!},
+    { enabled: shouldFetchSprint }
+  );
   const {data: sprints, isLoading: isLoadingSprint} = api.sprints.getProjectSprintsOverview.useQuery({ projectId });
 
   //Check the active sprint from the current project from the project settings
-  const currentSprintNumber = activeSprintConfig?.currentSprintId;
+  const currentSprint = sprint?.id.toString();
 
   let remainingDays: number | null = null;
 
   //Compare the sprints numbers with the sprint currentSprintId
-  if (sprints && currentSprintNumber != null) {
+  if (sprints && currentSprint != null) {
     for (const sprint of sprints) {
-      if (sprint.number.toString() === currentSprintNumber) {
+      if (sprint.id.toString() === currentSprint) {
         const endDate = new Date(sprint.endDate);
         const today = new Date();
 
