@@ -11,9 +11,9 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
   const [showDescription, setShowDescription] = useState(false);
   
   const projectTitle = project?.name ?? "Project Name";
-  let projectDescription = project?.description ?? "Project Description";
+  let projectDescription = project?.description;
   // Check if the description is empty or undefined
-  if (!projectDescription || projectDescription === "undefined") {
+  if (!projectDescription) {
     projectDescription = "No description available.";
   }
 
@@ -27,9 +27,12 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
     ? projectDescription.slice(0, previewLength) + "..."
     : projectDescription;
 
+  // Show full description if explicitly requested or if we shouldn't truncate
+  const shouldShowFullDescription = showDescription || !shouldTruncate;
+
   if (isLoading) {
     return (
-      <div className="flex w-2/4 flex-col gap-5 border-2 border-[#BECAD4] rounded-lg p-5">
+      <div className="flex w-full align-center flex-col gap-5 border-2 rounded-lg p-5">
         <LoadingSpinner />
       </div>
     )
@@ -55,10 +58,10 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
           <h1 className="text-2xl font-semibold">{projectTitle}</h1>
         </div>
       </div>
-      <div className="text-m text-gray-500">
-        <div className="flex flex-col gap-2 w-full">
+      <div className="text-m text-app-primary w-full">
+        <div className="flex flex-col gap-2 w-full text-left">
           <Markdown>
-            {showDescription ?? !shouldTruncate ? projectDescription : previewText}
+            { shouldShowFullDescription ? projectDescription : previewText}
           </Markdown>
         </div>
         <div className="w-full flex justify-end">
