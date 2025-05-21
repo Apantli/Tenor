@@ -69,7 +69,12 @@ export function DatePicker({
           )}
         />
         <div className="flex flex-grow items-center">
-          <div className="cursor-pointer font-medium text-gray-700">
+          <div
+            className={cn(
+              "font-medium text-gray-700",
+              !disabled && "cursor-pointer",
+            )}
+          >
             {selectedDate
               ? formatDate(selectedDate)
               : disabled
