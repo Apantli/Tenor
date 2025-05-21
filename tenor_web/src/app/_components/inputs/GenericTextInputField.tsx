@@ -280,17 +280,11 @@ export default function InputField({
           )}
           <div className={cn("absolute bottom-2 right-2")}>
             <Dropdown
-              className={cn(
-                "pointer-events-none cursor-auto group-focus-within:pointer-events-auto group-focus-within:cursor-pointer",
-                {
-                  "pointer-events-auto cursor-pointer": isDropdownOpen,
-                },
-              )}
               label={
                 <div
                   ref={dropdownButtonRef}
                   className={cn(
-                    "opacity-0 transition-opacity duration-200 group-focus-within:opacity-100",
+                    "opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100",
                     {
                       "opacity-100": isDropdownOpen,
                     },

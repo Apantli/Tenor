@@ -22,12 +22,17 @@ import {
   getSprintRef,
   getSprints,
   getSprintsRef,
+  updateSprintNumberOrder,
 } from "~/utils/helpers/shortcuts/sprints";
 import { sprintPermissions } from "~/lib/permission";
-import { getUserStories } from "~/utils/helpers/shortcuts/userStories";
-import { getIssues } from "~/utils/helpers/shortcuts/issues";
+import {
+  getUserStories,
+  getUserStoriesRef,
+} from "~/utils/helpers/shortcuts/userStories";
+import { getIssues, getIssuesRef } from "~/utils/helpers/shortcuts/issues";
 import { getBacklogTags } from "~/utils/helpers/shortcuts/tags";
 import { getProjectRef } from "~/utils/helpers/shortcuts/general";
+import { TRPCError } from "@trpc/server";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")
@@ -42,28 +47,89 @@ export const sprintsRouter = createTRPCRouter({
       const { projectId, sprintId } = input;
       return await getSprint(ctx.firestore, projectId, sprintId);
     }),
-  createOrModifySprint: roleRequiredProcedure(sprintPermissions, "write")
+  createSprint: roleRequiredProcedure(sprintPermissions, "write")
     .input(
       z.object({
         sprintData: SprintSchema,
         projectId: z.string(),
-        sprintId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, sprintData } = input;
+
+      sprintData.number = await getSprintNewId(ctx.firestore, projectId);
+      await getSprintsRef(ctx.firestore, projectId).add(sprintData);
+      return { success: true, reorderedSprints: false };
+    }),
+
+  modifySprint: roleRequiredProcedure(sprintPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+        sprintData: SprintSchema.omit({
+          deleted: true,
+          number: true,
+          genericItemIds: true,
+          issueIds: true,
+          userStoryIds: true,
+        }),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, sprintId, sprintData } = input;
+      const sprintRef = getSprintRef(ctx.firestore, projectId, sprintId);
 
-      if (sprintId) {
-        const epicDoc = await getSprintRef(
-          ctx.firestore,
-          projectId,
-          sprintId,
-        ).get();
-        await epicDoc?.ref.update(sprintData);
-      } else {
-        sprintData.number = await getSprintNewId(ctx.firestore, projectId);
-        await getSprintsRef(ctx.firestore, projectId).add(sprintData);
+      const sprintDoc = await sprintRef.get();
+      if (!sprintDoc.exists) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Sprint not found" });
       }
+
+      await sprintRef.update(sprintData);
+
+      const didReorderSprints = await updateSprintNumberOrder(
+        ctx.firestore,
+        projectId,
+      );
+      return { success: true, reorderedSprints: didReorderSprints };
+    }),
+
+  deleteSprint: roleRequiredProcedure(sprintPermissions, "write")
+    .input(z.object({ projectId: z.string(), sprintId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, sprintId } = input;
+
+      const [sprintStories, sprintIssues] = await Promise.all([
+        // Get all user stories
+        await getUserStoriesRef(ctx.firestore, projectId)
+          .where("sprintId", "==", sprintId)
+          .get(),
+        // Get all issues
+        await getIssuesRef(ctx.firestore, projectId)
+          .where("sprintId", "==", sprintId)
+          .get(),
+        // Mark the sprint as deleted
+        await getSprintRef(ctx.firestore, projectId, sprintId).update({
+          deleted: true,
+        }),
+      ]);
+
+      // Batch update the user stories and issues to remove the sprintId
+      const batch = ctx.firestore.batch();
+      sprintStories.forEach((doc) => {
+        batch.update(doc.ref, { sprintId: "" });
+      });
+      sprintIssues.forEach((doc) => {
+        batch.update(doc.ref, { sprintId: "" });
+      });
+      await batch.commit();
+
+      const didReorderSprints = await updateSprintNumberOrder(
+        ctx.firestore,
+        projectId,
+      );
+
+      return { success: true, reorderedSprints: didReorderSprints };
     }),
 
   getBacklogItemPreviewsBySprint: protectedProcedure

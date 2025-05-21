@@ -43,7 +43,10 @@ export const getSprintNewId = async (
   firestore: Firestore,
   projectId: string,
 ) => {
-  const sprintsRef = getSprintsRef(firestore, projectId).count().get();
+  const sprintsRef = getSprintsRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .count()
+    .get();
   const sprintsCount = (await sprintsRef).data().count;
   return sprintsCount + 1;
 };
@@ -58,7 +61,7 @@ export const getSprintNewId = async (
 export const getSprints = async (firestore: Firestore, projectId: string) => {
   const sprintsRef = getSprintsRef(firestore, projectId)
     .where("deleted", "==", false)
-    .orderBy("startDate", "desc");
+    .orderBy("number", "asc");
   const sprintsSnapshot = await sprintsRef.get();
   const sprints: WithId<Sprint>[] = sprintsSnapshot.docs.map((sprintData) => {
     const sprintSchema = SprintSchema.parse(sprintData.data());
@@ -137,4 +140,28 @@ export const getSprint = async (
   };
 
   return sprint;
+};
+
+export const updateSprintNumberOrder = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  let reorderedSprints = false;
+
+  // Reorder the remaining sprints by date
+  const sprints = await getSprints(firestore, projectId);
+  const sortedSprints = sprints.sort((a, b) => {
+    return a.startDate.getTime() - b.startDate.getTime();
+  });
+  // Make sure the sprint numbers match the new order
+  const batch2 = firestore.batch();
+  sortedSprints.forEach((sprint, index) => {
+    if (sprint.number === index + 1) return;
+    reorderedSprints = true;
+    const sprintRef = getSprintRef(firestore, projectId, sprint.id);
+    batch2.update(sprintRef, { number: index + 1 });
+  });
+  await batch2.commit();
+
+  return reorderedSprints;
 };
