@@ -679,9 +679,9 @@ export const userStoriesRouter = createTRPCRouter({
       // Create edges for dependencies
       const edges: Edge[] = userStories.flatMap((userStory) =>
         userStory.dependencyIds.map((dependencyId) => ({
-          id: `${userStory.id}-${dependencyId}`,
-          source: userStory.id,
-          target: dependencyId,
+          id: `${dependencyId}-${userStory.id}`,
+          source: dependencyId,
+          target: userStory.id,
           type: "dependency", // see edgeTypes
         })),
       );

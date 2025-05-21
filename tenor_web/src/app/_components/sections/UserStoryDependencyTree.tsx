@@ -131,7 +131,7 @@ export default function UserStoryDependencyTree() {
           width: 20,
           height: 20,
         },
-        label: showEdgeLabels ? "Needs" : "",
+        label: showEdgeLabels ? "Enables" : "",
       }));
       return updatedEdges;
     },
