@@ -166,10 +166,10 @@ export default function HappinessForm({
     }
   };
 
-  if (isLoading) {
+  if (isLoading || queryIsLoading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <LoadingSpinner />
+      <div className="flex h-full flex-col items-center justify-center gap-4">
+        <LoadingSpinner color="primary" />
         <p className="text-lg font-semibold">Loading happiness form...</p>
       </div>
     );

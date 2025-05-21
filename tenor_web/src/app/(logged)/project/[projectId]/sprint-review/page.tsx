@@ -10,46 +10,58 @@ import {
 } from "~/app/_components/charts/PerformanceChart";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
 export default function ProjectSprintReviewPage() {
   const { user } = useFirebaseAuth();
   const params = useParams();
   const projectId = params.projectId as string;
 
-  const { data: previousSprint } = api.sprintReviews.getPreviousSprint.useQuery(
-    { projectId: projectId },
-    {
-      enabled: !!projectId,
-    },
-  );
+  const { data: previousSprint, isLoading: loadingprevSprint } =
+    api.sprintReviews.getPreviousSprint.useQuery(
+      { projectId: projectId },
+      {
+        enabled: !!projectId,
+      },
+    );
 
   const previousSprintId = previousSprint?.id ?? "";
 
-  const { data: sprint } = api.sprints.getSprint.useQuery(
-    {
-      projectId: params.projectId as string,
-      sprintId: previousSprintId,
-    },
-    {
-      enabled: !!previousSprintId,
-    },
-  );
+  const { data: sprint, isLoading: loadingSprint } =
+    api.sprints.getSprint.useQuery(
+      {
+        projectId: params.projectId as string,
+        sprintId: previousSprintId,
+      },
+      {
+        enabled: !!previousSprintId,
+      },
+    );
 
-  const { data: sprintReviewId } = api.sprintReviews.getReviewId.useQuery(
-    {
-      projectId: projectId,
-      sprintId: previousSprintId,
-    },
-    {
-      enabled: !!previousSprintId,
-    },
-  );
+  const { data: sprintReviewId, isLoading: loadingReviewId } =
+    api.sprintReviews.getReviewId.useQuery(
+      {
+        projectId: projectId,
+        sprintId: previousSprintId,
+      },
+      {
+        enabled: !!previousSprintId,
+      },
+    );
 
   const sprintNumber = sprint?.number;
   const teamProgress = 90;
   const personalProgress = 100;
   const userName =
     user?.displayName ?? user?.email ?? "No name or email provided";
+
+  if (loadingprevSprint || loadingSprint || loadingReviewId) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center">
+        <LoadingSpinner color="primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-full flex-col justify-start overflow-y-auto">
