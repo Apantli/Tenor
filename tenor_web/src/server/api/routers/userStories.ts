@@ -588,16 +588,16 @@ export const userStoriesRouter = createTRPCRouter({
       await updateDependency(
         ctx.firestore,
         projectId,
-        sourceId,
         targetId,
+        sourceId,
         "add",
         "dependencyIds",
       );
       await updateDependency(
         ctx.firestore,
         projectId,
-        targetId,
         sourceId,
+        targetId,
         "add",
         "requiredByIds",
       );
@@ -628,16 +628,16 @@ export const userStoriesRouter = createTRPCRouter({
       await updateDependency(
         ctx.firestore,
         projectId,
-        sourceId,
         targetId,
+        sourceId,
         "remove",
         "dependencyIds",
       );
       await updateDependency(
         ctx.firestore,
         projectId,
-        targetId,
         sourceId,
+        targetId,
         "remove",
         "requiredByIds",
       );
