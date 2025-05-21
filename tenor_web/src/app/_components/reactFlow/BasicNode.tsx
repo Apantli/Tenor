@@ -32,6 +32,10 @@ const handleWhiteCircleStyle = {
   border: "1px solid #555",
   borderRadius: "50%",
 };
+const handleWhiteCircleStyleNotAllowed = {
+  ...handleWhiteCircleStyle,
+  cursor: "not-allowed",
+};
 
 export default function BasicNode({
   data: { scrumId, itemType, title, showDeleteButton, parentId },
@@ -96,7 +100,11 @@ export default function BasicNode({
       <Handle
         type="source"
         position={Position.Right}
-        style={handleWhiteCircleStyle}
+        style={
+          permission < permissionNumbers.write
+            ? handleWhiteCircleStyleNotAllowed
+            : handleWhiteCircleStyle
+        }
       />
       <div className="min-h-10 w-56 rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800">
         <div className="flex flex-row items-center justify-between px-2 text-xs">
@@ -132,7 +140,11 @@ export default function BasicNode({
       <Handle
         type="target"
         position={Position.Left}
-        style={handleWhiteCircleStyle}
+        style={
+          permission < permissionNumbers.write
+            ? handleWhiteCircleStyleNotAllowed
+            : handleWhiteCircleStyle
+        }
       />
     </>
   );

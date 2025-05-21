@@ -150,6 +150,9 @@ export default function UserStoryDependencyTree() {
   };
 
   const onConnect = useCallback(async (params: Connection) => {
+    if (permission < permissionNumbers.write) {
+      return;
+    }
     // Cancel ongoing queries for this user story data
     await utils.userStories.getUserStoryDependencies.cancel({
       projectId: projectId as string,
