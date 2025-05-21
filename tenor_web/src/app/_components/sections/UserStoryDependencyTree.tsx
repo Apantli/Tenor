@@ -162,7 +162,10 @@ export default function UserStoryDependencyTree() {
       },
       (oldData) => {
         if (!oldData) return oldData;
-        const newEdges = addEdge(params, oldData.edges);
+        const newEdges = addEdge(
+          { ...params, type: "dependency" },
+          oldData.edges,
+        );
         return {
           ...oldData,
           edges: newEdges,
@@ -173,8 +176,8 @@ export default function UserStoryDependencyTree() {
     try {
       await addUserStoryDependencies({
         projectId: projectId as string,
-        sourceId: params.source,
-        targetId: params.target,
+        dependencyUsId: params.source,
+        parentUsId: params.target,
       });
     } catch (error) {
       if (
@@ -244,8 +247,8 @@ export default function UserStoryDependencyTree() {
       for (const edge of targetEdges) {
         await deleteUserStoryDependencies({
           projectId: projectId as string,
-          sourceId: edge.source,
-          targetId: edge.target,
+          dependencyUsId: edge.source,
+          parentUsId: edge.target,
         });
       }
 

@@ -389,86 +389,84 @@ export const updateDependency = (
 
 /**
  * Helper function to perform DFS and detect cycle in user story dependencies
- * @param adjacencyList Adjacency list representation of the dependency graph
- * @param userStoryId Current user story ID being checked
+ * @param adjacencyList Adjacency list representation of the dependency graph, where each entry maps a parent user story to its dependencies
+ * @param parentUsId Current parent user story ID being checked
  * @param visitedUserStories Map to track visited nodes
  * @param recursionPathVisited Map to track nodes in current recursion stack
  * @returns {boolean} True if a cycle is detected, false otherwise
  */
 const isCyclicUtil = (
   adjacencyList: Map<string, string[]>,
-  userStoryId: string,
+  parentUsId: string,
   visitedUserStories: Map<string, boolean>,
   recursionPathVisited: Map<string, boolean>,
 ): boolean => {
   // If node is already in the recursion stack, cycle detected
-  if (recursionPathVisited.get(userStoryId)) return true;
+  if (recursionPathVisited.get(parentUsId)) return true;
 
   // If node is already visited and not in recStack, no need to check again
-  if (visitedUserStories.get(userStoryId)) return false;
+  if (visitedUserStories.get(parentUsId)) return false;
 
   // Mark the node as visited and add it to the recursion stack
-  visitedUserStories.set(userStoryId, true);
-  recursionPathVisited.set(userStoryId, true);
+  visitedUserStories.set(parentUsId, true);
+  recursionPathVisited.set(parentUsId, true);
 
-  // Recur for all neighbors (dependencies) of the current node
-  const neighbors = adjacencyList.get(userStoryId) ?? [];
-  for (const v of neighbors) {
+  // Recur for all dependencies of the current parent user story
+  const dependencies = adjacencyList.get(parentUsId) ?? [];
+  for (const dependencyId of dependencies) {
     if (
-      isCyclicUtil(adjacencyList, v, visitedUserStories, recursionPathVisited)
+      isCyclicUtil(
+        adjacencyList,
+        dependencyId,
+        visitedUserStories,
+        recursionPathVisited,
+      )
     ) {
       return true; // If any path leads to a cycle, return true
     }
   }
 
   // Backtrack: remove the node from recursion stack
-  recursionPathVisited.set(userStoryId, false);
+  recursionPathVisited.set(parentUsId, false);
   return false;
 };
 
 /**
- * Function to construct adjacency list from user stories
+ * Function to construct adjacency list from user stories, where each entry maps a parent user story
+ * to its list of dependencies
  * @param userStories Array of user stories
  * @param newUserStories Optional array of new user stories to include in the graph
- * @param newDependencies Optional array of new dependencies to include in the graph
- * @returns Map representing the adjacency list
+ * @param newDependencies Optional array of new dependencies to include in the graph, where parentUsId has dependencyUsId as dependency
+ * @returns Map representing the adjacency list where key is parentUsId and value is array of dependencyUsIds
  */
 const constructAdjacencyList = (
   userStories: DependenciesWithId[],
   newUserStories?: DependenciesWithId[],
-  newDependencies?: Array<{ sourceId: string; targetId: string }>,
+  newDependencies?: Array<{ parentUsId: string; dependencyUsId: string }>,
 ): Map<string, string[]> => {
   const adj = new Map<string, string[]>();
 
   // Add dependencies from existing user stories
   userStories.forEach((us) => {
+    // Each user story maps to its dependencies
     adj.set(us.id, [...(us.dependencyIds ?? [])]);
-    us.requiredByIds?.forEach((reqId) => {
-      const reqs = adj.get(reqId) ?? [];
-      reqs.push(us.id);
-      adj.set(reqId, reqs);
-    });
   });
 
   // Add new user stories if provided
   if (newUserStories) {
     newUserStories.forEach((us) => {
+      // Each new user story maps to its dependencies
       adj.set(us.id, [...(us.dependencyIds ?? [])]);
-      us.requiredByIds?.forEach((reqId) => {
-        const reqs = adj.get(reqId) ?? [];
-        reqs.push(us.id);
-        adj.set(reqId, reqs);
-      });
     });
   }
 
   // Add new dependencies if provided
   if (newDependencies) {
-    newDependencies.forEach(({ sourceId, targetId }) => {
-      const deps = adj.get(sourceId) ?? [];
-      if (!deps.includes(targetId)) {
-        deps.push(targetId);
-        adj.set(sourceId, deps);
+    newDependencies.forEach(({ parentUsId, dependencyUsId }) => {
+      const deps = adj.get(parentUsId) ?? [];
+      if (!deps.includes(dependencyUsId)) {
+        deps.push(dependencyUsId);
+        adj.set(parentUsId, deps);
       }
     });
   }
@@ -481,19 +479,20 @@ const constructAdjacencyList = (
  * @param firestore Firestore instance
  * @param projectId Project ID
  * @param newUserStories Optional array of new user stories to include in cycle detection
- * @param newDependencies Optional array of new dependencies to include in cycle detection
+ * @param newDependencies Optional array of new dependencies to include in cycle detection,
+ *                       where parentUsId has dependencyUsId as dependency
  * @returns {Promise<boolean>} True if a cycle is detected, false otherwise
  */
 export const hasDependencyCycle = async (
   firestore: Firestore,
   projectId: string,
   newUserStories?: DependenciesWithId[],
-  newDependencies?: Array<{ sourceId: string; targetId: string }>,
+  newDependencies?: Array<{ parentUsId: string; dependencyUsId: string }>,
 ): Promise<boolean> => {
   // Get all user stories
   const userStories = await getUserStories(firestore, projectId);
 
-  // Construct adjacency list
+  // Construct adjacency list where each entry maps a parent user story to its dependencies
   const adj = constructAdjacencyList(
     userStories,
     newUserStories,
