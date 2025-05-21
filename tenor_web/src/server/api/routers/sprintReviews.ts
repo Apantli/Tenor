@@ -13,6 +13,8 @@ import { z } from "zod";
 import { getPreviousSprint } from "~/utils/helpers/shortcuts/sprints";
 import { sprintPermissions } from "~/lib/permission";
 
+type ReviewAnswers = Record<string, string>;
+
 /**
  * Retrieves the ID of a review associated with a given sprint.
  * If the review does not exist, it is created automatically.
@@ -36,11 +38,48 @@ export const getReviewIdProcedure = protectedProcedure
     return response.data as number;
   });
 
+export const getReviewAnswersProcedure = protectedProcedure
+  .input(z.object({ reviewId: z.number(), userId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const response = await ctx.supabase.rpc("get_review_answers", {
+      p_review_id: input.reviewId,
+      p_user_id: input.userId,
+    });
+    if (response.error) {
+      throw new Error(`Failed to get review answers: ${response.error.message}`);
+    }
+    return response.data as ReviewAnswers;
+  });
+
+export const saveReviewAnswersProcedure = protectedProcedure
+  .input(
+    z.object({
+      reviewId: z.number(),
+      userId: z.string(),
+      questionNum: z.number(),
+      answerText: z.string(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    const response = await ctx.supabase.rpc("save_review_answer", {
+      p_review_id: input.reviewId,
+      p_user_id: input.userId,
+      p_question_num: input.questionNum,
+      p_response_text: input.answerText,
+    });
+    if (response.error) {
+      throw new Error(`Failed to save review answer: ${response.error.message}`);
+    }
+    return response.data as boolean;
+  });
+
 /**
  * Router for managing sprint reviews.
  */
 export const sprintReviewsRouter = createTRPCRouter({
   getReviewId: getReviewIdProcedure,
+  getReviewAnswers: getReviewAnswersProcedure,
+  saveReviewAnswers: saveReviewAnswersProcedure,
   getPreviousSprint: roleRequiredProcedure(sprintPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

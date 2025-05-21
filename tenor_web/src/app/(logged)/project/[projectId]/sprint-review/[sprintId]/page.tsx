@@ -4,13 +4,28 @@ import React from "react";
 import HappinessForm from "../HappinessForm";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import ProfilePicture from "~/app/_components/ProfilePicture";
+import {
+  SampleData,
+  PerformanceChart,
+} from "~/app/_components/charts/PerformanceChart";
 import { useParams } from "next/navigation";
+import { api } from "~/trpc/react";
 
 export default function ProjectSprintReviewPage() {
   const { user } = useFirebaseAuth();
   const params = useParams();
   const sprintId = params.sprintId as string;
 
+  const { data: sprint } = api.sprints.getSprint.useQuery({
+    projectId: params.projectId as string,
+    sprintId: sprintId,
+  });
+
+  const { data: sprintReviewId } = api.sprintReviews.getReviewId.useQuery({
+    sprintId: sprintId,
+  });
+
+  const sprintNumber = sprint?.number;
   const teamProgress = 90;
   const personalProgress = 100;
   const userName =
@@ -19,7 +34,7 @@ export default function ProjectSprintReviewPage() {
   return (
     <div className="flex h-full flex-col justify-start overflow-y-auto">
       <h1 className="text-3xl font-semibold">
-        Sprint Review {sprintId && `(ID: ${sprintId})`}
+        Sprint Review for Sprint {sprintNumber && `${sprintNumber}`}
       </h1>
       <p className="mb-5 text-gray-600">
         Congratulations on finishing another sprint! Let&apos;s take a look at
@@ -27,14 +42,14 @@ export default function ProjectSprintReviewPage() {
       </p>
 
       <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row">
-        <div className="flex w-full flex-col rounded-lg border border-app-border bg-white p-6 shadow-sm lg:w-1/2">
+        <div className="flex h-full w-full flex-col rounded-lg border border-app-border bg-white p-6 shadow-sm lg:w-1/2">
           <h2 className="mb-4 text-2xl font-semibold">Team Progress</h2>
           {/* ... rest of your component ... */}
           <div className="mb-6">
             <p className="mb-2 font-medium">90% of user stories completed</p>
             <div className="h-8 w-full overflow-hidden rounded-md bg-gray-200">
               <div
-                className="h-full bg-emerald-500"
+                className="h-full bg-app-secondary"
                 style={{ width: `${teamProgress}%` }}
               />
             </div>
@@ -45,13 +60,13 @@ export default function ProjectSprintReviewPage() {
             <p className="mb-2 font-medium">100% of your tasks completed</p>
             <div className="h-8 w-full overflow-hidden rounded-md bg-gray-200">
               <div
-                className="h-full bg-green-400"
+                className="h-full bg-app-light"
                 style={{ width: `${personalProgress}%` }}
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-6">
             <ProfilePicture
               user={user}
               className="h-16 w-16 min-w-16 text-xl"
@@ -61,10 +76,18 @@ export default function ProjectSprintReviewPage() {
               <p className="text-xl font-semibold">{userName}</p>
             </div>
           </div>
+
+          <div className="flex flex-1 flex-col">
+            <PerformanceChart
+              data={SampleData}
+              actions={false}
+              className="ml-8"
+            />
+          </div>
         </div>
 
         <div className="h-full w-full lg:w-1/2">
-          <HappinessForm />
+          <HappinessForm sprintReviewId={sprintReviewId} />
         </div>
       </div>
     </div>

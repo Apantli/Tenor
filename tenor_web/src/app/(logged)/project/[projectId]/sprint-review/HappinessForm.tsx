@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import ConversationButton from "./ConversationButton";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import ConversationPopup from "./ConversationPopup";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import { api } from "~/trpc/react";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
 interface HappinessFormProps {
+  sprintReviewId?: number;
   onSubmit?: (responses: HappinessResponses) => void;
 }
 
@@ -17,13 +21,92 @@ export interface HappinessResponses {
   improvementSuggestion: string;
 }
 
-export default function HappinessForm({}: HappinessFormProps) {
+const QUESTION_MAPPING = {
+  roleFeeling: 1,
+  companyFeeling: 2,
+  improvementSuggestion: 3,
+};
+
+export default function HappinessForm({
+  sprintReviewId,
+  onSubmit,
+}: HappinessFormProps) {
+  const { user } = useFirebaseAuth();
+  const userId = user?.uid ?? "";
+
   const [renderConversation, showConversation, setShowConversation] =
     usePopupVisibilityState();
+
   const [responses, setResponses] = useState<HappinessResponses>({
     roleFeeling: "",
     companyFeeling: "",
     improvementSuggestion: "",
+  });
+
+  const [savedFields, setSavedFields] = useState({
+    roleFeeling: false,
+    companyFeeling: false,
+    improvementSuggestion: false,
+  });
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const {
+    data: existingAnswers,
+    refetch: refetchAnswers,
+    isLoading: queryIsLoading,
+    error: queryError,
+  } = api.sprintReviews.getReviewAnswers.useQuery(
+    {
+      reviewId: sprintReviewId ?? 0,
+      userId,
+    },
+    {
+      enabled: !!sprintReviewId && !!userId,
+    },
+  );
+
+  useEffect(() => {
+    if (existingAnswers) {
+      const newResponsesData: Partial<HappinessResponses> = {};
+      const newSavedFieldsData: Partial<typeof savedFields> = {};
+
+      if (existingAnswers["1"]) {
+        newResponsesData.roleFeeling = existingAnswers["1"];
+        newSavedFieldsData.roleFeeling = true;
+      }
+      if (existingAnswers["2"]) {
+        newResponsesData.companyFeeling = existingAnswers["2"];
+        newSavedFieldsData.companyFeeling = true;
+      }
+      if (existingAnswers["3"]) {
+        newResponsesData.improvementSuggestion = existingAnswers["3"];
+        newSavedFieldsData.improvementSuggestion = true;
+      }
+
+      setResponses((prev) => ({ ...prev, ...newResponsesData }));
+      setSavedFields((prev) => ({ ...prev, ...newSavedFieldsData }));
+    }
+  }, [existingAnswers, setResponses, setSavedFields]);
+
+  useEffect(() => {
+    if (!queryIsLoading) {
+      setIsLoading(false);
+    }
+  }, [queryIsLoading]);
+
+  useEffect(() => {
+    if (queryError) {
+      console.error("Error fetching review answers:", queryError.message);
+      setIsLoading(false);
+    }
+  }, [queryError]);
+
+  const saveAnswer = api.sprintReviews.saveReviewAnswers.useMutation({
+    onSuccess: () => {
+      void refetchAnswers();
+    },
   });
 
   const handleChange = (
@@ -40,6 +123,53 @@ export default function HappinessForm({}: HappinessFormProps) {
     setShowConversation(true);
   };
 
+  const handleSubmit = async () => {
+    if (!sprintReviewId || !userId) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const savePromises = Object.entries(responses).map(
+        async ([field, value]) => {
+          const fieldKey = field as keyof HappinessResponses;
+
+          if (value && !savedFields[fieldKey]) {
+            await saveAnswer.mutateAsync({
+              reviewId: sprintReviewId,
+              userId,
+              questionNum: QUESTION_MAPPING[fieldKey],
+              answerText: value as string,
+            });
+
+            setSavedFields((prev) => ({
+              ...prev,
+              [fieldKey]: true,
+            }));
+          }
+        },
+      );
+
+      await Promise.all(savePromises);
+
+      if (onSubmit) {
+        onSubmit(responses);
+      }
+    } catch (error) {
+      console.error("Error saving responses:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <LoadingSpinner />
+        <p className="text-lg font-semibold">Loading happiness form...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-app-border bg-white shadow-sm">
       <div className="flex-1 overflow-y-auto p-6">
@@ -50,38 +180,33 @@ export default function HappinessForm({}: HappinessFormProps) {
         </p>
         <div className="flex flex-col gap-5">
           <div>
-            <label className="mb-2 block font-medium">
-              How do you feel in terms of your role with the company?
-            </label>
             <InputTextAreaField
+              label="1. How do you feel about your current role and responsibilities?"
               placeholder="Write 2 to 3 sentences answering the question..."
               value={responses.roleFeeling}
               onChange={(e) => handleChange(e, "roleFeeling")}
               disableAI={true}
+              disabled={savedFields.roleFeeling}
             />
           </div>
-
           <div>
-            <label className="mb-2 block font-medium">
-              How do you feel about the company in general?
-            </label>
             <InputTextAreaField
+              label="2. How do you feel about the company culture and team collaboration?"
               placeholder="Write 2 to 3 sentences answering the question..."
               value={responses.companyFeeling}
               onChange={(e) => handleChange(e, "companyFeeling")}
               disableAI={true}
+              disabled={savedFields.companyFeeling}
             />
           </div>
-
           <div>
-            <label className="mb-2 block font-medium">
-              What would make you happier in the next sprint?
-            </label>
             <InputTextAreaField
+              label="3. What are your suggestions for improvement for the next sprint?"
               placeholder="Write 2 to 3 sentences answering the question..."
               value={responses.improvementSuggestion}
               onChange={(e) => handleChange(e, "improvementSuggestion")}
               disableAI={true}
+              disabled={savedFields.improvementSuggestion}
             />
           </div>
         </div>
@@ -91,7 +216,18 @@ export default function HappinessForm({}: HappinessFormProps) {
         <ConversationButton onClick={handleConversationMode}>
           Try conversation mode
         </ConversationButton>
-        <PrimaryButton type="submit">Send report</PrimaryButton>
+        <PrimaryButton
+          type="button"
+          onClick={handleSubmit}
+          disabled={
+            isSubmitting ||
+            (savedFields.roleFeeling &&
+              savedFields.companyFeeling &&
+              savedFields.improvementSuggestion)
+          }
+        >
+          {isSubmitting ? "Saving..." : "Send report"}
+        </PrimaryButton>
       </div>
 
       {renderConversation && (
