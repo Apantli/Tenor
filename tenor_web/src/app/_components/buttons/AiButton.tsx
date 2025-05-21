@@ -31,7 +31,7 @@ export default function AiButton({
       data-tooltip-content={tooltip}
       data-tooltip-hidden={tooltip === undefined}
       data-tooltip-place="top-end"
-      data-tooltip-delay-show={1000}
+      data-tooltip-delay-show={500}
     >
       <AiIcon fontSize="small" htmlColor="white" />
       {children}

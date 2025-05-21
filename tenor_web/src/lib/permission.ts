@@ -46,6 +46,11 @@ export const settingsPermissions: FlagsRequired = {
   optimistic: true,
 };
 
+export const performancePermissions: FlagsRequired = {
+  flags: ["performance"],
+  optimistic: true,
+};
+
 export const sprintPermissions: FlagsRequired = {
   flags: ["sprints", "settings"],
   optimistic: true,

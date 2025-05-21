@@ -15,6 +15,7 @@ import { requirementsRouter } from "./routers/requirements";
 import { kanbanRouter } from "./routers/kanban";
 import { aiRouter } from "./routers/ai";
 import { sprintReviewsRouter } from "./routers/sprintReviews";
+import { performanceRouter } from "./routers/performance";
 
 /**
  * This is the primary router for your server.
@@ -38,6 +39,7 @@ export const appRouter = createTRPCRouter({
   issues: issuesRouter,
   kanban: kanbanRouter,
   ai: aiRouter,
+  performance: performanceRouter,
 });
 
 // export type definition of API

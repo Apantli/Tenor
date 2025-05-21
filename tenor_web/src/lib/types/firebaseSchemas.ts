@@ -7,6 +7,9 @@ TODO:
 - Agregar campo deleted a todos los correspondientes, si falta alguno
 */
 
+import { type PerformanceTime } from "~/lib/types/zodFirebaseSchema";
+import type z from "zod";
+import type { Timestamp } from "firebase-admin/firestore";
 /// Big categories
 
 export type WithId<T> = T & { id: string };
@@ -163,6 +166,7 @@ export interface BasicInfo {
   name: string;
   description: string; // Markdown
   deleted: boolean;
+  createdAt?: Timestamp;
 }
 
 // TODO: Make function to transform into number size (fibonacci)
@@ -208,4 +212,18 @@ export interface Requirement extends BasicInfo {
   priorityId: string;
   requirementTypeId: string;
   requirementFocusId: string;
+}
+
+export interface ProductivityData {
+  time: z.infer<typeof PerformanceTime>;
+  userStoryCompleted: number;
+  userStoryTotal: number;
+  issueCompleted: number;
+  issueTotal: number;
+  fetchDate: Timestamp;
+}
+
+// Have as an array as there are maximum 3 time periods
+export interface Productivity {
+  cached: ProductivityData[];
 }
