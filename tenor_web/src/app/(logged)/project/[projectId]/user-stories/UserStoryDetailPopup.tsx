@@ -206,7 +206,7 @@ export default function UserStoryDetailPopup({
     // This means we're editing a ghost user story, so it should be treated differently
     if (userStoryData !== undefined) {
       setUserStoryData?.({ ...finalData, tasks: userStoryData.tasks });
-      return true;
+      return;
     }
 
     const updatedUserStory = {
@@ -276,7 +276,7 @@ export default function UserStoryDetailPopup({
     if (!editMode || saveEditForm) {
       await refetch();
     }
-    return true;
+    return;
   };
 
   const handleDelete = async () => {
