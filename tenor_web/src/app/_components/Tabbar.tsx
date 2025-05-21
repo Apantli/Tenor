@@ -18,16 +18,8 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   const projectPath = `/project/${projectId}`;
   let cutPathname = pathname.slice(projectPath.length) || "/";
 
-  if (
-    cutPathname.startsWith("/sprint-review/") &&
-    cutPathname.split("/").length > 2
-  ) {
-    cutPathname = "/sprint-review";
-  } else if (
-    cutPathname.split("/").length > 1 &&
-    !cutPathname.startsWith("/sprint-review")
-  ) {
-    cutPathname = "/" + cutPathname.split("/")[1]!;
+  if (cutPathname.split("/").length > 2) {
+    cutPathname = `/${cutPathname.split("/")[1]!}`;
   }
 
   const handleClick: MouseEventHandler = (e) => {
@@ -70,13 +62,8 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
           }
         }
 
-        let href = projectPath + link;
-        let isActive = link === cutPathname;
-
-        if (id === "sprintReview" && previousSprint) {
-          href = `${projectPath}${link}/${previousSprint.id}`;
-          isActive = pathname.startsWith(`${projectPath}${link}/`);
-        }
+        const href = projectPath + link;
+        const isActive = link === cutPathname;
 
         return (
           <InterceptedLink

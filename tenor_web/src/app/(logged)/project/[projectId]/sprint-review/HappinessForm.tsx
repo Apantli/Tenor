@@ -9,6 +9,7 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import { useParams } from "next/navigation";
 
 interface HappinessFormProps {
   sprintReviewId?: number;
@@ -21,7 +22,7 @@ export interface HappinessResponses {
   improvementSuggestion: string;
 }
 
-const QUESTION_MAPPING = {
+const questionMapping = {
   roleFeeling: 1,
   companyFeeling: 2,
   improvementSuggestion: 3,
@@ -33,6 +34,8 @@ export default function HappinessForm({
 }: HappinessFormProps) {
   const { user } = useFirebaseAuth();
   const userId = user?.uid ?? "";
+  const params = useParams();
+  const projectId = params.projectId as string;
 
   const [renderConversation, showConversation, setShowConversation] =
     usePopupVisibilityState();
@@ -59,6 +62,7 @@ export default function HappinessForm({
     error: queryError,
   } = api.sprintReviews.getReviewAnswers.useQuery(
     {
+      projectId: projectId,
       reviewId: sprintReviewId ?? 0,
       userId,
     },
@@ -135,9 +139,10 @@ export default function HappinessForm({
 
           if (value && !savedFields[fieldKey]) {
             await saveAnswer.mutateAsync({
+              projectId: projectId,
               reviewId: sprintReviewId,
               userId,
-              questionNum: QUESTION_MAPPING[fieldKey],
+              questionNum: questionMapping[fieldKey],
               answerText: value as string,
             });
 

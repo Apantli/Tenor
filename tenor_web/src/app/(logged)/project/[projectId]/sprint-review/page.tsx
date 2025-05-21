@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import HappinessForm from "../HappinessForm";
+import HappinessForm from "./HappinessForm";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import ProfilePicture from "~/app/_components/ProfilePicture";
 import {
@@ -14,16 +14,36 @@ import { api } from "~/trpc/react";
 export default function ProjectSprintReviewPage() {
   const { user } = useFirebaseAuth();
   const params = useParams();
-  const sprintId = params.sprintId as string;
+  const projectId = params.projectId as string;
 
-  const { data: sprint } = api.sprints.getSprint.useQuery({
-    projectId: params.projectId as string,
-    sprintId: sprintId,
-  });
+  const { data: previousSprint } = api.sprintReviews.getPreviousSprint.useQuery(
+    { projectId: projectId },
+    {
+      enabled: !!projectId,
+    },
+  );
 
-  const { data: sprintReviewId } = api.sprintReviews.getReviewId.useQuery({
-    sprintId: sprintId,
-  });
+  const previousSprintId = previousSprint?.id ?? "";
+
+  const { data: sprint } = api.sprints.getSprint.useQuery(
+    {
+      projectId: params.projectId as string,
+      sprintId: previousSprintId,
+    },
+    {
+      enabled: !!previousSprintId,
+    },
+  );
+
+  const { data: sprintReviewId } = api.sprintReviews.getReviewId.useQuery(
+    {
+      projectId: projectId,
+      sprintId: previousSprintId,
+    },
+    {
+      enabled: !!previousSprintId,
+    },
+  );
 
   const sprintNumber = sprint?.number;
   const teamProgress = 90;
@@ -44,7 +64,6 @@ export default function ProjectSprintReviewPage() {
       <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row">
         <div className="flex h-full w-full flex-col rounded-lg border border-app-border bg-white p-6 shadow-sm lg:w-1/2">
           <h2 className="mb-4 text-2xl font-semibold">Team Progress</h2>
-          {/* ... rest of your component ... */}
           <div className="mb-6">
             <p className="mb-2 font-medium">90% of user stories completed</p>
             <div className="h-8 w-full overflow-hidden rounded-md bg-gray-200">

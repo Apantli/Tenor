@@ -8,7 +8,7 @@
  * @category API
  */
 
-import { createTRPCRouter, protectedProcedure, roleRequiredProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { getPreviousSprint } from "~/utils/helpers/shortcuts/sprints";
 import { sprintPermissions } from "~/lib/permission";
@@ -24,7 +24,7 @@ type ReviewAnswers = Record<string, string>;
  *
  * @http GET /api/trpc/sprintReviews.getReviewId
  */
-export const getReviewIdProcedure = protectedProcedure
+export const getReviewIdProcedure = roleRequiredProcedure(sprintPermissions, "read")
   .input(z.object({ sprintId: z.string() }))
   .query(async ({ ctx, input }) => {
     const response = await ctx.supabase.rpc("get_review_id", {
@@ -38,7 +38,7 @@ export const getReviewIdProcedure = protectedProcedure
     return response.data as number;
   });
 
-export const getReviewAnswersProcedure = protectedProcedure
+export const getReviewAnswersProcedure = roleRequiredProcedure(sprintPermissions, "read")
   .input(z.object({ reviewId: z.number(), userId: z.string() }))
   .query(async ({ ctx, input }) => {
     const response = await ctx.supabase.rpc("get_review_answers", {
@@ -51,7 +51,7 @@ export const getReviewAnswersProcedure = protectedProcedure
     return response.data as ReviewAnswers;
   });
 
-export const saveReviewAnswersProcedure = protectedProcedure
+export const saveReviewAnswersProcedure = roleRequiredProcedure(sprintPermissions, "write")
   .input(
     z.object({
       reviewId: z.number(),

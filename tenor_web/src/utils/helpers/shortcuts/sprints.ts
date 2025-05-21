@@ -113,12 +113,12 @@ export const getPreviousSprint = async (
 ) => {
   const sprints = await getSprints(firestore, projectId);
   const now = new Date();
-  const twoDaysInMs = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+  const threeDaysInMs = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
   
   return sprints.find((sprint) => {
     const sprintEndTime = sprint.endDate.getTime();
     return sprintEndTime < now.getTime() && 
-           now.getTime() - sprintEndTime < twoDaysInMs;
+           now.getTime() - sprintEndTime < threeDaysInMs;
   });
 };
 
