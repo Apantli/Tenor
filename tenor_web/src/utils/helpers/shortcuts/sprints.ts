@@ -154,14 +154,14 @@ export const updateSprintNumberOrder = async (
     return a.startDate.getTime() - b.startDate.getTime();
   });
   // Make sure the sprint numbers match the new order
-  const batch2 = firestore.batch();
+  const batch = firestore.batch();
   sortedSprints.forEach((sprint, index) => {
     if (sprint.number === index + 1) return;
     reorderedSprints = true;
     const sprintRef = getSprintRef(firestore, projectId, sprint.id);
-    batch2.update(sprintRef, { number: index + 1 });
+    batch.update(sprintRef, { number: index + 1 });
   });
-  await batch2.commit();
+  await batch.commit();
 
   return reorderedSprints;
 };

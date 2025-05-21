@@ -185,10 +185,9 @@ export default function CreateSprintPopup({
         </div>
       }
     >
-      {" "}
       <div className="flex flex-col gap-4">
         <h1 className="text-2xl">
-          <strong>New Sprint</strong>{" "}
+          <strong>New Sprint</strong>
         </h1>
         <InputTextAreaField
           height={15}

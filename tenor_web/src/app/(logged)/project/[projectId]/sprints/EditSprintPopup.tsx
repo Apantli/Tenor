@@ -127,7 +127,7 @@ export default function EditSprintPopup({
     if (
       await confirm(
         "Are you sure?",
-        "You are about to delete the sprint. All assigned backlog items will be put back in the product backlog.",
+        "You are about to delete the sprint. All assigned backlog items will be moved back to the product backlog.",
         "Delete sprint",
         "Cancel",
       )
