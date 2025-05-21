@@ -13,6 +13,11 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { type Links } from "~/server/api/routers/settings";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();
@@ -22,6 +27,18 @@ export default function ProjectAIConfig() {
   const { alert } = useAlert();
 
   // Fetch
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["settings"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
+
   const { data: text, isLoading } = api.settings.getContextDialog.useQuery({
     projectId: projectId as string,
   });
@@ -285,6 +302,7 @@ export default function ProjectAIConfig() {
       {links && loadedFiles && !isLoading ? (
         <div className="flex flex-col gap-4">
           <InputTextAreaField
+            disabled={permission < permissionNumbers.write}
             label="Project Context"
             value={newText}
             onChange={(e) => {
@@ -295,6 +313,7 @@ export default function ProjectAIConfig() {
             labelClassName="text-lg font-semibold"
           ></InputTextAreaField>
           <FileList
+            disabled={permission < permissionNumbers.write}
             label={"Context Files"}
             files={loadedFiles}
             memoryLimit={10000000}
@@ -302,6 +321,7 @@ export default function ProjectAIConfig() {
             handleFileRemove={handleRemoveFile}
           ></FileList>
           <LinkList
+            disabled={permission < permissionNumbers.write}
             label={"Context Links"}
             links={links.map((link) => ({
               link: link.link,

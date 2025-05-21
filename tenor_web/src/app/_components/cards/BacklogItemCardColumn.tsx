@@ -22,6 +22,7 @@ interface Props {
   className?: ClassNameValue;
   dndId: string;
   lastDraggedBacklogItemId: string | null;
+  disabled?: boolean;
 }
 
 export default function BacklogItemCardColumn({
@@ -34,6 +35,7 @@ export default function BacklogItemCardColumn({
   className,
   dndId,
   lastDraggedBacklogItemId,
+  disabled = false,
 }: Props) {
   const cards: KanbanCard[] = backlogItems.map((item) => ({
     id: item.id,
@@ -50,6 +52,7 @@ export default function BacklogItemCardColumn({
 
   return (
     <CardColumn
+      disabled={disabled}
       lastDraggedItemId={lastDraggedBacklogItemId}
       dndId={dndId}
       cards={cards}
@@ -61,6 +64,7 @@ export default function BacklogItemCardColumn({
       className={className}
       renderCard={(item) => (
         <ItemCardRender
+          disabled={disabled}
           item={item}
           scrumIdFormatter={() =>
             item.cardType === "US"

@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
 import CheckAll from "@mui/icons-material/DoneAll";
@@ -22,6 +22,11 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 
 export default function ItemsKanban() {
@@ -39,6 +44,17 @@ export default function ItemsKanban() {
     api.kanban.getBacklogItemsForKanban.useQuery({
       projectId: projectId as string,
     });
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   const { mutateAsync: modifyUserStoryTags } =
     api.userStories.modifyUserStoryTags.useMutation();
@@ -212,6 +228,7 @@ export default function ItemsKanban() {
     <>
       <DragDropProvider
         onDragEnd={async (event) => {
+          if (permission < permissionNumbers.write) return;
           const { operation, canceled } = event;
           const { source, target } = operation;
 
@@ -255,6 +272,7 @@ export default function ItemsKanban() {
 
               return (
                 <AssignableCardColumn
+                  disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedItemId}
                   assignSelectionToColumn={assignSelectionToColumn}
                   column={renamedColumn}
@@ -267,6 +285,7 @@ export default function ItemsKanban() {
                     const formatter = getCorrectFormatter(item.cardType);
                     return (
                       <ItemCardRender
+                        disabled={permission < permissionNumbers.write}
                         item={item}
                         scrumIdFormatter={formatter}
                       />
@@ -276,26 +295,28 @@ export default function ItemsKanban() {
                     <div className="flex flex-col items-start pr-1">
                       <div className="flex w-full justify-between">
                         <h1 className="text-2xl font-medium">{column.name}</h1>
-                        <div className="flex gap-2">
-                          <button
-                            className={cn(
-                              "rounded-lg px-1 text-app-text transition",
-                              {
-                                "text-app-secondary": allSelected,
-                              },
-                            )}
-                            onClick={toggleSelectAll}
-                          >
-                            {allSelected ? (
-                              <CheckNone fontSize="small" />
-                            ) : (
-                              <CheckAll fontSize="small" />
-                            )}
-                          </button>
-                          <Dropdown label={"• • •"}>
-                            <DropdownButton>Edit status</DropdownButton>
-                          </Dropdown>
-                        </div>
+                        {permission >= permissionNumbers.write && (
+                          <div className="flex gap-2">
+                            <button
+                              className={cn(
+                                "rounded-lg px-1 text-app-text transition",
+                                {
+                                  "text-app-secondary": allSelected,
+                                },
+                              )}
+                              onClick={toggleSelectAll}
+                            >
+                              {allSelected ? (
+                                <CheckNone fontSize="small" />
+                              ) : (
+                                <CheckAll fontSize="small" />
+                              )}
+                            </button>
+                            <Dropdown label={"• • •"}>
+                              <DropdownButton>Edit status</DropdownButton>
+                            </Dropdown>
+                          </div>
+                        )}
                       </div>
                       <hr className="my-2 w-full border border-app-border" />
                     </div>

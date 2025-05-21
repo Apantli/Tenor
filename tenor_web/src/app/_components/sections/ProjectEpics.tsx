@@ -1,7 +1,7 @@
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import Popup from "~/app/_components/Popup";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useEffect } from "react";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
@@ -14,12 +14,29 @@ import Markdown from "react-markdown";
 import SecondaryButton from "../buttons/SecondaryButton";
 import SearchBar from "../SearchBar";
 import { useParams } from "next/navigation";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
 import NoEpicsIcon from "@mui/icons-material/FormatListBulleted";
 
 export const ProjectEpics = () => {
   const { projectId } = useParams();
   const { mutateAsync: createEpic, isPending: creatingEpic } =
     api.epics.createOrModifyEpic.useMutation();
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   // Make a copy to show the loading state
   const { mutateAsync: deleteEpic, isPending: deletingEpic } =
@@ -125,9 +142,11 @@ export const ProjectEpics = () => {
     <>
       <h1 className="flex justify-between pb-2">
         <span className="text-3xl font-semibold">Epics</span>
-        <PrimaryButton onClick={() => setShowSmallPopup(true)}>
-          + New Epic
-        </PrimaryButton>
+        {permission >= permissionNumbers.write && (
+          <PrimaryButton onClick={() => setShowSmallPopup(true)}>
+            + New Epic
+          </PrimaryButton>
+        )}
       </h1>
       <div className="mb-3 flex flex-row justify-between gap-1 border-b-2 pb-3">
         <SearchBar
@@ -146,13 +165,15 @@ export const ProjectEpics = () => {
               <h1 className="mb-5 text-3xl font-semibold text-gray-500">
                 No epics yet
               </h1>
-              <PrimaryButton
-                onClick={() => {
-                  setShowSmallPopup(true);
-                }}
-              >
-                Create your first epic
-              </PrimaryButton>
+              {permission >= permissionNumbers.write && (
+                <PrimaryButton
+                  onClick={() => {
+                    setShowSmallPopup(true);
+                  }}
+                >
+                  Create your first epic
+                </PrimaryButton>
+              )}
             </div>
           </div>
         )}
@@ -232,7 +253,7 @@ export const ProjectEpics = () => {
       <Popup
         show={showEditPopup}
         className="h-[400px] min-w-[500px]"
-        editMode={editEpic}
+        editMode={permission >= permissionNumbers.write ? editEpic : undefined}
         size="small"
         data-cy="popup-detail-epic"
         title={
@@ -285,46 +306,49 @@ export const ProjectEpics = () => {
             {!editEpic && (
               <SecondaryButton
                 // FIXME: set filter for user stories related to epic
+                // FIXME: Implement permission
                 onClick={() => handleEditDismiss()}
               >
                 Show user stories
               </SecondaryButton>
             )}
 
-            <DeleteButton
-              loading={deletingEpic}
-              onClick={async () => {
-                const confirmation = await confirm(
-                  "Confirm deletion?",
-                  "This is irreversible.",
-                  "Delete permanently",
-                  "Cancel",
-                );
-                if (!confirmation) return;
-                if (!epic?.scrumId) {
-                  console.log("Warning: epic not found");
-                  return;
-                }
-                if (!deletingEpic) {
-                  await deleteEpic({
-                    projectId: projectId as string,
+            {permission >= permissionNumbers.write && (
+              <DeleteButton
+                loading={deletingEpic}
+                onClick={async () => {
+                  const confirmation = await confirm(
+                    "Confirm deletion?",
+                    "This is irreversible.",
+                    "Delete permanently",
+                    "Cancel",
+                  );
+                  if (!confirmation) return;
+                  if (!epic?.scrumId) {
+                    console.log("Warning: epic not found");
+                    return;
+                  }
+                  if (!deletingEpic) {
+                    await deleteEpic({
+                      projectId: projectId as string,
 
-                    epicId: epic?.id,
+                      epicId: epic?.id,
 
-                    epicData: {
-                      scrumId: epic?.scrumId,
-                      name: editEpicName,
-                      description: editEpicDescription,
-                      deleted: true,
-                    },
-                  });
-                  await utils.epics.invalidate();
-                  handleEditDismiss();
-                }
-              }}
-            >
-              Delete epic
-            </DeleteButton>
+                      epicData: {
+                        scrumId: epic?.scrumId,
+                        name: editEpicName,
+                        description: editEpicDescription,
+                        deleted: true,
+                      },
+                    });
+                    await utils.epics.invalidate();
+                    handleEditDismiss();
+                  }
+                }}
+              >
+                Delete epic
+              </DeleteButton>
+            )}
           </div>
         }
         dismiss={async () => {

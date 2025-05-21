@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
@@ -34,6 +34,11 @@ import {
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import {
+  permissionNumbers,
+  type Permission,
+} from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 
 interface Props {
@@ -53,6 +58,18 @@ export default function IssueDetailPopup({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["issues"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   const {
     data: issueDetail,
@@ -216,6 +233,7 @@ export default function IssueDetailPopup({
               <>
                 <h3 className="text-lg font-semibold">User Story</h3>
                 <UserStoryPicker
+                  disabled={permission < permissionNumbers.write}
                   userStory={issueDetail?.relatedUserStory}
                   onChange={async (userStory) => {
                     await handleSave({
@@ -229,6 +247,7 @@ export default function IssueDetailPopup({
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Priority</h3>
                     <PriorityPicker
+                      disabled={permission < permissionNumbers.write}
                       priority={issueDetail.priority}
                       onChange={async (priority) => {
                         await handleSave({ ...issueDetail, priority });
@@ -238,6 +257,7 @@ export default function IssueDetailPopup({
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePillComponent
+                      disabled={permission < permissionNumbers.write}
                       currentSize={issueDetail.size}
                       callback={async (size) => {
                         await handleSave({ ...issueDetail, size });
@@ -260,6 +280,7 @@ export default function IssueDetailPopup({
                     )}
                   </div>
                   <StatusPicker
+                    disabled={permission < permissionNumbers.write}
                     status={issueDetail.status}
                     onChange={async (status) => {
                       await handleSave({ ...issueDetail, status });
@@ -272,6 +293,7 @@ export default function IssueDetailPopup({
                 </div>
 
                 <BacklogTagList
+                  disabled={permission < permissionNumbers.write}
                   tags={issueDetail.tags}
                   onChange={async (tags) => {
                     await handleSave({ ...issueDetail, tags });
@@ -288,7 +310,8 @@ export default function IssueDetailPopup({
         )
       }
       footer={
-        !isLoading && (
+        !isLoading &&
+        permission >= permissionNumbers.write && (
           <DeleteButton onClick={handleDelete}>Delete issue</DeleteButton>
         )
       }
@@ -304,7 +327,13 @@ export default function IssueDetailPopup({
           )}
         </>
       }
-      editMode={isLoading ? undefined : editMode}
+      editMode={
+        permission >= permissionNumbers.write
+          ? isLoading
+            ? undefined
+            : editMode
+          : undefined
+      }
       setEditMode={async (isEditing) => {
         setEditMode(isEditing);
 
