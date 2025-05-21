@@ -10,6 +10,7 @@ import { api } from "~/trpc/react";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useParams } from "next/navigation";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 interface HappinessFormProps {
   sprintReviewId?: number;
@@ -36,6 +37,8 @@ export default function HappinessForm({
   const userId = user?.uid ?? "";
   const params = useParams();
   const projectId = params.projectId as string;
+  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const [renderConversation, showConversation, setShowConversation] =
     usePopupVisibilityState();
@@ -102,6 +105,7 @@ export default function HappinessForm({
 
   useEffect(() => {
     if (queryError) {
+      predefinedAlerts.unexpectedError();
       console.error("Error fetching review answers:", queryError.message);
       setIsLoading(false);
     }
@@ -129,6 +133,23 @@ export default function HappinessForm({
 
   const handleSubmit = async () => {
     if (!sprintReviewId || !userId) return;
+
+    const hasNewUnsavedContent =
+      (!savedFields.roleFeeling && responses.roleFeeling.trim() !== "") ||
+      (!savedFields.companyFeeling && responses.companyFeeling.trim() !== "") ||
+      (!savedFields.improvementSuggestion &&
+        responses.improvementSuggestion.trim() !== "");
+    if (!hasNewUnsavedContent) {
+      alert(
+        "Oops...",
+        "Please enter at least one response to a missing question.",
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
 
     setIsSubmitting(true);
 
