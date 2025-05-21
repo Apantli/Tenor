@@ -14,11 +14,19 @@ interface Props {
 export default function Tabbar({ disabled, mainPageName }: Props) {
   const pathname = usePathname();
   const params = useParams();
-  const projectPath = `/project/${params.projectId as string}`;
+  const projectId = params.projectId as string;
+  const projectPath = `/project/${projectId}`;
   let cutPathname = pathname.slice(projectPath.length) || "/";
 
-  // Consider the immediate parent directory, ignoring nested directories
-  if (cutPathname.split("/").length > 1) {
+  if (
+    cutPathname.startsWith("/sprint-review/") &&
+    cutPathname.split("/").length > 2
+  ) {
+    cutPathname = "/sprint-review";
+  } else if (
+    cutPathname.split("/").length > 1 &&
+    !cutPathname.startsWith("/sprint-review")
+  ) {
     cutPathname = "/" + cutPathname.split("/")[1]!;
   }
 
@@ -30,19 +38,44 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   };
 
   const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: (params.projectId as string) ?? "",
+    projectId: projectId ?? "",
   });
+
+  const { data: previousSprint, isLoading: isLoadingPreviousSprint } =
+    api.sprintReviews.getPreviousSprint.useQuery(
+      { projectId: projectId },
+      {
+        enabled: !!projectId,
+      },
+    );
 
   return (
     <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
       {tabs.map((id) => {
-        const { title, link, enabled, flags } =
+        const meta =
           tabsMetaInformation[id as keyof typeof tabsMetaInformation];
+        if (!meta) return null;
+
+        const { title, link, enabled, flags } = meta;
+
+        if (id === "sprintReview") {
+          if (isLoadingPreviousSprint || !previousSprint) {
+            return null;
+          }
+        }
 
         for (const flag of flags) {
           if (!role?.[flag as keyof typeof role]) {
             return null;
           }
+        }
+
+        let href = projectPath + link;
+        let isActive = link === cutPathname;
+
+        if (id === "sprintReview" && previousSprint) {
+          href = `${projectPath}${link}/${previousSprint.id}`;
+          isActive = pathname.startsWith(`${projectPath}${link}/`);
         }
 
         return (
@@ -51,19 +84,19 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
             className={cn(
               "relative flex h-full items-center rounded-t-lg px-3 font-medium text-white",
               {
-                "bg-white text-app-primary": link === cutPathname,
+                "bg-white text-app-primary": isActive,
                 "pointer-events-none opacity-50":
-                  !enabled || (disabled && link !== cutPathname),
+                  !enabled || (disabled && !isActive),
               },
             )}
-            href={projectPath + link}
+            href={href}
             onClick={handleClick}
           >
             <span data-cy={id}>
               {id === "overview" && mainPageName ? mainPageName : title}
             </span>
 
-            {link === cutPathname && (
+            {isActive && (
               <>
                 <div className="absolute -left-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[5px_5px_0_0_white]"></div>
                 <div className="absolute -right-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[-5px_5px_0_0_white]"></div>

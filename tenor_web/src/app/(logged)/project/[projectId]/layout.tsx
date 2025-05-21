@@ -13,7 +13,6 @@ import SearchOffIcon from "@mui/icons-material/SearchOff";
 export default function ProjectLayout({ children }: PropsWithChildren) {
   const { projectId } = useParams();
   const pathName = usePathname();
-  const tab = pathName.split("/").pop();
 
   const { data: projectNameData } = api.projects.getProjectName.useQuery({
     projectId: projectId as string,
@@ -24,32 +23,63 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     });
 
   const permitted = useMemo(() => {
-    if (!role || !tab) {
+    if (!role) {
       return false;
     }
-    // Project OverView
-    if (tab == projectId) {
+
+    const projectIdString = projectId as string;
+
+    const pathSegments = pathName.substring(1).split("/");
+
+    if (
+      pathSegments.length < 2 ||
+      pathSegments[0] !== "project" ||
+      pathSegments[1] !== projectIdString
+    ) {
+      return false;
+    }
+
+    if (pathSegments.length === 2) {
       return true;
     }
 
-    const metaTab = [
-      "ai",
-      "users",
-      "tags-kanban",
-      "scrum-preferences",
-    ].includes(tab)
-      ? tabsMetaInformation.settings
-      : tabsMetaInformation[
-          tabsToLinks[
-            tab as keyof typeof tabsToLinks
-          ] as keyof typeof tabsMetaInformation
-        ];
+    const currentTabSegment = pathSegments[2];
+
+    let metaKeyForFlags: keyof typeof tabsMetaInformation | undefined;
+
+    if (currentTabSegment === "settings") {
+      metaKeyForFlags = "settings";
+    } else {
+      if (
+        tabsToLinks &&
+        typeof tabsToLinks === "object" &&
+        currentTabSegment &&
+        currentTabSegment in tabsToLinks
+      ) {
+        metaKeyForFlags = tabsToLinks[
+          currentTabSegment as keyof typeof tabsToLinks
+        ] as keyof typeof tabsMetaInformation;
+      } else {
+        return false;
+      }
+    }
+
+    if (!metaKeyForFlags) {
+      return false;
+    }
+
+    const metaTab = tabsMetaInformation[metaKeyForFlags];
+
     if (!metaTab) {
       return false;
     }
 
-    // Check if the user has the required permissions for the tab
-    const { flags } = metaTab;
+    const flags = metaTab.flags;
+
+    if (!flags || flags.length === 0) {
+      return true;
+    }
+
     for (const flag of flags) {
       if (!role?.[flag as keyof typeof role]) {
         return false;
@@ -57,7 +87,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     }
 
     return true;
-  }, [role, tab]);
+  }, [role, pathName, projectId, tabsToLinks, tabsMetaInformation]);
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">

@@ -8,8 +8,10 @@
  * @category API
  */
 
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, roleRequiredProcedure } from "~/server/api/trpc";
 import { z } from "zod";
+import { getPreviousSprint } from "~/utils/helpers/shortcuts/sprints";
+import { sprintPermissions } from "~/lib/permission";
 
 /**
  * Retrieves the ID of a review associated with a given sprint.
@@ -39,4 +41,13 @@ export const getReviewIdProcedure = protectedProcedure
  */
 export const sprintReviewsRouter = createTRPCRouter({
   getReviewId: getReviewIdProcedure,
+  getPreviousSprint: roleRequiredProcedure(sprintPermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const previousSprint = await getPreviousSprint(
+        ctx.firestore,
+        input.projectId,
+      );
+      return previousSprint ?? null;
+    }),
 });
