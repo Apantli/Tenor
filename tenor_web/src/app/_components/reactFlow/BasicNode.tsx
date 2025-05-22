@@ -37,7 +37,12 @@ export default function BasicNode({
   data: { scrumId, itemType, title, showDeleteButton, parentId },
   id,
 }: Props) {
-  const plainItemType = itemType?.split("-")[1] as "US" | "EP" | "TS";
+  let plainItemType = "US" as "US" | "EP" | "TS";
+  if (itemType.includes("-")) {
+    plainItemType = itemType.split("-")[1] as "US" | "EP" | "TS";
+  } else {
+    plainItemType = itemType as "US" | "EP" | "TS";
+  }
 
   // #region Hooks
   const { projectId } = useParams();
@@ -66,7 +71,11 @@ export default function BasicNode({
   // #region Handlers
   const handleDetailClick = () => {
     if (id) {
-      setDetailItemId(`${parentId}-${id}-${itemType}`);
+      if (itemType.includes("-")) {
+        setDetailItemId(`${parentId}-${id}-${itemType}`);
+      } else {
+        setDetailItemId(id);
+      }
     }
   };
 
