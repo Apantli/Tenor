@@ -17,7 +17,7 @@ import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   tasks: TaskPreview[];
-  onChange: (userStories: TaskPreview[]) => void;
+  onChange: (tasks: TaskPreview[]) => void;
   taskId?: string;
   label: string;
   onClick?: (taskId: string) => void;
@@ -52,10 +52,10 @@ export default function DependencyList({
 
   const filteredTasks = allTasksExpectCurrent?.filter((task) => {
     const scrumId = "US" + task.scrumId.toString().padStart(3, "0");
-    const fullUserStoryName = `${scrumId}: ${task.name}`;
+    const fullTaskName = `${scrumId}: ${task.name}`;
     if (
       searchValue !== "" &&
-      !fullUserStoryName.toLowerCase().includes(searchValue.toLowerCase())
+      !fullTaskName.toLowerCase().includes(searchValue.toLowerCase())
     ) {
       return false;
     }
@@ -100,7 +100,7 @@ export default function DependencyList({
               ref={inputRef}
               type="text"
               className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
-              placeholder="Search user stories..."
+              placeholder="Search tasks..."
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
             />
@@ -144,7 +144,7 @@ export default function DependencyList({
               ))}
               {allTasksExpectCurrent?.length === 0 && (
                 <span className="w-full p-2 text-center text-sm text-gray-600">
-                  No user stories exist
+                  No tasks exist
                 </span>
               )}
             </div>
