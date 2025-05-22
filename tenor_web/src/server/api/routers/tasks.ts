@@ -9,7 +9,7 @@
  */
 
 import { z } from "zod";
-import type { StatusTag } from "~/lib/types/firebaseSchemas";
+import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -41,6 +41,7 @@ import {
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
 import { backlogPermissions } from "~/lib/permission";
+import { FieldValue } from "firebase-admin/firestore";
 
 export const tasksRouter = createTRPCRouter({
   getTasks: roleRequiredProcedure(backlogPermissions, "read")
@@ -66,15 +67,49 @@ export const tasksRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      try {
-        const task = await getTasksRef(ctx.firestore, input.projectId).add({
-          ...input.taskData,
-          scrumId: await getTaskNewId(ctx.firestore, input.projectId),
+      const { projectId, taskData: taskDataRaw } = input;
+      const taskData = TaskSchema.parse({
+        ...taskDataRaw,
+        scrumId: await getTaskNewId(ctx.firestore, projectId),
+      });
+
+      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
+        {
+          id: "this is a new user story", // id to avoid collision
+          dependencyIds: taskData.dependencyIds,
+        },
+      ]);
+
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
         });
-        return { success: true, taskId: task.id };
-      } catch {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
+
+      const task = await getTasksRef(ctx.firestore, projectId).add(taskData);
+
+      // Add dependency references
+      await Promise.all(
+        input.taskData.dependencyIds.map(async (dependencyId) => {
+          await getTaskRef(ctx.firestore, projectId, dependencyId).update({
+            requiredByIds: FieldValue.arrayUnion(task.id),
+          });
+        }),
+      );
+      // Add requiredBy references
+      await Promise.all(
+        input.taskData.requiredByIds.map(async (requiredById) => {
+          await getTaskRef(ctx.firestore, projectId, requiredById).update({
+            dependencyIds: FieldValue.arrayUnion(task.id),
+          });
+        }),
+      );
+
+      return {
+        id: task.id,
+        ...taskData,
+      } as WithId<Task>;
     }),
 
   /**
