@@ -51,4 +51,16 @@
   .markdown-content li {
     list-style: inherit;
   }
+
+  .markdown-content{ 
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-all;
+  }
+
+  .wrap-properly {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-all;
+  }
 }

@@ -31,6 +31,8 @@ export default function ProjectGeneralSettings() {
   const utils = api.useUtils();
   const { alert } = useAlert();
 
+  const [mounted, setMouted] = useState(false);
+
   const { data: project, isLoading } = api.projects.getGeneralConfig.useQuery({
     projectId: projectId as string,
   });
@@ -97,9 +99,13 @@ export default function ProjectGeneralSettings() {
     projectId: projectId as string,
   });
 
-  if (role?.id !== "owner" && tab == "project-settings") {
-    router.push(`/project/${projectId as string}/project-settings/users`);
-  }
+  useEffect(() => {
+    if (role?.id !== "owner" && tab == "project-settings") {
+      router.push(`/project/${projectId as string}/project-settings/users`);
+    } else {
+      setMouted(true);
+    }
+  }, [role, tab, router]);
 
   const handleSave = async () => {
     if (!projectId) return;
@@ -128,6 +134,10 @@ export default function ProjectGeneralSettings() {
     });
     return;
   };
+
+  if (!mounted) {
+    return <></>;
+  }
 
   return (
     <div className="flex h-full max-w-[600px] flex-col">

@@ -117,6 +117,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
 
   return (
     <Popup
+      reduceTopPadding
       show={showPopup}
       size="small"
       className="min-h-[400px] min-w-[500px]"

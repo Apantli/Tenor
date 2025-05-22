@@ -26,7 +26,7 @@ export interface Alert {
   enter: boolean;
 }
 
-type AlertFunction = (
+export type AlertFunction = (
   title: string,
   message: React.ReactNode,
   options?: AlertOptions,

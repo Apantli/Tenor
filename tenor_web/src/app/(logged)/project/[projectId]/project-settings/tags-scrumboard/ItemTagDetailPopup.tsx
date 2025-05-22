@@ -68,7 +68,7 @@ export default function ItemTagDetailPopup({
       emptyNameError: "Please enter a name for the backlog tag.",
     },
     ReqFocus: {
-      title: "Requirement Focus: ",
+      title: "Focus: ",
       namePlaceholder: "E.g., 'Security', 'Performance'...",
       nameLabel: "Focus name",
       colorLabel: "Focus color",
@@ -80,7 +80,7 @@ export default function ItemTagDetailPopup({
       emptyNameError: "Please enter a name for the requirement focus.",
     },
     ReqType: {
-      title: "Requirement Type: ",
+      title: "Type: ",
       namePlaceholder: "E.g., 'Functional', 'Non-functional'...",
       nameLabel: "Type name",
       colorLabel: "Type color",
@@ -438,7 +438,7 @@ export default function ItemTagDetailPopup({
     <Popup
       show={showPopup}
       size="small"
-      className="max-h-[400px] min-w-[500px]"
+      className="min-h-[300px] w-[500px]"
       dismiss={async () => {
         if (editMode && isModified()) {
           const confirmation = await confirm(
