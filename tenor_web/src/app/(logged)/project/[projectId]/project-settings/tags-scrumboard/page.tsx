@@ -31,7 +31,7 @@ export default function ProjectTags() {
 
   return (
     <div>
-      <h1 className="mb-4 text-3xl font-semibold">Tags & Kanban</h1>
+      <h1 className="mb-4 text-3xl font-semibold">Tags & Scrumboard</h1>
       <div className="mb-4">
         <SegmentedControl
           options={options}

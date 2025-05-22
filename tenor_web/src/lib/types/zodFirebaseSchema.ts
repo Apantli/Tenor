@@ -67,6 +67,7 @@ export const RoleSchema = z.object({
   scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
+  reviews: PermissionSchema // sprint reviews
 });
 
 export const BasicInfoSchema = z.object({
@@ -114,6 +115,7 @@ export const UserStorySchema = BacklogItemSchema.extend({
   name: z
     .string()
     .describe("Small (5 word maximum) description of the user story"),
+  // .min(1, "Name is required")
   description: z
     .string()
     .describe(

@@ -81,7 +81,8 @@ export default function IssueDetailPopup({
   });
 
   const { mutateAsync: updateIssue } = api.issues.modifyIssue.useMutation();
-  const { mutateAsync: deleteIssue } = api.issues.deleteIssue.useMutation();
+  const { mutateAsync: deleteIssue, isPending: isDeleting } =
+    api.issues.deleteIssue.useMutation();
   const utils = api.useUtils();
 
   const [editMode, setEditMode] = useState(false);
@@ -99,7 +100,7 @@ export default function IssueDetailPopup({
 
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
-  const { predefinedAlerts } = useAlert();
+  const { alert, predefinedAlerts } = useAlert();
   const formatIssueScrumId = useFormatIssueScrumId();
   const formatSprintNumber = useFormatSprintNumber();
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
@@ -198,7 +199,7 @@ export default function IssueDetailPopup({
       await confirm(
         "Are you sure?",
         "This action cannot be undone.",
-        "Delete user story",
+        "Delete issue",
         "Cancel",
       )
     ) {
@@ -312,7 +313,9 @@ export default function IssueDetailPopup({
       footer={
         !isLoading &&
         permission >= permissionNumbers.write && (
-          <DeleteButton onClick={handleDelete}>Delete issue</DeleteButton>
+          <DeleteButton onClick={handleDelete} loading={isDeleting}>
+            Delete issue
+          </DeleteButton>
         )
       }
       title={
@@ -345,6 +348,14 @@ export default function IssueDetailPopup({
             description: editForm.description,
             stepsToRecreate: editForm.stepsToRecreate,
           };
+          if (updatedData.name === "") {
+            setEditMode(true);
+            alert("Oops", "Please provide a name for the issue.", {
+              type: "error",
+              duration: 5000,
+            });
+            return;
+          }
           await handleSave(updatedData);
         }
       }}
@@ -381,9 +392,15 @@ export default function IssueDetailPopup({
       )}
       {!editMode && !isLoading && issueDetail && (
         <div className="overflow-hidden">
-          <div className="markdown-content overflow-hidden text-lg">
-            <Markdown>{issueDetail.description}</Markdown>
-          </div>
+          {issueDetail.description === "" ? (
+            <p className="text-lg italic text-gray-500">
+              No description provided.
+            </p>
+          ) : (
+            <div className="markdown-content overflow-hidden text-lg">
+              <Markdown>{issueDetail.description}</Markdown>
+            </div>
+          )}
 
           {issueDetail.stepsToRecreate !== "" && (
             <>
