@@ -24,17 +24,13 @@ interface Props {
   id?: string;
 }
 
-const handleSize = "0px";
+const handleSize = "8px";
 const handleWhiteCircleStyle = {
   width: handleSize,
   height: handleSize,
   backgroundColor: "white",
   border: "1px solid #555",
   borderRadius: "50%",
-};
-const handleWhiteCircleStyleNotAllowed = {
-  ...handleWhiteCircleStyle,
-  cursor: "not-allowed",
 };
 
 export default function BasicNode({
@@ -97,15 +93,13 @@ export default function BasicNode({
 
   return (
     <>
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={
-          permission < permissionNumbers.write
-            ? handleWhiteCircleStyleNotAllowed
-            : handleWhiteCircleStyle
-        }
-      />
+      {permission >= permissionNumbers.write && (
+        <Handle
+          type="source"
+          position={Position.Right}
+          style={handleWhiteCircleStyle}
+        />
+      )}
       <div className="min-h-10 w-56 rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800">
         <div className="flex flex-row items-center justify-between px-2 text-xs">
           <button
@@ -137,15 +131,13 @@ export default function BasicNode({
           )}
         ></div>
       </div>
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={
-          permission < permissionNumbers.write
-            ? handleWhiteCircleStyleNotAllowed
-            : handleWhiteCircleStyle
-        }
-      />
+      {permission >= permissionNumbers.write && (
+        <Handle
+          type="target"
+          position={Position.Left}
+          style={handleWhiteCircleStyle}
+        />
+      )}
     </>
   );
 }

@@ -7,14 +7,16 @@ import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import usePersistentState from "~/app/_hooks/usePersistentState";
 
 const segmentedControlOptions = ["List", "Dependency Tree"];
 
 export default function ProjectUserStories() {
   const confirm = useConfirmation();
 
-  const [selectedView, setSelectedView] = useState(
-    localStorage.getItem("user-stories-view") ?? segmentedControlOptions[0],
+  const [selectedView, setSelectedView] = usePersistentState(
+    segmentedControlOptions[0],
+    "userStoriesView",
   );
   const [allowSegmentedControlChange, setAllowSegmentedControlChange] =
     useState(true);
@@ -35,7 +37,6 @@ export default function ProjectUserStories() {
     }
     setAllowSegmentedControlChange(true);
     setSelectedView(value);
-    localStorage.setItem("user-stories-view", value);
   };
 
   return (

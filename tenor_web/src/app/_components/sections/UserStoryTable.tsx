@@ -318,7 +318,6 @@ export default function UserStoryTable({
       taskProgress: [0, 0] as [number, number],
     }));
 
-    // TODO: Re-add this
     finishLoading(tableData);
   };
 
