@@ -33,6 +33,7 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogge";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -57,6 +58,16 @@ export const tasksRouter = createTRPCRouter({
           ...input.taskData,
           scrumId: await getTaskNewId(ctx.firestore, input.projectId),
         });
+
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: task.id,
+          type: "TS",
+          action: "create",
+        });
+
         return { success: true, taskId: task.id };
       } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -129,6 +140,14 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, taskData } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "update",
+      });
       await taskRef.update(taskData);
     }),
 
@@ -152,6 +171,14 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, statusId } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "update",
+      });
       await taskRef.update({ statusId });
     }),
 
@@ -173,6 +200,14 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "delete",
+      });
       await taskRef.update({ deleted: true });
     }),
 
