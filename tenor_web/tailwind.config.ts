@@ -27,6 +27,27 @@ export default {
         "sprint-column-background": "#F1F2F4",
         "sprint-column-background-hovered": "#e6e7eb",
       },
+      keyframes: {
+        "pulse-and-grow": {
+          "0%": {
+            transform: "scale(1)",
+            opacity: "0.5",
+          },
+          "50%": {
+            transform: "scale(1.05)",
+            opacity: "0.8",
+          },
+          "100%": {
+            transform: "scale(1)",
+            opacity: "0.5",
+          },
+        },
+      },
+      animation: {
+        "spin-slow": "spin var(--animation-speed) linear infinite",
+        "pulse-and-grow":
+          "pulse-and-grow var(--animation-speed) ease-in-out infinite",
+      },
     },
   },
   plugins: [],
