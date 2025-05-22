@@ -8,6 +8,9 @@ import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { type BacklogItems } from "./page";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
+import EditSprintPopup from "./EditSprintPopup";
+import type { SprintDates } from "./CreateSprintPopup";
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
@@ -18,6 +21,7 @@ interface Props {
   setDetailItemId: (detailId: string) => void;
   assignSelectionToSprint: (sprintId: string) => Promise<void>;
   lastDraggedBacklogItemId: string | null;
+  allSprints: SprintDates[] | undefined;
   disabled?: boolean;
 }
 
@@ -29,11 +33,15 @@ export default function SprintCardColumn({
   setDetailItemId,
   assignSelectionToSprint,
   lastDraggedBacklogItemId,
+  allSprints,
   disabled = false,
 }: Props) {
   const allSelected =
     column.backlogItemIds.length > 0 &&
     column.backlogItemIds.every((itemId) => selectedItems.has(itemId));
+
+  const [renderEditPopup, showEditPopup, setShowEditPopup] =
+    usePopupVisibilityState();
 
   const toggleSelectAll = () => {
     const newSelection = new Set(selectedItems);
@@ -86,25 +94,27 @@ export default function SprintCardColumn({
               <h1 className="text-2xl font-medium">
                 Sprint {column.sprint.number}
               </h1>
-              {!disabled && (
-                <div className="flex gap-2">
-                  <button
-                    className={cn("rounded-lg px-1 text-app-text transition", {
-                      "text-app-secondary": allSelected,
-                    })}
-                    onClick={toggleSelectAll}
-                  >
-                    {allSelected ? (
-                      <CheckNone fontSize="small" />
-                    ) : (
-                      <CheckAll fontSize="small" />
-                    )}
-                  </button>
+              <div className="flex gap-2">
+                <button
+                  className={cn("rounded-lg px-1 text-app-text transition", {
+                    "text-app-secondary": allSelected,
+                  })}
+                  onClick={toggleSelectAll}
+                >
+                  {allSelected ? (
+                    <CheckNone fontSize="small" />
+                  ) : (
+                    <CheckAll fontSize="small" />
+                  )}
+                </button>
+                {!disabled && (
                   <Dropdown label={"• • •"}>
-                    <DropdownButton>Edit sprint</DropdownButton>
+                    <DropdownButton onClick={() => setShowEditPopup(true)}>
+                      Edit sprint
+                    </DropdownButton>
                   </Dropdown>
-                </div>
-              )}
+                )}
+              </div>
             </div>
             <span className="mb-4 text-lg text-gray-600">
               {dateFormatter.format(column.sprint.startDate)} -{" "}
@@ -130,6 +140,16 @@ export default function SprintCardColumn({
           Move to sprint
         </PrimaryButton>
       </div>
+      {renderEditPopup && (
+        <EditSprintPopup
+          otherSprints={allSprints?.filter(
+            (sprint) => sprint.id !== column.sprint.id,
+          )}
+          sprintId={column.sprint.id}
+          showPopup={showEditPopup}
+          setShowPopup={setShowEditPopup}
+        />
+      )}
     </div>
   );
 }
