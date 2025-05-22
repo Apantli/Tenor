@@ -9,11 +9,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 import { zipSamples, channelNames, MuseClient } from "muse-js";
-import { powerByBand, epoch, fft } from "@neurosity/pipes";
-import {
-  ChannelPowerData,
-  createElectrodeQualityInferer,
-} from "./electrodeQuality";
+import { powerByBand, epoch, fft, addSignalQuality } from "@neurosity/pipes";
 
 interface Props {
   showPopup: boolean;
@@ -25,15 +21,6 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
   const [step, setStep] = useState(0);
   const [connectingMuse, setConnectingMuse] = useState(false);
   const [headsetConnected, setHeadsetConnected] = useState(false);
-
-  const [electrodeQuality, setElectrodeQuality] = useState<
-    Record<(typeof channelNames)[number], string>
-  >({
-    TP9: "N/A",
-    AF7: "N/A",
-    AF8: "N/A",
-    TP10: "N/A",
-  });
 
   const { alert } = useAlert();
 
@@ -54,27 +41,9 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
     }
   };
 
-  const electrodeNames = ["TP9", "AF7", "AF8", "TP10"];
-
-  const museEEGDataCallback = (data: any) => {
-    const newElectrodeQuality = { ...electrodeQuality };
-    for (let i = 0; i < electrodeNames.length; i++) {
-      const channelPowerData = [
-        data.delta[i],
-        data.theta[i],
-        data.alpha[i],
-        data.beta[i],
-        data.gamma[i],
-      ];
-      newElectrodeQuality[electrodeNames[i]!] = inferElectrodeQuality(
-        channelPowerData as ChannelPowerData,
-        electrodeNames[i]!,
-      );
-    }
-    setElectrodeQuality(newElectrodeQuality);
+  const museDataCallback = (data: any) => {
+    console.log("Muse data", data);
   };
-
-  const powerHistoryRef = useRef({}); // Ref to store mutable power history
 
   // HANDLES
   const handleDismiss = () => {
@@ -82,9 +51,6 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
     museClientRef.current?.connectionStatus.unsubscribe();
     museClientRef.current?.disconnect();
   };
-
-  const { inferElectrodeQuality, resetHistory } =
-    createElectrodeQualityInferer();
 
   const handleNextStep = () => {
     setStep((prev) => prev + 1);
@@ -102,11 +68,13 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
       museClientRef.current.connectionStatus.subscribe(museConnectionCallback);
       zipSamples(museClientRef.current.eegReadings)
         .pipe(
+          // @ts-ignore
           epoch({ duration: 1024, interval: 100, samplingRate: 256 }),
           fft({ bins: 256 }),
           powerByBand(),
+          addSignalQuality(),
         )
-        .subscribe(museEEGDataCallback);
+        .subscribe(museDataCallback);
     } catch {
       alert(
         "We're sorry...",
@@ -207,25 +175,7 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
               correctly. We'll let you know when you're ready to go!
             </p>
             <img src="/muse_sensors.png" className="h-80" />
-            <div className="flex flex-col gap-2">
-              {Object.entries(electrodeQuality).map(([key, value]) => (
-                <div
-                  key={key}
-                  className="flex w-full items-center justify-between"
-                >
-                  <span className="text-lg font-semibold">{key}</span>
-                  <span
-                    className={`rounded-full px-4 py-1 text-sm font-semibold ${
-                      value === "Good"
-                        ? "bg-green-500 text-white"
-                        : "bg-red-500 text-white"
-                    }`}
-                  >
-                    {value}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <div className="flex flex-col gap-2"></div>
           </>
         )}
       </div>
