@@ -103,12 +103,34 @@ export default function RequirementsTable() {
   const invalidateAllRequirements = useInvalidateQueriesAllRequirements();
   const invalidateRequirementDetails = useInvalidateQueriesRequirementDetails();
 
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
+
+  const { data: defaultRequirementType } =
+    api.requirements.getDefaultRequirementType.useQuery(
+      {
+        projectId: projectId as string,
+      },
+      {
+        enabled: permission >= permissionNumbers.write,
+      },
+    );
+
   // New requirement values
   const defaultRequirement = {
     name: "",
     description: "",
     priority: undefined as Tag | undefined,
-    requirementType: undefined as Tag | undefined,
+    requirementType: defaultRequirementType as Tag | undefined,
     requirementFocus: undefined as Tag | undefined,
   };
   const [newRequirement, setNewRequirement] = useState(defaultRequirement);
@@ -125,17 +147,6 @@ export default function RequirementsTable() {
   const confirm = useConfirmation();
 
   const { alert } = useAlert();
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
-  });
-  const permission: Permission = useMemo(() => {
-    return checkPermissions(
-      {
-        flags: ["backlog"],
-      },
-      role ?? emptyRole,
-    );
-  }, [role]);
 
   const { mutateAsync: createOrModifyRequirement, isPending } =
     api.requirements.createOrModifyRequirement.useMutation();
@@ -784,7 +795,7 @@ export default function RequirementsTable() {
       newRequirement.name === "" &&
       newRequirement.description === "" &&
       newRequirement.priority === undefined &&
-      newRequirement.requirementType === undefined &&
+      newRequirement.requirementType === defaultRequirement.requirementType &&
       newRequirement.requirementFocus === undefined;
   } else {
     const originalData = {
@@ -840,9 +851,12 @@ export default function RequirementsTable() {
       {renderSmallPopup && (
         <Popup
           show={showSmallPopup}
-          reduceTopPadding={requirementEditedData === null}
+          reduceTopPadding={
+            requirementEditedData === null ||
+            permission < permissionNumbers.write
+          }
           size="small"
-          className="max-h-[700px] w-[600px]"
+          className="h-[300px] max-h-[700px] w-[600px]"
           disablePassiveDismiss={!requirementSaved}
           dismiss={async () => {
             if (!requirementSaved) {
@@ -1171,7 +1185,7 @@ export default function RequirementsTable() {
                     ))}
                 </div>
               )}
-              {requirementEditedData === null && (
+              {requirementEditedData === null && !isLoadingRequirements && (
                 <PrimaryButton
                   className="ml-auto"
                   onClick={async () => {
@@ -1243,19 +1257,6 @@ export default function RequirementsTable() {
                     ghostRequirementEdited === null && (
                       <div className="flex gap-2 pt-4">
                         <div className="w-36 space-y-2">
-                          <label className="font-semibold">Priority</label>
-                          <PriorityPicker
-                            disabled={permission < permissionNumbers.write}
-                            priority={newRequirement.priority}
-                            onChange={async (priority) => {
-                              setNewRequirement((prev) => ({
-                                ...prev,
-                                priority: priority,
-                              }));
-                            }}
-                          />
-                        </div>
-                        <div className="w-36 space-y-2">
                           <label className="font-semibold">Type</label>
                           <RequirementTypePicker
                             disabled={permission < permissionNumbers.write}
@@ -1264,6 +1265,19 @@ export default function RequirementsTable() {
                               setNewRequirement((prev) => ({
                                 ...prev,
                                 requirementType: type,
+                              }));
+                            }}
+                          />
+                        </div>
+                        <div className="w-36 space-y-2">
+                          <label className="font-semibold">Priority</label>
+                          <PriorityPicker
+                            disabled={permission < permissionNumbers.write}
+                            priority={newRequirement.priority}
+                            onChange={async (priority) => {
+                              setNewRequirement((prev) => ({
+                                ...prev,
+                                priority: priority,
                               }));
                             }}
                           />
