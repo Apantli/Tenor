@@ -29,9 +29,9 @@ function ProgressBar({
   };
 
   return (
-    <div className={`w-full rounded-lg relative dark:bg-gray-700 h-[39px]`} style={{ backgroundColor: customStyles.emptyBarColor }}>  
+    <div className={`w-full rounded-lg relative dark:bg-gray-700 h-[49px]`} style={{ backgroundColor: customStyles.emptyBarColor }}>  
       <div
-        className={`h-[39px] rounded-lg`}
+        className={`h-full rounded-lg`}
         style={{ width: `${percentage}%`, backgroundColor: customStyles.backgroundColor}}
       ></div>
       <div className="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-start">

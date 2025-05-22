@@ -45,6 +45,7 @@ import {
   getProject,
   getProjectRef,
   getProjectsRef,
+  getProjectStatus,
   getRoles,
   getRolesRef,
   getSettingsRef,
@@ -399,5 +400,11 @@ export const projectsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
       return await getRoles(ctx.firestore, projectId);
+    }),
+  getProjectStatus: roleRequiredProcedure(settingsPermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getProjectStatus(ctx.firestore, projectId, ctx.firebaseAdmin.app());
     }),
 });
