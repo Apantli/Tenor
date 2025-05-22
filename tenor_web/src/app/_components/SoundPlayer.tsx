@@ -59,7 +59,7 @@ export default function SoundPlayer({
 
     const endPlaying = () => {
       setPlayingInner(false);
-      onFinish?.(false);
+      onFinish?.();
     };
 
     audio.addEventListener("timeupdate", showTimeInUI);
