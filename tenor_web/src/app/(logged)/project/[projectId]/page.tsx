@@ -10,11 +10,11 @@ export default function ProjectOverview() {
   const projectId = params.projectId as string;
 
   return (
-    <div className="flex h-full w-full flex-row items-start">
-      <div className="flex w-2/4 flex-col gap-5 p-5">
+    <div className="flex h-full w-full flex-row items-start justify center">
+      <div className="flex w-1/2 flex-col gap-5 p-5 h-64">
         <ProjectInfo projectId={projectId} />
       </div>
-      <div className="flex w-2/4 flex-col gap-5 border-2 border-[#BECAD4] rounded-lg p-5">
+      <div className="flex w-1/2 flex-col gap-5 h-64 border-2 border-[#BECAD4] rounded-lg p-5">
         <ProjectStatus
           projectId={projectId}
         />

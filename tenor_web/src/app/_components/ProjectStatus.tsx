@@ -9,10 +9,6 @@ function projectStatus({projectId}: {projectId: string}) {
   const {data: projectStatus, isLoading } = api.projects.getProjectStatus.useQuery({ projectId });
   const {data: sprints, isLoading: isLoadingSprint} = api.sprints.getProjectSprintsOverview.useQuery({ projectId });
 
-  if (isLoading || isLoadingSprint) {
-    return <LoadingSpinner color="primary" />;
-  }
-
   let sprintTitle = "";
   if (projectStatus?.currentSprintId) {
     if (projectStatus?.currentSprintDescription === "") {
@@ -57,6 +53,14 @@ function projectStatus({projectId}: {projectId: string}) {
 
       message = `${parts.join(', ')} left.`;
     }
+  }
+
+  if (isLoading || isLoadingSprint) {
+    return (
+      <div className='w-full flex h-full items-center justify-center'>
+        <LoadingSpinner color="primary" />
+      </div>
+    );
   }
   
   return (
