@@ -19,7 +19,10 @@ import { UserPicker } from "../specific-pickers/UserPicker";
 import { DatePicker } from "../DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
 import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
-import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
+import {
+  useInvalidateQueriesAllTasks,
+  useInvalidateQueriesTaskDetails,
+} from "~/app/_hooks/invalidateHooks";
 import PrimaryButton from "../buttons/PrimaryButton";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import {
@@ -59,6 +62,7 @@ export default function TaskDetailPopup({
 }: Props) {
   const { projectId } = useParams();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   const {
     data: fetchedTask,
@@ -213,12 +217,13 @@ export default function TaskDetailPopup({
         "Cancel",
       )
     ) {
-      await deleteTask({
+      const { updatedTaskIds } = await deleteTask({
         projectId: projectId as string,
         taskId: taskId,
       });
 
       await invalidateQueriesAllTasks(projectId as string, [itemId]);
+      await invalidateQueriesTaskDetails(projectId as string, updatedTaskIds);
 
       setShowDetail(false);
     }

@@ -196,8 +196,8 @@ export default function UserStoryTable({
     });
   const { mutateAsync: updateUserStoryTags } =
     api.userStories.modifyUserStoryTags.useMutation();
-  const { mutateAsync: deleteUserStory } =
-    api.userStories.deleteUserStory.useMutation();
+  const { mutateAsync: deleteUserStories } =
+    api.userStories.deleteUserStories.useMutation();
   const { mutateAsync: createUserStory } =
     api.userStories.createUserStory.useMutation();
   const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
@@ -254,13 +254,13 @@ export default function UserStoryTable({
     );
 
     // Deletes in database
-    await Promise.all(
-      ids.map((id) =>
-        deleteUserStory({
-          projectId: projectId as string,
-          userStoryId: id,
-        }),
-      ),
+    const { updatedUserStoryIds } = await deleteUserStories({
+      projectId: projectId as string,
+      userStoryIds: ids,
+    });
+    await invalidateQueriesUserStoriesDetails(
+      projectId as string,
+      updatedUserStoryIds,
     );
     await invalidateQueriesAllTasks(projectId as string);
     await invalidateQueriesAllUserStories(projectId as string);

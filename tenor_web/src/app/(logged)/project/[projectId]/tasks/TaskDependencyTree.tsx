@@ -324,7 +324,6 @@ export default function TaskDependencyTree() {
   const parentId = urlParams[0];
   const taskId = urlParams[1];
   const parentType = urlParams[2] as "US" | "IS";
-  console.log(urlParams);
 
   // #endregion
 

@@ -21,13 +21,17 @@ import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import type { TaskPreview, UserStoryDetail } from "~/lib/types/detailSchemas";
 import type { Firestore } from "firebase-admin/firestore";
-import { getTaskProgress, getTaskTable } from "./tasks";
+import { getTaskProgress, getTaskTable, getTasksRef } from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
 import admin from "firebase-admin";
 import { getProjectContext } from "./ai";
 import { FieldValue } from "firebase-admin/firestore";
 import type { DependenciesWithId } from "~/lib/types/userStoriesUtilTypes";
+import type {
+  DocumentData,
+  QueryDocumentSnapshot,
+} from "firebase-admin/firestore";
 
 /**
  * @function getUserStoriesRef
@@ -546,4 +550,73 @@ export const getSprintUserStories = async (
     },
   );
   return userStories;
+};
+
+/**
+ * @function deleteUserStoryAndGetModified
+ * @description Deletes a single user story and returns the IDs of modified stories
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} userStoryId - The ID of the user story to delete
+ * @returns {Promise<string[]>} Array of modified user story IDs including the deleted story
+ */
+export const deleteUserStoryAndGetModified = async (
+  firestore: Firestore,
+  projectId: string,
+  userStoryId: string,
+): Promise<string[]> => {
+  const userStoryRef = getUserStoryRef(firestore, projectId, userStoryId);
+  const userStory = await getUserStory(firestore, projectId, userStoryId);
+
+  const modifiedUserStories = userStory.dependencyIds.concat(
+    userStory.requiredByIds,
+    userStoryId,
+  );
+
+  // Remove this user story from all dependencies' requiredBy arrays
+  await Promise.all(
+    userStory.dependencyIds.map(async (dependencyId) => {
+      await updateDependency(
+        firestore,
+        projectId,
+        dependencyId,
+        userStoryId,
+        "remove",
+        "requiredByIds",
+      );
+    }),
+  );
+
+  // Remove this user story from all requiredBy's dependency arrays
+  await Promise.all(
+    userStory.requiredByIds.map(async (requiredById) => {
+      await updateDependency(
+        firestore,
+        projectId,
+        requiredById,
+        userStoryId,
+        "remove",
+        "dependencyIds",
+      );
+    }),
+  );
+
+  // Mark the user story as deleted
+  await userStoryRef.update({ deleted: true });
+
+  // Delete associated tasks
+  const tasksSnapshot = await getTasksRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("itemType", "==", "US")
+    .where("itemId", "==", userStoryId)
+    .get();
+
+  // NOTE: This is a batch operation, so it will not be atomic
+  const batch = firestore.batch();
+  tasksSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
+    batch.update(doc.ref, { deleted: true });
+  });
+  await batch.commit();
+
+  return modifiedUserStories;
 };

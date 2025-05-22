@@ -4,6 +4,7 @@ import { api } from "~/trpc/react";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesBacklogItems,
+  useInvalidateQueriesTaskDetails,
   useInvalidateQueriesUserStoriesDetails,
 } from "./invalidateHooks";
 
@@ -19,7 +20,7 @@ export const useDeleteItemByType = () => {
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   // TODO: Implement this when dependencies for tasks are implemented
-  // const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   return async (
     projectId: string,
@@ -41,11 +42,14 @@ export const useDeleteItemByType = () => {
         break;
 
       case "TS":
-        await deleteTask({ projectId, taskId: itemId });
+        const { updatedTaskIds } = await deleteTask({
+          projectId,
+          taskId: itemId,
+        });
         if (parentId) {
           await invalidateQueriesAllTasks(projectId, [parentId]);
         }
-        // TODO: Invalidate also related tasks, like in the US case (will do when dependencies for tasks are implemented)
+        await invalidateQueriesTaskDetails(projectId, updatedTaskIds);
         break;
 
       case "EP":

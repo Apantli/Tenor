@@ -104,7 +104,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     );
   }, [role]);
 
-  const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
+  const { mutateAsync: deleteTasks } = api.tasks.deleteTasks.useMutation();
 
   const tasksData = itemData?.tasks;
 
@@ -402,15 +402,12 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       newTransformedTasks,
     );
 
-    await Promise.all(
-      ids.map((id) =>
-        deleteTask({
-          projectId: projectId as string,
-          taskId: id,
-        }),
-      ),
-    );
+    const { updatedTaskIds } = await deleteTasks({
+      projectId: projectId as string,
+      taskIds: ids,
+    });
 
+    await invalidateQueriesTaskDetails(projectId as string, updatedTaskIds);
     await invalidateQueriesAllTasks(projectId as string, [itemId]);
     await invalidateQueriesBacklogItems(projectId as string, itemType);
 

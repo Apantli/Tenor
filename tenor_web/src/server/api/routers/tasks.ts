@@ -19,6 +19,7 @@ import { TRPCError } from "@trpc/server";
 import { BacklogItemSchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
+  deleteTaskAndGetModified,
   getTask,
   getTaskContextFromItem,
   getTaskDetail,
@@ -310,7 +311,7 @@ export const tasksRouter = createTRPCRouter({
    * @input {object} input - Input parameters
    * @input {string} input.projectId - The ID of the project
    * @input {string} input.taskId - The ID of the task to delete
-   * @returns {object} Object with success status
+   * @returns {object} Object with success status and array of modified task IDs
    */
   deleteTask: protectedProcedure
     .input(
@@ -321,50 +322,52 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId } = input;
-      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
-
-      // Get the task to get its dependencies and required by relationships
-      const task = await getTask(ctx.firestore, projectId, taskId);
-
-      const modifiedTasks = task.dependencyIds.concat(
-        task.requiredByIds,
+      const modifiedTasks = await deleteTaskAndGetModified(
+        ctx.firestore,
+        projectId,
         taskId,
       );
-
-      // Remove this user story from all dependencies' requiredBy arrays
-      await Promise.all(
-        task.dependencyIds.map(async (dependencyId) => {
-          await updateDependency(
-            ctx.firestore,
-            projectId,
-            dependencyId,
-            taskId,
-            "remove",
-            "requiredByIds",
-          );
-        }),
-      );
-
-      // Remove this user story from all requiredBy's dependency arrays
-      await Promise.all(
-        task.requiredByIds.map(async (requiredById) => {
-          await updateDependency(
-            ctx.firestore,
-            projectId,
-            requiredById,
-            taskId,
-            "remove",
-            "dependencyIds",
-          );
-        }),
-      );
-
-      // Mark the task as deleted
-      await taskRef.update({ deleted: true });
 
       return {
         success: true,
         updatedTaskIds: modifiedTasks,
+      };
+    }),
+
+  /**
+   * @procedure deleteTasks
+   * @description Marks multiple tasks as deleted (soft delete)
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string[]} input.taskIds - The IDs of the tasks to delete
+   * @returns {object} Object with success status and array of modified task IDs
+   */
+  deleteTasks: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        taskIds: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, taskIds } = input;
+
+      const allModifiedTaskIds = new Set<string>();
+
+      await Promise.all(
+        taskIds.map(async (taskId) => {
+          const modifiedTasks = await deleteTaskAndGetModified(
+            ctx.firestore,
+            projectId,
+            taskId,
+          );
+          modifiedTasks.forEach((id) => allModifiedTaskIds.add(id));
+        }),
+      );
+
+      return {
+        success: true,
+        updatedTaskIds: Array.from(allModifiedTaskIds),
       };
     }),
 
