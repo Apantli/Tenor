@@ -191,13 +191,13 @@ export const tasksRouter = createTRPCRouter({
         (dep) => !oldTaskData.dependencyIds.includes(dep),
       );
       const removedDependencies = taskData.dependencyIds.filter(
-        (dep) => !oldTaskData.dependencyIds.includes(dep),
+        (dep) => !taskData.dependencyIds.includes(dep),
       );
       const addedRequiredBy = taskData.requiredByIds.filter(
         (req) => !oldTaskData.requiredByIds.includes(req),
       );
       const removedRequiredBy = taskData.requiredByIds.filter(
-        (req) => !oldTaskData.requiredByIds.includes(req),
+        (req) => !taskData.requiredByIds.includes(req),
       );
 
       // Since one change is made at a time one these (thanks for that UI),
