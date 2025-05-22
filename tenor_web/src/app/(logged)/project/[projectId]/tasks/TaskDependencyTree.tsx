@@ -26,7 +26,7 @@ import {
   loadFlowFromLocalStorage,
   saveFlowToLocalStorage,
 } from "~/utils/reactFlow";
-import SecondaryButton from "../buttons/SecondaryButton";
+import SecondaryButton from "../../../../_components/buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
 import { TRPCClientError } from "@trpc/client";
@@ -39,22 +39,35 @@ import {
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import usePersistentState from "~/app/_hooks/usePersistentState";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 
-export default function UserStoryDependencyTree() {
+export default function TaskDependencyTree() {
   // #region Hooks
   const { projectId } = useParams();
   const { predefinedAlerts } = useAlert();
+  const { fitView, setViewport } = useReactFlow();
+
   const utils = api.useUtils();
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
-  const { fitView, setViewport } = useReactFlow();
+
   const [rfInstance, setRfInstance] = useState<ReturnType<
     typeof useReactFlow
   > | null>(null);
+
   const [renderDetail, showDetail, detailItemId, setDetailItemId] =
     useQueryIdForPopup("id");
+
+  const [showEdgeLabels, setShowEdgeLabels] = usePersistentState(
+    true,
+    ":task:showEdgeLabels",
+  );
+  const [initialLayoutDone, setInitialLayoutDone] = usePersistentState(
+    false,
+    ":task:initialLayoutDone",
+  );
   // #endregion
 
   // #region TRPC
@@ -91,14 +104,6 @@ export default function UserStoryDependencyTree() {
   );
   const [edges, setEdges, onEdgesChange] = useEdgesState(
     dependencyData?.edges ?? [],
-  );
-  const [showEdgeLabels, setShowEdgeLabels] = useState<boolean>(
-    (localStorage.getItem((projectId as string) + ":showEdgeLabels") ??
-      "true") === "true",
-  );
-  const [initialLayoutDone, setInitialLayoutDone] = useState(
-    (localStorage.getItem((projectId as string) + ":initialLayoutDone") ??
-      "true") === "true",
   );
   const defaultViewport = loadFlowFromLocalStorage(
     projectId as string,
@@ -142,10 +147,6 @@ export default function UserStoryDependencyTree() {
     // Not updating first and then passing the parameter due to react delay in updating useState
     const updatedEdges = handleEdgeLabelChange(edges, !showEdgeLabels);
     setEdges(updatedEdges);
-    localStorage.setItem(
-      (projectId as string) + ":showEdgeLabels",
-      !showEdgeLabels ? "true" : "false",
-    );
     setShowEdgeLabels(!showEdgeLabels);
   };
 
@@ -317,10 +318,6 @@ export default function UserStoryDependencyTree() {
   // Trigger layout if the user has not interacted with the diagram yet
   useEffect(() => {
     if (!initialLayoutDone && nodes.length > 0 && nodes[0]?.measured) {
-      localStorage.setItem(
-        (projectId as string) + ":initialLayoutDone",
-        "true",
-      );
       setInitialLayoutDone(true);
       onLayout();
     }
@@ -329,10 +326,7 @@ export default function UserStoryDependencyTree() {
   // Do layout next time if there are no nodes
   useEffect(() => {
     if (!isLoadingDependencies && dependencyData?.nodes.length == 0) {
-      localStorage.setItem(
-        (projectId as string) + ":initialLayoutDone",
-        "false",
-      );
+      setInitialLayoutDone(false);
     }
   }, [isLoadingDependencies, dependencyData]);
 
