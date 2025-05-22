@@ -6,7 +6,7 @@ import { getProjectContext } from "./ai";
 import { getTasks } from "./tasks";
 import { getIssues } from "./issues";
 import { getUserStories } from "./userStories";
-import { getCurrentSprint, getSprint } from "./sprints";
+import { getCurrentSprint } from "./sprints";
 import { getUsers } from "./users";
 import type * as admin from "firebase-admin";
 

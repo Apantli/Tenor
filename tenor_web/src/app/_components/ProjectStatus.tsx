@@ -9,7 +9,7 @@ function ProjectStatus({projectId}: {projectId: string}) {
   const {data: ProjectStatus, isLoading } = api.projects.getProjectStatus.useQuery({ projectId });
   const {data: sprints, isLoading: isLoadingSprint} = api.sprints.getProjectSprintsOverview.useQuery({ projectId });
 
-  if (isLoading) {
+  if (isLoading || isLoadingSprint) {
     return <LoadingSpinner color="primary" />;
   }
 
