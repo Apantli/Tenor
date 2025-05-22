@@ -1,3 +1,6 @@
+/* eslint-disable */
+// @ts-nocheck
+
 import { pipe } from "rxjs";
 import { map } from "rxjs/operators";
 
@@ -34,9 +37,7 @@ const defaultDataProp: string = "data";
  */
 export const addSignalQuality = ({ dataProp = defaultDataProp } = {}) =>
   pipe(
-    // @ts-ignore
     map((epoch: any) => {
-      // console.log("epoch", epoch);
       const names = epoch.info.channelNames
         ? epoch.info.channelNames
         : epoch[dataProp].map((_: any, i: number) => i);

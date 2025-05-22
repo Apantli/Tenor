@@ -33,14 +33,14 @@ export default function SoundPlayer({
   const currentTimeRef = React.useRef<HTMLSpanElement>(null);
   const durationRef = React.useRef<HTMLSpanElement>(null);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     setPlayingInner((prev) => !prev);
     setPlaying?.(!playing);
     if (audioRef.current) {
       if (playing) {
         audioRef.current.pause();
       } else {
-        audioRef.current.play();
+        await audioRef.current.play();
       }
     }
   };

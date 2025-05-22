@@ -9,7 +9,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 import { zipSamples, MuseClient } from "muse-js";
-// @ts-ignore
+// @ts-expect-error @neurosity/pipes is a JS library without types
 import { epoch, addInfo } from "@neurosity/pipes";
 import { addSignalQuality } from "~/lib/eeg/addSignalQuality";
 import { cn } from "~/lib/utils";
@@ -68,7 +68,14 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
   // The value was determined via trial and error, and it is not a scientific value.
   const threshold = 100;
 
-  const museDataCallback = (data: any) => {
+  const museDataCallback = (data: {
+    signalQuality: {
+      TP9: number;
+      AF7: number;
+      AF8: number;
+      TP10: number;
+    };
+  }) => {
     if (!startTime.current) {
       startTime.current = new Date();
     }
@@ -113,7 +120,9 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
       museClientRef.current.connectionStatus.subscribe(museConnectionCallback);
       zipSamples(museClientRef.current.eegReadings)
         .pipe(
+          // eslint-disable-next-line
           epoch({ duration: 1024, interval: 100, samplingRate: 256 }),
+          // eslint-disable-next-line
           addInfo({
             samplingRate: 256,
             channelNames: ["TP9", "AF7", "AF8", "TP10"],
@@ -217,21 +226,25 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
           {step === 1 && (
             <>
               <h1 className="text-2xl font-semibold">
-                Great, let's get started!
+                Great, let&apos;s get started!
               </h1>
               <p className="max-w-[600px] text-center text-xl">
                 {isChromium
                   ? "Do you have a Muse headset? If so, please turn it on, put it on and press the button below to connect to it."
                   : "Unfortunately, your browser does not support connecting to the Muse headset. Please use a Chromium based browser like Chrome or Edge if you want to use it."}
               </p>
-              <img src="/muse_headset.png" className="my-10 h-36" />
+              <img
+                src="/muse_headset.png"
+                className="my-10 h-36"
+                alt="Muse Headset"
+              />
               <div className="flex gap-2">
                 <SecondaryButton
                   onClick={() => {
                     setStep(3);
                   }}
                 >
-                  I don't have one
+                  I don&apos;t have one
                 </SecondaryButton>
                 <PrimaryButton
                   className="px-10"
@@ -247,14 +260,15 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
           {step === 2 && (
             <>
               <h1 className="text-2xl font-semibold">
-                Perfect, let's get calibrated!
+                Perfect, let&apos;s get calibrated!
               </h1>
               <p className="max-w-[600px] text-center text-xl">
                 Please put your headset on and wait until the sensors are placed
-                correctly. We'll let you know when you're ready to go!
+                correctly. We&apos;ll let you know when you&apos;re ready to go!
               </p>
               <img
                 src="/muse_sensors.png"
+                alt="Muse Sensors"
                 className="h-80"
                 onClick={() => setStep(3)}
               />
@@ -349,7 +363,7 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
           {step === 4 && (
             <div className="flex flex-col gap-2">
               <h1 className="animate-hide-slow text-center text-2xl font-semibold text-app-primary">
-                You're all set!
+                You&apos;re all set!
               </h1>
               <p className="mx-auto w-[450px] text-center text-lg text-app-text">
                 You may now submit your happiness report. Thank you for trying
