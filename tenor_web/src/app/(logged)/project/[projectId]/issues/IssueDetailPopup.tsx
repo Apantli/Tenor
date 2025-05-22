@@ -56,6 +56,9 @@ export default function IssueDetailPopup({
 }: Props) {
   const { projectId } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [taskToOpen, setTaskToOpen] = useState<string>(
+    taskIdToOpenImmediately ?? "",
+  );
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -429,7 +432,8 @@ export default function IssueDetailPopup({
             setSelectedGhostTask={setSelectedGhostTaskId}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             selectedGhostTaskId={selectedGhostTaskId}
-            taskIdToOpenImmediately={taskIdToOpenImmediately}
+            setTaskToOpen={setTaskToOpen}
+            taskToOpen={taskToOpen}
           />
         </div>
       )}

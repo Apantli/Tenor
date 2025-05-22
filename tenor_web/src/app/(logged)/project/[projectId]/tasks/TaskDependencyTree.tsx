@@ -37,6 +37,7 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
+import IssueDetailPopup from "../issues/IssueDetailPopup";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 const flowIdentifier = "taskDependencyTree";
@@ -319,9 +320,11 @@ export default function TaskDependencyTree() {
   // #endregion
 
   // #region Utils
-
-  const parentId = detailItemId.split("/")[0];
-  const taskId = detailItemId.split("/")[1];
+  const urlParams = detailItemId.split("-");
+  const parentId = urlParams[0];
+  const taskId = urlParams[1];
+  const parentType = urlParams[2] as "US" | "IS";
+  console.log(urlParams);
 
   // #endregion
 
@@ -386,11 +389,19 @@ export default function TaskDependencyTree() {
         </ReactFlow>
       )}
 
-      {renderDetail && parentId && taskId && (
+      {renderDetail && parentId && parentType === "US" && taskId && (
         <UserStoryDetailPopup
           showDetail={showDetail}
           userStoryId={parentId}
           setUserStoryId={setDetailItemId}
+          taskIdToOpenImmediately={taskId}
+        />
+      )}
+      {renderDetail && parentId && parentType === "IS" && taskId && (
+        <IssueDetailPopup
+          showDetail={showDetail}
+          issueId={parentId}
+          setDetailId={setDetailItemId}
           taskIdToOpenImmediately={taskId}
         />
       )}

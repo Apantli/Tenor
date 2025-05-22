@@ -66,7 +66,7 @@ export default function BasicNode({
   // #region Handlers
   const handleDetailClick = () => {
     if (id) {
-      setDetailItemId(parentId + "/" + id);
+      setDetailItemId(`${parentId}-${id}-${itemType}`);
     }
   };
 
