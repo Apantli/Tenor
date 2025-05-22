@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import HappinessForm from "./HappinessForm";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import ProfilePicture from "~/app/_components/ProfilePicture";
@@ -11,11 +11,15 @@ import {
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 
 export default function ProjectSprintReviewPage() {
   const { user } = useFirebaseAuth();
   const params = useParams();
   const projectId = params.projectId as string;
+
+  const [answeredQuestionsCount, setAnsweredQuestionsCount] = useState(0);
+  const [userClickedShowAnswers, setUserClickedShowAnswers] = useState(false);
 
   const { data: previousSprint, isLoading: loadingprevSprint } =
     api.sprintReviews.getPreviousSprint.useQuery({
@@ -59,6 +63,9 @@ export default function ProjectSprintReviewPage() {
       </div>
     );
   }
+
+  const showMessageOverlay =
+    answeredQuestionsCount > 0 && !userClickedShowAnswers;
 
   return (
     <div className="flex h-full flex-col justify-start overflow-y-auto">
@@ -114,8 +121,25 @@ export default function ProjectSprintReviewPage() {
           </div>
         </div>
 
-        <div className="h-full w-full lg:w-1/2">
-          <HappinessForm sprintReviewId={sprintReviewId} />
+        <div className="relative h-full w-full lg:w-1/2">
+          <HappinessForm
+            sprintReviewId={sprintReviewId}
+            onAnsweredCountChange={setAnsweredQuestionsCount}
+          />
+
+          {showMessageOverlay && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-lg bg-white bg-opacity-75 p-4 text-center backdrop-blur-sm">
+              <p className="mb-4 text-xl font-semibold">
+                You have completed {answeredQuestionsCount}/3 answers for your
+                happiness survey.
+              </p>
+              <PrimaryButton onClick={() => setUserClickedShowAnswers(true)}>
+                {answeredQuestionsCount === 3
+                  ? "Review Answers"
+                  : "Show Answers"}
+              </PrimaryButton>
+            </div>
+          )}
         </div>
       </div>
     </div>

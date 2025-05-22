@@ -15,6 +15,7 @@ import { useAlert } from "~/app/_hooks/useAlert";
 interface HappinessFormProps {
   sprintReviewId?: number;
   onSubmit?: (responses: HappinessResponses) => void;
+  onAnsweredCountChange?: (answeredCount: number) => void;
 }
 
 export interface HappinessResponses {
@@ -32,6 +33,7 @@ const questionMapping = {
 export default function HappinessForm({
   sprintReviewId,
   onSubmit,
+  onAnsweredCountChange,
 }: HappinessFormProps) {
   const { user } = useFirebaseAuth();
   const userId = user?.uid ?? "";
@@ -58,6 +60,8 @@ export default function HappinessForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [derivedAnsweredCount, setDerivedAnsweredCount] = useState(0);
+
   const {
     data: existingAnswers,
     refetch: refetchAnswers,
@@ -78,24 +82,47 @@ export default function HappinessForm({
     if (existingAnswers) {
       const newResponsesData: Partial<HappinessResponses> = {};
       const newSavedFieldsData: Partial<typeof savedFields> = {};
+      let answeredCount = 0;
 
       if (existingAnswers["1"]) {
         newResponsesData.roleFeeling = existingAnswers["1"];
         newSavedFieldsData.roleFeeling = true;
+        answeredCount++;
       }
       if (existingAnswers["2"]) {
         newResponsesData.companyFeeling = existingAnswers["2"];
         newSavedFieldsData.companyFeeling = true;
+        answeredCount++;
       }
       if (existingAnswers["3"]) {
         newResponsesData.improvementSuggestion = existingAnswers["3"];
         newSavedFieldsData.improvementSuggestion = true;
+        answeredCount++;
       }
 
       setResponses((prev) => ({ ...prev, ...newResponsesData }));
       setSavedFields((prev) => ({ ...prev, ...newSavedFieldsData }));
+      setDerivedAnsweredCount(answeredCount);
+    } else if (!queryIsLoading) {
+      setResponses({
+        roleFeeling: "",
+        companyFeeling: "",
+        improvementSuggestion: "",
+      });
+      setSavedFields({
+        roleFeeling: false,
+        companyFeeling: false,
+        improvementSuggestion: false,
+      });
+      setDerivedAnsweredCount(0);
     }
-  }, [existingAnswers, setResponses, setSavedFields]);
+  }, [existingAnswers, queryIsLoading]);
+
+  useEffect(() => {
+    if (onAnsweredCountChange) {
+      onAnsweredCountChange(derivedAnsweredCount);
+    }
+  }, [derivedAnsweredCount, onAnsweredCountChange]);
 
   useEffect(() => {
     if (!queryIsLoading) {
@@ -166,7 +193,6 @@ export default function HappinessForm({
               questionNum: questionMapping[fieldKey],
               answerText: value as string,
             });
-
             setSavedFields((prev) => ({
               ...prev,
               [fieldKey]: true,
@@ -176,6 +202,7 @@ export default function HappinessForm({
       );
 
       await Promise.all(savePromises);
+      await refetchAnswers();
 
       if (onSubmit) {
         onSubmit(responses);

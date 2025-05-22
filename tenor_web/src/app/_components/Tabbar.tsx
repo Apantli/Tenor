@@ -17,6 +17,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   const projectId = params.projectId as string;
   const projectPath = `/project/${projectId}`;
   let cutPathname = pathname.slice(projectPath.length) || "/";
+  const utils = api.useUtils();
 
   if (cutPathname.split("/").length > 2) {
     cutPathname = `/${cutPathname.split("/")[1]!}`;
@@ -26,6 +27,9 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     const element = e.target as HTMLAnchorElement;
     element.scrollIntoView({
       behavior: "smooth",
+    });
+    void utils.sprintReviews.getPreviousSprint.invalidate({
+      projectId: projectId,
     });
   };
 
