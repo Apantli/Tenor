@@ -6,23 +6,17 @@ import BaseButton, {
   type BaseButtonProps,
 } from "~/app/_components/buttons/BaseButton";
 
-interface ConversationButtonProps {
-  onClick?: () => void;
-}
-
 export default function ConversationButton({
-  onClick,
   className,
   children,
   ...props
-}: ConversationButtonProps & BaseButtonProps) {
+}: BaseButtonProps) {
   return (
     <BaseButton
       className={cn(
         "flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border-2 border-app-primary bg-white px-3 text-app-text transition hover:bg-app-hover-border disabled:cursor-not-allowed disabled:opacity-60",
         className,
       )}
-      onClick={onClick}
       {...props}
     >
       <HeadphonesIcon fontSize="small" />

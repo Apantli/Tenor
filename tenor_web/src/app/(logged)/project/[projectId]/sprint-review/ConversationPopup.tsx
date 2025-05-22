@@ -8,7 +8,7 @@ interface Props {
   setShowPopup: (show: boolean) => void;
 }
 
-export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
+export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
   // REACT
 
   // TRPC

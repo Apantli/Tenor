@@ -18,12 +18,9 @@ export default function ProjectSprintReviewPage() {
   const projectId = params.projectId as string;
 
   const { data: previousSprint, isLoading: loadingprevSprint } =
-    api.sprintReviews.getPreviousSprint.useQuery(
-      { projectId: projectId },
-      {
-        enabled: !!projectId,
-      },
-    );
+    api.sprintReviews.getPreviousSprint.useQuery({
+      projectId: projectId,
+    });
 
   const previousSprintId = previousSprint?.id ?? "";
 
