@@ -6,25 +6,37 @@ import { useState, type ChangeEventHandler } from "react";
 import SearchBar from "~/app/_components/SearchBar";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import { StatusBarChart } from "~/app/_components/charts/ProjectStatusChart";
 
 export default function ProjectPage() {
   return (
-    <div className="flex h-full w-full flex-row items-start">
-      <div className="flex-1 2xl:flex-[3]">
+    <div className="flex h-full w-full flex-col items-start lg:flex-row">
+      <div className="flex-1 2xl:flex-[2]">
         <h1 className="mb-3 text-3xl font-semibold">Projects</h1>
         <ProjectList />
       </div>
-      <div className="hidden flex-1 pt-10 xl:block 2xl:flex-[2]">
+      <div className="flex-1 pt-10 2xl:flex-[2]">
+        <ProjectStatus />
         {/* FIXME: Remove when dashboard is ready */}
-        <img
-          src="/dashboard_mockup.png"
-          className="ml-auto h-full max-h-[700px] w-auto object-contain"
-          alt="Dashboard mockup"
-        />
       </div>
     </div>
   );
 }
+
+const ProjectStatus = () => {
+  const { data } = api.projects.getTopProjectStatus.useQuery({
+    count: 4,
+  });
+
+  console.log("data:", data);
+  return (
+    <div className="flex h-full w-full flex-col items-start justify-start rounded-md border-2 p-4">
+      <h2 className="mb-3 text-2xl font-semibold">Project status</h2>
+      <p className="text-lg font-semibold">No project selected</p>
+      <StatusBarChart />
+    </div>
+  );
+};
 
 const CreateNewProject = () => {
   const router = useRouter();

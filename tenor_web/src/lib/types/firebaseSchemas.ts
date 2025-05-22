@@ -228,3 +228,14 @@ export interface ProductivityData {
 export interface Productivity {
   cached: ProductivityData[];
 }
+
+export interface ProjectStatus {
+  projectId: string;
+  taskCount: number;
+  completedCount: number;
+}
+
+export interface ProjectStatusCache {
+  fetchDate: Timestamp;
+  topProjects: ProjectStatus[];
+}

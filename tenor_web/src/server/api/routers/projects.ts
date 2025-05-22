@@ -15,7 +15,10 @@ import type {
   WithId,
   User,
   Requirement,
+  ProjectStatusCache,
 } from "~/lib/types/firebaseSchemas";
+import type * as admin from "firebase-admin";
+
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -49,6 +52,8 @@ import {
   getRoles,
   getRolesRef,
   getSettingsRef,
+  getTopProjects,
+  getTopProjectStatusCacheRef,
 } from "~/utils/helpers/shortcuts/general";
 import { settingsPermissions } from "~/lib/permission";
 import { getGlobalUserRef, getUsersRef } from "~/utils/helpers/shortcuts/users";
@@ -57,6 +62,7 @@ import {
   getStatusTypesRef,
 } from "~/utils/helpers/shortcuts/tags";
 import { getRequirementTypesRef } from "~/utils/helpers/shortcuts/requirements";
+import { shouldRecomputeTopProjects } from "~/lib/cache";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -405,6 +411,83 @@ export const projectsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      return await getProjectStatus(ctx.firestore, projectId, ctx.firebaseAdmin.app());
+      return await getProjectStatus(
+        ctx.firestore,
+        projectId,
+        ctx.firebaseAdmin.app(),
+      );
+    }),
+
+  getTopProjectStatus: protectedProcedure
+    .input(z.object({ count: z.number() }))
+    .query(async ({ ctx, input }) => {
+      let topProjects = (
+        await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).get()
+      ).data() as ProjectStatusCache | undefined;
+
+      if (
+        !topProjects ||
+        shouldRecomputeTopProjects({ cacheTarget: topProjects })
+      ) {
+        topProjects = await computeTopProjectStatus(
+          ctx.firestore,
+          ctx.firebaseAdmin.app(),
+          ctx.session.uid,
+          input.count,
+        );
+        await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
+          topProjects,
+        );
+      }
+
+      return topProjects;
+    }),
+  recomputeTopProjectStatus: protectedProcedure
+    .input(z.object({ count: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const topProjects = await computeTopProjectStatus(
+        ctx.firestore,
+        ctx.firebaseAdmin.app(),
+        ctx.session.uid,
+        input.count,
+      );
+      await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
+        topProjects,
+      );
     }),
 });
+
+const computeTopProjectStatus = async (
+  firestore: FirebaseFirestore.Firestore,
+  adminFirestore: admin.app.App,
+  userId: string,
+  count: number,
+) => {
+  let projects = await getTopProjects(firestore, userId);
+
+  projects = projects.slice(0, count);
+  const projectStatus = await Promise.all(
+    projects.map(async (projectId) => {
+      const status = await getProjectStatus(
+        firestore,
+        projectId,
+        adminFirestore,
+      );
+      return {
+        id: projectId,
+        status,
+      };
+    }),
+  );
+
+  const topProjects = {
+    fetchDate: Timestamp.now(),
+    topProjects: projectStatus.map((project) => ({
+      projectId: project.id,
+      taskCount: project.status.taskCount,
+      completedCount: project.status.completedCount,
+    })),
+  };
+
+  return topProjects;
+};

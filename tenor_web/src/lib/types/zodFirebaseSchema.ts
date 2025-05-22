@@ -47,11 +47,12 @@ export const StatusTagSchema = TagSchema.extend({
   marksTaskAsDone: z.boolean(),
 });
 
+// FIXME: Remove optional once it's implemented
 export const UserSchema = z.object({
-  bio: z.string(),
-  jobTitle: z.string(),
+  bio: z.string().optional(),
+  jobTitle: z.string().optional(),
   projectIds: z.array(z.string()),
-  isManager: z.boolean(),
+  isManager: z.boolean().optional(),
 });
 
 // Each number refers to 1 permission: "none" | "read" | "write"
@@ -67,7 +68,7 @@ export const RoleSchema = z.object({
   scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
-  reviews: PermissionSchema // sprint reviews
+  reviews: PermissionSchema, // sprint reviews
 });
 
 export const BasicInfoSchema = z.object({
