@@ -20,6 +20,7 @@ import type {
   UserPreview,
 } from "~/lib/types/detailSchemas";
 import DependencyList from "./DependencyList";
+import { TRPCClientError } from "@trpc/client";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -48,7 +49,7 @@ export function CreateTaskForm({
     projectId: projectIdString,
   });
 
-  const { alert } = useAlert();
+  const { alert, predefinedAlerts } = useAlert();
 
   const [createForm, setCreateForm] = useState<{
     name: string;
@@ -127,27 +128,43 @@ export function CreateTaskForm({
       return;
     }
 
-    const { id: taskId } = await createTask({
-      projectId: projectId as string,
-      taskData: {
-        name: createForm.name,
-        description: createForm.description,
-        statusId: createForm.status?.id ?? "",
-        assigneeId: createForm.assigneeId ?? "",
-        size: createForm.size,
-        dueDate: dueDate,
-        itemId: itemId,
-        itemType: itemType,
-        dependencyIds: createForm.dependencies.map((task) => task.id),
-        requiredByIds: createForm.requiredBy.map((task) => task.id),
-      },
-    });
+    try {
+      const { id: taskId } = await createTask({
+        projectId: projectId as string,
+        taskData: {
+          name: createForm.name,
+          description: createForm.description,
+          statusId: createForm.status?.id ?? "",
+          assigneeId: createForm.assigneeId ?? "",
+          size: createForm.size,
+          dueDate: dueDate,
+          itemId: itemId,
+          itemType: itemType,
+          dependencyIds: createForm.dependencies.map((task) => task.id),
+          requiredByIds: createForm.requiredBy.map((task) => task.id),
+        },
+      });
 
-    if (onTaskAdded) {
-      onTaskAdded(taskId);
+      if (onTaskAdded) {
+        onTaskAdded(taskId);
+      }
+
+      await invalidateQueriesAllTasks(projectIdString, [itemId]);
+    } catch (error) {
+      if (
+        error instanceof TRPCClientError &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        error.data?.code === "BAD_REQUEST"
+      ) {
+        predefinedAlerts.cyclicDependency();
+        return;
+      }
+      alert("Error", "Failed to create task. Please try again.", {
+        type: "error",
+        duration: 5000,
+      });
+      console.error("Error creating task:", error);
     }
-
-    await invalidateQueriesAllTasks(projectIdString, [itemId]);
   };
 
   return (

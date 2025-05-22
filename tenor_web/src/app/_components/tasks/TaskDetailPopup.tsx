@@ -30,6 +30,7 @@ import {
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
 import DependencyList from "./DependencyList";
+import { TRPCClientError } from "@trpc/client";
 
 interface Props {
   taskId: string;
@@ -170,26 +171,37 @@ export default function TaskDetailPopup({
       },
     );
 
-    await updateTask({
-      projectId: projectId as string,
-      taskId: taskId,
-      taskData: {
-        name: updatedData.name,
-        description: updatedData.description,
-        statusId: updatedData.status?.id ?? "",
-        size: updatedData.size,
-        assigneeId: updatedData.assignee?.id ?? "",
-        dueDate: updatedData.dueDate
-          ? Timestamp.fromDate(updatedData.dueDate)
-          : undefined,
-        dependencyIds: updatedData.dependencies.map((task) => task.id),
-        requiredByIds: updatedData.requiredBy.map((task) => task.id),
-      },
-    });
+    try {
+      await updateTask({
+        projectId: projectId as string,
+        taskId: taskId,
+        taskData: {
+          name: updatedData.name,
+          description: updatedData.description,
+          statusId: updatedData.status?.id ?? "",
+          size: updatedData.size,
+          assigneeId: updatedData.assignee?.id ?? "",
+          dueDate: updatedData.dueDate
+            ? Timestamp.fromDate(updatedData.dueDate)
+            : undefined,
+          dependencyIds: updatedData.dependencies.map((task) => task.id),
+          requiredByIds: updatedData.requiredBy.map((task) => task.id),
+        },
+      });
 
-    await invalidateQueriesAllTasks(projectId as string, [itemId]);
-
-    await refetch();
+      await invalidateQueriesAllTasks(projectId as string, [itemId]);
+    } catch (error) {
+      if (
+        error instanceof TRPCClientError &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        error.data?.code === "BAD_REQUEST"
+      ) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        predefinedAlerts.cyclicDependency();
+      }
+    } finally {
+      await refetch();
+    }
   };
 
   const handleDelete = async () => {
