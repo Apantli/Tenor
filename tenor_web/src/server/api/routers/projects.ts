@@ -35,6 +35,7 @@ import {
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/helpers/base64";
 import {
+  defaultActivity,
   defaultPriorityTypes,
   defaultRequerimentTypes,
   defaultRoleList,
@@ -56,6 +57,7 @@ import {
   getStatusTypesRef,
 } from "~/utils/helpers/shortcuts/tags";
 import { getRequirementTypesRef } from "~/utils/helpers/shortcuts/requirements";
+import { getActivityRef } from "~/utils/helpers/shortcuts/performance";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -318,6 +320,18 @@ export const projectsRouter = createTRPCRouter({
         await Promise.all(
           defaultStatusTags.map((statusTag) => statusCollection.add(statusTag)),
         );
+
+        // Create default empty activity
+        const activityCollection = getActivityRef(
+          ctx.firestore,
+          newProjectRef.id,
+        );
+
+        await Promise.all(
+          defaultActivity.map((activity) =>
+            activityCollection.add(activity),
+          ),
+        )
 
         return { success: true, projectId: newProjectRef.id };
       } catch (error) {
