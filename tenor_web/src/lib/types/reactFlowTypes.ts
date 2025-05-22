@@ -14,9 +14,8 @@ export const edgeTypes = {
 // The data for the nodes in the dependency tree. This is what the backend needs to know to create the nodes.
 export interface BasicNodeData {
   scrumId: number;
-  itemType: "US" | "EP" | "TS";
+  itemType: "US" | "EP" | "US-TS" | "IS-TS";
   title: string;
-  parentId?: string; // Only for tasks
 }
 
 // This are the props that are passed to the BasicNode component. This is what the frontend needs to know to display the nodes.

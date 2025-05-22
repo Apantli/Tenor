@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "@xyflow/react/dist/style.css";
 import { useParams } from "next/navigation";
 import { edgeTypes, nodeTypes } from "~/lib/types/reactFlowTypes";
@@ -20,7 +20,7 @@ import {
   MarkerType,
 } from "@xyflow/react";
 import { api } from "~/trpc/react";
-import { useInvalidateQueriesUserStoriesDetails } from "~/app/_hooks/invalidateHooks";
+import { useInvalidateQueriesTaskDetails } from "~/app/_hooks/invalidateHooks";
 import {
   getLayoutedElements,
   loadFlowFromLocalStorage,
@@ -34,14 +34,12 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import {
-  permissionNumbers,
-  type Permission,
-} from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { useGetPermission } from "~/app/_hooks/useGetPermission";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
+const flowIdentifier = "taskDependencyTree";
 
 export default function TaskDependencyTree() {
   // #region Hooks
@@ -50,8 +48,7 @@ export default function TaskDependencyTree() {
   const { fitView, setViewport } = useReactFlow();
 
   const utils = api.useUtils();
-  const invalidateQueriesUserStoriesDetails =
-    useInvalidateQueriesUserStoriesDetails();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   const [rfInstance, setRfInstance] = useState<ReturnType<
     typeof useReactFlow
@@ -75,27 +72,17 @@ export default function TaskDependencyTree() {
     data: dependencyData,
     isLoading: isLoadingDependencies,
     refetch: refetchDependencies,
-  } = api.userStories.getUserStoryDependencies.useQuery({
+  } = api.tasks.getTaskDependencies.useQuery({
     projectId: projectId as string,
   });
 
-  const { mutateAsync: addUserStoryDependencies } =
-    api.userStories.addUserStoryDependencies.useMutation();
+  const { mutateAsync: addTaskDependencies } =
+    api.tasks.addTaskDependencies.useMutation();
 
-  const { mutateAsync: deleteUserStoryDependencies } =
-    api.userStories.deleteUserStoryDependencies.useMutation();
+  const { mutateAsync: deleteTaskDependencies } =
+    api.tasks.deleteTaskDependencies.useMutation();
 
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
-  });
-  const permission: Permission = useMemo(() => {
-    return checkPermissions(
-      {
-        flags: ["backlog"],
-      },
-      role ?? emptyRole,
-    );
-  }, [role]);
+  const permission = useGetPermission({ flags: ["backlog", "issues"] });
   // #endregion
 
   // #region FLOW UTILITY
@@ -107,13 +94,14 @@ export default function TaskDependencyTree() {
   );
   const defaultViewport = loadFlowFromLocalStorage(
     projectId as string,
+    flowIdentifier,
   )?.viewport;
 
   // Save flow state including node positions and zoom to localStorage
   const saveFlow = useCallback(() => {
     if (rfInstance) {
       const flow = rfInstance.toObject();
-      saveFlowToLocalStorage(projectId as string, flow);
+      saveFlowToLocalStorage(projectId as string, flowIdentifier, flow);
     }
   }, [rfInstance, projectId]);
 
@@ -154,13 +142,13 @@ export default function TaskDependencyTree() {
     if (permission < permissionNumbers.write) {
       return;
     }
-    // Cancel ongoing queries for this user story data
-    await utils.userStories.getUserStoryDependencies.cancel({
+    // Cancel ongoing queries for this task data
+    await utils.tasks.getTaskDependencies.cancel({
       projectId: projectId as string,
     });
 
     // Optimistically update the query data
-    utils.userStories.getUserStoryDependencies.setData(
+    utils.tasks.getTaskDependencies.setData(
       {
         projectId: projectId as string,
       },
@@ -178,10 +166,10 @@ export default function TaskDependencyTree() {
     );
 
     try {
-      await addUserStoryDependencies({
+      await addTaskDependencies({
         projectId: projectId as string,
-        dependencyUsId: params.source,
-        parentUsId: params.target,
+        dependencyTaskId: params.source,
+        parentTaskId: params.target,
       });
     } catch (error) {
       if (
@@ -196,7 +184,7 @@ export default function TaskDependencyTree() {
     }
 
     // Make other places refetch the data
-    await invalidateQueriesUserStoriesDetails(projectId as string, [
+    await invalidateQueriesTaskDetails(projectId as string, [
       params.source,
       params.target,
     ]);
@@ -225,13 +213,13 @@ export default function TaskDependencyTree() {
 
   const onEdgeDelete = useCallback(
     async (targetEdges: Edge[]) => {
-      // Cancel ongoing queries for this user story data
-      await utils.userStories.getUserStoryDependencies.cancel({
+      // Cancel ongoing queries for this task data
+      await utils.tasks.getTaskDependencies.cancel({
         projectId: projectId as string,
       });
 
       // Optimistically update the query data
-      utils.userStories.getUserStoryDependencies.setData(
+      utils.tasks.getTaskDependencies.setData(
         {
           projectId: projectId as string,
         },
@@ -249,15 +237,15 @@ export default function TaskDependencyTree() {
 
       // Delete each dependency in the backend
       for (const edge of targetEdges) {
-        await deleteUserStoryDependencies({
+        await deleteTaskDependencies({
           projectId: projectId as string,
-          dependencyUsId: edge.source,
-          parentUsId: edge.target,
+          dependencyTaskId: edge.source,
+          parentTaskId: edge.target,
         });
       }
 
       // Make other places refetch the data
-      await invalidateQueriesUserStoriesDetails(
+      await invalidateQueriesTaskDetails(
         projectId as string,
         Array.from(
           new Set([
@@ -267,19 +255,14 @@ export default function TaskDependencyTree() {
         ),
       );
     },
-    [
-      projectId,
-      utils,
-      deleteUserStoryDependencies,
-      invalidateQueriesUserStoriesDetails,
-    ],
+    [projectId, utils, deleteTaskDependencies, invalidateQueriesTaskDetails],
   );
 
   // Handle viewport changes (pan/zoom)
   const onMove = useCallback(() => {
     if (rfInstance) {
       const flow = rfInstance.toObject();
-      saveFlowToLocalStorage(projectId as string, flow);
+      saveFlowToLocalStorage(projectId as string, flowIdentifier, flow);
     }
   }, [rfInstance, projectId]);
 
@@ -287,7 +270,10 @@ export default function TaskDependencyTree() {
   useEffect(() => {
     if (dependencyData) {
       // Load saved flow state from localStorage
-      const savedFlow = loadFlowFromLocalStorage(projectId as string);
+      const savedFlow = loadFlowFromLocalStorage(
+        projectId as string,
+        flowIdentifier,
+      );
       let nodesWithPositions = [...dependencyData.nodes];
 
       if (savedFlow) {
@@ -348,7 +334,7 @@ export default function TaskDependencyTree() {
               <NoteAddIcon fontSize="inherit" />
             </span>
             <h1 className="mb-5 text-3xl font-semibold text-gray-500">
-              No user stories yet
+              No tasks yet
             </h1>
           </div>
         </div>
@@ -393,13 +379,13 @@ export default function TaskDependencyTree() {
         </ReactFlow>
       )}
 
-      {renderDetail && (
+      {/* {renderDetail && (
         <UserStoryDetailPopup
           showDetail={showDetail}
           userStoryId={detailItemId}
           setUserStoryId={setDetailItemId}
         />
-      )}
+      )} */}
     </div>
   );
 }

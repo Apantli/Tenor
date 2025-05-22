@@ -37,6 +37,8 @@ export default function BasicNode({
   data: { scrumId, itemType, title, showDeleteButton, parentId },
   id,
 }: Props) {
+  const plainItemType = itemType?.split("-")[1] as "US" | "EP" | "TS";
+
   // #region Hooks
   const { projectId } = useParams();
   const confirm = useConfirmation();
@@ -72,7 +74,7 @@ export default function BasicNode({
     if (!id) return;
     const confirmation = await confirm(
       "Are you sure you want to delete " +
-        formatAnyScrumId(scrumId, itemType) +
+        formatAnyScrumId(scrumId, plainItemType) +
         "?",
       "This action cannot be undone.",
       "Delete",
@@ -82,7 +84,7 @@ export default function BasicNode({
       return;
     }
     // Invalidation is made inside the deleteItemByType function
-    await deleteItemByType(projectId as string, itemType, id, parentId);
+    await deleteItemByType(projectId as string, plainItemType, id, parentId);
   };
   // #endregion
 
@@ -106,7 +108,7 @@ export default function BasicNode({
             className="flex grow-[1] underline-offset-4 hover:text-app-primary hover:underline"
             onClick={handleDetailClick}
           >
-            {formatAnyScrumId(scrumId, itemType)}
+            {formatAnyScrumId(scrumId, plainItemType)}
           </button>
           {showDeleteButton && permission >= permissionNumbers.write && (
             <DeleteOutlineIcon

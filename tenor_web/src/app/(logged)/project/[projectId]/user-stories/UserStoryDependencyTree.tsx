@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "@xyflow/react/dist/style.css";
 import { useParams } from "next/navigation";
 import { edgeTypes, nodeTypes } from "~/lib/types/reactFlowTypes";
@@ -34,14 +34,12 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import {
-  permissionNumbers,
-  type Permission,
-} from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { useGetPermission } from "~/app/_hooks/useGetPermission";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
+const flowIdentifier = "userStoryDependencyTree";
 
 export default function UserStoryDependencyTree() {
   // #region Hooks
@@ -85,17 +83,7 @@ export default function UserStoryDependencyTree() {
   const { mutateAsync: deleteUserStoryDependencies } =
     api.userStories.deleteUserStoryDependencies.useMutation();
 
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
-  });
-  const permission: Permission = useMemo(() => {
-    return checkPermissions(
-      {
-        flags: ["backlog"],
-      },
-      role ?? emptyRole,
-    );
-  }, [role]);
+  const permission = useGetPermission({ flags: ["backlog"] });
   // #endregion
 
   // #region FLOW UTILITY
@@ -107,13 +95,14 @@ export default function UserStoryDependencyTree() {
   );
   const defaultViewport = loadFlowFromLocalStorage(
     projectId as string,
+    flowIdentifier,
   )?.viewport;
 
   // Save flow state including node positions and zoom to localStorage
   const saveFlow = useCallback(() => {
     if (rfInstance) {
       const flow = rfInstance.toObject();
-      saveFlowToLocalStorage(projectId as string, flow);
+      saveFlowToLocalStorage(projectId as string, flowIdentifier, flow);
     }
   }, [rfInstance, projectId]);
 
@@ -279,7 +268,7 @@ export default function UserStoryDependencyTree() {
   const onMove = useCallback(() => {
     if (rfInstance) {
       const flow = rfInstance.toObject();
-      saveFlowToLocalStorage(projectId as string, flow);
+      saveFlowToLocalStorage(projectId as string, flowIdentifier, flow);
     }
   }, [rfInstance, projectId]);
 
@@ -287,7 +276,10 @@ export default function UserStoryDependencyTree() {
   useEffect(() => {
     if (dependencyData) {
       // Load saved flow state from localStorage
-      const savedFlow = loadFlowFromLocalStorage(projectId as string);
+      const savedFlow = loadFlowFromLocalStorage(
+        projectId as string,
+        flowIdentifier,
+      );
       let nodesWithPositions = [...dependencyData.nodes];
 
       if (savedFlow) {

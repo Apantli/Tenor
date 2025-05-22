@@ -27,6 +27,10 @@ export const useInvalidateQueriesAllTasks = () => {
     await utils.kanban.getBacklogItemsForKanban.invalidate({
       projectId: projectId,
     });
+
+    await utils.tasks.getTaskDependencies.invalidate({
+      projectId: projectId,
+    });
   };
 };
 

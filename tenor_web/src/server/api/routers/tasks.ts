@@ -40,8 +40,9 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
-import { backlogPermissions } from "~/lib/permission";
+import { backlogPermissions, taskPermissions } from "~/lib/permission";
 import { FieldValue } from "firebase-admin/firestore";
+import type { Edge, Node } from "@xyflow/react";
 
 export const tasksRouter = createTRPCRouter({
   getTasks: roleRequiredProcedure(backlogPermissions, "read")
@@ -73,19 +74,19 @@ export const tasksRouter = createTRPCRouter({
         scrumId: await getTaskNewId(ctx.firestore, projectId),
       });
 
-      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
-        {
-          id: "this is a new user story", // id to avoid collision
-          dependencyIds: taskData.dependencyIds,
-        },
-      ]);
+      // const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
+      //   {
+      //     id: "this is a new user story", // id to avoid collision
+      //     dependencyIds: taskData.dependencyIds,
+      //   },
+      // ]);
 
-      if (hasCycle) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Circular dependency detected.",
-        });
-      }
+      // if (hasCycle) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "Circular dependency detected.",
+      //   });
+      // }
 
       const task = await getTasksRef(ctx.firestore, projectId).add(taskData);
 
@@ -544,5 +545,146 @@ ${tagContext}\n\n`;
       const tasksRef = getTasksRef(ctx.firestore, projectId);
       const countSnapshot = await tasksRef.count().get();
       return countSnapshot.data().count;
+    }),
+  /**
+   * @function addTaskDependency
+   * @description Creates a dependency relationship between two tasks, where one task becomes a prerequisite for another.
+   * @param {string} projectId - The ID of the project to which the tasks belong.
+   * @param {string} dependencyTaskId - The ID of the task that will be a prerequisite (dependency).
+   * @param {string} parentTaskId - The ID of the task that will depend on the prerequisite task.
+   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the dependency is created.
+   */
+  addTaskDependencies: roleRequiredProcedure(taskPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        dependencyTaskId: z.string(),
+        parentTaskId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, dependencyTaskId, parentTaskId } = input;
+
+      // TODO: Make Alonso adapt to the new one
+      // const hasCycle = await hasDependencyCycle(
+      //   ctx.firestore,
+      //   projectId,
+      //   undefined,
+      //   [{ parentTaskId, dependencyTaskId }],
+      // );
+
+      // if (hasCycle) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "Circular dependency detected.",
+      //   });
+      // }
+
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        parentTaskId,
+        dependencyTaskId,
+        "add",
+        "dependencyIds",
+      );
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        dependencyTaskId,
+        parentTaskId,
+        "add",
+        "requiredByIds",
+      );
+      return { success: true };
+    }),
+
+  /**
+   * @function deleteTaskDependency
+   * @description Removes a dependency relationship between two tasks.
+   * @param {string} projectId - The ID of the project to which the tasks belong.
+   * @param {string} parentTaskId - The ID of the dependent task that will no longer require the prerequisite.
+   * @param {string} dependencyTaskId - The ID of the prerequisite task that will no longer be required.
+   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the dependency is removed.
+   */
+  deleteTaskDependencies: roleRequiredProcedure(taskPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        parentTaskId: z.string(),
+        dependencyTaskId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, parentTaskId, dependencyTaskId } = input;
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        parentTaskId,
+        dependencyTaskId,
+        "remove",
+        "dependencyIds",
+      );
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        dependencyTaskId,
+        parentTaskId,
+        "remove",
+        "requiredByIds",
+      );
+      return { success: true };
+    }),
+  /**
+   * @function getTaskDependencies
+   * @description Retrieves all tasks and their dependency relationships in a format suitable for visualization.
+   * @param {string} projectId - The ID of the project to get task dependencies from.
+   * @returns {Promise<{nodes: Node[], edges: Edge[]}>} - Returns an object containing:
+   *   - nodes: Array of task nodes with position and display data
+   *   - edges: Array of dependency relationships between tasks
+   */
+  getTaskDependencies: roleRequiredProcedure(taskPermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const tasks = await getTasks(ctx.firestore, projectId);
+
+      // Create nodes for each user story with a grid layout
+      const nodes: Node[] = tasks.map((task) => {
+        return {
+          id: task.id,
+          position: {
+            x: 0,
+            y: -100,
+          }, // Position is updated in the frontend because it needs nodes' real size
+          data: {
+            id: task.id,
+            title: task.name,
+            scrumId: task.scrumId,
+            itemType: task.itemType + "-TS",
+            showDeleteButton: true,
+            showEditButton: true,
+            collapsible: false,
+          }, // See BasicNodeData for properties
+          type: "basic", // see nodeTypes
+          deletable: false,
+        };
+      });
+
+      // Create edges for dependencies
+      const edges: Edge[] = tasks.flatMap((task) =>
+        task.dependencyIds.map((dependencyId) => ({
+          id: `${dependencyId}-${task.id}`,
+          source: dependencyId,
+          target: task.id,
+          type: "dependency", // see edgeTypes
+        })),
+      );
+
+      return { nodes, edges };
     }),
 });
