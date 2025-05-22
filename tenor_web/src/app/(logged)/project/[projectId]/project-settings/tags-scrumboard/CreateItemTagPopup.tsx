@@ -203,6 +203,7 @@ export default function CreateItemTagPopup({
 
   return (
     <Popup
+      reduceTopPadding
       show={showPopup}
       size="small"
       className="max-h-[400px] min-w-[500px]"

@@ -1,8 +1,15 @@
 import type { Firestore } from "firebase-admin/firestore";
-import type { Role, Size, WithId } from "~/lib/types/firebaseSchemas";
+import type { Role, Size, StatusTag, WithId } from "~/lib/types/firebaseSchemas";
 import { ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
-import { getPriority } from "./tags";
+import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
+import { getTasks } from "./tasks";
+import { getIssues } from "./issues";
+import { getUserStories } from "./userStories";
+import { getCurrentSprint } from "./sprints";
+import { getUsers } from "./users";
+import type * as admin from "firebase-admin";
+
 
 /**
  * @function getProjectsRef
@@ -170,3 +177,68 @@ export const generateTaskContext = async (
             `;
   return completePrompt;
 };
+
+export const getProjectStatus = async (
+  firestore: Firestore,
+  projectId: string,
+  admin: admin.app.App,
+) => {
+  // Fetch all data in parallel
+  const [tasks, statuses, issues, userStories, currentSprint, projectCollaborators] = await Promise.all([
+    getTasks(firestore, projectId),
+    getStatusTypes(firestore, projectId),
+    getIssues(firestore, projectId),
+    getUserStories(firestore, projectId),
+    getCurrentSprint(firestore, projectId),
+    getUsers(admin, firestore, projectId),
+  ]);
+
+  // Filter out deleted entries
+  const activeTasks = tasks.filter((task) => !task.deleted);
+  const activeIssues = issues.filter((issue) => !issue.deleted);
+  const activeUserStories = userStories.filter((us) => !us.deleted);
+
+  // Collect IDs linked to the current sprint
+  const spruntIssuesIds = new Set(
+    (activeIssues).filter((issue) => issue.sprintId === currentSprint?.id).map((issue) => issue.id)
+  );
+  const sprintUserStoriesIds = new Set(
+    (activeUserStories).filter((us) => us.sprintId === currentSprint?.id).map((us) => us.id)
+  );
+
+  // Filter tasks relevant to the sprint
+  const filteredTasks = (activeTasks).filter((task) =>
+    spruntIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId)
+  );
+
+  // Create a map of status types
+  const statusMap = statuses.reduce((acc, status) => {
+    acc[status.id] = status;
+    return acc;
+  }, {} as Record<string, StatusTag>);
+
+  // Get the completed tasks
+  const completedTasks = filteredTasks.filter((task) =>
+    statusMap[task.statusId]?.marksTaskAsDone === true
+  );
+
+  // Map collaborators
+  const mappedUsers = projectCollaborators?.map((u) => ({
+    uid: u.id ?? u.id, // Use 'id' or fallback to 'uid' if available
+    displayName: u.displayName,
+    photoURL: u.photoURL,
+  }));
+
+  // Return structured project status
+  return {
+    taskCount: filteredTasks.length ?? 0,
+    completedCount: completedTasks.length ?? 0,
+    currentSprintId: currentSprint?.id,
+    currentSprintNumber: currentSprint?.number,
+    currentSprintStartDate: currentSprint?.startDate,
+    currentSprintEndDate: currentSprint?.endDate,
+    currentSprintDescription: currentSprint?.description,
+    assignedUssers: mappedUsers,
+  };
+}
+

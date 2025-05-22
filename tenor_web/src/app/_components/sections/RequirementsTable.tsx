@@ -103,12 +103,34 @@ export default function RequirementsTable() {
   const invalidateAllRequirements = useInvalidateQueriesAllRequirements();
   const invalidateRequirementDetails = useInvalidateQueriesRequirementDetails();
 
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
+
+  const { data: defaultRequirementType } =
+    api.requirements.getDefaultRequirementType.useQuery(
+      {
+        projectId: projectId as string,
+      },
+      {
+        enabled: permission >= permissionNumbers.write,
+      },
+    );
+
   // New requirement values
   const defaultRequirement = {
     name: "",
     description: "",
     priority: undefined as Tag | undefined,
-    requirementType: undefined as Tag | undefined,
+    requirementType: defaultRequirementType as Tag | undefined,
     requirementFocus: undefined as Tag | undefined,
   };
   const [newRequirement, setNewRequirement] = useState(defaultRequirement);
@@ -125,17 +147,6 @@ export default function RequirementsTable() {
   const confirm = useConfirmation();
 
   const { alert } = useAlert();
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
-  });
-  const permission: Permission = useMemo(() => {
-    return checkPermissions(
-      {
-        flags: ["backlog"],
-      },
-      role ?? emptyRole,
-    );
-  }, [role]);
 
   const { mutateAsync: createOrModifyRequirement, isPending } =
     api.requirements.createOrModifyRequirement.useMutation();
@@ -784,7 +795,7 @@ export default function RequirementsTable() {
       newRequirement.name === "" &&
       newRequirement.description === "" &&
       newRequirement.priority === undefined &&
-      newRequirement.requirementType === undefined &&
+      newRequirement.requirementType === defaultRequirement.requirementType &&
       newRequirement.requirementFocus === undefined;
   } else {
     const originalData = {
@@ -840,9 +851,12 @@ export default function RequirementsTable() {
       {renderSmallPopup && (
         <Popup
           show={showSmallPopup}
-          reduceTopPadding={requirementEditedData === null}
+          reduceTopPadding={
+            requirementEditedData === null ||
+            permission < permissionNumbers.write
+          }
           size="small"
-          className="h-[700px] w-[600px]"
+          className="h-[300px] max-h-[700px] w-[600px]"
           disablePassiveDismiss={!requirementSaved}
           dismiss={async () => {
             if (!requirementSaved) {
@@ -955,16 +969,171 @@ export default function RequirementsTable() {
               )}
             </>
           }
+          footerClassName="ml-0"
           footer={
             <>
-              {requirementEdited === null && selectedReq !== "" ? (
+              {(requirementEdited === null && selectedReq !== "") ||
+              requirementEditedData === null ? (
                 <></>
               ) : (
-                <div className="flex gap-2" data-cy="requirement-popup-footer">
-                  {requirementEditedData ? (
-                    requirementEdited ? (
+                <div
+                  className="flex w-full flex-col gap-4"
+                  data-cy="requirement-popup-footer"
+                >
+                  <div className="flex w-full gap-2">
+                    <div className="w-36 space-y-2">
+                      <label className="font-semibold">Type</label>
+                      <RequirementTypePicker
+                        disabled={permission < permissionNumbers.write}
+                        type={requirementEditedData.requirementType}
+                        onChange={async (type) => {
+                          if (ghostRequirementEdited) {
+                            updateGhostRow(
+                              ghostRequirementEdited.id,
+                              (oldData) => ({
+                                ...oldData,
+                                requirementTypeId: type,
+                              }),
+                            );
+                            setGhostRequirementEdited((prev) => ({
+                              ...prev!,
+                              requirementType: type,
+                            }));
+                            generatedRequirements.current =
+                              generatedRequirements.current?.map((req) => {
+                                if (req.id === ghostRequirementEdited.id) {
+                                  return {
+                                    ...req,
+                                    requirementType: type,
+                                  };
+                                }
+                                return req;
+                              });
+                            return;
+                          }
+
+                          if (!requirementEdited) {
+                            setNewRequirement((prev) => ({
+                              ...prev,
+                              requirementType: type,
+                            }));
+                          } else {
+                            setRequirementEdited((prev) => ({
+                              ...prev!,
+                              requirementType: type,
+                            }));
+                            await handleEditRequirement({
+                              ...requirementEdited,
+                              requirementType: type,
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="w-36 space-y-2">
+                      <label className="font-semibold">Priority</label>
+                      <PriorityPicker
+                        disabled={permission < permissionNumbers.write}
+                        priority={requirementEditedData.priority}
+                        onChange={async (priority) => {
+                          if (ghostRequirementEdited) {
+                            updateGhostRow(
+                              ghostRequirementEdited.id,
+                              (oldData) => ({
+                                ...oldData,
+                                priority: priority,
+                              }),
+                            );
+                            setGhostRequirementEdited((prev) => ({
+                              ...prev!,
+                              priority: priority,
+                            }));
+                            generatedRequirements.current =
+                              generatedRequirements.current?.map((req) => {
+                                if (req.id === ghostRequirementEdited.id) {
+                                  return {
+                                    ...req,
+                                    priorityId: priority,
+                                  };
+                                }
+                                return req;
+                              });
+                            return;
+                          }
+
+                          if (!requirementEdited) {
+                            setNewRequirement((prev) => ({
+                              ...prev,
+                              priority: priority,
+                            }));
+                          } else {
+                            setRequirementEdited((prev) => ({
+                              ...prev!,
+                              priority: priority,
+                            }));
+                            await handleEditRequirement({
+                              ...requirementEdited,
+                              priority,
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                    <div className="w-36 space-y-2">
+                      <label className="font-semibold">Focus</label>
+                      <RequirementFocusPicker
+                        disabled={permission < permissionNumbers.write}
+                        focus={requirementEditedData.requirementFocus}
+                        onChange={async (focus) => {
+                          if (ghostRequirementEdited) {
+                            updateGhostRow(
+                              ghostRequirementEdited.id,
+                              (oldData) => ({
+                                ...oldData,
+                                requirementFocus: focus,
+                              }),
+                            );
+                            setGhostRequirementEdited((prev) => ({
+                              ...prev!,
+                              requirementFocus: focus,
+                            }));
+                            generatedRequirements.current =
+                              generatedRequirements.current?.map((req) => {
+                                if (req.id === ghostRequirementEdited.id) {
+                                  return {
+                                    ...req,
+                                    requirementFocus: focus,
+                                  };
+                                }
+                                return req;
+                              });
+                            return;
+                          }
+
+                          if (!requirementEdited) {
+                            setNewRequirement((prev) => ({
+                              ...prev,
+                              requirementFocus: focus,
+                            }));
+                          } else {
+                            setRequirementEdited((prev) => ({
+                              ...prev!,
+                              requirementFocus: focus,
+                            }));
+                            await handleEditRequirement({
+                              ...requirementEdited,
+                              requirementFocus: focus,
+                            });
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                  {requirementEditedData &&
+                    (requirementEdited ? (
                       permission < permissionNumbers.write ? null : (
                         <DeleteButton
+                          className="ml-auto"
                           onClick={async () => {
                             if (
                               requirementEdited &&
@@ -975,7 +1144,7 @@ export default function RequirementsTable() {
                             }
                           }}
                         >
-                          Delete
+                          Delete requirement
                         </DeleteButton>
                       )
                     ) : (
@@ -1013,19 +1182,20 @@ export default function RequirementsTable() {
                           </PrimaryButton>
                         </div>
                       )
-                    )
-                  ) : (
-                    <PrimaryButton
-                      onClick={async () => {
-                        await handleCreateRequirement();
-                      }}
-                      loading={isPending}
-                      data-cy="create-requirement-button"
-                    >
-                      Create Requirement
-                    </PrimaryButton>
-                  )}
+                    ))}
                 </div>
+              )}
+              {requirementEditedData === null && !isLoadingRequirements && (
+                <PrimaryButton
+                  className="ml-auto"
+                  onClick={async () => {
+                    await handleCreateRequirement();
+                  }}
+                  loading={isPending}
+                  data-cy="create-requirement-button"
+                >
+                  Create Requirement
+                </PrimaryButton>
               )}
             </>
           }
@@ -1087,19 +1257,6 @@ export default function RequirementsTable() {
                     ghostRequirementEdited === null && (
                       <div className="flex gap-2 pt-4">
                         <div className="w-36 space-y-2">
-                          <label className="font-semibold">Priority</label>
-                          <PriorityPicker
-                            disabled={permission < permissionNumbers.write}
-                            priority={newRequirement.priority}
-                            onChange={async (priority) => {
-                              setNewRequirement((prev) => ({
-                                ...prev,
-                                priority: priority,
-                              }));
-                            }}
-                          />
-                        </div>
-                        <div className="w-36 space-y-2">
                           <label className="font-semibold">Type</label>
                           <RequirementTypePicker
                             disabled={permission < permissionNumbers.write}
@@ -1108,6 +1265,19 @@ export default function RequirementsTable() {
                               setNewRequirement((prev) => ({
                                 ...prev,
                                 requirementType: type,
+                              }));
+                            }}
+                          />
+                        </div>
+                        <div className="w-36 space-y-2">
+                          <label className="font-semibold">Priority</label>
+                          <PriorityPicker
+                            disabled={permission < permissionNumbers.write}
+                            priority={newRequirement.priority}
+                            onChange={async (priority) => {
+                              setNewRequirement((prev) => ({
+                                ...prev,
+                                priority: priority,
                               }));
                             }}
                           />
@@ -1140,167 +1310,6 @@ export default function RequirementsTable() {
                     )}
                   </div>
                   <br />
-                  <div className="flex gap-2 pt-4">
-                    <div className="w-36 space-y-2">
-                      <label className="font-semibold">Priority</label>
-                      <PriorityPicker
-                        disabled={permission < permissionNumbers.write}
-                        priority={
-                          requirementEditedData
-                            ? requirementEditedData.priority
-                            : newRequirement.priority
-                        }
-                        onChange={async (priority) => {
-                          if (ghostRequirementEdited) {
-                            updateGhostRow(
-                              ghostRequirementEdited.id,
-                              (oldData) => ({
-                                ...oldData,
-                                priority: priority,
-                              }),
-                            );
-                            setGhostRequirementEdited((prev) => ({
-                              ...prev!,
-                              priority: priority,
-                            }));
-                            generatedRequirements.current =
-                              generatedRequirements.current?.map((req) => {
-                                if (req.id === ghostRequirementEdited.id) {
-                                  return {
-                                    ...req,
-                                    priorityId: priority,
-                                  };
-                                }
-                                return req;
-                              });
-                            return;
-                          }
-
-                          if (!requirementEdited) {
-                            setNewRequirement((prev) => ({
-                              ...prev,
-                              priority: priority,
-                            }));
-                          } else {
-                            setRequirementEdited((prev) => ({
-                              ...prev!,
-                              priority: priority,
-                            }));
-                            await handleEditRequirement({
-                              ...requirementEdited,
-                              priority,
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="w-36 space-y-2">
-                      <label className="font-semibold">Type</label>
-                      <RequirementTypePicker
-                        disabled={permission < permissionNumbers.write}
-                        type={
-                          requirementEditedData
-                            ? requirementEditedData.requirementType
-                            : newRequirement.requirementType
-                        }
-                        onChange={async (type) => {
-                          if (ghostRequirementEdited) {
-                            updateGhostRow(
-                              ghostRequirementEdited.id,
-                              (oldData) => ({
-                                ...oldData,
-                                requirementTypeId: type,
-                              }),
-                            );
-                            setGhostRequirementEdited((prev) => ({
-                              ...prev!,
-                              requirementType: type,
-                            }));
-                            generatedRequirements.current =
-                              generatedRequirements.current?.map((req) => {
-                                if (req.id === ghostRequirementEdited.id) {
-                                  return {
-                                    ...req,
-                                    requirementType: type,
-                                  };
-                                }
-                                return req;
-                              });
-                            return;
-                          }
-
-                          if (!requirementEdited) {
-                            setNewRequirement((prev) => ({
-                              ...prev,
-                              requirementType: type,
-                            }));
-                          } else {
-                            setRequirementEdited((prev) => ({
-                              ...prev!,
-                              requirementType: type,
-                            }));
-                            await handleEditRequirement({
-                              ...requirementEdited,
-                              requirementType: type,
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="w-36 space-y-2">
-                      <label className="font-semibold">Focus</label>
-                      <RequirementFocusPicker
-                        disabled={permission < permissionNumbers.write}
-                        focus={
-                          requirementEditedData
-                            ? requirementEditedData.requirementFocus
-                            : newRequirement.requirementFocus
-                        }
-                        onChange={async (focus) => {
-                          if (ghostRequirementEdited) {
-                            updateGhostRow(
-                              ghostRequirementEdited.id,
-                              (oldData) => ({
-                                ...oldData,
-                                requirementFocus: focus,
-                              }),
-                            );
-                            setGhostRequirementEdited((prev) => ({
-                              ...prev!,
-                              requirementFocus: focus,
-                            }));
-                            generatedRequirements.current =
-                              generatedRequirements.current?.map((req) => {
-                                if (req.id === ghostRequirementEdited.id) {
-                                  return {
-                                    ...req,
-                                    requirementFocus: focus,
-                                  };
-                                }
-                                return req;
-                              });
-                            return;
-                          }
-
-                          if (!requirementEdited) {
-                            setNewRequirement((prev) => ({
-                              ...prev,
-                              requirementFocus: focus,
-                            }));
-                          } else {
-                            setRequirementEdited((prev) => ({
-                              ...prev!,
-                              requirementFocus: focus,
-                            }));
-                            await handleEditRequirement({
-                              ...requirementEdited,
-                              requirementFocus: focus,
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
                 </div>
               )}
             </div>

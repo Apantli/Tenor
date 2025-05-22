@@ -39,7 +39,11 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
     },
     { title: "AI context", link: "/ai", icon: AutoAwesomeIcon },
     { title: "Scrum Preferences", link: "/scrum-preferences", icon: RouteIcon },
-    { title: "Tags & Kanban", link: "/tags-kanban", icon: LabelOutlinedIcon },
+    {
+      title: "Tags & Scrumboard",
+      link: "/tags-scrumboard",
+      icon: LabelOutlinedIcon,
+    },
   ];
 
   const layout_dir = "project-settings";
