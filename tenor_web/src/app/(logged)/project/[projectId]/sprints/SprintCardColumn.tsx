@@ -10,8 +10,6 @@ import { type BacklogItems } from "./page";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import EditSprintPopup from "./EditSprintPopup";
-import { useGetPermission } from "~/app/_hooks/useGetPermission";
-import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import type { SprintDates } from "./CreateSprintPopup";
 interface Props {
   column: inferRouterOutputs<
@@ -71,8 +69,6 @@ export default function SprintCardColumn({
       (selectedItemId) =>
         !column.backlogItemIds.some((itemId) => itemId === selectedItemId),
     );
-
-  const permission = useGetPermission({ flags: ["sprints"] });
 
   return (
     <div

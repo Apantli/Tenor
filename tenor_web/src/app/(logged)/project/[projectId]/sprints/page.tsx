@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
@@ -27,15 +27,10 @@ import {
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
-import {
-  type Permission,
-  permissionNumbers,
-} from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import CreateSprintPopup from "./CreateSprintPopup";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
-import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -48,17 +43,7 @@ const noSprintId = "noSprintId";
 export default function ProjectSprints() {
   const { projectId } = useParams();
 
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
-  });
-  const permission: Permission = useMemo(() => {
-    return checkPermissions(
-      {
-        flags: ["backlog"],
-      },
-      role ?? emptyRole,
-    );
-  }, [role]);
+  const permission = useGetPermission({ flags: ["backlog"] });
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();
@@ -441,8 +426,6 @@ export default function ProjectSprints() {
   useEffect(() => {
     setLastDraggedBacklogItemId(null);
   }, [sprintSearchValue]);
-
-  const permission = useGetPermission({ flags: ["sprints"] });
 
   return (
     <>

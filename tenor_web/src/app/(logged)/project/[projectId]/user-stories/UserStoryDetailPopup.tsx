@@ -248,7 +248,7 @@ export default function UserStoryDetailPopup({
     );
 
     try {
-      const { updatedUserStoryIds } = await updateUserStory({
+      const { updatedUserStoryIds } = await modifyUserStory({
         projectId: projectId as string,
         userStoryId: userStoryId,
         userStoryData: updatedUserStory,
