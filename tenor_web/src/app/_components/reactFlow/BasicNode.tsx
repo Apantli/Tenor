@@ -10,6 +10,13 @@ import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
 import { useParams } from "next/navigation";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import {
+  permissionNumbers,
+  type Permission,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { useMemo } from "react";
+import { api } from "~/trpc/react";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow
@@ -17,7 +24,7 @@ interface Props {
   id?: string;
 }
 
-const handleSize = "0px";
+const handleSize = "8px";
 const handleWhiteCircleStyle = {
   width: handleSize,
   height: handleSize,
@@ -38,6 +45,20 @@ export default function BasicNode({
   const formatAnyScrumId = useFormatAnyScrumId();
   const deleteItemByType = useDeleteItemByType();
 
+  // #endregion
+
+  // #region TRPC
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
   // #endregion
 
   // #region Handlers
@@ -72,11 +93,13 @@ export default function BasicNode({
 
   return (
     <>
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={handleWhiteCircleStyle}
-      />
+      {permission >= permissionNumbers.write && (
+        <Handle
+          type="source"
+          position={Position.Right}
+          style={handleWhiteCircleStyle}
+        />
+      )}
       <div className="min-h-10 w-56 rounded-lg border border-slate-200 bg-white pb-3 pt-1 text-gray-800">
         <div className="flex flex-row items-center justify-between px-2 text-xs">
           <button
@@ -85,7 +108,7 @@ export default function BasicNode({
           >
             {formatAnyScrumId(scrumId, itemType)}
           </button>
-          {showDeleteButton && (
+          {showDeleteButton && permission >= permissionNumbers.write && (
             <DeleteOutlineIcon
               fontSize="small"
               className="cursor-pointer hover:text-app-primary"
@@ -94,8 +117,9 @@ export default function BasicNode({
           )}
         </div>
         <hr className="mb-2 mt-1 border-t border-slate-400" />
+        {/* Padding bottom of 1 ridiculous pixel is due to a visual bug that causes the underline to disappear without it */}
         <div
-          className="line-clamp-2 cursor-pointer truncate px-2 text-left text-xs underline-offset-4 hover:text-app-primary hover:underline"
+          className="line-clamp-2 cursor-pointer truncate px-2 pb-[1px] text-left text-xs underline-offset-4 hover:text-app-primary hover:underline"
           onClick={handleDetailClick}
         >
           {title}
@@ -107,11 +131,13 @@ export default function BasicNode({
           )}
         ></div>
       </div>
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={handleWhiteCircleStyle}
-      />
+      {permission >= permissionNumbers.write && (
+        <Handle
+          type="target"
+          position={Position.Left}
+          style={handleWhiteCircleStyle}
+        />
+      )}
     </>
   );
 }
