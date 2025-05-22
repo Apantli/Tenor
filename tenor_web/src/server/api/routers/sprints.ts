@@ -17,6 +17,7 @@ import {
 import { BacklogItemSchema, SprintSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import {
+  getCurrentSprint,
   getSprint,
   getSprintNewId,
   getSprintRef,
@@ -305,4 +306,15 @@ export const sprintsRouter = createTRPCRouter({
         }
       }
     }),
+  
+  getActiveSprint: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
+      if (!currentSprint) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "No active sprint" });
+      }
+      return currentSprint;
+    })
 });

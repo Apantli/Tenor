@@ -32,14 +32,14 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
 
   if (isLoading) {
     return (
-      <div className="flex w-full align-center flex-col gap-5 border-2 rounded-lg p-5">
-        <LoadingSpinner />
+      <div className="w-full flex h-full items-center justify-center">
+        <LoadingSpinner color="primary" />
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="w-full h-full flex flex-col items-center gap-3">
       <div className="flex flex-row items-start gap-3 justify-start w-full">
         <div className="h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
           <img

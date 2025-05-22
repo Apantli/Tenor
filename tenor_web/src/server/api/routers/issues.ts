@@ -22,6 +22,7 @@ import {
   getIssueDetail,
   getIssueNewId,
   getIssueRef,
+  getIssues,
   getIssuesRef,
   getIssueTable,
 } from "~/utils/helpers/shortcuts/issues";
@@ -238,5 +239,18 @@ export const issuesRouter = createTRPCRouter({
       const issuesRef = getIssuesRef(ctx.firestore, projectId);
       const countSnapshot = await issuesRef.count().get();
       return countSnapshot.data().count;
+    }),
+
+  /**
+   * @function getIssues
+   * @description Retrieves all issues for a given project.
+   * @param {string} projectId - The ID of the project to retrieve issues for.
+   * @returns {Promise<IssueCol[]>} - A promise that resolves to an array of issues.
+  */
+  getAllIssues: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getIssues(ctx.firestore, projectId);
     }),
 });
