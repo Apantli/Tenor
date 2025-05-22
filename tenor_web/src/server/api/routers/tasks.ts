@@ -66,6 +66,7 @@ export const tasksRouter = createTRPCRouter({
           itemId: task.id,
           type: "TS",
           action: "create",
+          resolved: false,
         });
 
         return { success: true, taskId: task.id };
@@ -147,6 +148,7 @@ export const tasksRouter = createTRPCRouter({
         itemId: taskRef.id,
         type: "TS",
         action: "update",
+        resolved: false,
       });
       await taskRef.update(taskData);
     }),
@@ -178,6 +180,7 @@ export const tasksRouter = createTRPCRouter({
         itemId: taskRef.id,
         type: "TS",
         action: "update",
+        resolved: false,
       });
       await taskRef.update({ statusId });
     }),
@@ -207,6 +210,7 @@ export const tasksRouter = createTRPCRouter({
         itemId: taskRef.id,
         type: "TS",
         action: "delete",
+        resolved: false,
       });
       await taskRef.update({ deleted: true });
     }),

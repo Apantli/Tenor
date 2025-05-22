@@ -153,6 +153,7 @@ export const userStoriesRouter = createTRPCRouter({
         itemId: userStory.id,
         type: "US",
         action: "create",
+        resolved: false,
       });
 
       return {
@@ -285,6 +286,7 @@ export const userStoriesRouter = createTRPCRouter({
         itemId: userStoryId,
         type: "US",
         action: "update",
+        resolved: false,
       });
 
       return {
@@ -381,6 +383,7 @@ export const userStoriesRouter = createTRPCRouter({
         itemId: userStoryId,
         type: "US",
         action: "delete",
+        resolved: false,
       });
 
       return {
@@ -440,6 +443,7 @@ export const userStoriesRouter = createTRPCRouter({
         itemId: userStoryId,
         type: "US",
         action: "update",
+        resolved: false,
       });
     }),
   /**
@@ -648,6 +652,7 @@ export const userStoriesRouter = createTRPCRouter({
         itemId: dependencyUsId,
         type: "US",
         action: "update",
+        resolved: false,
       });
       return { success: true };
     }),
@@ -697,6 +702,7 @@ export const userStoriesRouter = createTRPCRouter({
         itemId: dependencyUsId,
         type: "US",
         action: "delete",
+        resolved: false,
       });
 
       return { success: true };

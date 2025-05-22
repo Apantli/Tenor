@@ -74,6 +74,7 @@ export const sprintsRouter = createTRPCRouter({
         itemId: getSprintsRef(ctx.firestore, projectId).id,
         type: "SP",
         action: "create",
+        resolved: false,
       });
 
       return { success: true, reorderedSprints: didReorderSprints };
@@ -116,6 +117,7 @@ export const sprintsRouter = createTRPCRouter({
         itemId: sprintRef.id,
         type: "SP",
         action: "update",
+        resolved: false,
       });
 
       return { success: true, reorderedSprints: didReorderSprints };
@@ -163,6 +165,7 @@ export const sprintsRouter = createTRPCRouter({
         itemId: sprintId,
         type: "SP",
         action: "delete",
+        resolved: false,
       });
 
       return { success: true, reorderedSprints: didReorderSprints };

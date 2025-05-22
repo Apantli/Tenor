@@ -1,4 +1,17 @@
-import type { LogProjectActivityParams } from "~/lib/types/firebaseSchemas";
+import type { Firestore } from "firebase-admin/firestore";
+
+type ActivityType = "US" | "EP" | "IS" | "TS" | "SP";
+type ActionType = "create" | "update" | "delete";
+
+interface LogProjectActivityParams {
+  firestore: Firestore;
+  projectId: string;
+  itemId: string;
+  userId: string;
+  type: ActivityType;
+  action: ActionType;
+  resolved: boolean;
+}
 
 export const LogProjectActivity = async ({
   firestore,
@@ -7,6 +20,7 @@ export const LogProjectActivity = async ({
   userId,
   type,
   action,
+  resolved = false,
 }: LogProjectActivityParams) => {
   try {
     const activeRef = firestore
@@ -19,6 +33,7 @@ export const LogProjectActivity = async ({
       userId,
       type,
       date: new Date(),
+      resolved,
       action,
     });
   } catch (error) {

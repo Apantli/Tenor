@@ -10,7 +10,6 @@ TODO:
 import { type PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
 import type { Timestamp } from "firebase-admin/firestore";
-import type { Firestore } from "firebase-admin/firestore";
 /// Big categories
 
 export type WithId<T> = T & { id: string };
@@ -228,16 +227,4 @@ export interface ProductivityData {
 // Have as an array as there are maximum 3 time periods
 export interface Productivity {
   cached: ProductivityData[];
-}
-
-type ActivityType = "US" | "EP" | "IS" | "TS" | "SP";
-type ActionType = "create" | "update" | "delete";
-
-export interface LogProjectActivityParams {
-  firestore: Firestore;
-  projectId: string;
-  itemId: string;
-  userId: string;
-  type: ActivityType;
-  action: ActionType;
 }
