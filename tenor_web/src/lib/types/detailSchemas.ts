@@ -83,6 +83,8 @@ export type TaskDetail = {
   size?: Size;
   assignee?: WithId<UserPreview>;
   dueDate?: Date;
+  dependencies: TaskPreview[];
+  requiredBy: TaskPreview[];
 };
 
 export type RoleDetail = {

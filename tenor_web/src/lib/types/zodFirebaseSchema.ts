@@ -157,6 +157,16 @@ export const TaskSchema = BasicInfoSchema.extend({
     ),
   size: SizeSchema.optional(),
   // reviewerId: z.string(), // Scope creep. Ignore for now
+  dependencyIds: z
+    .array(z.string())
+    .describe(
+      "List of task ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
+    ),
+  requiredByIds: z
+    .array(z.string())
+    .describe(
+      "List of task ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
+    ),
 });
 
 export const IssueSchema = BacklogItemSchema.extend({
