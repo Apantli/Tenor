@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import SoundPlayer from "~/app/_components/SoundPlayer";
 import MusicIcon from "@mui/icons-material/Headphones";
@@ -26,8 +26,9 @@ interface Props {
 export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
   // REACT
   const [step, setStep] = useState(0);
-  const [connectingMuse, setConnectingMuse] = useState(false);
-  const [headsetConnected, setHeadsetConnected] = useState(false);
+  const [headsetStatus, setHeadsetStatus] = useState<
+    "disconnected" | "connecting" | "connected"
+  >("disconnected");
   const [electrodesQuality, setElectrodesQuality] = useState({
     TP9: 1000,
     AF7: 1000,
@@ -59,10 +60,12 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
         type: "error",
         duration: 5000,
       });
-      setHeadsetConnected(false);
+      setHeadsetStatus("disconnected");
     }
   };
 
+  // This threshold is used as a reference to determine if the electrodes are placed correctly. If their quality is below this value, they are considered correctly placed.
+  // The value was determined via trial and error, and it is not a scientific value.
   const threshold = 100;
 
   const museDataCallback = (data: any) => {
@@ -100,17 +103,16 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
 
   const handleConnectHeadset = async () => {
     museClientRef.current = new MuseClient();
-    setConnectingMuse(true);
+    setHeadsetStatus("connecting");
     try {
       await museClientRef.current.connect();
       setStep(2);
-      setHeadsetConnected(true);
+      setHeadsetStatus("connected");
       await museClientRef.current.start();
 
       museClientRef.current.connectionStatus.subscribe(museConnectionCallback);
       zipSamples(museClientRef.current.eegReadings)
         .pipe(
-          // @ts-ignore
           epoch({ duration: 1024, interval: 100, samplingRate: 256 }),
           addInfo({
             samplingRate: 256,
@@ -129,7 +131,7 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
         },
       );
     } finally {
-      setConnectingMuse(false);
+      setHeadsetStatus("disconnected");
     }
   };
 
@@ -235,7 +237,7 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
                   className="px-10"
                   onClick={handleConnectHeadset}
                   disabled={!isChromium}
-                  loading={connectingMuse}
+                  loading={headsetStatus === "connecting"}
                 >
                   Connect headset
                 </PrimaryButton>

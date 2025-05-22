@@ -7,6 +7,8 @@ interface Props {
 }
 
 export default function PrivacyPopup({ showPopup, setShowPopup }: Props) {
+  // TODO: Confirm with the client if this is the correct text
+
   return (
     <Popup
       show={showPopup}
