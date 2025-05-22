@@ -46,6 +46,13 @@ import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
 
 export const tasksRouter = createTRPCRouter({
+  /**
+   * @procedure getTasks
+   * @description Retrieves tasks for a specific project
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @returns {Array} Array of tasks for the specified project
+   */
   getTasks: roleRequiredProcedure(backlogPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -186,13 +193,13 @@ export const tasksRouter = createTRPCRouter({
         (dep) => !oldTaskData.dependencyIds.includes(dep),
       );
       const removedDependencies = taskData.dependencyIds.filter(
-        (dep) => !oldTaskData.dependencyIds.includes(dep),
+        (dep) => !taskData.dependencyIds.includes(dep),
       );
       const addedRequiredBy = taskData.requiredByIds.filter(
         (req) => !oldTaskData.requiredByIds.includes(req),
       );
       const removedRequiredBy = taskData.requiredByIds.filter(
-        (req) => !oldTaskData.requiredByIds.includes(req),
+        (req) => !taskData.requiredByIds.includes(req),
       );
 
       // Since one change is made at a time one these (thanks for that UI),

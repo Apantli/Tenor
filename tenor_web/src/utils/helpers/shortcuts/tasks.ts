@@ -150,18 +150,14 @@ const constructAdjacencyList = (
 export const hasDependencyCycle = async (
   firestore: Firestore,
   projectId: string,
-  newUserStories?: DependenciesWithId[],
+  newTasks?: DependenciesWithId[],
   newDependencies?: Array<{ sourceId: string; targetId: string }>,
 ): Promise<boolean> => {
-  // Get all user stories
-  const userStories = await getTasks(firestore, projectId);
+  // Get all tasks
+  const tasks = await getTasks(firestore, projectId);
 
   // Construct adjacency list
-  const adj = constructAdjacencyList(
-    userStories,
-    newUserStories,
-    newDependencies,
-  );
+  const adj = constructAdjacencyList(tasks, newTasks, newDependencies);
 
   // Initialize visited and recursion stack maps
   const visited = new Map<string, boolean>();
@@ -173,7 +169,7 @@ export const hasDependencyCycle = async (
     recStack.set(id, false);
   });
 
-  // Check each user story (for disconnected components)
+  // Check each task (for disconnected components)
   for (const [id] of adj) {
     if (!visited.get(id) && isCyclicUtil(adj, id, visited, recStack)) {
       return true; // Cycle found
