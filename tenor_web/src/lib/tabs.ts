@@ -59,6 +59,12 @@ export const tabsMetaInformation = {
     link: "/sprint-review",
     enabled: true,
     flags: ["reviews"],
+  },
+  speech:{
+    title: "Speech Recognition",
+    link: "/speech",
+    enabled: true,
+    flags: ["reviews"],
   }
 };
 export const tabs = [
@@ -72,6 +78,7 @@ export const tabs = [
   "performance",
   "settings",
   "sprintReview",
+  "speech",
 ];
 export const tabsToLinks = {
   requirements: "requirements",
@@ -83,4 +90,5 @@ export const tabsToLinks = {
   performance: "performance",
   "project-settings": "settings",
   "sprint-review": "sprintReview",
+  speech: "speech",
 };
