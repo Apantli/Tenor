@@ -34,7 +34,6 @@ import { getIssues, getIssuesRef } from "~/utils/helpers/shortcuts/issues";
 import { getBacklogTags } from "~/utils/helpers/shortcuts/tags";
 import { getProjectRef } from "~/utils/helpers/shortcuts/general";
 import { TRPCError } from "@trpc/server";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")
@@ -66,16 +65,6 @@ export const sprintsRouter = createTRPCRouter({
         ctx.firestore,
         projectId,
       );
-
-      await LogProjectActivity({
-        firestore: ctx.firestore,
-        projectId: input.projectId,
-        userId: ctx.session.user.uid,
-        itemId: getSprintsRef(ctx.firestore, projectId).id,
-        type: "SP",
-        action: "create",
-        resolved: false,
-      });
 
       return { success: true, reorderedSprints: didReorderSprints };
     }),
@@ -109,17 +98,6 @@ export const sprintsRouter = createTRPCRouter({
         ctx.firestore,
         projectId,
       );
-
-      await LogProjectActivity({
-        firestore: ctx.firestore,
-        projectId: input.projectId,
-        userId: ctx.session.user.uid,
-        itemId: sprintRef.id,
-        type: "SP",
-        action: "update",
-        resolved: false,
-      });
-
       return { success: true, reorderedSprints: didReorderSprints };
     }),
 
@@ -157,16 +135,6 @@ export const sprintsRouter = createTRPCRouter({
         ctx.firestore,
         projectId,
       );
-
-      await LogProjectActivity({
-        firestore: ctx.firestore,
-        projectId: input.projectId,
-        userId: ctx.session.user.uid,
-        itemId: sprintId,
-        type: "SP",
-        action: "delete",
-        resolved: false,
-      });
 
       return { success: true, reorderedSprints: didReorderSprints };
     }),

@@ -18,7 +18,6 @@ import {
   getEpics,
   getEpicsRef,
 } from "~/utils/helpers/shortcuts/epics";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const epicsRouter = createTRPCRouter({
   /**
@@ -73,31 +72,9 @@ export const epicsRouter = createTRPCRouter({
           epicId,
         ).get();
         await epicDoc?.ref.update(epicData);
-        await LogProjectActivity({
-          firestore: ctx.firestore,
-          projectId: input.projectId,
-          userId: ctx.session.user.uid,
-          itemId: epicId,
-          type: "EP",
-          action: "update",
-          resolved: false,
-        });
       } else {
         epicData.scrumId = await getEpicNewId(ctx.firestore, projectId);
         await getEpicsRef(ctx.firestore, projectId).add(epicData);
-        await LogProjectActivity({
-          firestore: ctx.firestore,
-          projectId: input.projectId,
-          userId: ctx.session.user.uid,
-          itemId: getEpicRef(
-            ctx.firestore,
-            projectId,
-            epicData.scrumId.toString(),
-          ).id,
-          type: "EP",
-          action: "create",
-          resolved: false,
-        });
       }
     }),
 
@@ -128,14 +105,5 @@ export const epicsRouter = createTRPCRouter({
       const { projectId, epicId } = input;
       const epicRef = getEpicRef(ctx.firestore, projectId, epicId);
       await epicRef.update({ deleted: true });
-      await LogProjectActivity({
-        firestore: ctx.firestore,
-        projectId: input.projectId,
-        userId: ctx.session.user.uid,
-        itemId: epicId,
-        type: "EP",
-        action: "delete",
-        resolved: false,
-      });
     }),
 });
