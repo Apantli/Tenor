@@ -104,6 +104,28 @@ export const getCurrentSprint = async (
 };
 
 /**
+ * @function getPreviousSprint
+ * @description Retrieves the most recently ended sprint (within the last 2 days)
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @returns {Promise<WithId<Sprint> | undefined>} The previous sprint or undefined if no recent sprint
+ */
+export const getPreviousSprint = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const sprints = await getSprints(firestore, projectId);
+  const now = new Date();
+  const threeDaysInMs = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
+  
+  return sprints.find((sprint) => {
+    const sprintEndTime = sprint.endDate.getTime();
+    return sprintEndTime < now.getTime() && 
+           now.getTime() - sprintEndTime < threeDaysInMs;
+  });
+};
+
+/**
  * @function getSprint
  * @description Retrieves a sprint from the Firestore database
  * @param firestore

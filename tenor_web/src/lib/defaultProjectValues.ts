@@ -34,6 +34,7 @@ export interface FlagsRequired {
     | "scrumboard"
     | "issues"
     | "backlog"
+    | "reviews"
   )[];
 
   // false/null/pesimistic gets the lowest permission
@@ -74,6 +75,7 @@ export const defaultRoleList: Role[] = [
     scrumboard: 2,
     issues: 2,
     backlog: 2,
+    reviews: 2,
   },
   {
     id: "developer",
@@ -84,6 +86,7 @@ export const defaultRoleList: Role[] = [
     scrumboard: 1,
     issues: 1,
     backlog: 1,
+    reviews: 2,
   },
   {
     id: "viewer",
@@ -95,6 +98,7 @@ export const defaultRoleList: Role[] = [
     scrumboard: 0,
     issues: 0,
     backlog: 0,
+    reviews: 0,
   },
 ];
 
@@ -107,6 +111,7 @@ export const emptyRole: Role = {
   scrumboard: 0,
   issues: 0,
   backlog: 0,
+  reviews: 0,
 };
 
 export const ownerRole: Role = {
@@ -118,6 +123,7 @@ export const ownerRole: Role = {
   scrumboard: 2,
   issues: 2,
   backlog: 2,
+  reviews: 2,
 };
 
 export const todoTagName = "Todo";
