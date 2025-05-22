@@ -1,16 +1,4 @@
-import type { Firestore } from "firebase-admin/firestore";
-
-type ActivityType = "US" | "EP" | "IS" | "TS" | "SP";
-type ActionType = "create" | "update" | "delete";
-
-interface LogProjectActivityParams {
-  firestore: Firestore;
-  projectId: string;
-  itemId: string;
-  userId: string;
-  type: ActivityType;
-  action: ActionType;
-}
+import { LogProjectActivityParams } from "~/lib/types/firebaseSchemas";
 
 export const LogProjectActivity = async ({
   firestore,
