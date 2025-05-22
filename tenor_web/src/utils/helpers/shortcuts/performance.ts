@@ -3,4 +3,4 @@ import { getProjectRef } from "./general";
 
 export const getActivityRef = (firestore: Firestore, projectId: string) => {
   return getProjectRef(firestore, projectId).collection("activity");
-}
+};

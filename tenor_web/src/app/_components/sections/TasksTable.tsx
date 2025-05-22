@@ -488,6 +488,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             dueDate: task.dueDate
               ? Timestamp.fromDate(task.dueDate)
               : undefined,
+            dependencyIds: task.dependencies.map((dep) => dep.id),
+            requiredByIds: task.requiredBy.map((dep) => dep.id),
           },
         });
       }
@@ -527,6 +529,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
           description: task.description,
           statusId: task.status.id ?? "",
           size: task.size,
+          dependencyIds: task.dependencies.map((dep) => dep.id),
+          requiredByIds: task.requiredBy.map((dep) => dep.id),
         })) ?? [];
 
       generatedData = await generateTasks({
@@ -552,6 +556,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         scrumId: -1,
         id: i.toString(),
         status: task.status ?? todoStatus!,
+        dependencies: [],
+        requiredBy: [],
       })),
     );
     if (setUnsavedTasks) setUnsavedTasks(true);
