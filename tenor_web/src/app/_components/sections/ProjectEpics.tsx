@@ -146,15 +146,15 @@ export const ProjectEpics = () => {
   };
   return (
     <>
-      <h1 className="flex justify-between pb-2">
-        <span className="text-3xl font-semibold">Epics</span>
+      <div className="flex justify-between pb-5">
+        <h1 className="text-3xl font-semibold">Epics</h1>
         {permission >= permissionNumbers.write && (
           <PrimaryButton onClick={() => setShowSmallPopup(true)}>
             + New Epic
           </PrimaryButton>
         )}
-      </h1>
-      <div className="flex flex-row justify-between gap-1 border-b-2 pb-3">
+      </div>
+      <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
         <SearchBar
           searchValue={searchText}
           handleUpdateSearch={(e) => setSearchText(e.target.value)}
@@ -191,7 +191,7 @@ export const ProjectEpics = () => {
               setShowEditPopup(true);
             }}
             key={epic.scrumId}
-            className="border-b-2 px-3 py-3 transition hover:cursor-pointer hover:bg-gray-100"
+            className="border-b-2 px-3 py-4 transition hover:cursor-pointer hover:bg-gray-100"
           >
             <div className="flex flex-col gap-y-2">
               <h3 className="text-xl font-semibold">
