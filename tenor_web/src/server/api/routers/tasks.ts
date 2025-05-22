@@ -44,6 +44,13 @@ import { backlogPermissions } from "~/lib/permission";
 import { FieldValue } from "firebase-admin/firestore";
 
 export const tasksRouter = createTRPCRouter({
+  /**
+   * @procedure getTasks
+   * @description Retrieves tasks for a specific project
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @returns {Array} Array of tasks for the specified project
+   */
   getTasks: roleRequiredProcedure(backlogPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -530,20 +537,6 @@ ${tagContext}\n\n`;
         status: todoTag as StatusTag,
       }));
     }),
-
-  /**
-   * @procedure getTasks
-   * @description Retrieves tasks for a specific project
-   * @input {object} input - Input parameters
-   * @input {string} input.projectId - The ID of the project
-   * @returns {Array} Array of tasks for the specified project
-   */
-  getTasks: protectedProcedure
-    .input(z.object({ projectId: z.string()}))
-    .query(async ({ ctx, input }) => {
-      return await getTasks(ctx.firestore, input.projectId);
-    }),
-  
   /**
    * @function getTaskCount
    * @description Retrieves the number of tasks inside a given project, regardless of their deleted status.
