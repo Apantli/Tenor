@@ -401,7 +401,7 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getRoles(ctx.firestore, projectId);
     }),
-  getProjectStatus: roleRequiredProcedure(settingsPermissions, "read")
+  getProjectStatus: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;

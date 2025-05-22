@@ -19,6 +19,7 @@ import {
   getTaskDetail,
   getTaskNewId,
   getTaskRef,
+  getTasks,
   getTasksRef,
   getTaskTable,
 } from "~/utils/helpers/shortcuts/tasks";
@@ -340,7 +341,6 @@ ${tagContext}\n\n`;
     }),
 
   /**
-<<<<<<< HEAD
    * @procedure getTasks
    * @description Retrieves tasks for a specific project
    * @input {object} input - Input parameters
@@ -354,8 +354,6 @@ ${tagContext}\n\n`;
     }),
   
   /**
-=======
->>>>>>> origin/main
    * @function getTaskCount
    * @description Retrieves the number of tasks inside a given project, regardless of their deleted status.
    * @param {string} projectId - The ID of the project.

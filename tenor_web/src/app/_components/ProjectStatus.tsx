@@ -4,9 +4,9 @@ import ProgressBar from './ProgressBar';
 import AssignUsersList from './specific-pickers/AssignUsersList';
 import LoadingSpinner from './LoadingSpinner';
 
-function ProjectStatus({projectId}: {projectId: string}) {
+function projectStatus({projectId}: {projectId: string}) {
 
-  const {data: ProjectStatus, isLoading } = api.projects.getProjectStatus.useQuery({ projectId });
+  const {data: projectStatus, isLoading } = api.projects.getProjectStatus.useQuery({ projectId });
   const {data: sprints, isLoading: isLoadingSprint} = api.sprints.getProjectSprintsOverview.useQuery({ projectId });
 
   if (isLoading || isLoadingSprint) {
@@ -14,11 +14,11 @@ function ProjectStatus({projectId}: {projectId: string}) {
   }
 
   let sprintTitle = "";
-  if (ProjectStatus?.currentSprintId) {
-    if (ProjectStatus?.currentSprintDescription === "") {
-      sprintTitle = "Sprint " + ProjectStatus?.currentSprintNumber;
+  if (projectStatus?.currentSprintId) {
+    if (projectStatus?.currentSprintDescription === "") {
+      sprintTitle = "Sprint " + projectStatus?.currentSprintNumber;
     } else {
-      sprintTitle = "Sprint " + ProjectStatus?.currentSprintNumber + ": " + ProjectStatus?.currentSprintDescription;
+      sprintTitle = "Sprint " + projectStatus?.currentSprintNumber + ": " + projectStatus?.currentSprintDescription;
     }
   } else {
     sprintTitle = "No active sprint";
@@ -27,9 +27,9 @@ function ProjectStatus({projectId}: {projectId: string}) {
   let remainingDays: number | null = null;
 
   //Compare the sprints numbers with the sprint currentSprintId
-  if (sprints && ProjectStatus?.currentSprintId != null) {
+  if (sprints && projectStatus?.currentSprintId != null) {
     for (const sprint of sprints) {
-      if (sprint.id.toString() === ProjectStatus?.currentSprintId) {
+      if (sprint.id.toString() === projectStatus?.currentSprintId) {
         const endDate = new Date(sprint.endDate);
         const today = new Date();
 
@@ -70,12 +70,12 @@ function ProjectStatus({projectId}: {projectId: string}) {
         </div>
       </div>
       <ProgressStatusBar
-        taskCount={ProjectStatus?.taskCount ?? 0}
-        completedCount={ProjectStatus?.completedCount ?? 0}
+        taskCount={projectStatus?.taskCount ?? 0}
+        completedCount={projectStatus?.completedCount ?? 0}
       />
       <div className="flex flex-col md:flex-row md:items-start items-center gap-2 justify-between mt-4">
         <div className='w-full'>
-          <AssignUsersList users={ProjectStatus?.assignedUssers} />
+          <AssignUsersList users={projectStatus?.assignedUssers} />
         </div>
         <div className='w-full justify-start md:justify-end flex md:mt-0 mt-4'>
           {message && (
@@ -114,4 +114,4 @@ function ProgressStatusBar({
   )
 }
 
-export default ProjectStatus;
+export default projectStatus;
