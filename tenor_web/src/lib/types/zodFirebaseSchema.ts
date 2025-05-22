@@ -124,11 +124,14 @@ export const UserStorySchema = BacklogItemSchema.extend({
     ),
   dependencyIds: z
     .array(z.string())
+    .default([])
+
     .describe(
       "List of user story ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
   requiredByIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of user story ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
@@ -159,11 +162,13 @@ export const TaskSchema = BasicInfoSchema.extend({
   // reviewerId: z.string(), // Scope creep. Ignore for now
   dependencyIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of task ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
   requiredByIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of task ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),

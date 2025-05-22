@@ -3,6 +3,24 @@ import { createClassFromSpec, type VisualizationSpec } from "react-vega";
 import React from "react";
 import { cn } from "~/lib/utils";
 
+interface VegaScale {
+  name: string;
+  type: string;
+  domain: number[] | string[] | { data: string; field: string };
+  range?: string;
+  padding?: number;
+  paddingOuter?: number;
+  round?: boolean;
+  zero?: boolean;
+  nice?: boolean;
+}
+
+type ExtendedSpec = VisualizationSpec & {
+  scales: VegaScale[];
+  width: number;
+  height: number;
+};
+
 export type ProjectStatusData = Array<{
   category: string;
   position: "Finished" | "Expected";
@@ -207,14 +225,14 @@ export const StatusBarChart = ({
   }, []);
 
   // Modify spec with dynamic width and domain
-  const modifiedSpec = React.useMemo(() => {
-    const specCopy = JSON.parse(JSON.stringify(projectStatus));
+  const modifiedSpec = React.useMemo<ExtendedSpec>(() => {
+    const specCopy = JSON.parse(JSON.stringify(projectStatus)) as ExtendedSpec;
 
     // Update the y-scale domain
     const yscaleIndex = specCopy.scales.findIndex(
-      (scale: any) => scale.name === "yscale",
+      (scale: VegaScale) => scale.name === "yscale",
     );
-    if (yscaleIndex !== -1) {
+    if (yscaleIndex !== -1 && specCopy.scales[yscaleIndex]) {
       specCopy.scales[yscaleIndex].domain = domain;
     }
 
