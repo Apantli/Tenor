@@ -70,8 +70,6 @@ export default function SprintCardColumn({
         !column.backlogItemIds.some((itemId) => itemId === selectedItemId),
     );
 
-  const permission = useGetPermission({ flags: ["sprints"] });
-
   return (
     <div
       className="relative h-full w-96 min-w-96 overflow-hidden rounded-lg"
