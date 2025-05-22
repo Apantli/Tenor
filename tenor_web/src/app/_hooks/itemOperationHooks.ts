@@ -18,8 +18,6 @@ export const useDeleteItemByType = () => {
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
-
-  // TODO: Implement this when dependencies for tasks are implemented
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   return async (
@@ -30,26 +28,28 @@ export const useDeleteItemByType = () => {
   ) => {
     switch (itemType) {
       case "US":
-        const { updatedUserStoryIds } = await deleteUserStory({
-          projectId,
-          userStoryId: itemId,
-        });
+        const { updatedUserStoryIds, updatedTaskIds: updatedTaskIds1 } =
+          await deleteUserStory({
+            projectId,
+            userStoryId: itemId,
+          });
         await invalidateQueriesUserStoriesDetails(
           projectId,
           updatedUserStoryIds,
         );
         await invalidateQueriesBacklogItems(projectId, itemType);
+        await invalidateQueriesTaskDetails(projectId, updatedTaskIds1);
         break;
 
       case "TS":
-        const { updatedTaskIds } = await deleteTask({
+        const { updatedTaskIds: updatedTaskIds2 } = await deleteTask({
           projectId,
           taskId: itemId,
         });
         if (parentId) {
           await invalidateQueriesAllTasks(projectId, [parentId]);
         }
-        await invalidateQueriesTaskDetails(projectId, updatedTaskIds);
+        await invalidateQueriesTaskDetails(projectId, updatedTaskIds2);
         break;
 
       case "EP":

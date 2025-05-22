@@ -38,6 +38,7 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesTaskDetails,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
 import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
@@ -74,6 +75,7 @@ export default function UserStoryTable({
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   // For the ghost US
   const generatedUserStories = useRef<UserStoryDetailWithTasks[]>();
@@ -254,7 +256,7 @@ export default function UserStoryTable({
     );
 
     // Deletes in database
-    const { updatedUserStoryIds } = await deleteUserStories({
+    const { updatedUserStoryIds, updatedTaskIds } = await deleteUserStories({
       projectId: projectId as string,
       userStoryIds: ids,
     });
@@ -262,6 +264,7 @@ export default function UserStoryTable({
       projectId as string,
       updatedUserStoryIds,
     );
+    await invalidateQueriesTaskDetails(projectId as string, updatedTaskIds);
     await invalidateQueriesAllTasks(projectId as string);
     await invalidateQueriesAllUserStories(projectId as string);
     return true;

@@ -33,6 +33,7 @@ import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesTaskDetails,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
 import AiIcon from "@mui/icons-material/AutoAwesome";
@@ -72,6 +73,7 @@ export default function UserStoryDetailPopup({
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesUserStoriesDetails =
@@ -291,7 +293,7 @@ export default function UserStoryDetailPopup({
         "Cancel",
       )
     ) {
-      const { updatedUserStoryIds } = await deleteUserStory({
+      const { updatedUserStoryIds, updatedTaskIds } = await deleteUserStory({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
@@ -301,6 +303,8 @@ export default function UserStoryDetailPopup({
         projectId as string,
         updatedUserStoryIds, // for example, if you delete a user story, all its dependencies will be updated
       );
+      // for example, if you delete a user story, all its tasks that were related to any of the US tasks will be updated
+      await invalidateQueriesTaskDetails(projectId as string, updatedTaskIds);
       await dismissPopup();
     }
   };

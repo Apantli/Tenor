@@ -291,15 +291,17 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, userStoryId } = input;
-      const modifiedUserStories = await deleteUserStoryAndGetModified(
-        ctx.firestore,
-        projectId,
-        userStoryId,
-      );
+      const { modifiedUserStories, modifiedTasks } =
+        await deleteUserStoryAndGetModified(
+          ctx.firestore,
+          projectId,
+          userStoryId,
+        );
 
       return {
         success: true,
         updatedUserStoryIds: modifiedUserStories,
+        updatedTaskIds: modifiedTasks,
       };
     }),
 
@@ -320,21 +322,25 @@ export const userStoriesRouter = createTRPCRouter({
       const { projectId, userStoryIds } = input;
 
       const allModifiedUserStoryIds = new Set<string>();
+      const allModifiedTaskIds = new Set<string>();
 
       await Promise.all(
         userStoryIds.map(async (userStoryId) => {
-          const modifiedUserStories = await deleteUserStoryAndGetModified(
-            ctx.firestore,
-            projectId,
-            userStoryId,
-          );
+          const { modifiedUserStories, modifiedTasks } =
+            await deleteUserStoryAndGetModified(
+              ctx.firestore,
+              projectId,
+              userStoryId,
+            );
           modifiedUserStories.forEach((id) => allModifiedUserStoryIds.add(id));
+          modifiedTasks.forEach((id) => allModifiedTaskIds.add(id));
         }),
       );
 
       return {
         success: true,
         updatedUserStoryIds: Array.from(allModifiedUserStoryIds),
+        updatedTaskIds: Array.from(allModifiedTaskIds),
       };
     }),
   /**
