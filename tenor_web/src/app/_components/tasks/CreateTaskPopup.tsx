@@ -14,7 +14,11 @@ import type { StatusTag, WithId, Size } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
-import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
+import type {
+  TaskDetail,
+  TaskPreview,
+  UserPreview,
+} from "~/lib/types/detailSchemas";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -53,6 +57,8 @@ export function CreateTaskForm({
     assignee?: WithId<UserPreview>;
     size?: Size;
     dueDate?: Date;
+    dependencies: TaskPreview[];
+    requiredBy: TaskPreview[];
   }>({
     name: "",
     description: "",
@@ -68,6 +74,8 @@ export function CreateTaskForm({
     assignee: undefined,
     size: undefined,
     dueDate: undefined,
+    dependencies: [],
+    requiredBy: [],
   });
 
   // Select a status after the todo status is fetched
@@ -111,6 +119,8 @@ export function CreateTaskForm({
         assignee: createForm.assignee,
         dueDate: createForm.dueDate,
         scrumId: -1,
+        dependencies: createForm.dependencies,
+        requiredBy: createForm.requiredBy,
       });
       onTaskAdded?.(taskId);
       return;
@@ -127,6 +137,8 @@ export function CreateTaskForm({
         dueDate: dueDate,
         itemId: itemId,
         itemType: itemType,
+        dependencyIds: createForm.dependencies.map((task) => task.id),
+        requiredByIds: createForm.requiredBy.map((task) => task.id),
       },
     });
 

@@ -29,6 +29,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
+import DependencyList from "./DependencyList";
 
 interface Props {
   taskId: string;
@@ -140,6 +141,8 @@ export default function TaskDetailPopup({
       size: updatedData.size,
       assignee: updatedData.assignee ?? undefined,
       dueDate: updatedData.dueDate,
+      dependencies: updatedData.dependencies ?? [],
+      requiredBy: updatedData.requiredBy ?? [],
     };
 
     if (taskData !== undefined || isGhost) {
@@ -179,6 +182,8 @@ export default function TaskDetailPopup({
         dueDate: updatedData.dueDate
           ? Timestamp.fromDate(updatedData.dueDate)
           : undefined,
+        dependencyIds: updatedData.dependencies.map((task) => task.id),
+        requiredByIds: updatedData.requiredBy.map((task) => task.id),
       },
     });
 
@@ -371,6 +376,28 @@ export default function TaskDetailPopup({
               className="w-full"
             />
           </div>
+          <DependencyList
+            tasks={taskDetail?.dependencies ?? []}
+            taskId={taskId}
+            onChange={async (dependencies) => {
+              await handleSave({ ...taskDetail, dependencies });
+            }}
+            label="Dependencies"
+            // FIXME OPEN TASK DETAIL
+            onClick={() => {}}
+            disabled={permission < permissionNumbers.write}
+          />
+          <DependencyList
+            tasks={taskDetail?.requiredBy ?? []}
+            taskId={taskId}
+            onChange={async (requiredBy) => {
+              await handleSave({ ...taskDetail, requiredBy });
+            }}
+            label="Required by"
+            // FIXME OPEN TASK DETAIL
+            onClick={() => {}}
+            disabled={permission < permissionNumbers.write}
+          />
         </div>
       )}
       {isLoading && (

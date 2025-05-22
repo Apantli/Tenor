@@ -200,6 +200,8 @@ export interface Task extends BasicInfo {
   size: Size;
   itemId: string;
   itemType: itemTypes;
+  dependencyIds: string[];
+  requiredByIds: string[];
 }
 
 export interface Issue extends BacklogItem {

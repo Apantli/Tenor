@@ -10,17 +10,25 @@
 
 import { z } from "zod";
 import type { StatusTag } from "~/lib/types/firebaseSchemas";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { BacklogItemSchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
+  getTask,
   getTaskContextFromItem,
   getTaskDetail,
   getTaskNewId,
   getTaskRef,
+  getTasks,
   getTasksRef,
   getTaskTable,
+  hasDependencyCycle,
+  updateDependency,
 } from "~/utils/helpers/shortcuts/tasks";
 import {
   generateTaskContext,
@@ -32,8 +40,15 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
+import { backlogPermissions } from "~/lib/permission";
 
 export const tasksRouter = createTRPCRouter({
+  getTasks: roleRequiredProcedure(backlogPermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getTasks(ctx.firestore, projectId);
+    }),
   /**
    * @procedure createTask
    * @description Creates a new task in the specified project and assigns it a scrumId
@@ -127,8 +142,107 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, taskData } = input;
-      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
-      await taskRef.update(taskData);
+      const oldTaskData = await getTask(ctx.firestore, projectId, taskId);
+
+      // Check the difference in dependency and requiredBy arrays
+      const addedDependencies = taskData.dependencyIds.filter(
+        (dep) => !oldTaskData.dependencyIds.includes(dep),
+      );
+      const removedDependencies = taskData.dependencyIds.filter(
+        (dep) => !oldTaskData.dependencyIds.includes(dep),
+      );
+      const addedRequiredBy = taskData.requiredByIds.filter(
+        (req) => !oldTaskData.requiredByIds.includes(req),
+      );
+      const removedRequiredBy = taskData.requiredByIds.filter(
+        (req) => !oldTaskData.requiredByIds.includes(req),
+      );
+
+      // Since one change is made at a time one these (thanks for that UI),
+      // we only check if there's a cycle by adding the new dependencies (which are also the same as inverted requiredBy)
+      const newDependencies = [
+        ...addedDependencies.flatMap((dep) => [
+          { sourceId: taskId, targetId: dep },
+        ]),
+        ...addedRequiredBy.flatMap((req) => [
+          { sourceId: req, targetId: taskId },
+        ]),
+      ];
+      let hasCycle = false;
+      if (newDependencies.length > 0) {
+        hasCycle = await hasDependencyCycle(
+          ctx.firestore,
+          projectId,
+          undefined,
+          newDependencies,
+        );
+      }
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
+        });
+      }
+
+      // Update the related user stories
+      await Promise.all(
+        addedDependencies.map(async (dependencyId) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            dependencyId,
+            taskId,
+            "add",
+            "requiredByIds",
+          );
+        }),
+      );
+      await Promise.all(
+        removedDependencies.map(async (dependencyId) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            dependencyId,
+            taskId,
+            "remove",
+            "requiredByIds",
+          );
+        }),
+      );
+      await Promise.all(
+        addedRequiredBy.map(async (requiredById) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            requiredById,
+            taskId,
+            "add",
+            "dependencyIds",
+          );
+        }),
+      );
+      await Promise.all(
+        removedRequiredBy.map(async (requiredById) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            requiredById,
+            taskId,
+            "remove",
+            "dependencyIds",
+          );
+        }),
+      );
+
+      await getTaskRef(ctx.firestore, projectId, taskId).update(taskData);
+      return {
+        updatedTaskds: [
+          ...addedDependencies,
+          ...removedDependencies,
+          ...addedRequiredBy,
+          ...removedRequiredBy,
+        ],
+      };
     }),
 
   /**
@@ -172,7 +286,50 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+
+      // Get the task to get its dependencies and required by relationships
+      const task = await getTask(ctx.firestore, projectId, taskId);
+
+      const modifiedTasks = task.dependencyIds.concat(
+        task.requiredByIds,
+        taskId,
+      );
+
+      // Remove this user story from all dependencies' requiredBy arrays
+      await Promise.all(
+        task.dependencyIds.map(async (dependencyId) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            dependencyId,
+            taskId,
+            "remove",
+            "requiredByIds",
+          );
+        }),
+      );
+
+      // Remove this user story from all requiredBy's dependency arrays
+      await Promise.all(
+        task.requiredByIds.map(async (requiredById) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            requiredById,
+            taskId,
+            "remove",
+            "dependencyIds",
+          );
+        }),
+      );
+
+      // Mark the task as deleted
       await taskRef.update({ deleted: true });
+
+      return {
+        success: true,
+        updatedTaskIds: modifiedTasks,
+      };
     }),
 
   getTodoStatusTag: protectedProcedure
