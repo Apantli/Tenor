@@ -30,7 +30,6 @@ import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import { acceptableTagColors } from "~/utils/helpers/colorUtils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
-import ProgressBar  from "~/app/_components/ProgressBar";
 
 // Z index documentation:
 // 0-1000: Default z-index range for most elements (feel free to contribute to the documentation)
@@ -63,7 +62,6 @@ export default function ComponentShowcasePage() {
         <EditableBoxShowCase />
         <SegmentedControlShowcase />
         <DropdownColorPickerShowcase />
-        <ProgressBarShowcase />
       </div>
     </main>
   );
@@ -813,23 +811,6 @@ function DropdownColorPickerShowcase() {
         onChange={setColor}
         className="w-48"
       />
-    </div>
-  );
-}
-
-function ProgressBarShowcase() {
-  const [progress, setProgress] = useState(0);
-
-  const handleProgress = () => {
-    setProgress((prev) => (prev >= 100 ? 0 : prev + 10));
-  };
-
-  return (
-    <div>
-      <hr />
-      <h2 className="my-2 text-2xl font-medium">Progress Bar</h2>
-      <ProgressBar min={0} max={100} value={progress} emptyBarColor={"#D4DDE4"} progressBarColor={"#13918A"} displayValue={"This is a the porcentage"} />
-      <PrimaryButton onClick={handleProgress}>Increase Progress</PrimaryButton>
     </div>
   );
 }
