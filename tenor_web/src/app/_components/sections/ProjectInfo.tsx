@@ -58,7 +58,7 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
           <h1 className="text-2xl font-semibold">{projectTitle}</h1>
         </div>
       </div>
-      <div className="text-m text-app-primary w-full">
+      <div className="w-full">
         <div className="flex flex-col gap-2 w-full text-left">
           <Markdown>
             { shouldShowFullDescription ? projectDescription : previewText}
