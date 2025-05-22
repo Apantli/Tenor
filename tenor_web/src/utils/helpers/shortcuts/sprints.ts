@@ -61,7 +61,7 @@ export const getSprintNewId = async (
 export const getSprints = async (firestore: Firestore, projectId: string) => {
   const sprintsRef = getSprintsRef(firestore, projectId)
     .where("deleted", "==", false)
-    .orderBy("number", "asc");
+    .orderBy("number", "asc"); // This order is maintained dynamically by date after sprint modifications
   const sprintsSnapshot = await sprintsRef.get();
   const sprints: WithId<Sprint>[] = sprintsSnapshot.docs.map((sprintData) => {
     const sprintSchema = SprintSchema.parse(sprintData.data());
