@@ -1,4 +1,4 @@
-import { LogProjectActivityParams } from "~/lib/types/firebaseSchemas";
+import type { LogProjectActivityParams } from "~/lib/types/firebaseSchemas";
 
 export const LogProjectActivity = async ({
   firestore,
