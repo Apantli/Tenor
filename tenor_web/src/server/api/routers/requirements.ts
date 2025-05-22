@@ -311,4 +311,26 @@ export const requirementsRouter = createTRPCRouter({
 
       return parsedRequirements;
     }),
+
+  getDefaultRequirementType: roleRequiredProcedure(backlogPermissions, "write")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const requirementTypes = await getRequirementTypes(
+        ctx.firestore,
+        projectId,
+      );
+      // Default type is functional unless it doesn't exist, in which case we return the first one alphabetically
+      const functional = requirementTypes.find(
+        (type) => type.name === "Functional",
+      );
+      if (functional) {
+        return functional;
+      } else {
+        const sortedRequirementTypes = requirementTypes.sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
+        return sortedRequirementTypes[0];
+      }
+    }),
 });

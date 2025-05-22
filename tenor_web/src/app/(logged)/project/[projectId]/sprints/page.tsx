@@ -1,27 +1,23 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
 import SprintCardColumn from "./SprintCardColumn";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { Timestamp } from "firebase/firestore";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
-import { DatePicker } from "~/app/_components/DatePicker";
 import {
   useFormatIssueScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import type { inferRouterOutputs } from "@trpc/server";
-import { useAlert } from "~/app/_hooks/useAlert";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import {
@@ -31,12 +27,10 @@ import {
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
-import {
-  type Permission,
-  permissionNumbers,
-} from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import CreateSprintPopup from "./CreateSprintPopup";
+import { useGetPermission } from "~/app/_hooks/useGetPermission";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -49,17 +43,7 @@ const noSprintId = "noSprintId";
 export default function ProjectSprints() {
   const { projectId } = useParams();
 
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
-  });
-  const permission: Permission = useMemo(() => {
-    return checkPermissions(
-      {
-        flags: ["backlog"],
-      },
-      role ?? emptyRole,
-    );
-  }, [role]);
+  const permission = useGetPermission({ flags: ["backlog"] });
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();
@@ -76,47 +60,6 @@ export default function ProjectSprints() {
   const [lastDraggedBacklogItemId, setLastDraggedBacklogItemId] = useState<
     string | null
   >(null);
-
-  const { data: scrumSettings, isLoading: isLoadingSprintDuration } =
-    api.settings.fetchScrumSettings.useQuery({
-      projectId: projectId as string,
-    });
-
-  let defaultSprintInitialDate: Date | undefined = undefined;
-  let defaultSprintEndDate: Date | undefined = undefined;
-  // update values once loaded
-  useEffect(() => {
-    if (
-      !isLoadingSprintDuration &&
-      scrumSettings !== undefined &&
-      backlogItemsBySprint != undefined
-    ) {
-      for (const sprint of backlogItemsBySprint?.sprints ?? []) {
-        if (
-          defaultSprintInitialDate == null ||
-          sprint.sprint.endDate > defaultSprintInitialDate
-        ) {
-          defaultSprintInitialDate = sprint.sprint.endDate;
-        }
-      }
-
-      // Set defaultSprintInitialDate to one day after the latest sprint endDate
-      if (defaultSprintInitialDate != null) {
-        defaultSprintInitialDate = new Date(
-          defaultSprintInitialDate.getTime() + 24 * 60 * 60 * 1000,
-        );
-      } else {
-        defaultSprintInitialDate = new Date();
-      }
-
-      defaultSprintEndDate = new Date(
-        (defaultSprintInitialDate ?? new Date()).getTime() +
-          scrumSettings.sprintDuration * 24 * 60 * 60 * 1000,
-      );
-      setNewSprintStartDate(defaultSprintInitialDate);
-      setNewSprintEndDate(defaultSprintEndDate);
-    }
-  }, [isLoadingSprintDuration, scrumSettings, backlogItemsBySprint]);
 
   const [searchValue, setSearchValue] = useState("");
   const [sprintSearchValue, setSprintSearchValue] = useState("");
@@ -215,8 +158,6 @@ export default function ProjectSprints() {
       return hasMatchingItem;
     }) ?? [];
 
-  const { mutateAsync: createSprint, isPending } =
-    api.sprints.createOrModifySprint.useMutation();
   const utils = api.useUtils();
   const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
     usePopupVisibilityState();
@@ -229,76 +170,6 @@ export default function ProjectSprints() {
 
   const { mutateAsync: assignItemsToSprint } =
     api.sprints.assignItemsToSprint.useMutation();
-
-  // New sprint variables
-  const [newSprintDescription, setNewSprintDescription] = useState("");
-  const [newSprintStartDate, setNewSprintStartDate] = useState<
-    Date | undefined
-  >(undefined);
-  const [newSprintEndDate, setNewSprintEndDate] = useState<Date | undefined>(
-    undefined,
-  );
-
-  const { alert } = useAlert();
-  const handleCreateSprint = async () => {
-    if (newSprintStartDate === undefined || newSprintEndDate === undefined)
-      return;
-
-    // Validate dates
-    if (newSprintStartDate >= newSprintEndDate) {
-      alert("Oops...", "Dates are invalid.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
-      return;
-    }
-
-    for (const sprint of backlogItemsBySprint?.sprints ?? []) {
-      if (
-        (sprint.sprint.startDate <= newSprintStartDate &&
-          sprint.sprint.endDate >= newSprintStartDate) ||
-        (sprint.sprint.startDate <= newSprintEndDate &&
-          sprint.sprint.endDate >= newSprintEndDate) ||
-        (newSprintStartDate <= sprint.sprint.startDate &&
-          newSprintEndDate >= sprint.sprint.startDate) ||
-        (newSprintStartDate <= sprint.sprint.endDate &&
-          newSprintEndDate >= sprint.sprint.endDate)
-      ) {
-        alert(
-          "Oops...",
-          `Dates collide with Sprint number ${sprint.sprint.number}.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
-        return;
-      }
-    }
-
-    await createSprint({
-      projectId: projectId as string,
-      sprintData: {
-        number: -1,
-        description: newSprintDescription,
-        startDate: Timestamp.fromDate(newSprintStartDate),
-        endDate: Timestamp.fromDate(newSprintEndDate),
-        // updatedData.dueDate ? Timestamp.fromDate(updatedData.dueDate) : null,
-        userStoryIds: [],
-        genericItemIds: [],
-        issueIds: [],
-      },
-    });
-    await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
-
-    setNewSprintDescription("");
-    setNewSprintStartDate(defaultSprintInitialDate);
-    setNewSprintEndDate(defaultSprintEndDate);
-
-    setShowSmallPopup(false);
-  };
 
   const [renderDetail, showDetail, detailItemId, setDetailItemId] =
     useQueryIdForPopup("id");
@@ -646,7 +517,7 @@ export default function ProjectSprints() {
             <div className="flex w-full justify-between gap-5 pb-4">
               <h1 className="text-3xl font-semibold">Sprints</h1>
               <div className="flex flex-1 items-center justify-end gap-3">
-                <div style={{ width: "500px" }}>
+                <div className="w-full max-w-[500px]">
                   <SearchBar
                     searchValue={sprintSearchValue}
                     handleUpdateSearch={(e) =>
@@ -696,6 +567,9 @@ export default function ProjectSprints() {
               {filteredSprints.map((column) => (
                 <SprintCardColumn
                   disabled={permission < permissionNumbers.write}
+                  allSprints={backlogItemsBySprint?.sprints.map(
+                    (sprint) => sprint.sprint,
+                  )}
                   lastDraggedBacklogItemId={lastDraggedBacklogItemId}
                   assignSelectionToSprint={assignSelectionToSprint}
                   column={column}
@@ -752,64 +626,13 @@ export default function ProjectSprints() {
           />
         )}
       {renderSmallPopup && (
-        <Popup
-          show={showSmallPopup}
-          reduceTopPadding
-          size="small"
-          className="min-h-[400px] min-w-[500px]"
-          dismiss={() => setShowSmallPopup(false)}
-          footer={
-            <div className="flex gap-2">
-              <PrimaryButton
-                onClick={async () => {
-                  await handleCreateSprint();
-                }}
-                loading={isPending}
-              >
-                Create Sprint
-              </PrimaryButton>
-            </div>
-          }
-        >
-          {" "}
-          <div className="flex flex-col gap-4">
-            <h1 className="text-2xl">
-              <strong>New Sprint</strong>{" "}
-            </h1>
-            <InputTextAreaField
-              height={15}
-              label="Sprint description"
-              value={newSprintDescription}
-              onChange={(e) => setNewSprintDescription(e.target.value)}
-              placeholder="Explain what will be done in this sprint..."
-              className="h-[200px] w-full"
-            />
-            <div className="flex w-full justify-center gap-4">
-              <div className="w-full">
-                <h3 className="text-sm font-semibold">Start date</h3>
-                <DatePicker
-                  selectedDate={newSprintStartDate}
-                  placeholder="Select date"
-                  className="w-full"
-                  onChange={(e) => {
-                    setNewSprintStartDate(e);
-                  }}
-                />
-              </div>
-              <div className="w-full">
-                <h3 className="text-sm font-semibold">End date</h3>
-                <DatePicker
-                  selectedDate={newSprintEndDate}
-                  placeholder="Select date"
-                  className="w-full"
-                  onChange={(e) => {
-                    setNewSprintEndDate(e);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </Popup>
+        <CreateSprintPopup
+          setShowSmallPopup={setShowSmallPopup}
+          showSmallPopup={showSmallPopup}
+          otherSprints={backlogItemsBySprint?.sprints?.map(
+            (sprint) => sprint.sprint,
+          )}
+        />
       )}
     </>
   );

@@ -76,7 +76,7 @@ function TableHeader<I extends string | number, T extends Record<string, any>>({
   rejectAllGhosts,
   disableSelection,
 }: TableHeaderProps<I, T>) {
-  const showThreeDots = extraOptions !== undefined || deletable !== undefined;
+  const showThreeDots = extraOptions !== undefined || !!deletable;
   const columnEntries = React.useMemo(
     () => filterVisibleColumns(Object.entries(columns)),
     [columns],

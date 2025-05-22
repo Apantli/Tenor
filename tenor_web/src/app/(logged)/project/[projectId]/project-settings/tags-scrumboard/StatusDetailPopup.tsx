@@ -238,7 +238,7 @@ export default function StatusDetailPopup({
     <Popup
       show={showPopup}
       size="small"
-      className="max-h-[450px] min-w-[500px]"
+      className="min-h-[300px] w-[500px]"
       dismiss={async () => {
         if (editMode && isModified()) {
           const confirmation = await confirm(
