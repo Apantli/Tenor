@@ -75,19 +75,19 @@ export const tasksRouter = createTRPCRouter({
         scrumId: await getTaskNewId(ctx.firestore, projectId),
       });
 
-      // const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
-      //   {
-      //     id: "this is a new user story", // id to avoid collision
-      //     dependencyIds: taskData.dependencyIds,
-      //   },
-      // ]);
+      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
+        {
+          id: "this is a new user story", // id to avoid collision
+          dependencyIds: taskData.dependencyIds,
+        },
+      ]);
 
-      // if (hasCycle) {
-      //   throw new TRPCError({
-      //     code: "BAD_REQUEST",
-      //     message: "Circular dependency detected.",
-      //   });
-      // }
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
+        });
+      }
 
       const task = await getTasksRef(ctx.firestore, projectId).add(taskData);
 
@@ -568,20 +568,19 @@ ${tagContext}\n\n`;
     .mutation(async ({ ctx, input }) => {
       const { projectId, dependencyTaskId, parentTaskId } = input;
 
-      // TODO: Make Alonso adapt to the new one
-      // const hasCycle = await hasDependencyCycle(
-      //   ctx.firestore,
-      //   projectId,
-      //   undefined,
-      //   [{ parentTaskId, dependencyTaskId }],
-      // );
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        undefined,
+        [{ sourceId: parentTaskId, targetId: dependencyTaskId }],
+      );
 
-      // if (hasCycle) {
-      //   throw new TRPCError({
-      //     code: "BAD_REQUEST",
-      //     message: "Circular dependency detected.",
-      //   });
-      // }
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
+        });
+      }
 
       await updateDependency(
         ctx.firestore,
