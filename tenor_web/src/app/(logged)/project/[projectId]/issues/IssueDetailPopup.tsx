@@ -30,6 +30,7 @@ import {
   useInvalidateQueriesAllIssues,
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
+  useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
@@ -102,6 +103,7 @@ export default function IssueDetailPopup({
     usePopupVisibilityState();
 
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   const { alert, predefinedAlerts } = useAlert();
   const formatIssueScrumId = useFormatIssueScrumId();
@@ -206,14 +208,17 @@ export default function IssueDetailPopup({
         "Cancel",
       )
     ) {
-      await deleteIssue({
+      const { modifiedTaskIds: modifiedTaskIdsIs } = await deleteIssue({
         projectId: projectId as string,
         issueId: issueId,
       });
 
-      await invalidateQueriesIssueDetails(projectId as string, [issueId]);
       await invalidateQueriesAllIssues(projectId as string);
       await invalidateQueriesAllTasks(projectId as string);
+      await invalidateQueriesTaskDetails(
+        projectId as string,
+        modifiedTaskIdsIs,
+      );
 
       await dismissPopup();
     }

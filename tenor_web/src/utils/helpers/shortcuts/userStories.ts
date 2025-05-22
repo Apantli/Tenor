@@ -17,18 +17,22 @@ import type {
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import { getGenericBacklogItemContext, getProjectRef } from "./general";
-import { TaskSchema, UserStorySchema } from "~/lib/types/zodFirebaseSchema";
+import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import type { TaskPreview, UserStoryDetail } from "~/lib/types/detailSchemas";
 import type { Firestore } from "firebase-admin/firestore";
-import { getTaskProgress, getTaskTable, getTasksRef } from "./tasks";
+import {
+  deleteTaskAndGetModified,
+  getTaskProgress,
+  getTaskTable,
+  getTasksRef,
+} from "./tasks";
 import { getSprint } from "./sprints";
 import { getRequirementsContext } from "./requirements";
 import admin from "firebase-admin";
 import { getProjectContext } from "./ai";
 import { FieldValue } from "firebase-admin/firestore";
 import type { DependenciesWithId } from "~/lib/types/userStoriesUtilTypes";
-import { updateDependency as updateTaskDependency } from "./tasks";
 
 /**
  * @function getUserStoriesRef
@@ -617,43 +621,14 @@ export const deleteUserStoryAndGetModified = async (
       const taskId = taskDoc.id;
       allModifiedTasks.add(taskId);
 
-      // Get the task data to find its dependencies
-      const task = TaskSchema.parse(taskDoc.data());
-      const dependencyIds = task.dependencyIds ?? [];
-      const requiredByIds = task.requiredByIds ?? [];
-
-      // Add all related tasks to modified set
-      dependencyIds.forEach((id) => allModifiedTasks.add(id));
-      requiredByIds.forEach((id) => allModifiedTasks.add(id));
-
-      // Update dependencies to remove this task
-      await Promise.all([
-        // Remove task from its dependencies' requiredBy arrays
-        ...dependencyIds.map((depId) =>
-          updateTaskDependency(
-            firestore,
-            projectId,
-            depId,
-            taskId,
-            "remove",
-            "requiredByIds",
-          ),
-        ),
-        // Remove task from its requiredBy's dependency arrays
-        ...requiredByIds.map((reqId) =>
-          updateTaskDependency(
-            firestore,
-            projectId,
-            reqId,
-            taskId,
-            "remove",
-            "dependencyIds",
-          ),
-        ),
-      ]);
-
-      // Mark the task as deleted
-      batch.update(taskDoc.ref, { deleted: true });
+      const tempModifiedTasks = await deleteTaskAndGetModified(
+        firestore,
+        projectId,
+        taskId,
+      );
+      tempModifiedTasks.forEach((task) => {
+        allModifiedTasks.add(task);
+      });
     }),
   );
 

@@ -12,8 +12,10 @@ import {
 export const useDeleteItemByType = () => {
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
+  const { mutateAsync: deleteIssue } = api.issues.deleteIssue.useMutation();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
   const { mutateAsync: deleteEpic } = api.epics.deleteEpic.useMutation();
+
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
@@ -22,13 +24,13 @@ export const useDeleteItemByType = () => {
 
   return async (
     projectId: string,
-    itemType: "US" | "EP" | "TS",
+    itemType: "US" | "EP" | "TS" | "IS",
     itemId: string,
     parentId?: string,
   ) => {
     switch (itemType) {
       case "US":
-        const { updatedUserStoryIds, updatedTaskIds: updatedTaskIds1 } =
+        const { updatedUserStoryIds, modifiedTaskIds: modifiedTaskIdsUs } =
           await deleteUserStory({
             projectId,
             userStoryId: itemId,
@@ -38,18 +40,29 @@ export const useDeleteItemByType = () => {
           updatedUserStoryIds,
         );
         await invalidateQueriesBacklogItems(projectId, itemType);
-        await invalidateQueriesTaskDetails(projectId, updatedTaskIds1);
+        await invalidateQueriesTaskDetails(projectId, modifiedTaskIdsUs);
+        await invalidateQueriesAllTasks(projectId);
+        break;
+
+      case "IS":
+        const { modifiedTaskIds: modifiedTaskIdsIs } = await deleteIssue({
+          projectId,
+          issueId: itemId,
+        });
+        await invalidateQueriesBacklogItems(projectId, itemType);
+        await invalidateQueriesTaskDetails(projectId, modifiedTaskIdsIs);
+        await invalidateQueriesAllTasks(projectId);
         break;
 
       case "TS":
-        const { updatedTaskIds: updatedTaskIds2 } = await deleteTask({
+        const { modifiedTaskIds } = await deleteTask({
           projectId,
           taskId: itemId,
         });
         if (parentId) {
           await invalidateQueriesAllTasks(projectId, [parentId]);
         }
-        await invalidateQueriesTaskDetails(projectId, updatedTaskIds2);
+        await invalidateQueriesTaskDetails(projectId, modifiedTaskIds);
         break;
 
       case "EP":

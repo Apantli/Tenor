@@ -217,13 +217,13 @@ export default function TaskDetailPopup({
         "Cancel",
       )
     ) {
-      const { updatedTaskIds } = await deleteTask({
+      const { modifiedTaskIds } = await deleteTask({
         projectId: projectId as string,
         taskId: taskId,
       });
 
       await invalidateQueriesAllTasks(projectId as string, [itemId]);
-      await invalidateQueriesTaskDetails(projectId as string, updatedTaskIds);
+      await invalidateQueriesTaskDetails(projectId as string, modifiedTaskIds);
 
       setShowDetail(false);
     }

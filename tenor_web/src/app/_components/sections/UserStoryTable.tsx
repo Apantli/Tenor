@@ -256,7 +256,7 @@ export default function UserStoryTable({
     );
 
     // Deletes in database
-    const { updatedUserStoryIds, updatedTaskIds } = await deleteUserStories({
+    const { updatedUserStoryIds, modifiedTaskIds } = await deleteUserStories({
       projectId: projectId as string,
       userStoryIds: ids,
     });
@@ -264,7 +264,7 @@ export default function UserStoryTable({
       projectId as string,
       updatedUserStoryIds,
     );
-    await invalidateQueriesTaskDetails(projectId as string, updatedTaskIds);
+    await invalidateQueriesTaskDetails(projectId as string, modifiedTaskIds);
     await invalidateQueriesAllTasks(projectId as string);
     await invalidateQueriesAllUserStories(projectId as string);
     return true;

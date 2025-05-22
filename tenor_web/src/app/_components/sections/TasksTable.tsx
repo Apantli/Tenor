@@ -402,12 +402,12 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       newTransformedTasks,
     );
 
-    const { updatedTaskIds } = await deleteTasks({
+    const { modifiedTaskIds } = await deleteTasks({
       projectId: projectId as string,
       taskIds: ids,
     });
 
-    await invalidateQueriesTaskDetails(projectId as string, updatedTaskIds);
+    await invalidateQueriesTaskDetails(projectId as string, modifiedTaskIds);
     await invalidateQueriesAllTasks(projectId as string, [itemId]);
     await invalidateQueriesBacklogItems(projectId as string, itemType);
 

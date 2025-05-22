@@ -301,7 +301,7 @@ export const userStoriesRouter = createTRPCRouter({
       return {
         success: true,
         updatedUserStoryIds: modifiedUserStories,
-        updatedTaskIds: modifiedTasks,
+        modifiedTaskIds: modifiedTasks,
       };
     }),
 
@@ -340,7 +340,7 @@ export const userStoriesRouter = createTRPCRouter({
       return {
         success: true,
         updatedUserStoryIds: Array.from(allModifiedUserStoryIds),
-        updatedTaskIds: Array.from(allModifiedTaskIds),
+        modifiedTaskIds: Array.from(allModifiedTaskIds),
       };
     }),
   /**
