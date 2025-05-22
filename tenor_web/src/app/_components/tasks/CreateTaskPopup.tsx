@@ -127,7 +127,7 @@ export function CreateTaskForm({
       return;
     }
 
-    const { taskId } = await createTask({
+    const { id: taskId } = await createTask({
       projectId: projectId as string,
       taskData: {
         name: createForm.name,
