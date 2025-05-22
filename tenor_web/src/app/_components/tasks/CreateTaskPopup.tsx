@@ -19,6 +19,7 @@ import type {
   TaskPreview,
   UserPreview,
 } from "~/lib/types/detailSchemas";
+import DependencyList from "./DependencyList";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -231,6 +232,21 @@ export function CreateTaskForm({
             className="w-full"
           />
         </div>
+
+        <DependencyList
+          label="Dependencies"
+          tasks={createForm.dependencies}
+          onChange={(dependencies) =>
+            setCreateForm({ ...createForm, dependencies })
+          }
+        />
+        <DependencyList
+          label="Required by"
+          tasks={createForm.requiredBy}
+          onChange={(requiredBy) =>
+            setCreateForm({ ...createForm, requiredBy })
+          }
+        />
 
         <div className="mt-4 flex justify-end">
           <PrimaryButton

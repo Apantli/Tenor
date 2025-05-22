@@ -151,7 +151,7 @@ export default function DependencyList({
           </div>
         </Dropdown>
       </div>
-      <div className="grid grid-flow-row grid-cols-2 gap-2">
+      <div className="grid grid-flow-row grid-cols-4 gap-2">
         {tasks
           ?.slice(
             0,
@@ -164,7 +164,7 @@ export default function DependencyList({
               onDelete={() =>
                 onChange(tasks.filter((ts) => !areEqual2(task, ts)))
               }
-              className="max-w-20 text-left"
+              className="text-left"
               data-tooltip-id="tooltip"
               data-tooltip-content={task.name}
               onClick={() => onClick?.(task.id)}
