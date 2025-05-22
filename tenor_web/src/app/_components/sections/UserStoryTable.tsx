@@ -370,7 +370,7 @@ export default function UserStoryTable({
         render(row, _, isGhost) {
           return (
             <button
-              className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
+              className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 if (isGhost) {
                   setSelectedGhostUS(row.id);

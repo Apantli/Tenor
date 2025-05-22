@@ -94,7 +94,7 @@ export default function PillPickerComponent({
       )}
       {filteredItems.length > 0 && (
         <div className="whitespate-nowrap w-52 text-left">
-          <div className="flex max-h-40 w-full flex-col overflow-y-auto overflow-x-hidden rounded-b-lg">
+          <div className="flex max-h-48 w-full flex-col overflow-y-auto overflow-x-hidden rounded-b-lg">
             {allowClear && searchValue === "" && (
               <DropdownButton
                 onClick={() => onChange({ id: "", label: "" })}

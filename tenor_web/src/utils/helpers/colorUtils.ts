@@ -29,6 +29,7 @@ export function generateRandomTagColor(): string {
 export const accentColorByCardType = {
   US: "bg-app-secondary",
   IS: "bg-yellow-500/80",
-  TS: "bg-cyan-700",
+  "US-TS": "bg-cyan-700",
+  "IS-TS": "bg-yellow-700/80",
   // IT: "bg-app-quaternary",
 };

@@ -243,4 +243,23 @@ export const useInvalidateQueriesAllStatuses = () => {
   };
 };
 
+export const useInvalidateQueriesAllSprints = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
+      projectId: projectId,
+    });
+  };
+};
+
+export const useInvalidateQueriesSingleSprint = () => {
+  const utils = api.useUtils();
+  return async (projectId: string, sprintId: string) => {
+    await utils.sprints.getSprint.invalidate({
+      projectId: projectId,
+      sprintId: sprintId,
+    });
+  };
+};
+
 // TODO: Add one for all other stuff and use it in code

@@ -1,7 +1,7 @@
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import Popup from "~/app/_components/Popup";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useEffect } from "react";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
@@ -102,18 +102,24 @@ export const ProjectEpics = () => {
     return false;
   };
 
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleCreateDismiss = () => {
     setShowSmallPopup(false);
-    setNewEpicName("");
-    setNewEpicDescription("");
+    timeoutRef.current = setTimeout(() => {
+      setNewEpicName("");
+      setNewEpicDescription("");
+    }, 300);
   };
 
   const handleEditDismiss = () => {
     setShowEditPopup(false);
-    setSelectedEpic(null);
-    setEditEpic(false);
-    setEditEpicName("");
-    setEditEpicDescription("");
+    timeoutRef.current = setTimeout(() => {
+      setSelectedEpic(null);
+      setEditEpic(false);
+      setEditEpicName("");
+      setEditEpicDescription("");
+    }, 300);
   };
 
   const handleCreateEpic = async () => {
@@ -140,62 +146,61 @@ export const ProjectEpics = () => {
   };
   return (
     <>
-      <div className="flex flex-col gap-5">
-        <div className="flex justify-between">
-          <h1 className="text-3xl font-semibold">Epics</h1>
-          {permission >= permissionNumbers.write && (
-            <PrimaryButton onClick={() => setShowSmallPopup(true)}>
-              + New Epic
-            </PrimaryButton>
-          )}
-        </div>
-        <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
-          <SearchBar
-            searchValue={searchText}
-            handleUpdateSearch={(e) => setSearchText(e.target.value)}
-            placeholder="Search epics"
-          ></SearchBar>
-        </div>
-        <div className="flex h-[calc(100vh-230px)] flex-col gap-4 overflow-y-auto">
-          {!isLoading && epics?.length === 0 && (
-            <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
-              <div className="flex flex-col items-center gap-5">
-                <span className="-mb-10 text-[100px] text-gray-500">
-                  <NoEpicsIcon fontSize="inherit" />
-                </span>
-                <h1 className="mb-5 text-3xl font-semibold text-gray-500">
-                  No epics yet
-                </h1>
-                {permission >= permissionNumbers.write && (
-                  <PrimaryButton
-                    onClick={() => {
-                      setShowSmallPopup(true);
-                    }}
-                  >
-                    Create your first epic
-                  </PrimaryButton>
-                )}
-              </div>
+      <div className="flex justify-between pb-5">
+        <h1 className="text-3xl font-semibold">Epics</h1>
+        {permission >= permissionNumbers.write && (
+          <PrimaryButton onClick={() => setShowSmallPopup(true)}>
+            + New Epic
+          </PrimaryButton>
+        )}
+      </div>
+      <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
+        <SearchBar
+          searchValue={searchText}
+          handleUpdateSearch={(e) => setSearchText(e.target.value)}
+          placeholder="Search epics"
+        ></SearchBar>
+      </div>
+      <div className="flex h-[calc(100vh-230px)] flex-col overflow-y-auto">
+        {!isLoading && epics?.length === 0 && (
+          <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
+            <div className="flex flex-col items-center gap-5">
+              <span className="-mb-10 text-[100px] text-gray-500">
+                <NoEpicsIcon fontSize="inherit" />
+              </span>
+              <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+                No epics yet
+              </h1>
+              {permission >= permissionNumbers.write && (
+                <PrimaryButton
+                  onClick={() => {
+                    setShowSmallPopup(true);
+                  }}
+                >
+                  Create your first epic
+                </PrimaryButton>
+              )}
             </div>
-          )}
-          {filteredEpics?.map((epic) => (
-            <div
-              onClick={() => {
-                setSelectedEpic(epic.id);
-                setShowEditPopup(true);
-              }}
-              key={epic.scrumId}
-              className="border-b-2 pb-4 hover:cursor-pointer"
-            >
-              <div className="flex flex-col gap-y-2">
-                <h3 className="text-xl font-semibold">
-                  {formatEpicScrumId(epic.scrumId)}
-                </h3>
-                <p className="text-xl">{epic.name}</p>
-              </div>
+          </div>
+        )}
+        {filteredEpics?.map((epic) => (
+          <div
+            onClick={() => {
+              clearTimeout(timeoutRef.current!);
+              setSelectedEpic(epic.id);
+              setShowEditPopup(true);
+            }}
+            key={epic.scrumId}
+            className="border-b-2 px-3 py-4 transition hover:cursor-pointer hover:bg-gray-100"
+          >
+            <div className="flex flex-col gap-y-2">
+              <h3 className="text-xl font-semibold">
+                {formatEpicScrumId(epic.scrumId)}
+              </h3>
+              <p className="text-xl">{epic.name}</p>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
 
       {/* Popup to create epic */}
@@ -254,7 +259,7 @@ export const ProjectEpics = () => {
       {/* Popup to view, modify, or delete epic */}
       <Popup
         show={showEditPopup}
-        className="h-[400px] min-w-[500px]"
+        className="h-[400px] w-[500px]"
         editMode={permission >= permissionNumbers.write ? editEpic : undefined}
         size="small"
         data-cy="popup-detail-epic"
@@ -285,6 +290,29 @@ export const ProjectEpics = () => {
                 });
                 return;
               }
+
+              await utils.epics.getEpic.cancel({
+                projectId: projectId as string,
+                epicId: epic?.id ?? "",
+              });
+
+              utils.epics.getEpic.setData(
+                {
+                  projectId: projectId as string,
+                  epicId: epic?.id ?? "",
+                },
+                (oldData) => {
+                  if (!oldData) return oldData;
+                  return {
+                    ...epic,
+                    name: editEpicName,
+                    description: editEpicDescription,
+                  };
+                },
+              );
+
+              setEditEpic(!editEpic);
+
               await createEpic({
                 projectId: projectId as string,
                 epicId: epic?.id,
@@ -366,7 +394,7 @@ export const ProjectEpics = () => {
           handleEditDismiss();
         }}
       >
-        <div className="grow pt-3">
+        <div className="grow">
           {epicLoading && (
             <div className="flex h-full w-full flex-col items-center justify-center">
               <LoadingSpinner color="primary" />
@@ -374,7 +402,7 @@ export const ProjectEpics = () => {
           )}
 
           {!epicLoading && editEpic && (
-            <>
+            <div className="flex flex-col gap-4">
               <InputTextField
                 label="Epic name"
                 type="text"
@@ -389,15 +417,17 @@ export const ProjectEpics = () => {
                 placeholder="Your epic description"
                 className="h-auto min-h-24 w-full resize-none"
               />
-            </>
+            </div>
           )}
 
           {!epicLoading && !editEpic && (
             <>
               {epic?.description == "" ? (
-                <p className="italic text-gray-500">No description provided.</p>
+                <p className="text-lg italic text-gray-500">
+                  No description provided.
+                </p>
               ) : (
-                <div className="markdown-content text-ld">
+                <div className="markdown-content text-lg">
                   <Markdown>{epic?.description ?? ""}</Markdown>
                 </div>
               )}
