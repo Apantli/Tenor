@@ -80,7 +80,6 @@ export const epicsRouter = createTRPCRouter({
           itemId: epicId,
           type: "EP",
           action: "update",
-          resolved: false,
         });
       } else {
         epicData.scrumId = await getEpicNewId(ctx.firestore, projectId);
@@ -96,7 +95,6 @@ export const epicsRouter = createTRPCRouter({
           ).id,
           type: "EP",
           action: "create",
-          resolved: false,
         });
       }
     }),
@@ -135,7 +133,6 @@ export const epicsRouter = createTRPCRouter({
         itemId: epicId,
         type: "EP",
         action: "delete",
-        resolved: false,
       });
     }),
 });

@@ -88,7 +88,6 @@ export const issuesRouter = createTRPCRouter({
           itemId: issue.id,
           type: "IS",
           action: "create",
-          resolved: false,
         });
         return { issueId: issue.id };
       } catch {
@@ -140,7 +139,6 @@ export const issuesRouter = createTRPCRouter({
         itemId: issueId,
         type: "IS",
         action: "update",
-        resolved: false,
       });
       await issueRef.update(issueData);
     }),
@@ -180,7 +178,6 @@ export const issuesRouter = createTRPCRouter({
         itemId: issueId,
         type: "IS",
         action: "delete",
-        resolved: false,
       });
 
       await batch.commit();
@@ -227,7 +224,6 @@ export const issuesRouter = createTRPCRouter({
         itemId: issueId,
         type: "IS",
         action: "update",
-        resolved: false,
       });
 
       await issueRef.update({
@@ -271,7 +267,6 @@ export const issuesRouter = createTRPCRouter({
         itemId: issueId,
         type: "IS",
         action: "update",
-        resolved: false,
       });
 
       await issueRef.update(updatedIssueData);

@@ -10,7 +10,6 @@ interface LogProjectActivityParams {
   userId: string;
   type: ActivityType;
   action: ActionType;
-  resolved: boolean;
 }
 
 export const LogProjectActivity = async ({
@@ -20,7 +19,6 @@ export const LogProjectActivity = async ({
   userId,
   type,
   action,
-  resolved = false,
 }: LogProjectActivityParams) => {
   try {
     const activeRef = firestore
@@ -33,7 +31,6 @@ export const LogProjectActivity = async ({
       userId,
       type,
       date: new Date(),
-      resolved,
       action,
     });
   } catch (error) {
