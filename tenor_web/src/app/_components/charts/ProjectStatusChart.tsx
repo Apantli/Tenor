@@ -3,7 +3,13 @@ import { createClassFromSpec, type VisualizationSpec } from "react-vega";
 import React from "react";
 import { cn } from "~/lib/utils";
 
-export const SampleProjectStatus = [
+export type ProjectStatusData = Array<{
+  category: string;
+  position: "Finished" | "Expected";
+  value: number;
+}>;
+
+export const SampleProjectStatus: ProjectStatusData = [
   { category: "Patch", position: "Finished", value: 28 },
   { category: "Patch", position: "Expected", value: 30 },
   { category: "Echo Trail", position: "Finished", value: 40 },
@@ -17,17 +23,13 @@ export const SampleProjectStatus = [
 const projectStatus: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
   description: "Project status bar chart",
-  width: 450,
-  height: 250,
-  autosize: "none",
-  padding: { top: 10, right: 10, bottom: 35, left: 55 },
-  title: {
-    text: "Project status",
-    anchor: "start",
-    fontSize: 16,
-    fontWeight: "bold",
-    dy: -10,
+  width: 450, // Default width that will be overridden
+  height: 220,
+  autosize: {
+    type: "fit",
+    contains: "padding",
   },
+  padding: { right: 10, left: 10 },
 
   data: [
     {
@@ -50,23 +52,36 @@ const projectStatus: VisualizationSpec = {
     {
       orient: "left",
       scale: "yscale",
-      tickSize: 0,
       labelPadding: 8,
       zindex: 1,
-      title: "Tickets Completed",
-      titleFontSize: 12,
-      titleFontWeight: "bold",
-      titlePadding: 10,
-      labelFontSize: 11,
       grid: true,
       gridOpacity: 0.1,
+      // Title
+      title: "Tickets Completed",
+      titleFontSize: 18,
+      titleFontWeight: 600,
+      titleColor: "#6B7280",
+      titlePadding: 10,
+      // Label
+      labelFontSize: 14,
+      labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
+      labelColor: "#6B7280",
+      labelFontWeight: 600,
+      // Ticks
+      tickCount: 5,
+      tickSize: 5,
+      tickColor: "#6B7280",
+      titleFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
     },
     {
       orient: "bottom",
       scale: "xscale",
+      labelFontWeight: 600,
       labelAngle: 0,
       labelAlign: "center",
-      labelFontSize: 11,
+      labelFontSize: 18,
+      labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
+      labelColor: "#6B7280",
       tickSize: 0,
       labelPadding: 10,
     },
@@ -104,8 +119,11 @@ const projectStatus: VisualizationSpec = {
       orient: "top-right",
       direction: "horizontal",
       symbolType: "square",
-      symbolSize: 80,
-      labelFontSize: 11,
+      symbolSize: 500,
+      labelFontSize: 18,
+      labelFontWeight: 600,
+      labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
+      labelColor: "#6B7280",
       padding: 10,
       offset: 5,
     },
@@ -153,44 +171,81 @@ const projectStatus: VisualizationSpec = {
             },
           },
         },
-        {
-          type: "text",
-          from: { data: "bars" },
-          encode: {
-            enter: {
-              y: { field: "y", offset: -5 },
-              x: { field: "x", offset: { field: "width", mult: 0.5 } },
-              align: { value: "center" },
-              baseline: { value: "bottom" },
-              text: { signal: "format(datum.value, '0.0f')" },
-              fontSize: { value: 10 },
-              fontWeight: { value: "normal" },
-              fill: { value: "#333333" },
-            },
-          },
-        },
       ],
     },
   ],
 };
 
-const BarChartComponent = createClassFromSpec({
-  mode: "vega",
-  spec: projectStatus,
-});
-
 type StatusBarChartProps = {
   data?: typeof SampleProjectStatus;
   className?: string;
+  domain?: [number, number];
 };
 
 export const StatusBarChart = ({
   data = SampleProjectStatus,
   className = "",
+  domain = [0, 60],
 }: StatusBarChartProps) => {
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = React.useState(0);
+
+  // Resize graph on width changes
+  React.useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // Subtract padding of chart area
+        const width = entry.contentRect.width - 20; // (10px on each side)
+        setContainerWidth(Math.max(width, 300));
+      }
+    });
+
+    resizeObserver.observe(containerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Modify spec with dynamic width and domain
+  const modifiedSpec = React.useMemo(() => {
+    const specCopy = JSON.parse(JSON.stringify(projectStatus));
+
+    // Update the y-scale domain
+    const yscaleIndex = specCopy.scales.findIndex(
+      (scale: any) => scale.name === "yscale",
+    );
+    if (yscaleIndex !== -1) {
+      specCopy.scales[yscaleIndex].domain = domain;
+    }
+
+    if (containerWidth > 0) {
+      specCopy.width = containerWidth;
+    }
+
+    return specCopy;
+  }, [domain, containerWidth]);
+
+  // Create the component with the modified spec
+  const BarChartComponent = React.useMemo(
+    () =>
+      createClassFromSpec({
+        mode: "vega",
+        spec: modifiedSpec,
+      }),
+    [modifiedSpec],
+  );
+
   return (
-    <div className={cn("flex flex-col rounded-lg border p-4", className)}>
-      <BarChartComponent data={{ table: data }} actions={false} />
+    <div
+      ref={containerRef}
+      className={cn(
+        "mx-auto flex h-full w-full flex-col rounded-lg p-4",
+        className,
+      )}
+    >
+      {containerWidth > 0 && (
+        <BarChartComponent data={{ table: data }} actions={false} />
+      )}
     </div>
   );
 };

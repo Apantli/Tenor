@@ -440,6 +440,19 @@ export const projectsRouter = createTRPCRouter({
         );
       }
 
+      const projectsWithName = await Promise.all(
+        topProjects.topProjects.map(async (project) => {
+          const projectData = await getProject(
+            ctx.firestore,
+            project.projectId,
+          );
+          return {
+            ...project,
+            name: projectData.name,
+          };
+        }),
+      );
+      topProjects.topProjects = projectsWithName;
       return topProjects;
     }),
   recomputeTopProjectStatus: protectedProcedure

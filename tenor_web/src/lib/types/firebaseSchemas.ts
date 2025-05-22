@@ -233,6 +233,7 @@ export interface ProjectStatus {
   projectId: string;
   taskCount: number;
   completedCount: number;
+  name?: string;
 }
 
 export interface ProjectStatusCache {
