@@ -842,7 +842,7 @@ export default function RequirementsTable() {
           show={showSmallPopup}
           reduceTopPadding={requirementEditedData === null}
           size="small"
-          className="h-[700px] w-[600px]"
+          className="max-h-[700px] w-[600px]"
           disablePassiveDismiss={!requirementSaved}
           dismiss={async () => {
             if (!requirementSaved) {
@@ -958,7 +958,8 @@ export default function RequirementsTable() {
           footerClassName="ml-0"
           footer={
             <>
-              {requirementEdited === null && selectedReq !== "" ? (
+              {(requirementEdited === null && selectedReq !== "") ||
+              requirementEditedData === null ? (
                 <></>
               ) : (
                 <div
@@ -970,11 +971,7 @@ export default function RequirementsTable() {
                       <label className="font-semibold">Type</label>
                       <RequirementTypePicker
                         disabled={permission < permissionNumbers.write}
-                        type={
-                          requirementEditedData
-                            ? requirementEditedData.requirementType
-                            : newRequirement.requirementType
-                        }
+                        type={requirementEditedData.requirementType}
                         onChange={async (type) => {
                           if (ghostRequirementEdited) {
                             updateGhostRow(
@@ -1023,11 +1020,7 @@ export default function RequirementsTable() {
                       <label className="font-semibold">Priority</label>
                       <PriorityPicker
                         disabled={permission < permissionNumbers.write}
-                        priority={
-                          requirementEditedData
-                            ? requirementEditedData.priority
-                            : newRequirement.priority
-                        }
+                        priority={requirementEditedData.priority}
                         onChange={async (priority) => {
                           if (ghostRequirementEdited) {
                             updateGhostRow(
@@ -1076,11 +1069,7 @@ export default function RequirementsTable() {
                       <label className="font-semibold">Focus</label>
                       <RequirementFocusPicker
                         disabled={permission < permissionNumbers.write}
-                        focus={
-                          requirementEditedData
-                            ? requirementEditedData.requirementFocus
-                            : newRequirement.requirementFocus
-                        }
+                        focus={requirementEditedData.requirementFocus}
                         onChange={async (focus) => {
                           if (ghostRequirementEdited) {
                             updateGhostRow(
@@ -1126,8 +1115,8 @@ export default function RequirementsTable() {
                       />
                     </div>
                   </div>
-                  {requirementEditedData ? (
-                    requirementEdited ? (
+                  {requirementEditedData &&
+                    (requirementEdited ? (
                       permission < permissionNumbers.write ? null : (
                         <DeleteButton
                           className="ml-auto"
@@ -1179,19 +1168,20 @@ export default function RequirementsTable() {
                           </PrimaryButton>
                         </div>
                       )
-                    )
-                  ) : (
-                    <PrimaryButton
-                      onClick={async () => {
-                        await handleCreateRequirement();
-                      }}
-                      loading={isPending}
-                      data-cy="create-requirement-button"
-                    >
-                      Create Requirement
-                    </PrimaryButton>
-                  )}
+                    ))}
                 </div>
+              )}
+              {requirementEditedData === null && (
+                <PrimaryButton
+                  className="ml-auto"
+                  onClick={async () => {
+                    await handleCreateRequirement();
+                  }}
+                  loading={isPending}
+                  data-cy="create-requirement-button"
+                >
+                  Create Requirement
+                </PrimaryButton>
               )}
             </>
           }
