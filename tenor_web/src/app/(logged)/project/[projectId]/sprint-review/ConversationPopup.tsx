@@ -339,8 +339,8 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
                 <h1 className="animate-hide-slow text-center text-2xl font-semibold text-app-primary">
                   Conversation paused
                 </h1>
-                <p className="mx-auto w-[450px] text-center text-lg text-app-text">
-                  Click the play button continue from where you left off.
+                <p className="mx-auto w-[500px] text-center text-lg text-app-text">
+                  Click the play button to continue from where you left off.
                 </p>
               </div>
               <SoundPlayer
