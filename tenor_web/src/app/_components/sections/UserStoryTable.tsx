@@ -146,6 +146,8 @@ export default function UserStoryTable({
                 statusId: task.status?.id ?? "",
                 deleted: false,
                 size: task.size,
+                dependencyIds: task.dependencies.map((dep) => dep.id),
+                requiredByIds: task.requiredBy.map((dep) => dep.id),
               },
             });
           }
