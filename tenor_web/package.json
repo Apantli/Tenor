@@ -35,7 +35,7 @@
     "@google-cloud/storage": "^7.15.2",
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
-    "@neurosity/pipes": "^5.2.1",
+    "@neurosity/pipes": "^3.0.0",
     "@remixicon/react": "^4.6.0",
     "@supabase/supabase-js": "^2.49.1",
     "@t3-oss/env-nextjs": "^0.10.1",

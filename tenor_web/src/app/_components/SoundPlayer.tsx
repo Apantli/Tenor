@@ -5,9 +5,16 @@ import PauseIcon from "@mui/icons-material/Pause";
 interface Props {
   soundSrc: string;
   hideTime?: boolean;
+  setPlaying?: (playing: boolean) => void;
+  onFinish?: () => void;
 }
 
-export default function SoundPlayer({ soundSrc, hideTime }: Props) {
+export default function SoundPlayer({
+  soundSrc,
+  hideTime,
+  setPlaying,
+  onFinish,
+}: Props) {
   const ringCount = 10;
   const rings = useMemo(
     () =>
@@ -21,13 +28,14 @@ export default function SoundPlayer({ soundSrc, hideTime }: Props) {
     [],
   );
 
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlayingInner] = useState(false);
   const audioRef = React.useRef<HTMLAudioElement>(null);
   const currentTimeRef = React.useRef<HTMLSpanElement>(null);
   const durationRef = React.useRef<HTMLSpanElement>(null);
 
   const togglePlay = () => {
-    setPlaying((prev) => !prev);
+    setPlayingInner((prev) => !prev);
+    setPlaying?.(!playing);
     if (audioRef.current) {
       if (playing) {
         audioRef.current.pause();
@@ -50,7 +58,8 @@ export default function SoundPlayer({ soundSrc, hideTime }: Props) {
     };
 
     const endPlaying = () => {
-      setPlaying(false);
+      setPlayingInner(false);
+      onFinish?.(false);
     };
 
     audio.addEventListener("timeupdate", showTimeInUI);

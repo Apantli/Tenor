@@ -47,6 +47,7 @@ export default {
         "spin-slow": "spin var(--animation-speed) linear infinite",
         "pulse-and-grow":
           "pulse-and-grow var(--animation-speed) ease-in-out infinite",
+        "hide-slow": "hide-slow 5s ease-in-out",
       },
     },
   },
