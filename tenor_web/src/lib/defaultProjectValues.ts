@@ -194,3 +194,12 @@ export const noTag: Tag = {
   color: "#CCCCCC",
   deleted: false,
 };
+
+export const defaultActivity = [
+  {
+    itemId: "new project created",
+    user: "",
+    completitionDate: "",
+    resolved: false
+  },
+]
