@@ -67,6 +67,7 @@ export const RoleSchema = z.object({
   scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
+  reviews: PermissionSchema // sprint reviews
 });
 
 export const BasicInfoSchema = z.object({

@@ -49,7 +49,7 @@ export default function RoleTable({
     id: { visible: false },
     label: {
       label: "Name",
-      width: 140,
+      width: 120,
     },
     backlog: {
       label: "Backlog",
@@ -164,6 +164,30 @@ export default function RoleTable({
               handleEditTabPermission(
                 row.id,
                 "performance",
+                parseInt(item.id) as Permission,
+              );
+            }}
+          />
+        );
+      },
+    },
+    reviews: {
+      label: "Sprint Reviews",
+      width: defaultWidth,
+      render: (row) => {
+        return (
+          <PillPickerComponent
+            label={permissionLabels[row.reviews]}
+            selectedItem={{
+              id: row.reviews.toString(),
+              label: permissionLabels[row.reviews],
+            }}
+            hideSearch={true}
+            allItems={permissionItems}
+            onChange={(item: { id: string; label: string }): void => {
+              handleEditTabPermission(
+                row.id,
+                "reviews",
                 parseInt(item.id) as Permission,
               );
             }}

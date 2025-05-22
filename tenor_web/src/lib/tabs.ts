@@ -58,7 +58,7 @@ export const tabsMetaInformation = {
     title: "Sprint Review",
     link: "/sprint-review",
     enabled: true,
-    flags: ["sprints"],
+    flags: ["reviews"],
   }
 };
 export const tabs = [

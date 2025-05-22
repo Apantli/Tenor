@@ -13,6 +13,7 @@ export const generalPermissions: FlagsRequired = {
     "scrumboard",
     "performance",
     "sprints",
+    "reviews",
   ],
 
   optimistic: true,
@@ -36,6 +37,7 @@ export const usersPermissions: FlagsRequired = {
     "scrumboard",
     "performance",
     "sprints",
+    "reviews",
   ],
 
   optimistic: true,
@@ -53,5 +55,10 @@ export const performancePermissions: FlagsRequired = {
 
 export const sprintPermissions: FlagsRequired = {
   flags: ["sprints", "settings"],
+  optimistic: true,
+};
+
+export const reviewPermissions: FlagsRequired = {
+  flags: ["reviews"],
   optimistic: true,
 };

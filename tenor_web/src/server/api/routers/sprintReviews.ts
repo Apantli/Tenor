@@ -11,7 +11,7 @@
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { getPreviousSprint } from "~/utils/helpers/shortcuts/sprints";
-import { sprintPermissions } from "~/lib/permission";
+import { reviewPermissions } from "~/lib/permission";
 
 type ReviewAnswers = Record<string, string>;
 
@@ -24,7 +24,7 @@ type ReviewAnswers = Record<string, string>;
  *
  * @http GET /api/trpc/sprintReviews.getReviewId
  */
-export const getReviewIdProcedure = roleRequiredProcedure(sprintPermissions, "read")
+export const getReviewIdProcedure = roleRequiredProcedure(reviewPermissions, "read")
   .input(z.object({ sprintId: z.string() }))
   .query(async ({ ctx, input }) => {
     const response = await ctx.supabase.rpc("get_review_id", {
@@ -38,7 +38,7 @@ export const getReviewIdProcedure = roleRequiredProcedure(sprintPermissions, "re
     return response.data as number;
   });
 
-export const getReviewAnswersProcedure = roleRequiredProcedure(sprintPermissions, "read")
+export const getReviewAnswersProcedure = roleRequiredProcedure(reviewPermissions, "read")
   .input(z.object({ reviewId: z.number(), userId: z.string() }))
   .query(async ({ ctx, input }) => {
     const response = await ctx.supabase.rpc("get_review_answers", {
@@ -51,7 +51,7 @@ export const getReviewAnswersProcedure = roleRequiredProcedure(sprintPermissions
     return response.data as ReviewAnswers;
   });
 
-export const saveReviewAnswersProcedure = roleRequiredProcedure(sprintPermissions, "write")
+export const saveReviewAnswersProcedure = roleRequiredProcedure(reviewPermissions, "write")
   .input(
     z.object({
       reviewId: z.number(),
@@ -80,7 +80,7 @@ export const sprintReviewsRouter = createTRPCRouter({
   getReviewId: getReviewIdProcedure,
   getReviewAnswers: getReviewAnswersProcedure,
   saveReviewAnswers: saveReviewAnswersProcedure,
-  getPreviousSprint: roleRequiredProcedure(sprintPermissions, "read")
+  getPreviousSprint: roleRequiredProcedure(reviewPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const previousSprint = await getPreviousSprint(
