@@ -16,6 +16,7 @@ export interface BasicNodeData {
   scrumId: number;
   itemType: "US" | "EP" | "US-TS" | "IS-TS";
   title: string;
+  parentId?: string; // Only for tasks
 }
 
 // This are the props that are passed to the BasicNode component. This is what the frontend needs to know to display the nodes.

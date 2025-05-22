@@ -669,6 +669,7 @@ ${tagContext}\n\n`;
             showDeleteButton: true,
             showEditButton: true,
             collapsible: false,
+            parentId: task.itemId,
           }, // See BasicNodeData for properties
           type: "basic", // see nodeTypes
           deletable: false,

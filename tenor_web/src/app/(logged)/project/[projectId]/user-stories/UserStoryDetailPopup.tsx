@@ -79,6 +79,9 @@ export default function UserStoryDetailPopup({
   const [unsavedTasks, setUnsavedTasks] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [taskToOpen, setTaskToOpen] = useState<string>(
+    taskIdToOpenImmediately ?? "",
+  );
 
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
 
@@ -629,7 +632,8 @@ export default function UserStoryDetailPopup({
               });
             }}
             setUnsavedTasks={setUnsavedTasks}
-            taskIdToOpenImmediately={taskIdToOpenImmediately}
+            taskToOpen={taskToOpen}
+            setTaskToOpen={setTaskToOpen}
             itemData={
               userStoryData ? userStoryDataToItemData(userStoryData) : undefined
             }

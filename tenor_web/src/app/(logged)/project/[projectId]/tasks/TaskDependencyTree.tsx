@@ -318,6 +318,13 @@ export default function TaskDependencyTree() {
 
   // #endregion
 
+  // #region Utils
+
+  const parentId = detailItemId.split("/")[0];
+  const taskId = detailItemId.split("/")[1];
+
+  // #endregion
+
   return (
     <div className="mt-3 h-[calc(100vh-250px)] w-full">
       {isLoadingDependencies && (
@@ -379,13 +386,14 @@ export default function TaskDependencyTree() {
         </ReactFlow>
       )}
 
-      {/* {renderDetail && (
+      {renderDetail && parentId && taskId && (
         <UserStoryDetailPopup
           showDetail={showDetail}
-          userStoryId={detailItemId}
+          userStoryId={parentId}
           setUserStoryId={setDetailItemId}
+          taskIdToOpenImmediately={taskId}
         />
-      )} */}
+      )}
     </div>
   );
 }
