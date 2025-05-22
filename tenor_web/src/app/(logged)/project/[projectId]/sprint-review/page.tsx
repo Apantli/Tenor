@@ -12,6 +12,7 @@ import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import CheckIcon from "@mui/icons-material/Check";
 
 export default function ProjectSprintReviewPage() {
   const { user } = useFirebaseAuth();
@@ -128,7 +129,10 @@ export default function ProjectSprintReviewPage() {
           />
 
           {showMessageOverlay && (
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-lg bg-white bg-opacity-75 p-4 text-center backdrop-blur-sm">
+            <div className="absolute bottom-1 left-1 right-1 top-1 z-10 flex flex-col items-center justify-center rounded-lg bg-white bg-opacity-75 p-4 text-center backdrop-blur-sm">
+              <div className="mb-4 flex items-center justify-center">
+                <CheckIcon sx={{ fontSize: 60 }} />
+              </div>
               <p className="mb-4 text-xl font-semibold">
                 You have completed {answeredQuestionsCount}/3 answers for your
                 happiness survey.
