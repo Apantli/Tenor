@@ -114,6 +114,7 @@ export const UserStorySchema = BacklogItemSchema.extend({
   name: z
     .string()
     .describe("Small (5 word maximum) description of the user story"),
+  // .min(1, "Name is required")
   description: z
     .string()
     .describe(

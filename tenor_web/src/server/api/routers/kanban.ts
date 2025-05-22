@@ -40,9 +40,14 @@ export const kanbanRouter = createTRPCRouter({
           itemType,
           itemId,
         } = task;
+        const cardTypes = {
+          US: "US-TS",
+          IS: "IS-TS",
+          IT: "IT-TS",
+        };
         return {
           id,
-          cardType: "TS",
+          cardType: cardTypes[itemType],
           scrumId,
           name,
           description,

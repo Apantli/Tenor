@@ -8,7 +8,7 @@ import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
-
+import Check from "@mui/icons-material/Check";
 interface EditableBoxProps {
   options: WithId<UserPreview>[];
   selectedOption?: WithId<UserPreview> | undefined;
@@ -85,11 +85,16 @@ export function UserPicker({
     return (
       <DropdownButton
         onClick={() => handleSelect(option)}
-        className="flex items-center gap-2 border-b border-app-border px-2 py-2 last:border-none"
+        className="relative flex items-center gap-2 border-b border-app-border px-2 py-2 pl-8 last:border-none"
         key={option.id}
       >
+        {option.id === selectedOption?.id && (
+          <div className="absolute left-2 text-lg">
+            <Check fontSize="inherit" />
+          </div>
+        )}
         <ProfilePicture user={option} hideTooltip />
-        <span>{option.displayName}</span>
+        <span className="w-full truncate">{option.displayName}</span>
       </DropdownButton>
     );
   };

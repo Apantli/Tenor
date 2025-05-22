@@ -10,7 +10,7 @@ interface Props {
   showCheckbox?: boolean;
   dndId: string;
   lastDraggedItemId: string | null;
-  cardType?: "US" | "IS" | "IT" | "TS";
+  cardType?: "US" | "IS" | "IT" | "US-TS" | "IS-TS" | "IT-TS";
   disabled?: boolean;
 }
 
