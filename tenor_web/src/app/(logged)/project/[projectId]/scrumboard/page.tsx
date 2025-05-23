@@ -16,7 +16,7 @@ import {
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
 import SearchBar from "~/app/_components/SearchBar";
-import AdvancedSearch, { type RegexItem } from "./AdvancedSearch";
+import type { RegexItem } from "./AdvancedSearch";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
 
@@ -45,7 +45,7 @@ export default function ProjectKanban() {
       "Tasks",
   );
   const [filter, setFilter] = useState("");
-  const [regex, setRegex] = useState<RegexItem[]>([]);
+  const [regex, _setRegex] = useState<RegexItem[]>([]);
 
   // HANDLES
   const onListAdded = async () => {
@@ -63,7 +63,6 @@ export default function ProjectKanban() {
             searchValue={filter}
             placeholder="Search..."
           />
-          <AdvancedSearch regex={regex} setRegex={setRegex} />
         </div>
 
         <div className="min-w-[300px]">
