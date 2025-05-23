@@ -20,7 +20,7 @@ export default function ProjectPage() {
         <ProjectStatus className="h-[38vh]" />
         {/* FIXME: Remove when recent activity is ready */}
         <div
-          className="mt-2 h-[38vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
+          className="mt-4 h-[38vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
           style={{ backgroundImage: 'url("/recent_activity_mockup.png")' }}
           aria-label="Dashboard mockup"
         />

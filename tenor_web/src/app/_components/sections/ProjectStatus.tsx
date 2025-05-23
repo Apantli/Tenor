@@ -70,11 +70,11 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
       ) : (
         <>
           {data?.topProjects.length === 0 || maxTasks === 0 ? (
-            <div className="mx-auto my-auto flex flex-col items-center gap-y-3">
-              <span className="mx-auto -mb-10 text-[100px] text-gray-500">
+            <div className="mx-auto my-auto flex flex-col items-center">
+              <span className="mx-auto text-[100px] text-gray-500">
                 <BarChartIcon fontSize="inherit" />
               </span>
-              <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+              <h1 className="mb-5 text-xl font-semibold text-gray-500">
                 No projects contain an active sprint with assigned tasks
               </h1>
             </div>
