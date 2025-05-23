@@ -42,6 +42,7 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import type { Edge, Node } from "@xyflow/react";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -144,6 +145,15 @@ export const userStoriesRouter = createTRPCRouter({
           });
         }),
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStory.id,
+        type: "US",
+        action: "create",
+      });
 
       return {
         id: userStory.id,
@@ -267,6 +277,16 @@ export const userStoriesRouter = createTRPCRouter({
       await getUserStoryRef(ctx.firestore, projectId, userStoryId).update(
         userStoryData,
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "update",
+      });
+
       return {
         updatedUserStoryIds: [
           ...addedDependencies,
@@ -354,6 +374,15 @@ export const userStoriesRouter = createTRPCRouter({
       });
       await batch.commit();
 
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "delete",
+      });
+
       return {
         success: true,
         updatedUserStoryIds: modifiedUserStories,
@@ -402,6 +431,15 @@ export const userStoriesRouter = createTRPCRouter({
         priorityId: priorityId,
         size: size,
         statusId: statusId,
+      });
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "update",
       });
     }),
   /**
@@ -602,6 +640,15 @@ export const userStoriesRouter = createTRPCRouter({
         "add",
         "requiredByIds",
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: dependencyUsId,
+        type: "US",
+        action: "update",
+      });
       return { success: true };
     }),
 
@@ -642,6 +689,16 @@ export const userStoriesRouter = createTRPCRouter({
         "remove",
         "requiredByIds",
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: dependencyUsId,
+        type: "US",
+        action: "delete",
+      });
+
       return { success: true };
     }),
 

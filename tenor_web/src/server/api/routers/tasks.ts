@@ -40,6 +40,7 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 import { backlogPermissions } from "~/lib/permission";
 import { FieldValue } from "firebase-admin/firestore";
 
@@ -112,6 +113,15 @@ export const tasksRouter = createTRPCRouter({
           });
         }),
       );
+
+      await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: task.id,
+          type: "TS",
+          action: "create",
+        });
 
       return {
         id: task.id,
@@ -276,6 +286,15 @@ export const tasksRouter = createTRPCRouter({
         }),
       );
 
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskId,
+        type: "TS",
+        action: "update",
+      });
+
       await getTaskRef(ctx.firestore, projectId, taskId).update(taskData);
       return {
         updatedTaskds: [
@@ -307,6 +326,14 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, statusId } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "update",
+      });
       await taskRef.update({ statusId });
     }),
 
@@ -364,6 +391,15 @@ export const tasksRouter = createTRPCRouter({
           );
         }),
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "delete",
+      });
 
       // Mark the task as deleted
       await taskRef.update({ deleted: true });
