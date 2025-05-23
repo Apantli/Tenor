@@ -1,6 +1,6 @@
 // Use this hooks to invalidate the queries related to a specific item, task, project, etc.
 
-import type { itemTypes } from "~/lib/types/firebaseSchemas";
+import type { BacklogItemType } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export const useInvalidateQueriesAllTasks = () => {
@@ -165,7 +165,7 @@ export const useInvalidateQueriesBacklogItems = () => {
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesAllEpics = useInvalidateQueriesAllEpics();
 
-  return async (projectId: string, itemType: itemTypes | "EP") => {
+  return async (projectId: string, itemType: BacklogItemType | "EP") => {
     switch (itemType) {
       case "US":
         await invalidateQueriesAllUserStories(projectId);
@@ -183,7 +183,7 @@ export const useInvalidateQueriesBacklogItems = () => {
 
 interface CondenseItem {
   itemId: string;
-  itemType: itemTypes | "TS";
+  itemType: BacklogItemType | "TS";
 }
 
 export const useInvalidateQueriesBacklogItemDetails = () => {

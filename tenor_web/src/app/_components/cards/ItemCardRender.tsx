@@ -16,8 +16,7 @@ export default function ItemCardRender({
   showBackground = false,
   scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
-  const accentColor =
-    accentColorByCardType[item.cardType as keyof typeof accentColorByCardType];
+  const accentColor = accentColorByCardType[item.cardType];
   return (
     <div
       className={cn({

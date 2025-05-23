@@ -12,6 +12,8 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import {
   permissionNumbers,
+  type TaskType,
+  type UserStoryType,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
@@ -37,11 +39,11 @@ export default function BasicNode({
   data: { scrumId, itemType, title, showDeleteButton, parentId },
   id,
 }: Props) {
-  let plainItemType = "US" as "US" | "EP" | "TS";
+  let plainItemType = "US" as UserStoryType | TaskType;
   if (itemType.includes("-")) {
-    plainItemType = itemType.split("-")[1] as "US" | "EP" | "TS";
+    plainItemType = itemType.split("-")[1] as UserStoryType | TaskType;
   } else {
-    plainItemType = itemType as "US" | "EP" | "TS";
+    plainItemType = itemType as UserStoryType | TaskType;
   }
 
   // #region Hooks
@@ -98,8 +100,7 @@ export default function BasicNode({
   // #endregion
 
   // #region General
-  const accentColor =
-    accentColorByCardType[itemType as keyof typeof accentColorByCardType];
+  const accentColor = accentColorByCardType[itemType];
   // #endregion
 
   return (

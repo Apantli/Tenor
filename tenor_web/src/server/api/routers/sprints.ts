@@ -14,7 +14,11 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import { BacklogItemSchema, SprintSchema } from "~/lib/types/zodFirebaseSchema";
+import {
+  BacklogItemSchema,
+  BacklogItemZodType,
+  SprintSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import {
   getCurrentSprint,
@@ -233,7 +237,7 @@ export const sprintsRouter = createTRPCRouter({
         projectId: z.string(),
         sprintId: z.string().optional(),
         items: z.array(
-          z.object({ id: z.string(), itemType: z.enum(["US", "IS"]) }),
+          z.object({ id: z.string(), itemType: BacklogItemZodType }),
         ),
       }),
     )
@@ -306,7 +310,7 @@ export const sprintsRouter = createTRPCRouter({
         }
       }
     }),
-  
+
   getActiveSprint: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -316,5 +320,5 @@ export const sprintsRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "No active sprint" });
       }
       return currentSprint;
-    })
+    }),
 });

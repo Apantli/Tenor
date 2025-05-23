@@ -16,7 +16,11 @@ import {
   roleRequiredProcedure,
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { BacklogItemSchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
+import {
+  BacklogItemSchema,
+  BacklogItemZodType,
+  TaskSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
   deleteTaskAndGetModified,
@@ -401,7 +405,7 @@ export const tasksRouter = createTRPCRouter({
         .object({
           projectId: z.string(),
           itemId: z.string(),
-          itemType: z.enum(["US", "IS", "IT"]),
+          itemType: BacklogItemZodType,
           amount: z.number(),
           prompt: z.string(),
         })
@@ -410,7 +414,7 @@ export const tasksRouter = createTRPCRouter({
             projectId: z.string(),
             amount: z.number(),
             prompt: z.string(),
-            itemType: z.enum(["US", "IS", "IT"]),
+            itemType: BacklogItemZodType,
             itemDetail: BacklogItemSchema.omit({
               scrumId: true,
               deleted: true,
@@ -468,9 +472,7 @@ export const tasksRouter = createTRPCRouter({
       } else {
         let extra = "";
         const itemData = input.itemDetail;
-        if (input.itemType === "IT") {
-          itemTypeName = "backlog item";
-        } else if (input.itemType === "IS") {
+        if (input.itemType === "IS") {
           itemTypeName = "issue";
           extra = `- steps to recreate: ${itemData.extra}`;
         } else {

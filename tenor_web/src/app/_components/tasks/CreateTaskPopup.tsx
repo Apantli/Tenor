@@ -10,7 +10,12 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import type { StatusTag, WithId, Size } from "~/lib/types/firebaseSchemas";
+import type {
+  StatusTag,
+  WithId,
+  Size,
+  BacklogItemType,
+} from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
@@ -24,7 +29,7 @@ import { TRPCClientError } from "@trpc/client";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
-  itemType: "US" | "IS" | "IT";
+  itemType: BacklogItemType;
   itemId: string;
   addTaskToGhost?: (task: TaskDetail) => void;
 }

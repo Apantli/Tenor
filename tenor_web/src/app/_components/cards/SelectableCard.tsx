@@ -3,6 +3,7 @@ import { cn } from "~/lib/utils";
 import InputCheckbox from "../inputs/InputCheckbox";
 import { useDraggable } from "@dnd-kit/react";
 import { accentColorByCardType } from "~/utils/helpers/colorUtils";
+import type { BacklogItemAndTaskDetailType } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   selected: boolean;
@@ -10,7 +11,7 @@ interface Props {
   showCheckbox?: boolean;
   dndId: string;
   lastDraggedItemId: string | null;
-  cardType?: "US" | "IS" | "IT" | "US-TS" | "IS-TS" | "IT-TS";
+  cardType?: BacklogItemAndTaskDetailType;
   disabled?: boolean;
 }
 
@@ -61,10 +62,7 @@ export default function SelectableCard({
     }
   }, [lastDraggedItemId, dndId]);
 
-  const accentColor =
-    accentColorByCardType[
-      (cardType ?? "US") as keyof typeof accentColorByCardType
-    ];
+  const accentColor = accentColorByCardType[cardType ?? "US"];
 
   return (
     <div

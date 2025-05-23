@@ -34,7 +34,10 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import { permissionNumbers } from "~/lib/types/firebaseSchemas";
+import {
+  type BacklogItemType,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
@@ -320,10 +323,11 @@ export default function TaskDependencyTree() {
   // #endregion
 
   // #region Utils
-  const urlParams = detailItemId.split("-");
-  const parentId = urlParams[0];
-  const taskId = urlParams[1];
-  const parentType = urlParams[2] as "US" | "IS";
+  const [parentId, taskId, parentType] = detailItemId.split("-") as [
+    string,
+    string,
+    BacklogItemType,
+  ];
 
   // #endregion
 

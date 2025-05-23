@@ -27,7 +27,10 @@ import {
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
-import { permissionNumbers } from "~/lib/types/firebaseSchemas";
+import {
+  type BacklogItemType,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import CreateSprintPopup from "./CreateSprintPopup";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
@@ -278,7 +281,7 @@ export default function ProjectSprints() {
       sprintId,
       items: itemIds.map((itemId) => ({
         id: itemId,
-        itemType: items[itemId]!.itemType as "US" | "IS",
+        itemType: items[itemId]!.itemType as BacklogItemType,
       })),
     });
 
@@ -291,7 +294,7 @@ export default function ProjectSprints() {
       projectId as string,
       itemIds.map((id) => ({
         itemId: id,
-        itemType: items[id]!.itemType as "US" | "IS",
+        itemType: items[id]!.itemType as BacklogItemType,
       })),
     );
   };
@@ -398,7 +401,7 @@ export default function ProjectSprints() {
       sprintId,
       items: itemIds.map((itemId) => ({
         id: itemId,
-        itemType: items[itemId]!.itemType as "US" | "IS",
+        itemType: items[itemId]!.itemType as BacklogItemType,
       })),
     });
 
@@ -414,7 +417,7 @@ export default function ProjectSprints() {
         projectId as string,
         itemIds.map((id) => ({
           itemId: id,
-          itemType: items[id]!.itemType as "US" | "IS",
+          itemType: items[id]!.itemType as BacklogItemType,
         })),
       );
     }
@@ -596,7 +599,7 @@ export default function ProjectSprints() {
             };
             return (
               <ItemCardRender
-                item={{ ...item, cardType: item.itemType as "US" | "IS" }}
+                item={{ ...item, cardType: item.itemType as BacklogItemType }}
                 showBackground={true}
                 scrumIdFormatter={() =>
                   item.itemType === "US"

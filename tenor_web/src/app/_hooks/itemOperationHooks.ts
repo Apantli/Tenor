@@ -7,6 +7,7 @@ import {
   useInvalidateQueriesTaskDetails,
   useInvalidateQueriesUserStoriesDetails,
 } from "./invalidateHooks";
+import type { AllBasicItemType } from "~/lib/types/firebaseSchemas";
 
 // This also does all the necessary invalidations
 export const useDeleteItemByType = () => {
@@ -24,7 +25,7 @@ export const useDeleteItemByType = () => {
 
   return async (
     projectId: string,
-    itemType: "US" | "EP" | "TS" | "IS",
+    itemType: AllBasicItemType,
     itemId: string,
     parentId?: string,
   ) => {

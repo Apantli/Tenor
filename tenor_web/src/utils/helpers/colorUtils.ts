@@ -1,3 +1,5 @@
+import type { BacklogItemAndTaskDetailType } from "~/lib/types/firebaseSchemas";
+
 export const acceptableTagColors = [
   "#d9543d",
   "#bf5513",
@@ -26,7 +28,10 @@ export function generateRandomTagColor(): string {
   return acceptableTagColors[randomIndex] ?? "#d9543d";
 }
 
-export const accentColorByCardType = {
+export const accentColorByCardType: Record<
+  BacklogItemAndTaskDetailType,
+  string
+> = {
   US: "bg-app-secondary",
   IS: "bg-yellow-500/80",
   "US-TS": "bg-cyan-700",
