@@ -297,49 +297,75 @@ export const getProjectActivities = async (
 export const getItemActivityDetails = async (
   firestore: Firestore,
   projectId: string,
-  itemId: string,
 ) => {
-  // Fetch all item types in parallel
+  // Get activities
+  const activities = await getProjectActivities(firestore, projectId);
+  
+  // Create a map of activities by itemId
+  const activityMap: Record<string, WithId<ProjectActivity>> = activities.reduce((acc, activity) => {
+    if (activity.itemId) {
+      acc[activity.itemId] = activity;
+    }
+    return acc;
+  }, {} as Record<string, WithId<ProjectActivity>>);
+  
+  // Get unique item IDs from activities to fetch only relevant items
+  const itemIds = new Set(activities.map(activity => activity.itemId).filter(Boolean));
+  
+  // Create references to collections
+  const tasksRef = getProjectRef(firestore, projectId).collection("tasks");
+  const issuesRef = getProjectRef(firestore, projectId).collection("issues");
+  const userStoriesRef = getProjectRef(firestore, projectId).collection("userStories");
+  const epicsRef = getProjectRef(firestore, projectId).collection("epics");
+  const sprintsRef = getProjectRef(firestore, projectId).collection("sprints");
+  
+  // Fetch all items including deleted ones
   const [tasks, issues, userStories, epics, sprints] = await Promise.all([
-    getTasks(firestore, projectId),
-    getIssues(firestore, projectId),
-    getUserStories(firestore, projectId),
-    getEpics(firestore, projectId),  // Assuming you have this function
-    getSprints(firestore, projectId), // Assuming you have this function
+    // Include deleted items by not filtering in the query
+    tasksRef.get().then(snapshot => 
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    ),
+    issuesRef.get().then(snapshot => 
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    ),
+    userStoriesRef.get().then(snapshot => 
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    ),
+    epicsRef.get().then(snapshot => 
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    ),
+    sprintsRef.get().then(snapshot => 
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+    ),
   ]);
 
-  // First try direct ID matches
-  const task = tasks.find(t => t.id === itemId);
-  if (task) return { type: "task", item: task };
-
-  const issue = issues.find(i => i.id === itemId);
-  if (issue) return { type: "issue", item: issue };
-
-  const userStory = userStories.find(us => us.id === itemId);
-  if (userStory) return { type: "userStory", item: userStory };
-
-  const epic = epics.find(e => e.id === itemId);
-  if (epic) return { type: "epic", item: epic };
-
-  const sprint = sprints.find(s => s.id === itemId);
-  if (sprint) return { type: "sprint", item: sprint };
-
-  // If we didn't find a direct match by ID, check related items
-  // For tasks, they might reference another item
-  const relatedTask = tasks.find(t => t.itemId === itemId);
-  if (relatedTask) {
-    // Find what this task belongs to
-    const parentIssue = issues.find(i => i.id === relatedTask.itemId);
-    if (parentIssue) {
-      return { type: "issue", item: parentIssue, relatedTask };
-    }
-
-    const parentUserStory = userStories.find(us => us.id === relatedTask.itemId);
-    if (parentUserStory) {
-      return { type: "userStory", item: parentUserStory, relatedTask };
-    }
-  }
-
-  // No match found
-  return null;
+  // Filter items that have activities associated with them
+  const tasksActivities = tasks.filter((task) => activityMap[task.id]);
+  const issuesActivities = issues.filter((issue) => activityMap[issue.id]);
+  const userStoriesActivities = userStories.filter((us) => activityMap[us.id]);
+  const epicsActivities = epics.filter((epic) => activityMap[epic.id]);
+  const sprintsActivities = sprints.filter((sprint) => activityMap[sprint.id]);
+  
+  return {
+    tasksActivities: tasksActivities.map((task) => ({
+      ...task,
+      activity: activityMap[task.id],
+    })),
+    issuesActivities: issuesActivities.map((issue) => ({
+      ...issue,
+      activity: activityMap[issue.id],
+    })),
+    userStoriesActivities: userStoriesActivities.map((us) => ({
+      ...us,
+      activity: activityMap[us.id],
+    })),
+    epicsActivities: epicsActivities.map((epic) => ({
+      ...epic,
+      activity: activityMap[epic.id],
+    })),
+    sprintsActivities: sprintsActivities.map((sprint) => ({
+      ...sprint,
+      activity: activityMap[sprint.id],
+    })),
+  };
 };

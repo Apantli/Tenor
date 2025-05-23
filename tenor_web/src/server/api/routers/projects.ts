@@ -431,13 +431,12 @@ export const projectsRouter = createTRPCRouter({
       return await getProjectActivities( ctx.firestore, projectId);
     }),
 
-  getItemDetails: protectedProcedure
+  getActivityDetails: protectedProcedure
     .input(z.object({ 
       projectId: z.string(),
-      itemId: z.string()
     }))
     .query(async ({ ctx, input }) => {
-      const { projectId, itemId } = input;
-      return await getItemActivityDetails(ctx.firestore, projectId, itemId);
+      const { projectId } = input;
+      return await getItemActivityDetails(ctx.firestore, projectId);
     }),
 });

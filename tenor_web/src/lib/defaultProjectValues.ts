@@ -202,9 +202,10 @@ export const noTag: Tag = {
 
 export const defaultActivity = [
   {
-    itemId: "new project created",
-    user: "",
-    completitionDate: "",
-    resolved: false
+    itemId: "New Project Created",
+    userId: "",
+    action: "create",
+    date: new Date(),
+    type: "PJ",
   },
 ]

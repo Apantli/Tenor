@@ -28,7 +28,7 @@ export default function ProjectOverview() {
         </div>
       </div>
       <div className="w-1/2">
-        <div className="flex w-full flex-col">
+        <div className="flex h-80 w-full flex-col border-2 border-[#BECAD4] rounded-lg p-3">
           <ActivityProjectOverview projectId={projectId}/>
         </div>
       </div>

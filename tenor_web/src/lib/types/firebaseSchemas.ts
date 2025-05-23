@@ -233,7 +233,7 @@ export interface Productivity {
   cached: ProductivityData[];
 }
 
-type ActivityType = "US" | "EP" | "IS" | "TS" | "SP";
+type ActivityType = "US" | "EP" | "IS" | "TS" | "SP" | "PJ";
 type ActionType = "create" | "update" | "delete";
 
 export interface LogProjectActivityParams {
