@@ -15,7 +15,10 @@ import type {
   WithId,
   User,
   Requirement,
+  ProjectStatusCache,
 } from "~/lib/types/firebaseSchemas";
+import type * as admin from "firebase-admin";
+
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -52,6 +55,8 @@ import {
   getRoles,
   getRolesRef,
   getSettingsRef,
+  getTopProjects,
+  getTopProjectStatusCacheRef,
 } from "~/utils/helpers/shortcuts/general";
 import { settingsPermissions } from "~/lib/permission";
 import { getGlobalUserRef, getUsersRef } from "~/utils/helpers/shortcuts/users";
@@ -60,6 +65,7 @@ import {
   getStatusTypesRef,
 } from "~/utils/helpers/shortcuts/tags";
 import { getRequirementTypesRef } from "~/utils/helpers/shortcuts/requirements";
+import { shouldRecomputeTopProjects } from "~/lib/cache";
 import { getActivityRef } from "~/utils/helpers/shortcuts/performance";
 
 export const emptyRequeriment = (): Requirement => ({
@@ -331,10 +337,8 @@ export const projectsRouter = createTRPCRouter({
         );
 
         await Promise.all(
-          defaultActivity.map((activity) =>
-            activityCollection.add(activity),
-          ),
-        )
+          defaultActivity.map((activity) => activityCollection.add(activity)),
+        );
 
         return { success: true, projectId: newProjectRef.id };
       } catch (error) {
@@ -421,7 +425,62 @@ export const projectsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      return await getProjectStatus(ctx.firestore, projectId, ctx.firebaseAdmin.app());
+      return await getProjectStatus(
+        ctx.firestore,
+        projectId,
+        ctx.firebaseAdmin.app(),
+      );
+    }),
+
+  getTopProjectStatus: protectedProcedure
+    .input(z.object({ count: z.number() }))
+    .query(async ({ ctx, input }) => {
+      let topProjects = (
+        await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).get()
+      ).data() as ProjectStatusCache | undefined;
+
+      if (
+        !topProjects ||
+        shouldRecomputeTopProjects({ cacheTarget: topProjects })
+      ) {
+        topProjects = await computeTopProjectStatus(
+          ctx.firestore,
+          ctx.firebaseAdmin.app(),
+          ctx.session.uid,
+          input.count,
+        );
+        await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
+          topProjects,
+        );
+      }
+
+      const projectsWithName = await Promise.all(
+        topProjects.topProjects.map(async (project) => {
+          const projectData = await getProject(
+            ctx.firestore,
+            project.projectId,
+          );
+          return {
+            ...project,
+            name: projectData.name,
+          };
+        }),
+      );
+      topProjects.topProjects = projectsWithName;
+      return topProjects;
+    }),
+  recomputeTopProjectStatus: protectedProcedure
+    .input(z.object({ count: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const topProjects = await computeTopProjectStatus(
+        ctx.firestore,
+        ctx.firebaseAdmin.app(),
+        ctx.session.uid,
+        input.count,
+      );
+      await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
+        topProjects,
+      );
     }),
 
   getProjectActivities: protectedProcedure
@@ -440,3 +499,44 @@ export const projectsRouter = createTRPCRouter({
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
 });
+
+const computeTopProjectStatus = async (
+  firestore: FirebaseFirestore.Firestore,
+  adminFirestore: admin.app.App,
+  userId: string,
+  count: number,
+) => {
+  let projects = await getTopProjects(firestore, userId);
+
+  projects = projects.slice(0, count);
+  let projectStatus = await Promise.all(
+    projects.map(async (projectId) => {
+      const status = await getProjectStatus(
+        firestore,
+        projectId,
+        adminFirestore,
+      );
+
+      return {
+        id: projectId,
+        status,
+      };
+    }),
+  );
+
+  // Filter out projects with no tasks
+  projectStatus = projectStatus.filter(
+    (project) => project.status.taskCount !== 0,
+  );
+
+  const topProjects = {
+    fetchDate: Timestamp.now(),
+    topProjects: projectStatus.map((project) => ({
+      projectId: project.id,
+      taskCount: project.status.taskCount,
+      completedCount: project.status.completedCount,
+    })),
+  };
+
+  return topProjects;
+};

@@ -1,14 +1,24 @@
 import type { Firestore } from "firebase-admin/firestore";
-import type { Epic, Issue, ProjectActivity, Role, Size, Sprint, StatusTag, Task, UserStory, WithId } from "~/lib/types/firebaseSchemas";
-import { ActivitySchema, ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
+import type { Epic, Issue, ProjectActivity,
+  Role,
+  Size, Sprint,
+  StatusTag, Task, UserStory,
+  WithId,
+} from "~/lib/types/firebaseSchemas";
+import { ActivitySchema,
+  ProjectSchema,
+  SettingsSchema,
+  type UserSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
 import { getTasks } from "./tasks";
 import { getIssues } from "./issues";
 import { getUserStories } from "./userStories";
 import { getCurrentSprint } from "./sprints";
-import { getUsers } from "./users";
+import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
+import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 
@@ -105,6 +115,15 @@ export const getProductivityRef = (firestore: Firestore, projectId: string) => {
   return getPerformanceRef(firestore, projectId).doc("productivity");
 };
 
+export const getTopProjectStatusCacheRef = (
+  firestore: Firestore,
+  userId: string,
+) => {
+  return getGlobalUserRef(firestore, userId)
+    .collection("cache")
+    .doc("TopProjectsStatus");
+};
+
 /**
  * @function getRoleRef
  * @description Gets a reference to a specific project role document
@@ -185,7 +204,14 @@ export const getProjectStatus = async (
   admin: admin.app.App,
 ) => {
   // Fetch all data in parallel
-  const [tasks, statuses, issues, userStories, currentSprint, projectCollaborators] = await Promise.all([
+  const [
+    tasks,
+    statuses,
+    issues,
+    userStories,
+    currentSprint,
+    projectCollaborators,
+  ] = await Promise.all([
     getTasks(firestore, projectId),
     getStatusTypes(firestore, projectId),
     getIssues(firestore, projectId),
@@ -201,26 +227,34 @@ export const getProjectStatus = async (
 
   // Collect IDs linked to the current sprint
   const spruntIssuesIds = new Set(
-    (activeIssues).filter((issue) => issue.sprintId === currentSprint?.id).map((issue) => issue.id)
+    activeIssues
+      .filter((issue) => issue.sprintId === currentSprint?.id)
+      .map((issue) => issue.id),
   );
   const sprintUserStoriesIds = new Set(
-    (activeUserStories).filter((us) => us.sprintId === currentSprint?.id).map((us) => us.id)
+    activeUserStories
+      .filter((us) => us.sprintId === currentSprint?.id)
+      .map((us) => us.id),
   );
 
   // Filter tasks relevant to the sprint
-  const filteredTasks = (activeTasks).filter((task) =>
-    spruntIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId)
+  const filteredTasks = activeTasks.filter(
+    (task) =>
+      spruntIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId),
   );
 
   // Create a map of status types
-  const statusMap = statuses.reduce((acc, status) => {
-    acc[status.id] = status;
-    return acc;
-  }, {} as Record<string, StatusTag>);
+  const statusMap = statuses.reduce(
+    (acc, status) => {
+      acc[status.id] = status;
+      return acc;
+    },
+    {} as Record<string, StatusTag>,
+  );
 
   // Get the completed tasks
-  const completedTasks = filteredTasks.filter((task) =>
-    statusMap[task.statusId]?.marksTaskAsDone === true
+  const completedTasks = filteredTasks.filter(
+    (task) => statusMap[task.statusId]?.marksTaskAsDone === true,
   );
 
   // Map collaborators
@@ -232,6 +266,7 @@ export const getProjectStatus = async (
 
   // Return structured project status
   return {
+    projectId: projectId,
     taskCount: filteredTasks.length ?? 0,
     completedCount: completedTasks.length ?? 0,
     currentSprintId: currentSprint?.id,
@@ -241,7 +276,40 @@ export const getProjectStatus = async (
     currentSprintDescription: currentSprint?.description,
     assignedUssers: mappedUsers,
   };
-}
+};
+
+/**
+ * @function getTopProjects
+ * @description Gets an array of the projects that are closest to ending their sprint
+ * @param {string} userId - The ID of the user
+ * @param {Firestore} firestore - The Firestore instance
+ * @returns {WithId<Sprint>[]} An array of the projects sorted by their sprint end date
+ */
+export const getTopProjects = async (firestore: Firestore, userId: string) => {
+  // Fetch all user projects
+  const user = (
+    await getGlobalUserRef(firestore, userId).get()
+  ).data() as z.infer<typeof UserSchema>;
+
+  const projectSprintsPromises = user.projectIds.map(async (projectId) => {
+    const sprint = await getCurrentSprint(firestore, projectId);
+    return { sprint, projectId };
+  });
+
+  const projectSprintPairs = await Promise.all(projectSprintsPromises);
+
+  const filteredProjectSprintPairs = projectSprintPairs.filter(
+    (pair) => pair.sprint !== undefined,
+  );
+
+  const sortedProjectSprintPairs = filteredProjectSprintPairs.sort(
+    (a, b) =>
+      (b.sprint?.endDate?.getTime() ?? 0) - (a.sprint?.endDate?.getTime() ?? 0),
+  );
+
+  // Return just the projectIds in the same order as the sorted sprints
+  return sortedProjectSprintPairs.map((pair) => pair.projectId);
+};
 
 export const getActivityRef = (
   firestore: Firestore,

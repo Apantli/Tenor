@@ -1,7 +1,7 @@
 "use client";
 
 import { Handle, Position } from "@xyflow/react";
-import { accentColorByCardType } from "~/utils/helpers/colorUtils";
+import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
 import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -12,6 +12,8 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import {
   permissionNumbers,
+  type TaskType,
+  type UserStoryType,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
@@ -37,6 +39,13 @@ export default function BasicNode({
   data: { scrumId, itemType, title, showDeleteButton, parentId },
   id,
 }: Props) {
+  let plainItemType = "US" as UserStoryType | TaskType;
+  if (itemType.includes("-")) {
+    plainItemType = itemType.split("-")[1] as UserStoryType | TaskType;
+  } else {
+    plainItemType = itemType as UserStoryType | TaskType;
+  }
+
   // #region Hooks
   const { projectId } = useParams();
   const confirm = useConfirmation();
@@ -64,7 +73,11 @@ export default function BasicNode({
   // #region Handlers
   const handleDetailClick = () => {
     if (id) {
-      setDetailItemId(id);
+      if (itemType.includes("-")) {
+        setDetailItemId(`${parentId}-${id}-${itemType}`);
+      } else {
+        setDetailItemId(id);
+      }
     }
   };
 
@@ -72,7 +85,7 @@ export default function BasicNode({
     if (!id) return;
     const confirmation = await confirm(
       "Are you sure you want to delete " +
-        formatAnyScrumId(scrumId, itemType) +
+        formatAnyScrumId(scrumId, plainItemType) +
         "?",
       "This action cannot be undone.",
       "Delete",
@@ -82,13 +95,12 @@ export default function BasicNode({
       return;
     }
     // Invalidation is made inside the deleteItemByType function
-    await deleteItemByType(projectId as string, itemType, id, parentId);
+    await deleteItemByType(projectId as string, plainItemType, id, parentId);
   };
   // #endregion
 
   // #region General
-  const accentColor =
-    accentColorByCardType[itemType as keyof typeof accentColorByCardType];
+  const accentColor = getAccentColorByCardType(itemType);
   // #endregion
 
   return (
@@ -106,7 +118,7 @@ export default function BasicNode({
             className="flex grow-[1] underline-offset-4 hover:text-app-primary hover:underline"
             onClick={handleDetailClick}
           >
-            {formatAnyScrumId(scrumId, itemType)}
+            {formatAnyScrumId(scrumId, plainItemType)}
           </button>
           {showDeleteButton && permission >= permissionNumbers.write && (
             <DeleteOutlineIcon

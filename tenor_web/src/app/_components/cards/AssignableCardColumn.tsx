@@ -3,6 +3,8 @@ import { cn } from "~/lib/utils";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CardColumn from "./CardColumn";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+// import type { Tag } from "~/lib/types/firebaseSchemas";
+import { type RegexItem } from "~/app/(logged)/project/[projectId]/scrumboard/AdvancedSearch";
 
 // WithId<BasicInfo> change into only needed info...
 
@@ -22,6 +24,8 @@ interface Props {
   renderCard: (item: KanbanCard) => React.ReactNode;
   header: React.ReactNode;
   disabled?: boolean;
+  filter: string;
+  regex: RegexItem[];
 }
 
 export default function AssignableCardColumn({
@@ -35,6 +39,8 @@ export default function AssignableCardColumn({
   renderCard,
   header,
   disabled = false,
+  filter,
+  // regex,
 }: Props) {
   // Check there's selected items and none of them are in this column
   const availableToBeAssignedTo =
@@ -53,8 +59,17 @@ export default function AssignableCardColumn({
         disabled={disabled}
         cards={
           column.itemIds
-            .map((itemId) => items[itemId])
-            .filter((val) => val !== undefined) ?? []
+            .map((itemId: string) => items[itemId])
+            .filter((val: KanbanCard | undefined): val is KanbanCard => {
+              if (val === undefined) return false;
+              // check for filters
+              if (
+                filter &&
+                !val.name.toLowerCase().includes(filter.toLowerCase())
+              )
+                return false;
+              return true;
+            }) ?? []
         }
         selection={selectedItems}
         setSelection={setSelectedItems}

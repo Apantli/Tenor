@@ -1,3 +1,5 @@
+import type { BacklogItemAndTaskDetailType } from "~/lib/types/firebaseSchemas";
+
 export const acceptableTagColors = [
   "#d9543d",
   "#bf5513",
@@ -26,10 +28,19 @@ export function generateRandomTagColor(): string {
   return acceptableTagColors[randomIndex] ?? "#d9543d";
 }
 
-export const accentColorByCardType = {
-  US: "bg-app-secondary",
-  IS: "bg-yellow-500/80",
-  "US-TS": "bg-cyan-700",
-  "IS-TS": "bg-yellow-700/80",
-  // IT: "bg-app-quaternary",
-};
+export function getAccentColorByCardType(
+  type: BacklogItemAndTaskDetailType,
+): string {
+  switch (type) {
+    case "US":
+      return "bg-app-secondary";
+    case "IS":
+      return "bg-yellow-500/80";
+    case "US-TS":
+      return "bg-cyan-700";
+    case "IS-TS":
+      return "bg-yellow-700/80";
+    default:
+      return "bg-app-secondary";
+  }
+}

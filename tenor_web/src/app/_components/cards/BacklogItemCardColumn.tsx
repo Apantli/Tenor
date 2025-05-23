@@ -9,6 +9,7 @@ import {
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import type { BacklogItemType } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   backlogItems: inferRouterOutputs<
@@ -44,7 +45,7 @@ export default function BacklogItemCardColumn({
     size: item.size,
     tags: item.tags,
     columnId: item.sprintId,
-    cardType: item.itemType as "US" | "IS",
+    cardType: item.itemType as BacklogItemType,
   }));
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();

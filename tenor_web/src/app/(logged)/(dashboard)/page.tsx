@@ -7,19 +7,22 @@ import SearchBar from "~/app/_components/SearchBar";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
+import { ProjectStatus } from "~/app/_components/sections/ProjectStatus";
+
 export default function ProjectPage() {
   return (
-    <div className="flex h-full w-full flex-row items-start">
-      <div className="flex-1 2xl:flex-[3]">
+    <div className="flex h-full w-full flex-col items-start xl:flex-row">
+      <div className="flex-1 xl:flex-[2]">
         <h1 className="mb-3 text-3xl font-semibold">Projects</h1>
         <ProjectList />
       </div>
-      <div className="hidden flex-1 pt-10 xl:block 2xl:flex-[2]">
-        {/* FIXME: Remove when dashboard is ready */}
-        <img
-          src="/dashboard_mockup.png"
-          className="ml-auto h-full max-h-[700px] w-auto object-contain"
-          alt="Dashboard mockup"
+      <div className="w-full flex-1 pt-10 xl:w-fit xl:flex-[2]">
+        <ProjectStatus className="h-[38vh]" />
+        {/* FIXME: Remove when recent activity is ready */}
+        <div
+          className="mt-4 h-[38vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
+          style={{ backgroundImage: 'url("/recent_activity_mockup.png")' }}
+          aria-label="Dashboard mockup"
         />
       </div>
     </div>
@@ -98,7 +101,9 @@ function ProjectList() {
                   src={
                     project.logo.startsWith("/")
                       ? project.logo
-                      : `/api/image_proxy/?url=${encodeURIComponent(project.logo)}`
+                      : `/api/image_proxy/?url=${encodeURIComponent(
+                          project.logo,
+                        )}`
                   }
                   alt={project.name}
                 />

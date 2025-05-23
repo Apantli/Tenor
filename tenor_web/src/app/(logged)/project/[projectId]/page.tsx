@@ -6,7 +6,6 @@ import ProjectStatus from "~/app/_components/ProjectStatus";
 import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
 
 export default function ProjectOverview() {
-
   const params = useParams();
   const projectId = params.projectId as string;
 
