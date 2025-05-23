@@ -178,16 +178,16 @@ export default function RoleTable({
         );
       },
     },
-    reviews: {
-      label: "Sprint Reviews",
-      width: defaultWidth,
+    retrospective: {
+      label: "Sprint Retrospectives",
+      width: defaultWidth + 40,
       render: (row) => {
         return (
           <PillPickerComponent
-            label={permissionLabels[row.reviews]}
+            label={permissionLabels[row.retrospective]}
             selectedItem={{
-              id: row.reviews.toString(),
-              label: permissionLabels[row.reviews],
+              id: row.retrospective.toString(),
+              label: permissionLabels[row.retrospective],
             }}
             hideSearch={true}
             allItems={permissionItems}
