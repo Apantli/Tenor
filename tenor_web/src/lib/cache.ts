@@ -36,8 +36,6 @@ export const shouldRecomputeTopProjects = ({
 }) => {
   if (!cacheTarget) return true;
 
-  if (!cacheTarget) return true;
-
   const currentTime = new Date();
   const lastFetchDate = cacheTarget.fetchDate.toDate();
   const timeDifference = currentTime.getTime() - lastFetchDate.getTime();

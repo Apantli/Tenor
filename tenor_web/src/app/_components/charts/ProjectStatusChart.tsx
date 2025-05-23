@@ -42,7 +42,7 @@ const projectStatus: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
   description: "Project status bar chart",
   width: 450, // Default width that will be overridden
-  height: 220,
+  height: 220, // Default height that will be overridden
   autosize: {
     type: "fit",
     contains: "padding",
@@ -100,7 +100,7 @@ const projectStatus: VisualizationSpec = {
       labelFontSize: 18,
       labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
       labelColor: "#6B7280",
-      tickSize: 0,
+      tickSize: 9,
       labelPadding: 10,
     },
   ],
@@ -131,21 +131,7 @@ const projectStatus: VisualizationSpec = {
     },
   ],
 
-  legends: [
-    {
-      fill: "color",
-      orient: "top-right",
-      direction: "horizontal",
-      symbolType: "square",
-      symbolSize: 500,
-      labelFontSize: 18,
-      labelFontWeight: 600,
-      labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
-      labelColor: "#6B7280",
-      padding: 10,
-      offset: 5,
-    },
-  ],
+  legends: [],
 
   marks: [
     {
@@ -206,9 +192,12 @@ export const StatusBarChart = ({
   domain = [0, 60],
 }: StatusBarChartProps) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [containerWidth, setContainerWidth] = React.useState(0);
+  const [containerDimensions, setContainerDimensions] = React.useState({
+    width: 0,
+    height: 0,
+  });
 
-  // Resize graph on width changes
+  // Resize graph on container dimension changes
   React.useEffect(() => {
     if (!containerRef.current) return;
 
@@ -216,7 +205,13 @@ export const StatusBarChart = ({
       for (const entry of entries) {
         // Subtract padding of chart area
         const width = entry.contentRect.width - 20; // (10px on each side)
-        setContainerWidth(Math.max(width, 300));
+        // Account for legend and padding
+        const height = Math.max(entry.contentRect.height - 15, 200);
+
+        setContainerDimensions({
+          width: Math.max(width, 300),
+          height: Math.max(height, 150),
+        });
       }
     });
 
@@ -224,7 +219,7 @@ export const StatusBarChart = ({
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Modify spec with dynamic width and domain
+  // Modify spec with dynamic width, height and domain
   const modifiedSpec = React.useMemo<ExtendedSpec>(() => {
     const specCopy = JSON.parse(JSON.stringify(projectStatus)) as ExtendedSpec;
 
@@ -236,12 +231,14 @@ export const StatusBarChart = ({
       specCopy.scales[yscaleIndex].domain = domain;
     }
 
-    if (containerWidth > 0) {
-      specCopy.width = containerWidth;
+    // Update dimensions if container has been measured
+    if (containerDimensions.width > 0) {
+      specCopy.width = containerDimensions.width;
+      specCopy.height = containerDimensions.height;
     }
 
     return specCopy;
-  }, [domain, containerWidth]);
+  }, [domain, containerDimensions]);
 
   // Create the component with the modified spec
   const BarChartComponent = React.useMemo(
@@ -257,12 +254,32 @@ export const StatusBarChart = ({
     <div
       ref={containerRef}
       className={cn(
-        "mx-auto flex h-full w-full flex-col rounded-lg p-4",
+        "relative mx-auto flex h-full w-full flex-col rounded-lg p-4 pb-0 pt-0",
         className,
       )}
     >
-      {containerWidth > 0 && (
-        <BarChartComponent data={{ table: data }} actions={false} />
+      {containerDimensions.width > 0 && containerDimensions.height > 0 && (
+        <>
+          <div className="absolute right-4 top-4 z-10 flex flex-row gap-4">
+            <div className="flex items-center gap-2">
+              <div
+                className="h-6 w-6 rounded-sm"
+                style={{ backgroundColor: "#8BC48A" }}
+              />
+              <span className="font-semibold text-gray-600">Finished</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div
+                className="h-6 w-6 rounded-sm"
+                style={{ backgroundColor: "#13918A" }}
+              />
+              <span className="text-sm font-semibold text-gray-600">
+                Expected
+              </span>
+            </div>
+          </div>
+          <BarChartComponent data={{ table: data }} actions={false} />
+        </>
       )}
     </div>
   );

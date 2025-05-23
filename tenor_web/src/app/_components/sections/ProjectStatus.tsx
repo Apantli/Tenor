@@ -8,8 +8,8 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { timestampToDate } from "~/utils/helpers/parsers";
-
-export const ProjectStatus = () => {
+import { cn } from "~/lib/utils";
+export const ProjectStatus = ({ className }: { className?: string }) => {
   const { data, isLoading } = api.projects.getTopProjectStatus.useQuery({
     count: 4,
   });
@@ -19,7 +19,7 @@ export const ProjectStatus = () => {
   const { mutateAsync: recomputeTopProjectStatus, isPending } =
     api.projects.recomputeTopProjectStatus.useMutation({
       onSuccess: async () => {
-        alert("Success", "Project status has been refetched.", {
+        alert("Success", "Project status has been reloaded.", {
           type: "success",
           duration: 5000,
         });
@@ -37,22 +37,30 @@ export const ProjectStatus = () => {
 
   data?.topProjects.forEach((project) => {
     barCharData.push({
-      category: project.name ?? "Sin nombre",
+      category: project.name ?? "No name",
       position: "Finished",
       value: project.completedCount,
     });
     barCharData.push({
-      category: project.name ?? "Sin nombre",
+      category: project.name ?? "No name",
       position: "Expected",
       value: project.taskCount,
     });
   });
 
-  const domainMax = Math.max(...barCharData.map((item) => item.value), 0) + 5;
+  const maxTasks = Math.max(...barCharData.map((item) => item.value), 0);
+
+  const domainMax = maxTasks + 5;
 
   return (
-    <div className="flex h-full w-full flex-col items-start justify-start rounded-md border-2 p-4">
-      <h2 className="mb-3 text-2xl font-semibold">Project status</h2>
+    <div
+      className={cn(
+        "flex h-full w-full flex-col items-start justify-start rounded-md border-2 p-4",
+        className,
+      )}
+    >
+      {/* FIXME: standarize margin in cards */}
+      <h2 className="mb-3 ml-6 text-2xl font-semibold">Project status</h2>
 
       {isLoading ? (
         <div className="flex flex-row gap-3 align-middle">
@@ -61,14 +69,14 @@ export const ProjectStatus = () => {
         </div>
       ) : (
         <>
-          {data?.topProjects.length === 0 ? (
+          {data?.topProjects.length === 0 || maxTasks === 0 ? (
             <div className="mx-auto flex flex-col items-center">
               <p className="text-lg italic text-gray-500"></p>
               <span className="mx-auto -mb-10 text-[200px] text-gray-500">
                 <BarChartIcon fontSize="inherit" />
               </span>
               <h1 className="mb-5 text-3xl font-semibold text-gray-500">
-                No projects with active sprint found
+                No projects with an active sprint and tasks found
               </h1>
             </div>
           ) : (
@@ -89,7 +97,6 @@ export const ProjectStatus = () => {
                 className=""
               />
             )}
-
             {isPending || !data?.fetchDate ? (
               <>
                 <LoadingSpinner />

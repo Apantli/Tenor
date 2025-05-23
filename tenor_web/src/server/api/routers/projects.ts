@@ -491,18 +491,24 @@ const computeTopProjectStatus = async (
   let projects = await getTopProjects(firestore, userId);
 
   projects = projects.slice(0, count);
-  const projectStatus = await Promise.all(
+  let projectStatus = await Promise.all(
     projects.map(async (projectId) => {
       const status = await getProjectStatus(
         firestore,
         projectId,
         adminFirestore,
       );
+
       return {
         id: projectId,
         status,
       };
     }),
+  );
+
+  // Filter out projects with no tasks
+  projectStatus = projectStatus.filter(
+    (project) => project.status.taskCount !== 0,
   );
 
   const topProjects = {

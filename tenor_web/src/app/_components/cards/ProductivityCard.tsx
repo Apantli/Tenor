@@ -34,7 +34,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
   } = api.performance.recomputeProductivity.useMutation({
     onSuccess: async () => {
       // Handle success, e.g., show a toast notification
-      alert("Success", "Productivity has been refetched.", {
+      alert("Success", "Productivity has been reloaded.", {
         type: "success",
         duration: 5000,
       });
