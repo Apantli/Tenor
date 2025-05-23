@@ -242,3 +242,14 @@ export interface LogProjectActivityParams {
   type: ActivityType;
   action: ActionType;
 }
+export interface ProjectStatus {
+  projectId: string;
+  taskCount: number;
+  completedCount: number;
+  name?: string;
+}
+
+export interface ProjectStatusCache {
+  fetchDate: Timestamp;
+  topProjects: ProjectStatus[];
+}
