@@ -1,17 +1,15 @@
 import type { Firestore } from "firebase-admin/firestore";
-import type { ProjectActivity, Role, Size, StatusTag, WithId } from "~/lib/types/firebaseSchemas";
+import type { Epic, Issue, ProjectActivity, Role, Size, Sprint, StatusTag, Task, UserStory, WithId } from "~/lib/types/firebaseSchemas";
 import { ActivitySchema, ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
 import { getTasks } from "./tasks";
 import { getIssues } from "./issues";
 import { getUserStories } from "./userStories";
-import { getCurrentSprint, getSprints } from "./sprints";
+import { getCurrentSprint } from "./sprints";
 import { getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import { TRPCError } from "@trpc/server";
-import { UserPreview } from "~/lib/types/detailSchemas";
-import { getEpics } from "./epics";
 
 
 /**
@@ -309,9 +307,6 @@ export const getItemActivityDetails = async (
     return acc;
   }, {} as Record<string, WithId<ProjectActivity>>);
   
-  // Get unique item IDs from activities to fetch only relevant items
-  const itemIds = new Set(activities.map(activity => activity.itemId).filter(Boolean));
-  
   // Create references to collections
   const tasksRef = getProjectRef(firestore, projectId).collection("tasks");
   const issuesRef = getProjectRef(firestore, projectId).collection("issues");
@@ -323,19 +318,19 @@ export const getItemActivityDetails = async (
   const [tasks, issues, userStories, epics, sprints] = await Promise.all([
     // Include deleted items by not filtering in the query
     tasksRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Task }))
     ),
     issuesRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Issue}))
     ),
     userStoriesRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserStory}))
     ),
     epicsRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Epic}))
     ),
     sprintsRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Sprint}))
     ),
   ]);
 
@@ -349,23 +344,23 @@ export const getItemActivityDetails = async (
   return {
     tasksActivities: tasksActivities.map((task) => ({
       ...task,
-      activity: activityMap[task.id],
+      activity: activityMap[task.id]!,
     })),
     issuesActivities: issuesActivities.map((issue) => ({
       ...issue,
-      activity: activityMap[issue.id],
+      activity: activityMap[issue.id]!,
     })),
     userStoriesActivities: userStoriesActivities.map((us) => ({
       ...us,
-      activity: activityMap[us.id],
+      activity: activityMap[us.id]!,
     })),
     epicsActivities: epicsActivities.map((epic) => ({
       ...epic,
-      activity: activityMap[epic.id],
+      activity: activityMap[epic.id]!,
     })),
     sprintsActivities: sprintsActivities.map((sprint) => ({
       ...sprint,
-      activity: activityMap[sprint.id],
+      activity: activityMap[sprint.id]!,
     })),
   };
 };
