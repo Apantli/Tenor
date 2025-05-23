@@ -54,10 +54,11 @@ export default function TasksKanban() {
     );
   }, [role]);
 
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation({
-        onSuccess:async () => {
-      await utils.projects.getProjectStatus.invalidate({ projectId: projectId as string }); // <-- Invalidate all tasks
+  const { mutateAsync: changeStatus } = api.tasks.changeTaskStatus.useMutation({
+    onSuccess: async () => {
+      await utils.projects.getProjectStatus.invalidate({
+        projectId: projectId as string,
+      }); // <-- Invalidate all tasks
     },
   });
 
@@ -100,9 +101,10 @@ export default function TasksKanban() {
   const handleDragEnd = async (taskId: string, columnId: string) => {
     setLastDraggedTaskId(null);
     if (tasksAndColumnsData == undefined) return;
-    if (columnId === tasksAndColumnsData.cardTasks[taskId]?.columnId) return;
+    // Ensure the task exists and the column is different
+    const taskBeingDragged = tasksAndColumnsData.cardTasks[taskId];
+    if (!taskBeingDragged || columnId === taskBeingDragged.columnId) return;
 
-    setLastDraggedTaskId(taskId);
     await moveTasksToColumn([taskId], columnId);
   };
 
@@ -167,6 +169,14 @@ export default function TasksKanban() {
         };
       },
     );
+
+    // Set lastDraggedTaskId AFTER optimistic update, only if a single task was moved (typical for drag-and-drop)
+    if (taskIds.length === 1) {
+      setLastDraggedTaskId(taskIds[0] ?? null);
+    } else {
+      // If multiple tasks are moved (e.g., batch assign), clear any single-item highlight
+      setLastDraggedTaskId(null);
+    }
 
     setSelectedTasks(new Set());
 

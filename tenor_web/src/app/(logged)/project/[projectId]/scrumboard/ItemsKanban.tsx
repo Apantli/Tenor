@@ -89,9 +89,10 @@ export default function ItemsKanban() {
   const handleDragEnd = async (itemId: string, columnId: string) => {
     setLastDraggedItemId(null);
     if (itemsAndColumnsData == undefined) return;
-    if (columnId === itemsAndColumnsData.cardItems[itemId]?.columnId) return;
+    // Ensure the item exists and the column is different
+    const itemBeingDragged = itemsAndColumnsData.cardItems[itemId];
+    if (!itemBeingDragged || columnId === itemBeingDragged.columnId) return;
 
-    setLastDraggedItemId(itemId);
     await moveItemsToColumn([itemId], columnId);
   };
 
@@ -164,6 +165,13 @@ export default function ItemsKanban() {
         };
       },
     );
+
+    // Set lastDraggedItemId AFTER optimistic update, only if a single item was moved
+    if (itemIds.length === 1) {
+      setLastDraggedItemId(itemIds[0] ?? null);
+    } else {
+      setLastDraggedItemId(null);
+    }
 
     setSelectedItems(new Set());
 
