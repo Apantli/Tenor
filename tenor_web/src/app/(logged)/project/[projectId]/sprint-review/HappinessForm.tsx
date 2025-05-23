@@ -287,6 +287,7 @@ export default function HappinessForm({
         <ConversationPopup
           showPopup={showConversation}
           setShowPopup={setShowConversation}
+          sprintReviewId={sprintReviewId}
         />
       )}
     </div>

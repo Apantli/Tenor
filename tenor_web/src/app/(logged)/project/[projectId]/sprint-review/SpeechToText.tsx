@@ -14,6 +14,7 @@ export interface UseSpeechRecognitionProps {
   currentTime: number;
   endingTime: number;
   isActive: boolean;
+  setListening?: (listening: boolean) => void;
   onComplete?: (transcripts: WindowTranscript[]) => void;
 }
 
@@ -23,6 +24,7 @@ export function useSpeechRecognition({
   endingTime,
   isActive,
   onComplete,
+  setListening,
 }: UseSpeechRecognitionProps) {
   const [error, setError] = useState<string>("");
   const [windowTranscripts, setWindowTranscripts] = useState<
@@ -143,6 +145,7 @@ export function useSpeechRecognition({
       hasCompletedRef.current = true;
 
       if (recognition.current && recognitionManuallyStarted.current) {
+        setListening?.(false);
         recognition.current.stop();
       }
 
@@ -158,6 +161,7 @@ export function useSpeechRecognition({
 
     if (!isActive || currentTime >= endingTime) {
       if (recognitionManuallyStarted.current) {
+        setListening?.(false);
         currentRec.stop();
       }
       return;
@@ -171,6 +175,7 @@ export function useSpeechRecognition({
       if (!recognitionManuallyStarted.current) {
         try {
           currentRec.start();
+          setListening?.(true);
         } catch (e) {
           if (e instanceof DOMException && e.name === "InvalidStateError") {
             recognitionManuallyStarted.current = true;
@@ -181,6 +186,7 @@ export function useSpeechRecognition({
       }
     } else {
       if (recognitionManuallyStarted.current) {
+        setListening?.(false);
         currentRec.stop();
       }
     }
@@ -194,10 +200,33 @@ export function useSpeechRecognition({
     setError("");
   }, [timeWindows]);
 
+  const finishEarly = useCallback(() => {
+    if (recognition.current && recognitionManuallyStarted.current) {
+      setListening?.(false);
+      recognition.current.stop();
+    }
+    hasCompletedRef.current = true;
+    if (onCompleteRef.current) {
+      onCompleteRef.current(windowTranscriptsRef.current);
+    }
+    setWindowTranscripts((prev) =>
+      prev.map((tw) => ({
+        ...tw,
+        end: currentTime,
+      })),
+    );
+    windowTranscriptsRef.current = windowTranscriptsRef.current.map((tw) => ({
+      ...tw,
+      end: currentTime,
+    }));
+    setError("");
+  }, [currentTime, setListening]);
+
   return {
     windowTranscripts,
     error,
     isRecognitionSupported,
     resetTranscripts,
+    finishEarly,
   };
 }
