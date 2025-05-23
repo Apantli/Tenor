@@ -180,7 +180,7 @@ export default function RoleTable({
     },
     retrospective: {
       label: "Sprint Retrospectives",
-      width: defaultWidth + 40,
+      width: defaultWidth + 60,
       render: (row) => {
         return (
           <PillPickerComponent
