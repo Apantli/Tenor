@@ -1,7 +1,7 @@
 "use client";
 
 import { Handle, Position } from "@xyflow/react";
-import { accentColorByCardType } from "~/utils/helpers/colorUtils";
+import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
 import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
@@ -100,7 +100,7 @@ export default function BasicNode({
   // #endregion
 
   // #region General
-  const accentColor = accentColorByCardType[itemType];
+  const accentColor = getAccentColorByCardType(itemType);
   // #endregion
 
   return (
