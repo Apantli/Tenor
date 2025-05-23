@@ -20,7 +20,12 @@ import {
 import { getUserStory } from "./userStories";
 import { getSprint } from "./sprints";
 import admin from "firebase-admin";
-import { getTasksFromItem, getTaskTable } from "./tasks";
+import {
+  deleteTaskAndGetModified,
+  getTasksFromItem,
+  getTasksRef,
+  getTaskTable,
+} from "./tasks";
 import { getUser } from "./users";
 
 /**
@@ -345,4 +350,56 @@ ${itemContext}
 ${userStoryContext}
 ${tagContext}\n
 `;
+};
+
+/**
+ * @function deleteIssueAndGetModified
+ * @description Deletes a single issue and returns the IDs of modified tasks
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} issueId - The ID of the issue to delete
+ * @returns {Promise<{modifiedTasks: string[]}>} Object containing arrays of modified task IDs
+ */
+export const deleteIssueAndGetModified = async (
+  firestore: Firestore,
+  projectId: string,
+  issueId: string,
+): Promise<{ modifiedTasks: string[] }> => {
+  const issueRef = getIssueRef(firestore, projectId, issueId);
+
+  // Mark the user story as deleted
+  await issueRef.update({ deleted: true });
+
+  // Delete associated tasks
+  const tasksSnapshot = await getTasksRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("itemType", "==", "IS")
+    .where("itemId", "==", issueId)
+    .get();
+
+  const allModifiedTasks = new Set<string>();
+  const batch = firestore.batch();
+
+  // Process each task and its dependencies
+  await Promise.all(
+    tasksSnapshot.docs.map(async (taskDoc) => {
+      const taskId = taskDoc.id;
+      allModifiedTasks.add(taskId);
+
+      const tempModifiedTasks = await deleteTaskAndGetModified(
+        firestore,
+        projectId,
+        taskId,
+      );
+      tempModifiedTasks.forEach((task) => {
+        allModifiedTasks.add(task);
+      });
+    }),
+  );
+
+  await batch.commit();
+
+  return {
+    modifiedTasks: Array.from(allModifiedTasks),
+  };
 };

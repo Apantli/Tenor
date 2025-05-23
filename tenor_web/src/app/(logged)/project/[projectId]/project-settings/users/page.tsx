@@ -169,6 +169,27 @@ export default function ProjectUsers() {
 
   // Role handlers
   const handleRoleAdd = async function (label: string) {
+    if (label === "") {
+      alert("Error", "Please enter a role name.", {
+        type: "error",
+        duration: 5000,
+      });
+      return;
+    }
+    if (
+      roles?.some((role) => role.label.toLowerCase() === label.toLowerCase())
+    ) {
+      alert(
+        "Error",
+        `A role with the name "${label}" already exists. Please choose a different name.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+      return;
+    }
+
     // Add to database
     await addRole({
       projectId: projectId as string,

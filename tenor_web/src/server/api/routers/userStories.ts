@@ -24,6 +24,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { backlogPermissions, tagPermissions } from "~/lib/permission";
 import type { Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
 import {
+  deleteUserStoryAndGetModified,
   getUserStories,
   getUserStoriesRef,
   getUserStory,
@@ -40,8 +41,8 @@ import {
   getBacklogTag,
   getPriorityByNameOrId,
 } from "~/utils/helpers/shortcuts/tags";
-import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import type { Edge, Node } from "@xyflow/react";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -144,6 +145,15 @@ export const userStoriesRouter = createTRPCRouter({
           });
         }),
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStory.id,
+        type: "US",
+        action: "create",
+      });
 
       return {
         id: userStory.id,
@@ -267,6 +277,16 @@ export const userStoriesRouter = createTRPCRouter({
       await getUserStoryRef(ctx.firestore, projectId, userStoryId).update(
         userStoryData,
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "update",
+      });
+
       return {
         updatedUserStoryIds: [
           ...addedDependencies,
@@ -291,72 +311,65 @@ export const userStoriesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, userStoryId } = input;
-      const userStoryRef = getUserStoryRef(
-        ctx.firestore,
-        projectId,
-        userStoryId,
-      );
+      const { modifiedUserStories, modifiedTasks } =
+        await deleteUserStoryAndGetModified(
+          ctx.firestore,
+          projectId,
+          userStoryId,
+        );
 
-      // Get the user story to get its dependencies and required by relationships
-      const userStory = await getUserStory(
-        ctx.firestore,
-        projectId,
-        userStoryId,
-      );
-
-      const modifiedUserStories = userStory.dependencyIds.concat(
-        userStory.requiredByIds,
-        userStoryId,
-      );
-
-      // Remove this user story from all dependencies' requiredBy arrays
-      await Promise.all(
-        userStory.dependencyIds.map(async (dependencyId) => {
-          await updateDependency(
-            ctx.firestore,
-            projectId,
-            dependencyId,
-            userStoryId,
-            "remove",
-            "requiredByIds",
-          );
-        }),
-      );
-
-      // Remove this user story from all requiredBy's dependency arrays
-      await Promise.all(
-        userStory.requiredByIds.map(async (requiredById) => {
-          await updateDependency(
-            ctx.firestore,
-            projectId,
-            requiredById,
-            userStoryId,
-            "remove",
-            "dependencyIds",
-          );
-        }),
-      );
-
-      // Mark the user story as deleted
-      await userStoryRef.update({ deleted: true });
-
-      // Delete associated tasks
-      const tasksSnapshot = await getTasksRef(ctx.firestore, projectId)
-        .where("deleted", "==", false)
-        .where("itemType", "==", "US")
-        .where("itemId", "==", userStoryId)
-        .get();
-
-      // NOTE: This is a batch operation, so it will not be atomic. If one of the updates fails, the others will still be applied.
-      const batch = ctx.firestore.batch();
-      tasksSnapshot.docs.forEach((task) => {
-        batch.update(task.ref, { deleted: true });
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "delete",
       });
-      await batch.commit();
 
       return {
         success: true,
         updatedUserStoryIds: modifiedUserStories,
+        modifiedTaskIds: modifiedTasks,
+      };
+    }),
+
+  /**
+   * @function deleteUserStories
+   * @description Deletes multiple user stories by marking them as deleted.
+   * @param {string} projectId - The ID of the project
+   * @param {string[]} userStoryIds - The IDs of the user stories to delete
+   */
+  deleteUserStories: roleRequiredProcedure(backlogPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        userStoryIds: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userStoryIds } = input;
+
+      const allModifiedUserStoryIds = new Set<string>();
+      const allModifiedTaskIds = new Set<string>();
+
+      await Promise.all(
+        userStoryIds.map(async (userStoryId) => {
+          const { modifiedUserStories, modifiedTasks } =
+            await deleteUserStoryAndGetModified(
+              ctx.firestore,
+              projectId,
+              userStoryId,
+            );
+          modifiedUserStories.forEach((id) => allModifiedUserStoryIds.add(id));
+          modifiedTasks.forEach((id) => allModifiedTaskIds.add(id));
+        }),
+      );
+
+      return {
+        success: true,
+        updatedUserStoryIds: Array.from(allModifiedUserStoryIds),
+        modifiedTaskIds: Array.from(allModifiedTaskIds),
       };
     }),
   /**
@@ -402,6 +415,15 @@ export const userStoriesRouter = createTRPCRouter({
         priorityId: priorityId,
         size: size,
         statusId: statusId,
+      });
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "update",
       });
     }),
   /**
@@ -602,6 +624,15 @@ export const userStoriesRouter = createTRPCRouter({
         "add",
         "requiredByIds",
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: dependencyUsId,
+        type: "US",
+        action: "update",
+      });
       return { success: true };
     }),
 
@@ -642,6 +673,16 @@ export const userStoriesRouter = createTRPCRouter({
         "remove",
         "requiredByIds",
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: dependencyUsId,
+        type: "US",
+        action: "delete",
+      });
+
       return { success: true };
     }),
 

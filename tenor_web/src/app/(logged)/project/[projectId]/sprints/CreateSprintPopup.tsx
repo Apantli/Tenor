@@ -208,6 +208,7 @@ export default function CreateSprintPopup({
               selectedDate={newSprintStartDate}
               placeholder="Select date"
               className="w-full"
+              assignDataAt="beginOfDay"
               onChange={(e) => {
                 setNewSprintStartDate(e);
               }}

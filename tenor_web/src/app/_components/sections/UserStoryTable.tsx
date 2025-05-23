@@ -38,6 +38,7 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesTaskDetails,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
 import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
@@ -74,6 +75,7 @@ export default function UserStoryTable({
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   // For the ghost US
   const generatedUserStories = useRef<UserStoryDetailWithTasks[]>();
@@ -196,8 +198,8 @@ export default function UserStoryTable({
     });
   const { mutateAsync: updateUserStoryTags } =
     api.userStories.modifyUserStoryTags.useMutation();
-  const { mutateAsync: deleteUserStory } =
-    api.userStories.deleteUserStory.useMutation();
+  const { mutateAsync: deleteUserStories } =
+    api.userStories.deleteUserStories.useMutation();
   const { mutateAsync: createUserStory } =
     api.userStories.createUserStory.useMutation();
   const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
@@ -254,14 +256,15 @@ export default function UserStoryTable({
     );
 
     // Deletes in database
-    await Promise.all(
-      ids.map((id) =>
-        deleteUserStory({
-          projectId: projectId as string,
-          userStoryId: id,
-        }),
-      ),
+    const { updatedUserStoryIds, modifiedTaskIds } = await deleteUserStories({
+      projectId: projectId as string,
+      userStoryIds: ids,
+    });
+    await invalidateQueriesUserStoriesDetails(
+      projectId as string,
+      updatedUserStoryIds,
     );
+    await invalidateQueriesTaskDetails(projectId as string, modifiedTaskIds);
     await invalidateQueriesAllTasks(projectId as string);
     await invalidateQueriesAllUserStories(projectId as string);
     return true;

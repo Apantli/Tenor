@@ -2,6 +2,8 @@ import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import TagComponent from "../TagComponent";
 import { accentColorByCardType } from "~/utils/helpers/colorUtils";
+import { sizeToColor } from "../specific-pickers/SizePillComponent";
+import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import { sizeToColor } from "~/lib/defaultProjectValues";
 
@@ -16,8 +18,7 @@ export default function ItemCardRender({
   showBackground = false,
   scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
-  const accentColor =
-    accentColorByCardType[item.cardType as keyof typeof accentColorByCardType];
+  const accentColor = getAccentColorByCardType(item.cardType);
   return (
     <div
       className={cn({

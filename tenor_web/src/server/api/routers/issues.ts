@@ -18,6 +18,7 @@ import {
 } from "../trpc";
 import { issuePermissions } from "~/lib/permission";
 import {
+  deleteIssueAndGetModified,
   getIssue,
   getIssueDetail,
   getIssueNewId,
@@ -26,6 +27,7 @@ import {
   getIssuesRef,
   getIssueTable,
 } from "~/utils/helpers/shortcuts/issues";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const issuesRouter = createTRPCRouter({
   /**
@@ -80,6 +82,16 @@ export const issuesRouter = createTRPCRouter({
         const issue = await getIssuesRef(ctx.firestore, projectId).add(
           newIssue,
         );
+
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: issue.id,
+          type: "IS",
+          action: "create",
+        });
+
         return { issueId: issue.id };
       } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -123,6 +135,16 @@ export const issuesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId, issueData } = input;
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: issueId,
+        type: "IS",
+        action: "update",
+      });
+
       await issueRef.update(issueData);
     }),
 
@@ -141,20 +163,22 @@ export const issuesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId } = input;
-      const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
-      await issueRef.update({ deleted: true });
+      const { modifiedTasks } = await deleteIssueAndGetModified(
+        ctx.firestore,
+        projectId,
+        issueId,
+      );
 
-      const tasks = await getIssuesRef(ctx.firestore, projectId)
-        .where("itemType", "==", "IS")
-        .where("itemId", "==", issueId)
-        .get();
-
-      // NOTE: This is a batch operation, so it will not be atomic. If one of the updates fails, the others will still be applied.
-      const batch = ctx.firestore.batch();
-      tasks.docs.forEach((task) => {
-        batch.update(task.ref, { deleted: true });
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: issueId,
+        type: "IS",
+        action: "delete",
       });
-      await batch.commit();
+
+      return { success: true, modifiedTaskIds: modifiedTasks };
     }),
 
   /**
@@ -190,6 +214,16 @@ export const issuesRouter = createTRPCRouter({
       if (!issueSnapshot.exists) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Issue not found" });
       }
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: issueId,
+        type: "IS",
+        action: "update",
+      });
+
       await issueRef.update({
         priorityId: priorityId,
         size: size,
@@ -223,6 +257,16 @@ export const issuesRouter = createTRPCRouter({
       const updatedIssueData = {
         relatedUserStoryId: relatedUserStoryId,
       };
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: issueId,
+        type: "IS",
+        action: "update",
+      });
+
       await issueRef.update(updatedIssueData);
     }),
 
@@ -246,7 +290,7 @@ export const issuesRouter = createTRPCRouter({
    * @description Retrieves all issues for a given project.
    * @param {string} projectId - The ID of the project to retrieve issues for.
    * @returns {Promise<IssueCol[]>} - A promise that resolves to an array of issues.
-  */
+   */
   getAllIssues: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
