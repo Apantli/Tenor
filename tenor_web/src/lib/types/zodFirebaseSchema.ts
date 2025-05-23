@@ -67,7 +67,8 @@ export const RoleSchema = z.object({
   scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
-  reviews: PermissionSchema // sprint reviews
+  reviews: PermissionSchema, // sprint reviews
+  activity: PermissionSchema // activity
 });
 
 export const BasicInfoSchema = z.object({
@@ -310,3 +311,14 @@ export const ProjectSchemaCreator = z.object({
 });
 
 export const PerformanceTime = z.enum(["Week", "Month", "Sprint"]);
+
+export const ActivityType = z.enum(["US" , "EP" , "IS" , "TS" , "SP"]); // Replace with actual types
+export const ActionType = z.enum(["create" , "update" , "delete"]); // Replace with actual actions
+
+export const ActivitySchema = z.object({
+  itemId: z.string(),
+  userId: z.string(),
+  type: ActivityType.optional(),
+  date: z.date(),
+  action: ActionType.optional(),
+});

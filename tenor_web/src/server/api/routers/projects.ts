@@ -44,6 +44,7 @@ import {
 } from "~/lib/defaultProjectValues";
 import {
   getProject,
+  getProjectBurndown,
   getProjectRef,
   getProjectsRef,
   getProjectStatus,
@@ -420,5 +421,22 @@ export const projectsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
       return await getProjectStatus(ctx.firestore, projectId, ctx.firebaseAdmin.app());
+    }),
+  
+  getProjectScrumboardStats: protectedProcedure
+    .input(z.object({ 
+      projectId: z.string(),
+      // Make these truly optional
+      dependencyIds: z.array(z.string()).optional(),
+      requiredByIds: z.array(z.string()).optional()
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      try {
+        return await getProjectBurndown(ctx.firestore, projectId, ctx.firebaseAdmin.app());
+      } catch (error) {
+        console.error("Error in getProjectScrumboardStats:", error);
+        throw new Error("Failed to get project burndown data");
+      }
     }),
 });

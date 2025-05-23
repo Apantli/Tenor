@@ -159,6 +159,7 @@ export interface Role {
   issues: Permission; // issues, tasks
   backlog: Permission; // requirements, epics, user stories, tasks
   reviews: Permission; // sprint reviews
+  activity: Permission; // activity log
 }
 
 /// Backlog items
@@ -241,5 +242,13 @@ export interface LogProjectActivityParams {
   itemId: string;
   userId: string;
   type: ActivityType;
+  action: ActionType;
+}
+
+export interface ProjectActivity {
+  itemId: string;
+  userId: string;
+  type: ActivityType;
+  date: Date;
   action: ActionType;
 }
