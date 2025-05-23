@@ -11,7 +11,7 @@ export default function ProjectOverview() {
 
   return (
     <div className="flex h-full w-full flex-col items-start justify center">
-      <div className="flex h-full w-full flex-row items-start justify center">
+      <div className="flex h-full w-full gap-4 flex-row items-start justify center">
         <div className="flex w-1/2 flex-col gap-5 p-5 h-64">
           <ProjectInfo projectId={projectId} />
         </div>
@@ -21,14 +21,12 @@ export default function ProjectOverview() {
           />
         </div>
       </div>
-      <div>
-        <div>
-
-        </div>
-      </div>
-      <div className="w-1/2">
-        <div className="flex h-80 w-full flex-col border-2 border-[#BECAD4] rounded-lg p-3">
+      <div className="flex h-full w-full gap-4 flex-row items-start justify center">
+        <div className="flex w-1/2 h-80 w-full flex-col border-2 border-[#BECAD4] rounded-lg p-3">
           <ActivityProjectOverview projectId={projectId}/>
+        </div>
+        <div className="flex w-1/2 h-80 w-full flex-col border-2 border-[#BECAD4] rounded-lg p-3">
+          
         </div>
       </div>
     </div>

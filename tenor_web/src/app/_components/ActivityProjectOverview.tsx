@@ -3,7 +3,7 @@ import { api } from "~/trpc/react";
 import SearchBar from "./SearchBar";
 import { useState } from "react";
 import ProfilePicture from "./ProfilePicture";
-import { useFormatEpicScrumId, useFormatIssueScrumId, useFormatTaskScrumId, useFormatUserStoryScrumId } from "../_hooks/scrumIdHooks";
+import { useFormatEpicScrumId, useFormatIssueScrumId, useFormatSprintNumber, useFormatTaskScrumId, useFormatUserStoryScrumId } from "../_hooks/scrumIdHooks";
 import { capitalize } from "@mui/material";
 import LoadingSpinner from "./LoadingSpinner";
 import type { Epic, Issue, ProjectActivity, Sprint, Task, UserStory, WithId } from "~/lib/types/firebaseSchemas";
@@ -45,6 +45,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const formatIssueScrumId = useFormatIssueScrumId();
   const formatEpicScrumId = useFormatEpicScrumId();
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatSprintScrumId = useFormatSprintNumber();
   
   const [searchText, setSearchText] = useState("");
 
@@ -104,14 +105,9 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     const item = getItemDetails(activity);
     if (!item) return activity.itemId;
 
-    if (activity.type === 'SP') {
-      const sprint = item as WithId<Sprint>;
-      return `Sprint ${sprint.number}`;
-    }
-
     if ('name' in item && typeof item.name === 'string') {
       return item.name;
-    }
+    } else 
 
     return activity.itemId;
   };
@@ -122,14 +118,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const getScrumId = (activity: WithId<ProjectActivity>) => {
     const item = getItemDetails(activity);
     if (!item) return null;
-
-    if (activity.type === 'SP') {
-      const sprint = item as WithId<Sprint>;
-      if (sprint.number !== undefined && sprint.number !== null) {
-        return `Sprint ${sprint.number}`;
-      }
-      return `Sprint (${activity.itemId})`;
-    }
+    const sprint = item as WithId<Sprint>;
 
     if (hasScrumId(item)) {
       switch (activity.type) {
@@ -141,6 +130,8 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
           return formatEpicScrumId(item.scrumId) + ":";
         case 'US':
           return formatUserStoryScrumId(item.scrumId) + ":";
+        case 'SP':
+          return formatSprintScrumId(sprint.number);
       }
     }
 
@@ -316,8 +307,11 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
               className="border-b-2 px-3 py-4 flex flex-row w-full transition hover:bg-gray-100"
             >
               <div className="flex items-start flex-col w-3/4">                
-                <h3 className="text-xl font-semibold">
-                  {scrumId} {itemTitle}
+                <h3 className="text-lg font-semibold">
+                  {activity.type === "SP" && (
+                    <span>Sprint</span>
+                  )}
+                  {scrumId && <>{scrumId} <span className="font-normal">{itemTitle}</span> </>}
                 </h3>
                 <div className="flex flex-row w-full items-center justify-start">
                   {user ? (
