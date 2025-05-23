@@ -4,7 +4,7 @@ const spec1: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
   description: "Line chart to see team performance.",
   width: 500,
-  height: 70,
+  height: 100,
   padding: 5,
 
   data: [
@@ -15,9 +15,10 @@ const spec1: VisualizationSpec = {
   scales: [
     {
       name: "x",
-      type: "point",
+      type: "time",
       range: "width",
       domain: { data: "table", field: "x" },
+      nice: true,
     },
     {
       name: "y",
@@ -28,6 +29,21 @@ const spec1: VisualizationSpec = {
       domain: { data: "table", field: "y" },
     },
   ],
+
+  // axes: [
+  //   {
+  //     orient: "bottom",
+  //     scale: "x",
+  //     labelAngle: -45,
+  //     format: "%b %d",
+  //     tickCount: 5,
+  //   },
+  //   {
+  //     orient: "left",
+  //     scale: "y",
+  //     grid: true,
+  //   },
+  // ],
 
   marks: [
     {
@@ -84,15 +100,15 @@ export const PerformanceChart = createClassFromSpec({
 
 export const SampleData = {
   table: [
-    { x: 0, y: 0 },
-    { x: 1, y: 43.1231 },
-    { x: 2, y: 81 },
-    { x: 3, y: 19 },
-    { x: 4, y: 52 },
-    { x: 5, y: 24 },
-    { x: 6, y: 87 },
-    { x: 7, y: 17 },
-    { x: 8, y: 68 },
-    { x: 9, y: 49 },
+    { x: new Date("2025-05-01"), y: 20 },
+    { x: new Date("2025-05-02"), y: 43.1231 },
+    { x: new Date("2025-05-03"), y: 81 },
+    { x: new Date("2025-05-04"), y: 19 },
+    { x: new Date("2025-05-05"), y: 52 },
+    { x: new Date("2025-05-06"), y: 24 },
+    { x: new Date("2025-05-07"), y: 87 },
+    { x: new Date("2025-05-08"), y: 17 },
+    { x: new Date("2025-05-09"), y: 68 },
+    { x: new Date("2025-05-10"), y: 49 },
   ],
 };

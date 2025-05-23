@@ -241,7 +241,9 @@ export interface LogProjectActivityParams {
   userId: string;
   type: ActivityType;
   action: ActionType;
+  createdAt?: Timestamp;
 }
+
 export interface ProjectStatus {
   projectId: string;
   taskCount: number;

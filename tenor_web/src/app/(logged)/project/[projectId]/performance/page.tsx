@@ -45,7 +45,7 @@ export default function ProjectPerformance() {
         <MemberList
           projectId={projectIdString}
           searchValue={searchValue}
-          // timeInterval={section}
+          timePartition={section}
           setSelectedMember={setSelectedMember}
           selectedMember={selectedMember}
         />

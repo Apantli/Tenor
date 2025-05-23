@@ -38,6 +38,7 @@ import { Timestamp } from "firebase-admin/firestore";
 import { getStatusTypes } from "~/utils/helpers/shortcuts/tags";
 import { getCurrentSprint } from "~/utils/helpers/shortcuts/sprints";
 import { TRPCError } from "@trpc/server";
+import { getActivityPartition } from "~/utils/helpers/shortcuts/performance";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -68,14 +69,19 @@ export const performanceRouter = createTRPCRouter({
     }),
 
   getUserContributions: roleRequiredProcedure(performancePermissions, "read")
-    .input(z.object({ projectId: z.string(), time: z.string() }))
-    .query(async ({ ctx }) => {
-      const useruid = ctx.session.user.uid;
-      console.log("useruid", useruid);
-      // TODO: compute and return user contributions
-      return [];
-      // return projects;
+    .input(
+      z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
+    )
+    .query(async ({ ctx, input }) => {
+      const activities = await getActivityPartition(
+        ctx.firestore,
+        input.projectId,
+        input.userId,
+        input.time,
+      );
+      return activities;
     }),
+
   getProjectStatus: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     console.log("useruid", useruid);
