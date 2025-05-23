@@ -42,7 +42,7 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import type { Edge, Node } from "@xyflow/react";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogge";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const userStoriesRouter = createTRPCRouter({
   /**

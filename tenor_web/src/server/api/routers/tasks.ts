@@ -40,7 +40,7 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogge";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 import { backlogPermissions } from "~/lib/permission";
 import { FieldValue } from "firebase-admin/firestore";
 

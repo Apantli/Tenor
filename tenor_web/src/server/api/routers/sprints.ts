@@ -34,7 +34,7 @@ import { getIssues, getIssuesRef } from "~/utils/helpers/shortcuts/issues";
 import { getBacklogTags } from "~/utils/helpers/shortcuts/tags";
 import { getProjectRef } from "~/utils/helpers/shortcuts/general";
 import { TRPCError } from "@trpc/server";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogge";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")
