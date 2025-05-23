@@ -43,7 +43,9 @@ import {
   emptySettings,
 } from "~/lib/defaultProjectValues";
 import {
+  getItemActivityDetails,
   getProject,
+  getProjectActivities,
   getProjectRef,
   getProjectsRef,
   getProjectStatus,
@@ -420,5 +422,22 @@ export const projectsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
       return await getProjectStatus(ctx.firestore, projectId, ctx.firebaseAdmin.app());
+    }),
+
+  getProjectActivities: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getProjectActivities( ctx.firestore, projectId);
+    }),
+
+  getItemDetails: protectedProcedure
+    .input(z.object({ 
+      projectId: z.string(),
+      itemId: z.string()
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, itemId } = input;
+      return await getItemActivityDetails(ctx.firestore, projectId, itemId);
     }),
 });

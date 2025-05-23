@@ -319,6 +319,6 @@ export const ActivitySchema = z.object({
   itemId: z.string(),
   userId: z.string(),
   type: ActivityType.optional(),
-  date: z.date(),
+  date: TimestampType.optional(),
   action: ActionType.optional(),
 });

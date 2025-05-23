@@ -6,10 +6,12 @@ import { getProjectContext } from "./ai";
 import { getTasks } from "./tasks";
 import { getIssues } from "./issues";
 import { getUserStories } from "./userStories";
-import { getCurrentSprint } from "./sprints";
+import { getCurrentSprint, getSprints } from "./sprints";
 import { getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import { TRPCError } from "@trpc/server";
+import { UserPreview } from "~/lib/types/detailSchemas";
+import { getEpics } from "./epics";
 
 
 /**
@@ -150,69 +152,6 @@ export const getGenericBacklogItemContext = async (
   return `- name: ${name}\n- description: ${description}\n${priorityContext}${sizeContext}\n\n`;
 };
 
-export const getActivityRef = (
-  firestore: Firestore,
-  projectId: string,
-  activityId: string,
-) => {
-  return getActivitiesRef(firestore, projectId).doc(activityId);
-}
-
-export const getActivity = async (
-  firestore: Firestore,
-  projectId: string,
-  activityId: string,
-) => {
-  const activityRef = getActivityRef(firestore, projectId, activityId);
-  const activitySnapshot = await activityRef.get();
-  if (!activitySnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Activity not found",
-    });
-  }
-
-  return {
-    id : activitySnapshot.id,
-    ...ActivitySchema.parse(activitySnapshot.data()),
-  } as WithId<ProjectActivity>;
-}
-
-export const getActivitiesRef = (
-  firestore: Firestore,
-  projectId: string,
-) => { return getProjectRef(firestore, projectId).collection("activity");}
-
-export const getProjectActivities = async (
-  firestore: Firestore,
-  projectId: string,
-  admin: admin.app.App,
-) => {
-  const activitiesRef = getActivitiesRef(firestore, projectId);
-  const activitiesSnapshot = await activitiesRef.get();
-  const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map((activityData) => {
-    return {
-      id: activityData.id,
-      ...ActivitySchema.parse(activityData.data()),
-    } as WithId<ProjectActivity>;
-  }
-  );
-  const users = await getUsers(admin, firestore, projectId);
-  const usersMap = new Map(users.map(user => [user.id, user]));
-  const activitiesWithUser = activities.map(activity => {
-    const user = usersMap.get(activity.userId);
-    return {
-      ...activity,
-      user: user ? {
-        uid: user.id,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-      } : null,
-    };
-  });
-  return activitiesWithUser;
-}
-
 export const generateTaskContext = async (
   firestore: Firestore,
   projectId: string,
@@ -305,3 +244,102 @@ export const getProjectStatus = async (
     assignedUssers: mappedUsers,
   };
 }
+
+export const getActivityRef = (
+  firestore: Firestore,
+  projectId: string,
+  activityId: string,
+) => {
+  return getActivitiesRef(firestore, projectId).doc(activityId);
+}
+
+export const getActivity = async (
+  firestore: Firestore,
+  projectId: string,
+  activityId: string,
+) => {
+  const activityRef = getActivityRef(firestore, projectId, activityId);
+  const activitySnapshot = await activityRef.get();
+  if (!activitySnapshot.exists) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Activity not found",
+    });
+  }
+
+  return {
+    id : activitySnapshot.id,
+    ...ActivitySchema.parse(activitySnapshot.data()),
+  } as WithId<ProjectActivity>;
+}
+
+export const getActivitiesRef = (
+  firestore: Firestore,
+  projectId: string,
+) => { return getProjectRef(firestore, projectId).collection("activity");}
+
+export const getProjectActivities = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const activitiesRef = getActivitiesRef(firestore, projectId);
+  const activitiesSnapshot = await activitiesRef.get();
+  const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map((activityData) => {
+    return { 
+      id: activityData.id,
+      ...ActivitySchema.parse(activityData.data()),
+    } as WithId<ProjectActivity>;
+  }
+  );
+  return activities;
+}
+
+export const getItemActivityDetails = async (
+  firestore: Firestore,
+  projectId: string,
+  itemId: string,
+) => {
+  // Fetch all item types in parallel
+  const [tasks, issues, userStories, epics, sprints] = await Promise.all([
+    getTasks(firestore, projectId),
+    getIssues(firestore, projectId),
+    getUserStories(firestore, projectId),
+    getEpics(firestore, projectId),  // Assuming you have this function
+    getSprints(firestore, projectId), // Assuming you have this function
+  ]);
+
+  // First try direct ID matches
+  const task = tasks.find(t => t.id === itemId);
+  if (task) return { type: "task", item: task };
+
+  const issue = issues.find(i => i.id === itemId);
+  if (issue) return { type: "issue", item: issue };
+
+  const userStory = userStories.find(us => us.id === itemId);
+  if (userStory) return { type: "userStory", item: userStory };
+
+  const epic = epics.find(e => e.id === itemId);
+  if (epic) return { type: "epic", item: epic };
+
+  const sprint = sprints.find(s => s.id === itemId);
+  if (sprint) return { type: "sprint", item: sprint };
+
+  // If we didn't find a direct match by ID, check related items
+  // For tasks, they might reference another item
+  const relatedTask = tasks.find(t => t.itemId === itemId);
+  if (relatedTask) {
+    // Find what this task belongs to
+    const parentIssue = issues.find(i => i.id === relatedTask.itemId);
+    if (parentIssue) {
+      return { type: "issue", item: parentIssue, relatedTask };
+    }
+
+    const parentUserStory = userStories.find(us => us.id === relatedTask.itemId);
+    if (parentUserStory) {
+      return { type: "userStory", item: parentUserStory, relatedTask };
+    }
+  }
+
+  // No match found
+  return null;
+};

@@ -227,6 +227,31 @@ export default function RoleTable({
         );
       },
     },
+    activity: {
+      label: "Activity Log",
+      width: defaultWidth,
+      render: (row) => {
+        return (
+          <PillPickerComponent
+            disabled={disabled}
+            label={permissionLabels[row.activity]}
+            selectedItem={{
+              id: row.activity.toString(),
+              label: permissionLabels[row.activity],
+            }}
+            hideSearch={true}
+            allItems={permissionItems}
+            onChange={(item: { id: string; label: string }): void => {
+              handleEditTabPermission(
+                row.id,
+                "activity",
+                parseInt(item.id) as Permission,
+              );
+            }}
+          />
+        );
+      },
+    },
   };
 
   const filteredRoles = roles.filter((role) => {

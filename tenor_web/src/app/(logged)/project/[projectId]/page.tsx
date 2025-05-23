@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import ProjectInfo from "~/app/_components/sections/ProjectInfo";
 import ProjectStatus from "~/app/_components/ProjectStatus";
+import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
 
 export default function ProjectOverview() {
 
@@ -23,7 +24,12 @@ export default function ProjectOverview() {
       </div>
       <div>
         <div>
-          
+
+        </div>
+      </div>
+      <div className="w-1/2">
+        <div className="flex w-full flex-col">
+          <ActivityProjectOverview projectId={projectId}/>
         </div>
       </div>
     </div>

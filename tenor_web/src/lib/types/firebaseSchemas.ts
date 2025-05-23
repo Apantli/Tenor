@@ -249,6 +249,6 @@ export interface ProjectActivity {
   itemId: string;
   userId: string;
   type: ActivityType;
-  date: Date;
+  date?: Date;
   action: ActionType;
 }
