@@ -16,6 +16,7 @@ interface EditableBoxProps {
   className?: string;
   placeholder?: string;
   disabled?: boolean;
+  close?: boolean;
 }
 
 export function UserPicker({
@@ -25,6 +26,7 @@ export function UserPicker({
   className,
   placeholder = "Select an option",
   disabled = false,
+  close = true,
 }: EditableBoxProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -105,6 +107,7 @@ export function UserPicker({
   return (
     <div className={cn("w-full", className)}>
       <Dropdown
+        close={close}
         disabled={disabled}
         label={renderDropdownLabel()}
         onOpen={() => inputRef.current?.focus()}

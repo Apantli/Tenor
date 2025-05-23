@@ -28,8 +28,14 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import { type RegexItem } from "./AdvancedSearch";
 
-export default function ItemsKanban() {
+interface Props {
+  filter: string;
+  regex: RegexItem[];
+}
+
+export default function ItemsKanban({ filter, regex }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -272,6 +278,8 @@ export default function ItemsKanban() {
 
               return (
                 <AssignableCardColumn
+                  filter={filter}
+                  regex={regex}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedItemId}
                   assignSelectionToColumn={assignSelectionToColumn}

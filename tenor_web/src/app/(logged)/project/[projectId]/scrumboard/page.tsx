@@ -15,6 +15,8 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
+import SearchBar from "~/app/_components/SearchBar";
+import AdvancedSearch, { type RegexItem } from "./AdvancedSearch";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
 
@@ -42,6 +44,8 @@ export default function ProjectKanban() {
     (localStorage.getItem("scrumboard-section") as ScrumboardSections) ??
       "Tasks",
   );
+  const [filter, setFilter] = useState("");
+  const [regex, setRegex] = useState<RegexItem[]>([]);
 
   // HANDLES
   const onListAdded = async () => {
@@ -53,6 +57,15 @@ export default function ProjectKanban() {
     <div className="flex h-full flex-col justify-start overflow-hidden pt-0">
       <div className="flex items-baseline justify-between gap-3 pb-4">
         <h1 className="grow-[1] text-3xl font-semibold">Scrum Board</h1>
+        <div className="flex max-w-[400px] gap-2 pl-3">
+          <SearchBar
+            handleUpdateSearch={(e) => setFilter(e.target.value)}
+            searchValue={filter}
+            placeholder="Search..."
+          />
+          <AdvancedSearch regex={regex} setRegex={setRegex} />
+        </div>
+
         <div className="min-w-[300px]">
           <SegmentedControl
             options={["Tasks", "Backlog Items"]}
@@ -63,6 +76,7 @@ export default function ProjectKanban() {
             }}
           />
         </div>
+
         {permission >= permissionNumbers.write && (
           <PrimaryButton onClick={() => setShowNewList(true)}>
             + Add list
@@ -70,8 +84,12 @@ export default function ProjectKanban() {
         )}
       </div>
 
-      {section === "Tasks" && <TasksKanban></TasksKanban>}
-      {section === "Backlog Items" && <ItemsKanban></ItemsKanban>}
+      {section === "Tasks" && (
+        <TasksKanban filter={filter} regex={regex}></TasksKanban>
+      )}
+      {section === "Backlog Items" && (
+        <ItemsKanban filter={filter} regex={regex}></ItemsKanban>
+      )}
 
       {renderNewList && (
         <CreateKanbanListPopup

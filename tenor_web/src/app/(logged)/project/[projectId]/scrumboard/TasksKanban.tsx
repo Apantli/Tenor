@@ -27,8 +27,14 @@ import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
+import { type RegexItem } from "./AdvancedSearch";
 
-export default function TasksKanban() {
+interface Props {
+  filter: string;
+  regex: RegexItem[];
+}
+
+export default function TasksKanban({ filter, regex }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -54,10 +60,11 @@ export default function TasksKanban() {
     );
   }, [role]);
 
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation({
-        onSuccess:async () => {
-      await utils.projects.getProjectStatus.invalidate({ projectId: projectId as string }); // <-- Invalidate all tasks
+  const { mutateAsync: changeStatus } = api.tasks.changeTaskStatus.useMutation({
+    onSuccess: async () => {
+      await utils.projects.getProjectStatus.invalidate({
+        projectId: projectId as string,
+      }); // <-- Invalidate all tasks
     },
   });
 
@@ -258,6 +265,8 @@ export default function TasksKanban() {
 
               return (
                 <AssignableCardColumn
+                  filter={filter}
+                  regex={regex}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}
