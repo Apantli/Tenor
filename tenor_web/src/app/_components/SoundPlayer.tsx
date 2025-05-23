@@ -73,8 +73,6 @@ export default function SoundPlayer({
     const play = () => {
       setPlayingInner(true);
       setPlaying?.(true);
-
-      audioRef.current!.playbackRate = 3;
     };
 
     audio.addEventListener("timeupdate", showTimeInUI);
