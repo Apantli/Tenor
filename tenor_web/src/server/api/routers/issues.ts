@@ -26,7 +26,7 @@ import {
   getIssuesRef,
   getIssueTable,
 } from "~/utils/helpers/shortcuts/issues";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogge";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const issuesRouter = createTRPCRouter({
   /**

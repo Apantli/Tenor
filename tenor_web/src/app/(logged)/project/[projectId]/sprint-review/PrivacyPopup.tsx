@@ -13,7 +13,7 @@ export default function PrivacyPopup({ showPopup, setShowPopup }: Props) {
     <Popup
       show={showPopup}
       size="small"
-      className="h-[600px] max-h-[min(600px,calc(100vh-40px))] w-[600px] max-w-[min(600px,calc(100vw-40px))]"
+      className="h-[600px] max-h-[min(600px,calc(100vh-80px))] w-[600px] max-w-[min(600px,calc(100vw-80px))]"
       dismiss={() => {
         setShowPopup(false);
       }}

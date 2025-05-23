@@ -9,8 +9,7 @@ TODO:
 
 import { type PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
-import type { Timestamp } from "firebase-admin/firestore";
-import type { Firestore } from "firebase-admin/firestore";
+import type { Timestamp, Firestore } from "firebase-admin/firestore";
 /// Big categories
 
 export type WithId<T> = T & { id: string };

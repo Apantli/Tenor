@@ -54,12 +54,12 @@ export const tabsMetaInformation = {
     enabled: true,
     flags: ["settings"],
   },
-  sprintReview:{
+  sprintReview: {
     title: "Sprint Review",
     link: "/sprint-review",
     enabled: true,
     flags: ["reviews"],
-  }
+  },
 };
 export const tabs = [
   "overview",
