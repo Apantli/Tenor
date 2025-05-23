@@ -214,6 +214,7 @@ export default function EditSprintPopup({
                 selectedDate={editForm.startDate}
                 placeholder="Select date"
                 className="w-full"
+                assignDataAt="beginOfDay"
                 onChange={(newDate) =>
                   setEditForm({ ...editForm, startDate: newDate })
                 }
