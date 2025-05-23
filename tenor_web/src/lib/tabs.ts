@@ -24,6 +24,12 @@ export const tabsMetaInformation = {
     enabled: true,
     flags: ["issues"],
   },
+  tasks: {
+    title: "Tasks",
+    link: "/tasks",
+    enabled: true,
+    flags: ["backlog", "issues"],
+  },
   sprints: {
     title: "Sprints",
     link: "/sprints",
@@ -34,7 +40,7 @@ export const tabsMetaInformation = {
     title: "Scrum Board",
     link: "/scrumboard",
     enabled: true,
-    flags: ["issues"],
+    flags: ["backlog", "issues"],
   },
   calendar: {
     title: "Calendar",
@@ -67,6 +73,7 @@ export const tabs = [
   "userStories",
   "issues",
   "sprints",
+  "tasks",
   "scrumboard",
   "calendar",
   "performance",
@@ -78,6 +85,7 @@ export const tabsToLinks = {
   "user-stories": "userStories",
   issues: "issues",
   sprints: "sprints",
+  tasks: "tasks",
   scrumboard: "scrumboard",
   calendar: "calendar",
   performance: "performance",

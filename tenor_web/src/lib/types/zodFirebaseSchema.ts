@@ -5,6 +5,28 @@ import {
   defaultSprintDuration,
 } from "../defaultProjectValues";
 
+export const UserStoryZodType = z.literal("US");
+export const IssueZodType = z.literal("IS");
+export const TaskZodType = z.literal("TS");
+export const EpicZodType = z.literal("EP");
+
+export const BacklogItemZodType = z.union([UserStoryZodType, IssueZodType]);
+export const AllBasicItemZodType = z.union([
+  BacklogItemZodType,
+  TaskZodType,
+  EpicZodType,
+]);
+export const BacklogItemAndTaskZodType = z.union([
+  BacklogItemZodType,
+  TaskZodType,
+]);
+
+export const TaskDetailZodType = z.enum(["US-TS", "IS-TS"]);
+export const BacklogItemAndTaskDetailZodType = z.union([
+  BacklogItemZodType,
+  TaskDetailZodType,
+]);
+
 export const TimestampType = z.custom<Timestamp>((value) => value as Timestamp);
 
 export const SprintInfoSchema = z.object({
@@ -67,7 +89,7 @@ export const RoleSchema = z.object({
   scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
-  reviews: PermissionSchema // sprint reviews
+  reviews: PermissionSchema, // sprint reviews
 });
 
 export const BasicInfoSchema = z.object({
@@ -147,7 +169,7 @@ export const TaskSchema = BasicInfoSchema.extend({
   // FIXME: Finished date should be added to show on calendar
   // finishedDate: TimestampType.nullable(),
   itemId: z.string(),
-  itemType: z.enum(["US", "IS", "IT"]),
+  itemType: BacklogItemZodType,
   name: z.string().describe("Small (5 word maximum) description of the task"),
   description: z
     .string()
@@ -248,7 +270,7 @@ export const ProjectSchema = z.object({
       z.object({
         title: z.string(),
         activityId: z.string(),
-        type: z.enum(["US", "TS", "IS", "ITEM"]),
+        type: BacklogItemAndTaskZodType,
         newStatusId: z.string(),
         userId: z.string(),
         date: z.date(),
@@ -300,7 +322,7 @@ export const ProjectSchemaCreator = z.object({
       z.object({
         title: z.string(),
         activityId: z.string(),
-        type: z.enum(["US", "TS", "IS", "ITEM"]),
+        type: BacklogItemAndTaskZodType,
         newStatusId: z.string(),
         userId: z.string(),
         date: z.date(),
