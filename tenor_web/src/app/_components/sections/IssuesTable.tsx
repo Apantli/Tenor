@@ -24,12 +24,12 @@ import AssignUsersList from "../specific-pickers/AssignUsersList";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import {
   useInvalidateQueriesAllIssues,
-  useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 import type { IssueCol } from "~/lib/types/columnTypes";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -58,9 +58,9 @@ export default function IssuesTable() {
   const formatIssueScrumId = useFormatIssueScrumId();
 
   const confirm = useConfirmation();
+  const deleteItemByType = useDeleteItemByType();
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
-  const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
   const onIssueAdded = async (issueId: string) => {
     await invalidateQueriesAllIssues(projectId as string);
@@ -80,8 +80,6 @@ export default function IssuesTable() {
 
   const { mutateAsync: updateAssignUserStories } =
     api.issues.modifyIssuesRelatedUserStory.useMutation();
-
-  const { mutateAsync: deleteIssue } = api.issues.deleteIssue.useMutation();
 
   // Handles
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
@@ -375,19 +373,12 @@ export default function IssuesTable() {
         newData,
       );
 
-      // Deltes in database
+      // Deletes in database
       await Promise.all(
         ids.map((id) =>
-          deleteIssue({
-            projectId: projectId as string,
-            issueId: id,
-          }),
+          deleteItemByType(projectId as string, "IS", id, undefined),
         ),
       );
-
-      await invalidateQueriesIssueDetails(projectId as string, ids);
-      await invalidateQueriesAllIssues(projectId as string);
-      await invalidateQueriesAllTasks(projectId as string);
 
       return true;
     };

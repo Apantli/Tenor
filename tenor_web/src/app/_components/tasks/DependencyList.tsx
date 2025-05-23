@@ -51,7 +51,7 @@ export default function DependencyList({
   const formatTaskScrumId = useFormatTaskScrumId();
 
   const filteredTasks = allTasksExpectCurrent?.filter((task) => {
-    const scrumId = "US" + task.scrumId.toString().padStart(3, "0");
+    const scrumId = formatTaskScrumId(task.scrumId);
     const fullTaskName = `${scrumId}: ${task.name}`;
     if (
       searchValue !== "" &&

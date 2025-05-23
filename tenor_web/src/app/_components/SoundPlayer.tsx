@@ -6,6 +6,7 @@ interface Props {
   soundSrc: string;
   hideTime?: boolean;
   setPlaying?: (playing: boolean) => void;
+  setCurrentTime?: (currentTime: number) => void;
   onFinish?: () => void;
 }
 
@@ -14,6 +15,7 @@ export default function SoundPlayer({
   hideTime,
   setPlaying,
   onFinish,
+  setCurrentTime,
 }: Props) {
   const ringCount = 10;
   const rings = useMemo(
@@ -54,6 +56,7 @@ export default function SoundPlayer({
       currentTimeRef.current.innerText = secondsToTime(
         Math.floor(audio.currentTime),
       );
+      setCurrentTime?.(Math.floor(audio.currentTime));
       durationRef.current.innerText = secondsToTime(Math.floor(audio.duration));
     };
 
@@ -62,14 +65,28 @@ export default function SoundPlayer({
       onFinish?.();
     };
 
+    const pause = () => {
+      setPlayingInner(false);
+      setPlaying?.(false);
+    };
+
+    const play = () => {
+      setPlayingInner(true);
+      setPlaying?.(true);
+    };
+
     audio.addEventListener("timeupdate", showTimeInUI);
     audio.addEventListener("loadedmetadata", showTimeInUI);
     audio.addEventListener("ended", endPlaying);
+    audio.addEventListener("pause", pause);
+    audio.addEventListener("play", play);
 
     return () => {
       audio.removeEventListener("timeupdate", showTimeInUI);
       audio.removeEventListener("loadedmetadata", showTimeInUI);
       audio.removeEventListener("ended", endPlaying);
+      audio.removeEventListener("pause", pause);
+      audio.removeEventListener("play", play);
     };
   }, []);
 
@@ -119,7 +136,7 @@ export default function SoundPlayer({
         </div>
       </div>
       {!hideTime && (
-        <div className="flex gap-2">
+        <div className="flex gap-2 text-lg">
           <span ref={currentTimeRef}>-:--</span>
           <span>/</span>
           <span ref={durationRef}>-:--</span>

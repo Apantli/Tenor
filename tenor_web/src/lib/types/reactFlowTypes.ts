@@ -1,5 +1,6 @@
 import BasicNode from "~/app/_components/reactFlow/BasicNode";
 import DependencyEdge from "~/app/_components/reactFlow/DependencyEdge";
+import type { TaskDetailType, UserStoryType } from "./firebaseSchemas";
 
 // Node types for react flow
 export const nodeTypes = {
@@ -14,7 +15,7 @@ export const edgeTypes = {
 // The data for the nodes in the dependency tree. This is what the backend needs to know to create the nodes.
 export interface BasicNodeData {
   scrumId: number;
-  itemType: "US" | "EP" | "TS";
+  itemType: UserStoryType | TaskDetailType;
   title: string;
   parentId?: string; // Only for tasks
 }

@@ -11,6 +11,7 @@ import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import {
+  type BacklogItemType,
   permissionNumbers,
   type BacklogItem,
   type Permission,
@@ -41,11 +42,12 @@ export type BacklogItemWithTasks = BacklogItem & {
 
 interface Props<T extends BacklogItemWithTasks> {
   itemId: string;
-  itemType: "US" | "IS" | "IT";
+  itemType: BacklogItemType;
   setShowAddTaskPopup: (show: boolean) => void;
   setSelectedGhostTask: (taskId: string) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;
-  taskIdToOpenImmediately?: string;
+  taskToOpen: string;
+  setTaskToOpen: (taskId: string) => void;
   fetchedTasks?: TaskCol[];
   itemData?: T;
   updateTaskData?: (
@@ -67,7 +69,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
   setShowAddTaskPopup,
   setUnsavedTasks,
   fetchedTasks,
-  taskIdToOpenImmediately,
+  taskToOpen,
+  setTaskToOpen,
   itemData,
   updateTaskData,
   setTaskData,
@@ -77,7 +80,6 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
   sidebarOpen,
 }: Props<T>) {
   const [taskSearchText, setTaskSearchText] = useState("");
-  const [taskToOpen, setTaskToOpen] = useState(taskIdToOpenImmediately);
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
@@ -103,7 +105,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     );
   }, [role]);
 
-  const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
+  const { mutateAsync: deleteTasks } = api.tasks.deleteTasks.useMutation();
 
   const tasksData = itemData?.tasks;
 
@@ -122,10 +124,11 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         initialData: fetchedTasks,
       },
     );
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation({
-        onSuccess: async () => {
-      await utils.projects.getProjectStatus.invalidate({ projectId: projectId as string }); // <-- Invalidate all tasks
+  const { mutateAsync: changeStatus } = api.tasks.changeTaskStatus.useMutation({
+    onSuccess: async () => {
+      await utils.projects.getProjectStatus.invalidate({
+        projectId: projectId as string,
+      }); // <-- Invalidate all tasks
     },
   });
   const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
@@ -159,7 +162,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     setSelectedTaskId(taskToOpen);
     setSelectedGhostTask("");
     setShowTaskDetail(true);
-    setTaskToOpen(undefined);
+    setTaskToOpen("");
   }, [taskToOpen, tasksTableData]);
 
   const filteredTasks = transformedTasks
@@ -400,15 +403,12 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       newTransformedTasks,
     );
 
-    await Promise.all(
-      ids.map((id) =>
-        deleteTask({
-          projectId: projectId as string,
-          taskId: id,
-        }),
-      ),
-    );
+    const { modifiedTaskIds } = await deleteTasks({
+      projectId: projectId as string,
+      taskIds: ids,
+    });
 
+    await invalidateQueriesTaskDetails(projectId as string, modifiedTaskIds);
     await invalidateQueriesAllTasks(projectId as string, [itemId]);
     await invalidateQueriesBacklogItems(projectId as string, itemType);
 
@@ -671,7 +671,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             showDetail={showTaskDetail}
             setShowDetail={setShowTaskDetail}
             isGhost={selectedGhostTaskId !== ""}
-            closeAllPopupsOnDismiss={taskIdToOpenImmediately !== undefined}
+            closeAllPopupsOnDismiss={taskToOpen !== undefined}
             taskData={
               selectedGhostTask ??
               itemData?.tasks.find((task) => task.id === selectedTaskId)

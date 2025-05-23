@@ -9,7 +9,7 @@ TODO:
 
 import { type PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
-import type { Timestamp } from "firebase-admin/firestore";
+import type { Timestamp, Firestore } from "firebase-admin/firestore";
 /// Big categories
 
 export type WithId<T> = T & { id: string };
@@ -173,6 +173,20 @@ export interface BasicInfo {
 // TODO: Make function to transform into number size (fibonacci)
 export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
 
+// Any change in here, make sure to modify the zod firebase schemas too
+export type UserStoryType = "US";
+export type IssueType = "IS";
+// export type GenericItemType = "IT"; // NOT IMPLEMENTED YET
+export type TaskType = "TS";
+export type EpicType = "EP";
+
+export type BacklogItemType = UserStoryType | IssueType;
+export type AllBasicItemType = BacklogItemType | TaskType | EpicType;
+export type BacklogItemAndTaskType = BacklogItemType | TaskType;
+
+export type TaskDetailType = `${BacklogItemType}-${TaskType}`; // Used for simplification of moving info around
+export type BacklogItemAndTaskDetailType = BacklogItemType | TaskDetailType;
+
 export interface BacklogItem extends BasicInfo {
   sprintId: string;
   taskIds: string[];
@@ -192,7 +206,6 @@ export interface UserStory extends BacklogItem {
   requiredByIds: string[]; // US ID
 }
 
-export type itemTypes = "US" | "IS" | "IT"; // US = user story, IS = issue, ITEM = generic item
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
@@ -200,7 +213,7 @@ export interface Task extends BasicInfo {
   finishedDate?: Date;
   size: Size;
   itemId: string;
-  itemType: itemTypes;
+  itemType: BacklogItemType;
   dependencyIds: string[];
   requiredByIds: string[];
 }
@@ -241,4 +254,15 @@ export interface ProjectStatus {
 export interface ProjectStatusCache {
   fetchDate: Timestamp;
   topProjects: ProjectStatus[];
+}
+type ActivityType = "US" | "EP" | "IS" | "TS" | "SP";
+type ActionType = "create" | "update" | "delete";
+
+export interface LogProjectActivityParams {
+  firestore: Firestore;
+  projectId: string;
+  itemId: string;
+  userId: string;
+  type: ActivityType;
+  action: ActionType;
 }

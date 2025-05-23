@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import type { AllBasicItemType } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 const calculatePaddingNeeded = (maxNumber: number) => {
@@ -86,7 +87,7 @@ export const useFormatAnyScrumId = () => {
   const formatTaskScrumId = useFormatTaskScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();
 
-  return (scrumId: number, type: "US" | "EP" | "TS" | "IS") => {
+  return (scrumId: number, type: AllBasicItemType) => {
     switch (type) {
       case "US":
         return formatUserStoryScrumId(scrumId);

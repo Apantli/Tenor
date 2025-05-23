@@ -16,9 +16,14 @@ import {
   roleRequiredProcedure,
 } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { BacklogItemSchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
+import {
+  BacklogItemSchema,
+  BacklogItemZodType,
+  TaskSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
+  deleteTaskAndGetModified,
   getTask,
   getTaskContextFromItem,
   getTaskDetail,
@@ -40,8 +45,10 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
-import { backlogPermissions } from "~/lib/permission";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
+import { backlogPermissions, taskPermissions } from "~/lib/permission";
 import { FieldValue } from "firebase-admin/firestore";
+import type { Edge, Node } from "@xyflow/react";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -112,6 +119,15 @@ export const tasksRouter = createTRPCRouter({
           });
         }),
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: task.id,
+        type: "TS",
+        action: "create",
+      });
 
       return {
         id: task.id,
@@ -276,6 +292,15 @@ export const tasksRouter = createTRPCRouter({
         }),
       );
 
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskId,
+        type: "TS",
+        action: "update",
+      });
+
       await getTaskRef(ctx.firestore, projectId, taskId).update(taskData);
       return {
         updatedTaskds: [
@@ -307,6 +332,14 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, statusId } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "update",
+      });
       await taskRef.update({ statusId });
     }),
 
@@ -316,7 +349,7 @@ export const tasksRouter = createTRPCRouter({
    * @input {object} input - Input parameters
    * @input {string} input.projectId - The ID of the project
    * @input {string} input.taskId - The ID of the task to delete
-   * @returns {object} Object with success status
+   * @returns {object} Object with success status and array of modified task IDs
    */
   deleteTask: protectedProcedure
     .input(
@@ -327,50 +360,73 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId } = input;
-      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
-
-      // Get the task to get its dependencies and required by relationships
-      const task = await getTask(ctx.firestore, projectId, taskId);
-
-      const modifiedTasks = task.dependencyIds.concat(
-        task.requiredByIds,
+      const modifiedTasks = await deleteTaskAndGetModified(
+        ctx.firestore,
+        projectId,
         taskId,
       );
 
-      // Remove this user story from all dependencies' requiredBy arrays
-      await Promise.all(
-        task.dependencyIds.map(async (dependencyId) => {
-          await updateDependency(
-            ctx.firestore,
-            projectId,
-            dependencyId,
-            taskId,
-            "remove",
-            "requiredByIds",
-          );
-        }),
-      );
-
-      // Remove this user story from all requiredBy's dependency arrays
-      await Promise.all(
-        task.requiredByIds.map(async (requiredById) => {
-          await updateDependency(
-            ctx.firestore,
-            projectId,
-            requiredById,
-            taskId,
-            "remove",
-            "dependencyIds",
-          );
-        }),
-      );
-
-      // Mark the task as deleted
-      await taskRef.update({ deleted: true });
+      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "delete",
+      });
 
       return {
         success: true,
-        updatedTaskIds: modifiedTasks,
+        modifiedTaskIds: modifiedTasks,
+      };
+    }),
+
+  /**
+   * @procedure deleteTasks
+   * @description Marks multiple tasks as deleted (soft delete)
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {string[]} input.taskIds - The IDs of the tasks to delete
+   * @returns {object} Object with success status and array of modified task IDs
+   */
+  deleteTasks: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        taskIds: z.array(z.string()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, taskIds } = input;
+
+      const allModifiedTaskIds = new Set<string>();
+
+      await Promise.all(
+        taskIds.map(async (taskId) => {
+          const modifiedTasks = await deleteTaskAndGetModified(
+            ctx.firestore,
+            projectId,
+            taskId,
+          );
+          modifiedTasks.forEach((id) => allModifiedTaskIds.add(id));
+
+          // Only add the taskRef of deleted task, not the modified ones
+          const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+          await LogProjectActivity({
+            firestore: ctx.firestore,
+            projectId: input.projectId,
+            userId: ctx.session.user.uid,
+            itemId: taskRef.id,
+            type: "TS",
+            action: "delete",
+          });
+        }),
+      );
+
+      return {
+        success: true,
+        modifiedTaskIds: Array.from(allModifiedTaskIds),
       };
     }),
 
@@ -397,7 +453,7 @@ export const tasksRouter = createTRPCRouter({
         .object({
           projectId: z.string(),
           itemId: z.string(),
-          itemType: z.enum(["US", "IS", "IT"]),
+          itemType: BacklogItemZodType,
           amount: z.number(),
           prompt: z.string(),
         })
@@ -406,7 +462,7 @@ export const tasksRouter = createTRPCRouter({
             projectId: z.string(),
             amount: z.number(),
             prompt: z.string(),
-            itemType: z.enum(["US", "IS", "IT"]),
+            itemType: BacklogItemZodType,
             itemDetail: BacklogItemSchema.omit({
               scrumId: true,
               deleted: true,
@@ -464,9 +520,7 @@ export const tasksRouter = createTRPCRouter({
       } else {
         let extra = "";
         const itemData = input.itemDetail;
-        if (input.itemType === "IT") {
-          itemTypeName = "backlog item";
-        } else if (input.itemType === "IS") {
+        if (input.itemType === "IS") {
           itemTypeName = "issue";
           extra = `- steps to recreate: ${itemData.extra}`;
         } else {
@@ -537,6 +591,7 @@ ${tagContext}\n\n`;
         status: todoTag as StatusTag,
       }));
     }),
+
   /**
    * @function getTaskCount
    * @description Retrieves the number of tasks inside a given project, regardless of their deleted status.
@@ -550,5 +605,146 @@ ${tagContext}\n\n`;
       const tasksRef = getTasksRef(ctx.firestore, projectId);
       const countSnapshot = await tasksRef.count().get();
       return countSnapshot.data().count;
+    }),
+  /**
+   * @function addTaskDependency
+   * @description Creates a dependency relationship between two tasks, where one task becomes a prerequisite for another.
+   * @param {string} projectId - The ID of the project to which the tasks belong.
+   * @param {string} dependencyTaskId - The ID of the task that will be a prerequisite (dependency).
+   * @param {string} parentTaskId - The ID of the task that will depend on the prerequisite task.
+   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the dependency is created.
+   */
+  addTaskDependencies: roleRequiredProcedure(taskPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        dependencyTaskId: z.string(),
+        parentTaskId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, dependencyTaskId, parentTaskId } = input;
+
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        undefined,
+        [{ sourceId: parentTaskId, targetId: dependencyTaskId }],
+      );
+
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
+        });
+      }
+
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        parentTaskId,
+        dependencyTaskId,
+        "add",
+        "dependencyIds",
+      );
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        dependencyTaskId,
+        parentTaskId,
+        "add",
+        "requiredByIds",
+      );
+      return { success: true };
+    }),
+
+  /**
+   * @function deleteTaskDependency
+   * @description Removes a dependency relationship between two tasks.
+   * @param {string} projectId - The ID of the project to which the tasks belong.
+   * @param {string} parentTaskId - The ID of the dependent task that will no longer require the prerequisite.
+   * @param {string} dependencyTaskId - The ID of the prerequisite task that will no longer be required.
+   * @returns {Promise<{ success: boolean }>} - A promise that resolves when the dependency is removed.
+   */
+  deleteTaskDependencies: roleRequiredProcedure(taskPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        parentTaskId: z.string(),
+        dependencyTaskId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, parentTaskId, dependencyTaskId } = input;
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        parentTaskId,
+        dependencyTaskId,
+        "remove",
+        "dependencyIds",
+      );
+      await updateDependency(
+        ctx.firestore,
+        projectId,
+        dependencyTaskId,
+        parentTaskId,
+        "remove",
+        "requiredByIds",
+      );
+      return { success: true };
+    }),
+  /**
+   * @function getTaskDependencies
+   * @description Retrieves all tasks and their dependency relationships in a format suitable for visualization.
+   * @param {string} projectId - The ID of the project to get task dependencies from.
+   * @returns {Promise<{nodes: Node[], edges: Edge[]}>} - Returns an object containing:
+   *   - nodes: Array of task nodes with position and display data
+   *   - edges: Array of dependency relationships between tasks
+   */
+  getTaskDependencies: roleRequiredProcedure(taskPermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const tasks = await getTasks(ctx.firestore, projectId);
+
+      // Create nodes for each user story with a grid layout
+      const nodes: Node[] = tasks.map((task) => {
+        return {
+          id: task.id,
+          position: {
+            x: 0,
+            y: -100,
+          }, // Position is updated in the frontend because it needs nodes' real size
+          data: {
+            id: task.id,
+            title: task.name,
+            scrumId: task.scrumId,
+            itemType: task.itemType + "-TS",
+            showDeleteButton: true,
+            showEditButton: true,
+            collapsible: false,
+            parentId: task.itemId,
+          }, // See BasicNodeData for properties
+          type: "basic", // see nodeTypes
+          deletable: false,
+        };
+      });
+
+      // Create edges for dependencies
+      const edges: Edge[] = tasks.flatMap((task) =>
+        task.dependencyIds.map((dependencyId) => ({
+          id: `${dependencyId}-${task.id}`,
+          source: dependencyId,
+          target: task.id,
+          type: "dependency", // see edgeTypes
+        })),
+      );
+
+      return { nodes, edges };
     }),
 });
