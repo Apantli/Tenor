@@ -4,48 +4,66 @@ import { api } from "~/trpc/react";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesBacklogItems,
+  useInvalidateQueriesTaskDetails,
   useInvalidateQueriesUserStoriesDetails,
 } from "./invalidateHooks";
+import type { AllBasicItemType } from "~/lib/types/firebaseSchemas";
 
 // This also does all the necessary invalidations
 export const useDeleteItemByType = () => {
   const { mutateAsync: deleteUserStory } =
     api.userStories.deleteUserStory.useMutation();
+  const { mutateAsync: deleteIssue } = api.issues.deleteIssue.useMutation();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
   const { mutateAsync: deleteEpic } = api.epics.deleteEpic.useMutation();
+
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
-
-  // TODO: Implement this when dependencies for tasks are implemented
-  // const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   return async (
     projectId: string,
-    itemType: "US" | "EP" | "TS",
+    itemType: AllBasicItemType,
     itemId: string,
     parentId?: string,
   ) => {
     switch (itemType) {
       case "US":
-        const { updatedUserStoryIds } = await deleteUserStory({
-          projectId,
-          userStoryId: itemId,
-        });
+        const { updatedUserStoryIds, modifiedTaskIds: modifiedTaskIdsUs } =
+          await deleteUserStory({
+            projectId,
+            userStoryId: itemId,
+          });
         await invalidateQueriesUserStoriesDetails(
           projectId,
           updatedUserStoryIds,
         );
         await invalidateQueriesBacklogItems(projectId, itemType);
+        await invalidateQueriesTaskDetails(projectId, modifiedTaskIdsUs);
+        await invalidateQueriesAllTasks(projectId);
+        break;
+
+      case "IS":
+        const { modifiedTaskIds: modifiedTaskIdsIs } = await deleteIssue({
+          projectId,
+          issueId: itemId,
+        });
+        await invalidateQueriesBacklogItems(projectId, itemType);
+        await invalidateQueriesTaskDetails(projectId, modifiedTaskIdsIs);
+        await invalidateQueriesAllTasks(projectId);
         break;
 
       case "TS":
-        await deleteTask({ projectId, taskId: itemId });
+        const { modifiedTaskIds } = await deleteTask({
+          projectId,
+          taskId: itemId,
+        });
         if (parentId) {
           await invalidateQueriesAllTasks(projectId, [parentId]);
         }
-        // TODO: Invalidate also related tasks, like in the US case (will do when dependencies for tasks are implemented)
+        await invalidateQueriesTaskDetails(projectId, modifiedTaskIds);
         break;
 
       case "EP":

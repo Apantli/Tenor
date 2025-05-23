@@ -17,10 +17,10 @@ export default function ProjectPage() {
         <ProjectList />
       </div>
       <div className="w-full flex-1 pt-10 xl:w-fit xl:flex-[2]">
-        <ProjectStatus className="h-[40vh]" />
+        <ProjectStatus className="h-[38vh]" />
         {/* FIXME: Remove when recent activity is ready */}
         <div
-          className="mt-2 h-[40vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
+          className="mt-4 h-[38vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
           style={{ backgroundImage: 'url("/recent_activity_mockup.png")' }}
           aria-label="Dashboard mockup"
         />
@@ -101,7 +101,9 @@ function ProjectList() {
                   src={
                     project.logo.startsWith("/")
                       ? project.logo
-                      : `/api/image_proxy/?url=${encodeURIComponent(project.logo)}`
+                      : `/api/image_proxy/?url=${encodeURIComponent(
+                          project.logo,
+                        )}`
                   }
                   alt={project.name}
                 />

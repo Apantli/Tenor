@@ -1,10 +1,16 @@
+import type {
+  BacklogItemAndTaskDetailType,
+  BacklogItemType,
+  Size,
+} from "./firebaseSchemas";
+
 // Only information needed by the kanban board columns / selectable cards
 export interface KanbanCard {
   id: string;
-  cardType: "US" | "IS" | "IT" | "US-TS" | "IS-TS" | "IT-TS"; // US = user story, IS = issue, IT = generic item, TS = task
+  cardType: BacklogItemAndTaskDetailType;
   scrumId: number;
   name: string;
-  size: "XS" | "S" | "M" | "L" | "XL" | "XXL" | undefined;
+  size: Size | undefined;
   tags: {
     deleted: boolean;
     id: string;
@@ -16,8 +22,8 @@ export interface KanbanCard {
 
 export interface KanbanTaskCard extends KanbanCard {
   itemId: string;
-  itemType: "US" | "IS" | "IT"; // US = user story, IS = issue, IT = generic item
+  itemType: BacklogItemType;
 }
 export interface KanbanItemCard extends KanbanCard {
-  cardType: "US" | "IS" | "IT"; // US = user story, IS = issue, IT = generic item
+  cardType: BacklogItemType;
 }

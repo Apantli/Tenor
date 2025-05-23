@@ -33,6 +33,7 @@ import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
+  useInvalidateQueriesTaskDetails,
   useInvalidateQueriesUserStoriesDetails,
 } from "~/app/_hooks/invalidateHooks";
 import AiIcon from "@mui/icons-material/AutoAwesome";
@@ -72,6 +73,7 @@ export default function UserStoryDetailPopup({
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
+  const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesUserStoriesDetails =
@@ -79,6 +81,9 @@ export default function UserStoryDetailPopup({
   const [unsavedTasks, setUnsavedTasks] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [taskToOpen, setTaskToOpen] = useState<string>(
+    taskIdToOpenImmediately ?? "",
+  );
 
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
 
@@ -288,7 +293,7 @@ export default function UserStoryDetailPopup({
         "Cancel",
       )
     ) {
-      const { updatedUserStoryIds } = await deleteUserStory({
+      const { updatedUserStoryIds, modifiedTaskIds } = await deleteUserStory({
         projectId: projectId as string,
         userStoryId: userStoryId,
       });
@@ -298,6 +303,8 @@ export default function UserStoryDetailPopup({
         projectId as string,
         updatedUserStoryIds, // for example, if you delete a user story, all its dependencies will be updated
       );
+      // for example, if you delete a user story, all its tasks that were related to any of the US tasks will be updated
+      await invalidateQueriesTaskDetails(projectId as string, modifiedTaskIds);
       await dismissPopup();
     }
   };
@@ -629,7 +636,8 @@ export default function UserStoryDetailPopup({
               });
             }}
             setUnsavedTasks={setUnsavedTasks}
-            taskIdToOpenImmediately={taskIdToOpenImmediately}
+            taskToOpen={taskToOpen}
+            setTaskToOpen={setTaskToOpen}
             itemData={
               userStoryData ? userStoryDataToItemData(userStoryData) : undefined
             }

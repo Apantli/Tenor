@@ -18,6 +18,7 @@ import {
 } from "../trpc";
 import { issuePermissions } from "~/lib/permission";
 import {
+  deleteIssueAndGetModified,
   getIssue,
   getIssueDetail,
   getIssueNewId,
@@ -162,19 +163,11 @@ export const issuesRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId } = input;
-      const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
-      await issueRef.update({ deleted: true });
-
-      const tasks = await getIssuesRef(ctx.firestore, projectId)
-        .where("itemType", "==", "IS")
-        .where("itemId", "==", issueId)
-        .get();
-
-      // NOTE: This is a batch operation, so it will not be atomic. If one of the updates fails, the others will still be applied.
-      const batch = ctx.firestore.batch();
-      tasks.docs.forEach((task) => {
-        batch.update(task.ref, { deleted: true });
-      });
+      const { modifiedTasks } = await deleteIssueAndGetModified(
+        ctx.firestore,
+        projectId,
+        issueId,
+      );
 
       await LogProjectActivity({
         firestore: ctx.firestore,
@@ -185,7 +178,7 @@ export const issuesRouter = createTRPCRouter({
         action: "delete",
       });
 
-      await batch.commit();
+      return { success: true, modifiedTaskIds: modifiedTasks };
     }),
 
   /**
@@ -273,7 +266,7 @@ export const issuesRouter = createTRPCRouter({
         type: "IS",
         action: "update",
       });
-      
+
       await issueRef.update(updatedIssueData);
     }),
 
@@ -297,7 +290,7 @@ export const issuesRouter = createTRPCRouter({
    * @description Retrieves all issues for a given project.
    * @param {string} projectId - The ID of the project to retrieve issues for.
    * @returns {Promise<IssueCol[]>} - A promise that resolves to an array of issues.
-  */
+   */
   getAllIssues: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {

@@ -29,6 +29,11 @@ export const issuePermissions: FlagsRequired = {
   optimistic: true,
 };
 
+export const taskPermissions: FlagsRequired = {
+  flags: ["issues", "backlog"],
+  optimistic: true,
+};
+
 export const usersPermissions: FlagsRequired = {
   flags: [
     "backlog",
