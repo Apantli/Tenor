@@ -3,7 +3,6 @@
 import { useParams } from "next/navigation";
 import ProjectInfo from "~/app/_components/sections/ProjectInfo";
 import ProjectStatus from "~/app/_components/ProjectStatus";
-import BurndownChart from "~/app/_components/BurndownChart";
 
 export default function ProjectOverview() {
 
@@ -24,7 +23,7 @@ export default function ProjectOverview() {
       </div>
       <div>
         <div>
-          <BurndownChart projectId={projectId} />
+          
         </div>
       </div>
     </div>
