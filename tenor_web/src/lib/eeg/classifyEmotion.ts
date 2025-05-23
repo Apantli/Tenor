@@ -1,4 +1,4 @@
-import { EEGDataPointWithTimestamp } from "~/app/(logged)/project/[projectId]/sprint-review/ConversationPopup";
+import { type EEGDataPointWithTimestamp } from "~/app/(logged)/project/[projectId]/sprint-review/ConversationPopup";
 
 type EmotionClassificationResult = {
   emotion: "relaxed" | "happy" | "stressed" | "angry" | "neutral";
@@ -67,7 +67,7 @@ export function mode<T>(arr: T[]): T | undefined {
   const frequency = new Map<T, number>();
 
   for (const item of arr) {
-    frequency.set(item, (frequency.get(item) || 0) + 1);
+    frequency.set(item, (frequency.get(item) ?? 0) + 1);
   }
 
   let maxItem: T = arr[0]!;

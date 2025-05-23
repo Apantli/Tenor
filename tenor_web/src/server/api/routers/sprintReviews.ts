@@ -116,8 +116,8 @@ export const sprintReviewsRouter = createTRPCRouter({
         }),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      const { projectId, data } = input;
+    .query(async ({ input }) => {
+      const { data } = input;
 
       if (data.textAnswers.length < 3) {
         throw new TRPCError({
@@ -148,7 +148,7 @@ export const sprintReviewsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, reviewId, data } = input;
+      const { data } = input;
       if (data.textAnswers.length < 3) {
         throw new TRPCError({
           code: "BAD_REQUEST",

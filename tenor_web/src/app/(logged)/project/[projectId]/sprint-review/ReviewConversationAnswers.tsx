@@ -1,7 +1,5 @@
-import { EEGReading } from "muse-js";
 import { useParams } from "next/navigation";
 import React from "react";
-import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { api } from "~/trpc/react";

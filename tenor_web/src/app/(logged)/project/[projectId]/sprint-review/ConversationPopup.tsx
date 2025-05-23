@@ -10,7 +10,7 @@ import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 
-import { zipSamples, MuseClient, EEGReading } from "muse-js";
+import { zipSamples, MuseClient } from "muse-js";
 // @ts-expect-error @neurosity/pipes is a JS library without types
 import { epoch, addInfo, fft, powerByBand } from "@neurosity/pipes";
 import { addSignalQuality } from "~/lib/eeg/addSignalQuality";
@@ -82,13 +82,7 @@ export default function ConversationPopup({
 
   const textAnswers = useRef<string[]>([]);
 
-  const {
-    windowTranscripts,
-    error,
-    isRecognitionSupported,
-    resetTranscripts,
-    finishEarly,
-  } = useSpeechRecognition({
+  const { resetTranscripts, finishEarly } = useSpeechRecognition({
     timeWindows,
     currentTime: currentTime,
     endingTime,
@@ -243,7 +237,9 @@ export default function ConversationPopup({
         .pipe(
           // eslint-disable-next-line
           epoch({ duration: 256, interval: 128, samplingRate: 256 }),
+          // eslint-disable-next-line
           fft({ bins: 256 }),
+          // eslint-disable-next-line
           powerByBand(),
         )
         // eslint-disable-next-line
@@ -291,7 +287,7 @@ export default function ConversationPopup({
       }),
     );
 
-    utils.sprintReviews.getReviewAnswers.invalidate({
+    await utils.sprintReviews.getReviewAnswers.invalidate({
       projectId: projectId as string,
       reviewId: sprintReviewId,
       userId: user.uid,
@@ -311,7 +307,7 @@ export default function ConversationPopup({
       },
     });
 
-    utils.sprintReviews.getReviewAnswers.invalidate({
+    await utils.sprintReviews.getReviewAnswers.invalidate({
       projectId: projectId as string,
       reviewId: sprintReviewId,
       userId: user.uid,
@@ -607,7 +603,7 @@ export default function ConversationPopup({
                 </SecondaryButton>
                 <PrimaryButton
                   onClick={handleSendReport}
-                  loading={isSendingProcessedReport}
+                  loading={isSendingReport}
                 >
                   Send report
                 </PrimaryButton>
