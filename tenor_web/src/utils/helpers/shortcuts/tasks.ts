@@ -3,10 +3,16 @@ import { getProjectRef } from "./general";
 import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import { TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import { getStatusType, getTodoStatusTag } from "./tags";
-import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
+import type {
+  TaskDetail,
+  TaskPreview,
+  UserPreview,
+} from "~/lib/types/detailSchemas";
 import type * as admin from "firebase-admin";
 import type { TaskCol } from "~/lib/types/columnTypes";
 import { getGlobalUserPreview } from "./users";
+import { FieldValue } from "firebase-admin/firestore";
+import type { DependenciesWithId } from "~/lib/types/userStoriesUtilTypes";
 
 /**
  * @function getTasksRef
@@ -47,6 +53,130 @@ export const getTaskNewId = async (firestore: Firestore, projectId: string) => {
   const tasksRef = getTasksRef(firestore, projectId).count().get();
   const tasksCount = (await tasksRef).data().count;
   return tasksCount + 1;
+};
+
+const isCyclicUtil = (
+  adjacencyList: Map<string, string[]>,
+  taskId: string,
+  visitedTasks: Map<string, boolean>,
+  recursionPathVisited: Map<string, boolean>,
+): boolean => {
+  // If node is already in the recursion stack, cycle detected
+  if (recursionPathVisited.get(taskId)) return true;
+
+  // If node is already visited and not in recStack, no need to check again
+  if (visitedTasks.get(taskId)) return false;
+
+  // Mark the node as visited and add it to the recursion stack
+  visitedTasks.set(taskId, true);
+  recursionPathVisited.set(taskId, true);
+
+  // Recur for all neighbors (dependencies) of the current node
+  const neighbors = adjacencyList.get(taskId) ?? [];
+  for (const v of neighbors) {
+    if (isCyclicUtil(adjacencyList, v, visitedTasks, recursionPathVisited)) {
+      return true; // If any path leads to a cycle, return true
+    }
+  }
+
+  // Backtrack: remove the node from recursion stack
+  recursionPathVisited.set(taskId, false);
+  return false;
+};
+
+export const updateDependency = (
+  firestore: Firestore,
+  projectId: string,
+  taskId: string,
+  relaredTaskId: string,
+  operation: "add" | "remove",
+  field: "requiredByIds" | "dependencyIds",
+) => {
+  const updateRef = getTaskRef(firestore, projectId, taskId);
+  if (operation === "add") {
+    return updateRef.update({
+      [field]: FieldValue.arrayUnion(relaredTaskId),
+    });
+  } else {
+    return updateRef.update({
+      [field]: FieldValue.arrayRemove(relaredTaskId),
+    });
+  }
+};
+
+const constructAdjacencyList = (
+  tasks: DependenciesWithId[],
+  newTasks?: DependenciesWithId[],
+  newDependencies?: Array<{ sourceId: string; targetId: string }>,
+): Map<string, string[]> => {
+  const adj = new Map<string, string[]>();
+
+  // Add dependencies from existing tasks
+  tasks.forEach((ts) => {
+    adj.set(ts.id, [...(ts.dependencyIds ?? [])]);
+    ts.requiredByIds?.forEach((reqId) => {
+      const reqs = adj.get(reqId) ?? [];
+      reqs.push(ts.id);
+      adj.set(reqId, reqs);
+    });
+  });
+
+  // Add new tasks if provided
+  if (newTasks) {
+    newTasks.forEach((ts) => {
+      adj.set(ts.id, [...(ts.dependencyIds ?? [])]);
+      ts.requiredByIds?.forEach((reqId) => {
+        const reqs = adj.get(reqId) ?? [];
+        reqs.push(ts.id);
+        adj.set(reqId, reqs);
+      });
+    });
+  }
+
+  // Add new dependencies if provided
+  if (newDependencies) {
+    newDependencies.forEach(({ sourceId, targetId }) => {
+      const deps = adj.get(sourceId) ?? [];
+      if (!deps.includes(targetId)) {
+        deps.push(targetId);
+        adj.set(sourceId, deps);
+      }
+    });
+  }
+
+  return adj;
+};
+
+export const hasDependencyCycle = async (
+  firestore: Firestore,
+  projectId: string,
+  newTasks?: DependenciesWithId[],
+  newDependencies?: Array<{ sourceId: string; targetId: string }>,
+): Promise<boolean> => {
+  // Get all tasks
+  const tasks = await getTasks(firestore, projectId);
+
+  // Construct adjacency list
+  const adj = constructAdjacencyList(tasks, newTasks, newDependencies);
+
+  // Initialize visited and recursion stack maps
+  const visited = new Map<string, boolean>();
+  const recStack = new Map<string, boolean>();
+
+  // Initialize all nodes as not visited
+  adj.forEach((_, id) => {
+    visited.set(id, false);
+    recStack.set(id, false);
+  });
+
+  // Check each task (for disconnected components)
+  for (const [id] of adj) {
+    if (!visited.get(id) && isCyclicUtil(adj, id, visited, recStack)) {
+      return true; // Cycle found
+    }
+  }
+
+  return false; // No cycle detected
 };
 
 /**
@@ -249,11 +379,43 @@ export const getTaskDetail = async (
     ? await getStatusType(firestore, projectId, task.statusId)
     : undefined;
 
+  const dependencies: WithId<TaskPreview>[] = await Promise.all(
+    task.dependencyIds.map(async (dependencyId) => {
+      const task = await getTask(firestore, projectId, dependencyId);
+      const statusTag = await getStatusType(
+        firestore,
+        projectId,
+        task.statusId,
+      );
+      return {
+        ...task,
+        status: statusTag,
+      } as WithId<TaskPreview>;
+    }),
+  );
+
+  const requiredBy: WithId<TaskPreview>[] = await Promise.all(
+    task.requiredByIds.map(async (dependencyId) => {
+      const task = await getTask(firestore, projectId, dependencyId);
+      const statusTag = await getStatusType(
+        firestore,
+        projectId,
+        task.statusId,
+      );
+      return {
+        ...task,
+        status: statusTag,
+      } as WithId<TaskPreview>;
+    }),
+  );
+
   const taskDetail: TaskDetail = {
     ...task,
     dueDate: task.dueDate ?? undefined,
     assignee,
     status: status ?? (await getTodoStatusTag(firestore, projectId)),
+    dependencies,
+    requiredBy,
   };
   return taskDetail;
 };

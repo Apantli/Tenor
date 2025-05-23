@@ -9,7 +9,7 @@ TODO:
 
 import { type PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
-import type { Timestamp } from "firebase-admin/firestore";
+import type { Timestamp, Firestore } from "firebase-admin/firestore";
 /// Big categories
 
 export type WithId<T> = T & { id: string };
@@ -157,6 +157,7 @@ export interface Role {
   scrumboard: Permission; // scrumboard, tasks status, calendar
   issues: Permission; // issues, tasks
   backlog: Permission; // requirements, epics, user stories, tasks
+  reviews: Permission; // sprint reviews
 }
 
 /// Backlog items
@@ -200,6 +201,8 @@ export interface Task extends BasicInfo {
   size: Size;
   itemId: string;
   itemType: itemTypes;
+  dependencyIds: string[];
+  requiredByIds: string[];
 }
 
 export interface Issue extends BacklogItem {
@@ -226,4 +229,16 @@ export interface ProductivityData {
 // Have as an array as there are maximum 3 time periods
 export interface Productivity {
   cached: ProductivityData[];
+}
+
+type ActivityType = "US" | "EP" | "IS" | "TS" | "SP";
+type ActionType = "create" | "update" | "delete";
+
+export interface LogProjectActivityParams {
+  firestore: Firestore;
+  projectId: string;
+  itemId: string;
+  userId: string;
+  type: ActivityType;
+  action: ActionType;
 }

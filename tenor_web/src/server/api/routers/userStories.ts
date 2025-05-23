@@ -42,6 +42,7 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import type { Edge, Node } from "@xyflow/react";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -145,6 +146,15 @@ export const userStoriesRouter = createTRPCRouter({
         }),
       );
 
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStory.id,
+        type: "US",
+        action: "create",
+      });
+
       return {
         id: userStory.id,
         ...userStoryData,
@@ -192,10 +202,10 @@ export const userStoriesRouter = createTRPCRouter({
       // we only check if there's a cycle by adding the new dependencies (which are also the same as inverted requiredBy)
       const newDependencies = [
         ...addedDependencies.flatMap((dep) => [
-          { sourceId: userStoryId, targetId: dep },
+          { parentUsId: userStoryId, dependencyUsId: dep },
         ]),
         ...addedRequiredBy.flatMap((req) => [
-          { sourceId: req, targetId: userStoryId },
+          { parentUsId: req, dependencyUsId: userStoryId },
         ]),
       ];
       let hasCycle = false;
@@ -267,6 +277,16 @@ export const userStoriesRouter = createTRPCRouter({
       await getUserStoryRef(ctx.firestore, projectId, userStoryId).update(
         userStoryData,
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "update",
+      });
+
       return {
         updatedUserStoryIds: [
           ...addedDependencies,
@@ -354,6 +374,15 @@ export const userStoriesRouter = createTRPCRouter({
       });
       await batch.commit();
 
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "delete",
+      });
+
       return {
         success: true,
         updatedUserStoryIds: modifiedUserStories,
@@ -402,6 +431,15 @@ export const userStoriesRouter = createTRPCRouter({
         priorityId: priorityId,
         size: size,
         statusId: statusId,
+      });
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: userStoryId,
+        type: "US",
+        action: "update",
       });
     }),
   /**
@@ -557,27 +595,28 @@ export const userStoriesRouter = createTRPCRouter({
    * @function updateUserStoryDependencies
    * @description Updates the dependency relationship between two user stories.
    * @param {string} projectId - The ID of the project to which the user stories belong.
-   * @param {string} sourceId - The ID of the user story that will depend on the target.
-   * @param {string} targetId - The ID of the user story that will be a dependency.
+   * @param {string} dependencyUsId - The ID of the user story that will be a dependency.
+   * @param {string} parentUsId - The ID of the user story that will depend on the target.
    * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
    */
   addUserStoryDependencies: roleRequiredProcedure(backlogPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
-        sourceId: z.string(),
-        targetId: z.string(),
+        dependencyUsId: z.string(),
+        parentUsId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, sourceId, targetId } = input;
+      const { projectId, dependencyUsId, parentUsId } = input;
 
       const hasCycle = await hasDependencyCycle(
         ctx.firestore,
         projectId,
         undefined,
-        [{ sourceId, targetId }],
+        [{ parentUsId, dependencyUsId }],
       );
+
       if (hasCycle) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -588,19 +627,28 @@ export const userStoriesRouter = createTRPCRouter({
       await updateDependency(
         ctx.firestore,
         projectId,
-        sourceId,
-        targetId,
+        parentUsId,
+        dependencyUsId,
         "add",
         "dependencyIds",
       );
       await updateDependency(
         ctx.firestore,
         projectId,
-        targetId,
-        sourceId,
+        dependencyUsId,
+        parentUsId,
         "add",
         "requiredByIds",
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: dependencyUsId,
+        type: "US",
+        action: "update",
+      });
       return { success: true };
     }),
 
@@ -608,8 +656,8 @@ export const userStoriesRouter = createTRPCRouter({
    * @function deleteUserStoryDependencies
    * @description Updates the dependency relationship by removing a dependency between two user stories.
    * @param {string} projectId - The ID of the project to which the user stories belong.
-   * @param {string} sourceId - The ID of the user story that will no longer depend on the target.
-   * @param {string} targetId - The ID of the user story that will no longer be a dependency.
+   * @param {string} parentUsId - The ID of the user story that will no longer depend on the target.
+   * @param {string} dependencyUsId - The ID of the user story that will no longer be a dependency.
    * @returns {Promise<{ success: boolean }>} - A promise that resolves when the update is complete.
    */
   deleteUserStoryDependencies: roleRequiredProcedure(
@@ -619,28 +667,38 @@ export const userStoriesRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
-        sourceId: z.string(),
-        targetId: z.string(),
+        parentUsId: z.string(),
+        dependencyUsId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, sourceId, targetId } = input;
+      const { projectId, parentUsId, dependencyUsId } = input;
       await updateDependency(
         ctx.firestore,
         projectId,
-        sourceId,
-        targetId,
+        parentUsId,
+        dependencyUsId,
         "remove",
         "dependencyIds",
       );
       await updateDependency(
         ctx.firestore,
         projectId,
-        targetId,
-        sourceId,
+        dependencyUsId,
+        parentUsId,
         "remove",
         "requiredByIds",
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: dependencyUsId,
+        type: "US",
+        action: "delete",
+      });
+
       return { success: true };
     }),
 
@@ -679,9 +737,9 @@ export const userStoriesRouter = createTRPCRouter({
       // Create edges for dependencies
       const edges: Edge[] = userStories.flatMap((userStory) =>
         userStory.dependencyIds.map((dependencyId) => ({
-          id: `${userStory.id}-${dependencyId}`,
-          source: userStory.id,
-          target: dependencyId,
+          id: `${dependencyId}-${userStory.id}`,
+          source: dependencyId,
+          target: userStory.id,
           type: "dependency", // see edgeTypes
         })),
       );

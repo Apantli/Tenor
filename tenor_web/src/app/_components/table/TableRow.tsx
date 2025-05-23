@@ -48,7 +48,7 @@ function TableRow<
   ghostsShown,
   disableSelection,
 }: TableRowProps<I, T>) {
-  const showThreeDots = extraOptions !== undefined || deletable !== undefined;
+  const showThreeDots = extraOptions !== undefined || !!deletable;
   const columnEntries = useMemo(
     () => filterVisibleColumns(Object.entries(columns)),
     [columns],

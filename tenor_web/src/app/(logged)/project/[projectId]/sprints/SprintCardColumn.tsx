@@ -8,6 +8,9 @@ import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { type BacklogItems } from "./page";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
+import EditSprintPopup from "./EditSprintPopup";
+import type { SprintDates } from "./CreateSprintPopup";
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
@@ -18,6 +21,8 @@ interface Props {
   setDetailItemId: (detailId: string) => void;
   assignSelectionToSprint: (sprintId: string) => Promise<void>;
   lastDraggedBacklogItemId: string | null;
+  allSprints: SprintDates[] | undefined;
+  disabled?: boolean;
 }
 
 export default function SprintCardColumn({
@@ -28,10 +33,15 @@ export default function SprintCardColumn({
   setDetailItemId,
   assignSelectionToSprint,
   lastDraggedBacklogItemId,
+  allSprints,
+  disabled = false,
 }: Props) {
   const allSelected =
     column.backlogItemIds.length > 0 &&
     column.backlogItemIds.every((itemId) => selectedItems.has(itemId));
+
+  const [renderEditPopup, showEditPopup, setShowEditPopup] =
+    usePopupVisibilityState();
 
   const toggleSelectAll = () => {
     const newSelection = new Set(selectedItems);
@@ -66,6 +76,7 @@ export default function SprintCardColumn({
       key={column.sprint.id}
     >
       <BacklogItemCardColumn
+        disabled={disabled}
         lastDraggedBacklogItemId={lastDraggedBacklogItemId}
         dndId={column.sprint.id}
         backlogItems={
@@ -96,9 +107,13 @@ export default function SprintCardColumn({
                     <CheckAll fontSize="small" />
                   )}
                 </button>
-                <Dropdown label={"• • •"}>
-                  <DropdownButton>Edit sprint</DropdownButton>
-                </Dropdown>
+                {!disabled && (
+                  <Dropdown label={"• • •"}>
+                    <DropdownButton onClick={() => setShowEditPopup(true)}>
+                      Edit sprint
+                    </DropdownButton>
+                  </Dropdown>
+                )}
               </div>
             </div>
             <span className="mb-4 text-lg text-gray-600">
@@ -125,6 +140,16 @@ export default function SprintCardColumn({
           Move to sprint
         </PrimaryButton>
       </div>
+      {renderEditPopup && (
+        <EditSprintPopup
+          otherSprints={allSprints?.filter(
+            (sprint) => sprint.id !== column.sprint.id,
+          )}
+          sprintId={column.sprint.id}
+          showPopup={showEditPopup}
+          setShowPopup={setShowEditPopup}
+        />
+      )}
     </div>
   );
 }

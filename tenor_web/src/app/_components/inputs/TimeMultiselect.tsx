@@ -18,6 +18,7 @@ interface Props {
   timeFrame: TimeFrame;
   onTimeNumberChange: (value: number) => void;
   onTimeFrameChange: (value: TimeFrame) => void;
+  disabled?: boolean;
 }
 
 export default function TimeMultiselect({
@@ -28,6 +29,7 @@ export default function TimeMultiselect({
   timeFrame,
   onTimeNumberChange,
   onTimeFrameChange,
+  disabled = false,
   ...props
 }: Props & React.HTMLProps<HTMLDivElement>) {
   const id = useId();
@@ -55,6 +57,7 @@ export default function TimeMultiselect({
       )}
       <div id={id} className={cn("flex w-full gap-3", containerClassName)}>
         <InputTextField
+          disabled={disabled}
           value={timeNumber}
           onChange={(e) => handleTimeNumberChange(e.target.value)}
           containerClassName="w-3/4"
@@ -65,10 +68,11 @@ export default function TimeMultiselect({
           {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
         />
         <Dropdown
+          disabled={disabled}
           label={
             <div className="flex justify-start rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500">
               {timeFrame}
-              <ArrowDropDownIcon className="ml-auto" />
+              {!disabled && <ArrowDropDownIcon className="ml-auto" />}
             </div>
           }
           className="w-1/4"

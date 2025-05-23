@@ -35,7 +35,7 @@ export function SegmentedControl({
     const buttonRect = activeButton.getBoundingClientRect();
 
     setIndicatorStyle({
-      left: buttonRect.left - containerRect.left,
+      left: buttonRect.left - containerRect.left + container.scrollLeft,
       width: buttonRect.width,
     });
   };
@@ -57,21 +57,18 @@ export function SegmentedControl({
   const handleChange = (option: string) => {
     setSelected(option);
     onChange(option);
-  };
-
-  // Wait for the component to mount before starting the animation
-  useEffect(() => {
+    setAnimationActive(true);
     setTimeout(() => {
-      setAnimationActive(true);
-    }, 100);
-  }, []);
+      setAnimationActive(false);
+    }, 300); // Duration of the animation
+  };
 
   // TODO: Make this be the same size as a button (or maybe leave as is, I need second opinion)
   return (
     <div
       ref={containerRef}
       className={cn(
-        "relative flex rounded-lg bg-sprint-column-background p-1",
+        "no-scrollbar relative flex overflow-x-auto rounded-lg bg-sprint-column-background p-1",
         className,
       )}
       data-cy="segmented-control"
@@ -96,8 +93,14 @@ export function SegmentedControl({
         <button
           key={option}
           data-value={option}
-          onClick={() => handleChange(option)}
-          className={`relative z-10 flex-1 rounded-md px-4 py-2 text-center font-medium transition-colors duration-300 ${
+          onClick={(e) => {
+            handleChange(option);
+            const target = e.currentTarget as HTMLButtonElement;
+            target.scrollIntoView({
+              behavior: "smooth",
+            });
+          }}
+          className={`relative z-10 flex-1 whitespace-nowrap rounded-md px-4 py-2 text-center font-medium transition-colors duration-300 ${
             selected === option
               ? "text-white"
               : "text-gray-700 hover:text-gray-900"

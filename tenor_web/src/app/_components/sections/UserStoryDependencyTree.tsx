@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import "@xyflow/react/dist/style.css";
 import { useParams } from "next/navigation";
 import { edgeTypes, nodeTypes } from "~/lib/types/reactFlowTypes";
@@ -34,6 +34,11 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import {
+  permissionNumbers,
+  type Permission,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 
@@ -66,6 +71,18 @@ export default function UserStoryDependencyTree() {
 
   const { mutateAsync: deleteUserStoryDependencies } =
     api.userStories.deleteUserStoryDependencies.useMutation();
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
   // #endregion
 
   // #region FLOW UTILITY
@@ -114,7 +131,7 @@ export default function UserStoryDependencyTree() {
           width: 20,
           height: 20,
         },
-        label: showEdgeLabels ? "Needs" : "",
+        label: showEdgeLabels ? "Unblocks" : "",
       }));
       return updatedEdges;
     },
@@ -133,6 +150,9 @@ export default function UserStoryDependencyTree() {
   };
 
   const onConnect = useCallback(async (params: Connection) => {
+    if (permission < permissionNumbers.write) {
+      return;
+    }
     // Cancel ongoing queries for this user story data
     await utils.userStories.getUserStoryDependencies.cancel({
       projectId: projectId as string,
@@ -145,7 +165,10 @@ export default function UserStoryDependencyTree() {
       },
       (oldData) => {
         if (!oldData) return oldData;
-        const newEdges = addEdge(params, oldData.edges);
+        const newEdges = addEdge(
+          { ...params, type: "dependency" },
+          oldData.edges,
+        );
         return {
           ...oldData,
           edges: newEdges,
@@ -156,8 +179,8 @@ export default function UserStoryDependencyTree() {
     try {
       await addUserStoryDependencies({
         projectId: projectId as string,
-        sourceId: params.source,
-        targetId: params.target,
+        dependencyUsId: params.source,
+        parentUsId: params.target,
       });
     } catch (error) {
       if (
@@ -227,8 +250,8 @@ export default function UserStoryDependencyTree() {
       for (const edge of targetEdges) {
         await deleteUserStoryDependencies({
           projectId: projectId as string,
-          sourceId: edge.source,
-          targetId: edge.target,
+          dependencyUsId: edge.source,
+          parentUsId: edge.target,
         });
       }
 
@@ -316,7 +339,7 @@ export default function UserStoryDependencyTree() {
   // #endregion
 
   return (
-    <div className="mt-3 h-[calc(100vh-200px)] w-full">
+    <div className="mt-3 h-[calc(100vh-250px)] w-full">
       {isLoadingDependencies && (
         <div className="flex h-full w-full items-center justify-center">
           <p className="text-2xl font-bold text-gray-500">
@@ -350,6 +373,8 @@ export default function UserStoryDependencyTree() {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultViewport={defaultViewport}
+          nodesConnectable={permission >= permissionNumbers.write}
+          elementsSelectable={permission >= permissionNumbers.write}
         >
           <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />

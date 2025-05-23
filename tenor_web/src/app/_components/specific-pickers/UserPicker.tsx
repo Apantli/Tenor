@@ -8,13 +8,14 @@ import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
-
+import Check from "@mui/icons-material/Check";
 interface EditableBoxProps {
   options: WithId<UserPreview>[];
   selectedOption?: WithId<UserPreview> | undefined;
   onChange: (option: WithId<UserPreview> | undefined) => void;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function UserPicker({
@@ -23,6 +24,7 @@ export function UserPicker({
   onChange,
   className,
   placeholder = "Select an option",
+  disabled = false,
 }: EditableBoxProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -43,7 +45,12 @@ export function UserPicker({
 
   const renderDropdownLabel = () => {
     return (
-      <div className="relative flex h-12 w-full cursor-pointer items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors hover:bg-gray-200">
+      <div
+        className={cn(
+          "relative flex h-12 w-full items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
+          !disabled && "cursor-pointer hover:bg-gray-200",
+        )}
+      >
         {selectedOption ? (
           <>
             <div className="flex flex-grow items-center gap-2">
@@ -57,13 +64,17 @@ export function UserPicker({
               onClick={handleClear}
               className="ml-2 text-gray-500 transition-colors hover:text-gray-700"
             >
-              <CloseIcon className="h-5 w-5" />
+              {!disabled && <CloseIcon className="h-5 w-5" />}
             </div>
           </>
         ) : (
           <>
-            <span className="font-medium text-gray-700">{placeholder}</span>
-            <ArrowDropDownIcon className="h-5 w-5 text-gray-700" />
+            <span className="font-medium text-gray-700">
+              {disabled ? "None" : placeholder}
+            </span>
+            {!disabled && (
+              <ArrowDropDownIcon className="h-5 w-5 text-gray-700" />
+            )}
           </>
         )}
       </div>
@@ -74,11 +85,16 @@ export function UserPicker({
     return (
       <DropdownButton
         onClick={() => handleSelect(option)}
-        className="flex items-center gap-2 border-b border-app-border px-2 py-2 last:border-none"
+        className="relative flex items-center gap-2 border-b border-app-border px-2 py-2 pl-8 last:border-none"
         key={option.id}
       >
+        {option.id === selectedOption?.id && (
+          <div className="absolute left-2 text-lg">
+            <Check fontSize="inherit" />
+          </div>
+        )}
         <ProfilePicture user={option} hideTooltip />
-        <span>{option.displayName}</span>
+        <span className="w-full truncate">{option.displayName}</span>
       </DropdownButton>
     );
   };
@@ -89,12 +105,15 @@ export function UserPicker({
   return (
     <div className={cn("w-full", className)}>
       <Dropdown
+        disabled={disabled}
         label={renderDropdownLabel()}
         onOpen={() => inputRef.current?.focus()}
         menuClassName="w-56"
       >
         <DropdownItem className="flex w-full flex-col">
-          <span className="mb-2 text-sm text-gray-500">Select a person</span>
+          <span className="mb-2 text-sm text-gray-500">
+            {disabled ? "None" : "Select a person"}
+          </span>
           <input
             type="text"
             className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"

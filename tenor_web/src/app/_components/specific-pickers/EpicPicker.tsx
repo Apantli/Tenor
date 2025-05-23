@@ -10,9 +10,10 @@ import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
 interface Props {
   epic?: ExistingEpic;
   onChange: (epic?: ExistingEpic) => void;
+  disabled?: boolean;
 }
 
-export default function EpicPicker({ epic, onChange }: Props) {
+export default function EpicPicker({ epic, onChange, disabled }: Props) {
   const { projectId } = useParams();
 
   const { data: epics } = api.epics.getEpics.useQuery({
@@ -33,6 +34,7 @@ export default function EpicPicker({ epic, onChange }: Props) {
 
   return (
     <PillPickerComponent
+      disabled={disabled}
       label="Select an epic"
       emptyLabel="No epics available"
       selectedItem={epicToItem(epic)}

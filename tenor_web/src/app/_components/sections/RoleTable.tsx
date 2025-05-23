@@ -29,6 +29,7 @@ interface Props {
   ) => void;
   className?: ClassNameValue;
   isSearchable?: boolean;
+  disabled?: boolean;
 }
 
 // FIXME: This whole section is very laggy and needs to be optimized. Removing the pickers from the table kinda fixes the issue
@@ -40,6 +41,7 @@ export default function RoleTable({
   handleRoleRemove,
   handleEditTabPermission,
   isSearchable = false,
+  disabled = false,
 }: Props) {
   const [tableSearchValue, setTableSearchValue] = useState("");
   const [role, setRole] = useState("");
@@ -49,7 +51,7 @@ export default function RoleTable({
     id: { visible: false },
     label: {
       label: "Name",
-      width: 140,
+      width: 120,
     },
     backlog: {
       label: "Backlog",
@@ -57,6 +59,7 @@ export default function RoleTable({
       render: (row) => {
         return (
           <PillPickerComponent
+            disabled={disabled}
             label={permissionLabels[row.backlog]}
             selectedItem={{
               id: row.backlog.toString(),
@@ -81,6 +84,7 @@ export default function RoleTable({
       render: (row) => {
         return (
           <PillPickerComponent
+            disabled={disabled}
             label={permissionLabels[row.issues]}
             selectedItem={{
               id: row.issues.toString(),
@@ -105,6 +109,7 @@ export default function RoleTable({
       render: (row) => {
         return (
           <PillPickerComponent
+            disabled={disabled}
             label={permissionLabels[row.scrumboard]}
             selectedItem={{
               id: row.scrumboard.toString(),
@@ -129,6 +134,7 @@ export default function RoleTable({
       render: (row) => {
         return (
           <PillPickerComponent
+            disabled={disabled}
             label={permissionLabels[row.sprints]}
             selectedItem={{
               id: row.sprints.toString(),
@@ -153,6 +159,7 @@ export default function RoleTable({
       render: (row) => {
         return (
           <PillPickerComponent
+            disabled={disabled}
             label={permissionLabels[row.performance]}
             selectedItem={{
               id: row.performance.toString(),
@@ -171,12 +178,37 @@ export default function RoleTable({
         );
       },
     },
+    reviews: {
+      label: "Sprint Reviews",
+      width: defaultWidth,
+      render: (row) => {
+        return (
+          <PillPickerComponent
+            label={permissionLabels[row.reviews]}
+            selectedItem={{
+              id: row.reviews.toString(),
+              label: permissionLabels[row.reviews],
+            }}
+            hideSearch={true}
+            allItems={permissionItems}
+            onChange={(item: { id: string; label: string }): void => {
+              handleEditTabPermission(
+                row.id,
+                "reviews",
+                parseInt(item.id) as Permission,
+              );
+            }}
+          />
+        );
+      },
+    },
     settings: {
       label: "Settings",
       width: defaultWidth,
       render: (row) => {
         return (
           <PillPickerComponent
+            disabled={disabled}
             label={permissionLabels[row.settings]}
             selectedItem={{
               id: row.settings.toString(),
@@ -225,11 +257,13 @@ export default function RoleTable({
 
         <Dropdown
           label={
-            <PrimaryButton
-              asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
-            >
-              + Add Role
-            </PrimaryButton>
+            !disabled && (
+              <PrimaryButton
+                asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
+              >
+                + Add Role
+              </PrimaryButton>
+            )
           }
         >
           <DropdownItem>
@@ -260,10 +294,8 @@ export default function RoleTable({
         className="w-full"
         data={filteredRoles}
         columns={columns}
-        multiselect
-        deletable={{
-          deleteText: "Remove",
-        }}
+        multiselect={!disabled}
+        deletable={!disabled}
         onDelete={(ids) => handleRoleRemove(ids)}
         tableKey="team-member-table"
       />

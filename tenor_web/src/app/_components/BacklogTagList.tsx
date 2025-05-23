@@ -11,9 +11,10 @@ import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 interface Props {
   tags: Tag[];
   onChange: (tags: Tag[]) => void;
+  disabled?: boolean;
 }
 
-export default function BacklogTagList({ tags, onChange }: Props) {
+export default function BacklogTagList({ tags, onChange, disabled }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -79,63 +80,66 @@ export default function BacklogTagList({ tags, onChange }: Props) {
     <div>
       <div className="mt-4 flex items-center justify-between">
         <div className="text-lg font-semibold">Tags</div>
-        <Dropdown
-          label={<span className="text-2xl">+</span>}
-          onOpen={() => inputRef.current?.focus()}
-        >
-          <DropdownItem className="flex w-52 flex-col">
-            <span className="mb-2 text-sm text-gray-500">Add a tag</span>
-            <input
-              ref={inputRef}
-              type="text"
-              className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
-              placeholder="Search or create new..."
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
-          </DropdownItem>
-          <div className="w-full whitespace-nowrap text-left">
-            <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg">
-              {filteredTags?.map((tag) => (
-                <DropdownButton
-                  onClick={() => handleTagClick(tag)}
-                  className="flex max-w-52 items-center gap-2 border-b border-app-border px-2 py-2 last:border-none"
-                  key={tag.id}
-                >
-                  <Check
-                    fontSize="inherit"
-                    className={cn({
-                      "opacity-0": !isSelected(tag),
-                    })}
-                  ></Check>
-                  <span
-                    className="inline-block h-3 min-w-3 rounded-full"
-                    style={{
-                      borderColor: `${tag.color}90`,
-                      borderWidth: "1.4px",
-                      backgroundColor: `${tag.color}3E`,
-                      color: tag.color,
-                    }}
-                  ></span>
-                  <span className="truncate">{tag.name}</span>
-                </DropdownButton>
-              ))}
-              {allTags?.length === 0 && searchValue === "" && (
-                <div className="p-2 text-center text-sm text-gray-600">
-                  No tags exist
-                </div>
-              )}
-              {filteredTags?.length === 0 && searchValue !== "" && (
-                <DropdownButton
-                  onClick={handleCreateTag}
-                  className="max-w-52 truncate"
-                >
-                  Create tag &quot;{searchValue}&quot;
-                </DropdownButton>
-              )}
+        {!disabled && (
+          <Dropdown
+            label={<span className="text-2xl">+</span>}
+            onOpen={() => inputRef.current?.focus()}
+            disabled={disabled}
+          >
+            <DropdownItem className="flex w-52 flex-col">
+              <span className="mb-2 text-sm text-gray-500">Add a tag</span>
+              <input
+                ref={inputRef}
+                type="text"
+                className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
+                placeholder="Search or create new..."
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+              />
+            </DropdownItem>
+            <div className="w-full whitespace-nowrap text-left">
+              <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg">
+                {filteredTags?.map((tag) => (
+                  <DropdownButton
+                    onClick={() => handleTagClick(tag)}
+                    className="flex max-w-52 items-center gap-2 border-b border-app-border px-2 py-2 last:border-none"
+                    key={tag.id}
+                  >
+                    <Check
+                      fontSize="inherit"
+                      className={cn({
+                        "opacity-0": !isSelected(tag),
+                      })}
+                    ></Check>
+                    <span
+                      className="inline-block h-3 min-w-3 rounded-full"
+                      style={{
+                        borderColor: `${tag.color}90`,
+                        borderWidth: "1.4px",
+                        backgroundColor: `${tag.color}3E`,
+                        color: tag.color,
+                      }}
+                    ></span>
+                    <span className="truncate">{tag.name}</span>
+                  </DropdownButton>
+                ))}
+                {allTags?.length === 0 && searchValue === "" && (
+                  <div className="p-2 text-center text-sm text-gray-600">
+                    No tags exist
+                  </div>
+                )}
+                {filteredTags?.length === 0 && searchValue !== "" && (
+                  <DropdownButton
+                    onClick={handleCreateTag}
+                    className="max-w-52 truncate"
+                  >
+                    Create tag &quot;{searchValue}&quot;
+                  </DropdownButton>
+                )}
+              </div>
             </div>
-          </div>
-        </Dropdown>
+          </Dropdown>
+        )}
       </div>
       <div className="no-scrollbar flex gap-2 overflow-x-auto">
         {tags.map((tag) => (

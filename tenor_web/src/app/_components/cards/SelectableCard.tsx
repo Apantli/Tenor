@@ -10,7 +10,8 @@ interface Props {
   showCheckbox?: boolean;
   dndId: string;
   lastDraggedItemId: string | null;
-  cardType?: "US" | "IS" | "IT" | "TS";
+  cardType?: "US" | "IS" | "IT" | "US-TS" | "IS-TS" | "IT-TS";
+  disabled?: boolean;
 }
 
 export default function SelectableCard({
@@ -21,11 +22,12 @@ export default function SelectableCard({
   dndId,
   lastDraggedItemId: lastDraggedItemId,
   cardType,
+  disabled = false,
   ...props
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
   const { ref: setNodeRef, isDragging } = useDraggable({
     id: dndId,
-    disabled: selected || showCheckbox, // Don't allow dragging if selection in progress
+    disabled: disabled || selected || showCheckbox, // Don't allow dragging if selection in progress
   });
   const [highlightDropped, setHighlightDropped] = React.useState(false);
   const [isDropping, setIsDropping] = React.useState(
@@ -67,7 +69,7 @@ export default function SelectableCard({
   return (
     <div
       className={cn(
-        "group relative flex h-fit w-full cursor-pointer select-none rounded-lg border border-app-border bg-white p-2 pb-3 shadow-xl transition-all duration-100",
+        "group relative flex h-fit w-full cursor-pointer select-none overflow-hidden rounded-lg border border-app-border bg-white p-2 pb-3 shadow-xl transition-all duration-100",
         {
           "ring-2 ring-app-secondary": selected,
           "opacity-60": isDragging,
@@ -85,26 +87,32 @@ export default function SelectableCard({
       }}
       {...props}
     >
-      <div className="absolute left-[-1px] top-[-1px] h-[calc(100%+2px)] w-[calc(100%+2px)] overflow-hidden rounded-lg border border-transparent">
+      <div className="pointer-events-none absolute left-[-1px] top-[-1px] h-[calc(100%+2px)] w-[calc(100%+2px)] overflow-hidden rounded-lg border border-transparent">
         <div
           className={cn("absolute bottom-0 left-0 h-2 w-full", accentColor)}
         ></div>
       </div>
-      <div
-        className={cn(
-          "shrink-0 grow basis-0 overflow-hidden py-2 opacity-0 transition-all group-hover:basis-6 group-hover:opacity-100",
-          {
-            "basis-6 opacity-100":
-              (selected || showCheckbox) && !isDragging && !isDropping,
-          },
-        )}
-      >
-        <InputCheckbox
-          checked={selected}
-          onChange={(val) => onChange?.(val)}
-          className="h-6 w-6 cursor-auto rounded-full"
-        />
-      </div>
+      {!disabled && (
+        <div
+          className={cn(
+            "shrink-0 grow basis-0 overflow-hidden py-2 opacity-0 transition-all group-hover:basis-6 group-hover:opacity-100",
+            {
+              "basis-6 opacity-100":
+                (selected || showCheckbox) &&
+                !isDragging &&
+                !isDropping &&
+                !disabled,
+            },
+          )}
+        >
+          <InputCheckbox
+            disabled={disabled}
+            checked={selected}
+            onChange={(val) => onChange?.(val)}
+            className="h-6 w-6 cursor-auto rounded-full"
+          />
+        </div>
+      )}
       <div className="min-h-8 min-w-full px-2 py-2 pr-5">{children}</div>
     </div>
   );

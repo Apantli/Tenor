@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { TaskDetail, TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
@@ -10,7 +10,12 @@ import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { api } from "~/trpc/react";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useParams } from "next/navigation";
-import type { BacklogItem, StatusTag } from "~/lib/types/firebaseSchemas";
+import {
+  permissionNumbers,
+  type BacklogItem,
+  type Permission,
+  type StatusTag,
+} from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
@@ -26,6 +31,7 @@ import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "../Popup";
 import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import type { TaskCol } from "~/lib/types/columnTypes";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { cn } from "~/lib/utils";
 
 export type BacklogItemWithTasks = BacklogItem & {
@@ -85,6 +91,18 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
     undefined,
   );
 
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
+
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
 
   const tasksData = itemData?.tasks;
@@ -105,7 +123,11 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       },
     );
   const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation();
+    api.tasks.changeTaskStatus.useMutation({
+        onSuccess: async () => {
+      await utils.projects.getProjectStatus.invalidate({ projectId: projectId as string }); // <-- Invalidate all tasks
+    },
+  });
   const { mutateAsync: generateTasks } = api.tasks.generateTasks.useMutation();
   const { mutateAsync: createTask } = api.tasks.createTask.useMutation();
 
@@ -305,6 +327,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         };
         return (
           <StatusPicker
+            disabled={permission < permissionNumbers.write}
             status={row.status}
             onChange={async (status) => {
               if (isGhost) {
@@ -465,6 +488,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
             dueDate: task.dueDate
               ? Timestamp.fromDate(task.dueDate)
               : undefined,
+            dependencyIds: task.dependencies.map((dep) => dep.id),
+            requiredByIds: task.requiredBy.map((dep) => dep.id),
           },
         });
       }
@@ -504,6 +529,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
           description: task.description,
           statusId: task.status.id ?? "",
           size: task.size,
+          dependencyIds: task.dependencies.map((dep) => dep.id),
+          requiredByIds: task.requiredBy.map((dep) => dep.id),
         })) ?? [];
 
       generatedData = await generateTasks({
@@ -529,6 +556,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
         scrumId: -1,
         id: i.toString(),
         status: task.status ?? todoStatus!,
+        dependencies: [],
+        requiredBy: [],
       })),
     );
     if (setUnsavedTasks) setUnsavedTasks(true);
@@ -583,20 +612,22 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
               setSearchText={setTaskSearchText}
             />
           )}
-          <div className="flex items-center gap-1">
-            <PrimaryButton onClick={() => setShowAddTaskPopup(true)}>
-              + Add task
-            </PrimaryButton>
-            <AiGeneratorDropdown
-              singularLabel="task"
-              pluralLabel="tasks"
-              disabled={generating}
-              onGenerate={handleGenerateTasks}
-              alreadyGenerated={(ghostData?.length ?? 0) > 0}
-              onAcceptAll={onAcceptAll}
-              onRejectAll={onRejectAll}
-            />
-          </div>
+          {permission >= permissionNumbers.write && (
+            <div className="flex items-center gap-1">
+              <PrimaryButton onClick={() => setShowAddTaskPopup(true)}>
+                + Add task
+              </PrimaryButton>
+              <AiGeneratorDropdown
+                singularLabel="task"
+                pluralLabel="tasks"
+                disabled={generating}
+                onGenerate={handleGenerateTasks}
+                alreadyGenerated={(ghostData?.length ?? 0) > 0}
+                onAcceptAll={onAcceptAll}
+                onRejectAll={onRejectAll}
+              />
+            </div>
+          )}
         </div>
       </div>
 
@@ -615,8 +646,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
               "max-w-[min(900px,100vw-90px)]": !sidebarOpen,
             })}
             scrollContainerClassName="overflow-y-hidden"
-            multiselect
-            deletable
+            multiselect={permission >= permissionNumbers.write}
+            deletable={permission >= permissionNumbers.write}
             onDelete={handleTaskDelete}
             emptyMessage={
               transformedTasks.length > 0 ? "No tasks found" : "No tasks yet"

@@ -35,6 +35,7 @@ import {
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/helpers/base64";
 import {
+  defaultActivity,
   defaultPriorityTypes,
   defaultRequerimentTypes,
   defaultRoleList,
@@ -45,6 +46,7 @@ import {
   getProject,
   getProjectRef,
   getProjectsRef,
+  getProjectStatus,
   getRoles,
   getRolesRef,
   getSettingsRef,
@@ -56,6 +58,7 @@ import {
   getStatusTypesRef,
 } from "~/utils/helpers/shortcuts/tags";
 import { getRequirementTypesRef } from "~/utils/helpers/shortcuts/requirements";
+import { getActivityRef } from "~/utils/helpers/shortcuts/performance";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -319,6 +322,18 @@ export const projectsRouter = createTRPCRouter({
           defaultStatusTags.map((statusTag) => statusCollection.add(statusTag)),
         );
 
+        // Create default empty activity
+        const activityCollection = getActivityRef(
+          ctx.firestore,
+          newProjectRef.id,
+        );
+
+        await Promise.all(
+          defaultActivity.map((activity) =>
+            activityCollection.add(activity),
+          ),
+        )
+
         return { success: true, projectId: newProjectRef.id };
       } catch (error) {
         console.error("Error adding document: ", error);
@@ -399,5 +414,11 @@ export const projectsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
       return await getRoles(ctx.firestore, projectId);
+    }),
+  getProjectStatus: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getProjectStatus(ctx.firestore, projectId, ctx.firebaseAdmin.app());
     }),
 });

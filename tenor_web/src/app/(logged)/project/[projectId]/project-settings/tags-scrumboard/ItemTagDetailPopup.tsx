@@ -25,6 +25,7 @@ interface Props {
   tagId: string;
   setShowPopup: (show: boolean) => void;
   itemTagType: "ReqFocus" | "BacklogTag" | "ReqType";
+  disabled?: boolean;
 }
 
 interface TagTypeConfig {
@@ -45,6 +46,7 @@ export default function ItemTagDetailPopup({
   setShowPopup,
   tagId,
   itemTagType,
+  disabled = false,
 }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
@@ -66,7 +68,7 @@ export default function ItemTagDetailPopup({
       emptyNameError: "Please enter a name for the backlog tag.",
     },
     ReqFocus: {
-      title: "Requirement Focus: ",
+      title: "Focus: ",
       namePlaceholder: "E.g., 'Security', 'Performance'...",
       nameLabel: "Focus name",
       colorLabel: "Focus color",
@@ -78,7 +80,7 @@ export default function ItemTagDetailPopup({
       emptyNameError: "Please enter a name for the requirement focus.",
     },
     ReqType: {
-      title: "Requirement Type: ",
+      title: "Type: ",
       namePlaceholder: "E.g., 'Functional', 'Non-functional'...",
       nameLabel: "Type name",
       colorLabel: "Type color",
@@ -436,7 +438,7 @@ export default function ItemTagDetailPopup({
     <Popup
       show={showPopup}
       size="small"
-      className="max-h-[400px] min-w-[500px]"
+      className="min-h-[300px] w-[500px]"
       dismiss={async () => {
         if (editMode && isModified()) {
           const confirmation = await confirm(
@@ -450,7 +452,8 @@ export default function ItemTagDetailPopup({
         handleDismiss();
       }}
       footer={
-        !isLoading && (
+        !isLoading &&
+        !disabled && (
           <DeleteButton onClick={handleDelete}>
             {currentConfig.deleteButtonText}
           </DeleteButton>
@@ -474,7 +477,7 @@ export default function ItemTagDetailPopup({
           )}
         </>
       }
-      editMode={isLoading ? undefined : editMode}
+      editMode={!disabled ? (isLoading ? undefined : editMode) : undefined}
       setEditMode={async (isEditing) => {
         setEditMode(isEditing);
         if (!tagDetail || !isValidTagDetail(tagDetail)) return;

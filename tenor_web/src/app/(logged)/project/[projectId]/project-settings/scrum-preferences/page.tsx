@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import TimeMultiselect, {
@@ -15,10 +15,16 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
+  checkPermissions,
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
+  emptyRole,
 } from "~/lib/defaultProjectValues";
-import type { Size } from "~/lib/types/firebaseSchemas";
+import {
+  permissionNumbers,
+  type Permission,
+  type Size,
+} from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 const maxInputNumber = 10000000000;
@@ -55,6 +61,17 @@ export default function ProjectScrumPreferences() {
   const [originalSizeData, setOriginalSizeData] = useState<SizeCol[]>([]);
 
   // TRPC
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["settings"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
   const { data: scrumSettings, isLoading: settingFetchLoading } =
     api.settings.fetchScrumSettings.useQuery({
       projectId: projectId as string,
@@ -348,6 +365,7 @@ export default function ProjectScrumPreferences() {
       {!settingFetchLoading && (
         <>
           <TimeMultiselect
+            disabled={permission < permissionNumbers.write}
             timeNumber={timeForm[0]}
             timeFrame={timeForm[1]}
             onTimeNumberChange={handleTimeNumberChange}
@@ -358,6 +376,7 @@ export default function ProjectScrumPreferences() {
           />
 
           <InputTextField
+            disabled={permission < permissionNumbers.write}
             label="Maximum sprint story points"
             labelClassName="text-lg font-semibold"
             type="text"
@@ -370,7 +389,11 @@ export default function ProjectScrumPreferences() {
             data-cy="maximum-sprint-story-points"
             disableAI={true}
           />
-          <SettingsSizeTable sizeData={sizeData} setSizeData={setSizeData} />
+          <SettingsSizeTable
+            disabled={permission < permissionNumbers.write}
+            sizeData={sizeData}
+            setSizeData={setSizeData}
+          />
         </>
       )}
       {settingFetchLoading && (

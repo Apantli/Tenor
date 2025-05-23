@@ -14,7 +14,13 @@ import type { StatusTag, WithId, Size } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../specific-pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
-import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
+import type {
+  TaskDetail,
+  TaskPreview,
+  UserPreview,
+} from "~/lib/types/detailSchemas";
+import DependencyList from "./DependencyList";
+import { TRPCClientError } from "@trpc/client";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -43,7 +49,7 @@ export function CreateTaskForm({
     projectId: projectIdString,
   });
 
-  const { alert } = useAlert();
+  const { alert, predefinedAlerts } = useAlert();
 
   const [createForm, setCreateForm] = useState<{
     name: string;
@@ -53,6 +59,8 @@ export function CreateTaskForm({
     assignee?: WithId<UserPreview>;
     size?: Size;
     dueDate?: Date;
+    dependencies: TaskPreview[];
+    requiredBy: TaskPreview[];
   }>({
     name: "",
     description: "",
@@ -68,6 +76,8 @@ export function CreateTaskForm({
     assignee: undefined,
     size: undefined,
     dueDate: undefined,
+    dependencies: [],
+    requiredBy: [],
   });
 
   // Select a status after the todo status is fetched
@@ -111,30 +121,50 @@ export function CreateTaskForm({
         assignee: createForm.assignee,
         dueDate: createForm.dueDate,
         scrumId: -1,
+        dependencies: createForm.dependencies,
+        requiredBy: createForm.requiredBy,
       });
       onTaskAdded?.(taskId);
       return;
     }
 
-    const { taskId } = await createTask({
-      projectId: projectId as string,
-      taskData: {
-        name: createForm.name,
-        description: createForm.description,
-        statusId: createForm.status?.id ?? "",
-        assigneeId: createForm.assigneeId ?? "",
-        size: createForm.size,
-        dueDate: dueDate,
-        itemId: itemId,
-        itemType: itemType,
-      },
-    });
+    try {
+      const { id: taskId } = await createTask({
+        projectId: projectId as string,
+        taskData: {
+          name: createForm.name,
+          description: createForm.description,
+          statusId: createForm.status?.id ?? "",
+          assigneeId: createForm.assigneeId ?? "",
+          size: createForm.size,
+          dueDate: dueDate,
+          itemId: itemId,
+          itemType: itemType,
+          dependencyIds: createForm.dependencies.map((task) => task.id),
+          requiredByIds: createForm.requiredBy.map((task) => task.id),
+        },
+      });
 
-    if (onTaskAdded) {
-      onTaskAdded(taskId);
+      if (onTaskAdded) {
+        onTaskAdded(taskId);
+      }
+
+      await invalidateQueriesAllTasks(projectIdString, [itemId]);
+    } catch (error) {
+      if (
+        error instanceof TRPCClientError &&
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        error.data?.code === "BAD_REQUEST"
+      ) {
+        predefinedAlerts.cyclicDependency();
+        return;
+      }
+      alert("Error", "Failed to create task. Please try again.", {
+        type: "error",
+        duration: 5000,
+      });
+      console.error("Error creating task:", error);
     }
-
-    await invalidateQueriesAllTasks(projectIdString, [itemId]);
   };
 
   return (
@@ -219,6 +249,21 @@ export function CreateTaskForm({
             className="w-full"
           />
         </div>
+
+        <DependencyList
+          label="Dependencies"
+          tasks={createForm.dependencies}
+          onChange={(dependencies) =>
+            setCreateForm({ ...createForm, dependencies })
+          }
+        />
+        <DependencyList
+          label="Required by"
+          tasks={createForm.requiredBy}
+          onChange={(requiredBy) =>
+            setCreateForm({ ...createForm, requiredBy })
+          }
+        />
 
         <div className="mt-4 flex justify-end">
           <PrimaryButton

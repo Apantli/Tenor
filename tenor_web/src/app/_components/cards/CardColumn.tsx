@@ -21,6 +21,8 @@ interface Props {
 
   dndId: string;
   lastDraggedItemId: string | null;
+
+  disabled?: boolean;
 }
 
 export default function CardColumn({
@@ -34,6 +36,7 @@ export default function CardColumn({
   className,
   dndId,
   lastDraggedItemId,
+  disabled = false,
 }: Props) {
   const shiftClick = useShiftKey();
   const lastSelectedCard = useRef<number>();
@@ -51,7 +54,7 @@ export default function CardColumn({
         "flex h-full w-full flex-1 flex-col overflow-hidden rounded-lg bg-sprint-column-background transition-colors",
         className,
         {
-          "bg-sprint-column-background-hovered": isDropTarget,
+          "bg-sprint-column-background-hovered": isDropTarget && !disabled,
         },
       )}
       // Merging refs to avoid a new div
@@ -73,6 +76,7 @@ export default function CardColumn({
       <div className="flex h-full flex-1 flex-col gap-2 overflow-y-auto p-6 pt-2">
         {cards.map((cardInfo) => (
           <SelectableCard
+            disabled={disabled}
             lastDraggedItemId={lastDraggedItemId}
             key={cardInfo.id}
             dndId={cardInfo.id}

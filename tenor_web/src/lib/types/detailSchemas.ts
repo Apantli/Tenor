@@ -83,6 +83,8 @@ export type TaskDetail = {
   size?: Size;
   assignee?: WithId<UserPreview>;
   dueDate?: Date;
+  dependencies: TaskPreview[];
+  requiredBy: TaskPreview[];
 };
 
 export type RoleDetail = {
@@ -93,4 +95,5 @@ export type RoleDetail = {
   scrumboard: Permission; // scrumboard, tasks status, calendar
   issues: Permission; // issues, tasks
   backlog: Permission; // requirements, epics, user stories, tasks
+  reviews: Permission; // sprint reviews
 };

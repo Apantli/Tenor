@@ -9,18 +9,26 @@
  */
 
 import { z } from "zod";
-import type { StatusTag } from "~/lib/types/firebaseSchemas";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { BacklogItemSchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
+  getTask,
   getTaskContextFromItem,
   getTaskDetail,
   getTaskNewId,
   getTaskRef,
+  getTasks,
   getTasksRef,
   getTaskTable,
+  hasDependencyCycle,
+  updateDependency,
 } from "~/utils/helpers/shortcuts/tasks";
 import {
   generateTaskContext,
@@ -32,8 +40,24 @@ import {
 } from "~/utils/helpers/shortcuts/tags";
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
+import { backlogPermissions } from "~/lib/permission";
+import { FieldValue } from "firebase-admin/firestore";
 
 export const tasksRouter = createTRPCRouter({
+  /**
+   * @procedure getTasks
+   * @description Retrieves tasks for a specific project
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @returns {Array} Array of tasks for the specified project
+   */
+  getTasks: roleRequiredProcedure(backlogPermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getTasks(ctx.firestore, projectId);
+    }),
   /**
    * @procedure createTask
    * @description Creates a new task in the specified project and assigns it a scrumId
@@ -51,15 +75,58 @@ export const tasksRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      try {
-        const task = await getTasksRef(ctx.firestore, input.projectId).add({
-          ...input.taskData,
-          scrumId: await getTaskNewId(ctx.firestore, input.projectId),
+      const { projectId, taskData: taskDataRaw } = input;
+      const taskData = TaskSchema.parse({
+        ...taskDataRaw,
+        scrumId: await getTaskNewId(ctx.firestore, projectId),
+      });
+
+      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
+        {
+          id: "this is a new user story", // id to avoid collision
+          dependencyIds: taskData.dependencyIds,
+        },
+      ]);
+
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
         });
-        return { success: true, taskId: task.id };
-      } catch {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }
+
+      const task = await getTasksRef(ctx.firestore, projectId).add(taskData);
+
+      // Add dependency references
+      await Promise.all(
+        input.taskData.dependencyIds.map(async (dependencyId) => {
+          await getTaskRef(ctx.firestore, projectId, dependencyId).update({
+            requiredByIds: FieldValue.arrayUnion(task.id),
+          });
+        }),
+      );
+      // Add requiredBy references
+      await Promise.all(
+        input.taskData.requiredByIds.map(async (requiredById) => {
+          await getTaskRef(ctx.firestore, projectId, requiredById).update({
+            dependencyIds: FieldValue.arrayUnion(task.id),
+          });
+        }),
+      );
+
+      await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: task.id,
+          type: "TS",
+          action: "create",
+        });
+
+      return {
+        id: task.id,
+        ...taskData,
+      } as WithId<Task>;
     }),
 
   /**
@@ -127,8 +194,116 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, taskData } = input;
-      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
-      await taskRef.update(taskData);
+      const oldTaskData = await getTask(ctx.firestore, projectId, taskId);
+
+      // Check the difference in dependency and requiredBy arrays
+      const addedDependencies = taskData.dependencyIds.filter(
+        (dep) => !oldTaskData.dependencyIds.includes(dep),
+      );
+      const removedDependencies = taskData.dependencyIds.filter(
+        (dep) => !taskData.dependencyIds.includes(dep),
+      );
+      const addedRequiredBy = taskData.requiredByIds.filter(
+        (req) => !oldTaskData.requiredByIds.includes(req),
+      );
+      const removedRequiredBy = taskData.requiredByIds.filter(
+        (req) => !taskData.requiredByIds.includes(req),
+      );
+
+      // Since one change is made at a time one these (thanks for that UI),
+      // we only check if there's a cycle by adding the new dependencies (which are also the same as inverted requiredBy)
+      const newDependencies = [
+        ...addedDependencies.flatMap((dep) => [
+          { sourceId: taskId, targetId: dep },
+        ]),
+        ...addedRequiredBy.flatMap((req) => [
+          { sourceId: req, targetId: taskId },
+        ]),
+      ];
+      let hasCycle = false;
+      if (newDependencies.length > 0) {
+        hasCycle = await hasDependencyCycle(
+          ctx.firestore,
+          projectId,
+          undefined,
+          newDependencies,
+        );
+      }
+      if (hasCycle) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Circular dependency detected.",
+        });
+      }
+
+      // Update the related user stories
+      await Promise.all(
+        addedDependencies.map(async (dependencyId) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            dependencyId,
+            taskId,
+            "add",
+            "requiredByIds",
+          );
+        }),
+      );
+      await Promise.all(
+        removedDependencies.map(async (dependencyId) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            dependencyId,
+            taskId,
+            "remove",
+            "requiredByIds",
+          );
+        }),
+      );
+      await Promise.all(
+        addedRequiredBy.map(async (requiredById) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            requiredById,
+            taskId,
+            "add",
+            "dependencyIds",
+          );
+        }),
+      );
+      await Promise.all(
+        removedRequiredBy.map(async (requiredById) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            requiredById,
+            taskId,
+            "remove",
+            "dependencyIds",
+          );
+        }),
+      );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskId,
+        type: "TS",
+        action: "update",
+      });
+
+      await getTaskRef(ctx.firestore, projectId, taskId).update(taskData);
+      return {
+        updatedTaskds: [
+          ...addedDependencies,
+          ...removedDependencies,
+          ...addedRequiredBy,
+          ...removedRequiredBy,
+        ],
+      };
     }),
 
   /**
@@ -151,6 +326,14 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, statusId } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "update",
+      });
       await taskRef.update({ statusId });
     }),
 
@@ -172,7 +355,59 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+
+      // Get the task to get its dependencies and required by relationships
+      const task = await getTask(ctx.firestore, projectId, taskId);
+
+      const modifiedTasks = task.dependencyIds.concat(
+        task.requiredByIds,
+        taskId,
+      );
+
+      // Remove this user story from all dependencies' requiredBy arrays
+      await Promise.all(
+        task.dependencyIds.map(async (dependencyId) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            dependencyId,
+            taskId,
+            "remove",
+            "requiredByIds",
+          );
+        }),
+      );
+
+      // Remove this user story from all requiredBy's dependency arrays
+      await Promise.all(
+        task.requiredByIds.map(async (requiredById) => {
+          await updateDependency(
+            ctx.firestore,
+            projectId,
+            requiredById,
+            taskId,
+            "remove",
+            "dependencyIds",
+          );
+        }),
+      );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "delete",
+      });
+
+      // Mark the task as deleted
       await taskRef.update({ deleted: true });
+
+      return {
+        success: true,
+        updatedTaskIds: modifiedTasks,
+      };
     }),
 
   getTodoStatusTag: protectedProcedure
@@ -338,7 +573,6 @@ ${tagContext}\n\n`;
         status: todoTag as StatusTag,
       }));
     }),
-
   /**
    * @function getTaskCount
    * @description Retrieves the number of tasks inside a given project, regardless of their deleted status.

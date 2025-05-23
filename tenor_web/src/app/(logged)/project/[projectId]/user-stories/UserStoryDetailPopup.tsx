@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
@@ -40,6 +40,11 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 
@@ -94,9 +99,21 @@ export default function UserStoryDetailPopup({
 
   const userStoryDetail = userStoryData ?? fetchedUserStory;
 
-  const { mutateAsync: modifyUserStory } =
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["backlog"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
+
+  const { mutateAsync: modifyUserStory, isPending } =
     api.userStories.modifyUserStory.useMutation();
-  const { mutateAsync: deleteUserStory } =
+  const { mutateAsync: deleteUserStory, isPending: isDeleting } =
     api.userStories.deleteUserStory.useMutation();
 
   const [editMode, setEditMode] = useState(false);
@@ -113,7 +130,7 @@ export default function UserStoryDetailPopup({
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const { predefinedAlerts } = useAlert();
+  const { alert, predefinedAlerts } = useAlert();
   const formatSprintNumber = useFormatSprintNumber();
 
   const changeVisibleUserStory = async (userStoryId: string) => {
@@ -259,6 +276,7 @@ export default function UserStoryDetailPopup({
     if (!editMode || saveEditForm) {
       await refetch();
     }
+    return;
   };
 
   const handleDelete = async () => {
@@ -325,6 +343,7 @@ export default function UserStoryDetailPopup({
               <>
                 <h3 className="text-lg font-semibold">Epic</h3>
                 <EpicPicker
+                  disabled={permission < permissionNumbers.write}
                   epic={userStoryDetail?.epic}
                   onChange={async (epic) => {
                     await handleSave({ ...userStoryDetail, epic });
@@ -335,6 +354,7 @@ export default function UserStoryDetailPopup({
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Priority</h3>
                     <PriorityPicker
+                      disabled={permission < permissionNumbers.write}
                       priority={userStoryDetail.priority}
                       onChange={async (priority) => {
                         await handleSave({ ...userStoryDetail, priority });
@@ -344,6 +364,7 @@ export default function UserStoryDetailPopup({
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePillComponent
+                      disabled={permission < permissionNumbers.write}
                       currentSize={userStoryDetail.size}
                       callback={async (size) => {
                         await handleSave({ ...userStoryDetail, size });
@@ -368,6 +389,7 @@ export default function UserStoryDetailPopup({
                       )}
                     </div>
                     <StatusPicker
+                      disabled={permission < permissionNumbers.write}
                       status={userStoryDetail.status}
                       onChange={async (status) => {
                         await handleSave({ ...userStoryDetail, status });
@@ -381,6 +403,7 @@ export default function UserStoryDetailPopup({
                 )}
 
                 <BacklogTagList
+                  disabled={permission < permissionNumbers.write}
                   tags={userStoryDetail.tags}
                   onChange={async (tags) => {
                     await handleSave({ ...userStoryDetail, tags });
@@ -393,6 +416,7 @@ export default function UserStoryDetailPopup({
                 </h3>
 
                 <DependencyList
+                  disabled={permission < permissionNumbers.write}
                   label="Dependencies"
                   userStoryId={userStoryDetail.id}
                   userStories={userStoryDetail.dependencies}
@@ -403,6 +427,7 @@ export default function UserStoryDetailPopup({
                 />
 
                 <DependencyList
+                  disabled={permission < permissionNumbers.write}
                   label="Required by"
                   userStoryId={userStoryDetail.id}
                   userStories={userStoryDetail.requiredBy}
@@ -418,8 +443,11 @@ export default function UserStoryDetailPopup({
       }
       footer={
         !isLoading &&
+        permission >= permissionNumbers.write &&
         (userStoryDetail?.scrumId !== -1 ? (
-          <DeleteButton onClick={handleDelete}>Delete story</DeleteButton>
+          <DeleteButton onClick={handleDelete} loading={isDeleting}>
+            Delete story
+          </DeleteButton>
         ) : (
           <div className="flex items-center gap-2">
             <AiIcon
@@ -479,7 +507,14 @@ export default function UserStoryDetailPopup({
           )}
         </>
       }
-      editMode={isLoading ? undefined : editMode}
+      editMode={
+        permission >= permissionNumbers.write
+          ? isLoading
+            ? undefined
+            : editMode
+          : undefined
+      }
+      saving={isPending}
       setEditMode={async (isEditing) => {
         if (unsavedTasks) {
           const confirmation = await confirm(
@@ -491,6 +526,7 @@ export default function UserStoryDetailPopup({
           if (!confirmation) return;
           setUnsavedTasks(false);
         }
+
         setEditMode(isEditing);
 
         if (!userStoryDetail) return;
@@ -501,6 +537,14 @@ export default function UserStoryDetailPopup({
             description: editForm.description,
             acceptanceCriteria: editForm.acceptanceCriteria,
           };
+          if (updatedData.name === "") {
+            setEditMode(true);
+            alert("Oops", "Please enter a name for the user story.", {
+              type: "error",
+              duration: 5000,
+            });
+            return;
+          }
           await handleSave(updatedData, true); // Pass true to save the edit form
         }
       }}
@@ -538,9 +582,15 @@ export default function UserStoryDetailPopup({
       )}
       {!editMode && !isLoading && userStoryDetail && (
         <div className="overflow-hidden">
-          <div className="markdown-content overflow-hidden text-lg">
-            <Markdown>{userStoryDetail.description}</Markdown>
-          </div>
+          {userStoryDetail.description === "" ? (
+            <p className="text-lg italic text-gray-500">
+              No description provided.
+            </p>
+          ) : (
+            <div className="markdown-content overflow-hidden text-lg">
+              <Markdown>{userStoryDetail.description}</Markdown>
+            </div>
+          )}
 
           {userStoryDetail.acceptanceCriteria !== "" && (
             <>
