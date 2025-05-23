@@ -27,6 +27,7 @@ import {
   getIssuesRef,
   getIssueTable,
 } from "~/utils/helpers/shortcuts/issues";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const issuesRouter = createTRPCRouter({
   /**
@@ -81,6 +82,16 @@ export const issuesRouter = createTRPCRouter({
         const issue = await getIssuesRef(ctx.firestore, projectId).add(
           newIssue,
         );
+
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: issue.id,
+          type: "IS",
+          action: "create",
+        });
+
         return { issueId: issue.id };
       } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -124,6 +135,16 @@ export const issuesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId, issueData } = input;
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: issueId,
+        type: "IS",
+        action: "update",
+      });
+
       await issueRef.update(issueData);
     }),
 
@@ -147,6 +168,16 @@ export const issuesRouter = createTRPCRouter({
         projectId,
         issueId,
       );
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: issueId,
+        type: "IS",
+        action: "delete",
+      });
+
       return { success: true, modifiedTaskIds: modifiedTasks };
     }),
 
@@ -183,6 +214,16 @@ export const issuesRouter = createTRPCRouter({
       if (!issueSnapshot.exists) {
         throw new TRPCError({ code: "NOT_FOUND", message: "Issue not found" });
       }
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: issueId,
+        type: "IS",
+        action: "update",
+      });
+
       await issueRef.update({
         priorityId: priorityId,
         size: size,
@@ -216,6 +257,16 @@ export const issuesRouter = createTRPCRouter({
       const updatedIssueData = {
         relatedUserStoryId: relatedUserStoryId,
       };
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: issueId,
+        type: "IS",
+        action: "update",
+      });
+
       await issueRef.update(updatedIssueData);
     }),
 

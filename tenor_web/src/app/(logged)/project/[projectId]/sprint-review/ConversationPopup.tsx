@@ -1,30 +1,65 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import SoundPlayer from "~/app/_components/SoundPlayer";
 import MusicIcon from "@mui/icons-material/Headphones";
+import MicOffIcon from "@mui/icons-material/MicOff";
+import MicOnIcon from "@mui/icons-material/Mic";
 import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 import { zipSamples, MuseClient } from "muse-js";
 // @ts-expect-error @neurosity/pipes is a JS library without types
-import { epoch, addInfo } from "@neurosity/pipes";
+import { epoch, addInfo, fft, powerByBand } from "@neurosity/pipes";
 import { addSignalQuality } from "~/lib/eeg/addSignalQuality";
 import { cn } from "~/lib/utils";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import PrivacyPopup from "./PrivacyPopup";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import { useSpeechRecognition } from "./SpeechToText";
+import ReviewConversationAnswers from "./ReviewConversationAnswers";
+import { classifyEmotion, mode } from "~/lib/eeg/classifyEmotion";
+import { api } from "~/trpc/react";
+import { useParams } from "next/navigation";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 
 interface Props {
   showPopup: boolean;
   setShowPopup: (show: boolean) => void;
+  sprintReviewId?: number;
 }
 
-export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
+const timeWindows = [
+  { start: 36, end: 76 },
+  { start: 91, end: 131 },
+  { start: 144, end: 184 },
+];
+const endingTime = 195;
+
+export interface EEGDataPoint {
+  alpha: number[];
+  beta: number[];
+  delta: number[];
+  gamma: number[];
+  theta: number[];
+}
+
+export type EEGDataPointWithTimestamp = EEGDataPoint & {
+  timestamp: number;
+};
+
+export default function ConversationPopup({
+  showPopup,
+  setShowPopup,
+  sprintReviewId,
+}: Props) {
   // REACT
+  const { projectId } = useParams();
+  const { user } = useFirebaseAuth();
+
   const [step, setStep] = useState(0);
   const [headsetStatus, setHeadsetStatus] = useState<
     "disconnected" | "connecting" | "connected"
@@ -39,6 +74,26 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
   const [showInstructions, setShowInstructions] = useState(true);
   const [showPause, setShowPause] = useState(false);
 
+  const [playing, setPlaying] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  const [emotion, setEmotion] = useState("");
+
+  const textAnswers = useRef<string[]>([]);
+
+  const { resetTranscripts, finishEarly } = useSpeechRecognition({
+    timeWindows,
+    currentTime: currentTime,
+    endingTime,
+    isActive: playing,
+    onComplete: (transcripts) => {
+      console.log("Session completed with transcripts:", transcripts);
+      textAnswers.current = transcripts.map((section) => section.transcript);
+    },
+    setListening,
+  });
+
   const [renderPrivacy, showPrivacy, setShowPrivacy] =
     usePopupVisibilityState();
 
@@ -49,7 +104,30 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
 
   const museClientRef = React.useRef<MuseClient | null>(null);
 
+  const stepRef = useRef<number>(0);
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " ") {
+        finishEarly();
+        setStep(4);
+        setPlaying(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   // TRPC
+  const { mutateAsync: saveReviewAnswer, isPending: isSendingProcessedReport } =
+    api.sprintReviews.saveReviewAnswers.useMutation();
+  const { mutateAsync: sendReport, isPending: isSendingReport } =
+    api.sprintReviews.sendReport.useMutation();
 
   // GENERAL
 
@@ -61,6 +139,31 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
         duration: 5000,
       });
       setHeadsetStatus("disconnected");
+      setStep(1);
+      resetTranscripts();
+    }
+  };
+
+  const eegBuffer = useRef<EEGDataPointWithTimestamp[]>([]);
+  const emotionHistory = useRef<string[]>([]);
+
+  const museEEGCallback = (data: EEGDataPoint) => {
+    if (stepRef.current === 3) {
+      const timestamp = new Date().getTime();
+      eegBuffer.current.push({
+        ...data,
+        timestamp,
+      });
+
+      if (eegBuffer.current.length > 10) {
+        eegBuffer.current.shift();
+      }
+
+      if (eegBuffer.current.length === 10) {
+        const classifiedEmotion = classifyEmotion(eegBuffer.current).emotion;
+        setEmotion(classifiedEmotion);
+        emotionHistory.current.push(classifiedEmotion);
+      }
     }
   };
 
@@ -130,6 +233,17 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
           addSignalQuality(),
         )
         .subscribe(museDataCallback);
+      zipSamples(museClientRef.current.eegReadings)
+        .pipe(
+          // eslint-disable-next-line
+          epoch({ duration: 256, interval: 128, samplingRate: 256 }),
+          // eslint-disable-next-line
+          fft({ bins: 256 }),
+          // eslint-disable-next-line
+          powerByBand(),
+        )
+        // eslint-disable-next-line
+        .subscribe(museEEGCallback as any);
     } catch {
       alert(
         "We're sorry...",
@@ -139,9 +253,67 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
           duration: 5000,
         },
       );
-    } finally {
       setHeadsetStatus("disconnected");
     }
+  };
+
+  const utils = api.useUtils();
+
+  const handleSendProcessedReport = async () => {
+    if (!sprintReviewId || !user) return;
+
+    const processedAnswers =
+      utils.sprintReviews.getProcessedReviewAnswers.getData({
+        projectId: projectId as string,
+        data: {
+          textAnswers: textAnswers.current,
+        },
+      });
+
+    if (!processedAnswers) return;
+
+    console.log("Processed answers", processedAnswers);
+
+    await Promise.all(
+      processedAnswers.answers.map(async (answer, index) => {
+        if (answer === undefined || answer === "") return;
+        return await saveReviewAnswer({
+          projectId: projectId as string,
+          userId: user.uid,
+          reviewId: sprintReviewId,
+          questionNum: index + 1,
+          answerText: answer,
+        });
+      }),
+    );
+
+    await utils.sprintReviews.getReviewAnswers.invalidate({
+      projectId: projectId as string,
+      reviewId: sprintReviewId,
+      userId: user.uid,
+    });
+
+    handleDismiss();
+  };
+
+  const handleSendReport = async () => {
+    if (!sprintReviewId || !user) return;
+
+    await sendReport({
+      projectId: projectId as string,
+      reviewId: sprintReviewId,
+      data: {
+        textAnswers: textAnswers.current,
+      },
+    });
+
+    await utils.sprintReviews.getReviewAnswers.invalidate({
+      projectId: projectId as string,
+      reviewId: sprintReviewId,
+      userId: user.uid,
+    });
+
+    handleDismiss();
   };
 
   const isChromium =
@@ -154,12 +326,22 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
     "Your progress will not be saved?",
   );
 
+  const micEnabled = listening && playing;
+
   return (
     <>
       <Popup
         show={showPopup}
         size="small"
-        className="h-[700px] max-h-[min(700px,calc(100vh-40px))] w-[700px] max-w-[min(700px,calc(100vw-40px))]"
+        className={cn(
+          "h-[700px] max-h-[min(700px,calc(100vh-40px))] w-[700px] max-w-[min(700px,calc(100vw-40px))]",
+          {
+            "bg-gray-800 text-white delay-[1000ms] duration-[5000ms]": playing,
+          },
+        )}
+        coverClassName={cn("transition", {
+          "opacity-100 duration-[5000ms] delay-[1000ms]": playing,
+        })}
         dismiss={async () => {
           if (
             step === 0 ||
@@ -177,11 +359,17 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
         footer={
           <>
             {step === 0 && (
-              <div className="flex gap-2">
-                <SecondaryButton onClick={handleDismiss}>
-                  No, thank you
-                </SecondaryButton>
-              </div>
+              <SecondaryButton onClick={handleDismiss}>
+                No, thank you
+              </SecondaryButton>
+            )}
+            {step === 5 && (
+              <PrimaryButton
+                onClick={handleSendProcessedReport}
+                loading={isSendingProcessedReport}
+              >
+                Send report
+              </PrimaryButton>
             )}
           </>
         }
@@ -193,7 +381,7 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
           </>
         }
       >
-        <div className="flex h-full w-full flex-col items-center justify-center gap-2">
+        <div className="relative flex h-full w-full flex-col items-center justify-center gap-2">
           {step === 0 && (
             <>
               <span className="text-[100px]">
@@ -206,13 +394,18 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
                 Welcome to conversation mode
               </h1>
               <p className="max-w-[600px] text-center text-xl">
-                Fill out your happiness report in a more fun and interactive way
-                by talking instead of typing. It only takes 5 minutes!
+                {isChromium
+                  ? "Fill out your happiness report in a more fun and interactive way by talking instead of typing. It only takes 5 minutes!"
+                  : "Unfortunately, your browser does not support this feature. Please use a Chromium based browser like Chrome or Edge to use this feature."}
               </p>
-              <PrimaryButton className="mt-4 px-10" onClick={handleNextStep}>
+              <PrimaryButton
+                className="mt-4 px-10"
+                onClick={handleNextStep}
+                disabled={!isChromium}
+              >
                 Get started
               </PrimaryButton>
-              <p className="mt-5">
+              <p className="mt-5 text-center">
                 By using Conversation Mode, you agree to the{" "}
                 <TertiaryButton
                   className="ml-[-7px]"
@@ -229,9 +422,8 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
                 Great, let&apos;s get started!
               </h1>
               <p className="max-w-[600px] text-center text-xl">
-                {isChromium
-                  ? "Do you have a Muse headset? If so, please turn it on, put it on and press the button below to connect to it."
-                  : "Unfortunately, your browser does not support connecting to the Muse headset. Please use a Chromium based browser like Chrome or Edge if you want to use it."}
+                Do you have a Muse headset? If so, please turn it on, put it on
+                and press the button below to connect to it.
               </p>
               <img
                 src="/muse_headset.png"
@@ -316,49 +508,85 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
             </>
           )}
           {step === 3 && (
-            <div className="flex flex-col gap-5">
-              <div
-                className={cn("flex h-[100px] flex-col gap-2 transition-all", {
-                  "h-0 opacity-0": !showInstructions,
-                })}
-              >
-                <h1 className="animate-hide-slow text-center text-2xl font-semibold text-app-primary">
-                  Ready to start?
-                </h1>
-                <p className="mx-auto w-[450px] text-center text-lg text-app-text">
-                  Click the button to begin. Remain calm, listen carefully and
-                  answer truthfully. You will be able to pause the audio, if
-                  needed.
-                </p>
+            <>
+              <div className="mb-5 flex flex-col gap-5">
+                <div
+                  className={cn(
+                    "flex h-[100px] flex-col gap-2 transition-all",
+                    {
+                      "h-0 opacity-0": !showInstructions,
+                    },
+                  )}
+                >
+                  <h1 className="animate-hide-slow text-center text-2xl font-semibold text-app-primary">
+                    Ready to start?
+                  </h1>
+                  <p className="mx-auto w-[450px] text-center text-lg text-app-text">
+                    Click the button to begin. Remain calm, listen carefully and
+                    answer truthfully. You will be able to pause the audio, if
+                    needed.
+                  </p>
+                </div>
+                <div
+                  className={cn("flex h-[80px] flex-col gap-2 transition-all", {
+                    "h-0 opacity-0": !showPause,
+                  })}
+                >
+                  <h1 className="animate-hide-slow text-center text-2xl font-semibold text-app-primary">
+                    Conversation paused
+                  </h1>
+                  <p className="mx-auto w-[500px] text-center text-lg text-app-text">
+                    Click the play button to continue from where you left off.
+                  </p>
+                </div>
+                <SoundPlayer
+                  soundSrc="/conversation_mode.mp3"
+                  setPlaying={(playing) => {
+                    setPlaying(playing);
+                    if (playing) {
+                      setShowInstructions(false);
+                      setShowPause(false);
+                    }
+                    if (!playing) {
+                      setShowPause(true);
+                    }
+                  }}
+                  onFinish={() => {
+                    setTimeout(() => setShowPause(false), 10);
+                    setTimeout(() => setStep(4), 1000);
+                  }}
+                  setCurrentTime={setCurrentTime}
+                />
+                {playing && headsetStatus === "connected" && (
+                  <p className="animate-pulse text-center">
+                    {emotion
+                      ? `You're feeling ${emotion}`
+                      : "Detecting emotion..."}
+                  </p>
+                )}
               </div>
               <div
-                className={cn("flex h-[80px] flex-col gap-2 transition-all", {
-                  "h-0 opacity-0": !showPause,
-                })}
+                className="absolute bottom-0 right-10 text-[40px]"
+                data-tooltip-id="tooltip"
+                data-tooltip-content={
+                  micEnabled
+                    ? "Your response is being recorded right now"
+                    : "You are not being recorded right now"
+                }
               >
-                <h1 className="animate-hide-slow text-center text-2xl font-semibold text-app-primary">
-                  Conversation paused
-                </h1>
-                <p className="mx-auto w-[450px] text-center text-lg text-app-text">
-                  Click the play button continue from where you left off.
-                </p>
+                {!micEnabled && (
+                  <div className="flex h-12 items-center">
+                    <MicOffIcon fontSize="inherit" />
+                  </div>
+                )}
+                {micEnabled && (
+                  <div className="flex h-12 items-center">
+                    <span className="text-lg">Speak</span>
+                    <MicOnIcon fontSize="inherit" />
+                  </div>
+                )}
               </div>
-              <SoundPlayer
-                soundSrc="/demo_sound.mp3"
-                setPlaying={(playing) => {
-                  if (playing) {
-                    setShowInstructions(false);
-                    setShowPause(false);
-                  }
-                  if (!playing) {
-                    setShowPause(true);
-                  }
-                }}
-                onFinish={() => {
-                  setTimeout(() => setStep(4), 1000);
-                }}
-              />
-            </div>
+            </>
           )}
           {step === 4 && (
             <div className="flex flex-col gap-2">
@@ -370,9 +598,24 @@ export default function ConversationPopup({ showPopup, setShowPopup }: Props) {
                 out conversation mode!
               </p>
               <div className="mt-10 flex justify-center gap-2">
-                <SecondaryButton>Review Answers</SecondaryButton>
-                <PrimaryButton>Send report</PrimaryButton>
+                <SecondaryButton onClick={() => setStep(5)}>
+                  Review answers
+                </SecondaryButton>
+                <PrimaryButton
+                  onClick={handleSendReport}
+                  loading={isSendingReport}
+                >
+                  Send report
+                </PrimaryButton>
               </div>
+            </div>
+          )}
+          {step === 5 && (
+            <div className="h-full">
+              <ReviewConversationAnswers
+                textAnswers={textAnswers.current}
+                primaryEmotion={mode(emotionHistory.current)}
+              />
             </div>
           )}
         </div>
