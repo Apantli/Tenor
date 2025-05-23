@@ -94,16 +94,21 @@ const MemberItem = ({
     time: time,
   });
 
-  console.log("dataon", data);
-
-  const data2 = data?.map((d) => ({
+  const formattedData = data?.map((d) => ({
     x: d.date,
-    y: d.count + 20,
+    y: d.count,
   }));
-  data2?.push({
-    x: new Date("2025-05-03"),
-    y: 81,
-  });
+
+  // If there's only one data point, add another point one day before
+  if (formattedData?.length === 1 && formattedData[0]) {
+    const prevDate = new Date(formattedData[0].x);
+    prevDate.setDate(prevDate.getDate() - 1);
+    formattedData.push({
+      x: prevDate,
+      y: formattedData[0].y,
+    });
+  }
+
   return (
     <li
       className={cn(
@@ -131,7 +136,7 @@ const MemberItem = ({
       </div>
       <PerformanceChart
         data={{
-          table: data2,
+          table: formattedData,
         }}
         actions={false}
         className="ml-8"

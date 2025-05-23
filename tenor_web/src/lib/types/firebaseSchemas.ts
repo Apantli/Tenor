@@ -254,7 +254,7 @@ export interface LogProjectActivityParams {
   userId: string;
   type: ActivityType;
   action: ActionType;
-  createdAt?: Timestamp;
+  date?: Timestamp;
 }
 
 export interface ProjectStatus {

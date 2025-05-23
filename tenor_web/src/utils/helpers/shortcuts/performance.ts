@@ -43,17 +43,15 @@ export const getActivityPartition = async (
     });
   });
 
-  console.log("Activity data:", data);
-
   // Group activities by day
   const groupedByDay: Record<string, { date: string; count: number }> = {};
 
   data.forEach((item) => {
     // Get timestamp from the activity data
-    const timestamp = item.createdAt
-      ? item.createdAt instanceof Date
-        ? item.createdAt
-        : item.createdAt.toDate()
+    const timestamp = item.date
+      ? item.date instanceof Date
+        ? item.date
+        : item.date.toDate()
       : new Date();
 
     // Format date as YYYY-MM-DD
