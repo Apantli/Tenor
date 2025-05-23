@@ -10,40 +10,12 @@ import fitz
 from flask import request, jsonify
 from docx import Document
 from openpyxl import load_workbook
-import numpy as np
 
 initialize_app()
 
-def analyze_emotion(data):
-    # Dummy logic: average band power over the whole segment
-    avg_features = {
-        band: float(np.mean([point[band] for point in data]))
-        for band in ["delta", "theta", "alpha", "beta", "gamma"]
-    }
-
-    # Dummy classifier: Just thresholding
-    if avg_features["alpha"] > avg_features["beta"]:
-        emotion = "relaxed"
-    else:
-        emotion = "focused"
-
-    return {
-        "emotion": emotion,
-        "features": avg_features
-    }
-
 @https_fn.on_request()
-def analyze_eeg(request):
-    try:
-        data = request.get_json(silent=True)
-        if not data or not isinstance(data, list):
-            return jsonify({"error": "Invalid data format"}), 400
-
-        result = analyze_emotion(data)
-        return jsonify(result), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+def analyze_emotion(req: https_fn.Request) -> https_fn.Response:
+    return {"emotion": "Happy", "timestamp": math.floor(time.time() * 1000)}
 
 @https_fn.on_request()
 def parse_file(req: https_fn.Request) -> https_fn.Response:

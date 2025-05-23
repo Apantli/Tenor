@@ -2,5 +2,3 @@ firebase_functions~=0.1.0
 PyMuPDF
 python-docx
 openpyxl
-scikit-learn
-numpy
