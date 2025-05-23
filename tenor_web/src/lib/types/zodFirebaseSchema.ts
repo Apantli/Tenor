@@ -69,11 +69,12 @@ export const StatusTagSchema = TagSchema.extend({
   marksTaskAsDone: z.boolean(),
 });
 
+// FIXME: Remove optional once it's implemented
 export const UserSchema = z.object({
-  bio: z.string(),
-  jobTitle: z.string(),
+  bio: z.string().optional(),
+  jobTitle: z.string().optional(),
   projectIds: z.array(z.string()),
-  isManager: z.boolean(),
+  isManager: z.boolean().optional(),
 });
 
 // Each number refers to 1 permission: "none" | "read" | "write"
@@ -145,11 +146,14 @@ export const UserStorySchema = BacklogItemSchema.extend({
     ),
   dependencyIds: z
     .array(z.string())
+    .default([])
+
     .describe(
       "List of user story ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
   requiredByIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of user story ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
@@ -180,11 +184,13 @@ export const TaskSchema = BasicInfoSchema.extend({
   // reviewerId: z.string(), // Scope creep. Ignore for now
   dependencyIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of task ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
   requiredByIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of task ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),

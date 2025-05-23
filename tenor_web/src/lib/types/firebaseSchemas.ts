@@ -244,6 +244,17 @@ export interface Productivity {
   cached: ProductivityData[];
 }
 
+export interface ProjectStatus {
+  projectId: string;
+  taskCount: number;
+  completedCount: number;
+  name?: string;
+}
+
+export interface ProjectStatusCache {
+  fetchDate: Timestamp;
+  topProjects: ProjectStatus[];
+}
 type ActivityType = "US" | "EP" | "IS" | "TS" | "SP";
 type ActionType = "create" | "update" | "delete";
 
