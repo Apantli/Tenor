@@ -46,6 +46,9 @@ export default function BacklogItemCardColumn({
     tags: item.tags,
     columnId: item.sprintId,
     cardType: item.itemType as BacklogItemType,
+    assigneeIds: [],
+    sprintId: item.sprintId,
+    priorityId: undefined,
   }));
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
