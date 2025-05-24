@@ -47,7 +47,7 @@ import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
 import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 import { backlogPermissions, taskPermissions } from "~/lib/permission";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Timestamp } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
 
 export const tasksRouter = createTRPCRouter({
@@ -73,6 +73,51 @@ export const tasksRouter = createTRPCRouter({
    * @returns {object} Object with success status and the created task ID
    * @throws {TRPCError} If there's an error creating the task
    */
+  getTasksByDate: roleRequiredProcedure(backlogPermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+        month: z.number(),
+        year: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { projectId, month, year } = input;
+      const startDate = new Date(year, month, 1);
+      const endDate = new Date(year, month + 1, 1);
+      console.log(Timestamp.fromDate(startDate));
+      const tasksSnapshot = await getTasksRef(ctx.firestore, projectId)
+        .where("dueDate.seconds", ">=", Timestamp.fromDate(startDate).seconds)
+        .where("dueDate.seconds", "<", Timestamp.fromDate(endDate).seconds)
+        .get();
+      const tasks = tasksSnapshot.docs.map((doc) => {
+        const dueDateData = doc.data()?.dueDate as Timestamp | undefined;
+        const dueDate = dueDateData
+          ? new Date(dueDateData.seconds * 1000 + dueDateData.nanoseconds / 1e6)
+          : undefined;
+
+        return {
+          id: doc.id,
+          ...doc.data(),
+          dueDate,
+        };
+      }) as WithId<Task>[];
+
+      // return a map of day : tasks[]
+      // You can use a plain object for easier serialization (e.g., for JSON responses)
+      const tasksByDate: Record<number, WithId<Task>[]> = {};
+      tasks.forEach((task) => {
+        if (!task.dueDate) {
+          return;
+        }
+        const day = task.dueDate.getDate();
+        if (!tasksByDate[day]) {
+          tasksByDate[day] = [];
+        }
+        tasksByDate[day].push(task);
+      });
+      return tasksByDate;
+    }),
   createTask: protectedProcedure
     .input(
       z.object({
@@ -154,7 +199,6 @@ export const tasksRouter = createTRPCRouter({
         itemId,
       );
     }),
-
   /**
    * @procedure getTaskDetail
    * @description Gets detailed information about a specific task
