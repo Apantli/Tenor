@@ -41,7 +41,6 @@ export default function ProjectPerformance() {
           searchValue={searchValue}
           handleUpdateSearch={(e) => setSearchValue(e.target.value)}
         />
-        {/* FIXME: pass timeInterval and use it to actually compute the team performance */}
         <MemberList
           projectId={projectIdString}
           searchValue={searchValue}

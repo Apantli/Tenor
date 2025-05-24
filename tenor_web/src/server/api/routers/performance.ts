@@ -49,12 +49,8 @@ export const performanceRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return await recomputePerformance(
-        ctx,
-        input.projectId,
-        input.time,
-        false,
-      );
+      // SR3: Always show up-to-date productivity data
+      return await recomputePerformance(ctx, input.projectId, input.time, true);
     }),
 
   recomputeProductivity: roleRequiredProcedure(performancePermissions, "read")
