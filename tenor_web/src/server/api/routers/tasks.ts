@@ -20,6 +20,7 @@ import {
   BacklogItemSchema,
   BacklogItemZodType,
   TaskSchema,
+  TimestampType,
 } from "~/lib/types/zodFirebaseSchema";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
@@ -219,7 +220,28 @@ export const tasksRouter = createTRPCRouter({
         taskId,
       );
     }),
-
+  modifyDueDate: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        taskId: z.string(),
+        dueDate: TimestampType,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log("Modifying due date", input);
+      const { projectId, taskId, dueDate } = input;
+      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "update",
+      });
+      await taskRef.update({ dueDate });
+    }),
   /**
    * @procedure modifyTask
    * @description Updates a task with new data
