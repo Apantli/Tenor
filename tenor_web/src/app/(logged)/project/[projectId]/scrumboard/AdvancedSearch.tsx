@@ -1,45 +1,50 @@
 "use client";
 
 import Dropdown, { DropdownItem } from "~/app/_components/Dropdown";
+import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import TuneIcon from "@mui/icons-material/Tune";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 // import { Checkbox } from "@mui/material";
 // import ProfilePicture from "~/app/_components/ProfilePicture";
+import { Checkbox } from "@mui/material";
+import { type UserPreview } from "~/lib/types/detailSchemas";
+import TagComponent from "~/app/_components/TagComponent";
+import { sizeTags } from "~/lib/defaultProjectValues";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
-import { useState } from "react";
-import { cn } from "~/lib/utils";
-import PillComponent from "~/app/_components/PillComponent";
+import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 // import { UserPreview } from "~/lib/types/detailSchemas";
 
-export interface RegexItem {
-  label: string;
-  type: "assignee" | "size" | "tag" | "status" | "priority" | "operator";
-}
-
-const regexToColor = (regex: RegexItem) => {
-  switch (regex.type) {
-    case "assignee":
-      return "bg-blue-200";
-    case "size":
-      return "bg-green-200";
-    case "tag":
-      return "bg-yellow-200";
-    case "status":
-      return "bg-red-200";
-    case "priority":
-      return "bg-purple-200";
-    case "operator":
-      return "bg-gray-200";
-  }
-};
-
 interface Props {
-  regex?: RegexItem[];
-  setRegex?: (regex: RegexItem[]) => void;
+  tags: WithId<Tag>[];
+  setTags: (tags: WithId<Tag>[]) => void;
+
+  priorities: WithId<Tag>[];
+  setPriorities: (priorities: WithId<Tag>[]) => void;
+
+  size: WithId<Tag>[];
+  setSizes: (size: WithId<Tag>[]) => void;
+
+  assignee: WithId<UserPreview> | undefined;
+  setAssignee: (assignee: WithId<UserPreview> | undefined) => void;
+
+  sprint: WithId<Sprint> | undefined;
+  setSprint: (sprints: WithId<Sprint> | undefined) => void;
 }
 
-export default function AdvancedSearch({}: Props) {
+export default function AdvancedSearch({
+  tags,
+  setTags,
+  priorities,
+  setPriorities,
+  size,
+  setSizes,
+  assignee,
+  setAssignee,
+  sprint,
+  setSprint,
+}: Props) {
   // GENERAL
   const { projectId } = useParams();
 
@@ -47,67 +52,110 @@ export default function AdvancedSearch({}: Props) {
     projectId: projectId as string,
   });
 
-  // const regex: RegexItem[] = [];
-  const [regex, setRegex] = useState<RegexItem[]>([]);
+  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
+    projectId: projectId as string,
+  });
+
+  const { data: prioritiesData } = api.settings.getPriorityTypes.useQuery({
+    projectId: projectId as string,
+  });
+
+  const { data: backlogTags } = api.settings.getBacklogTags.useQuery({
+    projectId: projectId as string,
+  });
+
+  const filters = [
+    {
+      field: "priority",
+      label: "Priorities",
+      options: prioritiesData ?? [],
+      value: priorities,
+      setValue: setPriorities,
+    },
+    {
+      field: "size",
+      label: "Sizes",
+      options: sizeTags.map(
+        (tag) =>
+          ({
+            ...tag,
+            id: tag.id ?? tag.name,
+          }) as WithId<Tag>,
+      ),
+      value: size,
+      setValue: setSizes,
+    },
+    {
+      field: "backlog",
+      label: "Backlog Tags",
+      options: backlogTags ?? [],
+      value: tags,
+      setValue: setTags,
+    },
+  ];
 
   return (
-    <Dropdown label={<TuneIcon />} close={false}>
-      {/* Assignee section */}
-      <DropdownItem>
-        <div className="flex items-center">
-          <h1 className="text-l font-semibold">Regex</h1>
-        </div>
-      </DropdownItem>
-      <DropdownItem>
-        <div className="h-32">
-          {regex.map((item) => (
-            <div key={item.label} className="flex items-center">
-              <span
-                className={cn(
-                  "text-gray-60 mr-2 rounded-full px-3 py-1",
-                  regexToColor(item),
-                )}
-              >
-                {item.label}
-              </span>
-            </div>
-          ))}
-        </div>
-      </DropdownItem>
-      {/* Asignee Picker */}
-      {users && (
+    <div className="flex items-center gap-2">
+      <Dropdown
+        label={<LocalOfferIcon />}
+        menuClassName="max-h-80
+        overflow-y-auto"
+        close={false}
+      >
+        {filters.map((filter) => (
+          <DropdownItem key={filter.label}>
+            <h1 className="text-lg font-semibold">{filter.label}</h1>
+            {filter.options?.map((option) => (
+              <DropdownItem key={option.id}>
+                <div className="flex">
+                  <Checkbox
+                    checked={filter.value.some((i) => i.id === option.id)}
+                    onClick={() => {
+                      const exists = filter.value.some(
+                        (i) => i.id === option.id,
+                      );
+                      if (exists) {
+                        filter.setValue(
+                          filter.value.filter((i) => i.id !== option.id),
+                        );
+                      } else {
+                        filter.setValue([...filter.value, option]);
+                      }
+                    }}
+                  />
+                  <TagComponent
+                    color={option.color}
+                    reducedPadding
+                    className="max-w-20 truncate"
+                  >
+                    {option.name}
+                  </TagComponent>
+                </div>
+              </DropdownItem>
+            ))}
+          </DropdownItem>
+        ))}
+      </Dropdown>
+      <Dropdown label={<TuneIcon />} close={false}>
         <DropdownItem>
+          <h1 className="text-lg font-semibold">Assignee</h1>
           <UserPicker
             close={false}
-            options={users}
-            onChange={(user) => {
-              if (user) {
-                setRegex((prev) => [
-                  ...prev,
-                  { label: user.displayName, type: "assignee" },
-                ]);
-              }
-            }}
+            selectedOption={assignee}
+            options={users ?? []}
+            onChange={setAssignee}
           />
         </DropdownItem>
-      )}
-      {/* Operator Picker */}
-
-      <DropdownItem>
-        <PillComponent
-          allTags={[
-            { id: "1", name: "AND", color: "bg-green-200", deleted: false },
-            { id: "2", name: "OR", color: "bg-red-200", deleted: false },
-          ]}
-          callBack={(tag) => {
-            setRegex((prev) => [
-              ...prev,
-              { label: tag.name, type: "operator" },
-            ]);
-          }}
-          labelClassName={""}
-        />
-      </DropdownItem>
-    </Dropdown>
+        <DropdownItem>
+          <h1 className="text-lg font-semibold">Sprint</h1>
+          <SprintPicker
+            close={false}
+            selectedOption={sprint}
+            options={sprintsData ?? []}
+            onChange={setSprint}
+          />
+        </DropdownItem>
+      </Dropdown>
+    </div>
   );
 }

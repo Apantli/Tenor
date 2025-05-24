@@ -11,12 +11,16 @@ import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import ItemsKanban from "./ItemsKanban";
 import {
   permissionNumbers,
+  type Sprint,
+  type Tag,
+  type WithId,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
 import SearchBar from "~/app/_components/SearchBar";
-import type { RegexItem } from "./AdvancedSearch";
+import AdvancedSearch from "./AdvancedSearch";
+import { type UserPreview } from "~/lib/types/detailSchemas";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
 
@@ -45,7 +49,15 @@ export default function ProjectKanban() {
       "Tasks",
   );
   const [filter, setFilter] = useState("");
-  const [regex, _setRegex] = useState<RegexItem[]>([]);
+
+  const [tags, setTags] = useState<WithId<Tag>[]>([]);
+  const [size, setSizes] = useState<WithId<Tag>[]>([]);
+  const [priorities, setPriorities] = useState<WithId<Tag>[]>([]);
+
+  const [assignee, setAssignee] = useState<WithId<UserPreview> | undefined>(
+    undefined,
+  );
+  const [sprint, setSprint] = useState<WithId<Sprint> | undefined>(undefined);
 
   // HANDLES
   const onListAdded = async () => {
@@ -62,6 +74,18 @@ export default function ProjectKanban() {
             handleUpdateSearch={(e) => setFilter(e.target.value)}
             searchValue={filter}
             placeholder="Search..."
+          />
+          <AdvancedSearch
+            tags={tags}
+            setTags={setTags}
+            priorities={priorities}
+            setPriorities={setPriorities}
+            size={size}
+            setSizes={setSizes}
+            assignee={assignee}
+            setAssignee={setAssignee}
+            sprint={sprint}
+            setSprint={setSprint}
           />
         </div>
 
@@ -84,10 +108,24 @@ export default function ProjectKanban() {
       </div>
 
       {section === "Tasks" && (
-        <TasksKanban filter={filter} regex={regex}></TasksKanban>
+        <TasksKanban
+          filter={filter}
+          priorities={priorities}
+          tags={tags}
+          size={size}
+          assignee={assignee}
+          sprint={sprint}
+        ></TasksKanban>
       )}
       {section === "Backlog Items" && (
-        <ItemsKanban filter={filter} regex={regex}></ItemsKanban>
+        <ItemsKanban
+          filter={filter}
+          priorities={priorities}
+          tags={tags}
+          size={size}
+          assignee={assignee}
+          sprint={sprint}
+        ></ItemsKanban>
       )}
 
       {renderNewList && (

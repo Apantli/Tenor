@@ -22,19 +22,35 @@ import IssueDetailPopup from "../issues/IssueDetailPopup";
 import {
   type Permission,
   permissionNumbers,
+  type Sprint,
+  type Tag,
+  type WithId,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
-import { type RegexItem } from "./AdvancedSearch";
+import type { UserPreview } from "~/lib/types/detailSchemas";
 
 interface Props {
   filter: string;
-  regex: RegexItem[];
+  tags: WithId<Tag>[];
+  priorities: WithId<Tag>[];
+  size: WithId<Tag>[];
+
+  assignee: WithId<UserPreview> | undefined;
+
+  sprint: WithId<Sprint> | undefined;
 }
 
-export default function TasksKanban({ filter, regex }: Props) {
+export default function TasksKanban({
+  filter,
+  tags,
+  priorities,
+  size,
+  assignee,
+  sprint,
+}: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -275,7 +291,11 @@ export default function TasksKanban({ filter, regex }: Props) {
               return (
                 <AssignableCardColumn
                   filter={filter}
-                  regex={regex}
+                  tags={tags}
+                  priorities={priorities}
+                  size={size}
+                  assignee={assignee}
+                  sprint={sprint}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}

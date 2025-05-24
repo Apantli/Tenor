@@ -3,8 +3,9 @@ import { cn } from "~/lib/utils";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CardColumn from "./CardColumn";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { UserPreview } from "~/lib/types/detailSchemas";
 // import type { Tag } from "~/lib/types/firebaseSchemas";
-import { type RegexItem } from "~/app/(logged)/project/[projectId]/scrumboard/AdvancedSearch";
 
 // WithId<BasicInfo> change into only needed info...
 
@@ -25,7 +26,13 @@ interface Props {
   header: React.ReactNode;
   disabled?: boolean;
   filter: string;
-  regex: RegexItem[];
+  tags: WithId<Tag>[];
+  priorities: WithId<Tag>[];
+  size: WithId<Tag>[];
+
+  assignee: WithId<UserPreview> | undefined;
+
+  sprint: WithId<Sprint> | undefined;
 }
 
 export default function AssignableCardColumn({
@@ -40,7 +47,11 @@ export default function AssignableCardColumn({
   header,
   disabled = false,
   filter,
-  // regex,
+  tags,
+  priorities,
+  size,
+  assignee,
+  sprint,
 }: Props) {
   // Check there's selected items and none of them are in this column
   const availableToBeAssignedTo =
@@ -62,12 +73,33 @@ export default function AssignableCardColumn({
             .map((itemId: string) => items[itemId])
             .filter((val: KanbanCard | undefined): val is KanbanCard => {
               if (val === undefined) return false;
-              // check for filters
+
               if (
                 filter &&
                 !val.name.toLowerCase().includes(filter.toLowerCase())
               )
                 return false;
+              if (
+                tags.length > 0 &&
+                !val.tags.some((tag) => tags.some((t) => t.id === tag.id))
+              )
+                return false;
+              if (
+                priorities.length > 0 &&
+                val.priorityId &&
+                !priorities.some((tag) => tag.id === val.priorityId)
+              )
+                return false;
+              if (
+                size.length > 0 &&
+                val.size &&
+                !size.some((tag) => tag.id === val.size)
+              )
+                return false;
+              if (assignee && !val.assigneeIds.includes(assignee.id))
+                return false;
+              if (sprint && val.sprintId !== sprint.id) return false;
+
               return true;
             }) ?? []
         }
