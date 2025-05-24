@@ -41,7 +41,7 @@ export default function ProjectCalendar() {
 
   return (
     <div className="flex flex-col">
-      <div className="flex justify-between pb-4">
+      <div className="flex justify-between pb-2">
         <h1 className="text-3xl font-semibold">Calendar</h1>
         <MonthSlider
           month={month}

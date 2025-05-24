@@ -1,5 +1,8 @@
 "use client";
 
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+
 interface Props {
   month: number;
   setMonth: (month: number) => void;
@@ -35,10 +38,10 @@ export default function MonthSlider({ month, setMonth, year, setYear }: Props) {
           }
         }}
       >
-        {"<"}
+        <ChevronLeftIcon />
       </button>
       <div className="flex min-w-[120px] items-center justify-center">
-        <h1 className="text-lg font-semibold">
+        <h1 className="text-lg">
           {months[month]} {year}
         </h1>
       </div>
@@ -52,7 +55,7 @@ export default function MonthSlider({ month, setMonth, year, setYear }: Props) {
           }
         }}
       >
-        {">"}
+        <ChevronRightIcon />
       </button>
     </div>
   );

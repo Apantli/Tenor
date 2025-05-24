@@ -1,7 +1,9 @@
 "use client";
 
+import ProfilePicture from "~/app/_components/ProfilePicture";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import type { Task, WithId } from "~/lib/types/firebaseSchemas";
+import { api } from "~/trpc/react";
 
 interface Props {
   task: WithId<Task>;
@@ -17,12 +19,20 @@ export const TaskCalendarCard = ({ task, setTask, setDetailItemId }: Props) => {
 
   const formatTaskScrumId = useFormatTaskScrumId();
 
+  const { data: user } = task.assigneeId
+    ? api.users.getGlobalUser.useQuery({
+        userId: task.assigneeId,
+      })
+    : { data: null };
   return (
     <div
-      className="w-full cursor-pointer rounded-lg border border-gray-300 p-1 text-sm text-xs hover:bg-gray-100"
+      className="flex h-6 w-full cursor-pointer items-center rounded-lg border border-gray-300 p-0.5 text-xs font-semibold hover:bg-gray-100"
       onClick={handleClick}
     >
-      <div>{formatTaskScrumId(task.scrumId)}</div>
+      <div className="flex w-full items-center justify-between">
+        <p>{formatTaskScrumId(task.scrumId)}</p>
+        {user && <ProfilePicture user={user} pictureClassName="h-4 w-4" />}
+      </div>
     </div>
   );
 };

@@ -45,7 +45,7 @@ export default function CalendarGrid({
 
   return (
     <div>
-      <div className="mb-1 grid grid-cols-7 text-left text-sm font-semibold">
+      <div className="grid grid-cols-7 text-left text-sm font-semibold">
         {daysOfWeek.map((day) => (
           <div key={day}>{day}</div>
         ))}
@@ -55,18 +55,18 @@ export default function CalendarGrid({
           <div
             key={idx}
             className={cn(
-              "h-[90px] border border-gray-300 p-1",
+              "h-[92px] border border-gray-300 p-0.5",
               !day && "bg-gray-100",
             )}
           >
             {day && (
               <div className="flex w-full">
-                <span className="text-xs">{day}</span>
+                <span className="p-1 text-xs">{day}</span>
                 <div className="flex max-h-20 w-full flex-col overflow-y-auto">
                   {/* Add any additional content here */}
                   {tasksByDate && day && Array.isArray(tasksByDate[day])
                     ? tasksByDate[day].map((task) => (
-                        <div className="p-1" key={task.id}>
+                        <div className="p-0.5" key={task.id}>
                           <TaskCalendarCard
                             task={task}
                             setTask={setTask}
