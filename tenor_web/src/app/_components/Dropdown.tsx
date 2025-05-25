@@ -1,6 +1,7 @@
 "use client";
 
 import React, {
+  type HTMLAttributes,
   type PropsWithChildren,
   useEffect,
   useRef,
@@ -51,7 +52,8 @@ export default function Dropdown({
   disabled,
   close,
   setOpenState,
-}: Props) {
+  ...props
+}: Props & HTMLAttributes<HTMLDivElement>) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDirection, setOpenDirection] = useState<
     "top-right" | "top-left" | "bottom-right" | "bottom-left"
@@ -181,6 +183,7 @@ export default function Dropdown({
         className,
       )}
       ref={ref}
+      {...props}
     >
       <button onClick={toggleOpen} className="w-full" disabled={!!disabled}>
         {label}

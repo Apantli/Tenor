@@ -53,6 +53,7 @@ export function SprintPicker({
         className={cn(
           "relative flex h-12 w-full items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
           !disabled && "cursor-pointer hover:bg-gray-200",
+          className,
         )}
       >
         {selectedOption ? (

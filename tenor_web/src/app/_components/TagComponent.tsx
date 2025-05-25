@@ -1,4 +1,4 @@
-import React, { type PropsWithChildren } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { cn } from "~/lib/utils";
 
 interface Props {
@@ -8,6 +8,7 @@ interface Props {
   expanded?: boolean;
   onClick?: () => void;
   disabled?: boolean;
+  children: string;
 }
 export default function TagComponent({
   color,
@@ -19,7 +20,17 @@ export default function TagComponent({
   className,
   disabled = false,
   ...props
-}: Props & PropsWithChildren & React.HTMLAttributes<HTMLDivElement>) {
+}: Props & React.HTMLAttributes<HTMLDivElement>) {
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  useEffect(() => {
+    const el = textRef.current;
+    if (el) {
+      setIsTruncated(el.scrollWidth <= el.clientWidth);
+    }
+  }, [children]);
+
   return (
     <div
       className={cn(
@@ -42,8 +53,14 @@ export default function TagComponent({
       }}
       {...props}
       onClick={onClick}
+      data-tooltip-id="tooltip"
+      data-tooltip-content={children}
+      data-tooltip-hidden={isTruncated}
+      data-tooltip-delay-show={500}
     >
-      <span className="w-full truncate text-center">{children}</span>
+      <span className="w-full truncate text-center" ref={textRef}>
+        {children}
+      </span>
       {onDelete !== undefined && !disabled && (
         <button
           className="mb-[3px] flex h-8 items-center text-2xl font-thin"

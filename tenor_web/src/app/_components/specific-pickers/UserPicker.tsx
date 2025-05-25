@@ -9,6 +9,7 @@ import ProfilePicture from "../ProfilePicture";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
 import Check from "@mui/icons-material/Check";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 interface EditableBoxProps {
   options: WithId<UserPreview>[];
   selectedOption?: WithId<UserPreview> | undefined;
@@ -17,6 +18,7 @@ interface EditableBoxProps {
   placeholder?: string;
   disabled?: boolean;
   close?: boolean;
+  allowSetSelf?: boolean;
 }
 
 export function UserPicker({
@@ -27,12 +29,28 @@ export function UserPicker({
   placeholder = "Select an option",
   disabled = false,
   close = true,
+  allowSetSelf,
 }: EditableBoxProps) {
   const [searchTerm, setSearchTerm] = useState("");
 
-  const filteredOptions = options.filter((option) =>
+  const { user } = useFirebaseAuth();
+
+  let filteredOptions = options.filter((option) =>
     option.displayName?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
+
+  if (allowSetSelf && user) {
+    const selfOption = filteredOptions.find((option) => option.id === user.uid);
+    if (selfOption) {
+      filteredOptions = [
+        {
+          ...selfOption,
+          displayName: "You",
+        },
+        ...filteredOptions.filter((option) => option.id !== user.uid),
+      ];
+    }
+  }
 
   const handleSelect = (option: WithId<UserPreview>) => {
     onChange(option);
@@ -51,14 +69,15 @@ export function UserPicker({
         className={cn(
           "relative flex h-12 w-full items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
           !disabled && "cursor-pointer hover:bg-gray-200",
+          className,
         )}
       >
         {selectedOption ? (
           <>
-            <div className="flex flex-grow items-center gap-2">
+            <div className="flex flex-grow items-center gap-2 overflow-hidden">
               <ProfilePicture user={selectedOption} hideTooltip />
 
-              <span className="font-medium text-gray-700">
+              <span className="flex-1 truncate font-medium text-gray-700">
                 {selectedOption.displayName}
               </span>
             </div>
@@ -102,6 +121,7 @@ export function UserPicker({
   };
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Perhaps apply cn in renderDropdownLabel instead of here to make it cleaner
   return (
@@ -110,7 +130,13 @@ export function UserPicker({
         close={close}
         disabled={disabled}
         label={renderDropdownLabel()}
-        onOpen={() => inputRef.current?.focus()}
+        onOpen={() => {
+          inputRef.current?.focus();
+          scrollRef.current?.scrollTo({
+            top: 0,
+            behavior: "instant",
+          });
+        }}
         menuClassName="w-56"
       >
         <DropdownItem className="flex w-full flex-col">
@@ -127,7 +153,10 @@ export function UserPicker({
           />
         </DropdownItem>
         <div className="w-full whitespace-nowrap text-left">
-          <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg">
+          <div
+            className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg"
+            ref={scrollRef}
+          >
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => createOption(option))
             ) : (
