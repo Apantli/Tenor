@@ -4,10 +4,7 @@ import React, { useState } from "react";
 import HappinessForm from "./HappinessForm";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import ProfilePicture from "~/app/_components/ProfilePicture";
-import {
-  SampleData,
-  PerformanceChart,
-} from "~/app/_components/charts/PerformanceChart";
+import { PerformanceChart } from "~/app/_components/charts/PerformanceChart";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -120,11 +117,7 @@ export default function ProjectSprintReviewPage() {
           </div>
 
           <div className="flex flex-1 flex-col">
-            <PerformanceChart
-              data={SampleData}
-              actions={false}
-              className="ml-8"
-            />
+            <PerformanceChart className="ml-8" />
           </div>
         </div>
 

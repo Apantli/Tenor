@@ -10,9 +10,14 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import { timestampToDate } from "~/utils/helpers/parsers";
 import { cn } from "~/lib/utils";
 export const ProjectStatus = ({ className }: { className?: string }) => {
-  const { data, isLoading } = api.projects.getTopProjectStatus.useQuery({
-    count: 4,
-  });
+  const { data, isLoading } = api.projects.getTopProjectStatus.useQuery(
+    {
+      count: 4,
+    },
+    {
+      retry: 0,
+    },
+  );
   const utils = api.useUtils();
   const { alert } = useAlert();
 
@@ -83,7 +88,7 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
           )}
 
           <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
-            {!isPending && (
+            {!isPending && data?.fetchDate && (
               <RefreshIcon
                 data-tooltip-id="tooltip"
                 data-tooltip-content="Refetch project status"
@@ -96,13 +101,20 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
                 className=""
               />
             )}
-            {isPending || !data?.fetchDate ? (
+            {isPending ? (
               <>
                 <LoadingSpinner />
                 <p>Refreshing project status...</p>
               </>
             ) : (
-              <p>Updated {timestampToDate(data.fetchDate).toLocaleString()}</p>
+              <>
+                {data?.fetchDate && (
+                  <p>
+                    {" "}
+                    Updated {timestampToDate(data.fetchDate).toLocaleString()}
+                  </p>
+                )}
+              </>
             )}
           </div>
         </>

@@ -6,13 +6,18 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { timestampToDate } from "~/utils/helpers/parsers";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
-
+import { cn } from "~/lib/utils";
 interface PerformanceData {
   time: z.infer<typeof PerformanceTime>;
   projectId: string;
+  className?: string;
 }
 
-export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
+export const ProductivityCard = ({
+  projectId,
+  time,
+  className,
+}: PerformanceData) => {
   const { alert } = useAlert();
   const utils = api.useUtils();
 
@@ -82,7 +87,12 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
   const userStoriesStrokeDasharray = `${(userStoriesPercent / 100) * c1} ${c1}`;
   const issuesStrokeDasharray = `${(issuesPercent / 100) * c2} ${c2}`;
   return (
-    <div className="box-content flex h-[400px] w-[700px] min-w-[600px] flex-col rounded-md border-2 p-4">
+    <div
+      className={cn(
+        "mt-1 box-content flex flex-col rounded-md border-2 p-4",
+        className,
+      )}
+    >
       <h1 className="mb-6 border-b-2 pb-4 text-3xl font-bold">Productivity</h1>
       {isLoading ? (
         <div className="flex flex-row gap-3 align-middle">
@@ -94,7 +104,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
           {error?.message ? (
             <p className="text-xl text-gray-500">{error.message}</p>
           ) : (
-            <div className="relative h-64 w-64">
+            <div className="relative h-56 w-64">
               {/* Background circles */}
               <svg
                 className="absolute left-0 top-0 h-full w-full"
