@@ -20,7 +20,7 @@ import PrivacyPopup from "./PrivacyPopup";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useSpeechRecognition } from "./SpeechToText";
-import ReviewConversationAnswers from "./ReviewConversationAnswers";
+import RetrospectiveConversationAnswers from "./RetrospectiveConversationAnswers";
 import { classifyEmotion, mode } from "~/lib/eeg/classifyEmotion";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
@@ -29,7 +29,7 @@ import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 interface Props {
   showPopup: boolean;
   setShowPopup: (show: boolean) => void;
-  sprintReviewId?: number;
+  sprintRetrospectiveId?: number;
 }
 
 const timeWindows = [
@@ -54,7 +54,7 @@ export type EEGDataPointWithTimestamp = EEGDataPoint & {
 export default function ConversationPopup({
   showPopup,
   setShowPopup,
-  sprintReviewId,
+  sprintRetrospectiveId,
 }: Props) {
   // REACT
   const { projectId } = useParams();
@@ -124,10 +124,12 @@ export default function ConversationPopup({
   }, []);
 
   // TRPC
-  const { mutateAsync: saveReviewAnswer, isPending: isSendingProcessedReport } =
-    api.sprintReviews.saveReviewAnswers.useMutation();
+  const {
+    mutateAsync: saveRetrospectiveAnswer,
+    isPending: isSendingProcessedReport,
+  } = api.sprintRetrospectives.saveRetrospectiveAnswers.useMutation();
   const { mutateAsync: sendReport, isPending: isSendingReport } =
-    api.sprintReviews.sendReport.useMutation();
+    api.sprintRetrospectives.sendReport.useMutation();
 
   // GENERAL
 
@@ -260,10 +262,10 @@ export default function ConversationPopup({
   const utils = api.useUtils();
 
   const handleSendProcessedReport = async () => {
-    if (!sprintReviewId || !user) return;
+    if (!sprintRetrospectiveId || !user) return;
 
     const processedAnswers =
-      utils.sprintReviews.getProcessedReviewAnswers.getData({
+      utils.sprintRetrospectives.getProcessedRetrospectiveAnswers.getData({
         projectId: projectId as string,
         data: {
           textAnswers: textAnswers.current,
@@ -277,19 +279,19 @@ export default function ConversationPopup({
     await Promise.all(
       processedAnswers.answers.map(async (answer, index) => {
         if (answer === undefined || answer === "") return;
-        return await saveReviewAnswer({
+        return await saveRetrospectiveAnswer({
           projectId: projectId as string,
           userId: user.uid,
-          reviewId: sprintReviewId,
+          reviewId: sprintRetrospectiveId,
           questionNum: index + 1,
           answerText: answer,
         });
       }),
     );
 
-    await utils.sprintReviews.getReviewAnswers.invalidate({
+    await utils.sprintRetrospectives.getRetrospectiveAnswers.invalidate({
       projectId: projectId as string,
-      reviewId: sprintReviewId,
+      reviewId: sprintRetrospectiveId,
       userId: user.uid,
     });
 
@@ -297,19 +299,19 @@ export default function ConversationPopup({
   };
 
   const handleSendReport = async () => {
-    if (!sprintReviewId || !user) return;
+    if (!sprintRetrospectiveId || !user) return;
 
     await sendReport({
       projectId: projectId as string,
-      reviewId: sprintReviewId,
+      reviewId: sprintRetrospectiveId,
       data: {
         textAnswers: textAnswers.current,
       },
     });
 
-    await utils.sprintReviews.getReviewAnswers.invalidate({
+    await utils.sprintRetrospectives.getRetrospectiveAnswers.invalidate({
       projectId: projectId as string,
-      reviewId: sprintReviewId,
+      reviewId: sprintRetrospectiveId,
       userId: user.uid,
     });
 
@@ -612,7 +614,7 @@ export default function ConversationPopup({
           )}
           {step === 5 && (
             <div className="h-full">
-              <ReviewConversationAnswers
+              <RetrospectiveConversationAnswers
                 textAnswers={textAnswers.current}
                 primaryEmotion={mode(emotionHistory.current)}
               />

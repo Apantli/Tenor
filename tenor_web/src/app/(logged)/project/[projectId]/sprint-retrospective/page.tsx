@@ -15,7 +15,7 @@ import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CheckIcon from "@mui/icons-material/Check";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 
-export default function ProjectSprintReviewPage() {
+export default function ProjectSprintRetrospectivePage() {
   const { user } = useFirebaseAuth();
   const params = useParams();
   const projectId = params.projectId as string;
@@ -24,7 +24,7 @@ export default function ProjectSprintReviewPage() {
   const [userClickedShowAnswers, setUserClickedShowAnswers] = useState(false);
 
   const { data: previousSprint, isLoading: loadingprevSprint } =
-    api.sprintReviews.getPreviousSprint.useQuery({
+    api.sprintRetrospectives.getPreviousSprint.useQuery({
       projectId: projectId,
     });
 
@@ -41,8 +41,8 @@ export default function ProjectSprintReviewPage() {
       },
     );
 
-  const { data: sprintReviewId, isLoading: loadingReviewId } =
-    api.sprintReviews.getReviewId.useQuery(
+  const { data: sprintRetrospectiveId, isLoading: loadingRetrospectiveId } =
+    api.sprintRetrospectives.getRetrospectiveId.useQuery(
       {
         projectId: projectId,
         sprintId: previousSprintId,
@@ -58,7 +58,7 @@ export default function ProjectSprintReviewPage() {
   const userName =
     user?.displayName ?? user?.email ?? "No name or email provided";
 
-  if (loadingprevSprint || loadingSprint || loadingReviewId) {
+  if (loadingprevSprint || loadingSprint || loadingRetrospectiveId) {
     return (
       <div className="flex h-full flex-col items-center justify-center">
         <LoadingSpinner color="primary" />
@@ -77,7 +77,7 @@ export default function ProjectSprintReviewPage() {
   return (
     <div className="flex h-full flex-col justify-start overflow-y-auto">
       <h1 className="text-3xl font-semibold">
-        Sprint Review for Sprint {sprintNumber && `${sprintNumber}`}
+        Sprint retrospective for Sprint {sprintNumber && `${sprintNumber}`}
       </h1>
       <p className="mb-5 text-gray-600">
         Congratulations on finishing another sprint! Let&apos;s take a look at
@@ -130,7 +130,7 @@ export default function ProjectSprintReviewPage() {
 
         <div className="relative h-full w-full lg:w-1/2">
           <HappinessForm
-            sprintReviewId={sprintReviewId}
+            sprintRetrospectiveId={sprintRetrospectiveId}
             onAnsweredCountChange={setAnsweredQuestionsCount}
           />
 
@@ -149,7 +149,7 @@ export default function ProjectSprintReviewPage() {
               </p>
               <PrimaryButton onClick={() => setUserClickedShowAnswers(true)}>
                 {answeredQuestionsCount === 3
-                  ? "Review Answers"
+                  ? "Retrospective Answers"
                   : "Show Answers"}
               </PrimaryButton>
             </div>

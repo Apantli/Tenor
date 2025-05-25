@@ -157,7 +157,7 @@ export interface Role {
   scrumboard: Permission; // scrumboard, tasks status, calendar
   issues: Permission; // issues, tasks
   backlog: Permission; // requirements, epics, user stories, tasks
-  reviews: Permission; // sprint reviews
+  retrospective: Permission; // sprint retrospective
 }
 
 /// Backlog items

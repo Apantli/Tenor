@@ -281,7 +281,7 @@ export default function TaskDetailPopup({
               <span className="font-bold">
                 {formatTaskScrumId(taskDetail.scrumId)}:{" "}
               </span>
-              <span>{taskDetail.name}</span>
+              <span className="wrap-properly">{taskDetail.name}</span>
             </h1>
           )}
         </>

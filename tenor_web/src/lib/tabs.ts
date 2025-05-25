@@ -1,4 +1,4 @@
-// TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
+// TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint retrospective, etc...
 export const tabsMetaInformation = {
   overview: {
     title: "Overview",
@@ -60,11 +60,11 @@ export const tabsMetaInformation = {
     enabled: true,
     flags: ["settings"],
   },
-  sprintReview: {
-    title: "Sprint Review",
-    link: "/sprint-review",
+  sprintRetrospective: {
+    title: "Sprint Retrospective",
+    link: "/sprint-retrospective",
     enabled: true,
-    flags: ["reviews"],
+    flags: ["retrospective"],
   },
 };
 export const tabs = [
@@ -78,7 +78,7 @@ export const tabs = [
   "calendar",
   "performance",
   "settings",
-  "sprintReview",
+  "sprintRetrospective",
 ];
 export const tabsToLinks = {
   requirements: "requirements",
@@ -90,5 +90,5 @@ export const tabsToLinks = {
   calendar: "calendar",
   performance: "performance",
   "project-settings": "settings",
-  "sprint-review": "sprintReview",
+  "sprint-retrospective": "sprintRetrospective",
 };

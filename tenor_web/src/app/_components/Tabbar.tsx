@@ -28,7 +28,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     element.scrollIntoView({
       behavior: "smooth",
     });
-    void utils.sprintReviews.getPreviousSprint.invalidate({
+    void utils.sprintRetrospectives.getPreviousSprint.invalidate({
       projectId: projectId,
     });
   };
@@ -38,7 +38,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   });
 
   const { data: previousSprint, isLoading: isLoadingPreviousSprint } =
-    api.sprintReviews.getPreviousSprint.useQuery(
+    api.sprintRetrospectives.getPreviousSprint.useQuery(
       { projectId: projectId },
       {
         enabled: !!projectId,
@@ -54,7 +54,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
 
         const { title, link, enabled, flags } = meta;
 
-        if (id === "sprintReview") {
+        if (id === "sprintRetrospective") {
           if (isLoadingPreviousSprint || !previousSprint) {
             return null;
           }

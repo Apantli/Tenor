@@ -30,9 +30,11 @@ export default function ItemCardRender({
         ></div>
       )}
       <div
-        className={cn("wrap-properly flex w-full flex-col items-start gap-2")}
+        className={cn(
+          "wrap-properly flex w-full flex-col flex-wrap items-start gap-2",
+        )}
       >
-        <div>
+        <div className="">
           <span className="font-semibold">
             {scrumIdFormatter ? scrumIdFormatter(item.scrumId) : item.scrumId}
             :{" "}
