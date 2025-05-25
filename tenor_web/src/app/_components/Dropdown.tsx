@@ -1,8 +1,10 @@
 "use client";
 
 import React, {
+  createContext,
   type HTMLAttributes,
   type PropsWithChildren,
+  useContext,
   useEffect,
   useRef,
   useState,
@@ -73,15 +75,6 @@ export default function Dropdown({
       onClose?.();
     }
   }, [close]);
-
-  // Used to close the menu when the user clicks outside of it
-  useClickOutside([ref, dropdownRef], () => {
-    if (isOpen) {
-      setIsOpen(false);
-      setOpenState?.(false);
-      onClose?.();
-    }
-  });
 
   useWindowResize(() => {
     if (isOpen) {
@@ -176,53 +169,83 @@ export default function Dropdown({
       | "bottom-left";
   }
 
+  const [dropdownTreeApi, dropdownElements] = useDropdownTree();
+  const parentDropdown = useParentDropdown();
+
+  useEffect(() => {
+    const nodes = [ref, dropdownRef];
+
+    for (const node of nodes) {
+      dropdownTreeApi.register(node);
+      parentDropdown?.register(node);
+    }
+
+    return () => {
+      for (const node of nodes) {
+        dropdownTreeApi.unregister(node);
+        parentDropdown?.unregister(node);
+      }
+    };
+  }, []);
+
+  // Used to close the menu when the user clicks outside of it
+  useClickOutside(Array.from(dropdownElements), () => {
+    if (isOpen) {
+      setIsOpen(false);
+      setOpenState?.(false);
+      onClose?.();
+    }
+  });
+
   return (
-    <div
-      className={cn(
-        "relative flex items-center justify-center overflow-visible",
-        className,
-      )}
-      ref={ref}
-      {...props}
-    >
-      <button onClick={toggleOpen} className="w-full" disabled={!!disabled}>
-        {label}
-      </button>
-      <Portal>
-        <div
-          className={cn(
-            "pointer-events-none fixed z-[400000] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
-            {
-              "pointer-events-auto translate-y-0 scale-x-100 scale-y-100 opacity-100":
-                !!isOpen,
-              "origin-top-right": openDirection === "top-right",
-              "origin-top-left": openDirection === "top-left",
-              "origin-bottom-right": openDirection === "bottom-right",
-              "origin-bottom-left": openDirection === "bottom-left",
-            },
-            menuClassName,
-          )}
-          ref={dropdownRef}
-          data-cy="dropdown"
-        >
-          {childrenArray.map((option, i) => {
-            return (
-              <div
-                key={i}
-                className="border-b border-app-border text-base last:border-none"
-                onClick={() => {
-                  setIsOpen(false);
-                  setOpenState?.(false);
-                  onClose?.();
-                }}
-              >
-                {option}
-              </div>
-            );
-          })}
-        </div>
-      </Portal>
-    </div>
+    <DropdownTreeContext.Provider value={dropdownTreeApi}>
+      <div
+        className={cn(
+          "relative flex items-center justify-center overflow-visible",
+          className,
+        )}
+        ref={ref}
+        {...props}
+      >
+        <button onClick={toggleOpen} className="w-full" disabled={!!disabled}>
+          {label}
+        </button>
+        <Portal>
+          <div
+            className={cn(
+              "pointer-events-none fixed z-[400000] flex scale-x-50 scale-y-50 flex-col gap-0 overflow-hidden rounded-lg border border-app-border bg-white text-app-text opacity-0 shadow-lg transition",
+              {
+                "pointer-events-auto translate-y-0 scale-x-100 scale-y-100 opacity-100":
+                  !!isOpen,
+                "origin-top-right": openDirection === "top-right",
+                "origin-top-left": openDirection === "top-left",
+                "origin-bottom-right": openDirection === "bottom-right",
+                "origin-bottom-left": openDirection === "bottom-left",
+              },
+              menuClassName,
+            )}
+            ref={dropdownRef}
+            data-cy="dropdown"
+          >
+            {childrenArray.map((option, i) => {
+              return (
+                <div
+                  key={i}
+                  className="border-b border-app-border text-base last:border-none"
+                  onClick={() => {
+                    setIsOpen(false);
+                    setOpenState?.(false);
+                    onClose?.();
+                  }}
+                >
+                  {option}
+                </div>
+              );
+            })}
+          </div>
+        </Portal>
+      </div>
+    </DropdownTreeContext.Provider>
   );
 }
 
@@ -278,4 +301,34 @@ export function DropdownButton({
       {children}
     </BaseButton>
   );
+}
+
+interface DropdownContextType {
+  register: (el: React.RefObject<HTMLElement>) => void;
+  unregister: (el: React.RefObject<HTMLElement>) => void;
+}
+
+const DropdownTreeContext = createContext<DropdownContextType | null>(null);
+
+function useParentDropdown() {
+  return useContext(DropdownTreeContext);
+}
+
+function useDropdownTree() {
+  const [elements, setElements] = useState<Set<React.RefObject<HTMLElement>>>(
+    new Set(),
+  );
+
+  const api: DropdownContextType = {
+    register: (el: React.RefObject<HTMLElement>) => {
+      elements.add(el);
+      setElements(new Set(elements));
+    },
+    unregister: (el: React.RefObject<HTMLElement>) => {
+      elements.delete(el);
+      setElements(new Set(elements));
+    },
+  };
+
+  return [api, elements] as const;
 }

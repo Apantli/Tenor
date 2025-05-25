@@ -77,7 +77,7 @@ export function UserPicker({
             <div className="flex flex-grow items-center gap-2 overflow-hidden">
               <ProfilePicture user={selectedOption} hideTooltip />
 
-              <span className="flex-1 truncate font-medium text-gray-700">
+              <span className="flex-1 truncate text-left font-medium text-gray-700">
                 {selectedOption.displayName}
               </span>
             </div>
