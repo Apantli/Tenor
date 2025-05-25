@@ -11,15 +11,18 @@ import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
 import { api } from "~/trpc/react";
 import { emptyRole } from "~/lib/defaultProjectValues";
+import { cn } from "~/lib/utils";
 
 export const MemberDetailsCard = ({
   member,
   // timeInterval,
+  className,
   projectId,
   setSelectedMember,
 }: {
   member: UserCol;
   projectId: string;
+  className?: string;
   // timeInterval: string;
   setSelectedMember: (member: UserCol | null) => void;
 }) => {
@@ -35,7 +38,9 @@ export const MemberDetailsCard = ({
   }
 
   return (
-    <div className="flex w-[700px] min-w-[600px] flex-col gap-y-4 rounded-md border-2 p-4">
+    <div
+      className={cn("flex flex-col gap-y-4 rounded-md border-2 p-4", className)}
+    >
       <CrossIcon
         onClick={() => setSelectedMember(null)}
         className="ml-auto text-gray-500"
@@ -57,11 +62,11 @@ export const MemberDetailsCard = ({
         </div>
       </div>
 
-      <div className="mx-8 flex flex-col gap-8 pt-4">
+      <div className="mx-8 flex flex-col pt-4">
         <p className="mt-2 text-xl">
           <strong>Email:</strong> {member.email}
         </p>
-        <h4 className="mb-4 text-xl font-bold">Contribution overview</h4>
+        <h4 className="mb-4 mt-6 text-xl font-bold">Contribution overview</h4>
         <div className="flex flex-row items-center gap-8">
           <ContributionPieChart data={SampleContributionData} />
           <ContributionLegend />

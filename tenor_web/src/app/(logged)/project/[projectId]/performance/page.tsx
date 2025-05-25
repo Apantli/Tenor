@@ -22,9 +22,9 @@ export default function ProjectPerformance() {
 
   return (
     <div className="flex h-full flex-1 flex-col gap-x-7 overflow-hidden pt-0 md:flex-row">
-      <div className="flex w-[50vw] flex-col items-baseline gap-3 pb-4">
+      <div className="flex w-[50vw] max-w-[50vw] shrink-0 flex-col items-baseline gap-3 pb-4">
         <div className="flex w-full flex-row justify-between">
-          <h1 className="grow-[1] text-3xl font-semibold">Team Performance</h1>
+          <h1 className="text-3xl font-semibold">Team Performance</h1>
           <div className="min-w-[300px]">
             <SegmentedControl
               options={["Week", "Month", "Sprint"]}
@@ -55,6 +55,7 @@ export default function ProjectPerformance() {
             member={selectedMember}
             projectId={projectIdString}
             // timeInterval={section}
+            className="mx-20 my-auto"
             setSelectedMember={setSelectedMember}
           />
         ) : (
