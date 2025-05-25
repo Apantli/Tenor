@@ -8,7 +8,7 @@ interface Props {
   expanded?: boolean;
   onClick?: () => void;
   disabled?: boolean;
-  children: string;
+  children?: string;
 }
 export default function TagComponent({
   color,
