@@ -38,7 +38,10 @@ import { Timestamp } from "firebase-admin/firestore";
 import { getStatusTypes } from "~/utils/helpers/shortcuts/tags";
 import { getCurrentSprint } from "~/utils/helpers/shortcuts/sprints";
 import { TRPCError } from "@trpc/server";
-import { getActivityPartition } from "~/utils/helpers/shortcuts/performance";
+import {
+  getActivityPartition,
+  getContributionOverview,
+} from "~/utils/helpers/shortcuts/performance";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -76,6 +79,19 @@ export const performanceRouter = createTRPCRouter({
         input.time,
       );
       return activities;
+    }),
+  getContributionOverview: roleRequiredProcedure(performancePermissions, "read")
+    .input(
+      z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
+    )
+    .query(async ({ ctx, input }) => {
+      const contributionOverview = await getContributionOverview(
+        ctx.firestore,
+        input.projectId,
+        input.userId,
+        input.time,
+      );
+      return contributionOverview;
     }),
 
   getProjectStatus: protectedProcedure.query(async ({ ctx }) => {

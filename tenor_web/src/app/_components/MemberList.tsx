@@ -127,7 +127,7 @@ const MemberItem = ({
         pictureClassName="h-20 w-20 mx-5 my-auto text-4xl"
       />
       <div className="flex flex-col justify-start overflow-hidden pl-4 pr-4">
-        <h3 className="my-auto w-[250px] truncate text-xl font-semibold">
+        <h3 className="my-auto w-[250px] truncate text-xl font-semibold capitalize">
           {member.displayName}
         </h3>
       </div>

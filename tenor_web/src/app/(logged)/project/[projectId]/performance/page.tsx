@@ -54,7 +54,7 @@ export default function ProjectPerformance() {
           <MemberDetailsCard
             member={selectedMember}
             projectId={projectIdString}
-            // timeInterval={section}
+            timeInterval={section}
             className="mx-20 my-auto"
             setSelectedMember={setSelectedMember}
           />

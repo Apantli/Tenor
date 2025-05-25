@@ -5,7 +5,6 @@ import ProfilePicture from "~/app/_components/ProfilePicture";
 import {
   ContributionPieChart,
   ContributionLegend,
-  SampleContributionData,
 } from "~/app/_components/charts/ContributionPieChart";
 import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
@@ -15,7 +14,7 @@ import { cn } from "~/lib/utils";
 
 export const MemberDetailsCard = ({
   member,
-  // timeInterval,
+  timeInterval,
   className,
   projectId,
   setSelectedMember,
@@ -23,12 +22,19 @@ export const MemberDetailsCard = ({
   member: UserCol;
   projectId: string;
   className?: string;
-  // timeInterval: string;
+  timeInterval: string;
   setSelectedMember: (member: UserCol | null) => void;
 }) => {
   const { data: roles, isLoading } = api.projects.getUserTypes.useQuery({
     projectId: projectId,
   });
+
+  const { data: userContributions } =
+    api.performance.getContributionOverview.useQuery({
+      projectId: projectId,
+      userId: member.id,
+      time: timeInterval,
+    });
 
   let roleString =
     roles?.find((role) => role.id === member.roleId)?.label ?? emptyRole.label;
@@ -36,6 +42,15 @@ export const MemberDetailsCard = ({
   if (member.roleId === "owner") {
     roleString = "Owner";
   }
+
+  const formattedUserContributions = userContributions
+    ? Object.entries(userContributions).map(([key, value]) => ({
+        category: key,
+        value: value,
+      }))
+    : [];
+
+  console.log("formattedUserContributions", formattedUserContributions);
 
   return (
     <div
@@ -53,7 +68,7 @@ export const MemberDetailsCard = ({
           pictureClassName="h-32 w-32 ml-5 my-auto text-5xl"
         />
         <div className="my-auto flex flex-col justify-start overflow-hidden pl-4 pr-4">
-          <h3 className="my-[7px] max-w-[500px] truncate text-2xl font-semibold">
+          <h3 className="my-[7px] max-w-[500px] truncate text-2xl font-semibold capitalize">
             {member.displayName}
           </h3>
           <p className="line-clamp-2 text-xl capitalize text-gray-500">
@@ -68,8 +83,18 @@ export const MemberDetailsCard = ({
         </p>
         <h4 className="mb-4 mt-6 text-xl font-bold">Contribution overview</h4>
         <div className="flex flex-row items-center gap-8">
-          <ContributionPieChart data={SampleContributionData} />
-          <ContributionLegend />
+          <ContributionPieChart data={formattedUserContributions} />
+          <ContributionLegend data={formattedUserContributions} />
+        </div>
+        <h4 className="mb-4 mt-6 text-xl font-bold">Average time per task</h4>
+        <div className="flex flex-row items-center justify-between gap-8">
+          <div className="flex flex-col">
+            <h4>2h 10 min</h4>
+          </div>
+          <div className="flex flex-col">
+            <p>grafica 1</p>
+            <p>Updated Last Week</p>
+          </div>
         </div>
       </div>
     </div>

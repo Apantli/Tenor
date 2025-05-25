@@ -81,3 +81,58 @@ export const getActivityPartition = async (
 
   return result;
 };
+export const getContributionOverview = async (
+  firestore: Firestore,
+  projectId: string,
+  userId: string,
+  time: string,
+) => {
+  let activityRef = null;
+  if (time === "Week") {
+    activityRef = getActivityRef(firestore, projectId).where(
+      "date",
+      ">=",
+      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    );
+  } else if (time === "Month") {
+    activityRef = getActivityRef(firestore, projectId).where(
+      "date",
+      ">=",
+      new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    );
+  } else {
+    activityRef = getActivityRef(firestore, projectId).where(
+      "date",
+      ">=",
+      new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
+    );
+  }
+  const activitySnapshot = await activityRef
+    .where("userId", "==", userId)
+    .get();
+  const data: LogProjectActivityParams[] = [];
+
+  activitySnapshot.docs.forEach((activity) => {
+    data.push({
+      ...(activity.data() as LogProjectActivityParams),
+    });
+  });
+
+  const contributionCount = {
+    Tasks: 0,
+    Issues: 0,
+    "User Stories": 0,
+  };
+
+  data.forEach((item) => {
+    if (item.type === "TS") {
+      contributionCount.Tasks += 1;
+    } else if (item.type === "IS") {
+      contributionCount.Issues += 1;
+    } else if (item.type === "US") {
+      contributionCount["User Stories"] += 1;
+    }
+  });
+
+  return contributionCount;
+};
