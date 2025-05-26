@@ -5,6 +5,7 @@ import { cn } from "~/lib/utils";
 import { dateToString } from "~/utils/helpers/parsers";
 
 interface Props {
+  editable: boolean;
   day: number;
   month: number;
   year: number;
@@ -21,6 +22,7 @@ interface Props {
 }
 
 export default function CalendarCell({
+  editable,
   day,
   month,
   year,
@@ -40,6 +42,7 @@ export default function CalendarCell({
   });
 
   const setNewSelectedDate = (date: Date) => {
+    if (!editable) return; // Prevent selection if not editable
     if (selectedDate && date.getTime() === selectedDate.getTime()) {
       setSelectedDate(undefined);
       return;
@@ -80,6 +83,7 @@ export default function CalendarCell({
           {tasks.map((task) => (
             <div className="p-0.5" key={task.id}>
               <TaskCalendarCard
+                editable={editable}
                 task={task}
                 selectedTasksId={selectedTasksId}
                 setSelectedTasksId={setSelectedTasksId}

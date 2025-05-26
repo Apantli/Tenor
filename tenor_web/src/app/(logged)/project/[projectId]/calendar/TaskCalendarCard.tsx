@@ -12,6 +12,7 @@ import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import { useParams } from "next/navigation";
 
 interface Props {
+  editable?: boolean;
   task: WithId<Task>;
   setTask: (task: WithId<Task>) => void;
   setDetailItemId: (id: string) => void;
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export const TaskCalendarCard = ({
+  editable = false,
   task,
   setTask,
   setDetailItemId,
@@ -68,28 +70,30 @@ export const TaskCalendarCard = ({
         className="flex w-full grow items-center justify-between pl-1"
       >
         <div className="flex items-center">
-          <div
-            className={cn(
-              "w-0 shrink-0 grow basis-0 overflow-hidden opacity-0 transition-all group-hover:basis-4 group-hover:opacity-100",
-              {
-                "basis-5 opacity-100":
-                  selectedTasksId.includes(task.id) || hovering,
-              },
-            )}
-          >
-            <InputCheckbox
-              checked={selectedTasksId?.includes(task.id) ?? false}
-              onChange={() => {
-                if (selectedTasksId.includes(task.id)) {
-                  setSelectedTasksId(
-                    selectedTasksId.filter((id) => id !== task.id),
-                  );
-                } else {
-                  setSelectedTasksId([...selectedTasksId, task.id]);
-                }
-              }}
-            />
-          </div>
+          {editable && (
+            <div
+              className={cn(
+                "w-0 shrink-0 grow basis-0 overflow-hidden opacity-0 transition-all group-hover:basis-4 group-hover:opacity-100",
+                {
+                  "basis-5 opacity-100":
+                    selectedTasksId.includes(task.id) || hovering,
+                },
+              )}
+            >
+              <InputCheckbox
+                checked={selectedTasksId?.includes(task.id) ?? false}
+                onChange={() => {
+                  if (selectedTasksId.includes(task.id)) {
+                    setSelectedTasksId(
+                      selectedTasksId.filter((id) => id !== task.id),
+                    );
+                  } else {
+                    setSelectedTasksId([...selectedTasksId, task.id]);
+                  }
+                }}
+              />
+            </div>
+          )}
           <p>{formatTaskScrumId(task.scrumId)}</p>
         </div>
         <div className="flex items-center">

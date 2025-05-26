@@ -6,6 +6,7 @@ import CalendarCell from "./CalendarCell";
 import { dateToString } from "~/utils/helpers/parsers";
 
 interface Props {
+  editable?: boolean;
   month: number;
   year: number;
 
@@ -24,6 +25,7 @@ interface Props {
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function CalendarGrid({
+  editable = false,
   month,
   year,
   selectedDate,
@@ -69,6 +71,7 @@ export default function CalendarGrid({
           >
             {day && (
               <CalendarCell
+                editable={editable}
                 day={day}
                 month={month}
                 year={year}
