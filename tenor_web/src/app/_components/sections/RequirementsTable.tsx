@@ -856,7 +856,9 @@ export default function RequirementsTable() {
             permission < permissionNumbers.write
           }
           size="small"
-          className="h-[300px] max-h-[700px] w-[600px]"
+          className={cn("max-h-[700px] w-[600px]", {
+            "h-[500px]": !requirementEditedData,
+          })}
           disablePassiveDismiss={!requirementSaved}
           dismiss={async () => {
             if (!requirementSaved) {
