@@ -17,8 +17,6 @@ import type {
   Requirement,
   ProjectStatusCache,
 } from "~/lib/types/firebaseSchemas";
-import type * as admin from "firebase-admin";
-
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -46,6 +44,7 @@ import {
   emptySettings,
 } from "~/lib/defaultProjectValues";
 import {
+  computeTopProjectStatus,
   getProject,
   getProjectRef,
   getProjectsRef,
@@ -53,7 +52,6 @@ import {
   getRoles,
   getRolesRef,
   getSettingsRef,
-  getTopProjects,
   getTopProjectStatusCacheRef,
 } from "~/utils/helpers/shortcuts/general";
 import { settingsPermissions } from "~/lib/permission";
@@ -447,6 +445,13 @@ export const projectsRouter = createTRPCRouter({
           ctx.session.uid,
           input.count,
         );
+
+        if (!topProjects) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "No projects found",
+          });
+        }
         await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
           topProjects,
         );
@@ -465,8 +470,9 @@ export const projectsRouter = createTRPCRouter({
         }),
       );
       topProjects.topProjects = projectsWithName;
-      return topProjects;
+      return JSON.parse(JSON.stringify(topProjects)) as ProjectStatusCache;
     }),
+
   recomputeTopProjectStatus: protectedProcedure
     .input(z.object({ count: z.number() }))
     .mutation(async ({ ctx, input }) => {
@@ -476,49 +482,16 @@ export const projectsRouter = createTRPCRouter({
         ctx.session.uid,
         input.count,
       );
+
+      if (topProjects == undefined) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No projects found",
+        });
+      }
+
       await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
         topProjects,
       );
     }),
 });
-
-const computeTopProjectStatus = async (
-  firestore: FirebaseFirestore.Firestore,
-  adminFirestore: admin.app.App,
-  userId: string,
-  count: number,
-) => {
-  let projects = await getTopProjects(firestore, userId);
-
-  projects = projects.slice(0, count);
-  let projectStatus = await Promise.all(
-    projects.map(async (projectId) => {
-      const status = await getProjectStatus(
-        firestore,
-        projectId,
-        adminFirestore,
-      );
-
-      return {
-        id: projectId,
-        status,
-      };
-    }),
-  );
-
-  // Filter out projects with no tasks
-  projectStatus = projectStatus.filter(
-    (project) => project.status.taskCount !== 0,
-  );
-
-  const topProjects = {
-    fetchDate: Timestamp.now(),
-    topProjects: projectStatus.map((project) => ({
-      projectId: project.id,
-      taskCount: project.status.taskCount,
-      completedCount: project.status.completedCount,
-    })),
-  };
-
-  return topProjects;
-};

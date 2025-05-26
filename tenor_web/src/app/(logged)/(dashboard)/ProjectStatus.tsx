@@ -11,9 +11,12 @@ import { timestampToDate } from "~/utils/helpers/parsers";
 import { cn } from "~/lib/utils";
 
 export const ProjectStatus = ({ className }: { className?: string }) => {
-  const { data, isLoading } = api.projects.getTopProjectStatus.useQuery({
-    count: 4,
-  });
+  // Destructure isError and error from the useQuery hook
+  const { data, isLoading, isError } =
+    api.projects.getTopProjectStatus.useQuery({
+      count: 4,
+    });
+
   const utils = api.useUtils();
   const { alert } = useAlert();
 
@@ -36,21 +39,23 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
 
   const barCharData: ProjectStatusData = [];
 
-  data?.topProjects.forEach((project) => {
-    barCharData.push({
-      category: project.name ?? "No name",
-      position: "Finished",
-      value: project.completedCount,
+  // Only process data if it exists
+  if (data) {
+    data.topProjects.forEach((project) => {
+      barCharData.push({
+        category: project.name ?? "No name",
+        position: "Finished",
+        value: project.completedCount,
+      });
+      barCharData.push({
+        category: project.name ?? "No name",
+        position: "Expected",
+        value: project.taskCount,
+      });
     });
-    barCharData.push({
-      category: project.name ?? "No name",
-      position: "Expected",
-      value: project.taskCount,
-    });
-  });
+  }
 
   const maxTasks = Math.max(...barCharData.map((item) => item.value), 0);
-
   const domainMax = maxTasks + 5;
 
   return (
@@ -60,53 +65,51 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
         className,
       )}
     >
-      {/* FIXME: standarize margin in cards */}
       <h2 className="mb-3 ml-6 text-2xl font-semibold">Project status</h2>
 
       {isLoading ? (
         <div className="flex flex-row gap-3 align-middle">
           <LoadingSpinner color="primary" />
         </div>
+      ) : isError ||
+        !data ||
+        data?.topProjects.length === 0 ||
+        maxTasks === 0 ? (
+        <div className="mx-auto my-auto flex flex-col items-center">
+          <span className="mx-auto text-[100px] text-gray-500">
+            <BarChartIcon fontSize="inherit" />
+          </span>
+          <h1 className="mb-5 text-xl font-semibold text-gray-500">
+            No projects contain an active sprint with assigned tasks
+          </h1>
+        </div>
       ) : (
-        <>
-          {data?.topProjects.length === 0 || maxTasks === 0 ? (
-            <div className="mx-auto my-auto flex flex-col items-center">
-              <span className="mx-auto text-[100px] text-gray-500">
-                <BarChartIcon fontSize="inherit" />
-              </span>
-              <h1 className="mb-5 text-xl font-semibold text-gray-500">
-                No projects contain an active sprint with assigned tasks
-              </h1>
-            </div>
-          ) : (
-            <StatusBarChart data={barCharData} domain={[0, domainMax]} />
-          )}
-
-          <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
-            {!isPending && (
-              <RefreshIcon
-                data-tooltip-id="tooltip"
-                data-tooltip-content="Refetch project status"
-                data-tooltip-place="top-start"
-                onClick={async () => {
-                  await recomputeTopProjectStatus({
-                    count: 4,
-                  });
-                }}
-                className=""
-              />
-            )}
-            {isPending || !data?.fetchDate ? (
-              <>
-                <LoadingSpinner />
-                <p>Refreshing project status...</p>
-              </>
-            ) : (
-              <p>Updated {timestampToDate(data.fetchDate).toLocaleString()}</p>
-            )}
-          </div>
-        </>
+        <StatusBarChart data={barCharData} domain={[0, domainMax]} />
       )}
+
+      <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
+        {!isPending && (
+          <RefreshIcon
+            data-tooltip-id="tooltip"
+            data-tooltip-content="Refetch project status"
+            data-tooltip-place="top-start"
+            onClick={async () => {
+              await recomputeTopProjectStatus({
+                count: 4,
+              });
+            }}
+            className="cursor-pointer"
+          />
+        )}
+        {isPending || (isLoading && !isError) ? ( // Also show loading text on initial load
+          <>
+            <LoadingSpinner />
+            <p>Refreshing project status...</p>
+          </>
+        ) : data?.fetchDate ? (
+          <p>Updated {timestampToDate(data.fetchDate).toLocaleString()}</p>
+        ) : null}
+      </div>
     </div>
   );
 };
