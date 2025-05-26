@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import MonthSlider from "./MonthSlider";
 import CalendarGrid from "./CalendarGrid";
 import useQueryIdForPopup, {
@@ -8,7 +8,12 @@ import useQueryIdForPopup, {
 } from "~/app/_hooks/useQueryIdForPopup";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
 import IssueDetailPopup from "../issues/IssueDetailPopup";
-import type { Task, WithId } from "~/lib/types/firebaseSchemas";
+import {
+  permissionNumbers,
+  type Permission,
+  type Task,
+  type WithId,
+} from "~/lib/types/firebaseSchemas";
 import { DatePicker } from "~/app/_components/DatePicker";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
@@ -19,6 +24,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useInvalidateQueriesTaskDetails } from "~/app/_hooks/invalidateHooks";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 
 export default function ProjectCalendar() {
   // GENERAL
@@ -62,6 +68,18 @@ export default function ProjectCalendar() {
     projectId: projectId as string,
   });
   const { mutateAsync: changeTaskDate } = api.tasks.modifyDueDate.useMutation();
+
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["issues"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
 
   const handleDateChange = async (tasks: string[], date: Date) => {
     utils.tasks.getTasksByDate.setData(
@@ -196,6 +214,7 @@ export default function ProjectCalendar() {
         </div>
         {tasksByDate ? (
           <CalendarGrid
+            editable={permission >= permissionNumbers.write}
             tasksByDate={tasksByDate}
             month={month}
             year={year}

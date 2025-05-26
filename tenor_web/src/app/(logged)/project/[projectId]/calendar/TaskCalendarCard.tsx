@@ -12,7 +12,7 @@ import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import { useParams } from "next/navigation";
 
 interface Props {
-  editable?: boolean;
+  editable: boolean;
   task: WithId<Task>;
   setTask: (task: WithId<Task>) => void;
   setDetailItemId: (id: string) => void;

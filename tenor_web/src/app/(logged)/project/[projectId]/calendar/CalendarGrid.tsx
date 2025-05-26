@@ -6,7 +6,7 @@ import CalendarCell from "./CalendarCell";
 import { dateToString } from "~/utils/helpers/parsers";
 
 interface Props {
-  editable?: boolean;
+  editable: boolean;
   month: number;
   year: number;
 
