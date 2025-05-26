@@ -55,7 +55,7 @@ export default function ProjectPerformance() {
             member={selectedMember}
             projectId={projectIdString}
             timeInterval={section}
-            className="mx-20 my-auto"
+            className="mx-20 my-auto mt-1"
             setSelectedMember={setSelectedMember}
           />
         ) : (

@@ -124,7 +124,7 @@ const MemberItem = ({
       <ProfilePicture
         user={member}
         hideTooltip
-        pictureClassName="h-20 w-20 mx-5 my-auto text-4xl"
+        pictureClassName="min-h-20 min-w-20 h-20 w-20 mx-5 my-auto text-4xl"
       />
       <div className="flex flex-col justify-start overflow-hidden pl-4 pr-4">
         <h3 className="my-auto w-[250px] truncate text-xl font-semibold capitalize">
