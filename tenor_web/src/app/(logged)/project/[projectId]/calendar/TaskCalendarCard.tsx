@@ -9,6 +9,7 @@ import { api } from "~/trpc/react";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useState } from "react";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
+import { useParams } from "next/navigation";
 
 interface Props {
   task: WithId<Task>;
@@ -25,6 +26,7 @@ export const TaskCalendarCard = ({
   selectedTasksId,
   setSelectedTasksId,
 }: Props) => {
+  const { projectId } = useParams();
   const { ref, isDragging } = useDraggable({
     id: task.id,
     // disabled: selectedTasksId ? selectedTasksId.length > 0 : false, // Don't allow dragging if selection in progress
@@ -41,11 +43,11 @@ export const TaskCalendarCard = ({
 
   const formatTaskScrumId = useFormatTaskScrumId();
 
-  const { data: user } = task.assigneeId
-    ? api.users.getGlobalUser.useQuery({
-        userId: task.assigneeId,
-      })
-    : { data: null };
+  const { data: users } = api.users.getUsers.useQuery({
+    projectId: projectId as string,
+  });
+  const user = users?.find((u) => u.id === task.assigneeId);
+
   return (
     <div
       className={cn(
