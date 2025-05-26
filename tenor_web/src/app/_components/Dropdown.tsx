@@ -25,6 +25,7 @@ interface Props {
   disabled?: boolean;
   close?: boolean;
   setOpenState?: React.Dispatch<React.SetStateAction<boolean>>;
+  contextRef?: React.RefObject<HTMLElement>;
 }
 
 export function useCloseDropdown() {
@@ -51,6 +52,7 @@ export default function Dropdown({
   disabled,
   close,
   setOpenState,
+  contextRef,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDirection, setOpenDirection] = useState<
@@ -68,7 +70,7 @@ export default function Dropdown({
     if (close) {
       setIsOpen(false);
       setOpenState?.(false);
-      onClose?.();
+      handleClose();
     }
   }, [close]);
 
@@ -77,7 +79,7 @@ export default function Dropdown({
     if (isOpen) {
       setIsOpen(false);
       setOpenState?.(false);
-      onClose?.();
+      handleClose();
     }
   });
 
@@ -108,7 +110,7 @@ export default function Dropdown({
     } else {
       setIsOpen(false);
       setOpenState?.(false);
-      onClose?.();
+      handleClose();
     }
   }, scrollContainer);
 
@@ -122,10 +124,17 @@ export default function Dropdown({
       onOpen?.();
       startScrollPos.current = scrollContainer?.current?.scrollTop ?? null;
     } else {
-      onClose?.();
+      handleClose();
     }
     setIsOpen(!isOpen);
     setOpenState?.(!isOpen);
+  };
+
+  const handleClose = () => {
+    onClose?.();
+    if (contextRef?.current) {
+      contextRef.current.style.opacity = "1";
+    }
   };
 
   function positionDropdown(multiplier: number) {
@@ -166,6 +175,10 @@ export default function Dropdown({
     dropdownRef.current.style.top = `${top}px`;
     dropdownRef.current.style.left = `${left}px`;
     dropdownRef.current.style.position = "absolute"; // or "fixed" if you're using fixed positioning
+
+    if (contextRef?.current) {
+      contextRef.current.style.opacity = "0";
+    }
 
     return `${vertAlignment}-${horiAlignment}` as
       | "top-right"
@@ -210,7 +223,7 @@ export default function Dropdown({
                 onClick={() => {
                   setIsOpen(false);
                   setOpenState?.(false);
-                  onClose?.();
+                  handleClose();
                 }}
               >
                 {option}
