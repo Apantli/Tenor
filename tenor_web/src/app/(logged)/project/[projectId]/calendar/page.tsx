@@ -156,8 +156,6 @@ export default function ProjectCalendar() {
                     const tasks = selectedTasksId;
                     const date = selectedDate;
 
-                    date.setDate(date.getDate() + 1);
-
                     setSelectedTasksId([]);
                     setSelectedDate(undefined);
 

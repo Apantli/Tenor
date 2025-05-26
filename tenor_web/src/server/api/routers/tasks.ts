@@ -212,6 +212,7 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskId, dueDate } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
+
       await LogProjectActivity({
         firestore: ctx.firestore,
         projectId: input.projectId,

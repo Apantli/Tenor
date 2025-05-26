@@ -201,7 +201,7 @@ export const getTasks = async (firestore: Firestore, projectId: string) => {
           }
         | undefined;
     const dueDate = dueDateData
-      ? new Date(dueDateData.seconds * 1000 + dueDateData.nanoseconds / 1e6)
+      ? new Date(dueDateData.seconds * 1000)
       : undefined;
     return {
       id: doc.id,
@@ -242,7 +242,7 @@ export const getTask = async (
         }
       | undefined;
   const dueDate = dueDateData
-    ? new Date(dueDateData.seconds * 1000 + dueDateData.nanoseconds / 1e6)
+    ? new Date(dueDateData.seconds * 1000)
     : undefined;
 
   return {

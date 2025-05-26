@@ -74,7 +74,7 @@ export default function CalendarGrid({
                 year={year}
                 selectedDate={selectedDate}
                 setSelectedDate={setSelectedDate}
-                tasks={tasksByDate?.[dateKey(day + 1)!] ?? []}
+                tasks={tasksByDate?.[dateKey(day)!] ?? []}
                 selectedTasksId={selectedTasksId}
                 setSelectedTasksId={setSelectedTasksId}
                 setTask={setTask}
