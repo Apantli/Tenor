@@ -9,6 +9,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { timestampToDate } from "~/utils/helpers/parsers";
 import { cn } from "~/lib/utils";
+
 export const ProjectStatus = ({ className }: { className?: string }) => {
   const { data, isLoading } = api.projects.getTopProjectStatus.useQuery({
     count: 4,
@@ -55,7 +56,7 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-col items-start justify-start rounded-md border-2 p-4",
+        "flex h-[40vh] w-full flex-col items-start justify-start rounded-md border-2 p-4",
         className,
       )}
     >
@@ -64,8 +65,7 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
 
       {isLoading ? (
         <div className="flex flex-row gap-3 align-middle">
-          <LoadingSpinner />
-          <p className="text-lg font-semibold">Loading project status...</p>
+          <LoadingSpinner color="primary" />
         </div>
       ) : (
         <>

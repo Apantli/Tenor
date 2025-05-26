@@ -1,6 +1,6 @@
 "use client";
 
-import { ProjectStatus } from "~/app/_components/sections/ProjectStatus";
+import { ProjectStatus } from "~/app/(logged)/(dashboard)/ProjectStatus";
 import ProjectList from "./ProjectList";
 
 export default function ProjectPage() {
