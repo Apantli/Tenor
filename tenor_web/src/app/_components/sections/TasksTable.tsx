@@ -449,6 +449,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
                 size: task.size,
                 assignee: task.assignee,
                 dueDate: task.dueDate,
+                dependencies: task.dependencies,
+                requiredBy: task.requiredBy,
               }) as TaskDetail,
           ),
         ]);
@@ -529,8 +531,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
           description: task.description,
           statusId: task.status.id ?? "",
           size: task.size,
-          dependencyIds: task.dependencies.map((dep) => dep.id),
-          requiredByIds: task.requiredBy.map((dep) => dep.id),
+          dependencies: [],
+          requiredBy: [],
         })) ?? [];
 
       generatedData = await generateTasks({
