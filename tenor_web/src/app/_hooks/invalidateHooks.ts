@@ -75,6 +75,9 @@ export const useInvalidateQueriesAllUserStories = () => {
     await utils.userStories.getUserStoryDependencies.invalidate({
       projectId: projectId,
     });
+    await utils.userStories.getUserStories.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
