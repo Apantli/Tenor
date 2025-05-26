@@ -206,13 +206,13 @@ export const tasksRouter = createTRPCRouter({
       const addedDependencies = taskData.dependencyIds.filter(
         (dep) => !oldTaskData.dependencyIds.includes(dep),
       );
-      const removedDependencies = taskData.dependencyIds.filter(
+      const removedDependencies = oldTaskData.dependencyIds.filter(
         (dep) => !taskData.dependencyIds.includes(dep),
       );
       const addedRequiredBy = taskData.requiredByIds.filter(
         (req) => !oldTaskData.requiredByIds.includes(req),
       );
-      const removedRequiredBy = taskData.requiredByIds.filter(
+      const removedRequiredBy = oldTaskData.requiredByIds.filter(
         (req) => !taskData.requiredByIds.includes(req),
       );
 
@@ -279,6 +279,7 @@ export const tasksRouter = createTRPCRouter({
           );
         }),
       );
+      console.log("removedRequiredBy", removedRequiredBy);
       await Promise.all(
         removedRequiredBy.map(async (requiredById) => {
           await updateDependency(
