@@ -53,9 +53,9 @@
   }
 
   .markdown-content{ 
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-all;
+    word-wrap: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   .wrap-properly {
