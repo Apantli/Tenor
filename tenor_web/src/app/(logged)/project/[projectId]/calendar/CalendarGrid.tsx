@@ -64,7 +64,7 @@ export default function CalendarGrid({
             key={day ? dateKey(day) : idx.toString()}
             className={cn(
               "h-[108px] border border-gray-300",
-              !day && "bg-gray-100",
+              !day && "bg-gray-200",
             )}
           >
             {day && (

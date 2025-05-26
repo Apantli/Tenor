@@ -38,25 +38,35 @@ export default function CalendarCell({
     // FIXME: Enable feature
     disabled: true,
   });
+
+  const setNewSelectedDate = (date: Date) => {
+    if (selectedDate && date.getTime() === selectedDate.getTime()) {
+      setSelectedDate(undefined);
+      return;
+    }
+    setSelectedDate(date);
+  };
   return (
     <div
       className={cn(
         "flex h-full w-full",
         isDropTarget && "bg-gray-100",
-        selectedDate &&
-          date.getTime() === selectedDate.getTime() &&
-          "bg-app-secondary",
+        selectedDate && date.getTime() === selectedDate.getTime()
+          ? "bg-app-secondary"
+          : "hover:bg-gray-100",
       )}
     >
       <div className="flex h-full w-full p-0.5" ref={ref}>
         <span
-          className={cn("h-full p-1 text-xs", tasks.length == 0 && "w-full")}
+          className={cn(
+            "h-full p-1 text-xs",
+            tasks.length == 0 && "w-full",
+            selectedDate &&
+              date.getTime() === selectedDate.getTime() &&
+              "text-white",
+          )}
           onClick={() => {
-            if (selectedDate && date === selectedDate) {
-              setSelectedDate(undefined);
-              return;
-            }
-            setSelectedDate(date);
+            setNewSelectedDate(date);
           }}
         >
           {day}
@@ -78,6 +88,12 @@ export default function CalendarCell({
               />
             </div>
           ))}
+          <div
+            className="h-full"
+            onClick={() => {
+              setNewSelectedDate(date);
+            }}
+          />
         </div>
       </div>
     </div>
