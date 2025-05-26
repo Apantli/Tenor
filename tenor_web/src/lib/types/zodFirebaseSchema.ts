@@ -91,7 +91,8 @@ export const RoleSchema = z.object({
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
   reviews: PermissionSchema, // sprint reviews
-  activity: PermissionSchema // activity
+  activity: PermissionSchema, // activity
+  retrospective: PermissionSchema, // sprint retrospective
 });
 
 export const BasicInfoSchema = z.object({

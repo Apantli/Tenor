@@ -355,6 +355,7 @@ const settingsRouter = createTRPCRouter({
           backlog: roleData.backlog as Permission,
           reviews: roleData.reviews as Permission,
           activity: roleData.activity as Permission,
+          retrospective: roleData.retrospective as Permission,
         };
         return role;
       });

@@ -143,6 +143,7 @@ export const roleRequiredProcedure = (
         backlog: 0,
         reviews: 0,
         activity: 0,
+        retrospective: 0,
       };
 
       const userDoc = await ctx.firestore

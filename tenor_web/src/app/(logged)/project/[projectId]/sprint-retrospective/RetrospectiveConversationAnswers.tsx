@@ -9,14 +9,14 @@ interface Props {
   textAnswers: string[];
 }
 
-export default function ReviewConversationAnswers({
+export default function RetrospectiveConversationAnswers({
   primaryEmotion,
   textAnswers,
 }: Props) {
   const { projectId } = useParams();
 
   const { data: answerData, isLoading } =
-    api.sprintReviews.getProcessedReviewAnswers.useQuery({
+    api.sprintRetrospectives.getProcessedRetrospectiveAnswers.useQuery({
       projectId: projectId as string,
       data: {
         textAnswers,

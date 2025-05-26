@@ -299,13 +299,6 @@ export default function TasksKanban({ filter, regex }: Props) {
                         {permission >= permissionNumbers.write && (
                           <div className="flex gap-2">
                             <button
-                              className="rounded-lg px-1 text-app-text transition"
-                              onClick={() => assignSelectionToColumn(column.id)}
-                            >
-                              Assign
-                            </button>
-
-                            <button
                               className={cn(
                                 "rounded-lg px-1 text-app-text transition",
                                 {

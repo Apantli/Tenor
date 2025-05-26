@@ -69,7 +69,7 @@ export interface FlagsRequired {
     | "scrumboard"
     | "issues"
     | "backlog"
-    | "reviews"
+    | "retrospective"
   )[];
 
   // false/null/pesimistic gets the lowest permission
@@ -111,6 +111,7 @@ export const defaultRoleList: Role[] = [
     issues: 2,
     backlog: 2,
     reviews: 2,
+    retrospective: 2,
     activity: 2,
   },
   {
@@ -123,6 +124,7 @@ export const defaultRoleList: Role[] = [
     issues: 1,
     backlog: 1,
     reviews: 2,
+    retrospective: 2,
     activity: 0,
   },
   {
@@ -136,6 +138,7 @@ export const defaultRoleList: Role[] = [
     issues: 0,
     backlog: 0,
     reviews: 0,
+    retrospective: 0,
     activity: 0,
   },
 ];
@@ -150,6 +153,7 @@ export const emptyRole: Role = {
   issues: 0,
   backlog: 0,
   reviews: 0,
+  retrospective: 0,
   activity: 0,
 };
 
@@ -163,6 +167,7 @@ export const ownerRole: Role = {
   issues: 2,
   backlog: 2,
   reviews: 2,
+  retrospective: 2,
   activity: 2,
 };
 
