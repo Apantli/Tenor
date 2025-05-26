@@ -96,6 +96,8 @@ export const ContributionLegend: React.FC<{
     "User Stories": "#13918A",
   };
 
+  const totalValue = data.reduce((sum, item) => sum + item.value, 0);
+
   return (
     <div className="ml-4 flex flex-col gap-2">
       {data.map((item) => (
@@ -105,7 +107,9 @@ export const ContributionLegend: React.FC<{
             style={{ backgroundColor: colorMap[item.category] }}
           />
           <span className="text-sm">{item.category}</span>
-          <span className="ml-auto text-sm text-gray-500">{item.value}%</span>
+          <span className="ml-auto text-sm text-gray-500">
+            {((item.value / totalValue) * 100).toFixed(2)}%
+          </span>
         </div>
       ))}
     </div>

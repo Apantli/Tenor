@@ -77,8 +77,6 @@ export const getActivityPartition = async (
       count: item.count,
     }));
 
-  console.log("result", result);
-
   return result;
 };
 export const getContributionOverview = async (

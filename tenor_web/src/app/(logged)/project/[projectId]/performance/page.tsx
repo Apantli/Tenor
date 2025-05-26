@@ -49,7 +49,7 @@ export default function ProjectPerformance() {
           selectedMember={selectedMember}
         />
       </div>
-      <div className="w-[50vw]">
+      <div className="mx-auto">
         {selectedMember ? (
           <MemberDetailsCard
             member={selectedMember}

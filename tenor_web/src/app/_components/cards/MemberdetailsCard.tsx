@@ -11,6 +11,7 @@ import type { UserCol } from "~/lib/types/columnTypes";
 import { api } from "~/trpc/react";
 import { emptyRole } from "~/lib/defaultProjectValues";
 import { cn } from "~/lib/utils";
+import LoadingSpinner from "../LoadingSpinner";
 
 export const MemberDetailsCard = ({
   member,
@@ -29,7 +30,7 @@ export const MemberDetailsCard = ({
     projectId: projectId,
   });
 
-  const { data: userContributions } =
+  const { data: userContributions, isLoading: loadingContributions } =
     api.performance.getContributionOverview.useQuery({
       projectId: projectId,
       userId: member.id,
@@ -50,7 +51,10 @@ export const MemberDetailsCard = ({
       }))
     : [];
 
-  console.log("formattedUserContributions", formattedUserContributions);
+  const contributionTotal = formattedUserContributions.reduce(
+    (sum, item) => sum + item.value,
+    0,
+  );
 
   return (
     <div
@@ -82,10 +86,26 @@ export const MemberDetailsCard = ({
           <strong>Email:</strong> {member.email}
         </p>
         <h4 className="mb-4 mt-6 text-xl font-bold">Contribution overview</h4>
-        <div className="flex flex-row items-center gap-8">
-          <ContributionPieChart data={formattedUserContributions} />
-          <ContributionLegend data={formattedUserContributions} />
-        </div>
+        {loadingContributions && (
+          <div className="flex flex-row gap-2">
+            <LoadingSpinner />
+            <p className="text-xl text-gray-500">Loading contributions...</p>
+          </div>
+        )}
+        {!loadingContributions && (
+          <>
+            {contributionTotal > 0 ? (
+              <div className="flex flex-row items-center gap-8">
+                <ContributionPieChart data={formattedUserContributions} />
+                <ContributionLegend data={formattedUserContributions} />
+              </div>
+            ) : (
+              <p className="text-xl text-gray-500">
+                No user contributions in the selected time.
+              </p>
+            )}
+          </>
+        )}
         <h4 className="mb-4 mt-6 text-xl font-bold">Average time per task</h4>
         <div className="flex flex-row items-center justify-between gap-8">
           <div className="flex flex-col">
