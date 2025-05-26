@@ -27,7 +27,9 @@ export const TaskCalendarCard = ({
 }: Props) => {
   const { ref, isDragging } = useDraggable({
     id: task.id,
-    disabled: selectedTasksId ? selectedTasksId.length > 0 : false, // Don't allow dragging if selection in progress
+    // disabled: selectedTasksId ? selectedTasksId.length > 0 : false, // Don't allow dragging if selection in progress
+    // FIXME: Enable feature
+    disabled: true,
   });
 
   const [hovering, setHovering] = useState(false);
@@ -59,7 +61,7 @@ export const TaskCalendarCard = ({
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <div className="flex w-full items-center justify-between pl-1">
+      <div key="card" className="flex w-full items-center justify-between pl-1">
         <div className="flex items-center">
           {hovering && selectedTasksId && (
             <InputCheckbox

@@ -50,7 +50,7 @@ import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 import { backlogPermissions, taskPermissions } from "~/lib/permission";
 import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
-import { dateToSting } from "~/utils/helpers/parsers";
+import { dateToString } from "~/utils/helpers/parsers";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -87,7 +87,7 @@ export const tasksRouter = createTRPCRouter({
       const tasksByDate: Record<string, WithId<Task>[]> = {};
       tasks.forEach((task) => {
         const dateKey = task.dueDate
-          ? (dateToSting(task.dueDate) ?? undefined)
+          ? (dateToString(task.dueDate) ?? undefined)
           : undefined;
         if (!dateKey) {
           return;

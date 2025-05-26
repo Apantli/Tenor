@@ -194,6 +194,7 @@ export default function TaskDetailPopup({
       });
 
       await invalidateQueriesAllTasks(projectId as string, [itemId]);
+      await invalidateQueriesTaskDetails(projectId as string, [taskId]);
     } catch (error) {
       if (
         error instanceof TRPCClientError &&
