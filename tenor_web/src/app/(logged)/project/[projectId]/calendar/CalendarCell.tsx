@@ -5,17 +5,22 @@ import { cn } from "~/lib/utils";
 
 interface Props {
   day: number;
-  tasksByDate: Record<string, WithId<Task>[]> | undefined;
+  tasks: WithId<Task>[];
 
   setTask?: (task: WithId<Task>) => void;
   setDetailItemId?: (id: string) => void;
+
+  selectedTasksId?: string[];
+  setSelectedTasksId?: (ids: string[]) => void;
 }
 
 export default function CalendarCell({
   day,
-  tasksByDate,
+  tasks,
   setTask,
   setDetailItemId,
+  selectedTasksId,
+  setSelectedTasksId,
 }: Props) {
   const { ref, isDropTarget } = useDroppable({ id: day });
   return (
@@ -25,12 +30,13 @@ export default function CalendarCell({
     >
       <div className="flex h-full w-full p-0.5">
         <span className="p-1 text-xs">{day}</span>
-        <div className="flex max-h-20 w-full flex-col overflow-y-auto">
-          {/* Add any additional content here */}
-          {tasksByDate && day && Array.isArray(tasksByDate[day])
-            ? tasksByDate[day].map((task) => (
+        <div className="flex h-full w-full flex-col overflow-y-auto">
+          {tasks.length > 0
+            ? tasks.map((task) => (
                 <div className="p-0.5" key={task.id}>
                   <TaskCalendarCard
+                    selectedTasksId={selectedTasksId}
+                    setSelectedTasksId={setSelectedTasksId}
                     task={task}
                     setTask={setTask}
                     setDetailItemId={setDetailItemId}

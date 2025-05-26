@@ -48,8 +48,9 @@ import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
 import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 import { backlogPermissions, taskPermissions } from "~/lib/permission";
-import { FieldValue, Timestamp } from "firebase-admin/firestore";
+import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
+import { dateToSting } from "~/utils/helpers/parsers";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -78,44 +79,24 @@ export const tasksRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
-        month: z.number(),
-        year: z.number(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { projectId, month, year } = input;
-      const startDate = new Date(year, month, 1);
-      const endDate = new Date(year, month + 1, 1);
-      console.log(Timestamp.fromDate(startDate));
-      const tasksSnapshot = await getTasksRef(ctx.firestore, projectId)
-        .where("dueDate.seconds", ">=", Timestamp.fromDate(startDate).seconds)
-        .where("dueDate.seconds", "<", Timestamp.fromDate(endDate).seconds)
-        .get();
-      const tasks = tasksSnapshot.docs.map((doc) => {
-        const dueDateData = doc.data()?.dueDate as Timestamp | undefined;
-        const dueDate = dueDateData
-          ? new Date(dueDateData.seconds * 1000 + dueDateData.nanoseconds / 1e6)
-          : undefined;
+      const tasks = await getTasks(ctx.firestore, input.projectId);
 
-        return {
-          id: doc.id,
-          ...doc.data(),
-          dueDate,
-        };
-      }) as WithId<Task>[];
-
-      // return a map of day : tasks[]
-      // You can use a plain object for easier serialization (e.g., for JSON responses)
-      const tasksByDate: Record<number, WithId<Task>[]> = {};
+      const tasksByDate: Record<string, WithId<Task>[]> = {};
       tasks.forEach((task) => {
-        if (!task.dueDate) {
+        const dateKey = task.dueDate
+          ? (dateToSting(task.dueDate) ?? undefined)
+          : undefined;
+        if (!dateKey) {
           return;
         }
-        const day = task.dueDate.getDate();
-        if (!tasksByDate[day]) {
-          tasksByDate[day] = [];
+
+        if (!tasksByDate[dateKey]) {
+          tasksByDate[dateKey] = [];
         }
-        tasksByDate[day].push(task);
+        tasksByDate[dateKey].push(task);
       });
       return tasksByDate;
     }),
@@ -229,7 +210,6 @@ export const tasksRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      console.log("Modifying due date", input);
       const { projectId, taskId, dueDate } = input;
       const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
       await LogProjectActivity({

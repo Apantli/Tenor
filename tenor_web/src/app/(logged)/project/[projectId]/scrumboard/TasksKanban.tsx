@@ -361,7 +361,6 @@ export default function TasksKanban({ filter, regex }: Props) {
                 setShowDetail(false);
                 setTimeout(() => {
                   setForcedDetailParentUserStoryId("");
-                  // setShowDetail(false);
                 }, 500);
               }
             } else {

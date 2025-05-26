@@ -1,5 +1,6 @@
 "use client";
 
+// import { useDroppable } from "@dnd-kit/react";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
@@ -25,6 +26,8 @@ export default function MonthSlider({ month, setMonth, year, setYear }: Props) {
     "Nov",
     "Dec",
   ];
+
+  // const { leftRef, isDropTarget } = useDroppable({ id: day });
 
   return (
     <div className="flex items-center justify-between">
