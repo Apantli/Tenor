@@ -19,7 +19,7 @@ import {
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
 import SearchBar from "~/app/_components/SearchBar";
-import AdvancedSearch from "./AdvancedSearch";
+import AdvancedSearch from "../../../../_components/AdvancedSearch";
 import { type UserPreview } from "~/lib/types/detailSchemas";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
@@ -69,7 +69,7 @@ export default function ProjectKanban() {
     <div className="flex h-full flex-col justify-start overflow-hidden pt-0">
       <div className="flex items-baseline justify-between gap-3 pb-4">
         <h1 className="grow-[1] text-3xl font-semibold">Scrum Board</h1>
-        <div className="flex max-w-[400px] gap-2 pl-3">
+        <div className="flex w-[400px] gap-2 pl-3">
           <SearchBar
             handleUpdateSearch={(e) => setFilter(e.target.value)}
             searchValue={filter}
