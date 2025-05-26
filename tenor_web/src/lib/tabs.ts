@@ -45,7 +45,7 @@ export const tabsMetaInformation = {
   calendar: {
     title: "Calendar",
     link: "/calendar",
-    enabled: false,
+    enabled: true,
     flags: ["scrumboard"],
   },
   performance: {

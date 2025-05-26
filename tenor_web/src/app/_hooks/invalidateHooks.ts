@@ -36,7 +36,11 @@ export const useInvalidateQueriesAllTasks = () => {
 
 export const useInvalidateQueriesTaskDetails = () => {
   const utils = api.useUtils();
+
   return async (projectId: string, taskIds: string[]) => {
+    await utils.tasks.getTasksByDate.invalidate({
+      projectId: projectId,
+    });
     await utils.kanban.getTasksForKanban.invalidate({
       projectId: projectId,
     });

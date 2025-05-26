@@ -60,13 +60,14 @@ export function DatePicker({
   return (
     <div
       data-cy="datepicker"
-      className={cn("relative", className)}
+      className={cn("relative")}
       onClick={openDatePicker}
     >
       <div
         className={cn(
           "flex h-12 items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
           !disabled && "cursor-pointer hover:bg-gray-200",
+          className,
         )}
       >
         <CalendarMonthIcon
