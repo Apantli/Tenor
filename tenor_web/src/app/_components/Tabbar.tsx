@@ -28,9 +28,6 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     element.scrollIntoView({
       behavior: "smooth",
     });
-    void utils.sprintRetrospectives.getPreviousSprint.invalidate({
-      projectId: projectId,
-    });
   };
 
   const { data: role } = api.settings.getMyRole.useQuery({

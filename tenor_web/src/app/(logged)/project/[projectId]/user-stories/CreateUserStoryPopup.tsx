@@ -228,6 +228,7 @@ export default function CreateUserStoryPopup({
         containerClassName="mb-4"
       />
       <InputTextAreaField
+        chatPosition="right"
         label="Acceptance Criteria"
         value={createForm.acceptanceCriteria}
         onChange={(e) =>

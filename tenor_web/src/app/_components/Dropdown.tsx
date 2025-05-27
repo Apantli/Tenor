@@ -25,7 +25,8 @@ interface Props {
   disabled?: boolean;
   close?: boolean;
   setOpenState?: React.Dispatch<React.SetStateAction<boolean>>;
-  contextRef?: React.RefObject<HTMLElement>;
+  allowMove?: boolean;
+  place?: "top" | "bottom" | "left" | "right";
 }
 
 export function useCloseDropdown() {
@@ -52,7 +53,8 @@ export default function Dropdown({
   disabled,
   close,
   setOpenState,
-  contextRef,
+  allowMove,
+  place,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDirection, setOpenDirection] = useState<
@@ -132,59 +134,94 @@ export default function Dropdown({
 
   const handleClose = () => {
     onClose?.();
-    if (contextRef?.current) {
-      contextRef.current.style.opacity = "1";
-    }
   };
 
-  function positionDropdown(multiplier: number) {
+  type Alignment = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+  function positionDropdown(multiplier: number): Alignment {
     if (!ref.current || !dropdownRef.current) return "top-right";
 
     const triggerRect = ref.current.getBoundingClientRect();
     const dropdownRect = dropdownRef.current.getBoundingClientRect();
 
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
     const dropdownWidth = dropdownRect.width * multiplier;
     const dropdownHeight = dropdownRect.height * multiplier;
 
-    // Initial position — bottom-right of trigger (relative to viewport)
-    let top = triggerRect.bottom + window.scrollY;
-    let left = triggerRect.right - dropdownWidth + window.scrollX;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
-    let vertAlignment = "top";
-    let horiAlignment = "right";
+    let top = 0;
+    let left = 0;
+    let vertAlignment: "top" | "bottom" = "top";
+    let horiAlignment: "left" | "right" = "right";
 
-    // Adjust vertically if dropdown overflows the viewport
-    if (top + dropdownHeight > viewportHeight + window.scrollY) {
+    switch (place) {
+      case "top":
+        top = triggerRect.top - dropdownHeight + window.scrollY;
+        left = triggerRect.right - dropdownWidth + window.scrollX;
+        vertAlignment = "bottom";
+        break;
+      case "left":
+        top = triggerRect.top + window.scrollY;
+        left = triggerRect.left - dropdownWidth + window.scrollX;
+        horiAlignment = "right";
+        break;
+      case "right":
+        top = triggerRect.top + window.scrollY;
+        left = triggerRect.right + window.scrollX;
+        horiAlignment = "left";
+        break;
+      case "bottom":
+      default:
+        top = triggerRect.bottom + window.scrollY;
+        left = triggerRect.right - dropdownWidth + window.scrollX;
+        vertAlignment = "top";
+        break;
+    }
+
+    // Dynamic vertical overflow correction
+    const overflowsTop = top < window.scrollY;
+    const overflowsBottom =
+      top + dropdownHeight > window.scrollY + viewportHeight;
+    if (place === "top" && overflowsTop) {
+      // Flip to bottom
+      top = triggerRect.bottom + window.scrollY;
+      vertAlignment = "top";
+    } else if (place === "bottom" && overflowsBottom) {
+      // Flip to top
       top = triggerRect.top - dropdownHeight + window.scrollY;
       vertAlignment = "bottom";
     }
 
-    // Adjust horizontally if dropdown overflows the viewport
-    if (left < 0) {
-      left = 0;
+    // Dynamic horizontal overflow correction
+    const overflowsLeft = left < 0;
+    const overflowsRight =
+      left + dropdownWidth > window.scrollX + viewportWidth;
+    if (place === "left" && overflowsLeft) {
+      // Flip to right
+      left = triggerRect.right + window.scrollX;
       horiAlignment = "left";
-    } else if (left + dropdownWidth > viewportWidth + window.scrollX) {
-      left = viewportWidth - dropdownWidth + window.scrollX;
-      horiAlignment = "left";
+    } else if (place === "right" && overflowsRight) {
+      // Flip to left
+      left = triggerRect.left - dropdownWidth + window.scrollX;
+      horiAlignment = "right";
     }
 
-    // Apply styles
+    // Final clamps to keep within viewport if needed
+    top = Math.max(
+      window.scrollY,
+      Math.min(top, window.scrollY + viewportHeight - dropdownHeight),
+    );
+    left = Math.max(
+      window.scrollX,
+      Math.min(left, window.scrollX + viewportWidth - dropdownWidth),
+    );
+
     dropdownRef.current.style.top = `${top}px`;
     dropdownRef.current.style.left = `${left}px`;
-    dropdownRef.current.style.position = "absolute"; // or "fixed" if you're using fixed positioning
+    dropdownRef.current.style.position = "absolute";
 
-    if (contextRef?.current) {
-      contextRef.current.style.opacity = "0";
-    }
-
-    return `${vertAlignment}-${horiAlignment}` as
-      | "top-right"
-      | "top-left"
-      | "bottom-right"
-      | "bottom-left";
+    return `${vertAlignment}-${horiAlignment}` as Alignment;
   }
 
   return (

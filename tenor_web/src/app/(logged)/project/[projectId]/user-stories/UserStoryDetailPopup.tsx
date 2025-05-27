@@ -579,6 +579,7 @@ export default function UserStoryDetailPopup({
           <InputTextAreaField
             label="Acceptance Criteria"
             value={editForm.acceptanceCriteria}
+            chatPosition="right"
             onChange={(e) =>
               setEditForm({ ...editForm, acceptanceCriteria: e.target.value })
             }

@@ -388,6 +388,7 @@ export default function IssueDetailPopup({
             containerClassName="min-h-36"
           />
           <InputTextAreaField
+            chatPosition="right"
             label="Steps to recreate"
             value={editForm.stepsToRecreate}
             onChange={(e) =>

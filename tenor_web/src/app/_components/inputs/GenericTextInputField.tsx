@@ -28,6 +28,7 @@ export interface Props {
   className?: string;
   disablePlaceholder?: boolean;
   ref?: React.Ref<HTMLTextAreaElement | HTMLInputElement>;
+  chatPlacement?: "top" | "bottom" | "left" | "right";
 }
 
 export default function InputField({
@@ -44,6 +45,7 @@ export default function InputField({
   placeholder,
   disablePlaceholder,
   ref,
+  chatPlacement,
   ...props
 }: Props &
   (
@@ -280,7 +282,8 @@ export default function InputField({
           )}
           <div className={cn("absolute bottom-2 right-2")}>
             <Dropdown
-              contextRef={isTextArea ? textareaRef : inputRef}
+              allowMove
+              place={chatPlacement ?? "bottom"}
               label={
                 <div
                   ref={dropdownButtonRef}
@@ -310,17 +313,17 @@ export default function InputField({
                 setIsDropdownOpen(false);
               }}
             >
-              <DropdownItem className="px-0">
+              <DropdownItem className="px-0 pt-0">
                 <div
-                  className="flex h-80 w-[500px] flex-col"
+                  className="flex h-60 w-[343px] flex-col"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}
                 >
                   <div className="border-b-2">
-                    <div className="flex flex-row items-center gap-4 px-3 py-4">
-                      <AIIcon className="text-gray-500" />
-                      <h3 className="text-2xl font-bold">{aiTitle ?? label}</h3>
+                    <div className="flex flex-row items-center gap-4 px-3 py-2">
+                      <AIIcon className="text-app-primary" />
+                      <h3 className="text-lg font-bold">{aiTitle ?? label}</h3>
                       <CloseIcon
                         onClick={() => {
                           setIsDropdownOpen(false);
@@ -359,7 +362,7 @@ export default function InputField({
                         ))}
                       </div>
                     ) : (
-                      <p className="mt-3 text-sm text-gray-500">
+                      <p className="mt-3 whitespace-normal text-sm text-gray-500">
                         No messages yet. Type something to get started.
                       </p>
                     )}
@@ -449,7 +452,6 @@ export default function InputField({
                             status === "pending" ||
                             originalMessageRef.current === value
                           }
-                          loading={status === "pending"}
                         >
                           Accept Changes
                         </PrimaryButton>

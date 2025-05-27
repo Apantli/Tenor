@@ -46,6 +46,24 @@ export const createQueryClient = () => {
               }
             });
           }
+          if (
+            isTRPCError(err) &&
+            err.data?.code == "INTERNAL_SERVER_ERROR" &&
+            err.message.toLowerCase().includes("quota exceeded")
+          ) {
+            if (failureCount > 0) {
+              return false;
+            }
+            const alert = getAlertContextRef();
+            alert?.(
+              "We're sorry...",
+              "Our database has currently exceeded quota, try again tomorrow.",
+              {
+                type: "error",
+                duration: 5000,
+              },
+            );
+          }
 
           const defaultRetry = new QueryClient().getDefaultOptions().queries
             ?.retry;

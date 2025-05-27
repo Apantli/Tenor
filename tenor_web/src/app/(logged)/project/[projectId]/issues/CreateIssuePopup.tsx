@@ -175,6 +175,7 @@ export default function CreateIssuePopup({
         containerClassName="mb-4"
       />
       <InputTextAreaField
+        chatPosition="right"
         label="Steps To Recreate"
         value={createForm.stepsToRecreate}
         onChange={(e) =>

@@ -7,6 +7,7 @@
     "build": "next build",
     "check": "next lint && tsc --noEmit",
     "dev": "next dev --turbo",
+    "dev:emulator": "cross-env FIRESTORE_EMULATOR_HOST=localhost:8080 concurrently -k \"npm run dev\" \"npm run start-emulators\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "lint": "next lint",
