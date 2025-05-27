@@ -158,6 +158,7 @@ export default function CreateIssuePopup({
       disablePassiveDismiss={isModified()}
     >
       <InputTextField
+        id="issue-name-field"
         label="Issue name"
         value={createForm.name}
         onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
@@ -165,6 +166,7 @@ export default function CreateIssuePopup({
         containerClassName="mb-4"
       />
       <InputTextAreaField
+        id="issue-description-field"
         label="Issue description"
         value={createForm.description}
         onChange={(e) =>
@@ -175,6 +177,8 @@ export default function CreateIssuePopup({
         containerClassName="mb-4"
       />
       <InputTextAreaField
+        id="issue-steps-field"
+        chatPosition="right"
         label="Steps To Recreate"
         value={createForm.stepsToRecreate}
         onChange={(e) =>

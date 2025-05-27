@@ -302,6 +302,7 @@ export default function ProjectAIConfig() {
       {links && loadedFiles && !isLoading ? (
         <div className="flex flex-col gap-4">
           <InputTextAreaField
+            id="project-context-field"
             disabled={permission < permissionNumbers.write}
             label="Project Context"
             value={newText}

@@ -856,7 +856,9 @@ export default function RequirementsTable() {
             permission < permissionNumbers.write
           }
           size="small"
-          className="h-[300px] max-h-[700px] w-[600px]"
+          className={cn("max-h-[700px] w-[600px]", {
+            "h-[500px]": !requirementEditedData,
+          })}
           disablePassiveDismiss={!requirementSaved}
           dismiss={async () => {
             if (!requirementSaved) {
@@ -1209,6 +1211,7 @@ export default function RequirementsTable() {
               {!requirementEditedData || editingRequirement ? (
                 <div className="pt-4">
                   <InputTextField
+                    id="requirement-title-field"
                     label="Title"
                     containerClassName="mb-4"
                     value={
@@ -1231,6 +1234,7 @@ export default function RequirementsTable() {
                     data-cy="requirement-name-input"
                   />
                   <InputTextAreaField
+                    id="requirement-description-field"
                     label="Description"
                     html-rows="4"
                     className="min-h-[120px] w-full resize-none"

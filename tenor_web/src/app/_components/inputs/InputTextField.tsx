@@ -11,6 +11,7 @@ interface Props {
   disableAI?: boolean;
   aiTitle?: string;
   ref?: React.Ref<HTMLInputElement>;
+  chatPosition?: "top" | "bottom" | "left" | "right";
 }
 
 export default function InputTextField({
@@ -24,10 +25,12 @@ export default function InputTextField({
   value,
   onChange,
   ref,
+  chatPosition,
   ...props
 }: Props & React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <InputField
+      chatPlacement={chatPosition}
       label={label}
       id={id}
       labelClassName={labelClassName}

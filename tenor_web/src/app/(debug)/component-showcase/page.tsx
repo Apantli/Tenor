@@ -670,7 +670,7 @@ function InputComponents() {
 
   return (
     <div>
-      <InputTextField label="Text Field" />
+      <InputTextField id="component-showcase-text-field" label="Text Field" />
       <InputFileField
         label="File"
         accept="image/*"
@@ -680,7 +680,10 @@ function InputComponents() {
         }}
       />
 
-      <InputTextAreaField label="Text Area" />
+      <InputTextAreaField
+        label="Text Area"
+        id="component-showcase-text-area-field"
+      />
       <FileList
         label="Context Files"
         files={[]}
@@ -814,4 +817,3 @@ function DropdownColorPickerShowcase() {
     </div>
   );
 }
-
