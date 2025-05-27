@@ -37,6 +37,7 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 const flowIdentifier = "userStoryDependencyTree";
@@ -328,9 +329,7 @@ export default function UserStoryDependencyTree() {
     <div className="mt-3 h-[calc(100vh-250px)] w-full">
       {isLoadingDependencies && (
         <div className="flex h-full w-full items-center justify-center">
-          <p className="text-2xl font-bold text-gray-500">
-            Loading dependencies...
-          </p>
+          <LoadingSpinner color="primary" />
         </div>
       )}
       {!isLoadingDependencies && dependencyData?.nodes.length == 0 && (
