@@ -135,6 +135,18 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     );
   });
 
+  const getTypeDisplayName = (type: string | undefined): string => {
+    switch (type) {
+      case "TS": return "Task";
+      case "IS": return "Issue";
+      case "EP": return "Epic";
+      case "SP": return "Sprint";
+      case "US": return "US";
+      case "PJ": return "Project";
+      default: return type ?? "";
+    }
+  };
+
   const isLoading = activitiesLoading || usersLoading;
 
   if (isLoading) {
@@ -235,12 +247,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
                 <TagComponent
                   className={`rounded-lg text-white ${getAccentColorByCardType(activity.type as BacklogItemAndTaskDetailType)}`}
                 >
-                  {activity.type === "TS" && "Task"}
-                  {activity.type === "IS" && "Issue"}
-                  {activity.type === "EP" && "Epic"}
-                  {activity.type === "SP" && "Sprint"}
-                  {activity.type === "US" && "US"}
-                  {activity.type === "PJ" && "Project"}
+                  {getTypeDisplayName(activity.type)}
                 </TagComponent>
               </div>
             </div>

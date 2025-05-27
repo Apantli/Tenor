@@ -51,7 +51,7 @@ export function useActivityItemsMap(projectId: string) {
     activitiesDetails?.sprints.forEach((sprint) => {
       map[sprint.id] = {
         id: sprint.id,
-        name: sprint.description,
+        name: sprint.name,
         type: "SP",
         activity: sprint.activity,
       }

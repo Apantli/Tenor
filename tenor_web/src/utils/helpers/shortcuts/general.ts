@@ -1,14 +1,10 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type {
-  Epic,
-  Issue,
+  ActivityItem,
   ProjectActivity,
   Role,
   Size,
-  Sprint,
   StatusTag,
-  Task,
-  UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import {
@@ -376,20 +372,6 @@ export const getItemActivityDetails = async (
   // Get activities
   const activities = await getProjectActivities(firestore, projectId);
 
-  // Create a map of activities by itemId
-  const activityMap: Record<
-    string,
-    WithId<ProjectActivity>
-  > = activities.reduce(
-    (acc, activity) => {
-      if (activity.itemId) {
-        acc[activity.itemId] = activity;
-      }
-      return acc;
-    },
-    {} as Record<string, WithId<ProjectActivity>>,
-  );
-
   // Create a collection map to just make references
   const COLLECTION_MAP = {
     "TS": "tasks",
@@ -401,11 +383,11 @@ export const getItemActivityDetails = async (
 
   // Array to hold the results
   const results = {
-    tasks: [] as any[],
-    issues: [] as any[],
-    userStories: [] as any[],
-    epics: [] as any[],
-    sprints: [] as any[],
+    tasks: [] as ActivityItem[],
+    issues: [] as ActivityItem[],
+    userStories: [] as ActivityItem[],
+    epics: [] as ActivityItem[],
+    sprints: [] as ActivityItem[],
   }
 
   // Iterate in the activityMap to get the item type and itemId
@@ -426,7 +408,7 @@ export const getItemActivityDetails = async (
     if (!docSnap.exists) continue;
 
     // Get the item data
-    const data = { id: itemId, ...docSnap.data(), activity }
+    const data = { id: itemId, ...docSnap.data(), activity: activity } as ActivityItem;
 
     switch (collectionName) {
       case "tasks":
