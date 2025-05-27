@@ -41,7 +41,7 @@ import {
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/lib/checkPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface Props {
   issueId: string;

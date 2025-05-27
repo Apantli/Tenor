@@ -19,7 +19,7 @@ import {
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/lib/checkPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface TagTableConfig {
   title: string;

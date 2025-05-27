@@ -29,7 +29,7 @@ import {
 import type { IssueCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
-import { checkPermissions } from "~/lib/checkPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 import { emptyRole } from "~/lib/defaultValues/roles";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";

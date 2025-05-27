@@ -16,7 +16,7 @@ import {
 import { api } from "~/trpc/react";
 import SearchBar from "~/app/_components/SearchBar";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/lib/checkPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 import AdvancedSearch from "../../../../_components/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 

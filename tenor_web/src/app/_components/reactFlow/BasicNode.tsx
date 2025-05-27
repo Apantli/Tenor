@@ -19,7 +19,7 @@ import {
 import { useMemo } from "react";
 import { api } from "~/trpc/react";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/lib/checkPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow

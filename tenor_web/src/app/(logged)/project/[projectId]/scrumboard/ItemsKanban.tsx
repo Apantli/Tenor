@@ -29,7 +29,7 @@ import {
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/lib/checkPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface Props {
   filter: string;
