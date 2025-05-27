@@ -36,6 +36,8 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import CreateSprintPopup from "./CreateSprintPopup";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
 import { type KanbanCard } from "~/lib/types/kanbanTypes";
+import AdvancedSearch from "~/app/_components/AdvancedSearch";
+import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -432,6 +434,8 @@ export default function ProjectSprints() {
     setLastDraggedBacklogItemId(null);
   }, [sprintSearchValue]);
 
+  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
+
   return (
     <>
       <DragDropProvider
@@ -465,6 +469,7 @@ export default function ProjectSprints() {
             </div>
 
             <BacklogItemCardColumn
+              advancedFilters={advancedFilters}
               disabled={permission < permissionNumbers.write}
               lastDraggedBacklogItemId={lastDraggedBacklogItemId}
               dndId={noSprintId}
@@ -522,13 +527,18 @@ export default function ProjectSprints() {
             <div className="flex w-full justify-between gap-5 pb-4">
               <h1 className="text-3xl font-semibold">Sprints</h1>
               <div className="flex flex-1 items-center justify-end gap-3">
-                <div className="w-full max-w-[500px]">
+                <div className="flex w-full max-w-[500px] gap-2">
                   <SearchBar
                     searchValue={sprintSearchValue}
                     handleUpdateSearch={(e) =>
                       setSprintSearchValue(e.target.value)
                     }
                     placeholder="Find a sprint or item by title or id..."
+                  />
+                  <AdvancedSearch
+                    hideSprint
+                    advancedFilters={advancedFilters}
+                    setAdvancedFilters={setAdvancedFilters}
                   />
                 </div>
                 {permission >= permissionNumbers.write && (
@@ -571,6 +581,7 @@ export default function ProjectSprints() {
               )}
               {filteredSprints.map((column) => (
                 <SprintCardColumn
+                  advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
                   allSprints={backlogItemsBySprint?.sprints.map(
                     (sprint) => sprint.sprint,

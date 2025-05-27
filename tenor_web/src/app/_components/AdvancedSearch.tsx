@@ -19,11 +19,13 @@ import { SetStateAction } from "react";
 interface Props {
   advancedFilters: AdvancedSearchFilters;
   setAdvancedFilters: React.Dispatch<SetStateAction<AdvancedSearchFilters>>;
+  hideSprint?: boolean;
 }
 
 export default function AdvancedSearch({
   advancedFilters,
   setAdvancedFilters,
+  hideSprint,
 }: Props) {
   // GENERAL
   const { projectId } = useParams();
@@ -172,18 +174,22 @@ export default function AdvancedSearch({
               }}
               allowSetSelf
             />
-            <h1 className="mt-2 font-semibold">Sprint</h1>
-            <SprintPicker
-              className="h-10 max-w-[170px]"
-              selectedOption={advancedFilters.sprint}
-              options={sprintsData ?? []}
-              onChange={(sprint) => {
-                setAdvancedFilters({
-                  ...advancedFilters,
-                  sprint,
-                });
-              }}
-            />
+            {!hideSprint && (
+              <>
+                <h1 className="mt-2 font-semibold">Sprint</h1>
+                <SprintPicker
+                  className="h-10 max-w-[170px]"
+                  selectedOption={advancedFilters.sprint}
+                  options={sprintsData ?? []}
+                  onChange={(sprint) => {
+                    setAdvancedFilters({
+                      ...advancedFilters,
+                      sprint,
+                    });
+                  }}
+                />
+              </>
+            )}
           </div>
         </DropdownItem>
       </Dropdown>

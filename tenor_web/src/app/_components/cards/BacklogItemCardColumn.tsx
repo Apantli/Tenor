@@ -10,6 +10,11 @@ import {
 } from "~/app/_hooks/scrumIdHooks";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import type { BacklogItemType } from "~/lib/types/firebaseSchemas";
+import {
+  AdvancedSearchFilters,
+  matchesSearchFilters,
+} from "~/app/_hooks/useAdvancedSearchFilters";
+import { filter } from "node_modules/cypress/types/bluebird";
 
 interface Props {
   backlogItems: inferRouterOutputs<
@@ -24,6 +29,7 @@ interface Props {
   dndId: string;
   lastDraggedBacklogItemId: string | null;
   disabled?: boolean;
+  advancedFilters: AdvancedSearchFilters;
 }
 
 export default function BacklogItemCardColumn({
@@ -37,19 +43,24 @@ export default function BacklogItemCardColumn({
   dndId,
   lastDraggedBacklogItemId,
   disabled = false,
+  advancedFilters,
 }: Props) {
-  const cards: KanbanCard[] = backlogItems.map((item) => ({
-    id: item.id,
-    scrumId: item.scrumId,
-    name: item.name,
-    size: item.size,
-    tags: item.tags,
-    columnId: item.sprintId,
-    cardType: item.itemType as BacklogItemType,
-    assigneeIds: [],
-    sprintId: item.sprintId,
-    priorityId: undefined,
-  }));
+  const cards: KanbanCard[] = backlogItems
+    .map((item) => ({
+      id: item.id,
+      scrumId: item.scrumId,
+      name: item.name,
+      size: item.size,
+      tags: item.tags,
+      columnId: item.sprintId,
+      cardType: item.itemType as BacklogItemType,
+      assigneeIds: item.assigneeIds,
+      sprintId: item.sprintId,
+      priorityId: undefined,
+    }))
+    .filter((val: KanbanCard | undefined) => {
+      return matchesSearchFilters(val, "", advancedFilters);
+    });
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();

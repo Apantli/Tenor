@@ -11,6 +11,7 @@ import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import EditSprintPopup from "./EditSprintPopup";
 import type { SprintDates } from "./CreateSprintPopup";
+import { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
@@ -23,6 +24,7 @@ interface Props {
   lastDraggedBacklogItemId: string | null;
   allSprints: SprintDates[] | undefined;
   disabled?: boolean;
+  advancedFilters: AdvancedSearchFilters;
 }
 
 export default function SprintCardColumn({
@@ -35,6 +37,7 @@ export default function SprintCardColumn({
   lastDraggedBacklogItemId,
   allSprints,
   disabled = false,
+  advancedFilters,
 }: Props) {
   const allSelected =
     column.backlogItemIds.length > 0 &&
@@ -76,6 +79,7 @@ export default function SprintCardColumn({
       key={column.sprint.id}
     >
       <BacklogItemCardColumn
+        advancedFilters={advancedFilters}
         disabled={disabled}
         lastDraggedBacklogItemId={lastDraggedBacklogItemId}
         dndId={column.sprint.id}

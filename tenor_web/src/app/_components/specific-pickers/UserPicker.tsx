@@ -35,9 +35,14 @@ export function UserPicker({
 
   const { user } = useFirebaseAuth();
 
-  let filteredOptions = options.filter((option) =>
-    option.displayName?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  let filteredOptions = options
+    .filter((option) =>
+      option.displayName?.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+    .map((val) => ({
+      ...val,
+      isYou: false,
+    }));
 
   if (allowSetSelf && user) {
     const selfOption = filteredOptions.find((option) => option.id === user.uid);
@@ -45,7 +50,7 @@ export function UserPicker({
       filteredOptions = [
         {
           ...selfOption,
-          displayName: "You",
+          isYou: true,
         },
         ...filteredOptions.filter((option) => option.id !== user.uid),
       ];
@@ -102,7 +107,7 @@ export function UserPicker({
     );
   };
 
-  const createOption = (option: WithId<UserPreview>) => {
+  const createOption = (option: WithId<UserPreview> & { isYou: boolean }) => {
     return (
       <DropdownButton
         onClick={() => handleSelect(option)}
@@ -115,7 +120,9 @@ export function UserPicker({
           </div>
         )}
         <ProfilePicture user={option} hideTooltip />
-        <span className="w-full truncate">{option.displayName}</span>
+        <span className="w-full truncate">
+          {option.isYou ? "You" : option.displayName}
+        </span>
       </DropdownButton>
     );
   };

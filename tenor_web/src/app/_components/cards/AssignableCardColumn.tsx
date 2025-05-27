@@ -5,7 +5,10 @@ import CardColumn from "./CardColumn";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { UserPreview } from "~/lib/types/detailSchemas";
-import { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
+import {
+  AdvancedSearchFilters,
+  matchesSearchFilters,
+} from "~/app/_hooks/useAdvancedSearchFilters";
 // import type { Tag } from "~/lib/types/firebaseSchemas";
 
 // WithId<BasicInfo> change into only needed info...
@@ -52,8 +55,6 @@ export default function AssignableCardColumn({
         !column.itemIds.some((itemId) => itemId === selectedItem),
     );
 
-  const { tags, sizes, priorities, assignee, sprint } = advancedFilters;
-
   return (
     <div
       className="relative h-full w-96 min-w-96 overflow-hidden rounded-lg"
@@ -64,36 +65,8 @@ export default function AssignableCardColumn({
         cards={
           column.itemIds
             .map((itemId: string) => items[itemId])
-            .filter((val: KanbanCard | undefined): val is KanbanCard => {
-              if (val === undefined) return false;
-
-              if (
-                filter &&
-                !val.name.toLowerCase().includes(filter.toLowerCase())
-              )
-                return false;
-              if (
-                tags.length > 0 &&
-                !val.tags.some((tag) => tags.some((t) => t.id === tag.id))
-              )
-                return false;
-              if (
-                priorities.length > 0 &&
-                val.priorityId &&
-                !priorities.some((tag) => tag.id === val.priorityId)
-              )
-                return false;
-              if (
-                sizes.length > 0 &&
-                val.size &&
-                !sizes.some((tag) => tag.id === val.size)
-              )
-                return false;
-              if (assignee && !val.assigneeIds.includes(assignee.id))
-                return false;
-              if (sprint && val.sprintId !== sprint.id) return false;
-
-              return true;
+            .filter((val: KanbanCard | undefined) => {
+              return matchesSearchFilters(val, filter, advancedFilters);
             }) ?? []
         }
         selection={selectedItems}
