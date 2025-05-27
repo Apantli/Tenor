@@ -16,7 +16,6 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "../trpc";
-import { issuePermissions } from "~/lib/defaultValues/permission";
 import {
   deleteIssueAndGetModified,
   getIssue,
@@ -28,6 +27,7 @@ import {
   getIssueTable,
 } from "~/utils/helpers/shortcuts/issues";
 import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
+import { issuePermissions } from "~/lib/defaultValues/permission";
 
 export const issuesRouter = createTRPCRouter({
   /**
@@ -135,8 +135,6 @@ export const issuesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueId, issueData } = input;
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
-
-      console.log("Modifying issue:", issueData.statusId);
 
       await LogProjectActivity({
         firestore: ctx.firestore,
