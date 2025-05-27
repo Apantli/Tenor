@@ -11,7 +11,7 @@ import {
 import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
 import { api } from "~/trpc/react";
-import { emptyRole } from "~/lib/defaultProjectValues";
+import { emptyRole } from "~/lib/defaultValues/roles";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
 import { formatSeconds } from "~/utils/helpers/parsers";
@@ -103,11 +103,14 @@ export const MemberDetailsCard = ({
 
   return (
     <div
-      className={cn("flex flex-col gap-y-4 rounded-md border-2 p-4", className)}
+      className={cn(
+        "relative flex flex-col gap-y-4 rounded-md border-2 p-4 py-12",
+        className,
+      )}
     >
       <CrossIcon
         onClick={() => setSelectedMember(null)}
-        className="ml-auto text-gray-500"
+        className="absolute right-2 top-2 ml-auto text-gray-500"
         fontSize="large"
       />
       <div className="flex flex-row gap-3">
