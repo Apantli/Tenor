@@ -4,7 +4,7 @@ import InputField, {
   type Props as InputFieldProps,
 } from "./GenericTextInputField";
 interface Props {
-  label?: string;
+  label?: string | React.ReactNode;
   labelClassName?: string;
   containerClassName?: string;
   disableAI?: boolean;

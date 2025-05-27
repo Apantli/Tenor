@@ -11,6 +11,7 @@ import FileList from "~/app/_components/inputs/FileList";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import HelpIcon from "@mui/icons-material/Help";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { type Links } from "~/server/api/routers/settings";
 import { toBase64 } from "~/utils/helpers/base64";
@@ -324,8 +325,18 @@ export default function ProjectCreator() {
             {/* Context Text */}
             <InputTextAreaField
               id="project-context-field"
-              className="min-h-[180px]"
-              label="Context"
+              label={
+                <span className="flex items-center gap-1">
+                  Context
+                  <HelpIcon
+                    className="text-gray-500"
+                    data-tooltip-id="tooltip"
+                    data-tooltip-content="The data shared, including files and links, is private and used solely as context for the AI."
+                    data-tooltip-place="top-start"
+                    style={{ width: "15px" }}
+                  />
+                </span>
+              }
               html-rows="20"
               placeholder="Tell us about your project..."
               value={form.context}

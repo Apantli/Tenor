@@ -14,7 +14,7 @@ import type { AIMessage } from "~/lib/types/firebaseSchemas";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 export interface Props {
-  label?: string;
+  label?: string | React.ReactNode;
   labelClassName?: string;
   containerClassName?: string;
   disableAI?: boolean;
