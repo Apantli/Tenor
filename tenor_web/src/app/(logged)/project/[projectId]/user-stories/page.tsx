@@ -1,8 +1,8 @@
 "use client";
 
-import { ProjectEpics } from "~/app/_components/sections/ProjectEpics";
+import { ProjectEpics } from "~/app/(logged)/project/[projectId]/user-stories/ProjectEpics";
 import UserStoryDependencyTree from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDependencyTree";
-import UserStoryTable from "~/app/_components/sections/UserStoryTable";
+import UserStoryTable from "~/app/(logged)/project/[projectId]/user-stories/UserStoryTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";

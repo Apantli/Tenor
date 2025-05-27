@@ -29,9 +29,8 @@ export const MemberList = ({
 
   if (isLoading) {
     return (
-      <div className="flex flex-row gap-3 align-middle">
-        <LoadingSpinner />
-        <p className="text-lg font-semibold">Loading team members...</p>
+      <div className="flex h-full w-full flex-col items-center">
+        <LoadingSpinner color="primary" />
       </div>
     );
   }

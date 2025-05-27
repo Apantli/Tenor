@@ -11,8 +11,8 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
 import Markdown from "react-markdown";
-import SecondaryButton from "../buttons/SecondaryButton";
-import SearchBar from "../SearchBar";
+import SecondaryButton from "../../../../_components/buttons/SecondaryButton";
+import SearchBar from "../../../../_components/SearchBar";
 import { useParams } from "next/navigation";
 import {
   type Permission,
@@ -23,9 +23,22 @@ import { checkPermissions } from "~/lib/defaultValues/permission";
 import { emptyRole } from "~/lib/defaultValues/roles";
 
 export const ProjectEpics = () => {
+  // #region Hooks
   const { projectId } = useParams();
+  const utils = api.useUtils();
+  const confirm = useConfirmation();
+  const { alert } = useAlert();
+  const formatEpicScrumId = useFormatEpicScrumId();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // #endregion
+
+  // #region TRPC
   const { mutateAsync: createEpic, isPending: creatingEpic } =
     api.epics.createOrModifyEpic.useMutation();
+  const { data: epics, isLoading } = api.epics.getEpics.useQuery(
+    { projectId: projectId as string },
+    { enabled: !!projectId },
+  );
 
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: projectId as string,
@@ -43,28 +56,7 @@ export const ProjectEpics = () => {
   const { mutateAsync: deleteEpic, isPending: deletingEpic } =
     api.epics.createOrModifyEpic.useMutation();
 
-  const utils = api.useUtils();
-  const formatEpicScrumId = useFormatEpicScrumId();
-
-  const [showSmallPopup, setShowSmallPopup] = useState(false);
-  const [showEditPopup, setShowEditPopup] = useState(false);
-  const [editEpic, setEditEpic] = useState(false);
-  const [searchText, setSearchText] = useState("");
-
   const [selectedEpic, setSelectedEpic] = useState<string | null>(null);
-
-  const { data: epics, isLoading } = api.epics.getEpics.useQuery(
-    {
-      projectId: projectId as string,
-    },
-    { enabled: !!projectId },
-  );
-  const filteredEpics = epics?.filter((epic) =>
-    (epic.name + epic.name + formatEpicScrumId(epic.scrumId))
-      .toLowerCase()
-      .includes(searchText.toLowerCase()),
-  );
-
   const { data: epic, isLoading: epicLoading } = api.epics.getEpic.useQuery(
     {
       projectId: projectId as string,
@@ -75,20 +67,32 @@ export const ProjectEpics = () => {
     },
   );
 
+  // #endregion
+
+  // #region REACT
+  const [showSmallPopup, setShowSmallPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
+  const [editEpic, setEditEpic] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [newEpicName, setNewEpicName] = useState("");
+  const [newEpicDescription, setNewEpicDescription] = useState("");
+  const [editEpicName, setEditEpicName] = useState("");
+  const [editEpicDescription, setEditEpicDescription] = useState("");
+
   useEffect(() => {
     if (selectedEpic && epic) {
       setEditEpicName(epic.name || "");
       setEditEpicDescription(epic.description || "");
     }
   }, [selectedEpic, epic]);
+  // #endregion
 
-  const [newEpicName, setNewEpicName] = useState("");
-  const [newEpicDescription, setNewEpicDescription] = useState("");
-  const [editEpicName, setEditEpicName] = useState("");
-  const [editEpicDescription, setEditEpicDescription] = useState("");
-
-  const confirm = useConfirmation();
-  const { alert } = useAlert();
+  // #region UTILITY
+  const filteredEpics = epics?.filter((epic) =>
+    (epic.name + epic.name + formatEpicScrumId(epic.scrumId))
+      .toLowerCase()
+      .includes(searchText.toLowerCase()),
+  );
 
   const isNewEpicModified = () => {
     if (newEpicName !== "") return true;
@@ -102,8 +106,6 @@ export const ProjectEpics = () => {
     if (editEpicDescription !== epic.description) return true;
     return false;
   };
-
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleCreateDismiss = () => {
     setShowSmallPopup(false);
@@ -145,6 +147,9 @@ export const ProjectEpics = () => {
       handleCreateDismiss();
     }
   };
+
+  // #endregion
+
   return (
     <>
       <div className="flex justify-between pb-5">
@@ -202,6 +207,11 @@ export const ProjectEpics = () => {
             </div>
           </div>
         ))}
+        {isLoading && (
+          <div className="flex h-full w-full flex-col items-center justify-center">
+            <LoadingSpinner color="primary" />
+          </div>
+        )}
       </div>
 
       {/* Popup to create epic */}

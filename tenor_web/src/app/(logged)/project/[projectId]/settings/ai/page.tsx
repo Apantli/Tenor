@@ -334,9 +334,8 @@ export default function ProjectAIConfig() {
           ></LinkList>
         </div>
       ) : (
-        <div className="mt-5 flex flex-row gap-x-3">
-          <LoadingSpinner />
-          <p className="text-lg">Loading...</p>
+        <div className="flex h-full w-full flex-col items-center">
+          <LoadingSpinner color="primary" />
         </div>
       )}
     </div>

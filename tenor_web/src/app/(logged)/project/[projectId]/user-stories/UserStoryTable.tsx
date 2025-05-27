@@ -19,19 +19,19 @@ import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/SearchBar";
 import { cn } from "~/lib/utils";
-import { usePopupVisibilityState } from "../Popup";
+import { usePopupVisibilityState } from "../../../../_components/Popup";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
-import { SizePicker } from "../specific-pickers/SizePicker";
+import { SizePicker } from "../../../../_components/specific-pickers/SizePicker";
 import CreateUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/CreateUserStoryPopup";
 import {
   useFormatEpicScrumId,
   useFormatSprintNumber,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
-import PriorityPicker from "../specific-pickers/PriorityPicker";
+import PriorityPicker from "../../../../_components/specific-pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import LoadingSpinner from "../LoadingSpinner";
-import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
+import LoadingSpinner from "../../../../_components/LoadingSpinner";
+import AiGeneratorDropdown from "../../../../_components/ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
