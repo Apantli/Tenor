@@ -217,6 +217,7 @@ export const sprintsRouter = createTRPCRouter({
               .filter((tag) => tag !== undefined),
             itemType: "US",
             assigneeIds,
+            priorityId: userStory.priorityId,
           };
         }),
       );
@@ -248,6 +249,7 @@ export const sprintsRouter = createTRPCRouter({
               .filter((tag) => tag !== undefined),
             itemType: "IS",
             assigneeIds,
+            priorityId: issue.priorityId,
           };
         }),
       );
