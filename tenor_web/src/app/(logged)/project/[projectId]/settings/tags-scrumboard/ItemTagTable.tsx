@@ -54,6 +54,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
   const [selectedTagId, setSelectedTagId] = useState("");
   const confirm = useConfirmation();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
+  const [editMode, setEditMode] = useState(false);
 
   const tagTypeConfigs: Record<TagType, TagTableConfig> = {
     BacklogTag: {
@@ -120,7 +121,14 @@ export default function ItemTagTable({ itemTagType }: Props) {
 
   const { mutateAsync: deleteTag } = deleteTagMutation || {};
 
+  const handleOpen = async function (tagId: string) {
+    setEditMode(false);
+    setSelectedTagId(tagId);
+    setShowDetailTag(true);
+  };
+
   const handleModifyTag = async function (tagId: string) {
+    setEditMode(true);
     setSelectedTagId(tagId);
     setShowDetailTag(true);
   };
@@ -247,9 +255,8 @@ export default function ItemTagTable({ itemTagType }: Props) {
         return (
           <button
             className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
-            onClick={() => {
-              setSelectedTagId(row.id);
-              setShowDetailTag(true);
+            onClick={async () => {
+              await handleOpen(row.id);
             }}
           >
             {row.name}
@@ -354,6 +361,8 @@ export default function ItemTagTable({ itemTagType }: Props) {
 
       {renderDetailTag && (
         <ItemTagDetailPopup
+          editMode={editMode}
+          setEditMode={setEditMode}
           disabled={permission < permissionNumbers.write}
           showPopup={showDetailTag}
           setShowPopup={setShowDetailTag}

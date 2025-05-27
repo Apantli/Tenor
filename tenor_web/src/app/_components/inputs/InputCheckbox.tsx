@@ -6,7 +6,7 @@ import Check from "@mui/icons-material/Check";
 interface Props {
   className?: ClassNameValue;
   checked: boolean;
-  onChange: (value: boolean) => Promise<void>;
+  onChange: (value: boolean) => void;
   disabled?: boolean;
 }
 
@@ -27,10 +27,10 @@ export default function InputCheckbox({
         },
         className,
       )}
-      onClick={async (e) => {
+      onClick={(e) => {
         if (disabled) return;
         e.stopPropagation();
-        await onChange(!checked);
+        onChange(!checked);
       }}
     >
       <Check
