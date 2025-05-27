@@ -558,7 +558,9 @@ export default function RequirementsTable() {
       callback: (del: boolean) => void,
     ) => {
       const confirmMessage =
-        ids.length > 1 ? "delete requirements?" : "delete requirement?";
+        ids.length > 1
+          ? "delete these requirements?"
+          : "delete this requirement?";
       if (
         !(await confirm(
           `Are you sure you want to ${confirmMessage}`,
