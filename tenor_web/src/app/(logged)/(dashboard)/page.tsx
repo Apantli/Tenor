@@ -46,6 +46,9 @@ const CreateNewProject = () => {
 function ProjectList() {
   const { data: projects, isLoading } = api.projects.listProjects.useQuery();
   const [searchValue, setSearchValue] = useState("");
+  const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>(
+    {},
+  );
 
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchValue(e.target.value);
@@ -64,7 +67,7 @@ function ProjectList() {
   if (isLoading) {
     return (
       <div className="flex flex-row gap-3 align-middle">
-        <LoadingSpinner />
+        <LoadingSpinner color="primary" />
         <p className="text-lg font-semibold">Loading your projects...</p>
       </div>
     );
@@ -95,9 +98,14 @@ function ProjectList() {
               key={project.id}
               onClick={() => handleOpenProject(project.id)}
             >
-              <div className="h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
+              <div className="flex h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
+                {loadingImages[project.id] !== false && (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <LoadingSpinner color="primary" />
+                  </div>
+                )}
                 <img
-                  className="h-full w-full rounded-md object-contain p-[4px]"
+                  className={`h-full w-full rounded-md object-contain p-[4px] ${loadingImages[project.id] !== false ? "hidden" : ""}`}
                   src={
                     project.logo.startsWith("/")
                       ? project.logo
@@ -106,6 +114,18 @@ function ProjectList() {
                         )}`
                   }
                   alt={project.name}
+                  onLoad={() =>
+                    setLoadingImages((prev) => ({
+                      ...prev,
+                      [project.id]: false,
+                    }))
+                  }
+                  onError={() =>
+                    setLoadingImages((prev) => ({
+                      ...prev,
+                      [project.id]: false,
+                    }))
+                  }
                 />
               </div>
               <div className="flex flex-1 flex-col justify-start overflow-hidden pl-4 pr-4">
