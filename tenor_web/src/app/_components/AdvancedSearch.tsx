@@ -33,10 +33,6 @@ export default function AdvancedSearch({
     projectId: projectId as string,
   });
 
-  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
-    projectId: projectId as string,
-  });
-
   const { data: prioritiesData } = api.settings.getPriorityTypes.useQuery({
     projectId: projectId as string,
   });
@@ -179,7 +175,6 @@ export default function AdvancedSearch({
                 <SprintPicker
                   className="h-10 max-w-[170px]"
                   selectedOption={advancedFilters.sprint}
-                  options={sprintsData ?? []}
                   onChange={(sprint) => {
                     setAdvancedFilters({
                       ...advancedFilters,

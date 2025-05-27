@@ -136,10 +136,6 @@ export default function CreateUserStoryPopup({
     }
   };
 
-  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
-    projectId: projectId as string,
-  });
-
   return (
     <Popup
       show={showPopup}
@@ -197,7 +193,6 @@ export default function CreateUserStoryPopup({
             <span className="font-semibold">Sprint</span>
             <SprintPicker
               selectedOption={createForm.sprint}
-              options={sprintsData ?? []}
               onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
               placeholder="None"
               className="w-full"

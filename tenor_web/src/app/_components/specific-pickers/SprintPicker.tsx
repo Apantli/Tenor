@@ -8,9 +8,10 @@ import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
 import type { Sprint, WithId } from "~/lib/types/firebaseSchemas";
 import Check from "@mui/icons-material/Check";
 import { useFormatSprintNumber } from "~/app/_hooks/scrumIdHooks";
+import { api } from "~/trpc/react";
+import { useParams } from "next/navigation";
 
 interface EditableBoxProps {
-  options: WithId<Sprint>[];
   selectedOption?: WithId<Sprint> | undefined;
   onChange: (option: WithId<Sprint> | undefined) => void;
   className?: string;
@@ -20,7 +21,6 @@ interface EditableBoxProps {
 }
 
 export function SprintPicker({
-  options,
   selectedOption = undefined,
   onChange,
   className,
@@ -28,13 +28,22 @@ export function SprintPicker({
   disabled = false,
   close = true,
 }: EditableBoxProps) {
+  const { projectId } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
 
   const formatSprintNumber = useFormatSprintNumber();
 
-  const filteredOptions = options.filter((option) =>
-    option.number.toString()?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
+    projectId: projectId as string,
+  });
+
+  const filteredOptions =
+    sprintsData?.filter((option) =>
+      option.number
+        .toString()
+        ?.toLowerCase()
+        .includes(searchTerm.toLowerCase()),
+    ) ?? [];
 
   const handleSelect = (option: WithId<Sprint>) => {
     onChange(option);

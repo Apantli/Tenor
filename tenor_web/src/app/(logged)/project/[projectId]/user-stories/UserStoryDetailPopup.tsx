@@ -131,10 +131,6 @@ export default function UserStoryDetailPopup({
   const { mutateAsync: deleteUserStory, isPending: isDeleting } =
     api.userStories.deleteUserStory.useMutation();
 
-  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
-    projectId: projectId as string,
-  });
-
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -441,7 +437,6 @@ export default function UserStoryDetailPopup({
                   <SprintPicker
                     disabled={permission < permissionNumbers.write}
                     selectedOption={userStoryDetail.sprint}
-                    options={sprintsData ?? []}
                     onChange={async (sprint) => {
                       await handleSave({ ...userStoryDetail, sprint });
                     }}

@@ -96,10 +96,6 @@ export default function CreateIssuePopup({
     // Invalidation is done on the parent component
   };
 
-  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
-    projectId: projectId as string,
-  });
-
   return (
     <Popup
       show={showPopup}
@@ -158,7 +154,6 @@ export default function CreateIssuePopup({
             <span className="font-semibold">Sprint</span>
             <SprintPicker
               selectedOption={createForm.sprint}
-              options={sprintsData ?? []}
               onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
               placeholder="None"
               className="w-full"

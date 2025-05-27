@@ -65,10 +65,6 @@ export default function IssueDetailPopup({
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
-  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
-    projectId: projectId as string,
-  });
-
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: projectId as string,
   });
@@ -340,7 +336,6 @@ export default function IssueDetailPopup({
                   <SprintPicker
                     disabled={permission < permissionNumbers.write}
                     selectedOption={issueDetail.sprint}
-                    options={sprintsData ?? []}
                     onChange={async (sprint) => {
                       await handleSave({ ...issueDetail, sprint });
                     }}
