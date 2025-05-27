@@ -184,7 +184,12 @@ export type ProjectType = "PJ"; // For project activities
 export type SprintType = "SP"; // For requirements, not implemented yet
 
 export type BacklogItemType = UserStoryType | IssueType;
-export type AllBasicItemType = BacklogItemType | TaskType | EpicType | ProjectType | SprintType;
+export type AllBasicItemType =
+  | BacklogItemType
+  | TaskType
+  | EpicType
+  | ProjectType
+  | SprintType;
 export type BacklogItemAndTaskType = BacklogItemType | TaskType;
 
 export type TaskDetailType = `${BacklogItemType}-${TaskType}`; // Used for simplification of moving info around

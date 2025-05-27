@@ -344,7 +344,7 @@ export const ProjectSchemaCreator = z.object({
 
 export const PerformanceTime = z.enum(["Week", "Month", "Sprint"]);
 
-export const ActionType = z.enum(["create" , "update" , "delete"]); // Replace with actual actions
+export const ActionType = z.enum(["create", "update", "delete"]); // Replace with actual actions
 
 export const ActivitySchema = z.object({
   itemId: z.string(),

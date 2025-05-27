@@ -1,17 +1,18 @@
 import type { Firestore } from "firebase-admin/firestore";
-import type { 
-  Epic, 
-  Issue, 
+import type {
+  Epic,
+  Issue,
   ProjectActivity,
   Role,
-  Size, 
+  Size,
   Sprint,
-  StatusTag, 
-  Task, 
+  StatusTag,
+  Task,
   UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
-import { ActivitySchema,
+import {
+  ActivitySchema,
   ProjectSchema,
   SettingsSchema,
   type UserSchema,
@@ -26,7 +27,6 @@ import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
-
 
 /**
  * @function getProjectsRef
@@ -323,7 +323,7 @@ export const getActivityRef = (
   activityId: string,
 ) => {
   return getActivitiesRef(firestore, projectId).doc(activityId);
-}
+};
 
 export const getActivity = async (
   firestore: Firestore,
@@ -340,15 +340,14 @@ export const getActivity = async (
   }
 
   return {
-    id : activitySnapshot.id,
+    id: activitySnapshot.id,
     ...ActivitySchema.parse(activitySnapshot.data()),
   } as WithId<ProjectActivity>;
-}
+};
 
-export const getActivitiesRef = (
-  firestore: Firestore,
-  projectId: string,
-) => { return getProjectRef(firestore, projectId).collection("activity");}
+export const getActivitiesRef = (firestore: Firestore, projectId: string) => {
+  return getProjectRef(firestore, projectId).collection("activity");
+};
 
 export const getProjectActivities = async (
   firestore: Firestore,
@@ -356,18 +355,19 @@ export const getProjectActivities = async (
 ) => {
   const activitiesRef = getActivitiesRef(firestore, projectId);
   const activitiesSnapshot = await activitiesRef
-  .orderBy("date", "desc")
-  .limit(5)
-  .get();
-  const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map((activityData) => {
-    return { 
-      id: activityData.id,
-      ...ActivitySchema.parse(activityData.data()),
-    } as WithId<ProjectActivity>;
-  }
+    .orderBy("date", "desc")
+    .limit(5)
+    .get();
+  const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map(
+    (activityData) => {
+      return {
+        id: activityData.id,
+        ...ActivitySchema.parse(activityData.data()),
+      } as WithId<ProjectActivity>;
+    },
   );
   return activities;
-}
+};
 
 export const getItemActivityDetails = async (
   firestore: Firestore,
@@ -375,40 +375,61 @@ export const getItemActivityDetails = async (
 ) => {
   // Get activities
   const activities = await getProjectActivities(firestore, projectId);
-  
+
   // Create a map of activities by itemId
-  const activityMap: Record<string, WithId<ProjectActivity>> = activities.reduce((acc, activity) => {
-    if (activity.itemId) {
-      acc[activity.itemId] = activity;
-    }
-    return acc;
-  }, {} as Record<string, WithId<ProjectActivity>>);
-  
+  const activityMap: Record<
+    string,
+    WithId<ProjectActivity>
+  > = activities.reduce(
+    (acc, activity) => {
+      if (activity.itemId) {
+        acc[activity.itemId] = activity;
+      }
+      return acc;
+    },
+    {} as Record<string, WithId<ProjectActivity>>,
+  );
+
   // Create references to collections
   const tasksRef = getProjectRef(firestore, projectId).collection("tasks");
   const issuesRef = getProjectRef(firestore, projectId).collection("issues");
-  const userStoriesRef = getProjectRef(firestore, projectId).collection("userStories");
+  const userStoriesRef = getProjectRef(firestore, projectId).collection(
+    "userStories",
+  );
   const epicsRef = getProjectRef(firestore, projectId).collection("epics");
   const sprintsRef = getProjectRef(firestore, projectId).collection("sprints");
-  
+
   // Fetch all items including deleted ones
   const [tasks, issues, userStories, epics, sprints] = await Promise.all([
     // Include deleted items by not filtering in the query
-    tasksRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Task }))
-    ),
-    issuesRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Issue}))
-    ),
-    userStoriesRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as UserStory}))
-    ),
-    epicsRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Epic}))
-    ),
-    sprintsRef.get().then(snapshot => 
-      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Sprint}))
-    ),
+    tasksRef
+      .get()
+      .then((snapshot) =>
+        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Task) })),
+      ),
+    issuesRef
+      .get()
+      .then((snapshot) =>
+        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Issue) })),
+      ),
+    userStoriesRef
+      .get()
+      .then((snapshot) =>
+        snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...(doc.data() as UserStory),
+        })),
+      ),
+    epicsRef
+      .get()
+      .then((snapshot) =>
+        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Epic) })),
+      ),
+    sprintsRef
+      .get()
+      .then((snapshot) =>
+        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Sprint) })),
+      ),
   ]);
 
   // Filter items that have activities associated with them
@@ -417,7 +438,7 @@ export const getItemActivityDetails = async (
   const userStoriesActivities = userStories.filter((us) => activityMap[us.id]);
   const epicsActivities = epics.filter((epic) => activityMap[epic.id]);
   const sprintsActivities = sprints.filter((sprint) => activityMap[sprint.id]);
-  
+
   return {
     tasksActivities: tasksActivities.map((task) => ({
       ...task,

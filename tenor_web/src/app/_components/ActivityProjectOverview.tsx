@@ -6,20 +6,32 @@ import ProfilePicture from "./ProfilePicture";
 import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
 import { capitalize } from "@mui/material";
 import LoadingSpinner from "./LoadingSpinner";
-import type { ActionType, AllBasicItemType, BacklogItemAndTaskDetailType, ProjectActivity, WithId } from "~/lib/types/firebaseSchemas";
-import { getAccentColorByCardType, getPillColorByActivityType } from "~/utils/helpers/colorUtils";
+import type {
+  ActionType,
+  AllBasicItemType,
+  BacklogItemAndTaskDetailType,
+  ProjectActivity,
+  WithId,
+} from "~/lib/types/firebaseSchemas";
+import {
+  getAccentColorByCardType,
+  getPillColorByActivityType,
+} from "~/utils/helpers/colorUtils";
 import TagComponent from "./TagComponent";
 import { getRelativeTimeString } from "~/utils/helpers/firestoreTimestamp";
-import { useActivityItemsMap} from "~/lib/types/activityMappint";
+import { useActivityItemsMap } from "~/lib/types/activityMappint";
 
 const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
-  const { data: activities, isLoading: activitiesLoading } = api.projects.getProjectActivities.useQuery({ projectId });
-  const { data: users, isLoading: usersLoading } = api.users.getUsers.useQuery({ projectId });
-  
+  const { data: activities, isLoading: activitiesLoading } =
+    api.projects.getProjectActivities.useQuery({ projectId });
+  const { data: users, isLoading: usersLoading } = api.users.getUsers.useQuery({
+    projectId,
+  });
+
   const [searchText, setSearchText] = useState("");
 
   const formatAnyScrumId = useFormatAnyScrumId();
-  
+
   const firebaseTimestampToDate = getRelativeTimeString;
 
   // Single unified map for all activity items
@@ -28,18 +40,21 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
 
   // Create a better user map that tries multiple ID fields
   const userMap = users
-    ? users.reduce((map, user) => {
-        if (user.id) map[user.id] = user;
-        if (user.email) map[user.email] = user;
-        return map;
-      }, {} as Record<string, typeof users[0]>)
+    ? users.reduce(
+        (map, user) => {
+          if (user.id) map[user.id] = user;
+          if (user.email) map[user.email] = user;
+          return map;
+        },
+        {} as Record<string, (typeof users)[0]>,
+      )
     : {};
 
   const getItemDetails = (activity: WithId<ProjectActivity>) => {
     if (!activity?.type) return null;
     // Use the unified activity items map to get details
     return activityItemsMap[activity.itemId] ?? null;
-  }
+  };
 
   // Helper function to get item title
   const getItemTitle = (activity: WithId<ProjectActivity>) => {
@@ -47,7 +62,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     if (!item) return activity.itemId;
 
     return item.name || activity.itemId;
-  }
+  };
 
   // Helper function to get scrum ID
   const getScrumId = (activity: WithId<ProjectActivity>) => {
@@ -55,21 +70,26 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     if (!item) return null;
 
     if (activity.type === "SP") {
-      return formatAnyScrumId(item.scrumId ?? 0, activity.type as AllBasicItemType) + ":";
+      return (
+        formatAnyScrumId(item.scrumId ?? 0, activity.type as AllBasicItemType) +
+        ":"
+      );
     } else if (item.scrumId) {
-      return formatAnyScrumId(item.scrumId, activity.type as AllBasicItemType) + ":";
+      return (
+        formatAnyScrumId(item.scrumId, activity.type as AllBasicItemType) + ":"
+      );
     } else {
       return activity.type ? `${activity.type}-??` : String(item.id) + ":";
     }
-  }
+  };
 
   // 2. NOW USE THE FUNCTIONS IN FILTERS AND SORTING
   // Filter activities based on search
   const filteredActivities = activities?.filter((activity) => {
     if (!searchText) return true;
-    
+
     const searchLowerCase = searchText.toLowerCase();
-    
+
     // Prepare all searchable fields
     const dateStr = activity.date ? String(activity.date) : "";
     const actionStr = activity.action ?? "";
@@ -77,25 +97,32 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
 
     // Add readable type label for search
     const typeLabel =
-      activity.type === "TS" ? "task" :
-      activity.type === "IS" ? "issue" :
-      activity.type === "EP" ? "epic" :
-      activity.type === "SP" ? "sprint" :
-      activity.type === "US" ? "user story" :
-      activity.type === "PJ" ? "project" : "";
-    
+      activity.type === "TS"
+        ? "task"
+        : activity.type === "IS"
+          ? "issue"
+          : activity.type === "EP"
+            ? "epic"
+            : activity.type === "SP"
+              ? "sprint"
+              : activity.type === "US"
+                ? "user story"
+                : activity.type === "PJ"
+                  ? "project"
+                  : "";
+
     // Get user information if available
     const user = activity.userId ? userMap[activity.userId] : undefined;
     const userName = user
       ? (user.displayName ?? user.email ?? user.id ?? "")
-      : activity.userId ?? "System";
-    
+      : (activity.userId ?? "System");
+
     // Get item title
     const itemTitle = getItemTitle(activity) ?? "";
-    
+
     // Get scrum ID
     const scrumId = getScrumId(activity) ?? "";
-    
+
     // Check if any field contains the search text
     return (
       dateStr.toLowerCase().includes(searchLowerCase) ||
@@ -112,28 +139,32 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
 
   if (isLoading) {
     return (
-      <div className="w-full flex h-full items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
         <LoadingSpinner color="primary" />
       </div>
-    )
+    );
   }
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex h-full flex-col">
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
-        <h1 className="w-full text-2xl self-center font-semibold">Recent Project Activity</h1>
+        <h1 className="w-full self-center text-2xl font-semibold">
+          Recent Project Activity
+        </h1>
         <SearchBar
           searchValue={searchText}
           handleUpdateSearch={(e) => setSearchText(e.target.value)}
           placeholder="Search activities"
         ></SearchBar>
       </div>
-      <div className="flex-1 overflow-y-auto min-h-0">
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {!isLoading && (!activities || activities.length === 0) && (
           <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
             <div className="flex flex-col items-center gap-5">
               <span className="-mb-10 text-[100px] text-gray-500"></span>
-              <h1 className="mb-5 text-3xl font-semibold text-gray-500">No activities yet</h1>
+              <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+                No activities yet
+              </h1>
             </div>
           </div>
         )}
@@ -147,34 +178,40 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
           return (
             <div
               key={activity.id}
-              className="border-b-2 px-3 py-4 flex flex-row w-full transition hover:bg-gray-100"
+              className="flex w-full flex-row border-b-2 px-3 py-4 transition hover:bg-gray-100"
             >
-              <div className="flex items-start flex-col w-3/4">                
+              <div className="flex w-3/4 flex-col items-start">
                 <h3 className="text-lg font-semibold">
-                  {activity.type === "SP" && (
-                    <span>Sprint</span>
+                  {activity.type === "SP" && <span>Sprint</span>}
+                  {scrumId && (
+                    <>
+                      {scrumId}{" "}
+                      <span className="font-normal">{itemTitle}</span>{" "}
+                    </>
                   )}
-                  {scrumId && <>{scrumId} <span className="font-normal">{itemTitle}</span> </>}
                 </h3>
-                <div className="flex flex-row w-full items-center justify-start">
+                <div className="flex w-full flex-row items-center justify-start">
                   {user ? (
-                    <ProfilePicture pictureClassName="self-center" user={user} />
+                    <ProfilePicture
+                      pictureClassName="self-center"
+                      user={user}
+                    />
                   ) : activity.userId ? (
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
                       <span title={`Unknown user: ${activity.userId}`}>?</span>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-400 text-xs">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs text-gray-400">
                       <span>-</span>
                     </div>
                   )}
-                  
+
                   <div className="flex flex-col pl-2">
                     {/* Show generic user label or system */}
                     <p className="text-xs text-gray-600">
                       {activity.userId ? "" : "System"}
                     </p>
-                    
+
                     {/* Show date */}
                     {activity.date && (
                       <p className="text-s text-blakc self-center">
@@ -184,23 +221,26 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-row items-end justify-around w-1/4">
+              <div className="flex w-1/4 flex-row items-end justify-around">
                 {/* Action tag with dynamic background color */}
-                <TagComponent className={`text-white rounded-lg ${
-                  getPillColorByActivityType(
-                    activity.action?.toLowerCase() as ActionType)
-                }`}>
+                <TagComponent
+                  className={`rounded-lg text-white ${getPillColorByActivityType(
+                    activity.action?.toLowerCase() as ActionType,
+                  )}`}
+                >
                   {capitalize(activity.action || "")}
                 </TagComponent>
-                
+
                 {/* Type badges - keep as is */}
-                <TagComponent className={`text-white rounded-lg ${getAccentColorByCardType(activity.type as BacklogItemAndTaskDetailType)}`}>
+                <TagComponent
+                  className={`rounded-lg text-white ${getAccentColorByCardType(activity.type as BacklogItemAndTaskDetailType)}`}
+                >
                   {activity.type === "TS" && "Task"}
-                  {activity.type === "IS" && "Issue"}     
+                  {activity.type === "IS" && "Issue"}
                   {activity.type === "EP" && "Epic"}
                   {activity.type === "SP" && "Sprint"}
-                  {activity.type === "US" && "US"} 
-                  {activity.type === "PJ" && "Project"}   
+                  {activity.type === "US" && "US"}
+                  {activity.type === "PJ" && "Project"}
                 </TagComponent>
               </div>
             </div>
