@@ -65,7 +65,7 @@ export default function Dropdown({
 }: Props & HTMLAttributes<HTMLDivElement>) {
   const [isOpen, setIsOpen] = useState(false);
   const [openDirection, setOpenDirection] = useState<
-    "top-right" | "top-left" | "bottom-right" | "bottom-left"
+    "top-right" | "top-left" | "bottom-right" | "bottom-left" | "center-center"
   >("top-right");
   const ref = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -150,8 +150,8 @@ export default function Dropdown({
 
     let top = 0;
     let left = 0;
-    let vertAlignment: "top" | "bottom" = "top";
-    let horiAlignment: "left" | "right" = "right";
+    let vertAlignment: "top" | "bottom" | "center" = "top";
+    let horiAlignment: "left" | "right" | "center" = "right";
 
     switch (place) {
       case "top":
@@ -231,6 +231,8 @@ export default function Dropdown({
         window.scrollX,
         Math.min(left, window.scrollX + viewportWidth - dropdownWidth),
       );
+      vertAlignment = "center";
+      horiAlignment = "center";
     }
 
     dropdownRef.current.style.top = `${top}px`;
@@ -280,6 +282,7 @@ export default function Dropdown({
       );
       setPosition({ x, y });
       positionRef.current = { x, y };
+      setOpenDirection("center-center");
     };
 
     const handleMouseUp = () => {
@@ -357,6 +360,7 @@ export default function Dropdown({
                 "origin-top-left": openDirection === "top-left",
                 "origin-bottom-right": openDirection === "bottom-right",
                 "origin-bottom-left": openDirection === "bottom-left",
+                "origin-center": openDirection === "center-center",
               },
               menuClassName,
             )}
