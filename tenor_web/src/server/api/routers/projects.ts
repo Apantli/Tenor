@@ -229,7 +229,7 @@ export const projectsRouter = createTRPCRouter({
         );
       } else {
         // Use default icon
-        input.logo = "/defaultProject.png";
+        input.logo = "/icons/defaultProject.png";
       }
 
       try {
@@ -367,7 +367,7 @@ export const projectsRouter = createTRPCRouter({
       if (projectData.logo !== input.logo) {
         const isLogoValid = isBase64Valid(input.logo);
 
-        if (isLogoValid && projectData.logo !== "/defaultProject.png") {
+        if (isLogoValid && projectData.logo !== "/icons/defaultProject.png") {
           // Delete previous logo, assume the name starts with the projectId
           await deleteStartsWith(
             getLogoPath({ logo: input.projectId, projectId: input.projectId }),
@@ -382,7 +382,7 @@ export const projectsRouter = createTRPCRouter({
           );
         } else {
           // Use default icon
-          input.logo = "/defaultProject.png";
+          input.logo = "/icons/defaultProject.png";
         }
       }
 

@@ -12,7 +12,7 @@ import { NavigationGuardProvider } from "./_hooks/useNavigationGuard";
 
 export const metadata: Metadata = {
   title: "Tenor",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  icons: [{ rel: "icon", url: "/icons/favicon.ico" }],
 };
 
 export default async function RootLayout({

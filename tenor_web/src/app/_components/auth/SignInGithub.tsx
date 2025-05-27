@@ -52,7 +52,7 @@ export default function SignInGithub() {
       onClick={handleSignIn}
       className="flex items-center justify-center gap-4"
     >
-      <img className="h-6 w-auto" src="/github_logo.svg" alt="" />
+      <img className="h-6 w-auto" src="/logos/github_logo.svg" alt="" />
       <span className="text-app-text">Continue with Github</span>
     </SecondaryButton>
   );

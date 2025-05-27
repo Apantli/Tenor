@@ -21,12 +21,14 @@ export default function ProjectOverview() {
       <div className="flex h-full w-full flex-row items-start gap-5">
         <div
           className="mt-4 h-[45vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
-          style={{ backgroundImage: 'url("/project_activity_mockup.png")' }}
+          style={{
+            backgroundImage: 'url("/mockups/project_activity_mockup.png")',
+          }}
           aria-label="Dashboard mockup"
         />
         <div
           className="mt-4 h-[45vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
-          style={{ backgroundImage: 'url("/task_chart_mockup.png")' }}
+          style={{ backgroundImage: 'url("/mockups/task_chart_mockup.png")' }}
           aria-label="Dashboard mockup"
         />
       </div>

@@ -30,7 +30,7 @@ export default function Navbar({ children }: PropsWithChildren) {
       <div className="flex flex-grow items-center gap-8 text-white">
         <InterceptedLink className="flex items-center" href="/">
           <img
-            src={"/white_logo.png"}
+            src={"/logos/white_logo.png"}
             alt="Tenor Logo"
             className="h-7 w-auto"
           />

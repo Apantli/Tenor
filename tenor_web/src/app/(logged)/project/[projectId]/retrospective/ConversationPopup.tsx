@@ -428,7 +428,7 @@ export default function ConversationPopup({
                 and press the button below to connect to it.
               </p>
               <img
-                src="/muse_headset.png"
+                src="/conversation/muse_headset.png"
                 className="my-10 h-36"
                 alt="Muse Headset"
               />
@@ -461,7 +461,7 @@ export default function ConversationPopup({
                 correctly. We&apos;ll let you know when you&apos;re ready to go!
               </p>
               <img
-                src="/muse_sensors.png"
+                src="/conversation/muse_sensors.png"
                 alt="Muse Sensors"
                 className="h-80"
                 onClick={() => setStep(3)}
@@ -542,7 +542,7 @@ export default function ConversationPopup({
                   </p>
                 </div>
                 <SoundPlayer
-                  soundSrc="/conversation_mode.mp3"
+                  soundSrc="/conversation/conversation_mode.mp3"
                   setPlaying={(playing) => {
                     setPlaying(playing);
                     if (playing) {

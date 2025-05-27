@@ -16,7 +16,7 @@ export default async function VerifyEmailPage() {
     <div className="mx-auto flex h-screen max-w-[450px] flex-col items-center justify-center gap-4">
       <img
         className="h-[80px] w-auto"
-        src="/primary_logo.png"
+        src="/logos/primary_logo.png"
         alt="Tenor logo"
       />
       <h1 className="text-xl font-semibold text-app-text">
