@@ -13,7 +13,7 @@ export const generalPermissions: FlagsRequired = {
     "scrumboard",
     "performance",
     "sprints",
-    "reviews",
+    "retrospective",
   ],
 
   optimistic: true,
@@ -29,6 +29,11 @@ export const issuePermissions: FlagsRequired = {
   optimistic: true,
 };
 
+export const taskPermissions: FlagsRequired = {
+  flags: ["issues", "backlog"],
+  optimistic: true,
+};
+
 export const usersPermissions: FlagsRequired = {
   flags: [
     "backlog",
@@ -37,7 +42,7 @@ export const usersPermissions: FlagsRequired = {
     "scrumboard",
     "performance",
     "sprints",
-    "reviews",
+    "retrospective",
   ],
 
   optimistic: true,
@@ -59,6 +64,6 @@ export const sprintPermissions: FlagsRequired = {
 };
 
 export const reviewPermissions: FlagsRequired = {
-  flags: ["reviews"],
+  flags: ["retrospective"],
   optimistic: true,
 };

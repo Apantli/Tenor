@@ -1,4 +1,4 @@
-// TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint review, etc...
+// TODO: in the future we're going to have more functionality here like being able to disable certain tabs based on role, showing tabs conditionally like sprint retrospective, etc...
 export const tabsMetaInformation = {
   overview: {
     title: "Overview",
@@ -24,6 +24,12 @@ export const tabsMetaInformation = {
     enabled: true,
     flags: ["issues"],
   },
+  tasks: {
+    title: "Tasks",
+    link: "/tasks",
+    enabled: true,
+    flags: ["backlog", "issues"],
+  },
   sprints: {
     title: "Sprints",
     link: "/sprints",
@@ -34,12 +40,12 @@ export const tabsMetaInformation = {
     title: "Scrum Board",
     link: "/scrumboard",
     enabled: true,
-    flags: ["issues"],
+    flags: ["backlog", "issues"],
   },
   calendar: {
     title: "Calendar",
     link: "/calendar",
-    enabled: false,
+    enabled: true,
     flags: ["scrumboard"],
   },
   performance: {
@@ -48,18 +54,18 @@ export const tabsMetaInformation = {
     enabled: true,
     flags: ["performance"],
   },
+  retrospective: {
+    title: "Retrospective",
+    link: "/retrospective",
+    enabled: true,
+    flags: ["retrospective"],
+  },
   settings: {
-    title: "Project Settings",
-    link: "/project-settings",
+    title: "Settings",
+    link: "/settings",
     enabled: true,
     flags: ["settings"],
   },
-  sprintReview:{
-    title: "Sprint Review",
-    link: "/sprint-review",
-    enabled: true,
-    flags: ["reviews"],
-  }
 };
 export const tabs = [
   "overview",
@@ -67,20 +73,22 @@ export const tabs = [
   "userStories",
   "issues",
   "sprints",
+  "tasks",
   "scrumboard",
   "calendar",
   "performance",
+  "retrospective",
   "settings",
-  "sprintReview",
 ];
 export const tabsToLinks = {
   requirements: "requirements",
   "user-stories": "userStories",
   issues: "issues",
   sprints: "sprints",
+  tasks: "tasks",
   scrumboard: "scrumboard",
   calendar: "calendar",
   performance: "performance",
-  "project-settings": "settings",
-  "sprint-review": "sprintReview",
+  retrospective: "retrospective",
+  settings: "settings",
 };

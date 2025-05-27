@@ -2,7 +2,7 @@ import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import TagComponent from "../TagComponent";
 import { sizeToColor } from "../specific-pickers/SizePillComponent";
-import { accentColorByCardType } from "~/utils/helpers/colorUtils";
+import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 
 interface Props {
@@ -16,8 +16,7 @@ export default function ItemCardRender({
   showBackground = false,
   scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
-  const accentColor =
-    accentColorByCardType[item.cardType as keyof typeof accentColorByCardType];
+  const accentColor = getAccentColorByCardType(item.cardType);
   return (
     <div
       className={cn({
@@ -31,9 +30,11 @@ export default function ItemCardRender({
         ></div>
       )}
       <div
-        className={cn("wrap-properly flex w-full flex-col items-start gap-2")}
+        className={cn(
+          "wrap-properly flex w-full flex-col flex-wrap items-start gap-2",
+        )}
       >
-        <div>
+        <div className="">
           <span className="font-semibold">
             {scrumIdFormatter ? scrumIdFormatter(item.scrumId) : item.scrumId}
             :{" "}
@@ -68,7 +69,7 @@ export default function ItemCardRender({
                   .map((tag) => tag.name)
                   .join("<br>")}
               >
-                +{item.tags.length - 2}
+                {`+${item.tags.length - 2}`}
               </TagComponent>
             )}
           </div>

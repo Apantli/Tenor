@@ -28,8 +28,14 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 
-export default function ItemsKanban() {
+interface Props {
+  filter: string;
+  advancedFilters: AdvancedSearchFilters;
+}
+
+export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -89,9 +95,10 @@ export default function ItemsKanban() {
   const handleDragEnd = async (itemId: string, columnId: string) => {
     setLastDraggedItemId(null);
     if (itemsAndColumnsData == undefined) return;
-    if (columnId === itemsAndColumnsData.cardItems[itemId]?.columnId) return;
+    // Ensure the item exists and the column is different
+    const itemBeingDragged = itemsAndColumnsData.cardItems[itemId];
+    if (!itemBeingDragged || columnId === itemBeingDragged.columnId) return;
 
-    setLastDraggedItemId(itemId);
     await moveItemsToColumn([itemId], columnId);
   };
 
@@ -164,6 +171,13 @@ export default function ItemsKanban() {
         };
       },
     );
+
+    // Set lastDraggedItemId AFTER optimistic update, only if a single item was moved
+    if (itemIds.length === 1) {
+      setLastDraggedItemId(itemIds[0] ?? null);
+    } else {
+      setLastDraggedItemId(null);
+    }
 
     setSelectedItems(new Set());
 
@@ -272,6 +286,8 @@ export default function ItemsKanban() {
 
               return (
                 <AssignableCardColumn
+                  filter={filter}
+                  advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedItemId}
                   assignSelectionToColumn={assignSelectionToColumn}

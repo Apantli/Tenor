@@ -6,7 +6,6 @@ import ProjectStatus from "~/app/_components/ProjectStatus";
 import BurndownChart from "~/app/_components/BurndownChart";
 
 export default function ProjectOverview() {
-
   const params = useParams();
   const projectId = params.projectId as string;
 

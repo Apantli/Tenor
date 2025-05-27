@@ -1,16 +1,24 @@
 import type { Firestore } from "firebase-admin/firestore";
-import type { ProjectActivity, Role, Size, StatusTag, WithId } from "~/lib/types/firebaseSchemas";
-import { ActivitySchema, ProjectSchema, SettingsSchema } from "~/lib/types/zodFirebaseSchema";
+import type {
+  Role,
+  Size,
+  StatusTag,
+  WithId,
+} from "~/lib/types/firebaseSchemas";
+import {
+  ProjectSchema,
+  SettingsSchema,
+  type UserSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
 import { getTasks } from "./tasks";
 import { getIssues } from "./issues";
 import { getUserStories } from "./userStories";
 import { getCurrentSprint } from "./sprints";
-import { getUsers } from "./users";
+import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
-import { TRPCError } from "@trpc/server";
-
+import type { z } from "zod";
 
 /**
  * @function getProjectsRef
@@ -103,6 +111,15 @@ export const getPerformanceRef = (firestore: Firestore, projectId: string) => {
  */
 export const getProductivityRef = (firestore: Firestore, projectId: string) => {
   return getPerformanceRef(firestore, projectId).doc("productivity");
+};
+
+export const getTopProjectStatusCacheRef = (
+  firestore: Firestore,
+  userId: string,
+) => {
+  return getGlobalUserRef(firestore, userId)
+    .collection("cache")
+    .doc("TopProjectsStatus");
 };
 
 /**
@@ -248,7 +265,14 @@ export const getProjectStatus = async (
   admin: admin.app.App,
 ) => {
   // Fetch all data in parallel
-  const [tasks, statuses, issues, userStories, currentSprint, projectCollaborators] = await Promise.all([
+  const [
+    tasks,
+    statuses,
+    issues,
+    userStories,
+    currentSprint,
+    projectCollaborators,
+  ] = await Promise.all([
     getTasks(firestore, projectId),
     getStatusTypes(firestore, projectId),
     getIssues(firestore, projectId),
@@ -264,26 +288,34 @@ export const getProjectStatus = async (
 
   // Collect IDs linked to the current sprint
   const spruntIssuesIds = new Set(
-    (activeIssues).filter((issue) => issue.sprintId === currentSprint?.id).map((issue) => issue.id)
+    activeIssues
+      .filter((issue) => issue.sprintId === currentSprint?.id)
+      .map((issue) => issue.id),
   );
   const sprintUserStoriesIds = new Set(
-    (activeUserStories).filter((us) => us.sprintId === currentSprint?.id).map((us) => us.id)
+    activeUserStories
+      .filter((us) => us.sprintId === currentSprint?.id)
+      .map((us) => us.id),
   );
 
   // Filter tasks relevant to the sprint
-  const filteredTasks = (activeTasks).filter((task) =>
-    spruntIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId)
+  const filteredTasks = activeTasks.filter(
+    (task) =>
+      spruntIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId),
   );
 
   // Create a map of status types
-  const statusMap = statuses.reduce((acc, status) => {
-    acc[status.id] = status;
-    return acc;
-  }, {} as Record<string, StatusTag>);
+  const statusMap = statuses.reduce(
+    (acc, status) => {
+      acc[status.id] = status;
+      return acc;
+    },
+    {} as Record<string, StatusTag>,
+  );
 
   // Get the completed tasks
-  const completedTasks = filteredTasks.filter((task) =>
-    statusMap[task.statusId]?.marksTaskAsDone === true
+  const completedTasks = filteredTasks.filter(
+    (task) => statusMap[task.statusId]?.marksTaskAsDone === true,
   );
 
   // Map collaborators
@@ -295,6 +327,7 @@ export const getProjectStatus = async (
 
   // Return structured project status
   return {
+    projectId: projectId,
     taskCount: filteredTasks.length ?? 0,
     completedCount: completedTasks.length ?? 0,
     currentSprintId: currentSprint?.id,
@@ -304,191 +337,37 @@ export const getProjectStatus = async (
     currentSprintDescription: currentSprint?.description,
     assignedUssers: mappedUsers,
   };
-}
+};
 
-export const getProjectBurndown = async(
-  firestore: Firestore,
-  projectId: string,
-  admin: admin.app.App,
-) => {
-  try {
-    const [tasks, userStories, currentSprint, activitySnapshot, projectSettings] = await Promise.all([
-      getTasks(firestore, projectId),
-      getUserStories(firestore, projectId),
-      getCurrentSprint(firestore, projectId),
-      getProjectActivity(firestore, projectId, admin),
-      getSettingsRef(firestore, projectId),
-    ]);
+/**
+ * @function getTopProjects
+ * @description Gets an array of the projects that are closest to ending their sprint
+ * @param {string} userId - The ID of the user
+ * @param {Firestore} firestore - The Firestore instance
+ * @returns {WithId<Sprint>[]} An array of the projects sorted by their sprint end date
+ */
+export const getTopProjects = async (firestore: Firestore, userId: string) => {
+  // Fetch all user projects
+  const user = (
+    await getGlobalUserRef(firestore, userId).get()
+  ).data() as z.infer<typeof UserSchema>;
 
-    const activeTasks = tasks.filter((task) => !task.deleted);
-    const activeUserStories = userStories.filter((us) => !us.deleted);
+  const projectSprintsPromises = user.projectIds.map(async (projectId) => {
+    const sprint = await getCurrentSprint(firestore, projectId);
+    return { sprint, projectId };
+  });
 
-    const sprintUserStories = userStories.filter((us) => us.sprintId === currentSprint?.id);
-    const sprintUserStoriesIds = new Set(sprintUserStories.map((us) => us.id));
+  const projectSprintPairs = await Promise.all(projectSprintsPromises);
 
-    const settingsSnap = await projectSettings.get();
-    const settingsData = SettingsSchema.parse(settingsSnap.data());
-    const sizeValues = Array.isArray(settingsData.Size) ? settingsData.Size : [];
+  const filteredProjectSprintPairs = projectSprintPairs.filter(
+    (pair) => pair.sprint !== undefined,
+  );
 
-    // Map numeric values to Size types in order
-    const sizeOrder: Size[] = ["XS", "S", "M", "L", "XL", "XXL"];
-    const sizePointsMap: Record<Size, number> = {
-      XS: 0,
-      S: 0,
-      M: 0,
-      L: 0,
-      XL: 0,
-      XXL: 0,
-    };
+  const sortedProjectSprintPairs = filteredProjectSprintPairs.sort(
+    (a, b) =>
+      (b.sprint?.endDate?.getTime() ?? 0) - (a.sprint?.endDate?.getTime() ?? 0),
+  );
 
-    // Create a mapping between size labels and their point values
-    sizeValues.forEach((value, index) => {
-      const sizeKey = sizeOrder[index];
-      if (sizeKey !== undefined) {
-        sizePointsMap[sizeKey] = value;
-      }
-    });
-
-    // Calculate total points for each user story
-    // and map them to the corresponding tasks
-    const tasksPointMap: Record<string, number> = {};
-    for (const us of sprintUserStories) {
-      const tasksForUs = activeTasks.filter((task) => task.itemId === us.id);
-
-      // Calculate total points for the user story
-      // based on the size of its tasks
-      let totalPoints = 0;
-      for (const task of tasksForUs) {
-        // Assuming task.size is a Size type like "S", "M", etc.
-        if (task.size && sizePointsMap[task.size]) {
-          totalPoints += sizePointsMap[task.size];
-        }
-      }
-
-      // Add the user story's size points
-      if (us.size && sizePointsMap[us.size]) {
-        totalPoints += sizePointsMap[us.size];
-      }
-
-      // Map the user story ID to its total points
-      tasksPointMap[us.id] = totalPoints;
-    }
-
-    // Calculate total points for the sprint
-    const totalPoints = Object.values(tasksPointMap).reduce((sum, points) => sum + points, 0);
-    
-    // Create a map of status types to determine completed tasks
-    const statuses = await getStatusTypes(firestore, projectId);
-    const statusMap = statuses.reduce((acc, status) => {
-      acc[status.id] = status;
-      return acc;
-    }, {} as Record<string, StatusTag>);
-    
-    // Process activity data to track completion over time
-    const activityData = activitySnapshot;
-    
-    // Filter activities related to tasks (type TS)
-    const taskActivities = activityData.filter(activity => 
-      activity.type === "TS" && 
-      activity.itemId // Check if itemId exists
-    );
-    
-    // Create data structure for burndown
-    const burndownData: {
-      date: Date;
-      ideal: number;
-      actual: number;
-    }[] = [];
-    
-    // If we have a sprint with valid dates
-    if (currentSprint?.startDate && currentSprint?.endDate) {
-      const startDate = new Date(currentSprint.startDate);
-      const endDate = new Date(currentSprint.endDate);
-      
-      // Create a map to track completed story points by date
-      const completedPointsByDate: Record<string, number> = {};
-      
-      // Process task activities
-      taskActivities.forEach(activity => {
-        const timestamp = activity.date ? new Date(activity.date) : new Date();
-        const dateKeyRaw = timestamp.toISOString().split('T')[0]; // YYYY-MM-DD format
-        const dateKey: string = typeof dateKeyRaw === "string" ? dateKeyRaw : "";
-
-        // Get the task related to this activity
-        const taskId = activity.itemId;
-        const task = activeTasks.find(t => t.id === taskId);
-
-        // Check if this task exists and is marked as done
-        if (task && statusMap[task.statusId]?.marksTaskAsDone) {
-          const userStoryId = task.itemId;
-
-          // Only count if the task belongs to a user story in this sprint
-          if (sprintUserStoriesIds.has(userStoryId) && dateKey) {
-            // Add the task's points to completed points for this date
-            const taskPoints = task.size ? sizePointsMap[task.size] : 0;
-            completedPointsByDate[dateKey] = (completedPointsByDate[dateKey] || 0) + taskPoints;
-          }
-        }
-      });
-      
-      // Generate daily burndown data
-      const daysInSprint = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)) + 1;
-      let cumulativeCompletedPoints = 0;
-      
-      for (let i = 0; i < daysInSprint; i++) {
-        const currentDate = new Date(startDate);
-        currentDate.setDate(startDate.getDate() + i);
-        const dateKey = currentDate.toISOString().split('T')[0] as string;
-        
-        // Add completed points for this date to cumulative total
-        cumulativeCompletedPoints += completedPointsByDate[dateKey] || 0;
-        
-        // Calculate ideal burndown (straight line)
-        const idealRemaining = totalPoints - (totalPoints * (i / (daysInSprint - 1)));
-        
-        // Calculate actual remaining points
-        const actualRemaining = totalPoints - cumulativeCompletedPoints;
-        
-        burndownData.push({
-          date: currentDate,
-          ideal: Math.max(0, Math.round(idealRemaining * 10) / 10),  // Round to 1 decimal place
-          actual: Math.max(0, actualRemaining),
-        });
-      }
-    }
-    
-    // Make sure to have a safe default in case burndownData is empty
-    const burndownDataSafe = burndownData.length > 0 ? burndownData : [];
-    const lastActual = burndownDataSafe.length > 0 ? burndownDataSafe[burndownDataSafe.length - 1]?.actual : 0;
-    
-    return {
-      burndownData: burndownDataSafe.map(point => ({
-        date: point.date instanceof Date ? point.date.toISOString() : null,
-        ideal: point.ideal,
-        actual: point.actual
-      })),
-      totalPoints: totalPoints || 0,
-      completedPoints: totalPoints - (lastActual || 0),
-      startDate: currentSprint?.startDate ? new Date(currentSprint.startDate).toISOString() : null,
-      endDate: currentSprint?.endDate ? new Date(currentSprint.endDate).toISOString() : null,
-      sprintNumber: currentSprint?.number,
-      // Add these required fields:
-      dependencyIds: [],
-      requiredByIds: []
-    };
-  } catch (error) {
-    console.error("Error in getProjectBurndown:", error);
-    // Return a safe fallback response with all required fields
-    return {
-      burndownData: [],
-      totalPoints: 0,
-      completedPoints: 0,
-      startDate: null,
-      endDate: null,
-      sprintNumber: null,
-      dependencyIds: [],
-      requiredByIds: []
-    };
-  }
-}
-
+  // Return just the projectIds in the same order as the sorted sprints
+  return sortedProjectSprintPairs.map((pair) => pair.projectId);
+};

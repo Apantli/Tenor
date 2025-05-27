@@ -93,6 +93,12 @@ export const getCurrentSprint = async (
   firestore: Firestore,
   projectId: string,
 ) => {
+  // If project is deleted, return undefined
+  const projectRef = getProjectRef(firestore, projectId);
+  const projectDoc = await projectRef.get();
+  if (!projectDoc.exists || projectDoc.data()?.deleted) {
+    return undefined;
+  }
   const sprints = await getSprints(firestore, projectId);
   const now = new Date();
   return sprints.find((sprint) => {
@@ -117,11 +123,13 @@ export const getPreviousSprint = async (
   const sprints = await getSprints(firestore, projectId);
   const now = new Date();
   const threeDaysInMs = 3 * 24 * 60 * 60 * 1000; // 3 days in milliseconds
-  
+
   return sprints.find((sprint) => {
     const sprintEndTime = sprint.endDate.getTime();
-    return sprintEndTime < now.getTime() && 
-           now.getTime() - sprintEndTime < threeDaysInMs;
+    return (
+      sprintEndTime < now.getTime() &&
+      now.getTime() - sprintEndTime < threeDaysInMs
+    );
   });
 };
 

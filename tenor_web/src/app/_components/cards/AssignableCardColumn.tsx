@@ -3,6 +3,11 @@ import { cn } from "~/lib/utils";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CardColumn from "./CardColumn";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import {
+  type AdvancedSearchFilters,
+  matchesSearchFilters,
+} from "~/app/_hooks/useAdvancedSearchFilters";
+// import type { Tag } from "~/lib/types/firebaseSchemas";
 
 // WithId<BasicInfo> change into only needed info...
 
@@ -22,6 +27,8 @@ interface Props {
   renderCard: (item: KanbanCard) => React.ReactNode;
   header: React.ReactNode;
   disabled?: boolean;
+  filter: string;
+  advancedFilters: AdvancedSearchFilters;
 }
 
 export default function AssignableCardColumn({
@@ -35,6 +42,8 @@ export default function AssignableCardColumn({
   renderCard,
   header,
   disabled = false,
+  filter,
+  advancedFilters,
 }: Props) {
   // Check there's selected items and none of them are in this column
   const availableToBeAssignedTo =
@@ -53,8 +62,10 @@ export default function AssignableCardColumn({
         disabled={disabled}
         cards={
           column.itemIds
-            .map((itemId) => items[itemId])
-            .filter((val) => val !== undefined) ?? []
+            .map((itemId: string) => items[itemId])
+            .filter((val: KanbanCard | undefined) => {
+              return matchesSearchFilters(val, filter, advancedFilters);
+            }) ?? []
         }
         selection={selectedItems}
         setSelection={setSelectedItems}

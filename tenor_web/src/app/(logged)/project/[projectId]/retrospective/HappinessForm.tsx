@@ -13,7 +13,7 @@ import { useParams } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 interface HappinessFormProps {
-  sprintReviewId?: number;
+  sprintRetrospectiveId?: number;
   onSubmit?: (responses: HappinessResponses) => void;
   onAnsweredCountChange?: (answeredCount: number) => void;
 }
@@ -31,7 +31,7 @@ const questionMapping = {
 };
 
 export default function HappinessForm({
-  sprintReviewId,
+  sprintRetrospectiveId,
   onSubmit,
   onAnsweredCountChange,
 }: HappinessFormProps) {
@@ -67,14 +67,14 @@ export default function HappinessForm({
     refetch: refetchAnswers,
     isLoading: queryIsLoading,
     error: queryError,
-  } = api.sprintReviews.getReviewAnswers.useQuery(
+  } = api.sprintRetrospectives.getRetrospectiveAnswers.useQuery(
     {
       projectId: projectId,
-      reviewId: sprintReviewId ?? 0,
+      reviewId: sprintRetrospectiveId ?? 0,
       userId,
     },
     {
-      enabled: !!sprintReviewId && !!userId,
+      enabled: !!sprintRetrospectiveId && !!userId,
     },
   );
 
@@ -133,16 +133,20 @@ export default function HappinessForm({
   useEffect(() => {
     if (queryError) {
       predefinedAlerts.unexpectedError();
-      console.error("Error fetching review answers:", queryError.message);
+      console.error(
+        "Error fetching retrospective answers:",
+        queryError.message,
+      );
       setIsLoading(false);
     }
   }, [queryError]);
 
-  const saveAnswer = api.sprintReviews.saveReviewAnswers.useMutation({
-    onSuccess: () => {
-      void refetchAnswers();
-    },
-  });
+  const saveAnswer =
+    api.sprintRetrospectives.saveRetrospectiveAnswers.useMutation({
+      onSuccess: () => {
+        void refetchAnswers();
+      },
+    });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -159,7 +163,7 @@ export default function HappinessForm({
   };
 
   const handleSubmit = async () => {
-    if (!sprintReviewId || !userId) return;
+    if (!sprintRetrospectiveId || !userId) return;
 
     const hasNewUnsavedContent =
       (!savedFields.roleFeeling && responses.roleFeeling.trim() !== "") ||
@@ -188,7 +192,7 @@ export default function HappinessForm({
           if (value && !savedFields[fieldKey]) {
             await saveAnswer.mutateAsync({
               projectId: projectId,
-              reviewId: sprintReviewId,
+              reviewId: sprintRetrospectiveId,
               userId,
               questionNum: questionMapping[fieldKey],
               answerText: value as string,
@@ -287,6 +291,7 @@ export default function HappinessForm({
         <ConversationPopup
           showPopup={showConversation}
           setShowPopup={setShowConversation}
+          sprintRetrospectiveId={sprintRetrospectiveId}
         />
       )}
     </div>

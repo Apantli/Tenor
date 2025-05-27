@@ -21,6 +21,7 @@ interface Props {
   sidebar?: React.ReactNode;
   sidebarClassName?: ClassNameValue;
   footerClassName?: ClassNameValue;
+  coverClassName?: ClassNameValue;
   editMode?: boolean;
   setEditMode?: (edit: boolean) => void;
   saving?: boolean;
@@ -47,6 +48,7 @@ export default function Popup({
   reduceTopPadding,
   sidebarClassName,
   footerClassName,
+  coverClassName,
   zIndex,
   className,
   saveText = "Save",
@@ -98,6 +100,7 @@ export default function Popup({
             {
               "opacity-70": popIn && show,
             },
+            coverClassName,
           )}
           style={{ zIndex: zIndex ?? 100000 }}
           onClick={() => {

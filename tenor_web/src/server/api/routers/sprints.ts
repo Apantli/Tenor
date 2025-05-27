@@ -14,7 +14,11 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import { BacklogItemSchema, SprintSchema } from "~/lib/types/zodFirebaseSchema";
+import {
+  BacklogItemSchema,
+  BacklogItemZodType,
+  SprintSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import {
   getCurrentSprint,
@@ -34,7 +38,8 @@ import { getIssues, getIssuesRef } from "~/utils/helpers/shortcuts/issues";
 import { getBacklogTags } from "~/utils/helpers/shortcuts/tags";
 import { getProjectRef } from "~/utils/helpers/shortcuts/general";
 import { TRPCError } from "@trpc/server";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogge";
+import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
+import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")
@@ -184,38 +189,70 @@ export const sprintsRouter = createTRPCRouter({
       ]);
 
       // FIXME: turn into backlogItem list
-      const userStoriesPreviews = userStories.map((userStory) => {
-        return {
-          id: userStory.id,
-          scrumId: userStory.scrumId,
-          name: userStory.name,
-          sprintId: userStory.sprintId,
-          size: userStory.size,
-          tags: userStory.tagIds
-            .map((tagId) => {
-              const tag = backlogTags.find((tag) => tag.id === tagId);
-              return tag;
-            })
-            .filter((tag) => tag !== undefined),
-          itemType: "US",
-        };
-      });
-      const issuesPreviews = issues.map((issue) => {
-        return {
-          id: issue.id,
-          scrumId: issue.scrumId,
-          name: issue.name,
-          sprintId: issue.sprintId,
-          size: issue.size,
-          tags: issue.tagIds
-            .map((tagId) => {
-              const tag = backlogTags.find((tag) => tag.id === tagId);
-              return tag;
-            })
-            .filter((tag) => tag !== undefined),
-          itemType: "IS",
-        };
-      });
+      const userStoriesPreviews = await Promise.all(
+        userStories.map(async (userStory) => {
+          const assigneeIds = await getTasksRef(ctx.firestore, projectId)
+            .where("itemId", "==", userStory.id)
+            .get()
+            .then((tasksSnapshot) =>
+              tasksSnapshot.docs
+                .map((taskDoc) => {
+                  const taskData = taskDoc.data();
+                  return (taskData.assigneeId as string) ?? null;
+                })
+                .filter((id): id is string => id !== null),
+            );
+
+          return {
+            id: userStory.id,
+            scrumId: userStory.scrumId,
+            name: userStory.name,
+            sprintId: userStory.sprintId,
+            size: userStory.size,
+            tags: userStory.tagIds
+              .map((tagId) => {
+                const tag = backlogTags.find((tag) => tag.id === tagId);
+                return tag;
+              })
+              .filter((tag) => tag !== undefined),
+            itemType: "US",
+            assigneeIds,
+            priorityId: userStory.priorityId,
+          };
+        }),
+      );
+      const issuesPreviews = await Promise.all(
+        issues.map(async (issue) => {
+          const assigneeIds = await getTasksRef(ctx.firestore, projectId)
+            .where("itemId", "==", issue.id)
+            .get()
+            .then((tasksSnapshot) =>
+              tasksSnapshot.docs
+                .map((taskDoc) => {
+                  const taskData = taskDoc.data();
+                  return (taskData.assigneeId as string) ?? null;
+                })
+                .filter((id): id is string => id !== null),
+            );
+
+          return {
+            id: issue.id,
+            scrumId: issue.scrumId,
+            name: issue.name,
+            sprintId: issue.sprintId,
+            size: issue.size,
+            tags: issue.tagIds
+              .map((tagId) => {
+                const tag = backlogTags.find((tag) => tag.id === tagId);
+                return tag;
+              })
+              .filter((tag) => tag !== undefined),
+            itemType: "IS",
+            assigneeIds,
+            priorityId: issue.priorityId,
+          };
+        }),
+      );
 
       const allItems = [...userStoriesPreviews, ...issuesPreviews];
       // Sort the items by scrumId
@@ -262,7 +299,7 @@ export const sprintsRouter = createTRPCRouter({
         projectId: z.string(),
         sprintId: z.string().optional(),
         items: z.array(
-          z.object({ id: z.string(), itemType: z.enum(["US", "IS"]) }),
+          z.object({ id: z.string(), itemType: BacklogItemZodType }),
         ),
       }),
     )
@@ -335,7 +372,7 @@ export const sprintsRouter = createTRPCRouter({
         }
       }
     }),
-  
+
   getActiveSprint: protectedProcedure
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -345,5 +382,5 @@ export const sprintsRouter = createTRPCRouter({
         throw new TRPCError({ code: "NOT_FOUND", message: "No active sprint" });
       }
       return currentSprint;
-    })
+    }),
 });

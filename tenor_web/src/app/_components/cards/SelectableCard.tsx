@@ -2,7 +2,8 @@ import React, { useEffect, useRef, type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import InputCheckbox from "../inputs/InputCheckbox";
 import { useDraggable } from "@dnd-kit/react";
-import { accentColorByCardType } from "~/utils/helpers/colorUtils";
+import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
+import type { BacklogItemAndTaskDetailType } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   selected: boolean;
@@ -10,7 +11,7 @@ interface Props {
   showCheckbox?: boolean;
   dndId: string;
   lastDraggedItemId: string | null;
-  cardType?: "US" | "IS" | "IT" | "US-TS" | "IS-TS" | "IT-TS";
+  cardType?: BacklogItemAndTaskDetailType;
   disabled?: boolean;
 }
 
@@ -61,15 +62,12 @@ export default function SelectableCard({
     }
   }, [lastDraggedItemId, dndId]);
 
-  const accentColor =
-    accentColorByCardType[
-      (cardType ?? "US") as keyof typeof accentColorByCardType
-    ];
+  const accentColor = getAccentColorByCardType(cardType ?? "US");
 
   return (
     <div
       className={cn(
-        "group relative flex h-fit w-full cursor-pointer select-none overflow-hidden rounded-lg border border-app-border bg-white p-2 pb-3 shadow-xl transition-all duration-100",
+        "group relative flex h-fit min-h-fit w-full cursor-pointer select-none overflow-hidden rounded-lg border border-app-border bg-white p-2 pb-3 shadow-xl transition-all duration-100",
         {
           "ring-2 ring-app-secondary": selected,
           "opacity-60": isDragging,

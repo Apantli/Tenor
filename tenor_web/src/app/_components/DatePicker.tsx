@@ -9,6 +9,7 @@ interface DatePickerProps {
   onChange: (date: Date | undefined) => void;
   selectedDate?: Date | undefined;
   className?: string;
+  assignDataAt?: "beginOfDay" | "endOfDay";
   placeholder?: string;
   disabled?: boolean;
 }
@@ -17,6 +18,7 @@ export function DatePicker({
   onChange,
   selectedDate = undefined,
   className,
+  assignDataAt = "endOfDay",
   placeholder = "No date",
   disabled = false,
 }: DatePickerProps) {
@@ -33,6 +35,11 @@ export function DatePicker({
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.value) {
       onChange(undefined);
+      return;
+    }
+    if (assignDataAt === "beginOfDay") {
+      const newDate = new Date(`${e.target.value}T00:00:00`);
+      onChange(newDate);
       return;
     }
     const newDate = new Date(`${e.target.value}T23:59:59`);
@@ -53,13 +60,14 @@ export function DatePicker({
   return (
     <div
       data-cy="datepicker"
-      className={cn("relative", className)}
+      className={cn("relative")}
       onClick={openDatePicker}
     >
       <div
         className={cn(
           "flex h-12 items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
           !disabled && "cursor-pointer hover:bg-gray-200",
+          className,
         )}
       >
         <CalendarMonthIcon

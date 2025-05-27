@@ -193,9 +193,20 @@ export const getTasks = async (firestore: Firestore, projectId: string) => {
 
   const tasksSnapshot = await tasksRef.get();
   const tasks: WithId<Task>[] = tasksSnapshot.docs.map((doc) => {
+    const dueDateData: { seconds: number; nanoseconds: number } | undefined =
+      doc.data()?.dueDate as
+        | {
+            seconds: number;
+            nanoseconds: number;
+          }
+        | undefined;
+    const dueDate = dueDateData
+      ? new Date(dueDateData.seconds * 1000)
+      : undefined;
     return {
       id: doc.id,
       ...TaskSchema.parse(doc.data()),
+      dueDate,
     } as WithId<Task>;
   });
 
@@ -231,7 +242,7 @@ export const getTask = async (
         }
       | undefined;
   const dueDate = dueDateData
-    ? new Date(dueDateData.seconds * 1000 + dueDateData.nanoseconds / 1e6)
+    ? new Date(dueDateData.seconds * 1000)
     : undefined;
 
   return {
@@ -473,4 +484,56 @@ export const getTaskTable = async (
     }),
   );
   return taskCols;
+};
+
+/**
+ * @function deleteTaskAndGetModified
+ * @description Deletes a single task and returns the IDs of modified tasks
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} taskId - The ID of the task to delete
+ * @returns {Promise<string[]>} Array of modified task IDs including the deleted task
+ */
+export const deleteTaskAndGetModified = async (
+  firestore: Firestore,
+  projectId: string,
+  taskId: string,
+): Promise<string[]> => {
+  const taskRef = getTaskRef(firestore, projectId, taskId);
+  const task = await getTask(firestore, projectId, taskId);
+
+  const modifiedTasks = task.dependencyIds.concat(task.requiredByIds, taskId);
+
+  // Remove this task from all dependencies' requiredBy arrays
+  await Promise.all(
+    task.dependencyIds.map(async (dependencyId) => {
+      await updateDependency(
+        firestore,
+        projectId,
+        dependencyId,
+        taskId,
+        "remove",
+        "requiredByIds",
+      );
+    }),
+  );
+
+  // Remove this task from all requiredBy's dependency arrays
+  await Promise.all(
+    task.requiredByIds.map(async (requiredById) => {
+      await updateDependency(
+        firestore,
+        projectId,
+        requiredById,
+        taskId,
+        "remove",
+        "dependencyIds",
+      );
+    }),
+  );
+
+  // Mark the task as deleted
+  await taskRef.update({ deleted: true });
+
+  return modifiedTasks;
 };

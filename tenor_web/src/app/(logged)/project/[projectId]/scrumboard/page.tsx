@@ -15,6 +15,9 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
+import SearchBar from "~/app/_components/SearchBar";
+import AdvancedSearch from "../../../../_components/AdvancedSearch";
+import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
 
@@ -42,6 +45,9 @@ export default function ProjectKanban() {
     (localStorage.getItem("scrumboard-section") as ScrumboardSections) ??
       "Tasks",
   );
+  const [filter, setFilter] = useState("");
+
+  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
 
   // HANDLES
   const onListAdded = async () => {
@@ -53,6 +59,18 @@ export default function ProjectKanban() {
     <div className="flex h-full flex-col justify-start overflow-hidden pt-0">
       <div className="flex items-baseline justify-between gap-3 pb-4">
         <h1 className="grow-[1] text-3xl font-semibold">Scrum Board</h1>
+        <div className="flex w-[400px] gap-2 pl-3">
+          <SearchBar
+            handleUpdateSearch={(e) => setFilter(e.target.value)}
+            searchValue={filter}
+            placeholder="Search..."
+          />
+          <AdvancedSearch
+            advancedFilters={advancedFilters}
+            setAdvancedFilters={setAdvancedFilters}
+          />
+        </div>
+
         <div className="min-w-[300px]">
           <SegmentedControl
             options={["Tasks", "Backlog Items"]}
@@ -63,6 +81,7 @@ export default function ProjectKanban() {
             }}
           />
         </div>
+
         {permission >= permissionNumbers.write && (
           <PrimaryButton onClick={() => setShowNewList(true)}>
             + Add list
@@ -70,8 +89,18 @@ export default function ProjectKanban() {
         )}
       </div>
 
-      {section === "Tasks" && <TasksKanban></TasksKanban>}
-      {section === "Backlog Items" && <ItemsKanban></ItemsKanban>}
+      {section === "Tasks" && (
+        <TasksKanban
+          filter={filter}
+          advancedFilters={advancedFilters}
+        ></TasksKanban>
+      )}
+      {section === "Backlog Items" && (
+        <ItemsKanban
+          filter={filter}
+          advancedFilters={advancedFilters}
+        ></ItemsKanban>
+      )}
 
       {renderNewList && (
         <CreateKanbanListPopup

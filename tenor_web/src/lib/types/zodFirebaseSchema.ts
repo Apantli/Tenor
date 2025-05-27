@@ -5,6 +5,28 @@ import {
   defaultSprintDuration,
 } from "../defaultProjectValues";
 
+export const UserStoryZodType = z.literal("US");
+export const IssueZodType = z.literal("IS");
+export const TaskZodType = z.literal("TS");
+export const EpicZodType = z.literal("EP");
+
+export const BacklogItemZodType = z.union([UserStoryZodType, IssueZodType]);
+export const AllBasicItemZodType = z.union([
+  BacklogItemZodType,
+  TaskZodType,
+  EpicZodType,
+]);
+export const BacklogItemAndTaskZodType = z.union([
+  BacklogItemZodType,
+  TaskZodType,
+]);
+
+export const TaskDetailZodType = z.enum(["US-TS", "IS-TS"]);
+export const BacklogItemAndTaskDetailZodType = z.union([
+  BacklogItemZodType,
+  TaskDetailZodType,
+]);
+
 export const TimestampType = z.custom<Timestamp>((value) => value as Timestamp);
 
 export const SprintInfoSchema = z.object({
@@ -47,11 +69,12 @@ export const StatusTagSchema = TagSchema.extend({
   marksTaskAsDone: z.boolean(),
 });
 
+// FIXME: Remove optional once it's implemented
 export const UserSchema = z.object({
-  bio: z.string(),
-  jobTitle: z.string(),
+  bio: z.string().optional(),
+  jobTitle: z.string().optional(),
   projectIds: z.array(z.string()),
-  isManager: z.boolean(),
+  isManager: z.boolean().optional(),
 });
 
 // Each number refers to 1 permission: "none" | "read" | "write"
@@ -67,8 +90,7 @@ export const RoleSchema = z.object({
   scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
-  reviews: PermissionSchema, // sprint reviews
-  activity: PermissionSchema // activity
+  retrospective: PermissionSchema, // sprint retrospective
 });
 
 export const BasicInfoSchema = z.object({
@@ -124,11 +146,14 @@ export const UserStorySchema = BacklogItemSchema.extend({
     ),
   dependencyIds: z
     .array(z.string())
+    .default([])
+
     .describe(
       "List of user story ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
   requiredByIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of user story ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
@@ -148,7 +173,7 @@ export const TaskSchema = BasicInfoSchema.extend({
   // FIXME: Finished date should be added to show on calendar
   // finishedDate: TimestampType.nullable(),
   itemId: z.string(),
-  itemType: z.enum(["US", "IS", "IT"]),
+  itemType: BacklogItemZodType,
   name: z.string().describe("Small (5 word maximum) description of the task"),
   description: z
     .string()
@@ -159,11 +184,13 @@ export const TaskSchema = BasicInfoSchema.extend({
   // reviewerId: z.string(), // Scope creep. Ignore for now
   dependencyIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of task ids. May be empty, only include them if this user story depends on them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
   requiredByIds: z
     .array(z.string())
+    .default([])
     .describe(
       "List of task ids. May be empty, only include them if this user story is required by them. If they are included, make sure that they are valid ids that exist. Do NOT make up fake ids.",
     ),
@@ -249,7 +276,7 @@ export const ProjectSchema = z.object({
       z.object({
         title: z.string(),
         activityId: z.string(),
-        type: z.enum(["US", "TS", "IS", "ITEM"]),
+        type: BacklogItemAndTaskZodType,
         newStatusId: z.string(),
         userId: z.string(),
         date: z.date(),
@@ -301,7 +328,7 @@ export const ProjectSchemaCreator = z.object({
       z.object({
         title: z.string(),
         activityId: z.string(),
-        type: z.enum(["US", "TS", "IS", "ITEM"]),
+        type: BacklogItemAndTaskZodType,
         newStatusId: z.string(),
         userId: z.string(),
         date: z.date(),

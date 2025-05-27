@@ -58,13 +58,17 @@ export const getLayoutedElements = (
  */
 export const saveFlowToLocalStorage = (
   projectId: string,
+  flowIdentifier: string,
   flow: {
     nodes: Node[];
     edges: Edge[];
     viewport: { x: number; y: number; zoom: number };
   },
 ) => {
-  localStorage.setItem(`flow:${projectId}`, JSON.stringify(flow));
+  localStorage.setItem(
+    `flow:${flowIdentifier}:${projectId}`,
+    JSON.stringify(flow),
+  );
 };
 
 /**
@@ -73,8 +77,13 @@ export const saveFlowToLocalStorage = (
  * @param {string} projectId - The ID of the project to load the flow for.
  * @returns {Object|null} The saved flow state if it exists, null otherwise.
  */
-export const loadFlowFromLocalStorage = (projectId: string) => {
-  const flowString = localStorage.getItem(`flow:${projectId}`);
+export const loadFlowFromLocalStorage = (
+  projectId: string,
+  flowIdentifier: string,
+) => {
+  const flowString = localStorage.getItem(
+    `flow:${flowIdentifier}:${projectId}`,
+  );
   if (!flowString) return null;
   return JSON.parse(flowString) as {
     nodes: Node[];

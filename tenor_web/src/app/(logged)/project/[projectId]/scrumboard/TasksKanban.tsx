@@ -27,8 +27,14 @@ import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
+import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 
-export default function TasksKanban() {
+interface Props {
+  filter: string;
+  advancedFilters: AdvancedSearchFilters;
+}
+
+export default function TasksKanban({ filter, advancedFilters }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -54,10 +60,11 @@ export default function TasksKanban() {
     );
   }, [role]);
 
-  const { mutateAsync: changeStatus } =
-    api.tasks.changeTaskStatus.useMutation({
-        onSuccess:async () => {
-      await utils.projects.getProjectStatus.invalidate({ projectId: projectId as string }); // <-- Invalidate all tasks
+  const { mutateAsync: changeStatus } = api.tasks.changeTaskStatus.useMutation({
+    onSuccess: async () => {
+      await utils.projects.getProjectStatus.invalidate({
+        projectId: projectId as string,
+      }); // <-- Invalidate all tasks
     },
   });
 
@@ -100,9 +107,10 @@ export default function TasksKanban() {
   const handleDragEnd = async (taskId: string, columnId: string) => {
     setLastDraggedTaskId(null);
     if (tasksAndColumnsData == undefined) return;
-    if (columnId === tasksAndColumnsData.cardTasks[taskId]?.columnId) return;
+    // Ensure the task exists and the column is different
+    const taskBeingDragged = tasksAndColumnsData.cardTasks[taskId];
+    if (!taskBeingDragged || columnId === taskBeingDragged.columnId) return;
 
-    setLastDraggedTaskId(taskId);
     await moveTasksToColumn([taskId], columnId);
   };
 
@@ -167,6 +175,14 @@ export default function TasksKanban() {
         };
       },
     );
+
+    // Set lastDraggedTaskId AFTER optimistic update, only if a single task was moved (typical for drag-and-drop)
+    if (taskIds.length === 1) {
+      setLastDraggedTaskId(taskIds[0] ?? null);
+    } else {
+      // If multiple tasks are moved (e.g., batch assign), clear any single-item highlight
+      setLastDraggedTaskId(null);
+    }
 
     setSelectedTasks(new Set());
 
@@ -258,6 +274,8 @@ export default function TasksKanban() {
 
               return (
                 <AssignableCardColumn
+                  filter={filter}
+                  advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}
@@ -280,13 +298,6 @@ export default function TasksKanban() {
                         <h1 className="text-2xl font-medium">{column.name}</h1>
                         {permission >= permissionNumbers.write && (
                           <div className="flex gap-2">
-                            <button
-                              className="rounded-lg px-1 text-app-text transition"
-                              onClick={() => assignSelectionToColumn(column.id)}
-                            >
-                              Assign
-                            </button>
-
                             <button
                               className={cn(
                                 "rounded-lg px-1 text-app-text transition",
@@ -343,7 +354,6 @@ export default function TasksKanban() {
                 setShowDetail(false);
                 setTimeout(() => {
                   setForcedDetailParentUserStoryId("");
-                  // setShowDetail(false);
                 }, 500);
               }
             } else {

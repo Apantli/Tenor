@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { Role, Settings, Tag } from "./types/firebaseSchemas";
+import type { Role, Settings, Size, Tag } from "./types/firebaseSchemas";
 import type { Permission, RoleSchema } from "./types/zodFirebaseSchema";
 
 export const emptySettings: Settings = {
@@ -26,6 +26,41 @@ export const emptySettings: Settings = {
   // roles: [],
 };
 
+export const sizeToColor: Record<Size, string> = {
+  XS: "#4A90E2", // Light Blue
+  S: "#2c9659", // Green
+  M: "#a38921", // Yellow
+  L: "#E67E22", // Orange
+  XL: "#E74C3C", // Red
+  XXL: "#8E44AD", // Purple
+};
+
+export const sizeTags: Tag[] = [
+  { name: "XS", color: sizeToColor.XS, deleted: false }, // Light Blue
+  { name: "S", color: sizeToColor.S, deleted: false }, // Green
+  { name: "M", color: sizeToColor.M, deleted: false }, // Yellow
+  { name: "L", color: sizeToColor.L, deleted: false }, // Orange
+  { name: "XL", color: sizeToColor.XL, deleted: false }, // Red
+  { name: "XXL", color: sizeToColor.XXL, deleted: false }, // Purple
+] as const;
+
+export const sizeToInt = (size: Size): 0 | 1 | 2 | 3 | 4 | 5 => {
+  switch (size) {
+    case "XS":
+      return 0;
+    case "S":
+      return 1;
+    case "M":
+      return 2;
+    case "L":
+      return 3;
+    case "XL":
+      return 4;
+    case "XXL":
+      return 5;
+  }
+};
+
 export interface FlagsRequired {
   flags: (
     | "settings"
@@ -34,7 +69,7 @@ export interface FlagsRequired {
     | "scrumboard"
     | "issues"
     | "backlog"
-    | "reviews"
+    | "retrospective"
   )[];
 
   // false/null/pesimistic gets the lowest permission
@@ -75,8 +110,7 @@ export const defaultRoleList: Role[] = [
     scrumboard: 2,
     issues: 2,
     backlog: 2,
-    reviews: 2,
-    activity: 2,
+    retrospective: 2,
   },
   {
     id: "developer",
@@ -87,8 +121,7 @@ export const defaultRoleList: Role[] = [
     scrumboard: 1,
     issues: 1,
     backlog: 1,
-    reviews: 2,
-    activity: 0,
+    retrospective: 2,
   },
   {
     id: "viewer",
@@ -100,8 +133,7 @@ export const defaultRoleList: Role[] = [
     scrumboard: 0,
     issues: 0,
     backlog: 0,
-    reviews: 0,
-    activity: 0,
+    retrospective: 0,
   },
 ];
 
@@ -114,8 +146,7 @@ export const emptyRole: Role = {
   scrumboard: 0,
   issues: 0,
   backlog: 0,
-  reviews: 0,
-  activity: 0,
+  retrospective: 0,
 };
 
 export const ownerRole: Role = {
@@ -127,8 +158,7 @@ export const ownerRole: Role = {
   scrumboard: 2,
   issues: 2,
   backlog: 2,
-  reviews: 2,
-  activity: 2,
+  retrospective: 2,
 };
 
 export const todoTagName = "Todo";
@@ -205,6 +235,6 @@ export const defaultActivity = [
     itemId: "new project created",
     user: "",
     completitionDate: "",
-    resolved: false
+    resolved: false,
   },
-]
+];

@@ -9,10 +9,16 @@
  */
 
 import { z } from "zod";
-import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import { performancePermissions } from "~/lib/permission";
 import { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import { getProductivityRef } from "~/utils/helpers/shortcuts/general";
+
+import { shouldRecomputeProductivity } from "~/lib/cache";
 import type {
   Issue,
   Productivity,
@@ -32,30 +38,6 @@ import { Timestamp } from "firebase-admin/firestore";
 import { getStatusTypes } from "~/utils/helpers/shortcuts/tags";
 import { getCurrentSprint } from "~/utils/helpers/shortcuts/sprints";
 import { TRPCError } from "@trpc/server";
-
-const shouldRecompute = ({
-  data,
-  time,
-  refreshHours = 24,
-}: {
-  data: Productivity | undefined;
-  time: string;
-  refreshHours?: number;
-}) => {
-  if (!data) return true;
-
-  const cacheTarget = data.cached.find((cached) => cached.time === time);
-  if (!cacheTarget) return true;
-
-  const currentTime = new Date();
-  const lastFetchDate = cacheTarget.fetchDate.toDate();
-  const timeDifference = currentTime.getTime() - lastFetchDate.getTime();
-
-  // Hours to milliseconds
-  const refreshTime = refreshHours * 60 * 60 * 1000;
-
-  return timeDifference > refreshTime;
-};
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -94,6 +76,13 @@ export const performanceRouter = createTRPCRouter({
       return [];
       // return projects;
     }),
+  getProjectStatus: protectedProcedure.query(async ({ ctx }) => {
+    const useruid = ctx.session.user.uid;
+    console.log("useruid", useruid);
+    // TODO: compute and return user contributions
+    return [];
+    // return projects;
+  }),
 });
 
 const recomputePerformance = async (
@@ -113,7 +102,10 @@ const recomputePerformance = async (
     };
   }
 
-  if (recompute || shouldRecompute({ data: productivityData, time: time })) {
+  if (
+    recompute ||
+    shouldRecomputeProductivity({ data: productivityData, time: time })
+  ) {
     const newProductivityData = await computePerformanceTime(
       ctx,
       projectId,

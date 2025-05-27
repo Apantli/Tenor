@@ -1,6 +1,6 @@
 // Use this hooks to invalidate the queries related to a specific item, task, project, etc.
 
-import type { itemTypes } from "~/lib/types/firebaseSchemas";
+import type { BacklogItemType } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export const useInvalidateQueriesAllTasks = () => {
@@ -27,12 +27,20 @@ export const useInvalidateQueriesAllTasks = () => {
     await utils.kanban.getBacklogItemsForKanban.invalidate({
       projectId: projectId,
     });
+
+    await utils.tasks.getTaskDependencies.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
 export const useInvalidateQueriesTaskDetails = () => {
   const utils = api.useUtils();
+
   return async (projectId: string, taskIds: string[]) => {
+    await utils.tasks.getTasksByDate.invalidate({
+      projectId: projectId,
+    });
     await utils.kanban.getTasksForKanban.invalidate({
       projectId: projectId,
     });
@@ -161,7 +169,7 @@ export const useInvalidateQueriesBacklogItems = () => {
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesAllEpics = useInvalidateQueriesAllEpics();
 
-  return async (projectId: string, itemType: itemTypes | "EP") => {
+  return async (projectId: string, itemType: BacklogItemType | "EP") => {
     switch (itemType) {
       case "US":
         await invalidateQueriesAllUserStories(projectId);
@@ -179,7 +187,7 @@ export const useInvalidateQueriesBacklogItems = () => {
 
 interface CondenseItem {
   itemId: string;
-  itemType: itemTypes | "TS";
+  itemType: BacklogItemType | "TS";
 }
 
 export const useInvalidateQueriesBacklogItemDetails = () => {

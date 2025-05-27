@@ -49,7 +49,7 @@ export default function DependencyList({
 
   const filteredUserStories = allUserStoriesExceptCurrent?.filter(
     (userStory) => {
-      const scrumId = "US" + userStory.scrumId.toString().padStart(3, "0");
+      const scrumId = formatUserStoryScrumId(userStory.scrumId);
       const fullUserStoryName = `${scrumId}: ${userStory.name}`;
       if (
         searchValue !== "" &&
