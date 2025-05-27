@@ -15,3 +15,7 @@ export const timestampToDate = (timestamp: {
 
   return new Timestamp(seconds, nanoseconds ?? 0).toDate();
 };
+
+export const dateToString = (date: Date) => {
+  return date.toISOString().split("T")[0];
+};
