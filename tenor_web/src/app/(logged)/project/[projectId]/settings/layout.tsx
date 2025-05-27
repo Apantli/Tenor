@@ -18,7 +18,7 @@ const joinPath = (...paths: string[]) => {
   return joined.endsWith("/") ? joined.slice(0, -1) : joined;
 };
 
-export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
+export default function SettingsLayout({ children }: PropsWithChildren) {
   const { projectId } = useParams();
   const pathName = usePathname();
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function ProjectSettingsLayout({ children }: PropsWithChildren) {
     },
   ];
 
-  const layout_dir = "project-settings";
+  const layout_dir = "settings";
 
   const dirIndex = pathName.indexOf(layout_dir) + layout_dir.length;
   const rootPath = pathName.slice(0, dirIndex);
