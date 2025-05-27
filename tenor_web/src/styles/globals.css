@@ -52,15 +52,10 @@
     list-style: inherit;
   }
 
-  .markdown-content{ 
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-all;
-  }
-
-  .wrap-properly {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    word-break: break-all;
+  .markdown-content, 
+  .wrap-properly { 
+    word-wrap: normal;
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 }

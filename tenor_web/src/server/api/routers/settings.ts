@@ -18,12 +18,11 @@ import {
 import z from "zod";
 import { fetchHTML } from "~/utils/webcontent";
 import { fetchMultipleFiles } from "~/utils/helpers/filecontent";
-import { emptyRole, ownerRole } from "~/lib/defaultProjectValues";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
-} from "~/lib/defaultProjectValues";
+} from "~/lib/defaultValues/project";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -33,7 +32,7 @@ import {
   generalPermissions,
   settingsPermissions,
   tagPermissions,
-} from "~/lib/permission";
+} from "~/lib/defaultValues/permission";
 import type {
   Permission,
   StatusTag,
@@ -61,6 +60,7 @@ import {
 } from "~/utils/helpers/shortcuts/general";
 import { getUserRef } from "~/utils/helpers/shortcuts/users";
 import { TRPCError } from "@trpc/server";
+import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
 
 export interface Links {
   link: string;
@@ -353,7 +353,7 @@ const settingsRouter = createTRPCRouter({
           sprints: roleData.sprints as Permission,
           scrumboard: roleData.scrumboard as Permission,
           backlog: roleData.backlog as Permission,
-          reviews: roleData.reviews as Permission,
+          retrospective: roleData.retrospective as Permission,
         };
         return role;
       });

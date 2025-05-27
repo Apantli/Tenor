@@ -38,3 +38,7 @@ export const formatSeconds = (seconds: number | undefined): string => {
   if (hours === 0 && minutes == 0) return formattedTime + ` ${secs}s`;
   return formattedTime;
 };
+
+export const dateToString = (date: Date) => {
+  return date.toISOString().split("T")[0];
+};

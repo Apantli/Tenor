@@ -26,6 +26,8 @@ interface Props {
   setShowPopup: (show: boolean) => void;
   itemTagType: "ReqFocus" | "BacklogTag" | "ReqType";
   disabled?: boolean;
+  editMode: boolean;
+  setEditMode: (isEditing: boolean) => void;
 }
 
 interface TagTypeConfig {
@@ -47,6 +49,8 @@ export default function ItemTagDetailPopup({
   tagId,
   itemTagType,
   disabled = false,
+  editMode,
+  setEditMode,
 }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
@@ -97,8 +101,6 @@ export default function ItemTagDetailPopup({
 
   // REACT
   const { projectId } = useParams();
-
-  const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState<{
     name: string;
     color: string;

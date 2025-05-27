@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
-} from "../defaultProjectValues";
+} from "../defaultValues/project";
 
 export const UserStoryZodType = z.literal("US");
 export const IssueZodType = z.literal("IS");
@@ -90,7 +90,7 @@ export const RoleSchema = z.object({
   scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
-  reviews: PermissionSchema, // sprint reviews
+  retrospective: PermissionSchema, // sprint retrospective
 });
 
 export const BasicInfoSchema = z.object({

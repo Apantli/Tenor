@@ -14,7 +14,7 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import { performancePermissions } from "~/lib/permission";
+import { performancePermissions } from "~/lib/defaultValues/permission";
 import { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import { getProductivityRef } from "~/utils/helpers/shortcuts/general";
 

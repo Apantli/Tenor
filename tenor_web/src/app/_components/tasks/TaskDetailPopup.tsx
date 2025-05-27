@@ -9,7 +9,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePicker } from "~/app/_components/specific-pickers/SizePicker";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SidebarPopup } from "../Popup";
@@ -30,10 +30,11 @@ import {
   type Permission,
   type WithId,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
 import DependencyList from "./DependencyList";
 import { TRPCClientError } from "@trpc/client";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface Props {
   taskId: string;
@@ -194,6 +195,7 @@ export default function TaskDetailPopup({
       });
 
       await invalidateQueriesAllTasks(projectId as string, [itemId]);
+      await invalidateQueriesTaskDetails(projectId as string, [taskId]);
     } catch (error) {
       if (
         error instanceof TRPCClientError &&
@@ -281,7 +283,7 @@ export default function TaskDetailPopup({
               <span className="font-bold">
                 {formatTaskScrumId(taskDetail.scrumId)}:{" "}
               </span>
-              <span>{taskDetail.name}</span>
+              <span className="wrap-properly">{taskDetail.name}</span>
             </h1>
           )}
         </>
@@ -311,6 +313,7 @@ export default function TaskDetailPopup({
       {editMode && (
         <>
           <InputTextField
+            id="task-name-field"
             label="Task Name"
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
@@ -318,6 +321,7 @@ export default function TaskDetailPopup({
             containerClassName="mb-4"
           />
           <InputTextAreaField
+            id="task-description-field"
             label="Notes"
             value={editForm.description}
             onChange={(e) =>
@@ -349,7 +353,7 @@ export default function TaskDetailPopup({
             </div>
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium">Size</label>
-              <SizePillComponent
+              <SizePicker
                 disabled={permission < permissionNumbers.write}
                 currentSize={taskDetail.size}
                 callback={async (size) => {

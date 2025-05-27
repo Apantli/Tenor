@@ -23,18 +23,19 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
-import { type RegexItem } from "./AdvancedSearch";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
+import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 
 interface Props {
   filter: string;
-  regex: RegexItem[];
+  advancedFilters: AdvancedSearchFilters;
 }
 
-export default function TasksKanban({ filter, regex }: Props) {
+export default function TasksKanban({ filter, advancedFilters }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -275,7 +276,7 @@ export default function TasksKanban({ filter, regex }: Props) {
               return (
                 <AssignableCardColumn
                   filter={filter}
-                  regex={regex}
+                  advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}
@@ -298,13 +299,6 @@ export default function TasksKanban({ filter, regex }: Props) {
                         <h1 className="text-2xl font-medium">{column.name}</h1>
                         {permission >= permissionNumbers.write && (
                           <div className="flex gap-2">
-                            <button
-                              className="rounded-lg px-1 text-app-text transition"
-                              onClick={() => assignSelectionToColumn(column.id)}
-                            >
-                              Assign
-                            </button>
-
                             <button
                               className={cn(
                                 "rounded-lg px-1 text-app-text transition",
@@ -361,7 +355,6 @@ export default function TasksKanban({ filter, regex }: Props) {
                 setShowDetail(false);
                 setTimeout(() => {
                   setForcedDetailParentUserStoryId("");
-                  // setShowDetail(false);
                 }, 500);
               }
             } else {

@@ -36,7 +36,11 @@ export const useInvalidateQueriesAllTasks = () => {
 
 export const useInvalidateQueriesTaskDetails = () => {
   const utils = api.useUtils();
+
   return async (projectId: string, taskIds: string[]) => {
+    await utils.tasks.getTasksByDate.invalidate({
+      projectId: projectId,
+    });
     await utils.kanban.getTasksForKanban.invalidate({
       projectId: projectId,
     });
@@ -229,10 +233,10 @@ export const useInvalidateQueriesAllTags = () => {
     await utils.settings.getBacklogTags.invalidate({
       projectId: projectId,
     });
-    await utils.requirements.getRequirementFocus.invalidate({
+    await utils.requirements.getRequirementFocuses.invalidate({
       projectId: projectId,
     });
-    await utils.requirements.getRequirementType.invalidate({
+    await utils.requirements.getRequirementTypes.invalidate({
       projectId: projectId,
     });
   };

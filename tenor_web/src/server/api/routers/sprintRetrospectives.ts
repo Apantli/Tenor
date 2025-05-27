@@ -1,9 +1,9 @@
 /**
- * Sprint Reviews Router - API Endpoints for managing Review records.
+ * Sprint Retrospective Router - API Endpoints for managing Retrospective records.
  *
  * @packageDocumentation
- * This file defines the TRPC router and procedures for retrieving or creating Review entries
- * associated with sprints. It ensures that a review exists per sprint and returns its ID.
+ * This file defines the TRPC router and procedures for retrieving or creating Retrospective entries
+ * associated with sprints. It ensures that a retrospective exists per sprint and returns its ID.
  *
  * @category API
  */
@@ -11,23 +11,23 @@
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { getPreviousSprint } from "~/utils/helpers/shortcuts/sprints";
-import { reviewPermissions } from "~/lib/permission";
+import { reviewPermissions } from "~/lib/defaultValues/permission";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { TRPCError } from "@trpc/server";
-import { getSprintReviewTextAnswersContext } from "~/utils/helpers/shortcuts/sprintReviews";
+import { getSprintRetrospectiveTextAnswersContext } from "~/utils/helpers/shortcuts/sprintRetrospectives";
 
-type ReviewAnswers = Record<string, string>;
+type RetrospectiveAnswers = Record<string, string>;
 
 /**
- * Retrieves the ID of a review associated with a given sprint.
- * If the review does not exist, it is created automatically.
+ * Retrieves the ID of a retrospective associated with a given sprint.
+ * If the retrospective does not exist, it is created automatically.
  *
  * @param input - Object containing the `sprintId` (string).
- * @returns The ID of the existing or newly created review (number).
+ * @returns The ID of the existing or newly created retrospective (number).
  *
- * @http GET /api/trpc/sprintReviews.getReviewId
+ * @http GET /api/trpc/sprintRetrospectives.getRetrospectiveId
  */
-export const getReviewIdProcedure = roleRequiredProcedure(
+export const getRetrospectiveIdProcedure = roleRequiredProcedure(
   reviewPermissions,
   "read",
 )
@@ -39,14 +39,14 @@ export const getReviewIdProcedure = roleRequiredProcedure(
 
     if (response.error) {
       throw new Error(
-        `Failed to get or create review: ${response.error.message}`,
+        `Failed to get or create retrospective: ${response.error.message}`,
       );
     }
 
     return response.data as number;
   });
 
-export const getReviewAnswersProcedure = roleRequiredProcedure(
+export const getRetrospectiveAnswersProcedure = roleRequiredProcedure(
   reviewPermissions,
   "read",
 )
@@ -58,13 +58,13 @@ export const getReviewAnswersProcedure = roleRequiredProcedure(
     });
     if (response.error) {
       throw new Error(
-        `Failed to get review answers: ${response.error.message}`,
+        `Failed to get retrospective answers: ${response.error.message}`,
       );
     }
-    return response.data as ReviewAnswers;
+    return response.data as RetrospectiveAnswers;
   });
 
-export const saveReviewAnswersProcedure = roleRequiredProcedure(
+export const saveRetrospectiveAnswersProcedure = roleRequiredProcedure(
   reviewPermissions,
   "write",
 )
@@ -85,19 +85,19 @@ export const saveReviewAnswersProcedure = roleRequiredProcedure(
     });
     if (response.error) {
       throw new Error(
-        `Failed to save review answer: ${response.error.message}`,
+        `Failed to save retrospective answer: ${response.error.message}`,
       );
     }
     return response.data as boolean;
   });
 
 /**
- * Router for managing sprint reviews.
+ * Router for managing sprint retrospective.
  */
-export const sprintReviewsRouter = createTRPCRouter({
-  getReviewId: getReviewIdProcedure,
-  getReviewAnswers: getReviewAnswersProcedure,
-  saveReviewAnswers: saveReviewAnswersProcedure,
+export const sprintRetrospectivesRouter = createTRPCRouter({
+  getRetrospectiveId: getRetrospectiveIdProcedure,
+  getRetrospectiveAnswers: getRetrospectiveAnswersProcedure,
+  saveRetrospectiveAnswers: saveRetrospectiveAnswersProcedure,
   getPreviousSprint: roleRequiredProcedure(reviewPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -107,7 +107,10 @@ export const sprintReviewsRouter = createTRPCRouter({
       );
       return previousSprint ?? null;
     }),
-  getProcessedReviewAnswers: roleRequiredProcedure(reviewPermissions, "write")
+  getProcessedRetrospectiveAnswers: roleRequiredProcedure(
+    reviewPermissions,
+    "write",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -127,7 +130,7 @@ export const sprintReviewsRouter = createTRPCRouter({
       }
 
       const synthesizedResponses = await askAiToGenerate(
-        getSprintReviewTextAnswersContext(data.textAnswers),
+        getSprintRetrospectiveTextAnswersContext(data.textAnswers),
         z.object({
           answers: z.array(z.string()),
           happinessRating: z.number(),
@@ -157,7 +160,7 @@ export const sprintReviewsRouter = createTRPCRouter({
       }
 
       const synthesizedResponses = await askAiToGenerate(
-        getSprintReviewTextAnswersContext(data.textAnswers),
+        getSprintRetrospectiveTextAnswersContext(data.textAnswers),
         z.object({
           answers: z.array(z.string()),
           happinessRating: z.number(),

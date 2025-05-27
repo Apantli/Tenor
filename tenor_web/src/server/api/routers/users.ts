@@ -14,16 +14,20 @@ import {
   roleRequiredProcedure,
 } from "~/server/api/trpc";
 import { z } from "zod";
-import { emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCError } from "@trpc/server";
-import { settingsPermissions, usersPermissions } from "~/lib/permission";
 import {
+  settingsPermissions,
+  usersPermissions,
+} from "~/lib/defaultValues/permission";
+import {
+  getGlobalUserPreview,
   getGlobalUserPreviews,
   getGlobalUserRef,
   getUserRef,
   getUsers,
   getUserTable,
 } from "~/utils/helpers/shortcuts/users";
+import { emptyRole } from "~/lib/defaultValues/roles";
 
 export const userRouter = createTRPCRouter({
   /**
@@ -45,6 +49,13 @@ export const userRouter = createTRPCRouter({
           .toLowerCase()
           .includes(filter?.toLowerCase() ?? ""),
       );
+    }),
+
+  getGlobalUser: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { userId } = input;
+      return await getGlobalUserPreview(ctx.firebaseAdmin.app(), userId);
     }),
 
   /**

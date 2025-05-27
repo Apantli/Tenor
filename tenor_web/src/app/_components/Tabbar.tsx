@@ -17,7 +17,6 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   const projectId = params.projectId as string;
   const projectPath = `/project/${projectId}`;
   let cutPathname = pathname.slice(projectPath.length) || "/";
-  const utils = api.useUtils();
 
   if (cutPathname.split("/").length > 2) {
     cutPathname = `/${cutPathname.split("/")[1]!}`;
@@ -28,9 +27,6 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     element.scrollIntoView({
       behavior: "smooth",
     });
-    void utils.sprintReviews.getPreviousSprint.invalidate({
-      projectId: projectId,
-    });
   };
 
   const { data: role } = api.settings.getMyRole.useQuery({
@@ -38,12 +34,9 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   });
 
   const { data: previousSprint, isLoading: isLoadingPreviousSprint } =
-    api.sprintReviews.getPreviousSprint.useQuery(
-      { projectId: projectId },
-      {
-        enabled: !!projectId,
-      },
-    );
+    api.sprintRetrospectives.getPreviousSprint.useQuery({
+      projectId: projectId,
+    });
 
   return (
     <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
@@ -54,7 +47,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
 
         const { title, link, enabled, flags } = meta;
 
-        if (id === "sprintReview") {
+        if (id === "sprintRetrospective") {
           if (isLoadingPreviousSprint || !previousSprint) {
             return null;
           }
