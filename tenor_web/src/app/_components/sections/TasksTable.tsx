@@ -34,7 +34,7 @@ import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import type { TaskCol } from "~/lib/types/columnTypes";
 import { cn } from "~/lib/utils";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];

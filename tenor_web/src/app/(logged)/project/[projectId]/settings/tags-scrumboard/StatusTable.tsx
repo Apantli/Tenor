@@ -37,7 +37,7 @@ import {
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 export default function StatusTable() {
   const { projectId } = useParams();
