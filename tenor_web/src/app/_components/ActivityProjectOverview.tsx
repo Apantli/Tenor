@@ -119,7 +119,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   }
 
   return (
-    <>
+    <div className="flex flex-col h-full">
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
         <h1 className="w-full text-2xl self-center font-semibold">Recent Project Activity</h1>
         <SearchBar
@@ -128,7 +128,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
           placeholder="Search activities"
         ></SearchBar>
       </div>
-      <div className="flex h-64 flex-col overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {!isLoading && (!activities || activities.length === 0) && (
           <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
             <div className="flex flex-col items-center gap-5">
@@ -207,7 +207,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
           );
         })}
       </div>
-    </>
+    </div>
   );
 };
 

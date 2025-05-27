@@ -357,7 +357,7 @@ export const getProjectActivities = async (
   const activitiesRef = getActivitiesRef(firestore, projectId);
   const activitiesSnapshot = await activitiesRef
   .orderBy("date", "desc")
-  .limit(50)
+  .limit(5)
   .get();
   const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map((activityData) => {
     return { 
