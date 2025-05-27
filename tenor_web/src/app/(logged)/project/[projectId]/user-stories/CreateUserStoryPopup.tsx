@@ -165,6 +165,12 @@ export default function CreateUserStoryPopup({
             }}
           />
 
+          <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+          <SprintPicker
+            sprint={createForm.sprint}
+            onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
+          />
+
           <div className="mt-4 flex gap-2">
             <div className="flex-1 overflow-hidden">
               <h3 className="text-lg font-semibold">Priority</h3>
@@ -183,16 +189,6 @@ export default function CreateUserStoryPopup({
               />
             </div>
           </div>
-
-          <h3 className="mt-4 text-lg">
-            <span className="font-semibold">Sprint</span>
-            <SprintPicker
-              selectedOption={createForm.sprint}
-              onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
-              placeholder="None"
-              className="w-full"
-            />
-          </h3>
 
           <BacklogTagList
             tags={createForm.tags}

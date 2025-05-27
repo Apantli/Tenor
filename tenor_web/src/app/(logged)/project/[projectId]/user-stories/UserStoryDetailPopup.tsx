@@ -356,6 +356,15 @@ export default function UserStoryDetailPopup({
                   }}
                 />
 
+                <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+                <SprintPicker
+                  disabled={permission < permissionNumbers.write}
+                  sprint={userStoryDetail.sprint}
+                  onChange={async (sprint) => {
+                    await handleSave({ ...userStoryDetail, sprint });
+                  }}
+                />
+
                 <div className="mt-4 flex gap-2">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Priority</h3>
@@ -414,19 +423,6 @@ export default function UserStoryDetailPopup({
                     }}
                   />
                 </div>
-
-                <h3 className="mt-4 text-lg">
-                  <span className="font-semibold">Sprint</span>
-                  <SprintPicker
-                    disabled={permission < permissionNumbers.write}
-                    selectedOption={userStoryDetail.sprint}
-                    onChange={async (sprint) => {
-                      await handleSave({ ...userStoryDetail, sprint });
-                    }}
-                    placeholder="None"
-                    className="w-full"
-                  />
-                </h3>
 
                 <BacklogTagList
                   disabled={permission < permissionNumbers.write}

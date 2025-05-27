@@ -255,6 +255,15 @@ export default function IssueDetailPopup({
                   }}
                 />
 
+                <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+                <SprintPicker
+                  disabled={permission < permissionNumbers.write}
+                  sprint={issueDetail.sprint}
+                  onChange={async (sprint) => {
+                    await handleSave({ ...issueDetail, sprint });
+                  }}
+                />
+
                 <div className="mt-4 flex gap-2">
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Priority</h3>
@@ -313,19 +322,6 @@ export default function IssueDetailPopup({
                     }}
                   />
                 </div>
-
-                <h3 className="mt-4 text-lg">
-                  <span className="font-semibold">Sprint</span>
-                  <SprintPicker
-                    disabled={permission < permissionNumbers.write}
-                    selectedOption={issueDetail.sprint}
-                    onChange={async (sprint) => {
-                      await handleSave({ ...issueDetail, sprint });
-                    }}
-                    placeholder="None"
-                    className="w-full"
-                  />
-                </h3>
 
                 <BacklogTagList
                   disabled={permission < permissionNumbers.write}

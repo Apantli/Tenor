@@ -13,7 +13,7 @@ export default function ItemAutomaticStatus({ isAutomatic, onChange }: Props) {
   return (
     <div className="mt-1 flex items-center justify-start gap-1 text-sm text-gray-500">
       <InputCheckbox checked={isAutomatic} onChange={onChange} />
-      <div className="flex items-center">
+      <div className="flex items-center pt-[2px]">
         <p>Automatic</p>
         <HelpIcon
           className="ml-[3px] text-gray-500"
