@@ -41,6 +41,7 @@ import {
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 interface Props {
   issueId: string;
@@ -227,6 +228,8 @@ export default function IssueDetailPopup({
     return issueDetail?.status === undefined || issueDetail?.status?.id == "";
   };
 
+  const checkTitleLimit = useCharacterLimit("Issue name", 80);
+
   return (
     <Popup
       setSidebarOpen={setSidebarOpen}
@@ -375,7 +378,11 @@ export default function IssueDetailPopup({
             id="issue-name-field"
             label="Issue name"
             value={editForm.name}
-            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setEditForm({ ...editForm, name: e.target.value });
+              }
+            }}
             placeholder="Short summary of the issue..."
             containerClassName=""
           />

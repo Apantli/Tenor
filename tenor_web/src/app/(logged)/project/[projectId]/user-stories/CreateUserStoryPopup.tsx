@@ -17,6 +17,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 import { TRPCClientError } from "@trpc/client";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 interface Props {
   showPopup: boolean;
@@ -130,6 +131,8 @@ export default function CreateUserStoryPopup({
     }
   };
 
+  const checkTitleLimit = useCharacterLimit("User story title", 80);
+
   return (
     <Popup
       show={showPopup}
@@ -215,7 +218,11 @@ export default function CreateUserStoryPopup({
         id="story-name-field"
         label="Story name"
         value={createForm.name}
-        onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+        onChange={(e) => {
+          if (checkTitleLimit(e.target.value)) {
+            setCreateForm({ ...createForm, name: e.target.value });
+          }
+        }}
         placeholder="Short summary of the story..."
         containerClassName="mb-4"
       />

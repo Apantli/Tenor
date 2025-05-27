@@ -20,6 +20,7 @@ import {
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import NoEpicsIcon from "@mui/icons-material/FormatListBulleted";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 export const ProjectEpics = () => {
   const { projectId } = useParams();
@@ -144,6 +145,9 @@ export const ProjectEpics = () => {
       handleCreateDismiss();
     }
   };
+
+  const checkTitleLimit = useCharacterLimit("Epic name", 80);
+
   return (
     <>
       <div className="flex justify-between pb-5">
@@ -245,7 +249,11 @@ export const ProjectEpics = () => {
             placeholder="Briefly describe your epic..."
             label="Epic name"
             value={newEpicName}
-            onChange={(e) => setNewEpicName(e.target.value)}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setNewEpicName(e.target.value);
+              }
+            }}
           />
           <InputTextAreaField
             id="epic-description-field"
@@ -411,7 +419,11 @@ export const ProjectEpics = () => {
                 type="text"
                 placeholder="Your epic name"
                 value={editEpicName}
-                onChange={(e) => setEditEpicName(e.target.value)}
+                onChange={(e) => {
+                  if (checkTitleLimit(e.target.value)) {
+                    setEditEpicName(e.target.value);
+                  }
+                }}
               />
               <InputTextAreaField
                 id="epic-description-field"

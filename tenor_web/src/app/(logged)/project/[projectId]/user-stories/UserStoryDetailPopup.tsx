@@ -48,6 +48,7 @@ import {
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 interface Props {
   userStoryId: string;
@@ -335,6 +336,8 @@ export default function UserStoryDetailPopup({
     );
   };
 
+  const checkTitleLimit = useCharacterLimit("User story title", 80);
+
   return (
     <Popup
       scrollRef={scrollContainerRef}
@@ -563,7 +566,11 @@ export default function UserStoryDetailPopup({
             id="story-name-field"
             label="Story name"
             value={editForm.name}
-            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setEditForm({ ...editForm, name: e.target.value });
+              }
+            }}
             placeholder="Short summary of the story..."
             containerClassName="mb-4"
           />

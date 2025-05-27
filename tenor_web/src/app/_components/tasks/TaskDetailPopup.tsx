@@ -34,6 +34,7 @@ import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
 import DependencyList from "./DependencyList";
 import { TRPCClientError } from "@trpc/client";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 interface Props {
   taskId: string;
@@ -231,6 +232,8 @@ export default function TaskDetailPopup({
 
   const { resetParam } = useSearchParam();
 
+  const checkTitleLimit = useCharacterLimit("Task name", 80);
+
   return (
     <SidebarPopup
       show={showDetail}
@@ -315,7 +318,11 @@ export default function TaskDetailPopup({
             id="task-name-field"
             label="Task Name"
             value={editForm.name}
-            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setEditForm({ ...editForm, name: e.target.value });
+              }
+            }}
             placeholder="Task Objective"
             containerClassName="mb-4"
           />

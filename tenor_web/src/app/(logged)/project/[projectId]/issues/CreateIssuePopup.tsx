@@ -14,6 +14,7 @@ import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillCo
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 interface Props {
   showPopup: boolean;
@@ -91,6 +92,8 @@ export default function CreateIssuePopup({
     // Invalidation is done on the parent component
   };
 
+  const checkTitleLimit = useCharacterLimit("Issue name", 80);
+
   return (
     <Popup
       show={showPopup}
@@ -161,7 +164,11 @@ export default function CreateIssuePopup({
         id="issue-name-field"
         label="Issue name"
         value={createForm.name}
-        onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+        onChange={(e) => {
+          if (checkTitleLimit(e.target.value)) {
+            setCreateForm({ ...createForm, name: e.target.value });
+          }
+        }}
         placeholder="Short summary of the issue..."
         containerClassName="mb-4"
       />
