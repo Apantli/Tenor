@@ -25,3 +25,12 @@ export const defaultStatusTags = [
     orderIndex: 2,
   },
 ];
+
+export const automaticTag = {
+  id: "",
+  name: "Automatic",
+  color: "#333333",
+  deleted: false,
+  orderIndex: -1,
+  marksTaskAsDone: false,
+};

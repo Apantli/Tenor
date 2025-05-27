@@ -136,6 +136,8 @@ export const issuesRouter = createTRPCRouter({
       const { projectId, issueId, issueData } = input;
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
 
+      console.log("Modifying issue:", issueData.statusId);
+
       await LogProjectActivity({
         firestore: ctx.firestore,
         projectId: input.projectId,

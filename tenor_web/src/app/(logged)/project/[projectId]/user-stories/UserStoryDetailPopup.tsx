@@ -39,7 +39,6 @@ import AiIcon from "@mui/icons-material/AutoAwesome";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
-import HelpIcon from "@mui/icons-material/Help";
 import {
   type Permission,
   permissionNumbers,
@@ -49,6 +48,7 @@ import usePersistentState from "~/app/_hooks/usePersistentState";
 import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import { automaticTag } from "~/lib/defaultValues/status";
 
 interface Props {
   userStoryId: string;
@@ -87,6 +87,15 @@ export default function UserStoryDetailPopup({
   );
 
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
+
+  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
+    projectId: projectId as string,
+    itemId: userStoryId,
+  });
+
+  const { data: todoStatus } = api.settings.getTodoTag.useQuery({
+    projectId: projectId as string,
+  });
 
   const {
     data: fetchedUserStory,
@@ -333,12 +342,6 @@ export default function UserStoryDetailPopup({
     };
   };
 
-  const showAutomaticDetails = () => {
-    return (
-      userStoryDetail?.status === undefined || userStoryDetail?.status?.id == ""
-    );
-  };
-
   return (
     <Popup
       scrollRef={scrollContainerRef}
@@ -384,34 +387,46 @@ export default function UserStoryDetailPopup({
                   </div>
                 </div>
 
-                {/* Only show if its not a ghost! */}
-                {userStoryData === undefined && (
-                  <div className="mt-4 flex-1">
-                    <div className="flex">
-                      <h3 className="text-lg font-semibold">Status</h3>
-                      {showAutomaticDetails() && (
-                        <HelpIcon
-                          className="ml-[3px] text-gray-500"
-                          data-tooltip-id="tooltip"
-                          data-tooltip-content="A status is assigned based on the progress of all its tasks."
-                          data-tooltip-place="top-start"
-                          style={{ width: "15px" }}
-                        />
-                      )}
-                    </div>
-                    <StatusPicker
-                      disabled={permission < permissionNumbers.write}
-                      status={userStoryDetail.status}
-                      onChange={async (status) => {
-                        await handleSave({ ...userStoryDetail, status });
-                      }}
-                      showAutomaticStatus={true}
-                    />
-                    {showAutomaticDetails() && (
-                      <ItemAutomaticStatus itemId={userStoryId} />
-                    )}
+                <div className="mt-4 flex-1">
+                  <div className="flex">
+                    <h3 className="text-lg font-semibold">Status</h3>
                   </div>
-                )}
+                  <StatusPicker
+                    disabled={
+                      permission < permissionNumbers.write ||
+                      userStoryDetail.status === undefined ||
+                      userStoryDetail.status?.id === ""
+                    }
+                    status={
+                      userStoryDetail.status === undefined ||
+                      userStoryDetail.status?.id === ""
+                        ? automaticStatus
+                        : userStoryDetail.status
+                    }
+                    onChange={async (status) => {
+                      await handleSave({ ...userStoryDetail, status });
+                    }}
+                  />
+                  <ItemAutomaticStatus
+                    isAutomatic={
+                      userStoryDetail.status === undefined ||
+                      userStoryDetail.status?.id === ""
+                    }
+                    onChange={async (automatic) => {
+                      if (automatic) {
+                        await handleSave({
+                          ...userStoryDetail,
+                          status: automaticTag,
+                        });
+                      } else {
+                        await handleSave({
+                          ...userStoryDetail,
+                          status: todoStatus,
+                        });
+                      }
+                    }}
+                  />
+                </div>
 
                 <BacklogTagList
                   disabled={permission < permissionNumbers.write}

@@ -31,9 +31,8 @@ import {
   useInvalidateQueriesIssueDetails,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
-import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
-import HelpIcon from "@mui/icons-material/Help";
+
 import {
   permissionNumbers,
   type Permission,
@@ -42,6 +41,8 @@ import usePersistentState from "~/app/_hooks/usePersistentState";
 import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import { automaticTag } from "~/lib/defaultValues/status";
+import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 
 interface Props {
   issueId: string;
@@ -93,6 +94,15 @@ export default function IssueDetailPopup({
   const { mutateAsync: deleteIssue, isPending: isDeleting } =
     api.issues.deleteIssue.useMutation();
   const utils = api.useUtils();
+
+  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
+    projectId: projectId as string,
+    itemId: issueId,
+  });
+
+  const { data: todoStatus } = api.settings.getTodoTag.useQuery({
+    projectId: projectId as string,
+  });
 
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -227,9 +237,6 @@ export default function IssueDetailPopup({
       await dismissPopup();
     }
   };
-  const showAutomaticDetails = () => {
-    return issueDetail?.status === undefined || issueDetail?.status?.id == "";
-  };
 
   return (
     <Popup
@@ -282,27 +289,42 @@ export default function IssueDetailPopup({
                 <div className="mt-4 flex-1">
                   <div className="flex">
                     <h3 className="text-lg font-semibold">Status</h3>
-                    {showAutomaticDetails() && (
-                      <HelpIcon
-                        className="ml-[3px] text-gray-500"
-                        data-tooltip-id="tooltip"
-                        data-tooltip-content="A status is assigned based on the progress of all its tasks."
-                        data-tooltip-place="top-start"
-                        style={{ width: "15px" }}
-                      />
-                    )}
                   </div>
                   <StatusPicker
-                    disabled={permission < permissionNumbers.write}
-                    status={issueDetail.status}
+                    disabled={
+                      permission < permissionNumbers.write ||
+                      issueDetail.status === undefined ||
+                      issueDetail.status?.id === ""
+                    }
+                    status={
+                      issueDetail.status === undefined ||
+                      issueDetail.status?.id === ""
+                        ? automaticStatus
+                        : issueDetail.status
+                    }
                     onChange={async (status) => {
                       await handleSave({ ...issueDetail, status });
                     }}
-                    showAutomaticStatus={true}
                   />
-                  {showAutomaticDetails() && (
-                    <ItemAutomaticStatus itemId={issueId} />
-                  )}
+                  <ItemAutomaticStatus
+                    isAutomatic={
+                      issueDetail.status === undefined ||
+                      issueDetail.status?.id === ""
+                    }
+                    onChange={async (automatic) => {
+                      if (automatic) {
+                        await handleSave({
+                          ...issueDetail,
+                          status: automaticTag,
+                        });
+                      } else {
+                        await handleSave({
+                          ...issueDetail,
+                          status: todoStatus,
+                        });
+                      }
+                    }}
+                  />
                 </div>
 
                 <BacklogTagList

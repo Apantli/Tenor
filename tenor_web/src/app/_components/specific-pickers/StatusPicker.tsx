@@ -19,7 +19,6 @@ export default function StatusPicker({
   status,
   onChange,
   className,
-  showAutomaticStatus = false,
   disabled,
 }: Props) {
   const { projectId } = useParams();
@@ -27,34 +26,13 @@ export default function StatusPicker({
     projectId: projectId as string,
   });
 
-  const automaticTag = {
-    id: "",
-    name: "Automatic",
-    color: "#333333",
-    deleted: false,
-    orderIndex: -1,
-    marksTaskAsDone: false,
-  };
-
-  let statusValuesWithAuto: StatusTag[] = [];
-  if (showAutomaticStatus) {
-    statusValuesWithAuto = [automaticTag, ...(statusValues ?? [])];
-  } else {
-    statusValuesWithAuto = statusValues ?? [];
-  }
-
-  let currentStatus = status;
-  if (currentStatus === undefined && showAutomaticStatus) {
-    currentStatus = automaticTag;
-  }
-
   return (
     <PillComponent
-      disabled={disabled}
-      currentTag={currentStatus}
-      allTags={statusValuesWithAuto ?? []}
+      disabled={disabled ?? false}
+      currentTag={status}
+      allTags={statusValues ?? []}
       callBack={(tag) =>
-        onChange(statusValuesWithAuto.find((t) => t.id === tag.id)!)
+        onChange((statusValues ?? []).find((t) => t.id === tag.id)!)
       }
       labelClassName={cn("w-full", className)}
     />
