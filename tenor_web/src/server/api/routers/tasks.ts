@@ -47,7 +47,10 @@ import {
 import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
 import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
 import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
-import { backlogPermissions, taskPermissions } from "~/lib/permission";
+import {
+  backlogPermissions,
+  taskPermissions,
+} from "~/lib/defaultValues/permission";
 import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
 import { dateToString } from "~/utils/helpers/parsers";

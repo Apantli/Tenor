@@ -1,4 +1,18 @@
-import type { FlagsRequired } from "~/lib/defaultProjectValues";
+export interface FlagsRequired {
+  flags: (
+    | "settings"
+    | "performance"
+    | "sprints"
+    | "scrumboard"
+    | "issues"
+    | "backlog"
+    | "retrospective"
+  )[];
+
+  // false/null/pesimistic gets the lowest permission
+  // true/optimistic gets the highest permission
+  optimistic?: boolean;
+}
 
 export const tagPermissions: FlagsRequired = {
   flags: ["settings", "backlog", "issues"],

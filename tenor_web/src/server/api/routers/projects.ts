@@ -18,7 +18,6 @@ import type {
   ProjectStatusCache,
 } from "~/lib/types/firebaseSchemas";
 import type * as admin from "firebase-admin";
-
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -37,14 +36,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { isBase64Valid } from "~/utils/helpers/base64";
-import {
-  defaultActivity,
-  defaultPriorityTypes,
-  defaultRequerimentTypes,
-  defaultRoleList,
-  defaultStatusTags,
-  emptySettings,
-} from "~/lib/defaultProjectValues";
+import { defaultActivity, emptySettings } from "~/lib/defaultValues/project";
 import {
   getProject,
   getProjectRef,
@@ -56,7 +48,7 @@ import {
   getTopProjects,
   getTopProjectStatusCacheRef,
 } from "~/utils/helpers/shortcuts/general";
-import { settingsPermissions } from "~/lib/permission";
+import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "~/utils/helpers/shortcuts/users";
 import {
   getPrioritiesRef,
@@ -65,6 +57,12 @@ import {
 import { getRequirementTypesRef } from "~/utils/helpers/shortcuts/requirements";
 import { shouldRecomputeTopProjects } from "~/lib/cache";
 import { getActivityRef } from "~/utils/helpers/shortcuts/performance";
+import { defaultRoleList } from "~/lib/defaultValues/roles";
+import {
+  defaultPriorityTypes,
+  defaultRequerimentTypes,
+} from "~/lib/defaultValues/requirementTypes";
+import { defaultStatusTags } from "~/lib/defaultValues/status";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",

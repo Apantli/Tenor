@@ -18,7 +18,7 @@ import DependencyList from "./DependencyList";
 import TasksTable, {
   type BacklogItemWithTasks,
 } from "~/app/_components/sections/TasksTable";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePicker } from "~/app/_components/specific-pickers/SizePicker";
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
@@ -45,9 +45,10 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/app/_hooks/useGetPermission";
 
 interface Props {
   userStoryId: string;
@@ -370,7 +371,7 @@ export default function UserStoryDetailPopup({
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Size</h3>
-                    <SizePillComponent
+                    <SizePicker
                       disabled={permission < permissionNumbers.write}
                       currentSize={userStoryDetail.size}
                       callback={async (size) => {

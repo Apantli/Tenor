@@ -16,9 +16,10 @@ import {
   type UserStoryType,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useMemo } from "react";
 import { api } from "~/trpc/react";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/app/_hooks/useGetPermission";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow

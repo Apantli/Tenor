@@ -15,7 +15,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import TasksTable from "~/app/_components/sections/TasksTable";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePicker } from "~/app/_components/specific-pickers/SizePicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
@@ -35,12 +35,13 @@ import {
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import {
   permissionNumbers,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/app/_hooks/useGetPermission";
 
 interface Props {
   issueId: string;
@@ -265,7 +266,7 @@ export default function IssueDetailPopup({
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Size</h3>
-                    <SizePillComponent
+                    <SizePicker
                       disabled={permission < permissionNumbers.write}
                       currentSize={issueDetail.size}
                       callback={async (size) => {
