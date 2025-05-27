@@ -1,4 +1,4 @@
-import { type EEGDataPointWithTimestamp } from "~/app/(logged)/project/[projectId]/sprint-retrospective/ConversationPopup";
+import type { EEGDataPointWithTimestamp } from "~/app/(logged)/project/[projectId]/retrospective/ConversationPopup";
 
 type EmotionClassificationResult = {
   emotion: "relaxed" | "happy" | "stressed" | "angry" | "neutral";

@@ -20,6 +20,7 @@ import {
   BacklogItemSchema,
   BacklogItemZodType,
   TaskSchema,
+  TimestampType,
 } from "~/lib/types/zodFirebaseSchema";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import {
@@ -49,6 +50,7 @@ import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 import { backlogPermissions, taskPermissions } from "~/lib/permission";
 import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
+import { dateToString } from "~/utils/helpers/parsers";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -73,6 +75,31 @@ export const tasksRouter = createTRPCRouter({
    * @returns {object} Object with success status and the created task ID
    * @throws {TRPCError} If there's an error creating the task
    */
+  getTasksByDate: roleRequiredProcedure(backlogPermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const tasks = await getTasks(ctx.firestore, input.projectId);
+
+      const tasksByDate: Record<string, WithId<Task>[]> = {};
+      tasks.forEach((task) => {
+        const dateKey = task.dueDate
+          ? (dateToString(task.dueDate) ?? undefined)
+          : undefined;
+        if (!dateKey) {
+          return;
+        }
+
+        if (!tasksByDate[dateKey]) {
+          tasksByDate[dateKey] = [];
+        }
+        tasksByDate[dateKey].push(task);
+      });
+      return tasksByDate;
+    }),
   createTask: protectedProcedure
     .input(
       z.object({
@@ -154,7 +181,6 @@ export const tasksRouter = createTRPCRouter({
         itemId,
       );
     }),
-
   /**
    * @procedure getTaskDetail
    * @description Gets detailed information about a specific task
@@ -175,7 +201,28 @@ export const tasksRouter = createTRPCRouter({
         taskId,
       );
     }),
+  modifyDueDate: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        taskId: z.string(),
+        dueDate: TimestampType,
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, taskId, dueDate } = input;
+      const taskRef = getTaskRef(ctx.firestore, projectId, taskId);
 
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: taskRef.id,
+        type: "TS",
+        action: "update",
+      });
+      await taskRef.update({ dueDate });
+    }),
   /**
    * @procedure modifyTask
    * @description Updates a task with new data

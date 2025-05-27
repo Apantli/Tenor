@@ -3,8 +3,11 @@ import { cn } from "~/lib/utils";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CardColumn from "./CardColumn";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import {
+  type AdvancedSearchFilters,
+  matchesSearchFilters,
+} from "~/app/_hooks/useAdvancedSearchFilters";
 // import type { Tag } from "~/lib/types/firebaseSchemas";
-import { type RegexItem } from "~/app/(logged)/project/[projectId]/scrumboard/AdvancedSearch";
 
 // WithId<BasicInfo> change into only needed info...
 
@@ -25,7 +28,7 @@ interface Props {
   header: React.ReactNode;
   disabled?: boolean;
   filter: string;
-  regex: RegexItem[];
+  advancedFilters: AdvancedSearchFilters;
 }
 
 export default function AssignableCardColumn({
@@ -40,7 +43,7 @@ export default function AssignableCardColumn({
   header,
   disabled = false,
   filter,
-  // regex,
+  advancedFilters,
 }: Props) {
   // Check there's selected items and none of them are in this column
   const availableToBeAssignedTo =
@@ -60,15 +63,8 @@ export default function AssignableCardColumn({
         cards={
           column.itemIds
             .map((itemId: string) => items[itemId])
-            .filter((val: KanbanCard | undefined): val is KanbanCard => {
-              if (val === undefined) return false;
-              // check for filters
-              if (
-                filter &&
-                !val.name.toLowerCase().includes(filter.toLowerCase())
-              )
-                return false;
-              return true;
+            .filter((val: KanbanCard | undefined) => {
+              return matchesSearchFilters(val, filter, advancedFilters);
             }) ?? []
         }
         selection={selectedItems}
