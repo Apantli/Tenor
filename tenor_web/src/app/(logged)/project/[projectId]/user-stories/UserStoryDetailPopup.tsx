@@ -560,6 +560,7 @@ export default function UserStoryDetailPopup({
       {editMode && (
         <>
           <InputTextField
+            id="story-name-field"
             label="Story name"
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
@@ -567,6 +568,7 @@ export default function UserStoryDetailPopup({
             containerClassName="mb-4"
           />
           <InputTextAreaField
+            id="story-description-field"
             label="Story description"
             value={editForm.description}
             onChange={(e) =>
@@ -577,6 +579,7 @@ export default function UserStoryDetailPopup({
             containerClassName="mb-4"
           />
           <InputTextAreaField
+            id="story-criteria-field"
             label="Acceptance Criteria"
             value={editForm.acceptanceCriteria}
             chatPosition="right"

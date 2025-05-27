@@ -1211,6 +1211,7 @@ export default function RequirementsTable() {
               {!requirementEditedData || editingRequirement ? (
                 <div className="pt-4">
                   <InputTextField
+                    id="requirement-title-field"
                     label="Title"
                     containerClassName="mb-4"
                     value={
@@ -1233,6 +1234,7 @@ export default function RequirementsTable() {
                     data-cy="requirement-name-input"
                   />
                   <InputTextAreaField
+                    id="requirement-description-field"
                     label="Description"
                     html-rows="4"
                     className="min-h-[120px] w-full resize-none"

@@ -179,6 +179,7 @@ export function CreateTaskForm({
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Task Name</label>
           <InputTextField
+            id="task-name-field"
             value={createForm.name}
             onChange={(e) =>
               setCreateForm({ ...createForm, name: e.target.value })
@@ -192,6 +193,7 @@ export function CreateTaskForm({
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Notes</label>
           <InputTextAreaField
+            id="task-description-field"
             value={createForm.description}
             onChange={(e) =>
               setCreateForm({ ...createForm, description: e.target.value })

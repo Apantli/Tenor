@@ -372,6 +372,7 @@ export default function IssueDetailPopup({
       {editMode && (
         <div className="flex flex-col gap-4">
           <InputTextField
+            id="issue-name-field"
             label="Issue name"
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
@@ -379,6 +380,7 @@ export default function IssueDetailPopup({
             containerClassName=""
           />
           <InputTextAreaField
+            id="issue-description-field"
             label="Issue description"
             value={editForm.description}
             onChange={(e) =>
@@ -388,6 +390,7 @@ export default function IssueDetailPopup({
             containerClassName="min-h-36"
           />
           <InputTextAreaField
+            id="issue-steps-field"
             chatPosition="right"
             label="Steps to recreate"
             value={editForm.stepsToRecreate}

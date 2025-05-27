@@ -283,6 +283,7 @@ export default function InputField({
           <div className={cn("absolute bottom-2 right-2")}>
             <Dropdown
               allowMove
+              uniqueKey={id}
               place={chatPlacement ?? "bottom"}
               label={
                 <div

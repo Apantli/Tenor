@@ -311,6 +311,7 @@ export default function TaskDetailPopup({
       {editMode && (
         <>
           <InputTextField
+            id="task-name-field"
             label="Task Name"
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
@@ -318,6 +319,7 @@ export default function TaskDetailPopup({
             containerClassName="mb-4"
           />
           <InputTextAreaField
+            id="task-description-field"
             label="Notes"
             value={editForm.description}
             onChange={(e) =>

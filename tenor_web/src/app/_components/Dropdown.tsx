@@ -13,6 +13,7 @@ import useWindowResize from "../_hooks/useWindowResize";
 import useAfterScroll from "../_hooks/useAfterScroll";
 import BaseButton, { type BaseButtonProps } from "./buttons/BaseButton";
 import Portal from "./Portal";
+import usePersistentState from "../_hooks/usePersistentState";
 
 interface Props {
   label: React.ReactNode;
@@ -26,6 +27,7 @@ interface Props {
   close?: boolean;
   setOpenState?: React.Dispatch<React.SetStateAction<boolean>>;
   allowMove?: boolean;
+  uniqueKey?: string;
   place?: "top" | "bottom" | "left" | "right";
 }
 
@@ -54,6 +56,7 @@ export default function Dropdown({
   close,
   setOpenState,
   allowMove,
+  uniqueKey,
   place,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
@@ -155,56 +158,61 @@ export default function Dropdown({
     let vertAlignment: "top" | "bottom" = "top";
     let horiAlignment: "left" | "right" = "right";
 
-    switch (place) {
-      case "top":
+    if (position.x == 0 && position.y == 0) {
+      switch (place) {
+        case "top":
+          top = triggerRect.top - dropdownHeight + window.scrollY;
+          left = triggerRect.right - dropdownWidth + window.scrollX;
+          vertAlignment = "bottom";
+          break;
+        case "left":
+          top = triggerRect.top + window.scrollY;
+          left = triggerRect.left - dropdownWidth + window.scrollX;
+          horiAlignment = "right";
+          break;
+        case "right":
+          top = triggerRect.top + window.scrollY;
+          left = triggerRect.right + window.scrollX;
+          horiAlignment = "left";
+          break;
+        case "bottom":
+        default:
+          top = triggerRect.bottom + window.scrollY;
+          left = triggerRect.right - dropdownWidth + window.scrollX;
+          vertAlignment = "top";
+          break;
+      }
+
+      // Dynamic vertical overflow correction
+      const overflowsTop = top < window.scrollY;
+      const overflowsBottom =
+        top + dropdownHeight > window.scrollY + viewportHeight;
+      if (place === "top" && overflowsTop) {
+        // Flip to bottom
+        top = triggerRect.bottom + window.scrollY;
+        vertAlignment = "top";
+      } else if (place === "bottom" && overflowsBottom) {
+        // Flip to top
         top = triggerRect.top - dropdownHeight + window.scrollY;
-        left = triggerRect.right - dropdownWidth + window.scrollX;
         vertAlignment = "bottom";
-        break;
-      case "left":
-        top = triggerRect.top + window.scrollY;
-        left = triggerRect.left - dropdownWidth + window.scrollX;
-        horiAlignment = "right";
-        break;
-      case "right":
-        top = triggerRect.top + window.scrollY;
+      }
+
+      // Dynamic horizontal overflow correction
+      const overflowsLeft = left < 0;
+      const overflowsRight =
+        left + dropdownWidth > window.scrollX + viewportWidth;
+      if (place === "left" && overflowsLeft) {
+        // Flip to right
         left = triggerRect.right + window.scrollX;
         horiAlignment = "left";
-        break;
-      case "bottom":
-      default:
-        top = triggerRect.bottom + window.scrollY;
-        left = triggerRect.right - dropdownWidth + window.scrollX;
-        vertAlignment = "top";
-        break;
-    }
-
-    // Dynamic vertical overflow correction
-    const overflowsTop = top < window.scrollY;
-    const overflowsBottom =
-      top + dropdownHeight > window.scrollY + viewportHeight;
-    if (place === "top" && overflowsTop) {
-      // Flip to bottom
-      top = triggerRect.bottom + window.scrollY;
-      vertAlignment = "top";
-    } else if (place === "bottom" && overflowsBottom) {
-      // Flip to top
-      top = triggerRect.top - dropdownHeight + window.scrollY;
-      vertAlignment = "bottom";
-    }
-
-    // Dynamic horizontal overflow correction
-    const overflowsLeft = left < 0;
-    const overflowsRight =
-      left + dropdownWidth > window.scrollX + viewportWidth;
-    if (place === "left" && overflowsLeft) {
-      // Flip to right
-      left = triggerRect.right + window.scrollX;
-      horiAlignment = "left";
-    } else if (place === "right" && overflowsRight) {
-      // Flip to left
-      left = triggerRect.left - dropdownWidth + window.scrollX;
-      horiAlignment = "right";
+      } else if (place === "right" && overflowsRight) {
+        // Flip to left
+        left = triggerRect.left - dropdownWidth + window.scrollX;
+        horiAlignment = "right";
+      }
+    } else {
+      top = position.y;
+      left = position.x;
     }
 
     // Final clamps to keep within viewport if needed
@@ -223,6 +231,57 @@ export default function Dropdown({
 
     return `${vertAlignment}-${horiAlignment}` as Alignment;
   }
+
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = usePersistentState(
+    { x: 0, y: 0 },
+    `dropdownpos-${uniqueKey}`,
+  );
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!allowMove || !dropdownRef.current) return;
+    e.preventDefault();
+    const rect = dropdownRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+    setIsDragging(true);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDragging) return;
+      const x = Math.max(
+        0,
+        Math.min(
+          e.clientX - dragOffset.x,
+          window.innerWidth - (dropdownRef.current?.offsetWidth ?? 0),
+        ),
+      );
+      const y = Math.max(
+        0,
+        Math.min(
+          e.clientY - dragOffset.y,
+          window.innerHeight - (dropdownRef.current?.offsetHeight ?? 0),
+        ),
+      );
+      setPosition({ x, y });
+    };
+
+    const handleMouseUp = () => {
+      if (isDragging) setIsDragging(false);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, dragOffset]);
 
   return (
     <div
@@ -251,6 +310,13 @@ export default function Dropdown({
           )}
           ref={dropdownRef}
           data-cy="dropdown"
+          style={{
+            top: allowMove ? `${position.y}px` : undefined,
+            left: allowMove ? `${position.x}px` : undefined,
+            position: "absolute",
+            cursor: allowMove ? "move" : "default",
+          }}
+          onMouseDown={handleMouseDown}
         >
           {childrenArray.map((option, i) => {
             return (

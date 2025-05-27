@@ -268,6 +268,7 @@ export default function ProjectCreator() {
               {/* Project Name */}
               <div className="min-w-[300px] flex-1">
                 <InputTextField
+                  id="project-name-field"
                   label={`Project Name (${form.name.length}/${maxProjectNameLength})`}
                   value={form.name}
                   onChange={handleChange}
@@ -293,6 +294,7 @@ export default function ProjectCreator() {
 
             {/* Project Description */}
             <InputTextAreaField
+              id="project-description-field"
               label="Description"
               html-rows="4"
               placeholder="What is this project about..."
@@ -322,6 +324,7 @@ export default function ProjectCreator() {
           <div className="flex w-full flex-col gap-y-4">
             {/* Context Text */}
             <InputTextAreaField
+              id="project-context-field"
               className="min-h-[180px]"
               label="Context"
               html-rows="20"

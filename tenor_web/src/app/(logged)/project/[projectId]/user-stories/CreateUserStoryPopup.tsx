@@ -212,6 +212,7 @@ export default function CreateUserStoryPopup({
       disablePassiveDismiss={isModified()}
     >
       <InputTextField
+        id="story-name-field"
         label="Story name"
         value={createForm.name}
         onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
@@ -219,6 +220,7 @@ export default function CreateUserStoryPopup({
         containerClassName="mb-4"
       />
       <InputTextAreaField
+        id="story-description-field"
         label="Story description"
         value={createForm.description}
         onChange={(e) =>
@@ -228,6 +230,7 @@ export default function CreateUserStoryPopup({
         containerClassName="mb-4"
       />
       <InputTextAreaField
+        id="story-criteria-field"
         chatPosition="right"
         label="Acceptance Criteria"
         value={createForm.acceptanceCriteria}
