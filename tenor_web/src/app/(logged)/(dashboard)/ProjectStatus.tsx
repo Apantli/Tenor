@@ -98,26 +98,31 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
 
       <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
         {!isPending && !isLoading && (
-          <RefreshIcon
-            data-tooltip-id="tooltip"
-            data-tooltip-content="Refetch project status"
-            data-tooltip-place="top-start"
-            onClick={async () => {
-              await recomputeTopProjectStatus({
-                count: 4,
-              });
-            }}
-            className="cursor-pointer"
-          />
+          <>
+            <RefreshIcon
+              data-tooltip-id="tooltip"
+              data-tooltip-content="Refetch project status"
+              data-tooltip-place="top-start"
+              onClick={async () => {
+                await recomputeTopProjectStatus({
+                  count: 4,
+                });
+              }}
+              className="cursor-pointer"
+            />
+            {data?.fetchDate ? (
+              <p>Updated {timestampToDate(data.fetchDate).toLocaleString()}</p>
+            ) : (
+              <p>Updated {new Date().toLocaleString()}</p>
+            )}
+          </>
         )}
-        {isPending ? ( // Also show loading text on initial load
+        {isPending && ( // Also show loading text on initial load
           <>
             <LoadingSpinner />
             <p>Refreshing project status...</p>
           </>
-        ) : data?.fetchDate ? (
-          <p>Updated {timestampToDate(data.fetchDate).toLocaleString()}</p>
-        ) : null}
+        )}
       </div>
     </div>
   );

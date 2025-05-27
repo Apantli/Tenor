@@ -24,7 +24,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useInvalidateQueriesTaskDetails } from "~/app/_hooks/invalidateHooks";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 export default function ProjectCalendar() {
   // GENERAL

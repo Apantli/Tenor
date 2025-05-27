@@ -4,9 +4,9 @@ import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import {
   checkPermissions,
-  emptyRole,
   type FlagsRequired,
-} from "~/lib/defaultProjectValues";
+} from "~/lib/defaultValues/permission";
+import { emptyRole } from "~/lib/defaultValues/roles";
 import type { Permission } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 

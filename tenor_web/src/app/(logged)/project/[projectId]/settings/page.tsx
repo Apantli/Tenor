@@ -176,6 +176,7 @@ export default function ProjectGeneralSettings() {
             />
           </div>
           <InputTextField
+            id="project-name-field"
             label="Project Name"
             className="w-full"
             labelClassName="text-lg font-semibold"
@@ -186,6 +187,7 @@ export default function ProjectGeneralSettings() {
             containerClassName="mt-3"
           />
           <InputTextAreaField
+            id="project-description-field"
             label="Project Description"
             labelClassName="text-lg font-semibold"
             className="h-[115px] w-full"

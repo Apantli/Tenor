@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
-} from "../defaultProjectValues";
+} from "../defaultValues/project";
 
 export const UserStoryZodType = z.literal("US");
 export const IssueZodType = z.literal("IS");

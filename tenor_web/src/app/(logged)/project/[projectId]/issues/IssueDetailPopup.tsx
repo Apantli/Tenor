@@ -15,7 +15,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import TasksTable from "~/app/_components/sections/TasksTable";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePicker } from "~/app/_components/specific-pickers/SizePicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
@@ -35,12 +35,13 @@ import {
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import {
   permissionNumbers,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface Props {
   issueId: string;
@@ -265,7 +266,7 @@ export default function IssueDetailPopup({
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold">Size</h3>
-                    <SizePillComponent
+                    <SizePicker
                       disabled={permission < permissionNumbers.write}
                       currentSize={issueDetail.size}
                       callback={async (size) => {
@@ -372,6 +373,7 @@ export default function IssueDetailPopup({
       {editMode && (
         <div className="flex flex-col gap-4">
           <InputTextField
+            id="issue-name-field"
             label="Issue name"
             value={editForm.name}
             onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
@@ -379,6 +381,7 @@ export default function IssueDetailPopup({
             containerClassName=""
           />
           <InputTextAreaField
+            id="issue-description-field"
             label="Issue description"
             value={editForm.description}
             onChange={(e) =>
@@ -388,6 +391,8 @@ export default function IssueDetailPopup({
             containerClassName="min-h-36"
           />
           <InputTextAreaField
+            id="issue-steps-field"
+            chatPosition="right"
             label="Steps to recreate"
             value={editForm.stepsToRecreate}
             onChange={(e) =>

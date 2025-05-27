@@ -17,7 +17,8 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();
@@ -302,6 +303,7 @@ export default function ProjectAIConfig() {
       {links && loadedFiles && !isLoading ? (
         <div className="flex flex-col gap-4">
           <InputTextAreaField
+            id="project-context-field"
             disabled={permission < permissionNumbers.write}
             label="Project Context"
             value={newText}
