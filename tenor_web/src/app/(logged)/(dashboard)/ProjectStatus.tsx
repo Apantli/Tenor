@@ -74,9 +74,11 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
     >
       <h2 className="mb-3 ml-6 text-2xl font-semibold">Project status</h2>
 
-      {isLoading && !isError ? (
-        <div className="flex flex-row gap-3 align-middle">
-          <LoadingSpinner color="primary" />
+      {isLoading ? (
+        <div className="mx-auto my-auto flex flex-col items-center">
+          <span className="mx-auto text-[100px] text-gray-500">
+            <LoadingSpinner color="primary" />
+          </span>
         </div>
       ) : isError ||
         !data ||
@@ -95,7 +97,7 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
       )}
 
       <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
-        {!isPending && (
+        {!isPending && !isLoading && (
           <RefreshIcon
             data-tooltip-id="tooltip"
             data-tooltip-content="Refetch project status"
@@ -108,7 +110,7 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
             className="cursor-pointer"
           />
         )}
-        {isPending || (isLoading && !isError) ? ( // Also show loading text on initial load
+        {isPending ? ( // Also show loading text on initial load
           <>
             <LoadingSpinner />
             <p>Refreshing project status...</p>
