@@ -27,16 +27,16 @@ import {
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import { type RegexItem } from "./AdvancedSearch";
+import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/app/_hooks/useGetPermission";
 
 interface Props {
   filter: string;
-  regex: RegexItem[];
+  advancedFilters: AdvancedSearchFilters;
 }
 
-export default function ItemsKanban({ filter, regex }: Props) {
+export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -288,7 +288,7 @@ export default function ItemsKanban({ filter, regex }: Props) {
               return (
                 <AssignableCardColumn
                   filter={filter}
-                  regex={regex}
+                  advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedItemId}
                   assignSelectionToColumn={assignSelectionToColumn}
