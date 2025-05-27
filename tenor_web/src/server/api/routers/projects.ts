@@ -470,7 +470,7 @@ export const projectsRouter = createTRPCRouter({
         }),
       );
       topProjects.topProjects = projectsWithName;
-      return JSON.parse(JSON.stringify(topProjects)) as ProjectStatusCache;
+      return topProjects;
     }),
 
   recomputeTopProjectStatus: protectedProcedure
