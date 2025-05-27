@@ -29,7 +29,7 @@ import {
   getSprintsRef,
   updateSprintNumberOrder,
 } from "~/utils/helpers/shortcuts/sprints";
-import { sprintPermissions } from "~/lib/permission";
+import { sprintPermissions } from "~/lib/defaultValues/permission";
 import {
   getUserStories,
   getUserStoriesRef,

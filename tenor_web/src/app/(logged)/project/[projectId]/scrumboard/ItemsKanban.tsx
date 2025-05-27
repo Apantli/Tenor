@@ -26,9 +26,10 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { type RegexItem } from "./AdvancedSearch";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/app/_hooks/useGetPermission";
 
 interface Props {
   filter: string;

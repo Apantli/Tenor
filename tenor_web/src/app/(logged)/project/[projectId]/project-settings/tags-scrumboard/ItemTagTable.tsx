@@ -18,7 +18,8 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/app/_hooks/useGetPermission";
 
 interface TagTableConfig {
   title: string;
