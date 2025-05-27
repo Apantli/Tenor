@@ -121,7 +121,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
 
   const { mutateAsync: deleteTag } = deleteTagMutation || {};
 
-  const handleOpen = async function (tagId: string) {
+  const handleOpenTag = async function (tagId: string) {
     setEditMode(false);
     setSelectedTagId(tagId);
     setShowDetailTag(true);
@@ -256,7 +256,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
           <button
             className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
             onClick={async () => {
-              await handleOpen(row.id);
+              await handleOpenTag(row.id);
             }}
           >
             {row.name}

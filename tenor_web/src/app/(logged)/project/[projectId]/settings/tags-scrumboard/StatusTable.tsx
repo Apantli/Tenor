@@ -90,7 +90,7 @@ export default function StatusTable() {
   const { mutateAsync: reorderStatus } =
     api.settings.reorderStatusTypes.useMutation();
 
-  const handleOpen = async function (statusId: string) {
+  const handleOpenStatus = async function (statusId: string) {
     setEditMode(false);
     setSelectedStatusId(statusId);
     setShowDetailStatus(true);
@@ -348,7 +348,7 @@ export default function StatusTable() {
                   disabled={permission < permissionNumbers.write}
                   key={item.id}
                   item={item}
-                  onOpen={() => handleOpen(item.id)}
+                  onOpen={() => handleOpenStatus(item.id)}
                   onEdit={() => handleModifyStatus(item.id)}
                   onDelete={() => handleDeleteStatus(item.id)}
                   onToggleDone={() =>
