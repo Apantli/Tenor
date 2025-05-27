@@ -25,11 +25,11 @@ import TagComponent from "~/app/_components/TagComponent";
 import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import { defaultRoleList } from "~/lib/defaultProjectValues";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
 import { acceptableTagColors, getPillColorByActivityType } from "~/utils/helpers/colorUtils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
+import { defaultRoleList } from "~/lib/defaultValues/roles";
 
 // Z index documentation:
 // 0-1000: Default z-index range for most elements (feel free to contribute to the documentation)
@@ -676,7 +676,7 @@ function InputComponents() {
 
   return (
     <div>
-      <InputTextField label="Text Field" />
+      <InputTextField id="component-showcase-text-field" label="Text Field" />
       <InputFileField
         label="File"
         accept="image/*"
@@ -686,7 +686,10 @@ function InputComponents() {
         }}
       />
 
-      <InputTextAreaField label="Text Area" />
+      <InputTextAreaField
+        label="Text Area"
+        id="component-showcase-text-area-field"
+      />
       <FileList
         label="Context Files"
         files={[]}
@@ -820,4 +823,3 @@ function DropdownColorPickerShowcase() {
     </div>
   );
 }
-

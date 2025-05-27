@@ -15,7 +15,11 @@ function usePersistentState<T>(initialValue: T, key: string) {
     localStorage.setItem(fullKey, JSON.stringify(newValue));
   };
 
-  return [value, wrappedSetValue] as const;
+  const resetValue = () => {
+    localStorage.removeItem(fullKey);
+  };
+
+  return [value, wrappedSetValue, resetValue] as const;
 }
 
 export default usePersistentState;
