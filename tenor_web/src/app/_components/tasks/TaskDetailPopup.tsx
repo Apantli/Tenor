@@ -34,7 +34,7 @@ import { useSearchParam } from "~/app/_hooks/useSearchParam";
 import DependencyList from "./DependencyList";
 import { TRPCClientError } from "@trpc/client";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface Props {
   taskId: string;

@@ -27,7 +27,7 @@ import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 
 interface Props {

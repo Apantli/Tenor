@@ -13,7 +13,7 @@ import SettingsSizeTable from "~/app/_components/sections/SizeTable";
 import { useInvalidateQueriesScrumPreferences } from "~/app/_hooks/invalidateHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import {
   defaultMaximumSprintStoryPoints,
