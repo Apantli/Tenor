@@ -16,11 +16,9 @@ import { auth } from "../auth";
 
 import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import { RoleSchema } from "~/lib/types/zodFirebaseSchema";
-import {
-  checkPermissions,
-  type FlagsRequired,
-  ownerRole,
-} from "~/lib/defaultProjectValues";
+import type { FlagsRequired } from "~/lib/defaultValues/permission";
+import { ownerRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/app/_hooks/useGetPermission";
 
 /**
  * 1. CONTEXT

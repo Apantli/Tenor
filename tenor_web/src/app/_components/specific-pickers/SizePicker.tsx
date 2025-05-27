@@ -1,6 +1,6 @@
 import type { Size } from "~/lib/types/firebaseSchemas";
 import PillComponent from "../PillComponent";
-import { sizeTags, sizeToInt } from "~/lib/defaultProjectValues";
+import { sizeTags, sizeToInt } from "~/lib/defaultValues/size";
 
 interface Props {
   projectId?: string;
@@ -10,7 +10,7 @@ interface Props {
   disabled?: boolean;
 }
 
-export function SizePillComponent({
+export function SizePicker({
   currentSize,
   callback,
   className,
@@ -30,12 +30,3 @@ export function SizePillComponent({
     />
   );
 }
-
-export const sizeToColor: Record<Size, string> = {
-  XS: "#4A90E2", // Light Blue
-  S: "#2c9659", // Green
-  M: "#a38921", // Yellow
-  L: "#E67E22", // Orange
-  XL: "#E74C3C", // Red
-  XXL: "#8E44AD", // Purple
-};

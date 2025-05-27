@@ -32,8 +32,9 @@ import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "../Popup";
 import TaskDetailPopup from "../tasks/TaskDetailPopup";
 import type { TaskCol } from "~/lib/types/columnTypes";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { cn } from "~/lib/utils";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/app/_hooks/useGetPermission";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];
@@ -449,6 +450,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
                 size: task.size,
                 assignee: task.assignee,
                 dueDate: task.dueDate,
+                dependencies: task.dependencies,
+                requiredBy: task.requiredBy,
               }) as TaskDetail,
           ),
         ]);
@@ -529,8 +532,8 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
           description: task.description,
           statusId: task.status.id ?? "",
           size: task.size,
-          dependencyIds: task.dependencies.map((dep) => dep.id),
-          requiredByIds: task.requiredBy.map((dep) => dep.id),
+          dependencies: [],
+          requiredBy: [],
         })) ?? [];
 
       generatedData = await generateTasks({
