@@ -7,7 +7,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import RoleTable from "~/app/_components/sections/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/checkPermission";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";

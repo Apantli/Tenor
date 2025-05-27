@@ -48,7 +48,7 @@ import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/checkPermission";
 
 interface Props {
   userStoryId: string;

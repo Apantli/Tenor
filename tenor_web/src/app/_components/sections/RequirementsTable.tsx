@@ -39,7 +39,7 @@ import type { RequirementCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/checkPermission";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 

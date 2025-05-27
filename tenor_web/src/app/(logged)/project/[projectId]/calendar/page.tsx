@@ -25,7 +25,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useInvalidateQueriesTaskDetails } from "~/app/_hooks/invalidateHooks";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/app/_hooks/useGetPermission";
+import { checkPermissions } from "~/lib/checkPermission";
 
 export default function ProjectCalendar() {
   // GENERAL
