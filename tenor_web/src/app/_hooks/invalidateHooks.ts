@@ -35,6 +35,10 @@ export const useInvalidateQueriesAllTasks = () => {
     await utils.projects.getProjectActivities.invalidate({
       projectId: projectId,
     });
+
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -72,6 +76,10 @@ export const useInvalidateQueriesAllEpics = () => {
     await utils.projects.getProjectActivities.invalidate({
       projectId: projectId,
     });
+
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -91,6 +99,9 @@ export const useInvalidateQueriesAllUserStories = () => {
       projectId: projectId,
     });
     await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
   };
@@ -165,6 +176,9 @@ export const useInvalidateQueriesAllIssues = () => {
       projectId: projectId,
     });
     await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
   };
@@ -285,6 +299,9 @@ export const useInvalidateQueriesAllSprints = () => {
       projectId: projectId,
     });
     await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
   };

@@ -390,75 +390,63 @@ export const getItemActivityDetails = async (
     {} as Record<string, WithId<ProjectActivity>>,
   );
 
-  // Create references to collections
-  const tasksRef = getProjectRef(firestore, projectId).collection("tasks");
-  const issuesRef = getProjectRef(firestore, projectId).collection("issues");
-  const userStoriesRef = getProjectRef(firestore, projectId).collection(
-    "userStories",
-  );
-  const epicsRef = getProjectRef(firestore, projectId).collection("epics");
-  const sprintsRef = getProjectRef(firestore, projectId).collection("sprints");
+  // Create a collection map to just make references
+  const COLLECTION_MAP = {
+    "TS": "tasks",
+    "IS": "issues",
+    "US": "userStories",
+    "EP": "epics",
+    "SP": "sprints"
+  }
 
-  // Fetch all items including deleted ones
-  const [tasks, issues, userStories, epics, sprints] = await Promise.all([
-    // Include deleted items by not filtering in the query
-    tasksRef
-      .get()
-      .then((snapshot) =>
-        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Task) })),
-      ),
-    issuesRef
-      .get()
-      .then((snapshot) =>
-        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Issue) })),
-      ),
-    userStoriesRef
-      .get()
-      .then((snapshot) =>
-        snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...(doc.data() as UserStory),
-        })),
-      ),
-    epicsRef
-      .get()
-      .then((snapshot) =>
-        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Epic) })),
-      ),
-    sprintsRef
-      .get()
-      .then((snapshot) =>
-        snapshot.docs.map((doc) => ({ id: doc.id, ...(doc.data() as Sprint) })),
-      ),
-  ]);
+  // Array to hold the results
+  const results = {
+    tasks: [] as any[],
+    issues: [] as any[],
+    userStories: [] as any[],
+    epics: [] as any[],
+    sprints: [] as any[],
+  }
 
-  // Filter items that have activities associated with them
-  const tasksActivities = tasks.filter((task) => activityMap[task.id]);
-  const issuesActivities = issues.filter((issue) => activityMap[issue.id]);
-  const userStoriesActivities = userStories.filter((us) => activityMap[us.id]);
-  const epicsActivities = epics.filter((epic) => activityMap[epic.id]);
-  const sprintsActivities = sprints.filter((sprint) => activityMap[sprint.id]);
+  // Iterate in the activityMap to get the item type and itemId
+  for (const activity of activities) {
+    if (!activity.itemId) continue;
+    const itemType = activity.type?.toUpperCase();
+    const itemId = activity.itemId;
 
-  return {
-    tasksActivities: tasksActivities.map((task) => ({
-      ...task,
-      activity: activityMap[task.id]!,
-    })),
-    issuesActivities: issuesActivities.map((issue) => ({
-      ...issue,
-      activity: activityMap[issue.id]!,
-    })),
-    userStoriesActivities: userStoriesActivities.map((us) => ({
-      ...us,
-      activity: activityMap[us.id]!,
-    })),
-    epicsActivities: epicsActivities.map((epic) => ({
-      ...epic,
-      activity: activityMap[epic.id]!,
-    })),
-    sprintsActivities: sprintsActivities.map((sprint) => ({
-      ...sprint,
-      activity: activityMap[sprint.id]!,
-    })),
-  };
+    if (!itemType || !itemId || !(itemType in COLLECTION_MAP)) continue;
+
+    // Save the collection name based on the item type
+    const collectionName =  COLLECTION_MAP[itemType as keyof typeof COLLECTION_MAP];
+    // Make the reference
+    const itemRef = getProjectRef(firestore, projectId).collection(collectionName).doc(itemId);
+    const docSnap = await itemRef.get();
+
+    // If the document does not exist, continue to the next iteration
+    if (!docSnap.exists) continue;
+
+    // Get the item data
+    const data = { id: itemId, ...docSnap.data(), activity }
+
+    switch (collectionName) {
+      case "tasks":
+        results.tasks.push(data);
+        break;
+      case "issues":
+        results.issues.push(data);
+        break;
+      case "userStories":
+        results.userStories.push(data);
+        break;
+      case "epics":
+        results.epics.push(data);
+        break;
+      case "sprints":
+        results.sprints.push(data);
+        break;
+      default:
+    }
+  }
+
+  return results;
 };

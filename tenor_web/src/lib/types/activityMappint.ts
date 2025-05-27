@@ -1,14 +1,6 @@
 import { useMemo } from "react";
-import type { AllBasicItemType, ProjectActivity, WithId } from "./firebaseSchemas";
+import type { ActivityItem } from "./firebaseSchemas";
 import { api } from "~/trpc/react";
-
-export interface ActivityItem {
-  id: string;
-  name: string;
-  type: AllBasicItemType;
-  scrumId?: number
-  activity: WithId<ProjectActivity>;
-}
 
 export function useActivityItemsMap(projectId: string) {
   const { data: activitiesDetails } = api.projects.getActivityDetails.useQuery({ projectId });
@@ -16,7 +8,7 @@ export function useActivityItemsMap(projectId: string) {
   return useMemo(() => {
     const map: Record<string, ActivityItem> = {};
 
-    activitiesDetails?.tasksActivities.forEach((task) => {
+    activitiesDetails?.tasks.forEach((task) => {
       map[task.id] = {
         id: task.id,
         name: task.name,
@@ -26,7 +18,7 @@ export function useActivityItemsMap(projectId: string) {
       }
     })
 
-    activitiesDetails?.userStoriesActivities.forEach((userStory) => {
+    activitiesDetails?.userStories.forEach((userStory) => {
       map[userStory.id] = {
         id: userStory.id,
         name: userStory.name,
@@ -36,7 +28,7 @@ export function useActivityItemsMap(projectId: string) {
       }
     })
 
-    activitiesDetails?.epicsActivities.forEach((epic) => {
+    activitiesDetails?.epics.forEach((epic) => {
       map[epic.id] = {
         id: epic.id,
         name: epic.name,
@@ -46,7 +38,7 @@ export function useActivityItemsMap(projectId: string) {
       }
     })
 
-    activitiesDetails?.issuesActivities.forEach((issue) => {
+    activitiesDetails?.issues.forEach((issue) => {
       map[issue.id] = {
         id: issue.id,
         name: issue.name,
@@ -56,7 +48,7 @@ export function useActivityItemsMap(projectId: string) {
       }
     })
 
-    activitiesDetails?.sprintsActivities.forEach((sprint) => {
+    activitiesDetails?.sprints.forEach((sprint) => {
       map[sprint.id] = {
         id: sprint.id,
         name: sprint.description,

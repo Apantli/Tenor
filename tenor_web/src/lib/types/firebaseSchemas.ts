@@ -282,3 +282,11 @@ export interface ProjectActivity {
   date?: Date;
   action: ActionType;
 }
+
+export interface ActivityItem {
+  id: string;
+  name: string;
+  type: AllBasicItemType;
+  scrumId?: number
+  activity: WithId<ProjectActivity>;
+}
