@@ -49,13 +49,13 @@ export default function ProjectPerformance() {
           selectedMember={selectedMember}
         />
       </div>
-      <div className="mx-auto">
+      <div className="mx-auto w-[36vw]">
         {selectedMember ? (
           <MemberDetailsCard
             member={selectedMember}
             projectId={projectIdString}
             timeInterval={section}
-            className="mx-20 my-auto mt-1"
+            className="my-auto mt-1"
             setSelectedMember={setSelectedMember}
           />
         ) : (

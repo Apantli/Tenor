@@ -93,9 +93,7 @@ export const ProductivityCard = ({
         className,
       )}
     >
-      <h1 className="mx-6 mb-6 border-b-2 pb-4 text-3xl font-bold">
-        Productivity
-      </h1>
+      <h1 className="mx-6 mb-6 pb-4 text-2xl font-bold">Productivity</h1>
       {isLoading ? (
         <div className="flex flex-row gap-3 align-middle">
           <LoadingSpinner />

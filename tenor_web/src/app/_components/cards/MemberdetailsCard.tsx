@@ -104,7 +104,7 @@ export const MemberDetailsCard = ({
   return (
     <div
       className={cn(
-        "relative flex flex-col gap-y-4 rounded-md border-2 p-4 py-12",
+        "relative mx-auto flex w-full flex-col gap-y-4 rounded-md border-2 p-4 py-12",
         className,
       )}
     >
@@ -143,7 +143,7 @@ export const MemberDetailsCard = ({
         {!loadingContributions && (
           <>
             {contributionTotal > 0 ? (
-              <div className="flex flex-row items-center gap-8">
+              <div className="flex flex-row items-center justify-around gap-8">
                 <ContributionPieChart data={formattedUserContributions} />
                 <ContributionLegend data={formattedUserContributions} />
               </div>
@@ -155,7 +155,7 @@ export const MemberDetailsCard = ({
           </>
         )}
         <h4 className="mb-4 mt-6 text-xl font-bold">Average time per task</h4>
-        <div className="flex flex-row items-center justify-between gap-8">
+        <div className="flex flex-row items-center justify-around gap-8">
           {loadingAverageTime ? (
             <div className="flex flex-row items-center gap-2">
               <LoadingSpinner />
