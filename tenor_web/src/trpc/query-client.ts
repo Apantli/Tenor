@@ -48,6 +48,7 @@ export const createQueryClient = () => {
           }
           if (
             isTRPCError(err) &&
+            // eslint-disable-next-line
             err.data?.code == "INTERNAL_SERVER_ERROR" &&
             err.message.toLowerCase().includes("quota exceeded")
           ) {
