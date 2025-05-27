@@ -62,6 +62,7 @@ export default function StatusTable() {
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { alert } = useAlert();
+  const [editMode, setEditMode] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -89,7 +90,14 @@ export default function StatusTable() {
   const { mutateAsync: reorderStatus } =
     api.settings.reorderStatusTypes.useMutation();
 
+  const handleOpen = async function (statusId: string) {
+    setEditMode(false);
+    setSelectedStatusId(statusId);
+    setShowDetailStatus(true);
+  };
+
   const handleModifyStatus = async function (statusId: string) {
+    setEditMode(true);
     setSelectedStatusId(statusId);
     setShowDetailStatus(true);
   };
@@ -163,6 +171,19 @@ export default function StatusTable() {
       },
     );
 
+    await utils.settings.getStatusType.cancel({
+      projectId: projectId as string,
+      statusId: statusId,
+    });
+
+    utils.settings.getStatusType.setData(
+      { projectId: projectId as string, statusId: statusId },
+      (oldData) => {
+        if (!oldData) return;
+        return { ...oldData, marksTaskAsDone: !currentValue };
+      },
+    );
+
     await modifyStatus({
       projectId: projectId as string,
       statusId: statusId,
@@ -175,6 +196,7 @@ export default function StatusTable() {
       },
     });
 
+    await invalidateQueriesAllStatuses(projectId as string);
     await refetch();
   };
 
@@ -326,6 +348,7 @@ export default function StatusTable() {
                   disabled={permission < permissionNumbers.write}
                   key={item.id}
                   item={item}
+                  onOpen={() => handleOpen(item.id)}
                   onEdit={() => handleModifyStatus(item.id)}
                   onDelete={() => handleDeleteStatus(item.id)}
                   onToggleDone={() =>
@@ -375,6 +398,8 @@ export default function StatusTable() {
 
       {renderDetailStatus && (
         <StatusDetailPopup
+          editMode={editMode}
+          setEditMode={setEditMode}
           disabled={permission < permissionNumbers.write}
           showPopup={showDetailStatus}
           setShowPopup={setShowDetailStatus}
