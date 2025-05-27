@@ -38,12 +38,12 @@ import {
   getUserStoryTable,
   hasDependencyCycle,
   updateDependency,
-} from "~/utils/helpers/shortcuts/userStories";
-import { getEpic } from "~/utils/helpers/shortcuts/epics";
+} from "../shortcuts/userStories";
+import { getEpic } from "../shortcuts/epics";
 import {
   getBacklogTag,
   getPriorityByNameOrId,
-} from "~/utils/helpers/shortcuts/tags";
+} from "../shortcuts/tags";
 import type { Edge, Node } from "@xyflow/react";
 import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 

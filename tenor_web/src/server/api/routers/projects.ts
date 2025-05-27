@@ -47,16 +47,16 @@ import {
   getSettingsRef,
   getTopProjects,
   getTopProjectStatusCacheRef,
-} from "~/utils/helpers/shortcuts/general";
+} from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
-import { getGlobalUserRef, getUsersRef } from "~/utils/helpers/shortcuts/users";
+import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
 import {
   getPrioritiesRef,
   getStatusTypesRef,
-} from "~/utils/helpers/shortcuts/tags";
-import { getRequirementTypesRef } from "~/utils/helpers/shortcuts/requirements";
+} from "../shortcuts/tags";
+import { getRequirementTypesRef } from "../shortcuts/requirements";
 import { shouldRecomputeTopProjects } from "~/lib/cache";
-import { getActivityRef } from "~/utils/helpers/shortcuts/performance";
+import { getActivityRef } from "../shortcuts/performance";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
 import {
   defaultPriorityTypes,

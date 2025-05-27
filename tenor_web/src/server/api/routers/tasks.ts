@@ -35,17 +35,17 @@ import {
   getTaskTable,
   hasDependencyCycle,
   updateDependency,
-} from "~/utils/helpers/shortcuts/tasks";
+} from "../shortcuts/tasks";
 import {
   generateTaskContext,
   getGenericBacklogItemContext,
-} from "~/utils/helpers/shortcuts/general";
+} from "../shortcuts/general";
 import {
   getBacklogTagsContext,
   getTodoStatusTag,
-} from "~/utils/helpers/shortcuts/tags";
-import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
-import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
+} from "../shortcuts/tags";
+import { getUserStoryContextSolo } from "../shortcuts/userStories";
+import { getIssueContextSolo } from "../shortcuts/issues";
 import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 import {
   backlogPermissions,

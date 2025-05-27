@@ -17,7 +17,7 @@ import {
   getEpicRef,
   getEpics,
   getEpicsRef,
-} from "~/utils/helpers/shortcuts/epics";
+} from "../shortcuts/epics";
 import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 
 export const epicsRouter = createTRPCRouter({
