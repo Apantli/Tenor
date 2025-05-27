@@ -184,11 +184,6 @@ export default function CreateUserStoryPopup({
             </div>
           </div>
 
-          <BacklogTagList
-            tags={createForm.tags}
-            onChange={(tags) => setCreateForm({ ...createForm, tags })}
-          />
-
           <h3 className="mt-4 text-lg">
             <span className="font-semibold">Sprint</span>
             <SprintPicker
@@ -198,6 +193,11 @@ export default function CreateUserStoryPopup({
               className="w-full"
             />
           </h3>
+
+          <BacklogTagList
+            tags={createForm.tags}
+            onChange={(tags) => setCreateForm({ ...createForm, tags })}
+          />
 
           <DependencyList
             label="Dependencies"

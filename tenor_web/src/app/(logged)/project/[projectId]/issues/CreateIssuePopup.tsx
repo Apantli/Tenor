@@ -145,11 +145,6 @@ export default function CreateIssuePopup({
             </div>
           </div>
 
-          <BacklogTagList
-            tags={createForm.tags}
-            onChange={(tags) => setCreateForm({ ...createForm, tags })}
-          />
-
           <h3 className="mt-4 text-lg">
             <span className="font-semibold">Sprint</span>
             <SprintPicker
@@ -159,6 +154,11 @@ export default function CreateIssuePopup({
               className="w-full"
             />
           </h3>
+
+          <BacklogTagList
+            tags={createForm.tags}
+            onChange={(tags) => setCreateForm({ ...createForm, tags })}
+          />
         </>
       }
       title={

@@ -48,7 +48,7 @@ import usePersistentState from "~/app/_hooks/usePersistentState";
 import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
-import { automaticTag } from "~/lib/defaultValues/status";
+import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
 
 interface Props {
   userStoryId: string;
@@ -91,10 +91,6 @@ export default function UserStoryDetailPopup({
   const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
     projectId: projectId as string,
     itemId: userStoryId,
-  });
-
-  const { data: todoStatus } = api.settings.getTodoTag.useQuery({
-    projectId: projectId as string,
   });
 
   const {
@@ -390,12 +386,10 @@ export default function UserStoryDetailPopup({
                   <StatusPicker
                     disabled={
                       permission < permissionNumbers.write ||
-                      userStoryDetail.status === undefined ||
-                      userStoryDetail.status?.id === ""
+                      isAutomatic(userStoryDetail.status)
                     }
                     status={
-                      userStoryDetail.status === undefined ||
-                      userStoryDetail.status?.id === ""
+                      isAutomatic(userStoryDetail.status)
                         ? automaticStatus
                         : userStoryDetail.status
                     }
@@ -404,10 +398,7 @@ export default function UserStoryDetailPopup({
                     }}
                   />
                   <ItemAutomaticStatus
-                    isAutomatic={
-                      userStoryDetail.status === undefined ||
-                      userStoryDetail.status?.id === ""
-                    }
+                    isAutomatic={isAutomatic(userStoryDetail.status)}
                     onChange={async (automatic) => {
                       if (automatic) {
                         await handleSave({
@@ -417,20 +408,12 @@ export default function UserStoryDetailPopup({
                       } else {
                         await handleSave({
                           ...userStoryDetail,
-                          status: todoStatus,
+                          status: automaticStatus,
                         });
                       }
                     }}
                   />
                 </div>
-
-                <BacklogTagList
-                  disabled={permission < permissionNumbers.write}
-                  tags={userStoryDetail.tags}
-                  onChange={async (tags) => {
-                    await handleSave({ ...userStoryDetail, tags });
-                  }}
-                />
 
                 <h3 className="mt-4 text-lg">
                   <span className="font-semibold">Sprint</span>
@@ -444,6 +427,14 @@ export default function UserStoryDetailPopup({
                     className="w-full"
                   />
                 </h3>
+
+                <BacklogTagList
+                  disabled={permission < permissionNumbers.write}
+                  tags={userStoryDetail.tags}
+                  onChange={async (tags) => {
+                    await handleSave({ ...userStoryDetail, tags });
+                  }}
+                />
 
                 <DependencyList
                   disabled={permission < permissionNumbers.write}

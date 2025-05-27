@@ -1,3 +1,5 @@
+import { StatusTag } from "../types/firebaseSchemas";
+
 export const todoTagName = "Todo";
 export const doingTagName = "Doing";
 export const doneTagName = "Done";
@@ -33,4 +35,8 @@ export const automaticTag = {
   deleted: false,
   orderIndex: -1,
   marksTaskAsDone: false,
+};
+
+export const isAutomatic = (status: StatusTag | undefined) => {
+  return status === undefined || status.id === automaticTag.id;
 };

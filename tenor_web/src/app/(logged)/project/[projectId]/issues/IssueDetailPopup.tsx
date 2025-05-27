@@ -41,7 +41,7 @@ import usePersistentState from "~/app/_hooks/usePersistentState";
 import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
-import { automaticTag } from "~/lib/defaultValues/status";
+import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
 import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
 
 interface Props {
@@ -94,10 +94,6 @@ export default function IssueDetailPopup({
   const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
     projectId: projectId as string,
     itemId: issueId,
-  });
-
-  const { data: todoStatus } = api.settings.getTodoTag.useQuery({
-    projectId: projectId as string,
   });
 
   const [editMode, setEditMode] = useState(false);
@@ -289,12 +285,10 @@ export default function IssueDetailPopup({
                   <StatusPicker
                     disabled={
                       permission < permissionNumbers.write ||
-                      issueDetail.status === undefined ||
-                      issueDetail.status?.id === ""
+                      isAutomatic(issueDetail.status)
                     }
                     status={
-                      issueDetail.status === undefined ||
-                      issueDetail.status?.id === ""
+                      isAutomatic(issueDetail.status)
                         ? automaticStatus
                         : issueDetail.status
                     }
@@ -303,10 +297,7 @@ export default function IssueDetailPopup({
                     }}
                   />
                   <ItemAutomaticStatus
-                    isAutomatic={
-                      issueDetail.status === undefined ||
-                      issueDetail.status?.id === ""
-                    }
+                    isAutomatic={isAutomatic(issueDetail.status)}
                     onChange={async (automatic) => {
                       if (automatic) {
                         await handleSave({
@@ -316,20 +307,12 @@ export default function IssueDetailPopup({
                       } else {
                         await handleSave({
                           ...issueDetail,
-                          status: todoStatus,
+                          status: automaticStatus,
                         });
                       }
                     }}
                   />
                 </div>
-
-                <BacklogTagList
-                  disabled={permission < permissionNumbers.write}
-                  tags={issueDetail.tags}
-                  onChange={async (tags) => {
-                    await handleSave({ ...issueDetail, tags });
-                  }}
-                />
 
                 <h3 className="mt-4 text-lg">
                   <span className="font-semibold">Sprint</span>
@@ -343,6 +326,14 @@ export default function IssueDetailPopup({
                     className="w-full"
                   />
                 </h3>
+
+                <BacklogTagList
+                  disabled={permission < permissionNumbers.write}
+                  tags={issueDetail.tags}
+                  onChange={async (tags) => {
+                    await handleSave({ ...issueDetail, tags });
+                  }}
+                />
               </>
             )}
           </>
