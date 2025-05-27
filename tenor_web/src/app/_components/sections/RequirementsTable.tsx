@@ -228,45 +228,6 @@ export default function RequirementsTable() {
     await invalidateAllRequirements(projectId as string);
   };
 
-  /*
-  const deleteRequirements = async (ids: string[]) => {
-    const confirmMessage =
-      ids.length > 1
-        ? "delete these requirements?"
-        : "delete this requirement?";
-    if (
-      !(await confirm(
-        `Are you sure you want to ${confirmMessage}`,
-        "This action cannot be undone",
-        "Delete",
-      ))
-    ) {
-      return false;
-    }
-
-    const newData = requirementsData?.filter((item) => !ids.includes(item.id));
-
-    await utils.requirements.getRequirementTable.cancel({
-      projectId: projectId as string,
-    });
-    utils.requirements.getRequirementTable.setData(
-      { projectId: projectId as string },
-      () => newData,
-    );
-
-    await Promise.all(
-      ids.map((id) =>
-        deleteRequirement({
-          projectId: projectId as string,
-          requirementId: id,
-        }),
-      ),
-    );
-    await refetchRequirements();
-    return true;
-  };
-  */
-
   const handleGenerate = async (amount: number, prompt: string) => {
     beginLoading(amount);
 

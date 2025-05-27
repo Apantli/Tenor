@@ -344,7 +344,6 @@ export default function RequirementDetailPopup({
               />
               <InputTextAreaField
                 label="Description"
-                rows={4}
                 className="min-h-[120px] w-full resize-none"
                 value={editForm.description}
                 onChange={(e) =>

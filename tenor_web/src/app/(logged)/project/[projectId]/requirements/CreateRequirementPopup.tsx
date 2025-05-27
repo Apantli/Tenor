@@ -13,6 +13,7 @@ import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import RequirementTypePicker from "~/app/_components/specific-pickers/RequirementTypePicker";
 import RequirementFocusPicker from "~/app/_components/specific-pickers/RequirementFocusPicker";
 import { useInvalidateQueriesAllRequirements } from "~/app/_hooks/invalidateHooks";
+import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 
 interface Props {
   showPopup: boolean;
@@ -124,9 +125,8 @@ export default function CreateRequirementPopup({
 
   return (
     <Popup
+      reduceTopPadding
       show={showPopup}
-      saveText="Create Requirement"
-      saving={isPending || isSubmitting}
       dismiss={async () => {
         if (isModified()) {
           const confirmation = await confirm(
@@ -140,16 +140,55 @@ export default function CreateRequirementPopup({
         setShowPopup(false);
       }}
       size="small"
-      className="h-[400px] max-h-[600px] w-[600px]"
+      className="h-[500px] max-h-[700px] w-[650px]"
       title={<h1 className="text-2xl font-bold">New Requirement</h1>}
-      editMode={true}
-      setEditMode={async (editMode) => {
-        if (!editMode && !isPending && !isSubmitting) {
-          await handleCreateRequirement();
-        }
-      }}
       disablePassiveDismiss={isModified()}
       footer={
+        <PrimaryButton
+          onClick={async () => {
+            if (isModified()) {
+              await handleCreateRequirement();
+            } else {
+              setShowPopup(false);
+            }
+          }}
+          disabled={isPending || isSubmitting}
+          data-cy="create-requirement-button"
+        >
+          Create Requirement
+        </PrimaryButton>
+      }
+    >
+      <div className="pt-4">
+        <InputTextField
+          label="Title"
+          containerClassName="mb-4"
+          value={createForm.name}
+          onChange={(e) =>
+            setCreateForm((prev) => ({
+              ...prev,
+              name: e.target.value,
+            }))
+          }
+          name="name"
+          placeholder="Briefly describe the requirement..."
+          data-cy="requirement-name-input"
+        />
+        <InputTextAreaField
+          label="Description"
+          className="min-h-[120px] w-full resize-none"
+          containerClassName="mb-4"
+          value={createForm.description}
+          onChange={(e) =>
+            setCreateForm((prev) => ({
+              ...prev,
+              description: e.target.value,
+            }))
+          }
+          name="description"
+          placeholder="What is this requirement about..."
+          data-cy="requirement-description-input"
+        />
         <div className="flex w-full gap-2">
           <div className="w-36 space-y-2">
             <label className="font-semibold">Type</label>
@@ -188,37 +227,6 @@ export default function CreateRequirementPopup({
             />
           </div>
         </div>
-      }
-    >
-      <div className="pt-4">
-        <InputTextField
-          label="Title"
-          containerClassName="mb-4"
-          value={createForm.name}
-          onChange={(e) =>
-            setCreateForm((prev) => ({
-              ...prev,
-              name: e.target.value,
-            }))
-          }
-          name="name"
-          placeholder="Briefly describe the requirement..."
-          data-cy="requirement-name-input"
-        />
-        <InputTextAreaField
-          label="Description"
-          className="min-h-[120px] w-full resize-none"
-          value={createForm.description}
-          onChange={(e) =>
-            setCreateForm((prev) => ({
-              ...prev,
-              description: e.target.value,
-            }))
-          }
-          name="description"
-          placeholder="What is this requirement about..."
-          data-cy="requirement-description-input"
-        />
       </div>
     </Popup>
   );
