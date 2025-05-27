@@ -1,5 +1,5 @@
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   permissionNumbers,
   type Permission,
@@ -10,70 +10,47 @@ import type { requirementsRouter } from "~/server/api/routers/requirements";
 import { api } from "~/trpc/react";
 import Table, { type TableColumns } from "../table/Table";
 import { cn } from "~/lib/utils";
-import Popup from "../Popup";
 import PrimaryButton from "../buttons/PrimaryButton";
-import InputTextField from "../inputs/InputTextField";
-import InputTextAreaField from "../inputs/InputTextAreaField";
-import { useAlert } from "~/app/_hooks/useAlert";
-import PriorityPicker from "../specific-pickers/PriorityPicker";
-import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
-import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 import SearchBar from "../SearchBar";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
-import DeleteButton from "../buttons/DeleteButton";
-import Markdown from "react-markdown";
 import LoadingSpinner from "../LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import type { inferRouterOutputs } from "@trpc/server";
-import AiIcon from "@mui/icons-material/AutoAwesome";
-
-import {
-  useInvalidateQueriesAllRequirements,
-  useInvalidateQueriesRequirementDetails,
-} from "~/app/_hooks/invalidateHooks";
+import { useInvalidateQueriesAllRequirements } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
-import TertiaryButton from "../buttons/TertiaryButton";
-import { checkPermissions, emptyRole, noTag } from "~/lib/defaultProjectValues";
+import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import { useSearchParam } from "~/app/_hooks/useSearchParam";
+import { usePopupVisibilityState } from "../Popup";
+import PriorityPicker from "../specific-pickers/PriorityPicker";
+import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
+import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
+import CreateRequirementPopup from "~/app/(logged)/project/[projectId]/requirements/CreateRequirementPopup";
+import RequirementDetailPopup from "~/app/(logged)/project/[projectId]/requirements/RequirementDetailPopup";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
 export default function RequirementsTable() {
   const { projectId } = useParams();
-  const { setParam, resetParam } = useSearchParam();
-
   const utils = api.useUtils();
-  const [renderSmallPopup, showSmallPopup, selectedReq, , setShowSmallPopup] =
-    useQueryIdForPopup("id");
-  const [requirementEdited, setRequirementEdited] =
-    useState<RequirementCol | null>(null);
-  const [ghostRequirementEdited, setGhostRequirementEdited] =
-    useState<RequirementCol | null>(null);
-  const [editForm, setEditForm] = useState({
-    name: "",
-    description: "",
-  });
-  const [editingRequirement, setEditingRequirement] = useState(false);
 
-  useEffect(() => {
-    if (requirementEdited) {
-      setEditForm({
-        name: requirementEdited.name ?? "",
-        description: requirementEdited.description,
-      });
-    } else if (ghostRequirementEdited) {
-      setEditForm({
-        name: ghostRequirementEdited.name ?? "",
-        description: ghostRequirementEdited.description,
-      });
-    }
-  }, [requirementEdited, ghostRequirementEdited]);
+  // Popup states
+  const [renderCreatePopup, showCreatePopup, setShowCreatePopup] =
+    usePopupVisibilityState();
+  const [
+    renderDetailPopup,
+    showDetailPopup,
+    selectedReq,
+    setRequirementId,
+    setShowDetailPopup,
+  ] = useQueryIdForPopup("id");
 
-  //Hooks
+  const [selectedGhostReq, setSelectedGhostReq] = useState<string>("");
+  const [searchValue, setSearchValue] = useState("");
+
+  // Hooks
   const generatedRequirements =
     useRef<
       WithId<
@@ -83,170 +60,24 @@ export default function RequirementsTable() {
       >[]
     >();
 
-  const setRequirementsData = async (
-    updater: (
-      oldData: RequirementCol[] | undefined,
-    ) => RequirementCol[] | undefined,
-  ) => {
-    await utils.requirements.getRequirementTable.cancel({
-      projectId: projectId as string,
-    });
-    utils.requirements.getRequirementTable.setData(
-      {
-        projectId: projectId as string,
-      },
-      updater,
-    );
-  };
-
-  const [searchValue, setSearchValue] = useState("");
   const invalidateAllRequirements = useInvalidateQueriesAllRequirements();
-  const invalidateRequirementDetails = useInvalidateQueriesRequirementDetails();
+  const confirm = useConfirmation();
 
+  // API Hooks
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: projectId as string,
   });
+
   const permission: Permission = useMemo(() => {
-    return checkPermissions(
-      {
-        flags: ["backlog"],
-      },
-      role ?? emptyRole,
-    );
+    return checkPermissions({ flags: ["backlog"] }, role ?? emptyRole);
   }, [role]);
 
   const { data: defaultRequirementType } =
     api.requirements.getDefaultRequirementType.useQuery(
-      {
-        projectId: projectId as string,
-      },
-      {
-        enabled: permission >= permissionNumbers.write,
-      },
+      { projectId: projectId as string },
+      { enabled: permission >= permissionNumbers.write },
     );
 
-  // New requirement values
-  const defaultRequirement = {
-    name: "",
-    description: "",
-    priority: undefined as Tag | undefined,
-    requirementType: defaultRequirementType as Tag | undefined,
-    requirementFocus: undefined as Tag | undefined,
-  };
-  const [newRequirement, setNewRequirement] = useState(defaultRequirement);
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    const { name, value } = e.target;
-    setNewRequirement((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const confirm = useConfirmation();
-
-  const { alert } = useAlert();
-
-  const { mutateAsync: createOrModifyRequirement, isPending } =
-    api.requirements.createOrModifyRequirement.useMutation();
-  const { mutateAsync: deleteRequirement } =
-    api.requirements.deleteRequirement.useMutation();
-  const { mutateAsync: generateRequirements } =
-    api.requirements.generateRequirements.useMutation();
-
-  const handleCreateRequirement = async () => {
-    if (!newRequirement.name) {
-      alert("Oops...", "The requirement must have a name.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
-    }
-
-    if (newRequirement.requirementType?.id === undefined) {
-      alert("Oops...", "The requirement must have a type.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
-    }
-
-    if (
-      !newRequirement.name ||
-      newRequirement.requirementType?.id === undefined
-    ) {
-      return;
-    }
-
-    await createOrModifyRequirement({
-      projectId: projectId as string,
-      requirementData: {
-        ...newRequirement,
-        scrumId: -1,
-        priorityId: newRequirement.priority?.id ?? "",
-        requirementTypeId: newRequirement.requirementType.id,
-        requirementFocusId: newRequirement.requirementFocus?.id ?? "",
-      },
-    });
-
-    await invalidateAllRequirements(projectId as string);
-
-    setNewRequirement(defaultRequirement);
-
-    setShowSmallPopup(false);
-  };
-
-  const handleEditRequirement = async (
-    requirement: RequirementCol,
-    checkValues = true,
-  ) => {
-    let { name, description } = editForm;
-    const { priority, requirementType, requirementFocus, scrumId } =
-      requirement;
-    if (checkValues) {
-      if (!name) {
-        alert("Oops...", "Requirement must have a name.", {
-          type: "error",
-          duration: 5000, // time in ms (5 seconds)
-        });
-        return;
-      }
-    }
-
-    if (!name || !description) {
-      name = requirement.name ?? "";
-      description = requirement.description;
-    }
-
-    const newRequirement = {
-      projectId: projectId as string,
-      name,
-      description,
-      priorityId: priority?.id ?? "",
-      requirementTypeId: requirementType.id ?? "",
-      requirementFocusId: requirementFocus?.id ?? "",
-      scrumId: scrumId,
-      deleted: false,
-    };
-
-    await utils.requirements.getRequirementTable.cancel({
-      projectId: projectId as string,
-    });
-    await utils.requirements.getRequirement.cancel({
-      projectId: projectId as string,
-      requirementId: requirement.id,
-    });
-
-    await createOrModifyRequirement({
-      projectId: projectId as string,
-      requirementId: requirement.id,
-      requirementData: newRequirement,
-    });
-
-    await invalidateAllRequirements(projectId as string);
-    await invalidateRequirementDetails(projectId as string, [requirement.id]);
-  };
-
-  // TRPC
   const {
     data: requirementsData,
     isLoading: isLoadingRequirements,
@@ -255,51 +86,14 @@ export default function RequirementsTable() {
     projectId: projectId as string,
   });
 
-  const query = searchValue.toLowerCase();
-  const filteredRequirements = requirementsData
-    ?.filter((requirement) => {
-      const name = requirement.name?.toLowerCase() ?? "";
-      const description = requirement.description.toLowerCase();
+  const { mutateAsync: createOrModifyRequirement } =
+    api.requirements.createOrModifyRequirement.useMutation();
+  const { mutateAsync: deleteRequirement } =
+    api.requirements.deleteRequirement.useMutation();
+  const { mutateAsync: generateRequirements } =
+    api.requirements.generateRequirements.useMutation();
 
-      // Make sure the scrumId is formatted consistently
-      const formattedScrumText = UseFormatForAssignReqTypeScrumId(
-        requirement.requirementType.name,
-        requirement.scrumId,
-      ).toLowerCase();
-
-      return (
-        name.includes(query) ||
-        description.includes(query) ||
-        formattedScrumText.includes(query)
-      );
-    })
-    .sort((a, b) => {
-      // Flipped to show the latest requirements first (also makes AI generated ones appear at the top after getting accepted)
-      if (a.scrumId === -1 && b.scrumId === -1) return 0;
-      if (a.scrumId === -1) return -1;
-      if (b.scrumId === -1) return 1;
-
-      return a.scrumId < b.scrumId ? 1 : -1;
-    });
-
-  useEffect(() => {
-    if (selectedReq == "") {
-      setRequirementEdited(null);
-      setGhostRequirementEdited(null);
-    }
-    if (selectedReq && requirementsData) {
-      const requirement = requirementsData.find(
-        (req) => req.id === selectedReq,
-      );
-      if (requirement) {
-        setRequirementEdited(requirement);
-        setGhostRequirementEdited(null);
-        setEditingRequirement(false);
-        return;
-      }
-    }
-  }, [selectedReq, requirementsData]);
-
+  // Ghost table state management
   const {
     beginLoading,
     finishLoading,
@@ -358,6 +152,83 @@ export default function RequirementsTable() {
     },
   );
 
+  // Filtering logic
+  const query = searchValue.toLowerCase();
+  const filteredRequirements = requirementsData
+    ?.filter((requirement) => {
+      const name = requirement.name?.toLowerCase() ?? "";
+      const description = requirement.description.toLowerCase();
+      const formattedScrumText = UseFormatForAssignReqTypeScrumId(
+        requirement.requirementType.name,
+        requirement.scrumId,
+      ).toLowerCase();
+
+      return (
+        name.includes(query) ||
+        description.includes(query) ||
+        formattedScrumText.includes(query)
+      );
+    })
+    .sort((a, b) => {
+      if (a.scrumId === -1 && b.scrumId === -1) return 0;
+      if (a.scrumId === -1) return -1;
+      if (b.scrumId === -1) return 1;
+      return a.scrumId < b.scrumId ? 1 : -1;
+    });
+
+  // Handlers
+  const setRequirementsData = async (
+    updater: (
+      oldData: RequirementCol[] | undefined,
+    ) => RequirementCol[] | undefined,
+  ) => {
+    await utils.requirements.getRequirementTable.cancel({
+      projectId: projectId as string,
+    });
+    utils.requirements.getRequirementTable.setData(
+      { projectId: projectId as string },
+      updater,
+    );
+  };
+
+  const handleEditRequirement = async (
+    requirement: RequirementCol,
+    checkValues = true,
+  ) => {
+    const {
+      name,
+      description,
+      priority,
+      requirementType,
+      requirementFocus,
+      scrumId,
+    } = requirement;
+
+    if (checkValues && !name) {
+      return;
+    }
+
+    const newRequirement = {
+      projectId: projectId as string,
+      name: name ?? "",
+      description,
+      priorityId: priority?.id ?? "",
+      requirementTypeId: requirementType.id ?? "",
+      requirementFocusId: requirementFocus?.id ?? "",
+      scrumId: scrumId,
+      deleted: false,
+    };
+
+    await createOrModifyRequirement({
+      projectId: projectId as string,
+      requirementId: requirement.id,
+      requirementData: newRequirement,
+    });
+
+    await invalidateAllRequirements(projectId as string);
+  };
+
+  /*
   const deleteRequirements = async (ids: string[]) => {
     const confirmMessage =
       ids.length > 1
@@ -380,10 +251,7 @@ export default function RequirementsTable() {
     });
     utils.requirements.getRequirementTable.setData(
       { projectId: projectId as string },
-      (prev) => {
-        if (!prev) return prev;
-        return newData;
-      },
+      () => newData,
     );
 
     await Promise.all(
@@ -397,7 +265,72 @@ export default function RequirementsTable() {
     await refetchRequirements();
     return true;
   };
+  */
 
+  const handleGenerate = async (amount: number, prompt: string) => {
+    beginLoading(amount);
+
+    const generatedData = await generateRequirements({
+      projectId: projectId as string,
+      amount,
+      prompt,
+    });
+
+    generatedRequirements.current = generatedData.map((req, i) => ({
+      ...req,
+      id: i.toString(),
+    }));
+
+    const tableData: RequirementCol[] = generatedData.map((req, i) => ({
+      id: i.toString(),
+      scrumId: -1,
+      name: req.name,
+      description: req.description,
+      priority: req.priority ?? undefined,
+      requirementType: req.requirementType ?? { id: "", name: "" },
+      requirementFocus: req.requirementFocus ?? undefined,
+    }));
+
+    // New requirement focus might have been created, so we need to invalidate the query
+    await utils.requirements.getRequirementFocuses.invalidate({
+      projectId: projectId as string,
+    });
+
+    finishLoading(tableData);
+  };
+
+  const onRequirementAdded = async (requirementId: string) => {
+    await invalidateAllRequirements(projectId as string);
+    setShowCreatePopup(false);
+    setSelectedGhostReq("");
+    setRequirementId(requirementId);
+  };
+
+  // Navigation guard
+  useNavigationGuard(
+    async () => {
+      if ((generatedRequirements?.current?.length ?? 0) > 0) {
+        return !(await confirm(
+          "Are you sure?",
+          "You have unsaved AI generated requirements. To save them, please accept them first.",
+          "Discard",
+          "Keep editing",
+        ));
+      } else if (generating) {
+        return !(await confirm(
+          "Are you sure?",
+          "You are currently generating requirements. If you leave now, the generation will be cancelled.",
+          "Discard",
+          "Keep editing",
+        ));
+      }
+      return false;
+    },
+    generating || (generatedRequirements.current?.length ?? 0) > 0,
+    "Are you sure you want to leave? You have unsaved AI generated requirements. To save them, please accept them first.",
+  );
+
+  // Table configuration
   const table = useMemo(() => {
     if (filteredRequirements == undefined || isLoadingRequirements) {
       return (
@@ -420,16 +353,12 @@ export default function RequirementsTable() {
               className="flex w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 if (isGhost) {
-                  setRequirementEdited(null);
-                  setGhostRequirementEdited(row);
+                  setSelectedGhostReq(row.id);
+                  setShowDetailPopup(true);
                 } else {
-                  setRequirementEdited(row);
-                  setParam("id", row.id);
-                  setGhostRequirementEdited(null);
+                  setSelectedGhostReq("");
+                  setRequirementId(row.id);
                 }
-
-                setEditingRequirement(false);
-                setShowSmallPopup(true);
               }}
               disabled={row.scrumId === -1}
             >
@@ -455,15 +384,12 @@ export default function RequirementsTable() {
               className="w-full items-center truncate text-left text-app-text underline-offset-4 hover:text-app-primary hover:underline disabled:animate-pulse disabled:opacity-70 disabled:hover:text-app-text disabled:hover:no-underline"
               onClick={() => {
                 if (isGhost) {
-                  setRequirementEdited(null);
-                  setGhostRequirementEdited(row);
+                  setSelectedGhostReq(row.id);
+                  setShowDetailPopup(true);
                 } else {
-                  setRequirementEdited(row);
-                  setParam("id", row.id);
-                  setGhostRequirementEdited(null);
+                  setSelectedGhostReq("");
+                  setRequirementId(row.id);
                 }
-                setEditingRequirement(false);
-                setShowSmallPopup(true);
               }}
               disabled={!isGhost && row.scrumId === -1}
             >
@@ -493,14 +419,14 @@ export default function RequirementsTable() {
           const handleGhostPriorityChange = (tag: Tag) => {
             updateGhostRow(row.id, (oldData) => ({
               ...oldData,
-              priorityId: tag,
+              priority: tag,
             }));
             generatedRequirements.current = generatedRequirements.current?.map(
               (req) => {
                 if (req.id === row.id) {
                   return {
                     ...req,
-                    priorityId: tag.id ?? "",
+                    priority: tag,
                   };
                 }
                 return req;
@@ -619,7 +545,7 @@ export default function RequirementsTable() {
           const handleGhostFocusChange = (tag: Tag) => {
             updateGhostRow(row.id, (oldData) => ({
               ...oldData,
-              requirementFocusId: tag,
+              requirementFocus: tag,
             }));
             generatedRequirements.current = generatedRequirements.current?.map(
               (req) => {
@@ -682,7 +608,7 @@ export default function RequirementsTable() {
         callback(false);
         return;
       }
-      callback(true); // call the callback as soon as posible
+      callback(true);
 
       const newData = requirementsData?.filter(
         (item) => !ids.includes(item.id),
@@ -693,13 +619,9 @@ export default function RequirementsTable() {
       });
       utils.requirements.getRequirementTable.setData(
         { projectId: projectId as string },
-        (prev) => {
-          if (!prev) return prev;
-          return newData;
-        },
+        () => newData,
       );
 
-      //Deletes in database
       await Promise.all(
         ids.map((id) =>
           deleteRequirement({
@@ -731,82 +653,13 @@ export default function RequirementsTable() {
         rowClassName="h-12"
       />
     );
-  }, [filteredRequirements, isLoadingRequirements, ghostData, ghostRows]);
-
-  const handleGenerate = async (amount: number, prompt: string) => {
-    beginLoading(amount);
-
-    const generatedData = await generateRequirements({
-      projectId: projectId as string,
-      amount,
-      prompt,
-    });
-    generatedRequirements.current = generatedData.map((req, i) => ({
-      ...req,
-      id: i.toString(),
-    }));
-
-    const tableData: RequirementCol[] = generatedData.map((req, i) => ({
-      id: i.toString(),
-      scrumId: -1,
-      name: req.name,
-      description: req.description,
-      priority: req.priority ?? noTag,
-      requirementType: req.requirementType ?? noTag,
-      requirementFocus: req.requirementFocus ?? noTag,
-    }));
-
-    // New requirement focus might have been created, so we need to invalidate the query
-    await utils.requirements.getRequirementFocuses.invalidate({
-      projectId: projectId as string,
-    });
-
-    finishLoading(tableData);
-  };
-
-  useNavigationGuard(
-    async () => {
-      if ((generatedRequirements?.current?.length ?? 0) > 0) {
-        return !(await confirm(
-          "Are you sure?",
-          "You have unsaved AI generated requirements. To save them, please accept them first.",
-          "Discard",
-          "Keep editing",
-        ));
-      } else if (generating) {
-        return !(await confirm(
-          "Are you sure?",
-          "You are currently generating requirements. If you leave now, the generation will be cancelled.",
-          "Discard",
-          "Keep editing",
-        ));
-      }
-      return false;
-    },
-    generating || (generatedRequirements.current?.length ?? 0) > 0,
-    "Are you sure you want to leave? You have unsaved AI generated requirements. To save them, please accept them first.",
-  );
-
-  const requirementEditedData = requirementEdited ?? ghostRequirementEdited;
-
-  let requirementSaved = false;
-  if (requirementEditedData === null) {
-    requirementSaved =
-      newRequirement.name === "" &&
-      newRequirement.description === "" &&
-      newRequirement.priority === undefined &&
-      newRequirement.requirementType === defaultRequirement.requirementType &&
-      newRequirement.requirementFocus === undefined;
-  } else {
-    const originalData = {
-      name: requirementEditedData?.name ?? defaultRequirement.name,
-      description:
-        requirementEditedData?.description ?? defaultRequirement.description,
-    };
-    requirementSaved =
-      editForm.name === originalData.name &&
-      editForm.description === originalData.description;
-  }
+  }, [
+    filteredRequirements,
+    isLoadingRequirements,
+    ghostData,
+    ghostRows,
+    permission,
+  ]);
 
   return (
     <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
@@ -823,12 +676,7 @@ export default function RequirementsTable() {
           {permission >= permissionNumbers.write && (
             <div className="flex items-center gap-1">
               <PrimaryButton
-                onClick={() => {
-                  setEditingRequirement(false);
-                  setRequirementEdited(null);
-                  setNewRequirement(defaultRequirement);
-                  setShowSmallPopup(true);
-                }}
+                onClick={() => setShowCreatePopup(true)}
                 data-cy="add-requirement-button"
               >
                 + Add Requirement
@@ -847,474 +695,65 @@ export default function RequirementsTable() {
           )}
         </div>
       </div>
+
       {table}
-      {renderSmallPopup && (
-        <Popup
-          show={showSmallPopup}
-          reduceTopPadding={
-            requirementEditedData === null ||
-            permission < permissionNumbers.write
-          }
-          size="small"
-          className="h-[300px] max-h-[700px] w-[600px]"
-          disablePassiveDismiss={!requirementSaved}
-          dismiss={async () => {
-            if (!requirementSaved) {
-              const confirmation = await confirm(
-                "Are you sure?",
-                "Your changes will be discarded.",
-                "Discard changes",
-                "Keep Editing",
-              );
-              if (!confirmation) return;
+
+      {renderCreatePopup && (
+        <CreateRequirementPopup
+          showPopup={showCreatePopup}
+          setShowPopup={setShowCreatePopup}
+          onRequirementAdded={onRequirementAdded}
+          defaultRequirementType={defaultRequirementType}
+        />
+      )}
+
+      {renderDetailPopup && (
+        <RequirementDetailPopup
+          requirementId={selectedReq}
+          showDetail={showDetailPopup}
+          setRequirementId={(newId) => {
+            setRequirementId(newId);
+            if (newId === "" && selectedGhostReq !== "") {
+              setShowDetailPopup(false);
+              setTimeout(() => setSelectedGhostReq(""), 300);
             }
-            setShowSmallPopup(false);
-            setTimeout(() => resetParam("id"), 100);
           }}
-          setEditMode={
-            permission < permissionNumbers.write
-              ? undefined
-              : requirementEditedData !== null
-                ? async () => {
-                    const { name } = editForm;
-                    if (editingRequirement) {
-                      if (!name) {
-                        alert("Oops...", "The requirement must have a name.", {
-                          type: "error",
-                          duration: 5000, // time in ms (5 seconds)
-                        });
-                        return;
-                      }
-
-                      setEditingRequirement(false);
-
-                      if (ghostRequirementEdited) {
-                        updateGhostRow(
-                          ghostRequirementEdited.id,
-                          (oldData) => ({
-                            ...oldData,
-                            name: editForm.name,
-                            description: editForm.description,
-                          }),
-                        );
-                        setGhostRequirementEdited((prev) => {
-                          if (!prev) return null;
-                          return {
-                            ...prev,
-                            name: editForm.name,
-                            description: editForm.description,
-                          };
-                        });
-                        generatedRequirements.current =
-                          generatedRequirements.current?.map((req) => {
-                            if (req.id === ghostRequirementEdited.id) {
-                              return {
-                                ...req,
-                                name: editForm.name,
-                                description: editForm.description,
-                              };
-                            }
-                            return req;
-                          });
-                        return;
-                      }
-
-                      setRequirementEdited((prev) => {
-                        if (!prev) return null;
-                        return {
-                          ...prev,
-                          name: editForm.name,
-                          description: editForm.description,
-                        };
-                      });
-                      await handleEditRequirement(requirementEditedData);
-                    } else {
-                      setEditingRequirement(true);
-                    }
-                  }
-                : () => {}
+          requirementData={
+            selectedGhostReq !== ""
+              ? ghostData?.find((req) => req.id === selectedGhostReq)
+              : undefined
           }
-          editMode={
-            permission < permissionNumbers.write
-              ? undefined
-              : requirementEditedData
-                ? editingRequirement
-                : undefined
-          }
-          title={
-            <>
-              {requirementEdited === null && selectedReq !== "" ? (
-                <></>
-              ) : (
-                <h1 className="text-2xl">
-                  <strong>
-                    {requirementEditedData ? (
-                      <h1 className="font-semibold">
-                        <span>
-                          {UseFormatForAssignReqTypeScrumId(
-                            requirementEditedData.requirementType.name,
-                            requirementEditedData.scrumId,
-                          )}
-                          :{" "}
-                        </span>
-                        <span className="font-normal">
-                          {requirementEditedData.name}
-                        </span>
-                      </h1>
-                    ) : (
-                      <h1>New Requirement</h1>
-                    )}
-                  </strong>{" "}
-                </h1>
-              )}
-            </>
-          }
-          footerClassName="ml-0"
-          footer={
-            <>
-              {(requirementEdited === null && selectedReq !== "") ||
-              requirementEditedData === null ? (
-                <></>
-              ) : (
-                <div
-                  className="flex w-full flex-col gap-4"
-                  data-cy="requirement-popup-footer"
-                >
-                  <div className="flex w-full gap-2">
-                    <div className="w-36 space-y-2">
-                      <label className="font-semibold">Type</label>
-                      <RequirementTypePicker
-                        disabled={permission < permissionNumbers.write}
-                        type={requirementEditedData.requirementType}
-                        onChange={async (type) => {
-                          if (ghostRequirementEdited) {
-                            updateGhostRow(
-                              ghostRequirementEdited.id,
-                              (oldData) => ({
-                                ...oldData,
-                                requirementTypeId: type,
-                              }),
-                            );
-                            setGhostRequirementEdited((prev) => ({
-                              ...prev!,
-                              requirementType: type,
-                            }));
-                            generatedRequirements.current =
-                              generatedRequirements.current?.map((req) => {
-                                if (req.id === ghostRequirementEdited.id) {
-                                  return {
-                                    ...req,
-                                    requirementType: type,
-                                  };
-                                }
-                                return req;
-                              });
-                            return;
-                          }
-
-                          if (!requirementEdited) {
-                            setNewRequirement((prev) => ({
-                              ...prev,
-                              requirementType: type,
-                            }));
-                          } else {
-                            setRequirementEdited((prev) => ({
-                              ...prev!,
-                              requirementType: type,
-                            }));
-                            await handleEditRequirement({
-                              ...requirementEdited,
-                              requirementType: type,
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="w-36 space-y-2">
-                      <label className="font-semibold">Priority</label>
-                      <PriorityPicker
-                        disabled={permission < permissionNumbers.write}
-                        priority={requirementEditedData.priority}
-                        onChange={async (priority) => {
-                          if (ghostRequirementEdited) {
-                            updateGhostRow(
-                              ghostRequirementEdited.id,
-                              (oldData) => ({
-                                ...oldData,
-                                priority: priority,
-                              }),
-                            );
-                            setGhostRequirementEdited((prev) => ({
-                              ...prev!,
-                              priority: priority,
-                            }));
-                            generatedRequirements.current =
-                              generatedRequirements.current?.map((req) => {
-                                if (req.id === ghostRequirementEdited.id) {
-                                  return {
-                                    ...req,
-                                    priorityId: priority,
-                                  };
-                                }
-                                return req;
-                              });
-                            return;
-                          }
-
-                          if (!requirementEdited) {
-                            setNewRequirement((prev) => ({
-                              ...prev,
-                              priority: priority,
-                            }));
-                          } else {
-                            setRequirementEdited((prev) => ({
-                              ...prev!,
-                              priority: priority,
-                            }));
-                            await handleEditRequirement({
-                              ...requirementEdited,
-                              priority,
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                    <div className="w-36 space-y-2">
-                      <label className="font-semibold">Focus</label>
-                      <RequirementFocusPicker
-                        disabled={permission < permissionNumbers.write}
-                        focus={requirementEditedData.requirementFocus}
-                        onChange={async (focus) => {
-                          if (ghostRequirementEdited) {
-                            updateGhostRow(
-                              ghostRequirementEdited.id,
-                              (oldData) => ({
-                                ...oldData,
-                                requirementFocus: focus,
-                              }),
-                            );
-                            setGhostRequirementEdited((prev) => ({
-                              ...prev!,
-                              requirementFocus: focus,
-                            }));
-                            generatedRequirements.current =
-                              generatedRequirements.current?.map((req) => {
-                                if (req.id === ghostRequirementEdited.id) {
-                                  return {
-                                    ...req,
-                                    requirementFocus: focus,
-                                  };
-                                }
-                                return req;
-                              });
-                            return;
-                          }
-
-                          if (!requirementEdited) {
-                            setNewRequirement((prev) => ({
-                              ...prev,
-                              requirementFocus: focus,
-                            }));
-                          } else {
-                            setRequirementEdited((prev) => ({
-                              ...prev!,
-                              requirementFocus: focus,
-                            }));
-                            await handleEditRequirement({
-                              ...requirementEdited,
-                              requirementFocus: focus,
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                  {requirementEditedData &&
-                    (requirementEdited ? (
-                      permission < permissionNumbers.write ? null : (
-                        <DeleteButton
-                          className="ml-auto"
-                          onClick={async () => {
-                            if (
-                              requirementEdited &&
-                              (await deleteRequirements([requirementEdited.id]))
-                            ) {
-                              setShowSmallPopup(false);
-                              setRequirementEdited(null);
-                            }
-                          }}
-                        >
-                          Delete requirement
-                        </DeleteButton>
-                      )
-                    ) : (
-                      ghostRequirementEdited && (
-                        <div className="flex items-center gap-2">
-                          <AiIcon
-                            className="animate-pulse text-app-secondary"
-                            data-tooltip-id="tooltip"
-                            data-tooltip-content="This is a generated requirement. It will not get saved until you accept it."
-                          />
-                          <TertiaryButton
-                            onClick={() => {
-                              onReject([ghostRequirementEdited.id]);
-                              setShowSmallPopup(false);
-                              setTimeout(
-                                () => setGhostRequirementEdited(null),
-                                300,
-                              );
-                            }}
-                          >
-                            Reject
-                          </TertiaryButton>
-                          <PrimaryButton
-                            className="bg-app-secondary hover:bg-app-hover-secondary"
-                            onClick={async () => {
-                              setShowSmallPopup(false);
-                              setTimeout(
-                                () => setGhostRequirementEdited(null),
-                                300,
-                              );
-                              await onAccept([ghostRequirementEdited.id]);
-                            }}
-                          >
-                            Accept
-                          </PrimaryButton>
-                        </div>
-                      )
-                    ))}
-                </div>
-              )}
-              {requirementEditedData === null && !isLoadingRequirements && (
-                <PrimaryButton
-                  className="ml-auto"
-                  onClick={async () => {
-                    await handleCreateRequirement();
-                  }}
-                  loading={isPending}
-                  data-cy="create-requirement-button"
-                >
-                  Create Requirement
-                </PrimaryButton>
-              )}
-            </>
-          }
-        >
-          {requirementEdited === null && selectedReq !== "" ? (
-            <div className="flex h-full items-center justify-center">
-              <LoadingSpinner color="primary" />
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4">
-              {!requirementEditedData || editingRequirement ? (
-                <div className="pt-4">
-                  <InputTextField
-                    label="Title"
-                    containerClassName="mb-4"
-                    value={
-                      requirementEditedData
-                        ? editForm.name
-                        : newRequirement.name
-                    }
-                    onChange={(e) => {
-                      if (requirementEditedData) {
-                        setEditForm((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }));
-                      } else {
-                        handleChange(e);
-                      }
-                    }}
-                    name="name"
-                    placeholder="Briefly describe the requirement..."
-                    data-cy="requirement-name-input"
-                  />
-                  <InputTextAreaField
-                    label="Description"
-                    html-rows="4"
-                    className="min-h-[120px] w-full resize-none"
-                    value={
-                      requirementEditedData
-                        ? editForm.description
-                        : newRequirement.description
-                    }
-                    onChange={
-                      requirementEditedData
-                        ? (e) => {
-                            setEditForm((prev) => ({
-                              ...prev,
-                              description: e.target.value,
-                            }));
-                          }
-                        : handleChange
-                    }
-                    name="description"
-                    placeholder="What is this requirement about..."
-                    data-cy="requirement-description-input"
-                  />
-                  {requirementEdited === null &&
-                    ghostRequirementEdited === null && (
-                      <div className="flex gap-2 pt-4">
-                        <div className="w-36 space-y-2">
-                          <label className="font-semibold">Type</label>
-                          <RequirementTypePicker
-                            disabled={permission < permissionNumbers.write}
-                            type={newRequirement.requirementType}
-                            onChange={async (type) => {
-                              setNewRequirement((prev) => ({
-                                ...prev,
-                                requirementType: type,
-                              }));
-                            }}
-                          />
-                        </div>
-                        <div className="w-36 space-y-2">
-                          <label className="font-semibold">Priority</label>
-                          <PriorityPicker
-                            disabled={permission < permissionNumbers.write}
-                            priority={newRequirement.priority}
-                            onChange={async (priority) => {
-                              setNewRequirement((prev) => ({
-                                ...prev,
-                                priority: priority,
-                              }));
-                            }}
-                          />
-                        </div>
-                        <div className="w-36 space-y-2">
-                          <label className="font-semibold">Focus</label>
-                          <RequirementFocusPicker
-                            disabled={permission < permissionNumbers.write}
-                            focus={newRequirement.requirementFocus}
-                            onChange={async (focus) => {
-                              setNewRequirement((prev) => ({
-                                ...prev,
-                                requirementFocus: focus,
-                              }));
-                            }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                </div>
-              ) : (
-                <div>
-                  <div className="mt-4 text-lg">
-                    {requirementEditedData.description !== "" ? (
-                      <Markdown>{requirementEditedData.description}</Markdown>
-                    ) : (
-                      <p className="italic text-gray-500">
-                        No description provided.
-                      </p>
-                    )}
-                  </div>
-                  <br />
-                </div>
-              )}
-            </div>
-          )}
-        </Popup>
+          setRequirementData={(updatedDetail) => {
+            if (!selectedGhostReq || !updatedDetail) return;
+            updateGhostRow(selectedGhostReq, () => updatedDetail);
+          }}
+          canWrite={permission >= permissionNumbers.write}
+          generatedRequirements={generatedRequirements.current}
+          updateGeneratedRequirement={(
+            id,
+            data: WithId<
+              inferRouterOutputs<
+                typeof requirementsRouter
+              >["generateRequirements"][number]
+            >,
+          ) => {
+            generatedRequirements.current = generatedRequirements.current?.map(
+              (req) => (req.id === id ? data : req),
+            );
+          }}
+          onAccept={async () => {
+            setShowDetailPopup(false);
+            setTimeout(() => setSelectedGhostReq(""), 300);
+            await onAccept([selectedGhostReq]);
+          }}
+          onReject={() => {
+            setShowDetailPopup(false);
+            setTimeout(() => {
+              onReject([selectedGhostReq]);
+              setSelectedGhostReq("");
+            }, 300);
+          }}
+        />
       )}
     </div>
   );
