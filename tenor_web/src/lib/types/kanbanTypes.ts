@@ -3,6 +3,7 @@ import type {
   BacklogItemType,
   Size,
 } from "./firebaseSchemas";
+import type { Tag, WithId } from "./firebaseSchemas";
 
 // Only information needed by the kanban board columns / selectable cards
 export interface KanbanCard {
@@ -11,13 +12,11 @@ export interface KanbanCard {
   scrumId: number;
   name: string;
   size: Size | undefined;
-  tags: {
-    deleted: boolean;
-    id: string;
-    name: string;
-    color: string;
-  }[];
+  tags: WithId<Tag>[];
   columnId: string;
+  assigneeIds: string[];
+  sprintId: string | undefined;
+  priorityId: string | undefined;
 }
 
 export interface KanbanTaskCard extends KanbanCard {

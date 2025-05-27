@@ -69,7 +69,7 @@ export default function ItemCardRender({
                   .map((tag) => tag.name)
                   .join("<br>")}
               >
-                +{item.tags.length - 2}
+                {`+${item.tags.length - 2}`}
               </TagComponent>
             )}
           </div>
