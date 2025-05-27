@@ -75,7 +75,7 @@ const projectStatus: VisualizationSpec = {
       grid: true,
       gridOpacity: 0.1,
       // Title
-      title: "Tickets Completed",
+      title: "Tasks Completed",
       titleFontSize: 18,
       titleFontWeight: 600,
       titleColor: "#6B7280",
