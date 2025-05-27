@@ -5,7 +5,7 @@ import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { sendEmailVerification } from "firebase/auth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
-import SecondaryButton from "../_components/buttons/SecondaryButton";
+import SecondaryButton from "../_components/inputs/buttons/SecondaryButton";
 import { useAlert } from "../_hooks/useAlert";
 
 export default function ResendVerificationButton() {

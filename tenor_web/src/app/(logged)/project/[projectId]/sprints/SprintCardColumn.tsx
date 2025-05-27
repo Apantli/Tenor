@@ -5,7 +5,7 @@ import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { type BacklogItems } from "./page";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import { usePopupVisibilityState } from "~/app/_components/Popup";

@@ -1,24 +1,24 @@
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import Popup from "~/app/_components/Popup";
 import { useMemo, useRef, useState } from "react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useEffect } from "react";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
 import Markdown from "react-markdown";
-import SecondaryButton from "../../../../_components/buttons/SecondaryButton";
-import SearchBar from "../../../../_components/SearchBar";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useParams } from "next/navigation";
 import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import NoEpicsIcon from "@mui/icons-material/FormatListBulleted";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
+import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import { emptyRole } from "~/lib/defaultValues/roles";
 

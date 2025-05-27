@@ -16,19 +16,19 @@ import {
 } from "react";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import SearchBar from "~/app/_components/SearchBar";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../../../../_components/Popup";
-import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
-import { SizePicker } from "../../../../_components/specific-pickers/SizePicker";
-import CreateUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/CreateUserStoryPopup";
+import UserStoryDetailPopup from "~/app/_components/popups/UserStoryDetailPopup";
+import { SizePicker } from "../../../../_components/inputs/pickers/SizePicker";
+import CreateUserStoryPopup from "~/app/_components/popups/CreateUserStoryPopup";
 import {
   useFormatEpicScrumId,
   useFormatSprintNumber,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
-import PriorityPicker from "../../../../_components/specific-pickers/PriorityPicker";
+import PriorityPicker from "../../../../_components/inputs/pickers/PriorityPicker";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import LoadingSpinner from "../../../../_components/LoadingSpinner";
 import AiGeneratorDropdown from "../../../../_components/ai/AiGeneratorDropdown";

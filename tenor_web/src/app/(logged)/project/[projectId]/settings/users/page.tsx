@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import RoleTable from "~/app/_components/sections/RoleTable";
+import RoleTable from "~/app/(logged)/project/[projectId]/settings/users/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { checkPermissions } from "~/lib/defaultValues/permission";

@@ -2,14 +2,13 @@
 import { ProductivityCard } from "~/app/_components/cards/ProductivityCard";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { useParams } from "next/navigation";
-import { MemberDetailsCard } from "~/app/_components/cards/MemberdetailsCard";
+import { MemberDetailsCard } from "~/app/(logged)/project/[projectId]/performance/MemberDetailsCard";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
-
-import { MemberList } from "~/app/_components/MemberList";
+import { MemberList } from "~/app/(logged)/project/[projectId]/performance/MemberList";
 
 export default function ProjectPerformance() {
   const { projectId } = useParams();

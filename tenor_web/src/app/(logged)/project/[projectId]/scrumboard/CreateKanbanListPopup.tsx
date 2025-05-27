@@ -2,17 +2,17 @@
 
 import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesItemStatus } from "~/app/_hooks/invalidateHooks";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import HelpIcon from "@mui/icons-material/Help";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 interface Props {
   showPopup: boolean;

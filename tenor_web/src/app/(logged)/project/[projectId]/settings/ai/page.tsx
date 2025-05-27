@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { toBase64 } from "~/utils/helpers/base64";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import FileList from "~/app/_components/inputs/FileList";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import LinkList from "~/app/_components/inputs/LinkList";

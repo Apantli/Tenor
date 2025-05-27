@@ -1,6 +1,6 @@
 "use client";
 
-import { ProjectStatus } from "~/app/(logged)/(dashboard)/ProjectStatus";
+import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatusDashboard";
 import ProjectList from "./ProjectList";
 
 export default function ProjectPage() {
@@ -11,7 +11,7 @@ export default function ProjectPage() {
         <ProjectList />
       </div>
       <div className="w-full flex-1 pt-10 xl:w-fit xl:flex-[2]">
-        <ProjectStatus className="h-[38vh]" />
+        <ProjectStatusDashboard className="h-[38vh]" />
         {/* FIXME: Remove when recent activity is ready */}
         <div
           className="mt-4 h-[38vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
