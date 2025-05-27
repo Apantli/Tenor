@@ -28,7 +28,7 @@ import {
 } from "~/utils/reactFlow";
 import SecondaryButton from "../../../../_components/inputs/buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
+import UserStoryDetailPopup from "~/app/_components/popups/UserStoryDetailPopup";
 import { TRPCClientError } from "@trpc/client";
 import { useAlert } from "~/app/_hooks/useAlert";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -40,7 +40,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
-import IssueDetailPopup from "../issues/IssueDetailPopup";
+import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };

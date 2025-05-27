@@ -20,9 +20,9 @@ import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../../../../_components/Popup";
-import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
+import UserStoryDetailPopup from "~/app/_components/popups/UserStoryDetailPopup";
 import { SizePillComponent } from "../../../../_components/inputs/pickers/SizePillComponent";
-import CreateUserStoryPopup from "~/app/(logged)/project/[projectId]/user-stories/CreateUserStoryPopup";
+import CreateUserStoryPopup from "~/app/_components/popups/CreateUserStoryPopup";
 import {
   useFormatEpicScrumId,
   useFormatSprintNumber,

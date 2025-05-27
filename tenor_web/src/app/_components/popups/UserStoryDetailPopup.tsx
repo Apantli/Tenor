@@ -15,10 +15,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import DependencyListUserStory from "./DependencyListUserStory";
-import TasksTable, {
-  type BacklogItemWithTasks,
-} from "~/app/_components/tasks/TasksTable";
+import DependencyListUserStory from "../inputs/DependencyListUserStory";
 import { SizePillComponent } from "~/app/_components/inputs/pickers/SizePillComponent";
 import EpicPicker from "~/app/_components/inputs/pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
@@ -30,7 +27,6 @@ import {
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
-import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
@@ -48,6 +44,8 @@ import {
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { CreateTaskForm } from "./CreateTaskPopup";
+import TasksTable, { type BacklogItemWithTasks } from "../TasksTable";
 
 interface Props {
   userStoryId: string;

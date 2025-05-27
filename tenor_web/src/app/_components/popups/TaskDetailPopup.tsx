@@ -27,13 +27,13 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
-import DependencyListTask from "./DependencyListTask";
 import { TRPCClientError } from "@trpc/client";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import DependencyListTask from "../inputs/DependencyListTask";
 interface Props {
   taskId: string;
   itemId: string;

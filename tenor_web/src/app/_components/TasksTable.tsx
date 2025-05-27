@@ -2,11 +2,11 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import type { TaskDetail, TaskPreview } from "~/lib/types/detailSchemas";
-import Table, { type TableColumns } from "../table/Table";
-import ProfilePicture from "../ProfilePicture";
+import Table, { type TableColumns } from "./table/Table";
+import ProfilePicture from "./ProfilePicture";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { api } from "~/trpc/react";
-import StatusPicker from "../inputs/pickers/StatusPicker";
+import StatusPicker from "./inputs/pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import {
   type BacklogItemType,
@@ -16,9 +16,9 @@ import {
   type StatusTag,
 } from "~/lib/types/firebaseSchemas";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
+import AiGeneratorDropdown from "./ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import LoadingSpinner from "../LoadingSpinner";
+import LoadingSpinner from "./LoadingSpinner";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesBacklogItems,
@@ -27,13 +27,13 @@ import {
 import TagIcon from "@mui/icons-material/Tag";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { Timestamp } from "firebase/firestore";
-import { usePopupVisibilityState } from "../Popup";
-import TaskDetailPopup from "./TaskDetailPopup";
+import { usePopupVisibilityState } from "./Popup";
 import type { TaskCol } from "~/lib/types/columnTypes";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { cn } from "~/lib/utils";
-import CollapsableSearchBar from "../inputs/search/CollapsableSearchBar";
+import CollapsableSearchBar from "./inputs/search/CollapsableSearchBar";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import TaskDetailPopup from "./popups/TaskDetailPopup";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];

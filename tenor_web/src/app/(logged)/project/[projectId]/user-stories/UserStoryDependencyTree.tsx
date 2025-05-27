@@ -28,7 +28,7 @@ import {
 } from "~/utils/reactFlow";
 import SecondaryButton from "../../../../_components/inputs/buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
-import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
+import UserStoryDetailPopup from "~/app/_components/popups/UserStoryDetailPopup";
 import { TRPCClientError } from "@trpc/client";
 import { useAlert } from "~/app/_hooks/useAlert";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";

@@ -10,7 +10,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import TasksTable from "~/app/_components/tasks/TasksTable";
+import TasksTable from "~/app/_components/TasksTable";
 import { SizePillComponent } from "~/app/_components/inputs/pickers/SizePillComponent";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
@@ -20,7 +20,6 @@ import {
   useFormatTaskScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
 import UserStoryPicker from "~/app/_components/inputs/pickers/UserStoryPicker";
 import {
   useInvalidateQueriesAllIssues,
@@ -41,6 +40,7 @@ import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
+import { CreateTaskForm } from "./CreateTaskPopup";
 
 interface Props {
   issueId: string;

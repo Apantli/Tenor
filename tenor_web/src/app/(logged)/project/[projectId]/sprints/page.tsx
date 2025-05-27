@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { api } from "~/trpc/react";
-import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
+import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
@@ -25,7 +25,7 @@ import {
   useInvalidateQueriesBacklogItems,
 } from "~/app/_hooks/invalidateHooks";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
-import IssueDetailPopup from "../issues/IssueDetailPopup";
+import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
 import {
   type BacklogItemAndTaskDetailType,

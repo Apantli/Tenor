@@ -6,8 +6,8 @@ import CalendarGrid from "./CalendarGrid";
 import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
-import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import IssueDetailPopup from "../issues/IssueDetailPopup";
+import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
+import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import {
   permissionNumbers,
   type Permission,

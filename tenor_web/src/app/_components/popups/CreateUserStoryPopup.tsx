@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
-import DependencyListUserStory from "./DependencyListUserStory";
+import DependencyListUserStory from "../inputs/DependencyListUserStory";
 import EpicPicker from "~/app/_components/inputs/pickers/EpicPicker";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";

@@ -19,7 +19,7 @@ import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrivacyPopup from "./PrivacyPopup";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import { useSpeechRecognition } from "./SpeechToText";
+import { useSpeechRecognition } from "./useSpeechRecognition";
 import RetrospectiveConversationAnswers from "./RetrospectiveConversationAnswers";
 import { classifyEmotion, mode } from "~/lib/eeg/classifyEmotion";
 import { api } from "~/trpc/react";

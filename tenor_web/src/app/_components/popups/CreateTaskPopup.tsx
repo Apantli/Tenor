@@ -21,11 +21,11 @@ import type {
   TaskPreview,
   UserPreview,
 } from "~/lib/types/detailSchemas";
-import DependencyListTask from "./DependencyListTask";
 import { TRPCClientError } from "@trpc/client";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import DependencyListTask from "../inputs/DependencyListTask";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;

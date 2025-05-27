@@ -16,8 +16,8 @@ import PriorityPicker from "../../../../_components/inputs/pickers/PriorityPicke
 import { SizePillComponent } from "../../../../_components/inputs/pickers/SizePillComponent";
 import UserStoryPicker from "../../../../_components/inputs/pickers/UserStoryPicker";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
-import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
-import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
+import IssueDetailPopup from "~/app/_components/popups/IssueDetailPopup";
+import CreateIssuePopup from "~/app/_components/popups/CreateIssuePopup";
 import SearchBar from "../../../../_components/inputs/search/SearchBar";
 import AssignUsersList from "../../../../_components/inputs/pickers/AssignUsersList";
 import useConfirmation from "~/app/_hooks/useConfirmation";
