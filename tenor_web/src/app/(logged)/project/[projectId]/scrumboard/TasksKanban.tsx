@@ -31,26 +31,14 @@ import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
 import type { UserPreview } from "~/lib/types/detailSchemas";
+import { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 
 interface Props {
   filter: string;
-  tags: WithId<Tag>[];
-  priorities: WithId<Tag>[];
-  size: WithId<Tag>[];
-
-  assignee: WithId<UserPreview> | undefined;
-
-  sprint: WithId<Sprint> | undefined;
+  advancedFilters: AdvancedSearchFilters;
 }
 
-export default function TasksKanban({
-  filter,
-  tags,
-  priorities,
-  size,
-  assignee,
-  sprint,
-}: Props) {
+export default function TasksKanban({ filter, advancedFilters }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -291,11 +279,7 @@ export default function TasksKanban({
               return (
                 <AssignableCardColumn
                   filter={filter}
-                  tags={tags}
-                  priorities={priorities}
-                  size={size}
-                  assignee={assignee}
-                  sprint={sprint}
+                  advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}

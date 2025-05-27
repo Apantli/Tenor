@@ -21,6 +21,7 @@ import { api } from "~/trpc/react";
 import SearchBar from "~/app/_components/SearchBar";
 import AdvancedSearch from "../../../../_components/AdvancedSearch";
 import { type UserPreview } from "~/lib/types/detailSchemas";
+import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
 
@@ -50,14 +51,7 @@ export default function ProjectKanban() {
   );
   const [filter, setFilter] = useState("");
 
-  const [tags, setTags] = useState<WithId<Tag>[]>([]);
-  const [size, setSizes] = useState<WithId<Tag>[]>([]);
-  const [priorities, setPriorities] = useState<WithId<Tag>[]>([]);
-
-  const [assignee, setAssignee] = useState<WithId<UserPreview> | undefined>(
-    undefined,
-  );
-  const [sprint, setSprint] = useState<WithId<Sprint> | undefined>(undefined);
+  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
 
   // HANDLES
   const onListAdded = async () => {
@@ -76,16 +70,8 @@ export default function ProjectKanban() {
             placeholder="Search..."
           />
           <AdvancedSearch
-            tags={tags}
-            setTags={setTags}
-            priorities={priorities}
-            setPriorities={setPriorities}
-            size={size}
-            setSizes={setSizes}
-            assignee={assignee}
-            setAssignee={setAssignee}
-            sprint={sprint}
-            setSprint={setSprint}
+            advancedFilters={advancedFilters}
+            setAdvancedFilters={setAdvancedFilters}
           />
         </div>
 
@@ -110,21 +96,13 @@ export default function ProjectKanban() {
       {section === "Tasks" && (
         <TasksKanban
           filter={filter}
-          priorities={priorities}
-          tags={tags}
-          size={size}
-          assignee={assignee}
-          sprint={sprint}
+          advancedFilters={advancedFilters}
         ></TasksKanban>
       )}
       {section === "Backlog Items" && (
         <ItemsKanban
           filter={filter}
-          priorities={priorities}
-          tags={tags}
-          size={size}
-          assignee={assignee}
-          sprint={sprint}
+          advancedFilters={advancedFilters}
         ></ItemsKanban>
       )}
 

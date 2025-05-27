@@ -5,6 +5,7 @@ import CardColumn from "./CardColumn";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { UserPreview } from "~/lib/types/detailSchemas";
+import { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 // import type { Tag } from "~/lib/types/firebaseSchemas";
 
 // WithId<BasicInfo> change into only needed info...
@@ -26,13 +27,7 @@ interface Props {
   header: React.ReactNode;
   disabled?: boolean;
   filter: string;
-  tags: WithId<Tag>[];
-  priorities: WithId<Tag>[];
-  size: WithId<Tag>[];
-
-  assignee: WithId<UserPreview> | undefined;
-
-  sprint: WithId<Sprint> | undefined;
+  advancedFilters: AdvancedSearchFilters;
 }
 
 export default function AssignableCardColumn({
@@ -47,11 +42,7 @@ export default function AssignableCardColumn({
   header,
   disabled = false,
   filter,
-  tags,
-  priorities,
-  size,
-  assignee,
-  sprint,
+  advancedFilters,
 }: Props) {
   // Check there's selected items and none of them are in this column
   const availableToBeAssignedTo =
@@ -60,6 +51,8 @@ export default function AssignableCardColumn({
       (selectedItem) =>
         !column.itemIds.some((itemId) => itemId === selectedItem),
     );
+
+  const { tags, sizes, priorities, assignee, sprint } = advancedFilters;
 
   return (
     <div
@@ -91,9 +84,9 @@ export default function AssignableCardColumn({
               )
                 return false;
               if (
-                size.length > 0 &&
+                sizes.length > 0 &&
                 val.size &&
-                !size.some((tag) => tag.id === val.size)
+                !sizes.some((tag) => tag.id === val.size)
               )
                 return false;
               if (assignee && !val.assigneeIds.includes(assignee.id))

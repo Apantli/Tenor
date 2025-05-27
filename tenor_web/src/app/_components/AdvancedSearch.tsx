@@ -13,35 +13,17 @@ import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
 import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import { cn } from "~/lib/utils";
+import { AdvancedSearchFilters } from "../_hooks/useAdvancedSearchFilters";
+import { SetStateAction } from "react";
 
 interface Props {
-  tags: WithId<Tag>[];
-  setTags: (tags: WithId<Tag>[]) => void;
-
-  priorities: WithId<Tag>[];
-  setPriorities: (priorities: WithId<Tag>[]) => void;
-
-  size: WithId<Tag>[];
-  setSizes: (size: WithId<Tag>[]) => void;
-
-  assignee: WithId<UserPreview> | undefined;
-  setAssignee: (assignee: WithId<UserPreview> | undefined) => void;
-
-  sprint: WithId<Sprint> | undefined;
-  setSprint: (sprints: WithId<Sprint> | undefined) => void;
+  advancedFilters: AdvancedSearchFilters;
+  setAdvancedFilters: React.Dispatch<SetStateAction<AdvancedSearchFilters>>;
 }
 
 export default function AdvancedSearch({
-  tags,
-  setTags,
-  priorities,
-  setPriorities,
-  size,
-  setSizes,
-  assignee,
-  setAssignee,
-  sprint,
-  setSprint,
+  advancedFilters,
+  setAdvancedFilters,
 }: Props) {
   // GENERAL
   const { projectId } = useParams();
@@ -64,14 +46,12 @@ export default function AdvancedSearch({
 
   const filters = [
     {
-      field: "priority",
+      field: "priorities" as keyof AdvancedSearchFilters,
       label: "Priority",
       options: prioritiesData ?? [],
-      value: priorities,
-      setValue: setPriorities,
     },
     {
-      field: "size",
+      field: "sizes" as keyof AdvancedSearchFilters,
       label: "Size",
       options: sizeTags.map(
         (tag) =>
@@ -80,32 +60,30 @@ export default function AdvancedSearch({
             id: tag.id ?? tag.name,
           }) as WithId<Tag>,
       ),
-      value: size,
-      setValue: setSizes,
     },
     {
-      field: "backlog",
+      field: "tags" as keyof AdvancedSearchFilters,
       label: "Tags",
       options: backlogTags ?? [],
-      value: tags,
-      setValue: setTags,
     },
   ];
 
   const clearFilters = () => {
-    setAssignee(undefined);
-    setSprint(undefined);
-    setPriorities([]);
-    setSizes([]);
-    setTags([]);
+    setAdvancedFilters({
+      tags: [],
+      sizes: [],
+      priorities: [],
+      assignee: undefined,
+      sprint: undefined,
+    });
   };
 
   const showClear =
-    assignee !== undefined ||
-    sprint !== undefined ||
-    tags.length > 0 ||
-    priorities.length > 0 ||
-    size.length > 0;
+    advancedFilters.assignee !== undefined ||
+    advancedFilters.sprint !== undefined ||
+    advancedFilters.tags.length > 0 ||
+    advancedFilters.priorities.length > 0 ||
+    advancedFilters.sizes.length > 0;
 
   return (
     <div className="flex items-center gap-2">
@@ -148,46 +126,63 @@ export default function AdvancedSearch({
               <h1 className="text- sticky top-0 bg-white pt-2 font-semibold">
                 {filter.label}
               </h1>
-              {filter.options?.map((option) => (
-                <div key={option.id} className="my-1 flex items-center gap-2">
-                  <InputCheckbox
-                    checked={filter.value.some((i) => i.id === option.id)}
-                    onChange={(newValue) => {
-                      if (!newValue) {
-                        filter.setValue(
-                          filter.value.filter((i) => i.id !== option.id),
-                        );
-                      } else {
-                        filter.setValue([...filter.value, option]);
-                      }
-                    }}
-                  />
-                  <TagComponent
-                    color={option.color}
-                    reducedPadding
-                    className="w-16 truncate"
-                  >
-                    {option.name}
-                  </TagComponent>
-                </div>
-              ))}
+              {filter.options?.map((option) => {
+                const value = advancedFilters[filter.field] as WithId<Tag>[];
+                const setValue = (newValue: WithId<Tag>[]) => {
+                  setAdvancedFilters({
+                    ...advancedFilters,
+                    [filter.field]: newValue,
+                  });
+                };
+                return (
+                  <div key={option.id} className="my-1 flex items-center gap-2">
+                    <InputCheckbox
+                      checked={value.some((i) => i.id === option.id)}
+                      onChange={(newValue) => {
+                        if (!newValue) {
+                          setValue(value.filter((i) => i.id !== option.id));
+                        } else {
+                          setValue([...value, option]);
+                        }
+                      }}
+                    />
+                    <TagComponent
+                      color={option.color}
+                      reducedPadding
+                      className="w-16 truncate"
+                    >
+                      {option.name}
+                    </TagComponent>
+                  </div>
+                );
+              })}
             </div>
           ))}
           <div className="flex-[2] p-2">
             <h1 className="font-semibold">Assignee</h1>
             <UserPicker
               className="h-10 max-w-[170px]"
-              selectedOption={assignee}
+              selectedOption={advancedFilters.assignee}
               options={users ?? []}
-              onChange={setAssignee}
+              onChange={(assignee) => {
+                setAdvancedFilters({
+                  ...advancedFilters,
+                  assignee,
+                });
+              }}
               allowSetSelf
             />
             <h1 className="mt-2 font-semibold">Sprint</h1>
             <SprintPicker
               className="h-10 max-w-[170px]"
-              selectedOption={sprint}
+              selectedOption={advancedFilters.sprint}
               options={sprintsData ?? []}
-              onChange={setSprint}
+              onChange={(sprint) => {
+                setAdvancedFilters({
+                  ...advancedFilters,
+                  sprint,
+                });
+              }}
             />
           </div>
         </DropdownItem>
