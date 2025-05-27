@@ -90,6 +90,7 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
   const [renderStatusPopup, showStatusPopup, setShowStatusPopup] =
     usePopupVisibilityState();
   const [selectedStatusId, setSelectedStatusId] = useState<string | null>();
+  const [statusEditMode, setStatusEditMode] = useState(false);
 
   const [
     renderDetail,
@@ -462,7 +463,14 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
 
       {renderStatusPopup && selectedStatusId && (
         <StatusDetailPopup
-          setShowPopup={setShowStatusPopup}
+          editMode={statusEditMode}
+          setEditMode={setStatusEditMode}
+          setShowPopup={(show) => {
+            if (!show) {
+              setTimeout(() => setStatusEditMode(false), 200);
+            }
+            setShowStatusPopup(show);
+          }}
           showPopup={showStatusPopup}
           statusId={selectedStatusId}
         />

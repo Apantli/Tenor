@@ -119,6 +119,10 @@ export default function StatusDetailPopup({
             duration: 5000,
           },
         );
+        setForm({
+          ...form,
+          name: statusDetail?.name ?? "",
+        });
         return;
       }
     } else if (protectedNames.includes(newNameLower)) {
@@ -130,6 +134,10 @@ export default function StatusDetailPopup({
           duration: 5000,
         },
       );
+      setForm({
+        ...form,
+        name: statusDetail?.name ?? "",
+      });
       return;
     }
 
