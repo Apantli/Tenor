@@ -10,6 +10,9 @@ export const IssueZodType = z.literal("IS");
 export const TaskZodType = z.literal("TS");
 export const EpicZodType = z.literal("EP");
 
+const maxLengthTransformation = (length: number) => (val: string) =>
+  val.slice(0, length);
+
 export const BacklogItemZodType = z.union([UserStoryZodType, IssueZodType]);
 export const AllBasicItemZodType = z.union([
   BacklogItemZodType,
@@ -95,7 +98,10 @@ export const RoleSchema = z.object({
 
 export const BasicInfoSchema = z.object({
   scrumId: z.number(),
-  name: z.string().min(1, "Name is required"),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .transform(maxLengthTransformation(80)),
   description: z.string(),
   deleted: z.boolean().default(false),
   createdAt: TimestampType.default(() => Timestamp.fromDate(new Date())),
@@ -137,7 +143,8 @@ export const UserStorySchema = BacklogItemSchema.extend({
   // Redundant fields, but useful for describing their purposes to the AI
   name: z
     .string()
-    .describe("Small (5 word maximum) description of the user story"),
+    .describe("Small (5 word maximum) description of the user story")
+    .transform(maxLengthTransformation(80)),
   // .min(1, "Name is required")
   description: z
     .string()
@@ -174,7 +181,10 @@ export const TaskSchema = BasicInfoSchema.extend({
   // finishedDate: TimestampType.nullable(),
   itemId: z.string(),
   itemType: BacklogItemZodType,
-  name: z.string().describe("Small (5 word maximum) description of the task"),
+  name: z
+    .string()
+    .describe("Small (5 word maximum) description of the task")
+    .transform(maxLengthTransformation(80)),
   description: z
     .string()
     .describe(
@@ -209,7 +219,8 @@ export const RequirementSchema = BasicInfoSchema.extend({
   requirementFocusId: z.string(),
   name: z
     .string()
-    .describe("Small (5 word maximum) description of the requirement"),
+    .describe("Small (5 word maximum) description of the requirement")
+    .transform(maxLengthTransformation(80)),
   description: z
     .string()
     .describe(
