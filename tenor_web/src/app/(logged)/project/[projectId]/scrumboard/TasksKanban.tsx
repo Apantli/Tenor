@@ -28,6 +28,8 @@ import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
+import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";
 
 interface Props {
   filter: string;
@@ -76,6 +78,10 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
 
   const [forcedDetailParentUserStoryId, setForcedDetailParentUserStoryId] =
     useQueryId("id");
+
+  const [renderStatusPopup, showStatusPopup, setShowStatusPopup] =
+    usePopupVisibilityState();
+  const [selectedStatusId, setSelectedStatusId] = useState<string | null>();
 
   const [
     renderDetail,
@@ -314,7 +320,14 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
                               )}
                             </button>
                             <Dropdown label={"• • •"}>
-                              <DropdownButton>Edit status</DropdownButton>
+                              <DropdownButton
+                                onClick={() => {
+                                  setShowStatusPopup(true);
+                                  setSelectedStatusId(column.id);
+                                }}
+                              >
+                                Edit status
+                              </DropdownButton>
                             </Dropdown>
                           </div>
                         )}
@@ -373,6 +386,14 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
           showDetail={showDetail}
           issueId={detailParentItemId}
           taskIdToOpenImmediately={detailItemId}
+        />
+      )}
+
+      {renderStatusPopup && selectedStatusId && (
+        <StatusDetailPopup
+          setShowPopup={setShowStatusPopup}
+          showPopup={showStatusPopup}
+          statusId={selectedStatusId}
         />
       )}
     </>

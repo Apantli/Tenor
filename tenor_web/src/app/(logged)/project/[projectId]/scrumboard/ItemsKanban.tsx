@@ -29,6 +29,8 @@ import {
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
+import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";
 
 interface Props {
   filter: string;
@@ -79,6 +81,10 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // Detail item and parent
   const detailItem = itemsAndColumnsData?.cardItems[detailItemId];
   const detailItemType = detailItem?.cardType;
+
+  const [renderStatusPopup, showStatusPopup, setShowStatusPopup] =
+    usePopupVisibilityState();
+  const [selectedStatusId, setSelectedStatusId] = useState<string | null>();
 
   // UTILITY
   const getCorrectFormatter = (itemType: string) => {
@@ -329,7 +335,14 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
                               )}
                             </button>
                             <Dropdown label={"• • •"}>
-                              <DropdownButton>Edit status</DropdownButton>
+                              <DropdownButton
+                                onClick={() => {
+                                  setShowStatusPopup(true);
+                                  setSelectedStatusId(column.id);
+                                }}
+                              >
+                                Edit status
+                              </DropdownButton>
                             </Dropdown>
                           </div>
                         )}
@@ -374,6 +387,14 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
           setDetailId={setDetailItemId}
           showDetail={showDetail}
           issueId={detailItemId}
+        />
+      )}
+
+      {renderStatusPopup && selectedStatusId && (
+        <StatusDetailPopup
+          setShowPopup={setShowStatusPopup}
+          showPopup={showStatusPopup}
+          statusId={selectedStatusId}
         />
       )}
     </>

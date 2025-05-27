@@ -248,6 +248,12 @@ export const useInvalidateQueriesAllStatuses = () => {
     await utils.settings.getStatusTypes.invalidate({
       projectId: projectId,
     });
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
+      projectId,
+    });
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId,
+    });
   };
 };
 
