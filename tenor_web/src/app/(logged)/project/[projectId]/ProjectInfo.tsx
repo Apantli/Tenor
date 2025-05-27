@@ -1,15 +1,15 @@
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import LoadingSpinner from "../LoadingSpinner";
-import TertiaryButton from "../buttons/TertiaryButton";
+import LoadingSpinner from "../../../_components/LoadingSpinner";
+import TertiaryButton from "../../../_components/buttons/TertiaryButton";
 import Markdown from "react-markdown";
 
-
-export default function ProjectInfo({projectId}: {projectId: string}) {
-
-  const { data: project, isLoading } = api.projects.getGeneralConfig.useQuery({projectId});
+export default function ProjectInfo({ projectId }: { projectId: string }) {
+  const { data: project, isLoading } = api.projects.getGeneralConfig.useQuery({
+    projectId,
+  });
   const [showDescription, setShowDescription] = useState(false);
-  
+
   const projectTitle = project?.name ?? "Project Name";
   let projectDescription = project?.description;
   // Check if the description is empty or undefined
@@ -32,26 +32,26 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
 
   if (isLoading) {
     return (
-      <div className="w-full flex h-full items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center">
         <LoadingSpinner color="primary" />
       </div>
-    )
+    );
   }
 
   return (
-    <div className="w-full h-full flex flex-col items-center gap-3">
-      <div className="flex flex-row items-start gap-3 justify-start w-full">
+    <div className="flex h-full w-full flex-col items-center gap-3">
+      <div className="flex w-full flex-row items-start justify-start gap-3">
         <div className="h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
           <img
-          src={
-            project?.logo
-              ? project.logo.startsWith("/")
-                ? project.logo
-                : `/api/image_proxy/?url=${encodeURIComponent(project.logo)}`
-              : ""
-          }
-          alt="Project Logo"
-          className="h-full w-full rounded-md object-contain p-[4px]"
+            src={
+              project?.logo
+                ? project.logo.startsWith("/")
+                  ? project.logo
+                  : `/api/image_proxy/?url=${encodeURIComponent(project.logo)}`
+                : ""
+            }
+            alt="Project Logo"
+            className="h-full w-full rounded-md object-contain p-[4px]"
           />
         </div>
         <div>
@@ -59,12 +59,12 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
         </div>
       </div>
       <div className="w-full">
-        <div className="flex flex-col gap-2 w-full text-left">
+        <div className="flex w-full flex-col gap-2 text-left">
           <Markdown>
-            { shouldShowFullDescription ? projectDescription : previewText}
+            {shouldShowFullDescription ? projectDescription : previewText}
           </Markdown>
         </div>
-        <div className="w-full flex justify-end">
+        <div className="flex w-full justify-end">
           {shouldTruncate && (
             <TertiaryButton
               onClick={() => setShowDescription(!showDescription)}
@@ -75,5 +75,5 @@ export default function ProjectInfo({projectId}: {projectId: string}) {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -3,12 +3,17 @@
 import type { ClassNameValue } from "tailwind-merge";
 import { useState } from "react";
 import { cn } from "~/lib/utils";
-import SearchBar from "../SearchBar";
-import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
-import PrimaryButton from "../buttons/PrimaryButton";
-import InputTextField from "../inputs/InputTextField";
-import Table, { type TableColumns } from "../table/Table";
-import PillPickerComponent from "../pickers/PillPickerComponent";
+import SearchBar from "../../../../../_components/SearchBar";
+import Dropdown, {
+  DropdownButton,
+  DropdownItem,
+} from "../../../../../_components/Dropdown";
+import PrimaryButton from "../../../../../_components/buttons/PrimaryButton";
+import InputTextField from "../../../../../_components/inputs/InputTextField";
+import Table, {
+  type TableColumns,
+} from "../../../../../_components/table/Table";
+import PillPickerComponent from "../../../../../_components/pickers/PillPickerComponent";
 import {
   permissionItems,
   permissionLabels,

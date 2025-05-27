@@ -17,7 +17,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import DependencyListUserStory from "./DependencyListUserStory";
 import TasksTable, {
   type BacklogItemWithTasks,
-} from "~/app/_components/sections/TasksTable";
+} from "~/app/_components/tasks/TasksTable";
 import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
 import EpicPicker from "~/app/_components/pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/pickers/PriorityPicker";

@@ -1,6 +1,8 @@
-import Table, { type TableColumns } from "../table/Table";
+import Table, {
+  type TableColumns,
+} from "../../../../../_components/table/Table";
 import type { Size } from "~/lib/types/firebaseSchemas";
-import InputTextField from "../inputs/InputTextField";
+import InputTextField from "../../../../../_components/inputs/InputTextField";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useState } from "react";
 
@@ -22,7 +24,7 @@ export default function SettingsSizeTable({
   disabled?: boolean;
   setSizeData: React.Dispatch<React.SetStateAction<SizeCol[]>>;
 }) {
-  //Hook
+  // Hook
   const { alert } = useAlert();
 
   const [numberWarningShown, setNumberWarningShown] = useState(false);

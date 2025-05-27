@@ -9,7 +9,7 @@ import TimeMultiselect, {
   timeframeMultiplier,
 } from "~/app/_components/inputs/TimeMultiselect";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import SettingsSizeTable from "~/app/_components/sections/SizeTable";
+import SettingsSizeTable from "~/app/(logged)/project/[projectId]/settings/scrum-preferences/SizeTable";
 import { useInvalidateQueriesScrumPreferences } from "~/app/_hooks/invalidateHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";

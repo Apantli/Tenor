@@ -30,7 +30,7 @@ import TagIcon from "@mui/icons-material/Tag";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "../Popup";
-import TaskDetailPopup from "../tasks/TaskDetailPopup";
+import TaskDetailPopup from "./TaskDetailPopup";
 import type { TaskCol } from "~/lib/types/columnTypes";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { cn } from "~/lib/utils";

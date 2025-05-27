@@ -1,8 +1,8 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
-import { usePopupVisibilityState } from "../Popup";
+import { usePopupVisibilityState } from "../../../../_components/Popup";
 import { type ChangeEventHandler, useMemo, useState } from "react";
-import Table, { type TableColumns } from "../table/Table";
+import Table, { type TableColumns } from "../../../../_components/table/Table";
 import {
   permissionNumbers,
   type Permission,
@@ -10,17 +10,17 @@ import {
   type Tag,
 } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
-import LoadingSpinner from "../LoadingSpinner";
+import LoadingSpinner from "../../../../_components/LoadingSpinner";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
-import PriorityPicker from "../pickers/PriorityPicker";
-import { SizePillComponent } from "../pickers/SizePillComponent";
-import UserStoryPicker from "../pickers/UserStoryPicker";
+import PriorityPicker from "../../../../_components/pickers/PriorityPicker";
+import { SizePillComponent } from "../../../../_components/pickers/SizePillComponent";
+import UserStoryPicker from "../../../../_components/pickers/UserStoryPicker";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
-import PrimaryButton from "../buttons/PrimaryButton";
+import PrimaryButton from "../../../../_components/buttons/PrimaryButton";
 import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
 import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
-import SearchBar from "../SearchBar";
-import AssignUsersList from "../pickers/AssignUsersList";
+import SearchBar from "../../../../_components/SearchBar";
+import AssignUsersList from "../../../../_components/pickers/AssignUsersList";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import {
   useInvalidateQueriesAllIssues,

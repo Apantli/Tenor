@@ -8,33 +8,32 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import type { requirementsRouter } from "~/server/api/routers/requirements";
 import { api } from "~/trpc/react";
-import Table, { type TableColumns } from "../table/Table";
+import Table, { type TableColumns } from "../../../../_components/table/Table";
 import { cn } from "~/lib/utils";
-import Popup from "../Popup";
-import PrimaryButton from "../buttons/PrimaryButton";
-import InputTextField from "../inputs/InputTextField";
-import InputTextAreaField from "../inputs/InputTextAreaField";
+import Popup from "../../../../_components/Popup";
+import PrimaryButton from "../../../../_components/buttons/PrimaryButton";
+import InputTextField from "../../../../_components/inputs/InputTextField";
+import InputTextAreaField from "../../../../_components/inputs/InputTextAreaField";
 import { useAlert } from "~/app/_hooks/useAlert";
-import PriorityPicker from "../pickers/PriorityPicker";
-import RequirementTypePicker from "../pickers/RequirementTypePicker";
-import RequirementFocusPicker from "../pickers/RequirementFocusPicker";
-import SearchBar from "../SearchBar";
+import PriorityPicker from "../../../../_components/pickers/PriorityPicker";
+import RequirementTypePicker from "../../../../_components/pickers/RequirementTypePicker";
+import RequirementFocusPicker from "../../../../_components/pickers/RequirementFocusPicker";
+import SearchBar from "../../../../_components/SearchBar";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
-import DeleteButton from "../buttons/DeleteButton";
+import DeleteButton from "../../../../_components/buttons/DeleteButton";
 import Markdown from "react-markdown";
-import LoadingSpinner from "../LoadingSpinner";
+import LoadingSpinner from "../../../../_components/LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
+import AiGeneratorDropdown from "../../../../_components/ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import type { inferRouterOutputs } from "@trpc/server";
 import AiIcon from "@mui/icons-material/AutoAwesome";
-
 import {
   useInvalidateQueriesAllRequirements,
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
-import TertiaryButton from "../buttons/TertiaryButton";
+import TertiaryButton from "../../../../_components/buttons/TertiaryButton";
 import { checkPermissions, emptyRole, noTag } from "~/lib/defaultProjectValues";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";

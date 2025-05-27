@@ -14,7 +14,7 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import TasksTable from "~/app/_components/sections/TasksTable";
+import TasksTable from "~/app/_components/tasks/TasksTable";
 import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
 import PriorityPicker from "~/app/_components/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
