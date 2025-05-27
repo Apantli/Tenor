@@ -18,15 +18,17 @@ interface StatusItem {
 
 interface StatusTableRowProps {
   item: StatusItem;
+  onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  onToggleDone: () => void;
+  onToggleDone: () => Promise<void>;
   scrollContainerRef?: React.RefObject<HTMLDivElement>;
   disabled?: boolean;
 }
 
 export default function StatusTableRow({
   item,
+  onOpen,
   onEdit,
   onDelete,
   onToggleDone,
@@ -63,7 +65,7 @@ export default function StatusTableRow({
       <td className="px-3 py-2">
         <button
           className="w-full truncate text-left underline-offset-4 hover:text-app-primary hover:underline"
-          onClick={onEdit}
+          onClick={onOpen}
         >
           {item.name}
         </button>

@@ -8,7 +8,7 @@ import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePicker } from "~/app/_components/specific-pickers/SizePicker";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import type {
   StatusTag,
@@ -179,6 +179,7 @@ export function CreateTaskForm({
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Task Name</label>
           <InputTextField
+            id="task-name-field"
             value={createForm.name}
             onChange={(e) =>
               setCreateForm({ ...createForm, name: e.target.value })
@@ -192,6 +193,7 @@ export function CreateTaskForm({
         <div className="mb-2">
           <label className="mb-1 block text-sm font-medium">Notes</label>
           <InputTextAreaField
+            id="task-description-field"
             value={createForm.description}
             onChange={(e) =>
               setCreateForm({ ...createForm, description: e.target.value })
@@ -213,7 +215,7 @@ export function CreateTaskForm({
           </div>
           <div className="flex-1">
             <label className="mb-1 block text-sm font-medium">Size</label>
-            <SizePillComponent
+            <SizePicker
               currentSize={createForm.size}
               callback={(size) => setCreateForm({ ...createForm, size })}
             />

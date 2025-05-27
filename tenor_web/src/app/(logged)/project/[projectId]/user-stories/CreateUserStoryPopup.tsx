@@ -12,7 +12,7 @@ import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePicker } from "~/app/_components/specific-pickers/SizePicker";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
@@ -171,7 +171,7 @@ export default function CreateUserStoryPopup({
             </div>
             <div className="flex-1 overflow-hidden">
               <h3 className="text-lg font-semibold">Size</h3>
-              <SizePillComponent
+              <SizePicker
                 currentSize={createForm.size}
                 callback={(size) => setCreateForm({ ...createForm, size })}
               />
@@ -212,6 +212,7 @@ export default function CreateUserStoryPopup({
       disablePassiveDismiss={isModified()}
     >
       <InputTextField
+        id="story-name-field"
         label="Story name"
         value={createForm.name}
         onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
@@ -219,6 +220,7 @@ export default function CreateUserStoryPopup({
         containerClassName="mb-4"
       />
       <InputTextAreaField
+        id="story-description-field"
         label="Story description"
         value={createForm.description}
         onChange={(e) =>
@@ -228,6 +230,8 @@ export default function CreateUserStoryPopup({
         containerClassName="mb-4"
       />
       <InputTextAreaField
+        id="story-criteria-field"
+        chatPosition="right"
         label="Acceptance Criteria"
         value={createForm.acceptanceCriteria}
         onChange={(e) =>

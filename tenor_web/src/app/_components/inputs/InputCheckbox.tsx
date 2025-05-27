@@ -14,7 +14,7 @@ export default function InputCheckbox({
   className,
   checked,
   onChange,
-  disabled,
+  disabled = false,
 }: Props) {
   return (
     <div
@@ -28,7 +28,7 @@ export default function InputCheckbox({
         className,
       )}
       onClick={(e) => {
-        if (!!disabled) return;
+        if (disabled) return;
         e.stopPropagation();
         onChange(!checked);
       }}
