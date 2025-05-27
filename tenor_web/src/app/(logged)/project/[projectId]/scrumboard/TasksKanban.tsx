@@ -27,14 +27,14 @@ import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
-import { type RegexItem } from "./AdvancedSearch";
+import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 
 interface Props {
   filter: string;
-  regex: RegexItem[];
+  advancedFilters: AdvancedSearchFilters;
 }
 
-export default function TasksKanban({ filter, regex }: Props) {
+export default function TasksKanban({ filter, advancedFilters }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -275,7 +275,7 @@ export default function TasksKanban({ filter, regex }: Props) {
               return (
                 <AssignableCardColumn
                   filter={filter}
-                  regex={regex}
+                  advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
                   lastDraggedItemId={lastDraggedTaskId}
                   assignSelectionToColumn={assignSelectionToColumn}

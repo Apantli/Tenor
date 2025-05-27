@@ -10,15 +10,18 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
 import type { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
-import { getTasks } from "~/utils/helpers/shortcuts/tasks";
+import { getTasks, getTasksRef } from "~/utils/helpers/shortcuts/tasks";
 import {
   getAutomaticStatusId,
   getBacklogTag,
   getStatusTypes,
   getStatusTypesRef,
 } from "~/utils/helpers/shortcuts/tags";
-import { getUserStoriesRef } from "~/utils/helpers/shortcuts/userStories";
-import { getIssuesRef } from "~/utils/helpers/shortcuts/issues";
+import {
+  getUserStoriesRef,
+  getUserStory,
+} from "~/utils/helpers/shortcuts/userStories";
+import { getIssue, getIssuesRef } from "~/utils/helpers/shortcuts/issues";
 
 export const kanbanRouter = createTRPCRouter({
   getTasksForKanban: protectedProcedure
@@ -28,36 +31,83 @@ export const kanbanRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const tasks = await getTasks(ctx.firestore, input.projectId);
-      const cardTasks = tasks.map((task) => {
-        const {
-          id,
-          scrumId,
-          name,
-          description,
-          size,
-          statusId,
-          itemType,
-          itemId,
-        } = task;
-        const cardTypes = {
-          US: "US-TS",
-          IS: "IS-TS",
-          IT: "IT-TS",
-        };
-        return {
-          id,
-          cardType: cardTypes[itemType],
-          scrumId,
-          name,
-          description,
-          size,
-          tags: [],
-          columnId: statusId,
-          itemType,
-          itemId,
-        } as KanbanTaskCard;
-      });
+      const { projectId } = input;
+      const tasks = await getTasks(ctx.firestore, projectId);
+
+      const cardTasks = await Promise.all(
+        tasks.map(async (task) => {
+          // Load parent item variables
+          let priorityId: string | undefined = undefined;
+          let sprintId: string | undefined = undefined;
+          let tagIds: string[] = [];
+
+          if (task.itemType === "US") {
+            const userStory = await getUserStory(
+              ctx.firestore,
+              projectId,
+              task.itemId,
+            );
+            if (userStory) {
+              priorityId = userStory.priorityId;
+              sprintId = userStory.sprintId;
+              tagIds = userStory.tagIds;
+            }
+          }
+          if (task.itemType === "IS") {
+            const issue = await getIssue(ctx.firestore, projectId, task.itemId);
+            if (issue) {
+              priorityId = issue.priorityId;
+              sprintId = issue.sprintId;
+              tagIds = issue.tagIds;
+            }
+          }
+
+          const tags: WithId<Tag>[] = (
+            await Promise.all(
+              tagIds.map(async (tagId: string) => {
+                const tag = await getBacklogTag(
+                  ctx.firestore,
+                  projectId,
+                  tagId,
+                );
+                return tag ?? null;
+              }),
+            )
+          ).filter((tag): tag is WithId<Tag> => tag !== null);
+
+          const {
+            id,
+            scrumId,
+            name,
+            description,
+            size,
+            statusId,
+            itemType,
+            itemId,
+            assigneeId,
+          } = task;
+          const cardTypes = {
+            US: "US-TS",
+            IS: "IS-TS",
+            IT: "IT-TS",
+          };
+          return {
+            id,
+            cardType: cardTypes[itemType],
+            scrumId,
+            name,
+            description,
+            size,
+            tags,
+            columnId: statusId,
+            itemType,
+            itemId,
+            assigneeIds: [assigneeId],
+            sprintId,
+            priorityId,
+          } as KanbanTaskCard;
+        }),
+      );
 
       const activeColumns = await getStatusTypes(
         ctx.firestore,
@@ -118,6 +168,19 @@ export const kanbanRouter = createTRPCRouter({
               return tag;
             }),
           );
+
+          const assigneeIds = await getTasksRef(ctx.firestore, projectId)
+            .where("itemId", "==", doc.id)
+            .get()
+            .then((tasksSnapshot) =>
+              tasksSnapshot.docs
+                .map((taskDoc) => {
+                  const taskData = taskDoc.data();
+                  return (taskData.assigneeId as string) ?? null;
+                })
+                .filter((id): id is string => id !== null),
+            );
+
           return {
             id: doc.id,
             cardType: "US",
@@ -127,6 +190,9 @@ export const kanbanRouter = createTRPCRouter({
             size: data.size,
             tags: tags,
             columnId: data.statusId ?? "",
+            assigneeIds: assigneeIds,
+            sprintId: data.sprintId,
+            priorityId: data.priorityId,
           } as KanbanItemCard;
         }),
       );
@@ -156,6 +222,19 @@ export const kanbanRouter = createTRPCRouter({
               return tag;
             }),
           );
+
+          const assigneeIds = await getTasksRef(ctx.firestore, projectId)
+            .where("itemId", "==", doc.id)
+            .get()
+            .then((tasksSnapshot) =>
+              tasksSnapshot.docs
+                .map((taskDoc) => {
+                  const taskData = taskDoc.data();
+                  return (taskData.assigneeId as string) ?? null;
+                })
+                .filter((id): id is string => id !== null),
+            );
+
           return {
             id: doc.id,
             cardType: "IS",
@@ -165,6 +244,9 @@ export const kanbanRouter = createTRPCRouter({
             size: data.size,
             tags,
             columnId: data.statusId ?? "",
+            assigneeIds: assigneeIds,
+            sprintId: data.sprintId,
+            priorityId: data.priorityId,
           } as KanbanItemCard;
         }),
       );
