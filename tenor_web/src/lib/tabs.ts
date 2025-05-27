@@ -45,7 +45,7 @@ export const tabsMetaInformation = {
   calendar: {
     title: "Calendar",
     link: "/calendar",
-    enabled: false,
+    enabled: true,
     flags: ["scrumboard"],
   },
   performance: {
@@ -54,17 +54,17 @@ export const tabsMetaInformation = {
     enabled: true,
     flags: ["performance"],
   },
-  settings: {
-    title: "Project Settings",
-    link: "/project-settings",
-    enabled: true,
-    flags: ["settings"],
-  },
-  sprintRetrospective: {
-    title: "Sprint Retrospective",
-    link: "/sprint-retrospective",
+  retrospective: {
+    title: "Retrospective",
+    link: "/retrospective",
     enabled: true,
     flags: ["retrospective"],
+  },
+  settings: {
+    title: "Settings",
+    link: "/settings",
+    enabled: true,
+    flags: ["settings"],
   },
 };
 export const tabs = [
@@ -77,8 +77,8 @@ export const tabs = [
   "scrumboard",
   "calendar",
   "performance",
+  "retrospective",
   "settings",
-  "sprintRetrospective",
 ];
 export const tabsToLinks = {
   requirements: "requirements",
@@ -89,6 +89,6 @@ export const tabsToLinks = {
   scrumboard: "scrumboard",
   calendar: "calendar",
   performance: "performance",
-  "project-settings": "settings",
-  "sprint-retrospective": "sprintRetrospective",
+  retrospective: "retrospective",
+  settings: "settings",
 };
