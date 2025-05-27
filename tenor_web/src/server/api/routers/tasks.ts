@@ -326,7 +326,6 @@ export const tasksRouter = createTRPCRouter({
           );
         }),
       );
-      console.log("removedRequiredBy", removedRequiredBy);
       await Promise.all(
         removedRequiredBy.map(async (requiredById) => {
           await updateDependency(
