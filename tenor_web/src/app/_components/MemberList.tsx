@@ -29,7 +29,7 @@ export const MemberList = ({
 
   if (isLoading) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center">
+      <div className="flex h-full w-full flex-col items-center">
         <LoadingSpinner color="primary" />
       </div>
     );

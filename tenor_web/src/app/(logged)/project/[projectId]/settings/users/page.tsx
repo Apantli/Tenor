@@ -273,9 +273,8 @@ export default function ProjectUsers() {
             />
           )}
           {!teamMembers && !userTypes && !roles && (
-            <div className="mt-5 flex flex-row gap-x-3">
-              <LoadingSpinner />
-              <p className="text-lg">Loading...</p>
+            <div className="flex h-full w-full flex-col items-center">
+              <LoadingSpinner color="primary" />
             </div>
           )}
         </>
@@ -293,9 +292,8 @@ export default function ProjectUsers() {
             ></RoleTable>
           )}
           {!roles && (
-            <div className="flex h-40 w-full items-center justify-center">
+            <div className="flex h-full w-full flex-col items-center">
               <LoadingSpinner color="primary" />
-              <p className="text-lg">Loading...</p>
             </div>
           )}
         </>

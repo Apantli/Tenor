@@ -233,7 +233,7 @@ export default function ProjectGeneralSettings() {
           </div>
         </div>
       ) : (
-        <div className="flex h-40 w-full items-center justify-center">
+        <div className="flex h-40 w-full justify-center">
           <LoadingSpinner color="primary" />
         </div>
       )}
