@@ -23,6 +23,7 @@ import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
+import { TYPE_COLLECTION_MAP } from "../typeDisplayName";
 
 /**
  * @function getProjectsRef
@@ -372,15 +373,6 @@ export const getItemActivityDetails = async (
   // Get activities
   const activities = await getProjectActivities(firestore, projectId);
 
-  // Create a collection map to just make references
-  const COLLECTION_MAP = {
-    "TS": "tasks",
-    "IS": "issues",
-    "US": "userStories",
-    "EP": "epics",
-    "SP": "sprints"
-  }
-
   // Array to hold the results
   const results = {
     tasks: [] as ActivityItem[],
@@ -392,14 +384,19 @@ export const getItemActivityDetails = async (
 
   // Iterate in the activityMap to get the item type and itemId
   for (const activity of activities) {
-    if (!activity.itemId) continue;
-    const itemType = activity.type?.toUpperCase();
+    if (!activity.itemId || !activity.type) continue;
+    
+    const itemType = activity.type.toUpperCase();
     const itemId = activity.itemId;
 
-    if (!itemType || !itemId || !(itemType in COLLECTION_MAP)) continue;
+    if (!(itemType in TYPE_COLLECTION_MAP)) continue;
 
     // Save the collection name based on the item type
-    const collectionName =  COLLECTION_MAP[itemType as keyof typeof COLLECTION_MAP];
+    const collectionName =  TYPE_COLLECTION_MAP[itemType];
+    
+    // Check if collectionName is defined before using it
+    if (!collectionName) continue;
+    
     // Make the reference
     const itemRef = getProjectRef(firestore, projectId).collection(collectionName).doc(itemId);
     const docSnap = await itemRef.get();

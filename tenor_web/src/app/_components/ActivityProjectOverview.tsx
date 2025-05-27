@@ -8,7 +8,6 @@ import { capitalize } from "@mui/material";
 import LoadingSpinner from "./LoadingSpinner";
 import type {
   ActionType,
-  AllBasicItemType,
   BacklogItemAndTaskDetailType,
   ProjectActivity,
   WithId,
@@ -20,6 +19,7 @@ import {
 import TagComponent from "./TagComponent";
 import { getRelativeTimeString } from "~/utils/helpers/firestoreTimestamp";
 import { useActivityItemsMap } from "~/lib/types/activityMappint";
+import { getTypeDisplayName } from "~/utils/helpers/typeDisplayName";
 
 const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const { data: activities, isLoading: activitiesLoading } =
@@ -36,7 +36,6 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
 
   // Single unified map for all activity items
   const activityItemsMap = useActivityItemsMap(projectId) ?? {};
-  console.log("ActivityItemsMap size:", Object.keys(activityItemsMap).length);
 
   // Create a better user map that tries multiple ID fields
   const userMap = users
@@ -68,19 +67,9 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const getScrumId = (activity: WithId<ProjectActivity>) => {
     const item = getItemDetails(activity);
     if (!item) return null;
-
-    if (activity.type === "SP") {
-      return (
-        formatAnyScrumId(item.scrumId ?? 0, activity.type as AllBasicItemType) +
-        ":"
-      );
-    } else if (item.scrumId) {
-      return (
-        formatAnyScrumId(item.scrumId, activity.type as AllBasicItemType) + ":"
-      );
-    } else {
-      return activity.type ? `${activity.type}-??` : String(item.id) + ":";
-    }
+    return (
+      formatAnyScrumId(item.scrumId ?? 0, activity.type) + ":"
+    );
   };
 
   // 2. NOW USE THE FUNCTIONS IN FILTERS AND SORTING
@@ -96,20 +85,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     const typeStr = activity.type ?? "";
 
     // Add readable type label for search
-    const typeLabel =
-      activity.type === "TS"
-        ? "task"
-        : activity.type === "IS"
-          ? "issue"
-          : activity.type === "EP"
-            ? "epic"
-            : activity.type === "SP"
-              ? "sprint"
-              : activity.type === "US"
-                ? "user story"
-                : activity.type === "PJ"
-                  ? "project"
-                  : "";
+    const typeLabel = getTypeDisplayName(activity.type, 'search');
 
     // Get user information if available
     const user = activity.userId ? userMap[activity.userId] : undefined;
@@ -134,18 +110,6 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
       scrumId.toString().toLowerCase().includes(searchLowerCase)
     );
   });
-
-  const getTypeDisplayName = (type: string | undefined): string => {
-    switch (type) {
-      case "TS": return "Task";
-      case "IS": return "Issue";
-      case "EP": return "Epic";
-      case "SP": return "Sprint";
-      case "US": return "US";
-      case "PJ": return "Project";
-      default: return type ?? "";
-    }
-  };
 
   const isLoading = activitiesLoading || usersLoading;
 

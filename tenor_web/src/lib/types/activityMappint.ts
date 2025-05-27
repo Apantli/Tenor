@@ -60,3 +60,4 @@ export function useActivityItemsMap(projectId: string) {
     return map;
   }, [activitiesDetails]);
 }
+
