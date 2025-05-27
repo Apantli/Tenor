@@ -101,7 +101,7 @@ export const ContributionLegend: React.FC<{
   return (
     <div className="ml-4 flex flex-col gap-2">
       {data.map((item) => (
-        <div key={item.category} className="flex items-center gap-2">
+        <div key={item.category} className="flex items-center gap-5">
           <div
             className="h-4 w-4 rounded-sm"
             style={{ backgroundColor: colorMap[item.category] }}

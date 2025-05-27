@@ -7,6 +7,7 @@
  *
  * @category API
  */
+import { Timestamp } from "firebase-admin/firestore";
 
 import { z } from "zod";
 import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
@@ -300,8 +301,22 @@ export const tasksRouter = createTRPCRouter({
         type: "TS",
         action: "update",
       });
+      let assignedDate = oldTaskData.assignedDate;
 
-      await getTaskRef(ctx.firestore, projectId, taskId).update(taskData);
+      if (taskData.assigneeId !== oldTaskData.assigneeId) {
+        assignedDate = Timestamp.fromDate(new Date());
+      }
+
+      let statusChangeDate = oldTaskData.statusChangeDate;
+      if (taskData.statusId !== oldTaskData.statusId) {
+        statusChangeDate = Timestamp.fromDate(new Date());
+      }
+
+      await getTaskRef(ctx.firestore, projectId, taskId).update({
+        ...taskData,
+        assignedDate,
+        statusChangeDate,
+      });
       return {
         updatedTaskds: [
           ...addedDependencies,
@@ -340,7 +355,11 @@ export const tasksRouter = createTRPCRouter({
         type: "TS",
         action: "update",
       });
-      await taskRef.update({ statusId });
+
+      await taskRef.update({
+        statusId,
+        statusChangeDate: Timestamp.fromDate(new Date()),
+      });
     }),
 
   /**

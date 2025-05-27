@@ -1,6 +1,8 @@
 "use client";
 
 import ProfilePicture from "~/app/_components/ProfilePicture";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 import {
   ContributionPieChart,
@@ -12,6 +14,8 @@ import { api } from "~/trpc/react";
 import { emptyRole } from "~/lib/defaultProjectValues";
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
+import { formatSeconds } from "~/utils/helpers/parsers";
+import { AverageTimeChart } from "../charts/AverageTimeChart";
 
 export const MemberDetailsCard = ({
   member,
@@ -45,16 +49,57 @@ export const MemberDetailsCard = ({
   }
 
   const formattedUserContributions = userContributions
-    ? Object.entries(userContributions).map(([key, value]) => ({
-        category: key,
-        value: value,
-      }))
+    ? Object.entries(userContributions)
+        .map(([key, value]) => ({
+          category: key,
+          value: value,
+        }))
+        .sort((a, b) => a.category.localeCompare(b.category))
     : [];
 
   const contributionTotal = formattedUserContributions.reduce(
     (sum, item) => sum + item.value,
     0,
   );
+
+  const { data: averageTime, isLoading: loadingAverageTime } =
+    api.performance.getAverageTimeTask.useQuery({
+      projectId: projectId,
+      userId: member.id,
+    });
+
+  const sortedAverageTime = Object.keys(averageTime ?? {})
+    .sort()
+    .map((key) => averageTime?.[key])
+    .filter((value) => value !== undefined)
+    .filter((value) => value !== 0);
+
+  const lastTime = sortedAverageTime.length
+    ? formatSeconds(sortedAverageTime[sortedAverageTime.length - 1])
+    : null;
+
+  let timePercentageDifference: number | null = null;
+
+  if (sortedAverageTime.length > 1) {
+    const prevWeek = sortedAverageTime[sortedAverageTime.length - 2];
+    const currWeek = sortedAverageTime[sortedAverageTime.length - 1];
+    if (prevWeek && currWeek && prevWeek + currWeek > 0) {
+      timePercentageDifference = Number(
+        (((currWeek - prevWeek) / ((prevWeek + currWeek) / 2)) * 100).toFixed(
+          2,
+        ),
+      );
+    }
+  }
+
+  timePercentageDifference = 10;
+
+  const formattedData = sortedAverageTime.map((time, index) => ({
+    x: index,
+    y: time,
+  }));
+
+  console.log("formattedData:", formattedData);
 
   return (
     <div
@@ -108,13 +153,50 @@ export const MemberDetailsCard = ({
         )}
         <h4 className="mb-4 mt-6 text-xl font-bold">Average time per task</h4>
         <div className="flex flex-row items-center justify-between gap-8">
-          <div className="flex flex-col">
-            <h4>2h 10 min</h4>
-          </div>
-          <div className="flex flex-col">
-            <p>grafica 1</p>
-            <p>Updated Last Week</p>
-          </div>
+          {loadingAverageTime ? (
+            <div className="flex flex-row items-center gap-2">
+              <LoadingSpinner />
+              <p className="text-xl text-gray-500">Loading average time...</p>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col gap-3">
+                <h4
+                  className={cn("text-3xl font-bold", {
+                    "text-lg font-normal text-gray-500": !Boolean(lastTime),
+                  })}
+                >
+                  {lastTime ??
+                    "No tasks completed by this user during the last 5 weeks"}
+                </h4>
+                {timePercentageDifference && (
+                  <div className="flex flex-row gap-2">
+                    <p
+                      className={cn("text-xl font-bold", {
+                        "text-green-400": timePercentageDifference <= 0,
+                        "text-red-400": timePercentageDifference > 0,
+                      })}
+                    >
+                      {timePercentageDifference}%
+                    </p>
+                    {timePercentageDifference <= 0 ? (
+                      <TrendingUpIcon className="text-green-400" />
+                    ) : (
+                      <TrendingDownIcon className="text-red-400" />
+                    )}
+                  </div>
+                )}
+              </div>
+              {timePercentageDifference && (
+                <div className="flex flex-col">
+                  <AverageTimeChart
+                    data={formattedData}
+                    isGreen={timePercentageDifference <= 0}
+                  />
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </div>

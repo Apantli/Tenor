@@ -209,8 +209,9 @@ export interface UserStory extends BacklogItem {
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
+  assignedDate?: Timestamp;
   dueDate?: Date;
-  finishedDate?: Date;
+  statusChangeDate?: Timestamp;
   size: Size;
   itemId: string;
   itemType: BacklogItemType;

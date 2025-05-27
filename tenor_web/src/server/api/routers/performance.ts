@@ -40,6 +40,7 @@ import { getCurrentSprint } from "~/utils/helpers/shortcuts/sprints";
 import { TRPCError } from "@trpc/server";
 import {
   getActivityPartition,
+  getAverageTime,
   getContributionOverview,
 } from "~/utils/helpers/shortcuts/performance";
 
@@ -92,6 +93,11 @@ export const performanceRouter = createTRPCRouter({
         input.time,
       );
       return contributionOverview;
+    }),
+  getAverageTimeTask: roleRequiredProcedure(performancePermissions, "read")
+    .input(z.object({ projectId: z.string(), userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await getAverageTime(ctx.firestore, input.projectId, input.userId);
     }),
 
   getProjectStatus: protectedProcedure.query(async ({ ctx }) => {
