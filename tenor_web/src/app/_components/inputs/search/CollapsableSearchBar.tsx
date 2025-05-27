@@ -2,9 +2,9 @@
 
 import React, { useRef, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import useClickOutside from "../_hooks/useClickOutside";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
+import useClickOutside from "~/app/_hooks/useClickOutside";
 
 interface Props {
   className?: ClassNameValue;
@@ -25,7 +25,11 @@ export default function CollapsableSearchBar({
   });
 
   return (
-    <div className="relative flex w-full" ref={ref} data-cy="collapsable-search-bar">
+    <div
+      className="relative flex w-full"
+      ref={ref}
+      data-cy="collapsable-search-bar"
+    >
       <input
         ref={inputRef}
         type="text"

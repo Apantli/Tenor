@@ -1,4 +1,4 @@
-import PillComponent from "~/app/_components/pickers/PillComponent";
+import PillComponent from "~/app/_components/inputs/pickers/PillComponent";
 import { mount } from "cypress/react";
 import { useState } from "react";
 

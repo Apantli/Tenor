@@ -3,17 +3,6 @@
 import type { ClassNameValue } from "tailwind-merge";
 import { useState } from "react";
 import { cn } from "~/lib/utils";
-import SearchBar from "../../../../../_components/SearchBar";
-import Dropdown, {
-  DropdownButton,
-  DropdownItem,
-} from "../../../../../_components/Dropdown";
-import PrimaryButton from "../../../../../_components/buttons/PrimaryButton";
-import InputTextField from "../../../../../_components/inputs/InputTextField";
-import Table, {
-  type TableColumns,
-} from "../../../../../_components/table/Table";
-import PillPickerComponent from "../../../../../_components/pickers/PillPickerComponent";
 import {
   permissionItems,
   permissionLabels,
@@ -21,6 +10,15 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import type { RoleDetail } from "~/lib/types/detailSchemas";
 import type { Permission } from "~/lib/types/zodFirebaseSchema";
+import Table, { type TableColumns } from "~/app/_components/table/Table";
+import PillPickerComponent from "~/app/_components/inputs/pickers/PillPickerComponent";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
+import Dropdown, {
+  DropdownButton,
+  DropdownItem,
+} from "~/app/_components/Dropdown";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
 interface Props {
   label?: string;

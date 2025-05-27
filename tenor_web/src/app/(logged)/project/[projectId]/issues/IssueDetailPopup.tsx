@@ -1,22 +1,18 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Popup, {
   SidebarPopup,
   usePopupVisibilityState,
 } from "~/app/_components/Popup";
 import Markdown from "react-markdown";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import TasksTable from "~/app/_components/tasks/TasksTable";
-import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
-import PriorityPicker from "~/app/_components/pickers/PriorityPicker";
+import { SizePillComponent } from "~/app/_components/inputs/pickers/SizePillComponent";
+import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
@@ -25,14 +21,14 @@ import {
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
-import UserStoryPicker from "~/app/_components/pickers/UserStoryPicker";
+import UserStoryPicker from "~/app/_components/inputs/pickers/UserStoryPicker";
 import {
   useInvalidateQueriesAllIssues,
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
-import StatusPicker from "~/app/_components/pickers/StatusPicker";
+import StatusPicker from "~/app/_components/inputs/pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
@@ -41,6 +37,10 @@ import {
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 
 interface Props {
   issueId: string;

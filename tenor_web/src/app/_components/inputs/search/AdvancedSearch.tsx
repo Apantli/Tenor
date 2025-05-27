@@ -8,11 +8,11 @@ import { useParams } from "next/navigation";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import TagComponent from "~/app/_components/TagComponent";
 import { sizeTags } from "~/lib/defaultProjectValues";
-import { UserPicker } from "~/app/_components/pickers/UserPicker";
-import { SprintPicker } from "~/app/_components/pickers/SprintPicker";
-import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
+import { UserPicker } from "~/app/_components/inputs/pickers/UserPicker";
+import { SprintPicker } from "~/app/_components/inputs/pickers/SprintPicker";
+import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { cn } from "~/lib/utils";
-import type { AdvancedSearchFilters } from "../_hooks/useAdvancedSearchFilters";
+import type { AdvancedSearchFilters } from "../../../_hooks/useAdvancedSearchFilters";
 import type { SetStateAction } from "react";
 
 interface Props {

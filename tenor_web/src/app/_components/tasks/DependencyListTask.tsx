@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import React, { useRef, useState } from "react";
-import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
+import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import Dropdown, {
   DropdownButton,
   DropdownItem,

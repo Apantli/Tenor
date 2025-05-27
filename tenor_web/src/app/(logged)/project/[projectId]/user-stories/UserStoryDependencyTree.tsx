@@ -26,7 +26,7 @@ import {
   loadFlowFromLocalStorage,
   saveFlowToLocalStorage,
 } from "~/utils/reactFlow";
-import SecondaryButton from "../../../../_components/buttons/SecondaryButton";
+import SecondaryButton from "../../../../_components/inputs/buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import UserStoryDetailPopup from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDetailPopup";
 import { TRPCClientError } from "@trpc/client";

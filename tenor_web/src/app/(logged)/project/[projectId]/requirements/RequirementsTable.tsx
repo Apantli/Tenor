@@ -11,16 +11,12 @@ import { api } from "~/trpc/react";
 import Table, { type TableColumns } from "../../../../_components/table/Table";
 import { cn } from "~/lib/utils";
 import Popup from "../../../../_components/Popup";
-import PrimaryButton from "../../../../_components/buttons/PrimaryButton";
-import InputTextField from "../../../../_components/inputs/InputTextField";
-import InputTextAreaField from "../../../../_components/inputs/InputTextAreaField";
 import { useAlert } from "~/app/_hooks/useAlert";
-import PriorityPicker from "../../../../_components/pickers/PriorityPicker";
-import RequirementTypePicker from "../../../../_components/pickers/RequirementTypePicker";
-import RequirementFocusPicker from "../../../../_components/pickers/RequirementFocusPicker";
-import SearchBar from "../../../../_components/SearchBar";
+import PriorityPicker from "../../../../_components/inputs/pickers/PriorityPicker";
+import RequirementTypePicker from "../../../../_components/inputs/pickers/RequirementTypePicker";
+import RequirementFocusPicker from "../../../../_components/inputs/pickers/RequirementFocusPicker";
+import SearchBar from "../../../../_components/inputs/search/SearchBar";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
-import DeleteButton from "../../../../_components/buttons/DeleteButton";
 import Markdown from "react-markdown";
 import LoadingSpinner from "../../../../_components/LoadingSpinner";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -33,11 +29,15 @@ import {
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
-import TertiaryButton from "../../../../_components/buttons/TertiaryButton";
 import { checkPermissions, emptyRole, noTag } from "~/lib/defaultProjectValues";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 

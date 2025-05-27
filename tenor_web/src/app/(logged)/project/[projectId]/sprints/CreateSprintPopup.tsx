@@ -1,13 +1,13 @@
 import { Timestamp } from "firebase/firestore";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import { DatePicker } from "~/app/_components/pickers/DatePicker";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
 import Popup from "~/app/_components/Popup";
 import { type AlertFunction, useAlert } from "~/app/_hooks/useAlert";
 import { api } from "~/trpc/react";
 import { showReorderAlert } from "./EditSprintPopup";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 export interface SprintDates {
   id: string;

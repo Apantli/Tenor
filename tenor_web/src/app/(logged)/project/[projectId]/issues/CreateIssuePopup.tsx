@@ -2,18 +2,18 @@
 
 import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
-import PriorityPicker from "~/app/_components/pickers/PriorityPicker";
+import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
+import { SizePillComponent } from "~/app/_components/inputs/pickers/SizePillComponent";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import UserStoryPicker from "~/app/_components/pickers/UserStoryPicker";
+import UserStoryPicker from "~/app/_components/inputs/pickers/UserStoryPicker";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
 interface Props {
   showPopup: boolean;

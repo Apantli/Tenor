@@ -2,21 +2,21 @@
 
 import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
 import DependencyListUserStory from "./DependencyListUserStory";
-import EpicPicker from "~/app/_components/pickers/EpicPicker";
+import EpicPicker from "~/app/_components/inputs/pickers/EpicPicker";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
-import PriorityPicker from "~/app/_components/pickers/PriorityPicker";
+import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
+import { SizePillComponent } from "~/app/_components/inputs/pickers/SizePillComponent";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 import { TRPCClientError } from "@trpc/client";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 
 interface Props {
   showPopup: boolean;

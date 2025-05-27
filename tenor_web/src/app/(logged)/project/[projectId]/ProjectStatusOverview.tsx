@@ -1,7 +1,7 @@
 "use client";
 import { api } from "~/trpc/react";
 import ProgressBar from "../../../_components/ProgressBar";
-import AssignUsersList from "../../../_components/pickers/AssignUsersList";
+import AssignUsersList from "../../../_components/inputs/pickers/AssignUsersList";
 import LoadingSpinner from "../../../_components/LoadingSpinner";
 
 function projectStatusOverview({ projectId }: { projectId: string }) {

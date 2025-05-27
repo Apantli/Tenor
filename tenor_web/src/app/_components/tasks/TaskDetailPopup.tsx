@@ -1,29 +1,24 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import Markdown from "react-markdown";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
+import { SizePillComponent } from "~/app/_components/inputs/pickers/SizePillComponent";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SidebarPopup } from "../Popup";
 import { Timestamp } from "firebase/firestore";
-import StatusPicker from "../pickers/StatusPicker";
-import { UserPicker } from "../pickers/UserPicker";
-import { DatePicker } from "../pickers/DatePicker";
+import StatusPicker from "../inputs/pickers/StatusPicker";
+import { UserPicker } from "../inputs/pickers/UserPicker";
+import { DatePicker } from "../inputs/pickers/DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
 import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
-import PrimaryButton from "../buttons/PrimaryButton";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import {
   permissionNumbers,
@@ -34,7 +29,11 @@ import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
 import DependencyListTask from "./DependencyListTask";
 import { TRPCClientError } from "@trpc/client";
-
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 interface Props {
   taskId: string;
   itemId: string;

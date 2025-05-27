@@ -4,11 +4,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import type { TaskDetail, TaskPreview } from "~/lib/types/detailSchemas";
 import Table, { type TableColumns } from "../table/Table";
 import ProfilePicture from "../ProfilePicture";
-import PrimaryButton from "../buttons/PrimaryButton";
-import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { api } from "~/trpc/react";
-import StatusPicker from "../pickers/StatusPicker";
+import StatusPicker from "../inputs/pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import {
   type BacklogItemType,
@@ -34,6 +32,8 @@ import TaskDetailPopup from "./TaskDetailPopup";
 import type { TaskCol } from "~/lib/types/columnTypes";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { cn } from "~/lib/utils";
+import CollapsableSearchBar from "../inputs/search/CollapsableSearchBar";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 export type BacklogItemWithTasks = BacklogItem & {
   tasks: TaskDetail[];

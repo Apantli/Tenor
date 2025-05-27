@@ -2,7 +2,7 @@ import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { usePopupVisibilityState } from "../../../../_components/Popup";
 import { type ChangeEventHandler, useMemo, useState } from "react";
-import Table, { type TableColumns } from "../../../../_components/table/Table";
+import Table, { type TableColumns } from "~/app/_components/table/Table";
 import {
   permissionNumbers,
   type Permission,
@@ -12,15 +12,14 @@ import {
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../../../../_components/LoadingSpinner";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
-import PriorityPicker from "../../../../_components/pickers/PriorityPicker";
-import { SizePillComponent } from "../../../../_components/pickers/SizePillComponent";
-import UserStoryPicker from "../../../../_components/pickers/UserStoryPicker";
+import PriorityPicker from "../../../../_components/inputs/pickers/PriorityPicker";
+import { SizePillComponent } from "../../../../_components/inputs/pickers/SizePillComponent";
+import UserStoryPicker from "../../../../_components/inputs/pickers/UserStoryPicker";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
-import PrimaryButton from "../../../../_components/buttons/PrimaryButton";
 import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
 import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
-import SearchBar from "../../../../_components/SearchBar";
-import AssignUsersList from "../../../../_components/pickers/AssignUsersList";
+import SearchBar from "../../../../_components/inputs/search/SearchBar";
+import AssignUsersList from "../../../../_components/inputs/pickers/AssignUsersList";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import {
   useInvalidateQueriesAllIssues,
@@ -30,6 +29,7 @@ import type { IssueCol } from "~/lib/types/columnTypes";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 

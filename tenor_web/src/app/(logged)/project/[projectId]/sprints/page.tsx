@@ -2,8 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import SearchBar from "~/app/_components/SearchBar";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
@@ -36,7 +36,7 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import CreateSprintPopup from "./CreateSprintPopup";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
 import { type KanbanCard } from "~/lib/types/kanbanTypes";
-import AdvancedSearch from "~/app/_components/AdvancedSearch";
+import AdvancedSearch from "~/app/_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 
 export type BacklogItems = inferRouterOutputs<

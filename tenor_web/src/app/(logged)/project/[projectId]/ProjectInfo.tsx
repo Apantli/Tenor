@@ -1,8 +1,8 @@
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import LoadingSpinner from "../../../_components/LoadingSpinner";
-import TertiaryButton from "../../../_components/buttons/TertiaryButton";
 import Markdown from "react-markdown";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 
 export default function ProjectInfo({ projectId }: { projectId: string }) {
   const { data: project, isLoading } = api.projects.getGeneralConfig.useQuery({

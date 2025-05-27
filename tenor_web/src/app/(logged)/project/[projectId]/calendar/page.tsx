@@ -14,8 +14,8 @@ import {
   type Task,
   type WithId,
 } from "~/lib/types/firebaseSchemas";
-import { DatePicker } from "~/app/_components/pickers/DatePicker";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { dateToString } from "~/utils/helpers/parsers";

@@ -1,5 +1,5 @@
 import { cn } from "~/lib/utils";
-import LoadingSpinner from "../LoadingSpinner";
+import LoadingSpinner from "../../LoadingSpinner";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import BaseButton, { type BaseButtonProps } from "./BaseButton";
 import { type PropsWithChildren } from "react";

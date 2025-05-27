@@ -3,9 +3,9 @@
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useState, type ChangeEventHandler } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 export default function ProjectList() {
   const { data: projects, isLoading } = api.projects.listProjects.useQuery();

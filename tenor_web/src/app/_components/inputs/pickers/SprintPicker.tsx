@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { cn } from "~/lib/utils";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import CloseIcon from "@mui/icons-material/Close";
-import Dropdown, { DropdownItem, DropdownButton } from "../Dropdown";
+import Dropdown, { DropdownItem, DropdownButton } from "../../Dropdown";
 import type { Sprint, WithId } from "~/lib/types/firebaseSchemas";
 import Check from "@mui/icons-material/Check";
 import { useFormatSprintNumber } from "~/app/_hooks/scrumIdHooks";

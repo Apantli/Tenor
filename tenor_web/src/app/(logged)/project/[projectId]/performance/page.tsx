@@ -2,7 +2,7 @@
 import { ProductivityCard } from "~/app/_components/cards/ProductivityCard";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { useParams } from "next/navigation";
 import { MemberDetailsCard } from "~/app/(logged)/project/[projectId]/performance/MemberDetailsCard";
 import type { UserCol } from "~/lib/types/columnTypes";

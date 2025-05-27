@@ -2,8 +2,8 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TimeMultiselect, {
   type TimeFrame,
   timeframeMultiplier,

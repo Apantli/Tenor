@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import ProfilePicture from "../ProfilePicture";
+import ProfilePicture from "../../ProfilePicture";
 
 interface User {
   uid: string;

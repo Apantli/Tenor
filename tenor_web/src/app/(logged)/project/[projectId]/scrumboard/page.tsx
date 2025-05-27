@@ -1,6 +1,6 @@
 "use client";
 
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TasksKanban from "./TasksKanban";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
@@ -15,8 +15,8 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
-import SearchBar from "~/app/_components/SearchBar";
-import AdvancedSearch from "../../../../_components/AdvancedSearch";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
+import AdvancedSearch from "../../../../_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
