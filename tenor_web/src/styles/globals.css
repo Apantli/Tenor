@@ -52,13 +52,8 @@
     list-style: inherit;
   }
 
-  .markdown-content{ 
-    word-wrap: normal;
-    overflow-wrap: anywhere;
-    word-break: normal;
-  }
-
-  .wrap-properly {
+  .markdown-content, 
+  .wrap-properly { 
     word-wrap: normal;
     overflow-wrap: anywhere;
     word-break: normal;

@@ -20,7 +20,7 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${GeistSans.variable}`}>
-      <body>
+      <body className="relative">
         <TRPCReactProvider>
           <NavigationGuardProvider>
             <TooltipClientWrapper>
@@ -30,7 +30,10 @@ export default async function RootLayout({
             </TooltipClientWrapper>
           </NavigationGuardProvider>
         </TRPCReactProvider>
-        <div id="portal-root" />
+        <div
+          id="portal-root"
+          className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden"
+        />
       </body>
     </html>
   );
