@@ -74,13 +74,10 @@ export default function StatusTable() {
     }),
   );
 
-  const {
-    data: status,
-    isLoading: isLoadingTags,
-    refetch: refetch,
-  } = api.settings.getStatusTypes.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: status, isLoading: isLoadingTags } =
+    api.settings.getStatusTypes.useQuery({
+      projectId: projectId as string,
+    });
 
   const { mutateAsync: modifyStatus } =
     api.settings.modifyStatusType.useMutation();
@@ -135,7 +132,7 @@ export default function StatusTable() {
         projectId: projectId as string,
         statusId: statusId,
       });
-      await refetch();
+      await invalidateQueriesAllStatuses(projectId as string);
     }
   };
 
@@ -175,7 +172,7 @@ export default function StatusTable() {
       },
     });
 
-    await refetch();
+    await invalidateQueriesAllStatuses(projectId as string);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -217,7 +214,7 @@ export default function StatusTable() {
           statusIds: newOrder.map((item) => item.id),
         });
 
-        await refetch();
+        await invalidateQueriesAllStatuses(projectId as string);
       }
     }
   };

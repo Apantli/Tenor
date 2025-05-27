@@ -14,6 +14,7 @@ import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
 import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import {
+  useInvalidateQueriesAllStatuses,
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesTaskDetails,
@@ -30,6 +31,9 @@ import useQueryIdForPopup, {
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";
+import MoveLeftIcon from "@mui/icons-material/West";
+import MoveRightIcon from "@mui/icons-material/East";
+import EditIcon from "@mui/icons-material/Edit";
 
 interface Props {
   filter: string;
@@ -44,6 +48,7 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
 
   // TRPC
   const { data: tasksAndColumnsData, isLoading } =
@@ -69,6 +74,8 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
       }); // <-- Invalidate all tasks
     },
   });
+  const { mutateAsync: reorderStatus } =
+    api.settings.reorderStatusTypes.useMutation();
 
   // REACT
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set());
@@ -232,6 +239,48 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
     await moveTasksToColumn(taskIds, columnId);
   };
 
+  const moveStatus = async (statusId: string, dir: 1 | -1) => {
+    const statuses = tasksAndColumnsData?.columns;
+    if (!statuses) return;
+
+    const statusIndex = statuses.findIndex((status) => status.id === statusId);
+    const newIndex = statusIndex + dir;
+
+    if (newIndex < 0 || newIndex >= statuses.length) return;
+
+    // Swap statusIndex and newIndex;
+    const otherStatus = statuses[newIndex]!;
+    statuses[newIndex] = statuses[statusIndex]!;
+    statuses[statusIndex] = otherStatus;
+
+    await utils.kanban.getTasksForKanban.cancel({
+      projectId: projectId as string,
+    });
+
+    utils.kanban.getTasksForKanban.setData(
+      {
+        projectId: projectId as string,
+      },
+      (oldData) => {
+        if (!oldData) return oldData;
+        return {
+          cardTasks: oldData.cardTasks,
+          columns: statuses.map((status, index) => ({
+            ...status,
+            orderIndex: index,
+          })),
+        };
+      },
+    );
+
+    await reorderStatus({
+      projectId: projectId as string,
+      statusIds: statuses.map((status) => status.id),
+    });
+
+    await invalidateQueriesAllStatuses(projectId as string);
+  };
+
   return (
     <>
       <DragDropProvider
@@ -325,11 +374,30 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
                                   setShowStatusPopup(true);
                                   setSelectedStatusId(column.id);
                                 }}
+                                className="flex items-center justify-between gap-8"
                               >
-                                Edit status
+                                <span>Edit</span>
+                                <EditIcon />
                               </DropdownButton>
-                              <DropdownButton>Move column left</DropdownButton>
-                              <DropdownButton>Move column right</DropdownButton>
+                              {column.orderIndex != 0 && (
+                                <DropdownButton
+                                  className="flex items-center justify-between gap-8"
+                                  onClick={() => moveStatus(column.id, -1)}
+                                >
+                                  <span>Move left</span>
+                                  <MoveLeftIcon />
+                                </DropdownButton>
+                              )}
+                              {column.orderIndex !==
+                                tasksAndColumnsData.columns.length - 1 && (
+                                <DropdownButton
+                                  className="flex items-center justify-between gap-8"
+                                  onClick={() => moveStatus(column.id, 1)}
+                                >
+                                  <span>Move right</span>
+                                  <MoveRightIcon />
+                                </DropdownButton>
+                              )}
                             </Dropdown>
                           </div>
                         )}
