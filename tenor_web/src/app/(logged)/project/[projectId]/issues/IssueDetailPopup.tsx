@@ -19,7 +19,6 @@ import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillCo
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
-  useFormatSprintNumber,
   useFormatIssueScrumId,
   useFormatTaskScrumId,
 } from "~/app/_hooks/scrumIdHooks";
@@ -41,6 +40,7 @@ import {
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 
 interface Props {
   issueId: string;
@@ -62,6 +62,10 @@ export default function IssueDetailPopup({
   );
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
+    projectId: projectId as string,
+  });
 
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: projectId as string,
@@ -107,7 +111,6 @@ export default function IssueDetailPopup({
 
   const { alert, predefinedAlerts } = useAlert();
   const formatIssueScrumId = useFormatIssueScrumId();
-  const formatSprintNumber = useFormatSprintNumber();
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
@@ -310,8 +313,17 @@ export default function IssueDetailPopup({
                 />
 
                 <h3 className="mt-4 text-lg">
-                  <span className="font-semibold">Sprint: </span>
-                  {formatSprintNumber(issueDetail.sprint?.number)}
+                  <span className="font-semibold">Sprint</span>
+                  <SprintPicker
+                    disabled={permission < permissionNumbers.write}
+                    selectedOption={issueDetail.sprint}
+                    options={sprintsData ?? []}
+                    onChange={async (sprint) => {
+                      await handleSave({ ...issueDetail, sprint });
+                    }}
+                    placeholder="None"
+                    className="w-full"
+                  />
                 </h3>
               </>
             )}

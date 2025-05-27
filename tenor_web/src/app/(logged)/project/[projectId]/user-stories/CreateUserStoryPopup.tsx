@@ -8,7 +8,7 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
 import DependencyList from "./DependencyList";
 import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
@@ -17,6 +17,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 import { TRPCClientError } from "@trpc/client";
+import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 
 interface Props {
   showPopup: boolean;
@@ -44,6 +45,7 @@ export default function CreateUserStoryPopup({
     priority?: Tag;
     size?: Size;
     epic?: ExistingEpic;
+    sprint?: WithId<Sprint>;
     dependencies: UserStoryPreview[];
     requiredBy: UserStoryPreview[];
   }>({
@@ -54,6 +56,7 @@ export default function CreateUserStoryPopup({
     priority: undefined,
     size: undefined,
     epic: undefined,
+    sprint: undefined,
     dependencies: [],
     requiredBy: [],
   });
@@ -67,6 +70,8 @@ export default function CreateUserStoryPopup({
     if (createForm.acceptanceCriteria !== "") return true;
     if (createForm.size !== undefined) return true;
     if (createForm.epic !== undefined) return true;
+    if (createForm.priority !== undefined) return true;
+    if (createForm.sprint !== undefined) return true;
     if (createForm.dependencies.length > 0) return true;
     if (createForm.requiredBy.length > 0) return true;
     if (createForm.tags.length > 0) return true;
@@ -100,6 +105,7 @@ export default function CreateUserStoryPopup({
           priorityId: createForm.priority?.id,
           size: createForm.size,
           epicId: createForm.epic?.id ?? "",
+          sprintId: createForm.sprint?.id ?? "",
           requiredByIds: createForm.requiredBy.map((us) => us.id),
           dependencyIds: createForm.dependencies.map((us) => us.id),
         },
@@ -129,6 +135,10 @@ export default function CreateUserStoryPopup({
       setIsSubmitting(false);
     }
   };
+
+  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
+    projectId: projectId as string,
+  });
 
   return (
     <Popup
@@ -182,6 +192,17 @@ export default function CreateUserStoryPopup({
             tags={createForm.tags}
             onChange={(tags) => setCreateForm({ ...createForm, tags })}
           />
+
+          <h3 className="mt-4 text-lg">
+            <span className="font-semibold">Sprint</span>
+            <SprintPicker
+              selectedOption={createForm.sprint}
+              options={sprintsData ?? []}
+              onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
+              placeholder="None"
+              className="w-full"
+            />
+          </h3>
 
           <DependencyList
             label="Dependencies"

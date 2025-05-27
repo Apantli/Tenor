@@ -23,7 +23,6 @@ import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
-  useFormatSprintNumber,
   useFormatTaskScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
@@ -48,6 +47,7 @@ import {
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 
 interface Props {
   userStoryId: string;
@@ -121,6 +121,10 @@ export default function UserStoryDetailPopup({
   const { mutateAsync: deleteUserStory, isPending: isDeleting } =
     api.userStories.deleteUserStory.useMutation();
 
+  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
+    projectId: projectId as string,
+  });
+
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -136,7 +140,6 @@ export default function UserStoryDetailPopup({
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
   const { alert, predefinedAlerts } = useAlert();
-  const formatSprintNumber = useFormatSprintNumber();
 
   const changeVisibleUserStory = async (userStoryId: string) => {
     setUserStoryId("");
@@ -418,8 +421,17 @@ export default function UserStoryDetailPopup({
                 />
 
                 <h3 className="mt-4 text-lg">
-                  <span className="font-semibold">Sprint: </span>
-                  {formatSprintNumber(userStoryDetail.sprint?.number)}
+                  <span className="font-semibold">Sprint</span>
+                  <SprintPicker
+                    disabled={permission < permissionNumbers.write}
+                    selectedOption={userStoryDetail.sprint}
+                    options={sprintsData ?? []}
+                    onChange={async (sprint) => {
+                      await handleSave({ ...userStoryDetail, sprint });
+                    }}
+                    placeholder="None"
+                    className="w-full"
+                  />
                 </h3>
 
                 <DependencyList

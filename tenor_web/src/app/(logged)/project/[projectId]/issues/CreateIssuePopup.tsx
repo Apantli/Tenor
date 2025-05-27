@@ -6,7 +6,7 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
@@ -14,6 +14,7 @@ import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillCo
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
+import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 
 interface Props {
   showPopup: boolean;
@@ -37,6 +38,7 @@ export default function CreateIssuePopup({
     stepsToRecreate: string;
     tags: Tag[];
     priority?: Tag;
+    sprint?: WithId<Sprint>;
     size?: Size;
     relatedUserStory?: UserStoryPreview;
   }>({
@@ -46,6 +48,7 @@ export default function CreateIssuePopup({
     tags: [],
     priority: undefined,
     size: undefined,
+    sprint: undefined,
     relatedUserStory: undefined,
   });
 
@@ -59,6 +62,7 @@ export default function CreateIssuePopup({
     if (createForm.tags.length > 0) return true;
     if (createForm.priority !== undefined) return true;
     if (createForm.size !== undefined) return true;
+    if (createForm.sprint !== undefined) return true;
     if (createForm.relatedUserStory !== undefined) return true;
     return false;
   };
@@ -82,6 +86,7 @@ export default function CreateIssuePopup({
           .filter((val) => val !== undefined),
         priorityId: createForm.priority?.id ?? "",
         size: createForm.size,
+        sprintId: createForm.sprint?.id ?? "",
         relatedUserStoryId: createForm.relatedUserStory?.id ?? "", // FIXME
         stepsToRecreate: createForm.stepsToRecreate, // FIXME
       },
@@ -90,6 +95,10 @@ export default function CreateIssuePopup({
 
     // Invalidation is done on the parent component
   };
+
+  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
+    projectId: projectId as string,
+  });
 
   return (
     <Popup
@@ -144,6 +153,17 @@ export default function CreateIssuePopup({
             tags={createForm.tags}
             onChange={(tags) => setCreateForm({ ...createForm, tags })}
           />
+
+          <h3 className="mt-4 text-lg">
+            <span className="font-semibold">Sprint</span>
+            <SprintPicker
+              selectedOption={createForm.sprint}
+              options={sprintsData ?? []}
+              onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
+              placeholder="None"
+              className="w-full"
+            />
+          </h3>
         </>
       }
       title={
