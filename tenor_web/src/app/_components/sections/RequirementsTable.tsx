@@ -20,7 +20,6 @@ import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import type { inferRouterOutputs } from "@trpc/server";
 import { useInvalidateQueriesAllRequirements } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { usePopupVisibilityState } from "../Popup";
@@ -29,6 +28,8 @@ import RequirementTypePicker from "../specific-pickers/RequirementTypePicker";
 import RequirementFocusPicker from "../specific-pickers/RequirementFocusPicker";
 import CreateRequirementPopup from "~/app/(logged)/project/[projectId]/requirements/CreateRequirementPopup";
 import RequirementDetailPopup from "~/app/(logged)/project/[projectId]/requirements/RequirementDetailPopup";
+import { checkPermissions } from "~/lib/defaultValues/permission";
+import { emptyRole } from "~/lib/defaultValues/roles";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 

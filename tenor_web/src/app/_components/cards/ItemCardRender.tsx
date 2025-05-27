@@ -1,9 +1,9 @@
 import React, { type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import TagComponent from "../TagComponent";
-import { sizeToColor } from "../specific-pickers/SizePillComponent";
 import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import { sizeToColor } from "~/lib/defaultValues/size";
 
 interface Props {
   item: KanbanCard;
@@ -69,7 +69,7 @@ export default function ItemCardRender({
                   .map((tag) => tag.name)
                   .join("<br>")}
               >
-                +{item.tags.length - 2}
+                {`+${item.tags.length - 2}`}
               </TagComponent>
             )}
           </div>

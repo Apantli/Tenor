@@ -161,6 +161,7 @@ export default function CreateRequirementPopup({
     >
       <div className="pt-4">
         <InputTextField
+          id="requirement-title"
           label="Title"
           containerClassName="mb-4"
           value={createForm.name}
@@ -175,6 +176,8 @@ export default function CreateRequirementPopup({
           data-cy="requirement-name-input"
         />
         <InputTextAreaField
+          id="requirement-description"
+          chatPosition="right"
           label="Description"
           className="min-h-[120px] w-full resize-none"
           containerClassName="mb-4"
