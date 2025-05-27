@@ -21,7 +21,7 @@ import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { cn } from "~/lib/utils";
 import { usePopupVisibilityState } from "../../../../_components/Popup";
 import UserStoryDetailPopup from "~/app/_components/popups/UserStoryDetailPopup";
-import { SizePillComponent } from "../../../../_components/inputs/pickers/SizePillComponent";
+import { SizePicker } from "../../../../_components/inputs/pickers/SizePicker";
 import CreateUserStoryPopup from "~/app/_components/popups/CreateUserStoryPopup";
 import {
   useFormatEpicScrumId,
@@ -44,8 +44,9 @@ import {
 import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
 import { Timestamp } from "firebase/firestore";
 import type { UserStoryCol } from "~/lib/types/columnTypes";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -562,7 +563,7 @@ export default function UserStoryTable({
           };
 
           return (
-            <SizePillComponent
+            <SizePicker
               disabled={permission < permissionNumbers.write}
               currentSize={row.size}
               callback={isGhost ? handleGhostSizeChange : handleSizeChange}

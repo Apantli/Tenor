@@ -12,7 +12,10 @@ import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
-import { backlogPermissions, tagPermissions } from "~/lib/permission";
+import {
+  backlogPermissions,
+  tagPermissions,
+} from "~/lib/defaultValues/permission";
 import {
   getRequirement,
   getRequirementContext,

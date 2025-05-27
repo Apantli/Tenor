@@ -20,6 +20,8 @@ interface Props {
   statusId: string;
   setShowPopup: (show: boolean) => void;
   disabled?: boolean;
+  editMode: boolean;
+  setEditMode: (isEditing: boolean) => void;
 }
 
 export default function StatusDetailPopup({
@@ -27,6 +29,8 @@ export default function StatusDetailPopup({
   setShowPopup,
   statusId,
   disabled = false,
+  editMode,
+  setEditMode,
 }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
@@ -35,7 +39,6 @@ export default function StatusDetailPopup({
   const { alert } = useAlert();
 
   const { projectId } = useParams();
-  const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState<{
     name: string;
     color: string;
@@ -155,13 +158,22 @@ export default function StatusDetailPopup({
       }
     }
 
-    const updatedStatus = {
-      ...updatedData,
-      name: form.name,
-      color: form.color,
-      marksTaskAsDone: form.marksTaskAsDone,
-      orderIndex: form.orderIndex,
-    };
+    await utils.settings.getStatusTypes.cancel({
+      projectId: projectId as string,
+    });
+
+    utils.settings.getStatusTypes.setData(
+      { projectId: projectId as string },
+      (oldData) => {
+        if (!oldData) return [];
+        return oldData.map((s) => {
+          if (s.id === statusId) {
+            return { ...s, ...updatedData };
+          }
+          return s;
+        });
+      },
+    );
 
     await utils.settings.getStatusType.cancel({
       projectId: projectId as string,
@@ -172,7 +184,7 @@ export default function StatusDetailPopup({
       { projectId: projectId as string, statusId: statusId },
       (oldData) => {
         if (!oldData) return;
-        return { ...oldData, ...updatedStatus };
+        return { ...oldData, ...updatedData };
       },
     );
 
@@ -180,10 +192,7 @@ export default function StatusDetailPopup({
       projectId: projectId as string,
       statusId: statusId,
       status: {
-        name: form.name,
-        color: form.color,
-        marksTaskAsDone: form.marksTaskAsDone,
-        orderIndex: form.orderIndex,
+        ...updatedData,
         deleted: false,
       },
     });
@@ -199,6 +208,17 @@ export default function StatusDetailPopup({
       const updatedData = {
         ...statusDetail,
         color: color,
+      };
+      await handleSave(updatedData);
+    }
+  };
+
+  const handleMarksTaskAsDoneChange = async (value: boolean) => {
+    setForm({ ...form, marksTaskAsDone: value });
+    if (statusDetail) {
+      const updatedData = {
+        ...statusDetail,
+        marksTaskAsDone: value,
       };
       await handleSave(updatedData);
     }
@@ -309,21 +329,6 @@ export default function StatusDetailPopup({
               />
             </div>
           </div>
-          <div className="mt-2 flex items-baseline">
-            <InputCheckbox
-              disabled={disabled}
-              checked={form.marksTaskAsDone}
-              onChange={(value) => setForm({ ...form, marksTaskAsDone: value })}
-              className={`m-0 ${!disabled ? "cursor-pointer" : "cursor-default"}`}
-            />
-            <HelpIcon
-              className="ml-[3px] text-gray-500"
-              data-tooltip-id="tooltip"
-              data-tooltip-content="Tasks moved to this status will be considered as a completed task"
-              data-tooltip-place="top-start"
-              style={{ width: "15px" }}
-            />
-          </div>
         </div>
       )}
       {!editMode && !isLoading && statusDetail && (
@@ -343,17 +348,10 @@ export default function StatusDetailPopup({
             <InputCheckbox
               disabled={disabled}
               checked={form.marksTaskAsDone}
-              onChange={(value) => setForm({ ...form, marksTaskAsDone: value })}
+              onChange={handleMarksTaskAsDoneChange}
               className={`mb-1 mr-2 ${!disabled ? "cursor-pointer" : "cursor-default"}`}
             />
-            <button
-              disabled={disabled}
-              onClick={() =>
-                setForm({ ...form, marksTaskAsDone: !form.marksTaskAsDone })
-              }
-            >
-              Marks tasks as resolved
-            </button>
+            <button disabled={disabled}>Marks tasks as resolved</button>
             <HelpIcon
               className="ml-[3px] text-gray-500"
               data-tooltip-id="tooltip"

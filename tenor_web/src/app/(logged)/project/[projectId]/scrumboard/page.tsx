@@ -13,9 +13,10 @@ import {
   permissionNumbers,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 import AdvancedSearch from "../../../../_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 

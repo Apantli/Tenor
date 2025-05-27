@@ -16,9 +16,10 @@ import {
   type UserStoryType,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useMemo } from "react";
 import { api } from "~/trpc/react";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface Props {
   // Encapsulating everything in a data property because it is needed by react flow
@@ -131,7 +132,7 @@ export default function BasicNode({
         <hr className="mb-2 mt-1 border-t border-slate-400" />
         {/* Padding bottom of 1 ridiculous pixel is due to a visual bug that causes the underline to disappear without it */}
         <div
-          className="line-clamp-1 w-full cursor-pointer text-ellipsis px-2 pb-[1px] text-left text-xs underline-offset-4 hover:text-app-primary hover:underline"
+          className="line-clamp-1 w-full cursor-pointer text-ellipsis break-all px-2 pb-[1px] text-left text-xs underline-offset-4 hover:text-app-primary hover:underline"
           onClick={handleDetailClick}
         >
           {title}

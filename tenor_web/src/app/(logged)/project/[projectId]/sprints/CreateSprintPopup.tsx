@@ -194,6 +194,7 @@ export default function CreateSprintPopup({
           <strong>New Sprint</strong>
         </h1>
         <InputTextAreaField
+          id="sprint-description-field"
           height={15}
           label="Sprint description"
           value={newSprintDescription}

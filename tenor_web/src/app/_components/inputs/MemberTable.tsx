@@ -10,11 +10,11 @@ import ProfilePicture from "../ProfilePicture";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import PillPickerComponent from "./pickers/PillPickerComponent";
 import SearchBar from "./search/SearchBar";
-import { emptyRole } from "~/lib/defaultProjectValues";
 import { useAlert } from "~/app/_hooks/useAlert";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { WithId } from "~/lib/types/firebaseSchemas";
+import { emptyRole } from "~/lib/defaultValues/roles";
 
 interface Props {
   label?: string;

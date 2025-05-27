@@ -197,6 +197,7 @@ export default function EditSprintPopup({
       ) : (
         <div className="flex flex-col gap-4 pt-4">
           <InputTextAreaField
+            id="sprint-description-field"
             height={15}
             label="Sprint description"
             value={editForm.description}

@@ -12,7 +12,6 @@ import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useParams } from "next/navigation";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import {
   type Permission,
   permissionNumbers,
@@ -20,6 +19,8 @@ import {
 import NoEpicsIcon from "@mui/icons-material/FormatListBulleted";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
+import { checkPermissions } from "~/lib/defaultValues/permission";
+import { emptyRole } from "~/lib/defaultValues/roles";
 
 export const ProjectEpics = () => {
   // #region Hooks
@@ -250,6 +251,7 @@ export const ProjectEpics = () => {
             <strong>Create new epic</strong>{" "}
           </h1>
           <InputTextField
+            id="epic-name-field"
             type="text"
             placeholder="Briefly describe your epic..."
             label="Epic name"
@@ -257,6 +259,7 @@ export const ProjectEpics = () => {
             onChange={(e) => setNewEpicName(e.target.value)}
           />
           <InputTextAreaField
+            id="epic-description-field"
             label="Epic description"
             value={newEpicDescription}
             onChange={(e) => setNewEpicDescription(e.target.value)}
@@ -414,6 +417,7 @@ export const ProjectEpics = () => {
           {!epicLoading && editEpic && (
             <div className="flex flex-col gap-4">
               <InputTextField
+                id="epic-name-field"
                 label="Epic name"
                 type="text"
                 placeholder="Your epic name"
@@ -421,6 +425,7 @@ export const ProjectEpics = () => {
                 onChange={(e) => setEditEpicName(e.target.value)}
               />
               <InputTextAreaField
+                id="epic-description-field"
                 label="Epic description"
                 value={editEpicDescription}
                 onChange={(e) => setEditEpicDescription(e.target.value)}

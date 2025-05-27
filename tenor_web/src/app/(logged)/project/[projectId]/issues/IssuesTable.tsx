@@ -13,7 +13,7 @@ import { cn } from "~/lib/utils";
 import LoadingSpinner from "../../../../_components/LoadingSpinner";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../../../../_components/inputs/pickers/PriorityPicker";
-import { SizePillComponent } from "../../../../_components/inputs/pickers/SizePillComponent";
+import { SizePicker } from "../../../../_components/inputs/pickers/SizePicker";
 import UserStoryPicker from "../../../../_components/inputs/pickers/UserStoryPicker";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import IssueDetailPopup from "~/app/_components/popups/IssueDetailPopup";
@@ -26,9 +26,10 @@ import {
   useInvalidateQueriesIssueDetails,
 } from "~/app/_hooks/invalidateHooks";
 import type { IssueCol } from "~/lib/types/columnTypes";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { useDeleteItemByType } from "~/app/_hooks/itemOperationHooks";
+import { checkPermissions } from "~/lib/defaultValues/permission";
+import { emptyRole } from "~/lib/defaultValues/roles";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
@@ -324,7 +325,7 @@ export default function IssuesTable() {
           };
 
           return (
-            <SizePillComponent
+            <SizePicker
               disabled={permission < permissionNumbers.write}
               currentSize={row.size}
               callback={handleSizeChange}

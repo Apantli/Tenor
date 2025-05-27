@@ -29,7 +29,6 @@ import {
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
-import { checkPermissions, emptyRole, noTag } from "~/lib/defaultProjectValues";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
@@ -38,6 +37,9 @@ import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
+import { noTag } from "~/lib/defaultValues/project";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
@@ -855,7 +857,9 @@ export default function RequirementsTable() {
             permission < permissionNumbers.write
           }
           size="small"
-          className="h-[300px] max-h-[700px] w-[600px]"
+          className={cn("max-h-[700px] w-[600px]", {
+            "h-[500px]": !requirementEditedData,
+          })}
           disablePassiveDismiss={!requirementSaved}
           dismiss={async () => {
             if (!requirementSaved) {
@@ -1208,6 +1212,7 @@ export default function RequirementsTable() {
               {!requirementEditedData || editingRequirement ? (
                 <div className="pt-4">
                   <InputTextField
+                    id="requirement-title-field"
                     label="Title"
                     containerClassName="mb-4"
                     value={
@@ -1230,6 +1235,7 @@ export default function RequirementsTable() {
                     data-cy="requirement-name-input"
                   />
                   <InputTextAreaField
+                    id="requirement-description-field"
                     label="Description"
                     html-rows="4"
                     className="min-h-[120px] w-full resize-none"
