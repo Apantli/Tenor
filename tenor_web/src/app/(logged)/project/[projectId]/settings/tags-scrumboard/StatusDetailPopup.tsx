@@ -13,7 +13,7 @@ import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import HelpIcon from "@mui/icons-material/Help";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextField from "~/app/_components/inputs/InputTextField";
 
 interface Props {
   showPopup: boolean;

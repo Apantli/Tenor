@@ -2,8 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/text/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import Popup, {

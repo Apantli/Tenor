@@ -13,7 +13,7 @@ import { api } from "~/trpc/react";
 import { CheckNewSprintDates, type SprintDates } from "./CreateSprintPopup";
 import { Timestamp } from "firebase/firestore";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
-import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 interface Props {
   sprintId: string;

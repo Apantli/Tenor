@@ -1,5 +1,4 @@
 import React from "react";
-
 import InputField, {
   type Props as InputFieldProps,
 } from "./GenericTextInputField";
@@ -10,11 +9,11 @@ interface Props {
   containerClassName?: string;
   disableAI?: boolean;
   aiTitle?: string;
-  ref?: React.Ref<HTMLInputElement>;
+  ref?: React.Ref<HTMLTextAreaElement>;
   chatPosition?: "top" | "bottom" | "left" | "right";
 }
 
-export default function InputTextField({
+export default function InputTextAreaField({
   label,
   id,
   labelClassName,
@@ -23,11 +22,11 @@ export default function InputTextField({
   disableAI,
   aiTitle,
   value,
-  onChange,
   ref,
+  onChange,
   chatPosition,
   ...props
-}: Props & React.InputHTMLAttributes<HTMLInputElement>) {
+}: Props & React.InputHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <InputField
       chatPlacement={chatPosition}
@@ -39,9 +38,9 @@ export default function InputTextField({
       disableAI={disableAI}
       aiTitle={aiTitle}
       value={value as string}
-      disablePlaceholder
-      ref={ref}
       onChange={onChange as InputFieldProps["onChange"]}
+      isTextArea
+      ref={ref}
       {...props}
     />
   );

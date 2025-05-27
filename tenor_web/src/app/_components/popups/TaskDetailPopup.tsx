@@ -28,8 +28,8 @@ import {
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
 import { TRPCClientError } from "@trpc/client";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/text/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import DependencyListTask from "../inputs/DependencyListTask";

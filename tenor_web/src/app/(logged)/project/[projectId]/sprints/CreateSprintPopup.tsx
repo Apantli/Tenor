@@ -6,7 +6,7 @@ import Popup from "~/app/_components/Popup";
 import { type AlertFunction, useAlert } from "~/app/_hooks/useAlert";
 import { api } from "~/trpc/react";
 import { showReorderAlert } from "./EditSprintPopup";
-import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 export interface SprintDates {

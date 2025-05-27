@@ -4,7 +4,7 @@ import Table, {
 import type { Size } from "~/lib/types/firebaseSchemas";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useState } from "react";
-import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextField from "~/app/_components/inputs/InputTextField";
 
 interface SizeCol {
   id: string; // id must be a string to match the API response

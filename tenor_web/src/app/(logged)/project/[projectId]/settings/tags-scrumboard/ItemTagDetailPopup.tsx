@@ -11,7 +11,7 @@ import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorP
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextField from "~/app/_components/inputs/InputTextField";
 
 interface TagDetail {
   id: string;

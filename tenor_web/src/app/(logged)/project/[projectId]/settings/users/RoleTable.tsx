@@ -18,7 +18,7 @@ import Dropdown, {
   DropdownItem,
 } from "~/app/_components/Dropdown";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
-import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextField from "~/app/_components/inputs/InputTextField";
 
 interface Props {
   label?: string;
