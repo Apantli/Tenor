@@ -316,7 +316,7 @@ export default function InputField({
             >
               <DropdownItem className="px-0 pt-0">
                 <div
-                  className="flex h-60 w-[343px] flex-col"
+                  className="flex h-80 w-[343px] flex-col"
                   onClick={(e) => {
                     e.stopPropagation();
                   }}

@@ -13,13 +13,12 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { type Links } from "~/server/api/routers/settings";
-
-import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
 import { toBase64 } from "~/utils/helpers/base64";
 import type { UserCol } from "~/lib/types/columnTypes";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
+import { defaultRoleList, emptyRole } from "~/lib/defaultValues/roles";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();

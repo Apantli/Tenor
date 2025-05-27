@@ -24,10 +24,11 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";

@@ -16,7 +16,7 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "../trpc";
-import { issuePermissions } from "~/lib/permission";
+import { issuePermissions } from "~/lib/defaultValues/permission";
 import {
   deleteIssueAndGetModified,
   getIssue,

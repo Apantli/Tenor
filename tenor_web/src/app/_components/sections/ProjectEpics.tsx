@@ -14,12 +14,13 @@ import Markdown from "react-markdown";
 import SecondaryButton from "../buttons/SecondaryButton";
 import SearchBar from "../SearchBar";
 import { useParams } from "next/navigation";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import NoEpicsIcon from "@mui/icons-material/FormatListBulleted";
+import { checkPermissions } from "~/lib/defaultValues/permission";
+import { emptyRole } from "~/lib/defaultValues/roles";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 export const ProjectEpics = () => {

@@ -28,17 +28,18 @@ import AiGeneratorDropdown from "../ai/AiGeneratorDropdown";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import type { inferRouterOutputs } from "@trpc/server";
 import AiIcon from "@mui/icons-material/AutoAwesome";
-
 import {
   useInvalidateQueriesAllRequirements,
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import TertiaryButton from "../buttons/TertiaryButton";
-import { checkPermissions, emptyRole, noTag } from "~/lib/defaultProjectValues";
+import { noTag } from "~/lib/defaultValues/project";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 

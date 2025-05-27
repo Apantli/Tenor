@@ -1,14 +1,14 @@
 import type { Firestore } from "firebase-admin/firestore";
-import {
-  doingTagName,
-  doneTagName,
-  todoTagName,
-} from "~/lib/defaultProjectValues";
 import { getSettingsRef } from "./general";
 import type { StatusTag, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import { getTasksFromItem } from "./tasks";
+import {
+  doingTagName,
+  doneTagName,
+  todoTagName,
+} from "~/lib/defaultValues/status";
 
 /**
  * @function getPrioritiesRef

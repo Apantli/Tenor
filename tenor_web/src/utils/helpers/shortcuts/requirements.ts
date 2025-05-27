@@ -4,7 +4,7 @@ import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import type { RequirementCol } from "~/lib/types/columnTypes";
-import { noTag } from "~/lib/defaultProjectValues";
+import { noTag } from "~/lib/defaultValues/project";
 import { getPriority, getPriorityContext } from "./tags";
 import { getProjectContext } from "./ai";
 
