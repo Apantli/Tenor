@@ -11,15 +11,12 @@ import { timestampToDate } from "~/utils/helpers/parsers";
 import { cn } from "~/lib/utils";
 
 export const ProjectStatus = ({ className }: { className?: string }) => {
-  // Destructure isError and error from the useQuery hook
-  const { data, isLoading, isError } =
-    api.projects.getTopProjectStatus.useQuery({
-      count: 4,
-    });
-
+  // #region Hooks
   const utils = api.useUtils();
   const { alert } = useAlert();
+  // #endregion
 
+  // #region TRPC
   const { mutateAsync: recomputeTopProjectStatus, isPending } =
     api.projects.recomputeTopProjectStatus.useMutation({
       onSuccess: async () => {
@@ -35,11 +32,18 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
           duration: 5000,
         });
       },
+      retry: 0,
     });
+  const { data, isLoading, isError } =
+    api.projects.getTopProjectStatus.useQuery({
+      count: 4,
+    });
+  // #endregion
+
+  // #region UTILITY
 
   const barCharData: ProjectStatusData = [];
 
-  // Only process data if it exists
   if (data) {
     data.topProjects.forEach((project) => {
       barCharData.push({
@@ -57,6 +61,7 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
 
   const maxTasks = Math.max(...barCharData.map((item) => item.value), 0);
   const domainMax = maxTasks + 5;
+  // #endregion
 
   return (
     <div
@@ -67,7 +72,7 @@ export const ProjectStatus = ({ className }: { className?: string }) => {
     >
       <h2 className="mb-3 ml-6 text-2xl font-semibold">Project status</h2>
 
-      {isLoading ? (
+      {isLoading && !isError ? (
         <div className="flex flex-row gap-3 align-middle">
           <LoadingSpinner color="primary" />
         </div>
