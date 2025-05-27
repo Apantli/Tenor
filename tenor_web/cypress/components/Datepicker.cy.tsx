@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "~/styles/globals.css";
 import { mount } from "cypress/react";
 // import InputTextField from "~/app/_components/inputs/InputTextField";
-import { DatePicker } from "~/app/_components/DatePicker";
+import { DatePicker } from "~/app/_components/pickers/DatePicker";
 
 describe("<DatePicker />", () => {
   it("Can render date picker", () => {

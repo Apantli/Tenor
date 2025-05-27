@@ -2,7 +2,7 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import { DatePicker } from "~/app/_components/DatePicker";
+import { DatePicker } from "~/app/_components/pickers/DatePicker";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import Popup from "~/app/_components/Popup";

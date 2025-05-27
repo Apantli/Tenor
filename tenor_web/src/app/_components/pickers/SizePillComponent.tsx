@@ -1,5 +1,5 @@
 import type { Size } from "~/lib/types/firebaseSchemas";
-import PillComponent from "../PillComponent";
+import PillComponent from "./PillComponent";
 import { sizeTags, sizeToInt } from "~/lib/defaultProjectValues";
 
 interface Props {

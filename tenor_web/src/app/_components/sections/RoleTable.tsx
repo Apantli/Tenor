@@ -8,7 +8,7 @@ import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import PrimaryButton from "../buttons/PrimaryButton";
 import InputTextField from "../inputs/InputTextField";
 import Table, { type TableColumns } from "../table/Table";
-import PillPickerComponent from "../PillPickerComponent";
+import PillPickerComponent from "../pickers/PillPickerComponent";
 import {
   permissionItems,
   permissionLabels,

@@ -14,13 +14,13 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import DependencyList from "./DependencyList";
+import DependencyListUserStory from "./DependencyListUserStory";
 import TasksTable, {
   type BacklogItemWithTasks,
 } from "~/app/_components/sections/TasksTable";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
-import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
+import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
+import EpicPicker from "~/app/_components/pickers/EpicPicker";
+import PriorityPicker from "~/app/_components/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
@@ -38,7 +38,7 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
+import StatusPicker from "~/app/_components/pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
 import {
@@ -422,7 +422,7 @@ export default function UserStoryDetailPopup({
                   {formatSprintNumber(userStoryDetail.sprint?.number)}
                 </h3>
 
-                <DependencyList
+                <DependencyListUserStory
                   disabled={permission < permissionNumbers.write}
                   label="Dependencies"
                   userStoryId={userStoryDetail.id}
@@ -433,7 +433,7 @@ export default function UserStoryDetailPopup({
                   onClick={changeVisibleUserStory}
                 />
 
-                <DependencyList
+                <DependencyListUserStory
                   disabled={permission < permissionNumbers.write}
                   label="Required by"
                   userStoryId={userStoryDetail.id}

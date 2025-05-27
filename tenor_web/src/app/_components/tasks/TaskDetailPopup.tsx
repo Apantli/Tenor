@@ -9,14 +9,14 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { SidebarPopup } from "../Popup";
 import { Timestamp } from "firebase/firestore";
-import StatusPicker from "../specific-pickers/StatusPicker";
-import { UserPicker } from "../specific-pickers/UserPicker";
-import { DatePicker } from "../DatePicker";
+import StatusPicker from "../pickers/StatusPicker";
+import { UserPicker } from "../pickers/UserPicker";
+import { DatePicker } from "../pickers/DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
 import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
 import {
@@ -32,7 +32,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
-import DependencyList from "./DependencyList";
+import DependencyListTask from "./DependencyListTask";
 import { TRPCClientError } from "@trpc/client";
 
 interface Props {
@@ -393,7 +393,7 @@ export default function TaskDetailPopup({
               className="w-full"
             />
           </div>
-          <DependencyList
+          <DependencyListTask
             tasks={taskDetail?.dependencies ?? []}
             taskId={taskId}
             onChange={async (dependencies) => {
@@ -404,7 +404,7 @@ export default function TaskDetailPopup({
             onClick={() => {}}
             disabled={permission < permissionNumbers.write}
           />
-          <DependencyList
+          <DependencyListTask
             tasks={taskDetail?.requiredBy ?? []}
             taskId={taskId}
             onChange={async (requiredBy) => {

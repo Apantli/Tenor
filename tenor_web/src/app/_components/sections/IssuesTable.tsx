@@ -12,15 +12,15 @@ import {
 import { cn } from "~/lib/utils";
 import LoadingSpinner from "../LoadingSpinner";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
-import PriorityPicker from "../specific-pickers/PriorityPicker";
-import { SizePillComponent } from "../specific-pickers/SizePillComponent";
-import UserStoryPicker from "../specific-pickers/UserStoryPicker";
+import PriorityPicker from "../pickers/PriorityPicker";
+import { SizePillComponent } from "../pickers/SizePillComponent";
+import UserStoryPicker from "../pickers/UserStoryPicker";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import PrimaryButton from "../buttons/PrimaryButton";
 import IssueDetailPopup from "~/app/(logged)/project/[projectId]/issues/IssueDetailPopup";
 import CreateIssuePopup from "~/app/(logged)/project/[projectId]/issues/CreateIssuePopup";
 import SearchBar from "../SearchBar";
-import AssignUsersList from "../specific-pickers/AssignUsersList";
+import AssignUsersList from "../pickers/AssignUsersList";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import {
   useInvalidateQueriesAllIssues,

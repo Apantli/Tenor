@@ -3,12 +3,12 @@
 import React, { useEffect, useState } from "react";
 import InputTextField from "~/app/_components/inputs/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
-import { DatePicker } from "~/app/_components/DatePicker";
-import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
+import { DatePicker } from "~/app/_components/pickers/DatePicker";
+import { UserPicker } from "~/app/_components/pickers/UserPicker";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import type {
   StatusTag,
@@ -17,14 +17,14 @@ import type {
   BacklogItemType,
 } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
-import StatusPicker from "../specific-pickers/StatusPicker";
+import StatusPicker from "../pickers/StatusPicker";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import type {
   TaskDetail,
   TaskPreview,
   UserPreview,
 } from "~/lib/types/detailSchemas";
-import DependencyList from "./DependencyList";
+import DependencyListTask from "./DependencyListTask";
 import { TRPCClientError } from "@trpc/client";
 
 interface Props {
@@ -255,14 +255,14 @@ export function CreateTaskForm({
           />
         </div>
 
-        <DependencyList
+        <DependencyListTask
           label="Dependencies"
           tasks={createForm.dependencies}
           onChange={(dependencies) =>
             setCreateForm({ ...createForm, dependencies })
           }
         />
-        <DependencyList
+        <DependencyListTask
           label="Required by"
           tasks={createForm.requiredBy}
           onChange={(requiredBy) =>

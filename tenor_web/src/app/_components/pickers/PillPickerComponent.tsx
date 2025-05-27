@@ -5,7 +5,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";
 import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
-import Dropdown, { DropdownButton, DropdownItem } from "./Dropdown";
+import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 
 interface Item {
   id: string;

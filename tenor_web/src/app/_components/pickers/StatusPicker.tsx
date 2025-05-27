@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import React from "react";
 import { api } from "~/trpc/react";
-import PillComponent from "../PillComponent";
+import PillComponent from "./PillComponent";
 import type { StatusTag, Tag } from "~/lib/types/firebaseSchemas";
 import { cn } from "~/lib/utils";
 

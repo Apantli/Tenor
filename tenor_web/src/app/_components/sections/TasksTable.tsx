@@ -8,7 +8,7 @@ import PrimaryButton from "../buttons/PrimaryButton";
 import CollapsableSearchBar from "../CollapsableSearchBar";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { api } from "~/trpc/react";
-import StatusPicker from "../specific-pickers/StatusPicker";
+import StatusPicker from "../pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import {
   type BacklogItemType,

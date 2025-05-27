@@ -5,14 +5,18 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import {
   StatusBarChart,
   type ProjectStatusData,
-} from "~/app/_components/charts/ProjectStatusChart";
+} from "~/app/(logged)/(dashboard)/ProjectStatusChart";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { timestampToDate } from "~/utils/helpers/parsers";
 import { cn } from "~/lib/utils";
 
-export const ProjectStatus = ({ className }: { className?: string }) => {
+export const ProjectStatusDashboard = ({
+  className,
+}: {
+  className?: string;
+}) => {
   // #region Hooks
   const utils = api.useUtils();
   const { alert } = useAlert();

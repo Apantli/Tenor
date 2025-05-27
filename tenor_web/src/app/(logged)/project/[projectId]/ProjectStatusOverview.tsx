@@ -1,20 +1,25 @@
 "use client";
-import { api } from '~/trpc/react';
-import ProgressBar from './ProgressBar';
-import AssignUsersList from './specific-pickers/AssignUsersList';
-import LoadingSpinner from './LoadingSpinner';
+import { api } from "~/trpc/react";
+import ProgressBar from "../../../_components/ProgressBar";
+import AssignUsersList from "../../../_components/pickers/AssignUsersList";
+import LoadingSpinner from "../../../_components/LoadingSpinner";
 
-function projectStatus({projectId}: {projectId: string}) {
-
-  const {data: projectStatus, isLoading } = api.projects.getProjectStatus.useQuery({ projectId });
-  const {data: sprints, isLoading: isLoadingSprint} = api.sprints.getProjectSprintsOverview.useQuery({ projectId });
+function projectStatusOverview({ projectId }: { projectId: string }) {
+  const { data: projectStatus, isLoading } =
+    api.projects.getProjectStatus.useQuery({ projectId });
+  const { data: sprints, isLoading: isLoadingSprint } =
+    api.sprints.getProjectSprintsOverview.useQuery({ projectId });
 
   let sprintTitle = "";
   if (projectStatus?.currentSprintId) {
     if (projectStatus?.currentSprintDescription === "") {
       sprintTitle = "Sprint " + projectStatus?.currentSprintNumber;
     } else {
-      sprintTitle = "Sprint " + projectStatus?.currentSprintNumber + ": " + projectStatus?.currentSprintDescription;
+      sprintTitle =
+        "Sprint " +
+        projectStatus?.currentSprintNumber +
+        ": " +
+        projectStatus?.currentSprintDescription;
     }
   } else {
     sprintTitle = "No active sprint";
@@ -47,28 +52,28 @@ function projectStatus({projectId}: {projectId: string}) {
       const days = remainingDays % 7;
 
       const parts = [];
-      if (months > 0) parts.push(`${months} month${months !== 1 ? 's' : ''}`);
-      if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? 's' : ''}`);
-      if (days > 0) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+      if (months > 0) parts.push(`${months} month${months !== 1 ? "s" : ""}`);
+      if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? "s" : ""}`);
+      if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
 
-      message = `${parts.join(', ')} left.`;
+      message = `${parts.join(", ")} left.`;
     }
   }
 
   if (isLoading || isLoadingSprint) {
     return (
-      <div className='w-full flex h-full items-center justify-center'>
+      <div className="flex h-full w-full items-center justify-center">
         <LoadingSpinner color="primary" />
       </div>
     );
   }
-  
+
   return (
-    <div className='w-full h-full flex flex-col gap-5'>
+    <div className="flex h-full w-full flex-col gap-5">
       <div className="flex flex-col gap-2">
         <h2 className="text-lg font-bold">Status</h2>
         <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold truncate whitespace-nowrap overflow-hidden max-w-[90%]">
+          <span className="max-w-[90%] overflow-hidden truncate whitespace-nowrap text-lg font-semibold">
             {sprintTitle}
           </span>
         </div>
@@ -77,31 +82,32 @@ function projectStatus({projectId}: {projectId: string}) {
         taskCount={projectStatus?.taskCount ?? 0}
         completedCount={projectStatus?.completedCount ?? 0}
       />
-      <div className="flex flex-col md:flex-row md:items-start items-center gap-2 justify-between mt-4">
-        <div className='w-full'>
+      <div className="mt-4 flex flex-col items-center justify-between gap-2 md:flex-row md:items-start">
+        <div className="w-full">
           <AssignUsersList users={projectStatus?.assignedUssers} />
         </div>
-        <div className='w-full justify-start md:justify-end flex md:mt-0 mt-4'>
+        <div className="mt-4 flex w-full justify-start md:mt-0 md:justify-end">
           {message && (
-            <p className="text-m font-semibold text-gray-500"><span className='text-app-primary'>On track •</span> {message}</p>
+            <p className="text-m font-semibold text-gray-500">
+              <span className="text-app-primary">On track •</span> {message}
+            </p>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function ProgressStatusBar({ 
+function ProgressStatusBar({
   taskCount,
   completedCount,
- }: { 
-  taskCount: number,
-  completedCount: number,
+}: {
+  taskCount: number;
+  completedCount: number;
 }) {
-
   const displayValue = `of tasks completed`;
-  const progressBarColor = '#13918A';
-  const emptyBarColor = '#B1B8BE';
+  const progressBarColor = "#13918A";
+  const emptyBarColor = "#B1B8BE";
 
   return (
     // contianer of the project status
@@ -115,7 +121,7 @@ function ProgressStatusBar({
         displayValue={displayValue}
       />
     </div>
-  )
+  );
 }
 
-export default projectStatus;
+export default projectStatusOverview;

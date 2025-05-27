@@ -2,7 +2,7 @@ import { Timestamp } from "firebase/firestore";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import { DatePicker } from "~/app/_components/DatePicker";
+import { DatePicker } from "~/app/_components/pickers/DatePicker";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import Popup from "~/app/_components/Popup";
 import { type AlertFunction, useAlert } from "~/app/_hooks/useAlert";

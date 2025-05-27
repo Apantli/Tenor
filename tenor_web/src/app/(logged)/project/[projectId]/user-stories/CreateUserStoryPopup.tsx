@@ -6,13 +6,13 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
-import DependencyList from "./DependencyList";
-import EpicPicker from "~/app/_components/specific-pickers/EpicPicker";
+import DependencyListUserStory from "./DependencyListUserStory";
+import EpicPicker from "~/app/_components/pickers/EpicPicker";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
-import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
+import PriorityPicker from "~/app/_components/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
@@ -183,14 +183,14 @@ export default function CreateUserStoryPopup({
             onChange={(tags) => setCreateForm({ ...createForm, tags })}
           />
 
-          <DependencyList
+          <DependencyListUserStory
             label="Dependencies"
             userStories={createForm.dependencies}
             onChange={(dependencies) =>
               setCreateForm({ ...createForm, dependencies })
             }
           />
-          <DependencyList
+          <DependencyListUserStory
             label="Required by"
             userStories={createForm.requiredBy}
             onChange={(requiredBy) =>

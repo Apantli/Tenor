@@ -8,12 +8,12 @@ import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import { useParams } from "next/navigation";
 import type { Size, Tag } from "~/lib/types/firebaseSchemas";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
-import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
+import PriorityPicker from "~/app/_components/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
+import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
+import UserStoryPicker from "~/app/_components/pickers/UserStoryPicker";
 
 interface Props {
   showPopup: boolean;

@@ -1,10 +1,10 @@
 "use client";
 
 import { type PropsWithChildren, useEffect, useState } from "react";
-import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { type User } from "firebase/auth";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 
 export default function ClientAuthBoundary({ children }: PropsWithChildren) {
   const { user, loading } = useFirebaseAuth();

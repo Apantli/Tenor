@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import React from "react";
 import { api } from "~/trpc/react";
-import PillPickerComponent from "../PillPickerComponent";
+import PillPickerComponent from "./PillPickerComponent";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 

@@ -8,7 +8,7 @@ import { api } from "~/trpc/react";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
-import PillPickerComponent from "../PillPickerComponent";
+import PillPickerComponent from "../pickers/PillPickerComponent";
 import SearchBar from "../SearchBar";
 import { emptyRole } from "~/lib/defaultProjectValues";
 import { useAlert } from "~/app/_hooks/useAlert";

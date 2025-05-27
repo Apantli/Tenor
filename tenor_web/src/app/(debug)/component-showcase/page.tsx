@@ -7,7 +7,7 @@ import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
 import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
-import PillComponent from "~/app/_components/PillComponent";
+import PillComponent from "~/app/_components/pickers/PillComponent";
 import Popup, { SidebarPopup } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import DeleteButton from "~/app/_components/buttons/DeleteButton";
@@ -19,10 +19,10 @@ import InputTextField from "~/app/_components/inputs/InputTextField";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import InputFileField from "~/app/_components/inputs/InputFileField";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
-import { DatePicker } from "~/app/_components/DatePicker";
+import { DatePicker } from "~/app/_components/pickers/DatePicker";
 import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
 import TagComponent from "~/app/_components/TagComponent";
-import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
+import { UserPicker } from "~/app/_components/pickers/UserPicker";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
@@ -814,4 +814,3 @@ function DropdownColorPickerShowcase() {
     </div>
   );
 }
-

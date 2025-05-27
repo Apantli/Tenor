@@ -15,8 +15,8 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import TasksTable from "~/app/_components/sections/TasksTable";
-import { SizePillComponent } from "~/app/_components/specific-pickers/SizePillComponent";
-import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
+import { SizePillComponent } from "~/app/_components/pickers/SizePillComponent";
+import PriorityPicker from "~/app/_components/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
   useFormatSprintNumber,
@@ -25,14 +25,14 @@ import {
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { CreateTaskForm } from "~/app/_components/tasks/CreateTaskPopup";
-import UserStoryPicker from "~/app/_components/specific-pickers/UserStoryPicker";
+import UserStoryPicker from "~/app/_components/pickers/UserStoryPicker";
 import {
   useInvalidateQueriesAllIssues,
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesIssueDetails,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
-import StatusPicker from "~/app/_components/specific-pickers/StatusPicker";
+import StatusPicker from "~/app/_components/pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import HelpIcon from "@mui/icons-material/Help";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";

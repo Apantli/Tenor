@@ -4,7 +4,7 @@ import {
   ContributionPieChart,
   ContributionLegend,
   SampleContributionData,
-} from "~/app/_components/charts/ContributionPieChart";
+} from "~/app/(logged)/project/[projectId]/performance/ContributionPieChart";
 import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
 
