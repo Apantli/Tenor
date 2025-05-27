@@ -11,16 +11,12 @@ import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import ItemsKanban from "./ItemsKanban";
 import {
   permissionNumbers,
-  type Sprint,
-  type Tag,
-  type WithId,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import { api } from "~/trpc/react";
 import SearchBar from "~/app/_components/SearchBar";
 import AdvancedSearch from "../../../../_components/AdvancedSearch";
-import { type UserPreview } from "~/lib/types/detailSchemas";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";

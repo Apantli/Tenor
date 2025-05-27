@@ -25,14 +25,10 @@ import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import {
   type Permission,
   permissionNumbers,
-  type Sprint,
-  type Tag,
-  type WithId,
 } from "~/lib/types/firebaseSchemas";
 import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
-import { type UserPreview } from "~/lib/types/detailSchemas";
-import { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
+import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 
 interface Props {
   filter: string;

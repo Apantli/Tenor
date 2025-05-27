@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { UserPreview } from "~/lib/types/detailSchemas";
+import { useState } from "react";
+import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
-import { KanbanCard } from "~/lib/types/kanbanTypes";
+import type { KanbanCard } from "~/lib/types/kanbanTypes";
 
 export interface AdvancedSearchFilters {
   tags: WithId<Tag>[];

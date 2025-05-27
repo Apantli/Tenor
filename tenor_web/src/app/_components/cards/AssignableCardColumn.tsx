@@ -3,10 +3,8 @@ import { cn } from "~/lib/utils";
 import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
 import CardColumn from "./CardColumn";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
-import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
-import type { UserPreview } from "~/lib/types/detailSchemas";
 import {
-  AdvancedSearchFilters,
+  type AdvancedSearchFilters,
   matchesSearchFilters,
 } from "~/app/_hooks/useAdvancedSearchFilters";
 // import type { Tag } from "~/lib/types/firebaseSchemas";

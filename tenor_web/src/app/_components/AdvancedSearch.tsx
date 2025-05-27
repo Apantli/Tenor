@@ -1,20 +1,19 @@
 "use client";
 
 import Dropdown, { DropdownItem } from "~/app/_components/Dropdown";
-import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
+import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import TuneIcon from "@mui/icons-material/Tune";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
-import { type UserPreview } from "~/lib/types/detailSchemas";
 import TagComponent from "~/app/_components/TagComponent";
 import { sizeTags } from "~/lib/defaultProjectValues";
 import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
 import { SprintPicker } from "~/app/_components/specific-pickers/SprintPicker";
 import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import { cn } from "~/lib/utils";
-import { AdvancedSearchFilters } from "../_hooks/useAdvancedSearchFilters";
-import { SetStateAction } from "react";
+import type { AdvancedSearchFilters } from "../_hooks/useAdvancedSearchFilters";
+import type { SetStateAction } from "react";
 
 interface Props {
   advancedFilters: AdvancedSearchFilters;

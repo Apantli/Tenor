@@ -11,10 +11,9 @@ import {
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import type { BacklogItemType } from "~/lib/types/firebaseSchemas";
 import {
-  AdvancedSearchFilters,
+  type AdvancedSearchFilters,
   matchesSearchFilters,
 } from "~/app/_hooks/useAdvancedSearchFilters";
-import { filter } from "node_modules/cypress/types/bluebird";
 
 interface Props {
   backlogItems: inferRouterOutputs<

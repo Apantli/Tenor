@@ -11,7 +11,7 @@ import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import EditSprintPopup from "./EditSprintPopup";
 import type { SprintDates } from "./CreateSprintPopup";
-import { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
+import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
