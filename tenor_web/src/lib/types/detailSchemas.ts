@@ -96,6 +96,5 @@ export type RoleDetail = {
   issues: Permission; // issues, tasks
   backlog: Permission; // requirements, epics, user stories, tasks
   reviews: Permission; // sprint reviews
-  activity: Permission; // activity log
   retrospective: Permission; // sprint retrospective
 };

@@ -27,7 +27,7 @@ import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import { defaultRoleList } from "~/lib/defaultProjectValues";
 import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import { acceptableTagColors } from "~/utils/helpers/colorUtils";
+import { acceptableTagColors, getPillColorByActivityType } from "~/utils/helpers/colorUtils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 
@@ -473,6 +473,12 @@ function TagShowcase() {
         <TagComponent onDelete={() => console.log("HELLO")} color="#009719">
           Login
         </TagComponent>
+      </div>
+      <br />
+      <div className="flex justify-start gap-2">
+        <TagComponent color={getPillColorByActivityType("create")}>Create</TagComponent>
+        <TagComponent color={getPillColorByActivityType("update")}>Update</TagComponent>
+        <TagComponent color={getPillColorByActivityType("delete")}>Delete</TagComponent>
       </div>
     </div>
   );

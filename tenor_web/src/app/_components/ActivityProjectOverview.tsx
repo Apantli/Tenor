@@ -3,51 +3,28 @@ import { api } from "~/trpc/react";
 import SearchBar from "./SearchBar";
 import { useState } from "react";
 import ProfilePicture from "./ProfilePicture";
-import { useFormatEpicScrumId, useFormatIssueScrumId, useFormatSprintNumber, useFormatTaskScrumId, useFormatUserStoryScrumId } from "../_hooks/scrumIdHooks";
+import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
 import { capitalize } from "@mui/material";
 import LoadingSpinner from "./LoadingSpinner";
-import type { Epic, Issue, ProjectActivity, Sprint, Task, UserStory, WithId } from "~/lib/types/firebaseSchemas";
-
-type WithActivity<T> = T & { activity: WithId<ProjectActivity> };
-type ItemWithName =
-  | WithId<Task>
-  | WithId<Issue>
-  | WithId<UserStory>
-  | WithId<Epic>
-  | WithId<Sprint>;
-
-type ItemWithScrumId = { scrumId: number };
-
-type PossibleItem = {
-  scrumId?: unknown;
-  id?: string; 
-  name?: string;
-}
-
-const hasScrumId = (item: PossibleItem): item is ItemWithScrumId => {
-  return item && typeof item.scrumId === 'number';
-};
-
-type PossibleDate =
-  | Date
-  | { _seconds: number }
-  | { seconds: number }
-  | { toDate: () => Date }
-  | string
-  | number;
+import type { ActionType, AllBasicItemType, BacklogItemAndTaskDetailType, ProjectActivity, WithId } from "~/lib/types/firebaseSchemas";
+import { getAccentColorByCardType, getPillColorByActivityType } from "~/utils/helpers/colorUtils";
+import TagComponent from "./TagComponent";
+import { getRelativeTimeString } from "~/utils/helpers/firestoreTimestamp";
+import { useActivityItemsMap} from "~/lib/types/activityMappint";
 
 const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const { data: activities, isLoading: activitiesLoading } = api.projects.getProjectActivities.useQuery({ projectId });
   const { data: users, isLoading: usersLoading } = api.users.getUsers.useQuery({ projectId });
-  const { data: activitiesDetails, isLoading: activitiesDetailsLoading } = api.projects.getActivityDetails.useQuery({ projectId });
-
-  const formatTaskScrumId = useFormatTaskScrumId();
-  const formatIssueScrumId = useFormatIssueScrumId();
-  const formatEpicScrumId = useFormatEpicScrumId();
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatSprintScrumId = useFormatSprintNumber();
   
   const [searchText, setSearchText] = useState("");
+
+  const formatAnyScrumId = useFormatAnyScrumId();
+  
+  const firebaseTimestampToDate = getRelativeTimeString;
+
+  // Single unified map for all activity items
+  const activityItemsMap = useActivityItemsMap(projectId) ?? {};
+  console.log("ActivityItemsMap size:", Object.keys(activityItemsMap).length);
 
   // Create a better user map that tries multiple ID fields
   const userMap = users
@@ -58,145 +35,33 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
       }, {} as Record<string, typeof users[0]>)
     : {};
 
-  // Create lookup maps for different item types
-  const taskMap = activitiesDetails?.tasksActivities?.reduce((map, task) => {
-    if (task.id) map[task.id] = task;
-    return map;
-  }, {} as Record<string, WithActivity<WithId<Task>>>) ?? {};
-
-  const issueMap = activitiesDetails?.issuesActivities?.reduce((map, issue) => {
-    if (issue.id) map[issue.id] = issue;
-    return map;
-  }, {} as Record<string, WithActivity<WithId<Issue>>>) ?? {};
-
-  const epicMap = activitiesDetails?.epicsActivities?.reduce((map, epic) => {
-    if (epic.id) map[epic.id] = epic;
-    return map;
-  }, {} as Record<string, WithActivity<WithId<Epic>>>) ?? {};
-
-  const sprintMap = activitiesDetails?.sprintsActivities?.reduce((map, sprint) => {
-    if (sprint.id) map[sprint.id] = sprint;
-    return map;
-  }, {} as Record<string, WithActivity<WithId<Sprint>>>) ?? {};
-
-  const userStoryMap = activitiesDetails?.userStoriesActivities?.reduce((map, userStory) => {
-    if (userStory.id) map[userStory.id] = userStory;
-    return map;
-  }, {} as Record<string, WithActivity<WithId<UserStory>>>) ?? {};
-
-  // 1. DEFINE HELPER FUNCTIONS FIRST
-  // Helper function to get item details based on activity type and itemId
-  const getItemDetails = (activity: WithId<ProjectActivity>): ItemWithName | null => {
-    if (!activity?.type || !activity?.itemId) return null;
-    
-    const { type, itemId } = activity;
-
-    if (type === 'TS') return taskMap[itemId] ?? null;
-    if (type === 'IS') return issueMap[itemId] ?? null;
-    if (type === 'EP') return epicMap[itemId] ?? null;
-    if (type === 'SP') return sprintMap[itemId] ?? null;
-    if (type === 'US') return userStoryMap[itemId] ?? null;
-    
-    return null;
-  };
+  const getItemDetails = (activity: WithId<ProjectActivity>) => {
+    if (!activity?.type) return null;
+    // Use the unified activity items map to get details
+    return activityItemsMap[activity.itemId] ?? null;
+  }
 
   // Helper function to get item title
   const getItemTitle = (activity: WithId<ProjectActivity>) => {
     const item = getItemDetails(activity);
     if (!item) return activity.itemId;
 
-    if ('name' in item && typeof item.name === 'string') {
-      return item.name;
-    } else 
-
-    return activity.itemId;
-  };
-
-
+    return item.name || activity.itemId;
+  }
 
   // Helper function to get scrum ID
   const getScrumId = (activity: WithId<ProjectActivity>) => {
     const item = getItemDetails(activity);
     if (!item) return null;
-    const sprint = item as WithId<Sprint>;
 
-    if (hasScrumId(item)) {
-      switch (activity.type) {
-        case 'TS':
-          return formatTaskScrumId(item.scrumId) + ":";
-        case 'IS':
-          return formatIssueScrumId(item.scrumId) + ":";
-        case 'EP':
-          return formatEpicScrumId(item.scrumId) + ":";
-        case 'US':
-          return formatUserStoryScrumId(item.scrumId) + ":";
-        case 'SP':
-          return formatSprintScrumId(sprint.number);
-      }
-    }
-
-    return null;
-  };
-
-
-  // Helper function to format date from Firestore timestamp
-  const getRelativeTimeString = (date: PossibleDate): string => {
-    if (!date) return '';
-
-    let jsDate: Date | null = null;
-
-    if (typeof date === 'object' && date !== null) {
-      if ('_seconds' in date) {
-        jsDate = new Date(date._seconds * 1000);
-      } else if ('seconds' in date) {
-        jsDate = new Date(date.seconds * 1000);
-      } else if (date instanceof Date) {
-        jsDate = date;
-      } else if (typeof (date as { toDate?: () => Date }).toDate === 'function') {
-        jsDate = (date as { toDate: () => Date }).toDate();
-      } else {
-        jsDate = new Date((date as unknown) as string | number);
-      }
+    if (activity.type === "SP") {
+      return formatAnyScrumId(item.scrumId ?? 0, activity.type as AllBasicItemType) + ":";
+    } else if (item.scrumId) {
+      return formatAnyScrumId(item.scrumId, activity.type as AllBasicItemType) + ":";
     } else {
-      jsDate = new Date(date);
+      return activity.type ? `${activity.type}-??` : String(item.id) + ":";
     }
-
-    if (!jsDate || isNaN(jsDate.getTime())) return '';
-
-    // Resto de la función igual
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - jsDate.getTime()) / 1000);
-
-    const MINUTE = 60;
-    const HOUR = 3600;
-    const DAY = 86400;
-    const WEEK = 604800;
-    const MONTH = 2419200;
-    const YEAR = 29030400;
-
-    if (diffInSeconds < MINUTE) {
-      return 'just now';
-    } else if (diffInSeconds < HOUR) {
-      const minutes = Math.floor(diffInSeconds / MINUTE);
-      return `${minutes} ${minutes === 1 ? 'min' : 'mins'} ago`;
-    } else if (diffInSeconds < DAY) {
-      const hours = Math.floor(diffInSeconds / HOUR);
-      return `${hours} ${hours === 1 ? 'hr' : 'hrs'} ago`;
-    } else if (diffInSeconds < WEEK) {
-      const days = Math.floor(diffInSeconds / DAY);
-      return `${days} ${days === 1 ? 'day' : 'days'} ago`;
-    } else if (diffInSeconds < MONTH) {
-      const weeks = Math.floor(diffInSeconds / WEEK);
-      return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
-    } else if (diffInSeconds < YEAR) {
-      const months = Math.floor(diffInSeconds / MONTH);
-      return `${months} ${months === 1 ? 'month' : 'months'} ago`;
-    } else {
-      const years = Math.floor(diffInSeconds / YEAR);
-      return `${years} ${years === 1 ? 'year' : 'years'} ago`;
-    }
-  };
-
+  }
 
   // 2. NOW USE THE FUNCTIONS IN FILTERS AND SORTING
   // Filter activities based on search
@@ -209,6 +74,15 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     const dateStr = activity.date ? String(activity.date) : "";
     const actionStr = activity.action ?? "";
     const typeStr = activity.type ?? "";
+
+    // Add readable type label for search
+    const typeLabel =
+      activity.type === "TS" ? "task" :
+      activity.type === "IS" ? "issue" :
+      activity.type === "EP" ? "epic" :
+      activity.type === "SP" ? "sprint" :
+      activity.type === "US" ? "user story" :
+      activity.type === "PJ" ? "project" : "";
     
     // Get user information if available
     const user = activity.userId ? userMap[activity.userId] : undefined;
@@ -224,48 +98,17 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     
     // Check if any field contains the search text
     return (
-      dateStr.toLowerCase().includes(searchLowerCase) ??
-      actionStr.toLowerCase().includes(searchLowerCase) ??
-      typeStr.toLowerCase().includes(searchLowerCase) ??
-      userName.toLowerCase().includes(searchLowerCase) ??
-      itemTitle.toLowerCase().includes(searchLowerCase) ??
+      dateStr.toLowerCase().includes(searchLowerCase) ||
+      actionStr.toLowerCase().includes(searchLowerCase) ||
+      typeStr.toLowerCase().includes(searchLowerCase) ||
+      typeLabel.toLowerCase().includes(searchLowerCase) ||
+      userName.toLowerCase().includes(searchLowerCase) ||
+      itemTitle.toLowerCase().includes(searchLowerCase) ||
       scrumId.toString().toLowerCase().includes(searchLowerCase)
     );
   });
 
-  // Sort activities by date (most recent first)
-  const sortedActivities = filteredActivities?.sort((a, b) => {
-    // Handle missing dates
-    if (!a.date) return 1;
-    if (!b.date) return -1;
-
-    const getTimestamp = (date: unknown): number => {
-      if (date instanceof Date) return date.getTime() / 1000;
-        
-      if (typeof date === 'object' && date !== null) {
-        const d = date as { _seconds?: number; seconds?: number; toDate?: () => Date };
-      
-        if (d._seconds !== undefined) return d._seconds;
-        if (d.seconds !== undefined) return d.seconds;
-        if (typeof d.toDate === 'function') return d.toDate().getTime() / 1000;
-      }
-    
-      if (typeof date === 'string' || typeof date === 'number') {
-        return new Date(date).getTime() / 1000;
-      }
-    
-      return 0; // fallback
-    };
-
-    const timestampA = getTimestamp(a.date);
-    const timestampB = getTimestamp(b.date);
-
-    // Sort in descending order (newest first)
-    return timestampB - timestampA;
-  });
-
-
-  const isLoading = activitiesLoading || usersLoading || activitiesDetailsLoading;
+  const isLoading = activitiesLoading || usersLoading;
 
   if (isLoading) {
     return (
@@ -295,7 +138,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
           </div>
         )}
 
-        {sortedActivities?.map((activity) => {
+        {filteredActivities?.map((activity) => {
           // Try to match user by userId - will work if userId matches any of our mapped fields
           const user = activity.userId ? userMap[activity.userId] : undefined;
           const itemTitle = getItemTitle(activity);
@@ -335,7 +178,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
                     {/* Show date */}
                     {activity.date && (
                       <p className="text-s text-blakc self-center">
-                        {getRelativeTimeString(activity.date)}
+                        {firebaseTimestampToDate(activity.date)}
                       </p>
                     )}
                   </div>
@@ -343,44 +186,22 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
               </div>
               <div className="flex flex-row items-end justify-around w-1/4">
                 {/* Action tag with dynamic background color */}
-                <p className={`text-sm px-2 py-1 text-white rounded-lg ${
-                  activity.action?.toLowerCase().includes("create") 
-                    ? "bg-green-500" 
-                    : activity.action?.toLowerCase().includes("update") || activity.action?.toLowerCase().includes("change")
-                    ? "bg-amber-500"
-                    : activity.action?.toLowerCase().includes("delete") || activity.action?.toLowerCase().includes("remove")
-                    ? "bg-red-500"
-                    : "text-gray-500"
+                <TagComponent className={`text-white rounded-lg ${
+                  getPillColorByActivityType(
+                    activity.action?.toLowerCase() as ActionType)
                 }`}>
                   {capitalize(activity.action || "")}
-                </p>
+                </TagComponent>
                 
                 {/* Type badges - keep as is */}
-                {activity.type === "TS" && (
-                  <p className="text-sm text-white bg-[#13918A] rounded-lg px-2 py-1">
-                    {activity.type === "TS" && "Task"}
-                  </p>
-                )}
-                {activity.type === "IS" && (
-                  <p className="text-sm text-white bg-[#15734F] rounded-lg px-2 py-1">
-                    {activity.type === "IS" && "Issue"}
-                  </p>
-                )}
-                {activity.type === "EP" && (
-                  <p className="text-sm text-white bg-[#012112] rounded-lg px-2 py-1">
-                    {activity.type === "EP" && "Epic"}
-                  </p>
-                )}
-                {activity.type === "SP" && (
-                  <p className="text-sm text-white bg-[#184723] rounded-lg px-2 py-1">
-                    {activity.type === "SP" && "Sprint"}
-                  </p>
-                )}
-                {activity.type === "US" && (
-                  <p className="text-sm text-white bg-[#88BB87] rounded-lg px-2 py-1">
-                    {activity.type === "US" && "US"}
-                  </p>
-                )}
+                <TagComponent className={`text-white rounded-lg ${getAccentColorByCardType(activity.type as BacklogItemAndTaskDetailType)}`}>
+                  {activity.type === "TS" && "Task"}
+                  {activity.type === "IS" && "Issue"}     
+                  {activity.type === "EP" && "Epic"}
+                  {activity.type === "SP" && "Sprint"}
+                  {activity.type === "US" && "US"} 
+                  {activity.type === "PJ" && "Project"}   
+                </TagComponent>
               </div>
             </div>
           );

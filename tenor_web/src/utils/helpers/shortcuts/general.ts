@@ -1,8 +1,14 @@
 import type { Firestore } from "firebase-admin/firestore";
-import type { Epic, Issue, ProjectActivity,
+import type { 
+  Epic, 
+  Issue, 
+  ProjectActivity,
   Role,
-  Size, Sprint,
-  StatusTag, Task, UserStory,
+  Size, 
+  Sprint,
+  StatusTag, 
+  Task, 
+  UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import { ActivitySchema,
@@ -349,7 +355,10 @@ export const getProjectActivities = async (
   projectId: string,
 ) => {
   const activitiesRef = getActivitiesRef(firestore, projectId);
-  const activitiesSnapshot = await activitiesRef.get();
+  const activitiesSnapshot = await activitiesRef
+  .orderBy("date", "desc")
+  .limit(50)
+  .get();
   const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map((activityData) => {
     return { 
       id: activityData.id,

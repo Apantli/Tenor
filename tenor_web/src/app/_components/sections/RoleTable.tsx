@@ -49,6 +49,7 @@ export default function RoleTable({
   const defaultWidth = 100;
   const columns: TableColumns<WithId<RoleDetail>> = {
     id: { visible: false },
+    reviews: { visible: false },
     label: {
       label: "Name",
       width: 120,
@@ -220,31 +221,6 @@ export default function RoleTable({
               handleEditTabPermission(
                 row.id,
                 "settings",
-                parseInt(item.id) as Permission,
-              );
-            }}
-          />
-        );
-      },
-    },
-    activity: {
-      label: "Activity Log",
-      width: defaultWidth,
-      render: (row) => {
-        return (
-          <PillPickerComponent
-            disabled={disabled}
-            label={permissionLabels[row.activity]}
-            selectedItem={{
-              id: row.activity.toString(),
-              label: permissionLabels[row.activity],
-            }}
-            hideSearch={true}
-            allItems={permissionItems}
-            onChange={(item: { id: string; label: string }): void => {
-              handleEditTabPermission(
-                row.id,
-                "activity",
                 parseInt(item.id) as Permission,
               );
             }}

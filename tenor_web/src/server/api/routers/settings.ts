@@ -354,7 +354,6 @@ const settingsRouter = createTRPCRouter({
           scrumboard: roleData.scrumboard as Permission,
           backlog: roleData.backlog as Permission,
           reviews: roleData.reviews as Permission,
-          activity: roleData.activity as Permission,
           retrospective: roleData.retrospective as Permission,
         };
         return role;

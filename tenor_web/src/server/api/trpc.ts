@@ -142,7 +142,6 @@ export const roleRequiredProcedure = (
         issues: 0,
         backlog: 0,
         reviews: 0,
-        activity: 0,
         retrospective: 0,
       };
 
