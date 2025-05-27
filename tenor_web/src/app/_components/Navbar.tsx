@@ -39,7 +39,13 @@ export default function Navbar({ children }: PropsWithChildren) {
       </div>
       <div className="flex items-center gap-4">
         <Dropdown
-          label={<ProfilePicture user={user} hideTooltip />}
+          label={
+            <ProfilePicture
+              user={user}
+              hideTooltip
+              className="cursor-pointer"
+            />
+          }
           menuClassName="w-56 mt-2"
         >
           <DropdownButton className="flex items-center justify-between">
@@ -64,7 +70,10 @@ export default function Navbar({ children }: PropsWithChildren) {
             </DropdownButton>
           )}
           {shiftClicked && process.env.NODE_ENV === "development" && (
-            <DropdownButton onClick={() => router.push("/component-showcase")}>
+            <DropdownButton
+              onClick={() => router.push("/component-showcase")}
+              className="text-sm text-gray-500"
+            >
               Component showcase
             </DropdownButton>
           )}
