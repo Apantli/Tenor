@@ -1,3 +1,5 @@
+"use client";
+
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import {
