@@ -193,9 +193,20 @@ export const getTasks = async (firestore: Firestore, projectId: string) => {
 
   const tasksSnapshot = await tasksRef.get();
   const tasks: WithId<Task>[] = tasksSnapshot.docs.map((doc) => {
+    const dueDateData: { seconds: number; nanoseconds: number } | undefined =
+      doc.data()?.dueDate as
+        | {
+            seconds: number;
+            nanoseconds: number;
+          }
+        | undefined;
+    const dueDate = dueDateData
+      ? new Date(dueDateData.seconds * 1000)
+      : undefined;
     return {
       id: doc.id,
       ...TaskSchema.parse(doc.data()),
+      dueDate,
     } as WithId<Task>;
   });
 
@@ -231,7 +242,7 @@ export const getTask = async (
         }
       | undefined;
   const dueDate = dueDateData
-    ? new Date(dueDateData.seconds * 1000 + dueDateData.nanoseconds / 1e6)
+    ? new Date(dueDateData.seconds * 1000)
     : undefined;
 
   return {

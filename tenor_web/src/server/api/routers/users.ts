@@ -18,6 +18,7 @@ import { emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCError } from "@trpc/server";
 import { settingsPermissions, usersPermissions } from "~/lib/permission";
 import {
+  getGlobalUserPreview,
   getGlobalUserPreviews,
   getGlobalUserRef,
   getUserRef,
@@ -45,6 +46,13 @@ export const userRouter = createTRPCRouter({
           .toLowerCase()
           .includes(filter?.toLowerCase() ?? ""),
       );
+    }),
+
+  getGlobalUser: protectedProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { userId } = input;
+      return await getGlobalUserPreview(ctx.firebaseAdmin.app(), userId);
     }),
 
   /**

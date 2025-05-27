@@ -1,6 +1,5 @@
 "use client";
 
-import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown, { DropdownButton } from "./Dropdown";
@@ -39,7 +38,6 @@ export default function Navbar({ children }: PropsWithChildren) {
         {children}
       </div>
       <div className="flex items-center gap-4">
-        <SettingsIcon htmlColor="white" fontSize={"large"} />
         <Dropdown
           label={<ProfilePicture user={user} hideTooltip />}
           menuClassName="w-56 mt-2"

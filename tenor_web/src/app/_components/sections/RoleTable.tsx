@@ -180,8 +180,8 @@ export default function RoleTable({
       },
     },
     retrospective: {
-      label: "Sprint Retrospectives",
-      width: defaultWidth + 60,
+      label: "Retrospectives",
+      width: defaultWidth + 40,
       render: (row) => {
         return (
           <PillPickerComponent
@@ -195,7 +195,7 @@ export default function RoleTable({
             onChange={(item: { id: string; label: string }): void => {
               handleEditTabPermission(
                 row.id,
-                "reviews",
+                "retrospective",
                 parseInt(item.id) as Permission,
               );
             }}
