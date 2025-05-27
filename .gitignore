@@ -22,3 +22,6 @@ ui-debug.log
 
 .DS_Store
 node_modules
+
+fb1.env
+fb2.env
