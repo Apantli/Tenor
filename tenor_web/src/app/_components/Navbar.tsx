@@ -55,7 +55,7 @@ export default function Navbar({ children }: PropsWithChildren) {
             <span className="text-app-fail">Sign out</span>
             <LogoutIcon htmlColor="red" fontSize="small" />
           </DropdownButton>
-          {shiftClicked && (
+          {shiftClicked && process.env.NODE_ENV === "development" && (
             <DropdownButton
               className="text-sm text-gray-500"
               onClick={handleCopyUID}
@@ -63,7 +63,7 @@ export default function Navbar({ children }: PropsWithChildren) {
               Copy your user id
             </DropdownButton>
           )}
-          {shiftClicked && (
+          {shiftClicked && process.env.NODE_ENV === "development" && (
             <DropdownButton onClick={() => router.push("/component-showcase")}>
               Component showcase
             </DropdownButton>
