@@ -21,8 +21,8 @@ export default function ProjectPerformance() {
   const [selectedMember, setSelectedMember] = useState<UserCol | null>(null);
 
   return (
-    <div className="flex h-full w-full flex-1 flex-col gap-x-32 overflow-hidden pt-0 md:flex-row">
-      <div className="flex w-[50vw] flex-col items-baseline gap-3 pb-4">
+    <div className="flex h-full w-full flex-col gap-x-16 md:flex-row">
+      <div className="flex w-[55vw] flex-col items-baseline gap-3 pb-4">
         <div className="flex w-full flex-row justify-between">
           <h1 className="grow-[1] text-3xl font-semibold">Team Performance</h1>
           <div className="min-w-[300px]">
@@ -50,15 +50,17 @@ export default function ProjectPerformance() {
           selectedMember={selectedMember}
         />
       </div>
-      {selectedMember ? (
-        <MemberDetailsCard
-          member={selectedMember}
-          // timeInterval={section}
-          setSelectedMember={setSelectedMember}
-        />
-      ) : (
-        <ProductivityCard projectId={projectIdString} time={section} />
-      )}
+      <div className="flex-1">
+        {selectedMember ? (
+          <MemberDetailsCard
+            member={selectedMember}
+            // timeInterval={section}
+            setSelectedMember={setSelectedMember}
+          />
+        ) : (
+          <ProductivityCard projectId={projectIdString} time={section} />
+        )}
+      </div>
     </div>
   );
 }
