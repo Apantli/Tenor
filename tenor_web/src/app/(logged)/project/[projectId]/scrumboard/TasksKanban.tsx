@@ -328,6 +328,8 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
                               >
                                 Edit status
                               </DropdownButton>
+                              <DropdownButton>Move column left</DropdownButton>
+                              <DropdownButton>Move column right</DropdownButton>
                             </Dropdown>
                           </div>
                         )}

@@ -95,10 +95,7 @@ export const RoleSchema = z.object({
 
 export const BasicInfoSchema = z.object({
   scrumId: z.number(),
-  name: z
-    .string()
-    .min(1, "Name is required")
-    .max(80, "Name can't be longer than 80 characters"),
+  name: z.string().min(1, "Name is required"),
   description: z.string(),
   deleted: z.boolean().default(false),
   createdAt: TimestampType.default(() => Timestamp.fromDate(new Date())),
@@ -140,8 +137,7 @@ export const UserStorySchema = BacklogItemSchema.extend({
   // Redundant fields, but useful for describing their purposes to the AI
   name: z
     .string()
-    .describe("Small (5 word maximum) description of the user story")
-    .max(80),
+    .describe("Small (5 word maximum) description of the user story"),
   // .min(1, "Name is required")
   description: z
     .string()
@@ -178,10 +174,7 @@ export const TaskSchema = BasicInfoSchema.extend({
   // finishedDate: TimestampType.nullable(),
   itemId: z.string(),
   itemType: BacklogItemZodType,
-  name: z
-    .string()
-    .describe("Small (5 word maximum) description of the task")
-    .max(80),
+  name: z.string().describe("Small (5 word maximum) description of the task"),
   description: z
     .string()
     .describe(
