@@ -135,7 +135,7 @@ export default function RequirementDetailPopup({
     // This means we're editing a ghost requirement
     if (isGhost) {
       setRequirementData?.(finalData);
-      updateGeneratedRequirement?.(requirementId, {
+      updateGeneratedRequirement?.(finalData.id, {
         ...finalData,
         priority: finalData.priority,
         requirementType: finalData.requirementType,
