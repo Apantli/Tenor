@@ -101,7 +101,7 @@ export const MemberDetailsCard = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex max-h-[90vh] w-full flex-col overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:pb-12 2xl:pt-12",
+        "relative mx-auto flex h-[40rem] max-h-[40rem] w-full flex-col overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:overflow-y-hidden 2xl:pb-12 2xl:pt-12",
         className,
       )}
     >
@@ -114,7 +114,7 @@ export const MemberDetailsCard = ({
         <ProfilePicture
           user={member}
           hideTooltip
-          pictureClassName="h-14 w-14 2xl:h-32 2xl:w-32 ml-5 my-auto text-5xl"
+          pictureClassName="h-14 w-14 2xl:h-24 2xl:w-24 ml-5 my-auto text-xl 2xl:text-5xl"
         />
         <div className="my-auto flex flex-col justify-start overflow-hidden pl-4 pr-4">
           <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold capitalize xl:text-2xl">
