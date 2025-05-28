@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from "react";
+import { type SetStateAction, useState } from "react";
 
 function usePersistentState<T>(initialValue: T, key: string) {
   const fullKey = `persistent_value:${key}`;

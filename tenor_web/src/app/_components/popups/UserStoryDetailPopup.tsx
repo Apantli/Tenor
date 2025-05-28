@@ -6,10 +6,7 @@ import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
-import Popup, {
-  SidebarPopup,
-  usePopupVisibilityState,
-} from "~/app/_components/Popup";
+import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";

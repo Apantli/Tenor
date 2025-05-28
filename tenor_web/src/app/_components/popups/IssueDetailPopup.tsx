@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Popup, {
-  SidebarPopup,
-  usePopupVisibilityState,
-} from "~/app/_components/Popup";
+import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";

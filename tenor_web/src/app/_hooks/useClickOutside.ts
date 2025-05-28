@@ -17,8 +17,8 @@ export default function useClickOutside(
       const target = event.target as Node;
 
       // Check if the click is outside all registered elements
-      const clickedInside = elementsRef.current.some(
-        (el) => el && el.contains(target),
+      const clickedInside = elementsRef.current.some((el) =>
+        el?.contains(target),
       );
 
       if (!clickedInside) {

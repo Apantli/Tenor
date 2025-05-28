@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
