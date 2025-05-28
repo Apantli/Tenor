@@ -165,7 +165,10 @@ export const ContributionLegend: React.FC<{
           />
           <span className="text-sm">{item.category}</span>
           <span className="ml-auto text-sm text-gray-500">
-            {((item.value / totalValue) * 100).toFixed(2)}%
+            {parseFloat(
+              ((item.value / totalValue) * 100).toFixed(2),
+            ).toString()}
+            %
           </span>
         </div>
       ))}
