@@ -5,10 +5,10 @@ import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { toBase64 } from "~/utils/helpers/base64";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -176,6 +176,7 @@ export default function ProjectGeneralSettings() {
             />
           </div>
           <InputTextField
+            id="project-name-field"
             label="Project Name"
             className="w-full"
             labelClassName="text-lg font-semibold"
@@ -186,6 +187,7 @@ export default function ProjectGeneralSettings() {
             containerClassName="mt-3"
           />
           <InputTextAreaField
+            id="project-description-field"
             label="Project Description"
             labelClassName="text-lg font-semibold"
             className="h-[115px] w-full"
@@ -233,7 +235,7 @@ export default function ProjectGeneralSettings() {
           </div>
         </div>
       ) : (
-        <div className="flex h-40 w-full items-center justify-center">
+        <div className="flex h-40 w-full justify-center">
           <LoadingSpinner color="primary" />
         </div>
       )}

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 
 describe("Search bar", () => {
   const searchValue = "";

@@ -21,7 +21,10 @@ import type {
 } from "~/lib/types/detailSchemas";
 import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
 import { FieldValue } from "firebase-admin/firestore";
-import { backlogPermissions, tagPermissions } from "~/lib/permission";
+import {
+  backlogPermissions,
+  tagPermissions,
+} from "~/lib/defaultValues/permission";
 import type { Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
 import {
   deleteUserStoryAndGetModified,

@@ -1,25 +1,25 @@
 "use client";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import Navbar from "~/app/_components/Navbar";
 import Link from "next/link";
 import Tabbar from "~/app/_components/Tabbar";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import InputFileField from "~/app/_components/inputs/InputFileField";
 import LinkList from "~/app/_components/inputs/LinkList";
 import FileList from "~/app/_components/inputs/FileList";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import HelpIcon from "@mui/icons-material/Help";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { type Links } from "~/server/api/routers/settings";
-
-import { defaultRoleList, emptyRole } from "~/lib/defaultProjectValues";
 import { toBase64 } from "~/utils/helpers/base64";
 import type { UserCol } from "~/lib/types/columnTypes";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
+import { defaultRoleList, emptyRole } from "~/lib/defaultValues/roles";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();
@@ -268,6 +268,7 @@ export default function ProjectCreator() {
               {/* Project Name */}
               <div className="min-w-[300px] flex-1">
                 <InputTextField
+                  id="project-name-field"
                   label={`Project Name (${form.name.length}/${maxProjectNameLength})`}
                   value={form.name}
                   onChange={handleChange}
@@ -293,6 +294,7 @@ export default function ProjectCreator() {
 
             {/* Project Description */}
             <InputTextAreaField
+              id="project-description-field"
               label="Description"
               html-rows="4"
               placeholder="What is this project about..."
@@ -322,8 +324,19 @@ export default function ProjectCreator() {
           <div className="flex w-full flex-col gap-y-4">
             {/* Context Text */}
             <InputTextAreaField
-              className="min-h-[180px]"
-              label="Context"
+              id="project-context-field"
+              label={
+                <span className="flex items-center gap-1">
+                  Context
+                  <HelpIcon
+                    className="text-gray-500"
+                    data-tooltip-id="tooltip"
+                    data-tooltip-content="The data shared, including files and links, is private and used solely as context for the AI."
+                    data-tooltip-place="top-start"
+                    style={{ width: "15px" }}
+                  />
+                </span>
+              }
               html-rows="20"
               placeholder="Tell us about your project..."
               value={form.context}

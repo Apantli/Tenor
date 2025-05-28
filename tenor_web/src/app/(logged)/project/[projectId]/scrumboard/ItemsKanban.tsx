@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { api } from "~/trpc/react";
-import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
+import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
@@ -20,15 +20,16 @@ import {
   useInvalidateQueriesBacklogItemDetails,
   useInvalidateQueriesBacklogItems,
 } from "~/app/_hooks/invalidateHooks";
-import IssueDetailPopup from "../issues/IssueDetailPopup";
+import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 interface Props {
   filter: string;

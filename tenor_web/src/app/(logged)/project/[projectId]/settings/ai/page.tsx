@@ -3,21 +3,23 @@
 import { useParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { toBase64 } from "~/utils/helpers/base64";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import FileList from "~/app/_components/inputs/FileList";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import LinkList from "~/app/_components/inputs/LinkList";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { api } from "~/trpc/react";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
+import HelpIcon from "@mui/icons-material/Help";
 import { type Links } from "~/server/api/routers/settings";
 import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();
@@ -283,7 +285,16 @@ export default function ProjectAIConfig() {
     <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
-          <h1 className="mb-4 text-3xl font-semibold">AI Context</h1>
+          <div className="mb-4 flex items-center gap-2">
+            <h1 className="text-3xl font-semibold">AI Context</h1>
+            <HelpIcon
+              className="text-gray-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content="The data shared, including files and links, is private and used solely as context for the AI."
+              data-tooltip-place="top-start"
+              style={{ width: "20px" }}
+            />
+          </div>
           {(isModified() || isContextUpdatePending) &&
             links &&
             loadedFiles &&
@@ -302,6 +313,7 @@ export default function ProjectAIConfig() {
       {links && loadedFiles && !isLoading ? (
         <div className="flex flex-col gap-4">
           <InputTextAreaField
+            id="project-context-field"
             disabled={permission < permissionNumbers.write}
             label="Project Context"
             value={newText}
@@ -332,9 +344,8 @@ export default function ProjectAIConfig() {
           ></LinkList>
         </div>
       ) : (
-        <div className="mt-5 flex flex-row gap-x-3">
-          <LoadingSpinner />
-          <p className="text-lg">Loading...</p>
+        <div className="flex h-full w-full flex-col items-center">
+          <LoadingSpinner color="primary" />
         </div>
       )}
     </div>

@@ -3,18 +3,18 @@ import React, { useState } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import Table, { type TableColumns } from "../table/Table";
-import PrimaryButton from "../buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
-import PillPickerComponent from "../PillPickerComponent";
-import SearchBar from "../SearchBar";
-import { emptyRole } from "~/lib/defaultProjectValues";
+import PillPickerComponent from "./pickers/PillPickerComponent";
+import SearchBar from "./search/SearchBar";
 import { useAlert } from "~/app/_hooks/useAlert";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { WithId } from "~/lib/types/firebaseSchemas";
+import { emptyRole } from "~/lib/defaultValues/roles";
 
 interface Props {
   label?: string;

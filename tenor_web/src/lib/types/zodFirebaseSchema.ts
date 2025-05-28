@@ -3,18 +3,22 @@ import { z } from "zod";
 import {
   defaultMaximumSprintStoryPoints,
   defaultSprintDuration,
-} from "../defaultProjectValues";
+} from "../defaultValues/project";
 
 export const UserStoryZodType = z.literal("US");
 export const IssueZodType = z.literal("IS");
 export const TaskZodType = z.literal("TS");
 export const EpicZodType = z.literal("EP");
+export const ProjectZodType = z.literal("PJ");
+export const SprintZodType = z.literal("SP");
 
 export const BacklogItemZodType = z.union([UserStoryZodType, IssueZodType]);
 export const AllBasicItemZodType = z.union([
   BacklogItemZodType,
   TaskZodType,
   EpicZodType,
+  ProjectZodType,
+  SprintZodType,
 ]);
 export const BacklogItemAndTaskZodType = z.union([
   BacklogItemZodType,
@@ -90,6 +94,7 @@ export const RoleSchema = z.object({
   scrumboard: PermissionSchema, // scrumboard, tasks status, calendar
   issues: PermissionSchema, // issues, tasks
   backlog: PermissionSchema, // requirements, epics, user stories, tasks
+  reviews: PermissionSchema, // sprint reviews
   retrospective: PermissionSchema, // sprint retrospective
 });
 
@@ -339,13 +344,12 @@ export const ProjectSchemaCreator = z.object({
 
 export const PerformanceTime = z.enum(["Week", "Month", "Sprint"]);
 
-export const ActivityType = z.enum(["US" , "EP" , "IS" , "TS" , "SP"]); // Replace with actual types
-export const ActionType = z.enum(["create" , "update" , "delete"]); // Replace with actual actions
+export const ActionType = z.enum(["create", "update", "delete"]);
 
 export const ActivitySchema = z.object({
   itemId: z.string(),
   userId: z.string(),
-  type: ActivityType.optional(),
-  date: z.date(),
+  type: AllBasicItemZodType.optional(),
+  date: TimestampType.optional(),
   action: ActionType.optional(),
 });

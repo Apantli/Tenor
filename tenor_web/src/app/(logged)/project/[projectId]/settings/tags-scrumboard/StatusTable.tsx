@@ -3,9 +3,9 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useMemo, useRef, useState } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";
@@ -36,7 +36,8 @@ import {
   permissionNumbers,
   type Permission,
 } from "~/lib/types/firebaseSchemas";
-import { checkPermissions, emptyRole } from "~/lib/defaultProjectValues";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import { checkPermissions } from "~/lib/defaultValues/permission";
 
 export default function StatusTable() {
   const { projectId } = useParams();
@@ -62,6 +63,7 @@ export default function StatusTable() {
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { alert } = useAlert();
+  const [editMode, setEditMode] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -89,7 +91,14 @@ export default function StatusTable() {
   const { mutateAsync: reorderStatus } =
     api.settings.reorderStatusTypes.useMutation();
 
+  const handleOpenStatus = async function (statusId: string) {
+    setEditMode(false);
+    setSelectedStatusId(statusId);
+    setShowDetailStatus(true);
+  };
+
   const handleModifyStatus = async function (statusId: string) {
+    setEditMode(true);
     setSelectedStatusId(statusId);
     setShowDetailStatus(true);
   };
@@ -163,6 +172,19 @@ export default function StatusTable() {
       },
     );
 
+    await utils.settings.getStatusType.cancel({
+      projectId: projectId as string,
+      statusId: statusId,
+    });
+
+    utils.settings.getStatusType.setData(
+      { projectId: projectId as string, statusId: statusId },
+      (oldData) => {
+        if (!oldData) return;
+        return { ...oldData, marksTaskAsDone: !currentValue };
+      },
+    );
+
     await modifyStatus({
       projectId: projectId as string,
       statusId: statusId,
@@ -175,6 +197,7 @@ export default function StatusTable() {
       },
     });
 
+    await invalidateQueriesAllStatuses(projectId as string);
     await refetch();
   };
 
@@ -326,6 +349,7 @@ export default function StatusTable() {
                   disabled={permission < permissionNumbers.write}
                   key={item.id}
                   item={item}
+                  onOpen={() => handleOpenStatus(item.id)}
                   onEdit={() => handleModifyStatus(item.id)}
                   onDelete={() => handleDeleteStatus(item.id)}
                   onToggleDone={() =>
@@ -375,6 +399,8 @@ export default function StatusTable() {
 
       {renderDetailStatus && (
         <StatusDetailPopup
+          editMode={editMode}
+          setEditMode={setEditMode}
           disabled={permission < permissionNumbers.write}
           showPopup={showDetailStatus}
           setShowPopup={setShowDetailStatus}

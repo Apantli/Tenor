@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
 interface TagDetail {
   id: string;
@@ -26,6 +26,8 @@ interface Props {
   setShowPopup: (show: boolean) => void;
   itemTagType: "ReqFocus" | "BacklogTag" | "ReqType";
   disabled?: boolean;
+  editMode: boolean;
+  setEditMode: (isEditing: boolean) => void;
 }
 
 interface TagTypeConfig {
@@ -47,6 +49,8 @@ export default function ItemTagDetailPopup({
   tagId,
   itemTagType,
   disabled = false,
+  editMode,
+  setEditMode,
 }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
@@ -97,8 +101,6 @@ export default function ItemTagDetailPopup({
 
   // REACT
   const { projectId } = useParams();
-
-  const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState<{
     name: string;
     color: string;

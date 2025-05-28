@@ -14,9 +14,11 @@ import {
   roleRequiredProcedure,
 } from "~/server/api/trpc";
 import { z } from "zod";
-import { emptyRole } from "~/lib/defaultProjectValues";
 import { TRPCError } from "@trpc/server";
-import { settingsPermissions, usersPermissions } from "~/lib/permission";
+import {
+  settingsPermissions,
+  usersPermissions,
+} from "~/lib/defaultValues/permission";
 import {
   getGlobalUserPreview,
   getGlobalUserPreviews,
@@ -25,6 +27,7 @@ import {
   getUsers,
   getUserTable,
 } from "~/utils/helpers/shortcuts/users";
+import { emptyRole } from "~/lib/defaultValues/roles";
 
 export const userRouter = createTRPCRouter({
   /**
