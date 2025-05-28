@@ -14,7 +14,7 @@ import ProfilePicture from "./../ProfilePicture";
 import DeleteButton from "./buttons/DeleteButton";
 
 export interface Props {
-  label?: string;
+  label?: string | React.ReactNode;
   labelClassName?: string;
   containerClassName?: string;
   disableAI?: boolean;

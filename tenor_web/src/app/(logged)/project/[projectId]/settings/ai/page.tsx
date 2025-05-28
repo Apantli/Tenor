@@ -12,6 +12,7 @@ import { api } from "~/trpc/react";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
+import HelpIcon from "@mui/icons-material/Help";
 import { type Links } from "~/server/api/routers/settings";
 import {
   type Permission,
@@ -284,7 +285,16 @@ export default function ProjectAIConfig() {
     <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
-          <h1 className="mb-4 text-3xl font-semibold">AI Context</h1>
+          <div className="mb-4 flex items-center gap-2">
+            <h1 className="text-3xl font-semibold">AI Context</h1>
+            <HelpIcon
+              className="text-gray-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content="The data shared, including files and links, is private and used solely as context for the AI."
+              data-tooltip-place="top-start"
+              style={{ width: "20px" }}
+            />
+          </div>
           {(isModified() || isContextUpdatePending) &&
             links &&
             loadedFiles &&
