@@ -36,7 +36,6 @@ export default function StatusDetailPopup({
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
-  const { alert } = useAlert();
 
   const { projectId } = useParams();
   const [form, setForm] = useState<{
@@ -98,10 +97,7 @@ export default function StatusDetailPopup({
 
   const handleSave = async (updatedData: NonNullable<typeof statusDetail>) => {
     if (form.name === "") {
-      alert("Oops...", "Please enter a name for the status.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.statusNameError();
       return;
     }
 
@@ -111,14 +107,7 @@ export default function StatusDetailPopup({
 
     if (protectedNames.includes(originalNameLower)) {
       if (originalNameLower !== newNameLower) {
-        alert(
-          "Default Status",
-          `You cannot change the name of a default status. You can only modify its capitalization.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
+        predefinedAlerts.statusNameNotEditableError();
         setForm({
           ...form,
           name: statusDetail?.name ?? "",
@@ -126,14 +115,7 @@ export default function StatusDetailPopup({
         return;
       }
     } else if (protectedNames.includes(newNameLower)) {
-      alert(
-        "Default Status Name",
-        `"${form.name}" is a reserved name for default statuses and cannot be used.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.statusNameReservedError(form.name);
       setForm({
         ...form,
         name: statusDetail?.name ?? "",
@@ -154,14 +136,7 @@ export default function StatusDetailPopup({
       );
 
       if (statusWithSameNameExists) {
-        alert(
-          "Duplicate Status Name",
-          `A status with name "${form.name}" already exists.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
+        predefinedAlerts.existingStatusError(form.name);
         return;
       }
     }
@@ -234,14 +209,7 @@ export default function StatusDetailPopup({
 
   const handleDelete = async () => {
     if (statusDetail && ["Todo", "Doing", "Done"].includes(statusDetail.name)) {
-      alert(
-        "Cannot delete default status",
-        `The status "${statusDetail.name}" is a default status and cannot be deleted.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.statusNameNotEditableError();
       return;
     }
 

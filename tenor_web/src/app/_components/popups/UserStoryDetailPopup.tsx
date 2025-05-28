@@ -6,10 +6,7 @@ import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
-import Popup, {
-  SidebarPopup,
-  usePopupVisibilityState,
-} from "~/app/_components/Popup";
+import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
@@ -41,7 +38,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
-import { CreateTaskForm } from "./CreateTaskPopup";
+import { CreateTaskPopup } from "./CreateTaskPopup";
 import TasksTable, { type BacklogItemWithTasks } from "../TasksTable";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
@@ -140,7 +137,8 @@ export default function UserStoryDetailPopup({
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const { alert, predefinedAlerts } = useAlert();
+
+  const { predefinedAlerts } = useAlert();
 
   const changeVisibleUserStory = async (userStoryId: string) => {
     setUserStoryId("");
@@ -557,10 +555,7 @@ export default function UserStoryDetailPopup({
           };
           if (updatedData.name === "") {
             setEditMode(true);
-            alert("Oops", "Please enter a name for the user story.", {
-              type: "error",
-              duration: 5000,
-            });
+            predefinedAlerts.userStoryNameError();
             return;
           }
           await handleSave(updatedData, true); // Pass true to save the edit form
@@ -691,26 +686,23 @@ export default function UserStoryDetailPopup({
       )}
 
       {renderCreateTaskPopup && (
-        <SidebarPopup
+        <CreateTaskPopup
+          itemId={userStoryId}
           show={showCreateTaskPopup}
           dismiss={() => setShowCreateTaskPopup(false)}
-        >
-          <CreateTaskForm
-            itemId={userStoryId}
-            itemType="US"
-            onTaskAdded={() => setShowCreateTaskPopup(false)}
-            addTaskToGhost={
-              userStoryData !== undefined
-                ? (task) => {
-                    setUserStoryData?.({
-                      ...userStoryData,
-                      tasks: [...userStoryData.tasks, task],
-                    });
-                  }
-                : undefined
-            }
-          />
-        </SidebarPopup>
+          itemType="US"
+          onTaskAdded={() => setShowCreateTaskPopup(false)}
+          addTaskToGhost={
+            userStoryData !== undefined
+              ? (task) => {
+                  setUserStoryData?.({
+                    ...userStoryData,
+                    tasks: [...userStoryData.tasks, task],
+                  });
+                }
+              : undefined
+          }
+        />
       )}
     </Popup>
   );

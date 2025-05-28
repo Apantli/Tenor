@@ -3,13 +3,11 @@ import { AlertProvider, useAlert } from "~/app/_hooks/useAlert";
 
 describe("Collapsable Search Bar", () => {
   const TestComponent = () => {
-    const { alert } = useAlert();
+    const { alertTemplates } = useAlert();
     const [shownAlert, setShownAlert] = useState(false);
 
     if (!shownAlert) {
-      alert("Success Alert title", "Alert description", {
-        type: "success",
-      });
+      alertTemplates.success("Alert description");
       setShownAlert(true);
     }
 

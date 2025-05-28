@@ -328,13 +328,16 @@ export default function Dropdown({
   }, []);
 
   // Used to close the menu when the user clicks outside of it
-  useClickOutside(Array.from(dropdownElements), () => {
-    if (isOpen) {
-      setIsOpen(false);
-      setOpenState?.(false);
-      handleClose();
-    }
-  });
+  useClickOutside(
+    Array.from(dropdownElements).map((ref) => ref.current),
+    () => {
+      if (isOpen) {
+        setIsOpen(false);
+        setOpenState?.(false);
+        handleClose();
+      }
+    },
+  );
 
   return (
     <DropdownTreeContext.Provider value={dropdownTreeApi}>

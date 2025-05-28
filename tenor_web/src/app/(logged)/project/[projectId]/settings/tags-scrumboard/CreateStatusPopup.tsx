@@ -27,7 +27,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
 
   // REACT
   const { projectId } = useParams();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const [form, setForm] = useState<{
     name: string;
@@ -56,10 +56,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
 
   const handleCreateStatus = async () => {
     if (form.name === "") {
-      alert("Oops...", "Please enter a name for the status.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.statusNameError();
       return;
     }
 
@@ -68,14 +65,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
     const protectedNames = ["todo", "doing", "done"];
 
     if (protectedNames.some((name) => normalizedName === name)) {
-      alert(
-        "Default status name",
-        `The status name "${form.name}" is reserved for default statuses and cannot be created manually.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.statusNameReservedError(form.name);
       return;
     }
 
@@ -89,14 +79,7 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
     );
 
     if (statusAlreadyExists) {
-      alert(
-        "Duplicate Status Name",
-        `A status with name "${form.name}" already exists.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.existingStatusError(form.name);
       return;
     }
 

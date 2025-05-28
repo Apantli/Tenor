@@ -62,7 +62,7 @@ export default function StatusTable() {
   const confirm = useConfirmation();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const [editMode, setEditMode] = useState(false);
 
   const sensors = useSensors(
@@ -107,14 +107,7 @@ export default function StatusTable() {
       statusToDelete &&
       ["Todo", "Doing", "Done"].includes(statusToDelete.name)
     ) {
-      alert(
-        "Cannot delete default status",
-        `The status "${statusToDelete.name}" is a default status and cannot be deleted.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.statusNameNotEditableError();
       return;
     }
 

@@ -88,7 +88,7 @@ export default function RequirementDetailPopup({
     description: "",
   });
 
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   useEffect(() => {
     if (!requirementDetail) return;
@@ -225,10 +225,7 @@ export default function RequirementDetailPopup({
           : async () => {
               if (editMode) {
                 if (!editForm.name) {
-                  alert("Oops...", "The requirement must have a name.", {
-                    type: "error",
-                    duration: 5000,
-                  });
+                  predefinedAlerts.requirementNameError();
                   return;
                 }
 
