@@ -111,6 +111,7 @@ export const defaultRoleList: Role[] = [
     issues: 2,
     backlog: 2,
     retrospective: 2,
+    reviews: 2,
   },
   {
     id: "developer",
@@ -122,6 +123,7 @@ export const defaultRoleList: Role[] = [
     issues: 1,
     backlog: 1,
     retrospective: 2,
+    reviews: 0,
   },
   {
     id: "viewer",
@@ -134,6 +136,7 @@ export const defaultRoleList: Role[] = [
     issues: 0,
     backlog: 0,
     retrospective: 0,
+    reviews: 0,
   },
 ];
 
@@ -147,6 +150,7 @@ export const emptyRole: Role = {
   issues: 0,
   backlog: 0,
   retrospective: 0,
+  reviews: 0,
 };
 
 export const ownerRole: Role = {
@@ -159,6 +163,7 @@ export const ownerRole: Role = {
   issues: 2,
   backlog: 2,
   retrospective: 2,
+  reviews: 2,
 };
 
 export const todoTagName = "Todo";
