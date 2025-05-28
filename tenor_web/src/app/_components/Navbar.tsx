@@ -49,10 +49,12 @@ export default function Navbar({ children }: PropsWithChildren) {
           menuClassName="w-56 mt-2"
         >
           <DropdownButton className="flex items-center justify-between">
-            <span>Profile</span>
-            <span className="w-[120px] truncate text-right text-sm opacity-50">
-              {user?.displayName ?? ""}
-            </span>
+            <a href="/profile">
+              <span>Profile</span>
+              <span className="w-[120px] truncate text-right text-sm opacity-50">
+                {user?.displayName ?? ""}
+              </span>
+            </a>
           </DropdownButton>
           <DropdownButton
             className="flex items-center justify-between gap-2"
