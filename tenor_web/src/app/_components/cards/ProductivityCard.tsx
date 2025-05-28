@@ -89,11 +89,11 @@ export const ProductivityCard = ({
   return (
     <div
       className={cn(
-        "mt-1 box-content flex min-h-[420px] flex-col rounded-md border-2 p-4",
+        "mt-1 box-content flex flex-col rounded-md border-2 p-4",
         className,
       )}
     >
-      <h1 className="mx-6 mb-6 pb-4 text-2xl font-bold">Productivity</h1>
+      <h1 className="mx-6 text-2xl font-bold">Productivity</h1>
       {isLoading ? (
         <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
           <LoadingSpinner color="primary" />
@@ -103,7 +103,7 @@ export const ProductivityCard = ({
           {error?.message ? (
             <p className="text-xl text-gray-500">{error.message}</p>
           ) : (
-            <div className="relative h-full w-64">
+            <div className="relative h-60 w-60">
               {/* Background circles */}
               <svg
                 className="absolute left-0 top-0 h-full w-full"

@@ -101,7 +101,7 @@ export const MemberDetailsCard = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex w-full max-h-[90vh] flex-col gap-y-4 overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 py-12",
+        "relative mx-auto flex max-h-[90vh] w-full flex-col overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:pb-12 2xl:pt-12",
         className,
       )}
     >
@@ -114,17 +114,17 @@ export const MemberDetailsCard = ({
         <ProfilePicture
           user={member}
           hideTooltip
-          pictureClassName="h-32 w-32 ml-5 my-auto text-5xl"
+          pictureClassName="h-14 w-14 2xl:h-32 2xl:w-32 ml-5 my-auto text-5xl"
         />
         <div className="my-auto flex flex-col justify-start overflow-hidden pl-4 pr-4">
-          <h3 className="my-[7px] max-w-[500px] truncate text-2xl font-semibold capitalize">
+          <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold capitalize xl:text-2xl">
             {member.displayName}
           </h3>
           <p className="line-clamp-2 text-xl capitalize text-gray-500">
             {isLoading ? "Loading..." : roleString}
           </p>
         </div>
-        <div className="mx-auto my-auto text-6xl">
+        <div className="mx-auto my-auto text-3xl 2xl:text-6xl">
           <SentimentSatisfiedAltIcon
             fontSize="inherit"
             className="text-app-green"
@@ -132,26 +132,24 @@ export const MemberDetailsCard = ({
         </div>
       </div>
 
-      <div className="mx-8 flex flex-col pt-4">
+      <div className="mx-8 flex flex-col">
         <p className="mt-2 text-xl">
           <strong>Email:</strong> {member.email}
         </p>
-        <h4 className="mb-4 mt-6 text-xl font-bold">Contribution overview</h4>
+        <h4 className="mb-4 mt-2 text-xl font-bold 2xl:mt-6">
+          Contribution overview
+        </h4>
         {loadingContributions && (
           <div className="flex flex-row gap-2">
             <LoadingSpinner />
           </div>
         )}
         {!loadingContributions && (
-          <div className="mb-6">
+          <div className="">
             {contributionTotal > 0 ? (
-              <div className="flex flex-col items-center justify-around gap-4 xl:flex-row xl:gap-8">
-                <div className="h-44 w-44 flex-shrink-0 sm:h-48 sm:w-48">
-                  <ContributionPieChart data={formattedUserContributions} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <ContributionLegend data={formattedUserContributions} />
-                </div>
+              <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
+                <ContributionPieChart data={formattedUserContributions} />
+                <ContributionLegend data={formattedUserContributions} />
               </div>
             ) : (
               <p className="text-xl text-gray-500">
@@ -160,7 +158,9 @@ export const MemberDetailsCard = ({
             )}
           </div>
         )}
-        <h4 className="mb-4 mt-6 text-xl font-bold">Average time per task</h4>
+        <h4 className="mb-4 mt-2 text-xl font-bold 2xl:mt-6">
+          Average time per task
+        </h4>
         <div
           className={cn("flex flex-row gap-8", {
             "items-center justify-around": Boolean(lastTime),

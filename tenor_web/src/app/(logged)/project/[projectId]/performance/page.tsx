@@ -64,7 +64,7 @@ export default function ProjectPerformance() {
             <ProductivityCard
               projectId={projectIdString}
               time={section}
-              className="h-[300px] sm:h-[400px] lg:h-[36vh]"
+              className="h-[22rem] max-h-[22rem]"
             />
           </>
         )}
