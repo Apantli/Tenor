@@ -51,12 +51,12 @@ export default function TagComponent({
         color: color,
         borderColor: `${color}40`,
       }}
-      {...props}
-      onClick={onClick}
       data-tooltip-id="tooltip"
       data-tooltip-content={children}
       data-tooltip-hidden={isTruncated}
       data-tooltip-delay-show={500}
+      {...props}
+      onClick={onClick}
     >
       <span className="w-full truncate text-center" ref={textRef}>
         {children}

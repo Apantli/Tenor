@@ -37,7 +37,7 @@ import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
-import { CreateTaskForm } from "./CreateTaskPopup";
+import { CreateTaskPopup } from "./CreateTaskPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
@@ -477,16 +477,13 @@ export default function IssueDetailPopup({
       )}
 
       {renderCreateTaskPopup && (
-        <SidebarPopup
+        <CreateTaskPopup
+          itemId={issueId}
+          itemType="IS"
+          onTaskAdded={() => setShowCreateTaskPopup(false)}
           show={showCreateTaskPopup}
           dismiss={() => setShowCreateTaskPopup(false)}
-        >
-          <CreateTaskForm
-            itemId={issueId}
-            itemType="IS"
-            onTaskAdded={() => setShowCreateTaskPopup(false)}
-          />
-        </SidebarPopup>
+        />
       )}
     </Popup>
   );
