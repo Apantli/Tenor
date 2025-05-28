@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Popup, {
-  SidebarPopup,
-  usePopupVisibilityState,
-} from "~/app/_components/Popup";
+import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
@@ -37,7 +34,7 @@ import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
-import { CreateTaskForm } from "./CreateTaskPopup";
+import { CreateTaskPopup } from "./CreateTaskPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
@@ -477,16 +474,13 @@ export default function IssueDetailPopup({
       )}
 
       {renderCreateTaskPopup && (
-        <SidebarPopup
+        <CreateTaskPopup
+          itemId={issueId}
+          itemType="IS"
+          onTaskAdded={() => setShowCreateTaskPopup(false)}
           show={showCreateTaskPopup}
           dismiss={() => setShowCreateTaskPopup(false)}
-        >
-          <CreateTaskForm
-            itemId={issueId}
-            itemType="IS"
-            onTaskAdded={() => setShowCreateTaskPopup(false)}
-          />
-        </SidebarPopup>
+        />
       )}
     </Popup>
   );

@@ -64,6 +64,8 @@ export default function ItemCardRender({
               <TagComponent
                 reducedPadding
                 data-tooltip-id="tooltip"
+                data-tooltip-hidden={false}
+                data-tooltip-delay-show={0}
                 data-tooltip-html={item.tags
                   .slice(2)
                   .map((tag) => tag.name)

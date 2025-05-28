@@ -6,10 +6,7 @@ import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
-import Popup, {
-  SidebarPopup,
-  usePopupVisibilityState,
-} from "~/app/_components/Popup";
+import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
@@ -41,7 +38,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { TRPCClientError } from "@trpc/client";
 import usePersistentState from "~/app/_hooks/usePersistentState";
-import { CreateTaskForm } from "./CreateTaskPopup";
+import { CreateTaskPopup } from "./CreateTaskPopup";
 import TasksTable, { type BacklogItemWithTasks } from "../TasksTable";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
@@ -691,26 +688,23 @@ export default function UserStoryDetailPopup({
       )}
 
       {renderCreateTaskPopup && (
-        <SidebarPopup
+        <CreateTaskPopup
+          itemId={userStoryId}
           show={showCreateTaskPopup}
           dismiss={() => setShowCreateTaskPopup(false)}
-        >
-          <CreateTaskForm
-            itemId={userStoryId}
-            itemType="US"
-            onTaskAdded={() => setShowCreateTaskPopup(false)}
-            addTaskToGhost={
-              userStoryData !== undefined
-                ? (task) => {
-                    setUserStoryData?.({
-                      ...userStoryData,
-                      tasks: [...userStoryData.tasks, task],
-                    });
-                  }
-                : undefined
-            }
-          />
-        </SidebarPopup>
+          itemType="US"
+          onTaskAdded={() => setShowCreateTaskPopup(false)}
+          addTaskToGhost={
+            userStoryData !== undefined
+              ? (task) => {
+                  setUserStoryData?.({
+                    ...userStoryData,
+                    tasks: [...userStoryData.tasks, task],
+                  });
+                }
+              : undefined
+          }
+        />
       )}
     </Popup>
   );

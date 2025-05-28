@@ -20,7 +20,7 @@ export default function CollapsableSearchBar({
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useClickOutside(ref, () => {
+  useClickOutside([ref.current], () => {
     if (searchText === "") setExpanded(false);
   });
 
