@@ -6,16 +6,16 @@ import CalendarGrid from "./CalendarGrid";
 import useQueryIdForPopup, {
   useQueryId,
 } from "~/app/_hooks/useQueryIdForPopup";
-import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
-import IssueDetailPopup from "../issues/IssueDetailPopup";
+import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
+import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import {
   permissionNumbers,
   type Permission,
   type Task,
   type WithId,
 } from "~/lib/types/firebaseSchemas";
-import { DatePicker } from "~/app/_components/DatePicker";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { dateToString } from "~/utils/helpers/parsers";

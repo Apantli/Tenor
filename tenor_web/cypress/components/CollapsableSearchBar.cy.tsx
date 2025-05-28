@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import CollapsableSearchBar from "~/app/_components/CollapsableSearchBar";
+import CollapsableSearchBar from "~/app/_components/inputs/search/CollapsableSearchBar";
 
 describe("Collapsable Search Bar", () => {
   const searchValue = "";

@@ -31,6 +31,10 @@ export const useInvalidateQueriesAllTasks = () => {
     await utils.tasks.getTaskDependencies.invalidate({
       projectId: projectId,
     });
+
+    await utils.tasks.getTasks.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -77,6 +81,9 @@ export const useInvalidateQueriesAllUserStories = () => {
       projectId: projectId,
     });
     await utils.userStories.getUserStoryDependencies.invalidate({
+      projectId: projectId,
+    });
+    await utils.userStories.getUserStories.invalidate({
       projectId: projectId,
     });
   };

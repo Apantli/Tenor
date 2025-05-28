@@ -4,10 +4,10 @@ import { cn } from "~/lib/utils";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import DescriptionIcon from "@mui/icons-material/Description";
-import PrimaryButton from "../buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CloseIcon from "@mui/icons-material/Cancel";
+import PrimaryButton from "./buttons/PrimaryButton";
 
 interface Props {
   label: string;

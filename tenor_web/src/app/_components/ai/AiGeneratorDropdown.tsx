@@ -1,9 +1,9 @@
 import React, { useRef, useState } from "react";
 import Dropdown, { DropdownItem, useCloseDropdown } from "../Dropdown";
-import AiButton from "../buttons/AiButton";
-import FloatingLabelInput from "../FloatingLabelInput";
+import FloatingLabelInput from "../inputs/FloatingLabelInput";
 import { cn } from "~/lib/utils";
 import useConfirmation from "~/app/_hooks/useConfirmation";
+import AiButton from "../inputs/buttons/AiButton";
 
 interface Props {
   singularLabel: string;

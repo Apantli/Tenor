@@ -1,8 +1,8 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import ProjectInfo from "~/app/_components/sections/ProjectInfo";
-import ProjectStatus from "~/app/_components/ProjectStatus";
+import ProjectInfo from "~/app/(logged)/project/[projectId]/ProjectInfo";
+import ProjectStatus from "~/app/(logged)/project/[projectId]/ProjectStatusOverview";
 
 export default function ProjectOverview() {
   const params = useParams();

@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import FloatingLabelInput from "../FloatingLabelInput";
-import PrimaryButton from "../buttons/PrimaryButton";
+import FloatingLabelInput from "../inputs/FloatingLabelInput";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -13,6 +12,7 @@ import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
+import PrimaryButton from "../inputs/buttons/PrimaryButton";
 
 export default function SignUp() {
   const router = useRouter();
