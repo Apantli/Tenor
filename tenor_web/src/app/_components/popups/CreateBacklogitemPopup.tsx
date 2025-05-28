@@ -22,7 +22,7 @@ interface Props {
   onItemAdded: (itemId: string) => void;
 }
 
-export default function CreateBacklogItem({
+export default function CreateBacklogItemPopup({
   showPopup,
   setShowPopup,
   onItemAdded,
@@ -123,7 +123,7 @@ export default function CreateBacklogItem({
   return (
     <Popup
       show={showPopup}
-      saveText="Create story"
+      saveText="Create item"
       saving={isPending || isSubmitting}
       dismiss={async () => {
         if (isModified()) {
@@ -194,7 +194,7 @@ export default function CreateBacklogItem({
             setCreateForm({ ...createForm, name: e.target.value });
           }
         }}
-        placeholder="Short summary of the story..."
+        placeholder="Short summary of the item..."
         containerClassName="mb-4"
       />
       <InputTextAreaField
@@ -204,7 +204,7 @@ export default function CreateBacklogItem({
         onChange={(e) =>
           setCreateForm({ ...createForm, description: e.target.value })
         }
-        placeholder="Explain the story in detail..."
+        placeholder="Explain the item in detail..."
         containerClassName="mb-4"
       />
     </Popup>

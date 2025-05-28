@@ -38,6 +38,7 @@ import { useGetPermission } from "~/app/_hooks/useGetPermission";
 import { type KanbanCard } from "~/lib/types/kanbanTypes";
 import AdvancedSearch from "~/app/_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
+import CreateBacklogItemPopup from "~/app/_components/popups/CreateBacklogitemPopup";
 
 export type BacklogItems = inferRouterOutputs<
   typeof sprintsRouter
@@ -45,11 +46,10 @@ export type BacklogItems = inferRouterOutputs<
 
 const noSprintId = "noSprintId";
 
-// FIXME: Use the general AssignableCardColumn instead of specific columns
-
 export default function ProjectSprints() {
+  // #region Hooks
+  const utils = api.useUtils();
   const { projectId } = useParams();
-
   const permission = useGetPermission({ flags: ["backlog"] });
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
@@ -58,19 +58,38 @@ export default function ProjectSprints() {
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
 
+  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
+  const [renderDetail, showDetail, detailItemId, setDetailItemId] =
+    useQueryIdForPopup("id");
+  const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
+    usePopupVisibilityState();
+  const [renderNewBacklogItem, showNewBacklogItem, setShowNewBacklogItem] =
+    usePopupVisibilityState();
+  // #endregion
+
+  // #region TRPC
   const { data: backlogItemsBySprint, isLoading } =
     api.sprints.getBacklogItemPreviewsBySprint.useQuery({
       projectId: projectId as string,
     });
+  const { mutateAsync: assignItemsToSprint } =
+    api.sprints.assignItemsToSprint.useMutation();
+  // #endregion
+
+  // #region React
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  // Drag and drop state
   const [lastDraggedBacklogItemId, setLastDraggedBacklogItemId] = useState<
     string | null
   >(null);
-
   const [searchValue, setSearchValue] = useState("");
   const [sprintSearchValue, setSprintSearchValue] = useState("");
 
+  useEffect(() => {
+    setLastDraggedBacklogItemId(null);
+  }, [sprintSearchValue]);
+  // #endregion
+
+  // #region Utils
   const filteredUnassignedItems =
     backlogItemsBySprint?.unassignedItemIds.filter((itemId) => {
       const item = backlogItemsBySprint?.backlogItems[itemId];
@@ -165,26 +184,23 @@ export default function ProjectSprints() {
       return hasMatchingItem;
     }) ?? [];
 
-  const utils = api.useUtils();
-  const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
-    usePopupVisibilityState();
+  const availableToBeAssignedTo =
+    selectedItems.size > 0 &&
+    Array.from(selectedItems).every(
+      (selectedId) =>
+        backlogItemsBySprint?.backlogItems[selectedId]?.sprintId !== "",
+    );
+
+  // Check if all unassigned items are selected
+  const allUnassignedSelected = filteredUnassignedItems.every((itemId) =>
+    selectedItems.has(itemId),
+  );
 
   const cancelBacklogItemsPreviewQuery = async () => {
     await utils.sprints.getBacklogItemPreviewsBySprint.cancel({
       projectId: projectId as string,
     });
   };
-
-  const { mutateAsync: assignItemsToSprint } =
-    api.sprints.assignItemsToSprint.useMutation();
-
-  const [renderDetail, showDetail, detailItemId, setDetailItemId] =
-    useQueryIdForPopup("id");
-
-  // Check if all unassigned items are selected
-  const allUnassignedSelected = filteredUnassignedItems.every((itemId) =>
-    selectedItems.has(itemId),
-  );
 
   const toggleSelectAllUnassigned = () => {
     const newSelection = new Set(selectedItems);
@@ -303,14 +319,13 @@ export default function ProjectSprints() {
     );
   };
 
-  const availableToBeAssignedTo =
-    selectedItems.size > 0 &&
-    Array.from(selectedItems).every(
-      (selectedId) =>
-        backlogItemsBySprint?.backlogItems[selectedId]?.sprintId !== "",
-    );
+  const onItemAdded = async (_backlogItemId: string) => {
+    setShowNewBacklogItem(false);
+    // setUserStoryId(userStoryId); // TODO: Implement when detail popup is ready
+  };
+  // #endregion
 
-  //// Drag and drop operations
+  // #region Drag and Drop Utils
   let dndOperationsInProgress = 0;
 
   // Similar but not equal to assignSelectionToSprint
@@ -429,12 +444,7 @@ export default function ProjectSprints() {
     // Mark operation as finished
     dndOperationsInProgress -= 1;
   };
-
-  useEffect(() => {
-    setLastDraggedBacklogItemId(null);
-  }, [sprintSearchValue]);
-
-  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
+  // #endregion
 
   return (
     <>
@@ -456,7 +466,9 @@ export default function ProjectSprints() {
             <div className="flex w-full justify-between pb-2">
               <h1 className="text-3xl font-semibold">Product Backlog</h1>
               {permission >= permissionNumbers.write && (
-                <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
+                <PrimaryButton onClick={() => setShowNewBacklogItem(true)}>
+                  + Add Item
+                </PrimaryButton>
               )}
             </div>
 
@@ -653,6 +665,13 @@ export default function ProjectSprints() {
           otherSprints={backlogItemsBySprint?.sprints?.map(
             (sprint) => sprint.sprint,
           )}
+        />
+      )}
+      {renderNewBacklogItem && (
+        <CreateBacklogItemPopup
+          onItemAdded={onItemAdded}
+          showPopup={showNewBacklogItem}
+          setShowPopup={setShowNewBacklogItem}
         />
       )}
     </>
