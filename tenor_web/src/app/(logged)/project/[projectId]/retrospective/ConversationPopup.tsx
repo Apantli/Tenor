@@ -99,7 +99,7 @@ export default function ConversationPopup({
 
   const startTime = useRef<Date>();
 
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const confirm = useConfirmation();
 
   const museClientRef = React.useRef<MuseClient | null>(null);
@@ -136,10 +136,7 @@ export default function ConversationPopup({
   // MUSE CALLBACKS
   const museConnectionCallback = (status: boolean) => {
     if (!status) {
-      alert("We're sorry...", "Muse headset got disconnected.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.headSetDisconnected();
       setHeadsetStatus("disconnected");
       setStep(1);
       resetTranscripts();
@@ -247,14 +244,7 @@ export default function ConversationPopup({
         // eslint-disable-next-line
         .subscribe(museEEGCallback as any);
     } catch {
-      alert(
-        "We're sorry...",
-        "Failed to connect to Muse headset, please try again.",
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.headSetConnectionError();
       setHeadsetStatus("disconnected");
     }
   };

@@ -54,9 +54,8 @@ export default function ItemTagDetailPopup({
 }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const { predefinedAlerts } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
-  const { alert } = useAlert();
 
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
     BacklogTag: {
@@ -287,10 +286,7 @@ export default function ItemTagDetailPopup({
     const errorName = currentConfig.emptyNameError;
 
     if (form.name === "") {
-      alert("Oops...", errorName, {
-        type: "error",
-        duration: 5000,
-      });
+      alertTemplates.error(errorName);
       return;
     }
 
@@ -331,13 +327,9 @@ export default function ItemTagDetailPopup({
     );
 
     if (tagWithSameNameExists) {
-      alert(
-        "Duplicate Name",
+      predefinedAlerts.existingTagError(
         `A ${itemTagType === "BacklogTag" ? "tag" : itemTagType === "ReqFocus" ? "focus area" : "requirement type"} with this name already exists.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
+        form.name,
       );
       return;
     }

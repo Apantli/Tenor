@@ -18,7 +18,7 @@ export const ProductivityCard = ({
   time,
   className,
 }: PerformanceData) => {
-  const { alert } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   const utils = api.useUtils();
 
   const {
@@ -40,21 +40,14 @@ export const ProductivityCard = ({
     retry: 0,
     onSuccess: async () => {
       // Handle success, e.g., show a toast notification
-      alert("Success", "Productivity has been reloaded.", {
-        type: "success",
-        duration: 5000,
-      });
+      predefinedAlerts.productivityUpdateSuccess();
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,
       });
     },
     onError: async (error) => {
-      // Handle success, e.g., show a toast notification
-      alert("Couldn't refetch Productivity", error.message, {
-        type: "warning",
-        duration: 5000,
-      });
+      alertTemplates.warning(error.message);
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,

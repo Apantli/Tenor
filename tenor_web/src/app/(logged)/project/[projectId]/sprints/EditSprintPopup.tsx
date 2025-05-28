@@ -10,7 +10,7 @@ import {
 import { type AlertFunction, useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
-import { CheckNewSprintDates, type SprintDates } from "./CreateSprintPopup";
+import { type SprintDates } from "./CreateSprintPopup";
 import { Timestamp } from "firebase/firestore";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
@@ -41,7 +41,7 @@ export default function EditSprintPopup({
 }: Props) {
   const { projectId } = useParams();
   const confirm = useConfirmation();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const invalidateQueriesAllSprints = useInvalidateQueriesAllSprints();
   const invalidateQueriesSingleSprint = useInvalidateQueriesSingleSprint();
@@ -85,22 +85,24 @@ export default function EditSprintPopup({
     if (!sprintData) return;
 
     if (!editForm.startDate || !editForm.endDate) {
-      alert("Oops...", "Please select a start and end date.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.sprintDatesError();
       return;
     }
 
-    if (
-      !CheckNewSprintDates(
-        editForm.startDate,
-        editForm.endDate,
-        otherSprints ?? [],
-        alert,
-      )
-    ) {
-      return;
+    for (const sprint of otherSprints ?? []) {
+      if (
+        (sprint.startDate <= editForm.startDate &&
+          sprint.endDate >= editForm.startDate) ||
+        (sprint.startDate <= editForm.endDate &&
+          sprint.endDate >= editForm.endDate) ||
+        (editForm.startDate <= sprint.startDate &&
+          editForm.endDate >= sprint.startDate) ||
+        (editForm.startDate <= sprint.endDate &&
+          editForm.endDate >= sprint.endDate)
+      ) {
+        predefinedAlerts.sprintDateCollideError(sprint.number);
+        return;
+      }
     }
 
     const result = await modifySprint({
