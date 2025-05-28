@@ -15,8 +15,8 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 import { TRPCClientError } from "@trpc/client";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 
 interface Props {
   showPopup: boolean;

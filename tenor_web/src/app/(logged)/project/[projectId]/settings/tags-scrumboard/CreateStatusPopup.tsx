@@ -11,7 +11,7 @@ import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import HelpIcon from "@mui/icons-material/Help";
-import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 interface Props {

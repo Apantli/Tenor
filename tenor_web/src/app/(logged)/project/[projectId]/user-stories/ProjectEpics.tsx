@@ -8,8 +8,8 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
 import Markdown from "react-markdown";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useParams } from "next/navigation";
 import {
