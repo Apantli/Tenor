@@ -157,7 +157,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
               className="flex w-full flex-row border-b-2 px-3 py-4 transition hover:bg-gray-100"
             >
               <div className="flex w-3/4 flex-col items-start">
-                <h3 className="text-lg font-semibold">
+                <h3 className="line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
                   {activity.type === "SP" && <span>Sprint</span>}
                   {scrumId && (
                     <>
@@ -197,7 +197,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
                   </div>
                 </div>
               </div>
-              <div className="flex w-1/4 flex-row items-end justify-around">
+              <div className="flex w-1/4 flex-row items-end justify-end gap-3">
                 {/* Action tag with dynamic background color */}
                 <TagComponent
                   className={`rounded-lg text-white ${getPillColorByActivityType(

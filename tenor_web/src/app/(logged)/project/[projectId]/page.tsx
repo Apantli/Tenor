@@ -25,7 +25,7 @@ export default function ProjectOverview() {
         </div>
       </div>
       
-      {/* Second row - col 2 */}
+      {/* Second col - col 2 */}
       <div className="flex flex-col w-full gap-4">
         <div className="flex flex-col gap-5 h-64 border-2 border-[#BECAD4] rounded-lg p-5">
           <ProjectStatus projectId={projectId} />
