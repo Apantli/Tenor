@@ -42,7 +42,7 @@ export const MemberList = ({
   return (
     <div className="mr-10 w-full">
       <ul
-        className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto pb-5"
+        className="h-fit max-h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto pb-5 xl:h-[calc(100vh-250px)]"
         data-cy="member-list"
       >
         {filteredMembers && filteredMembers?.length > 0 ? (
@@ -125,11 +125,9 @@ const MemberItem = ({
         hideTooltip
         pictureClassName="min-h-20 min-w-20 h-20 w-20 mx-5 my-auto text-4xl"
       />
-      <div className="flex flex-col justify-start overflow-hidden pl-4 pr-4">
-        <h3 className="my-auto w-[250px] truncate text-xl font-semibold capitalize">
-          {member.displayName}
-        </h3>
-      </div>
+      <h3 className="my-auto min-w-[100px] truncate text-xl font-semibold capitalize xl:min-w-[200px]">
+        {member.displayName}
+      </h3>
 
       <PerformanceChart data={formattedData ?? []} className="" />
       <ArrowForwardIosIcon

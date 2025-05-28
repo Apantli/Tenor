@@ -20,11 +20,13 @@ export default function ProjectPerformance() {
   const [selectedMember, setSelectedMember] = useState<UserCol | null>(null);
 
   return (
-    <div className="flex h-full w-full flex-col gap-x-16 md:flex-row">
-      <div className="flex w-[55vw] flex-col items-baseline gap-3 pb-4">
-        <div className="flex w-full flex-row justify-between">
-          <h1 className="text-3xl font-semibold">Team Performance</h1>
-          <div className="min-w-[300px]">
+    <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 lg:flex-row lg:gap-16 lg:p-6 xl:overflow-hidden">
+      <div className="flex w-full flex-col items-baseline gap-3 pb-4 lg:w-[55%] xl:w-[55vw]">
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl font-semibold sm:text-3xl">
+            Team Performance
+          </h1>
+          <div className="w-full min-w-0 sm:w-auto sm:min-w-[280px] lg:min-w-[300px]">
             <SegmentedControl
               options={["Week", "Month", "Sprint"]}
               selectedOption={section}
@@ -48,7 +50,7 @@ export default function ProjectPerformance() {
           selectedMember={selectedMember}
         />
       </div>
-      <div className="mx-auto w-[36vw]">
+      <div className="w-full lg:w-[45%] xl:w-[36vw]">
         {selectedMember ? (
           <MemberDetailsCard
             member={selectedMember}
@@ -62,7 +64,7 @@ export default function ProjectPerformance() {
             <ProductivityCard
               projectId={projectIdString}
               time={section}
-              className="h-[36vh]"
+              className="h-[300px] sm:h-[400px] lg:h-[36vh]"
             />
           </>
         )}

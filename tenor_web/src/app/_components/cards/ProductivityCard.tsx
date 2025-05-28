@@ -89,7 +89,7 @@ export const ProductivityCard = ({
   return (
     <div
       className={cn(
-        "mt-1 box-content flex min-h-[420px] w-full flex-col rounded-md border-2 p-4",
+        "mt-1 box-content flex min-h-[420px] flex-col rounded-md border-2 p-4",
         className,
       )}
     >
@@ -99,7 +99,7 @@ export const ProductivityCard = ({
           <LoadingSpinner color="primary" />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-8 rounded-lg bg-white p-4 lg:flex-row">
+        <div className="flex h-full flex-row items-center justify-center gap-8 rounded-lg bg-white p-4">
           {error?.message ? (
             <p className="text-xl text-gray-500">{error.message}</p>
           ) : (
@@ -178,59 +178,31 @@ export const ProductivityCard = ({
                   <span className="text-lg">Issues {issuesPercent}%</span>
                 </div>
               </div>
-              {stats?.fetchDate && (
-                <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
-                  {!isPending && (
-                    <RefreshIcon
-                      onClick={async () => {
-                        if (isPending) return;
-                        await recomputeProductivity({
-                          projectId: projectId,
-                          time: time,
-                        });
-                      }}
-                      className=""
-                    />
-                  )}
-
-                  {isPending ? (
-                    <>
-                      <LoadingSpinner />
-                    </>
-                  ) : (
-                    <p>
-                      Updated{" "}
-                      {timestampToDate(stats.fetchDate).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
           )}
-          {stats?.fetchDate && (
-            <div className="mx-auto flex flex-row gap-2 text-gray-500">
-              {!isPending && (
-                <RefreshIcon
-                  onClick={async () => {
-                    await recomputeProductivity({
-                      projectId: projectId,
-                      time: time,
-                    });
-                  }}
-                  className=""
-                />
-              )}
+        </div>
+      )}
+      {stats?.fetchDate && (
+        <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
+          {!isPending && (
+            <RefreshIcon
+              onClick={async () => {
+                if (isPending) return;
+                await recomputeProductivity({
+                  projectId: projectId,
+                  time: time,
+                });
+              }}
+              className=""
+            />
+          )}
 
-              {isPending ? (
-                <>
-                  <LoadingSpinner />
-                </>
-              ) : (
-                <p>
-                  Updated {timestampToDate(stats.fetchDate).toLocaleString()}
-                </p>
-              )}
-            </div>
+          {isPending ? (
+            <>
+              <LoadingSpinner />
+            </>
+          ) : (
+            <p>Updated {timestampToDate(stats.fetchDate).toLocaleString()}</p>
           )}
         </div>
       )}

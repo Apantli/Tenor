@@ -101,10 +101,10 @@ export const PerformanceChart = ({
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const width = entry.contentRect.width - 80;
+        const width = entry.contentRect.width * 0.8;
         const height = entry.contentRect.height - 50;
         setContainerDimensions({
-          width: Math.max(width, 300),
+          width: Math.max(width, 0),
           height: Math.max(height, 100),
         });
       }
