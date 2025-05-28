@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import HelpIcon from "@mui/icons-material/Help";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
 interface Props {
   showPopup: boolean;
@@ -119,6 +119,10 @@ export default function StatusDetailPopup({
             duration: 5000,
           },
         );
+        setForm({
+          ...form,
+          name: statusDetail?.name ?? "",
+        });
         return;
       }
     } else if (protectedNames.includes(newNameLower)) {
@@ -130,6 +134,10 @@ export default function StatusDetailPopup({
           duration: 5000,
         },
       );
+      setForm({
+        ...form,
+        name: statusDetail?.name ?? "",
+      });
       return;
     }
 
@@ -328,6 +336,29 @@ export default function StatusDetailPopup({
                 label=""
               />
             </div>
+          </div>
+          <div className="mt-2 flex items-baseline">
+            <InputCheckbox
+              disabled={disabled}
+              checked={form.marksTaskAsDone}
+              onChange={(value) => setForm({ ...form, marksTaskAsDone: value })}
+              className={`m-0 mr-2 ${!disabled ? "cursor-pointer" : "cursor-default"}`}
+            />
+            <button
+              disabled={disabled}
+              onClick={() =>
+                setForm({ ...form, marksTaskAsDone: !form.marksTaskAsDone })
+              }
+            >
+              Marks tasks as resolved
+            </button>
+            <HelpIcon
+              className="ml-[3px] text-gray-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content="Tasks moved to this status will be considered as a completed task"
+              data-tooltip-place="top-start"
+              style={{ width: "15px" }}
+            />
           </div>
         </div>
       )}

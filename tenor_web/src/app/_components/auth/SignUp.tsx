@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import FloatingLabelInput from "../FloatingLabelInput";
-import PrimaryButton from "../buttons/PrimaryButton";
+import FloatingLabelInput from "../inputs/FloatingLabelInput";
 import {
   createUserWithEmailAndPassword,
   sendEmailVerification,
@@ -13,6 +12,8 @@ import { auth } from "~/utils/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
+import InputCheckbox from "../inputs/InputCheckbox";
+import PrimaryButton from "../inputs/buttons/PrimaryButton";
 
 export default function SignUp() {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function SignUp() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const userRef = useRef<User | null>(null);
 
@@ -140,7 +142,35 @@ export default function SignUp() {
       >
         Password
       </FloatingLabelInput>
-      <PrimaryButton onClick={handleSignUp} loading={loading} floatingSpinner>
+      <div className="flex items-center gap-2">
+        <InputCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
+        <span className="text-xs text-app-text">
+          I accept the{" "}
+          <a
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-app-primary underline"
+          >
+            Terms of Service
+          </a>{" "}
+          and{" "}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-app-primary underline"
+          >
+            Privacy Policy
+          </a>
+        </span>
+      </div>
+      <PrimaryButton
+        disabled={!acceptedTerms}
+        onClick={handleSignUp}
+        loading={loading}
+        floatingSpinner
+      >
         Create account
       </PrimaryButton>
     </div>

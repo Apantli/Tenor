@@ -1,4 +1,4 @@
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import { mount } from "cypress/react";
 
 describe("DropdownColorPicker", () => {

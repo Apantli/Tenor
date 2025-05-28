@@ -1,28 +1,28 @@
 "use client";
 
 import React from "react";
-import { api } from "~/trpc/react";
-import { useParams } from "next/navigation";
+import InputCheckbox from "./inputs/InputCheckbox";
+import HelpIcon from "@mui/icons-material/Help";
 
 interface Props {
-  itemId: string;
+  isAutomatic: boolean;
+  onChange: (value: boolean) => void;
 }
 
-export default function ItemAutomaticStatus({ itemId }: Props) {
-  const { projectId } = useParams();
-  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
-    projectId: projectId as string,
-    itemId: itemId,
-  });
-
-  const isUndefined = () => {
-    return automaticStatus?.name === null;
-  };
-
-  return isUndefined() ? null : (
-    <div className="mt-1 flex items-center justify-start text-sm text-gray-500">
-      <strong>Current Status:</strong>
-      &nbsp;{automaticStatus?.name ?? "Loading..."}
+export default function ItemAutomaticStatus({ isAutomatic, onChange }: Props) {
+  return (
+    <div className="mt-1 flex items-center justify-start gap-1 text-sm text-gray-500">
+      <InputCheckbox checked={isAutomatic} onChange={onChange} />
+      <div className="flex items-center pt-[2px]">
+        <p>Automatic</p>
+        <HelpIcon
+          className="ml-[3px] text-gray-500"
+          data-tooltip-id="tooltip"
+          data-tooltip-content="A status is assigned based on the progress of all its tasks."
+          data-tooltip-place="top-start"
+          style={{ width: "15px" }}
+        />
+      </div>
     </div>
   );
 }

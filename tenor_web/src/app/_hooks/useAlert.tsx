@@ -145,6 +145,16 @@ export const useAlert = () => {
           duration: 10000,
         },
       ),
+    tooLongText: (label: string, limit: number) => {
+      context.alert(
+        "Oops...",
+        `${label} can't be longer than ${limit} characters.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+    },
   };
 
   return { alert: context.alert, predefinedAlerts };
