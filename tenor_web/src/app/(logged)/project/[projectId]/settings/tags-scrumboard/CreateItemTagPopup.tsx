@@ -37,7 +37,7 @@ export default function CreateItemTagPopup({
   const confirm = useConfirmation();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
   const { projectId } = useParams();
-  const { alert } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   const utils = api.useUtils();
 
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
@@ -113,10 +113,7 @@ export default function CreateItemTagPopup({
 
   const handleCreateTag = async () => {
     if (form.name === "") {
-      alert("Oops...", currentConfig.errorEmptyName, {
-        type: "error",
-        duration: 5000,
-      });
+      alertTemplates.error(currentConfig.errorEmptyName);
       return;
     }
 
@@ -145,13 +142,13 @@ export default function CreateItemTagPopup({
     );
 
     if (tagAlreadyExists) {
-      alert(
-        "Duplicate Name",
-        `A ${itemTagType === "BacklogTag" ? "tag" : itemTagType === "ReqFocus" ? "focus area" : "requirement type"} with this name already exists.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
+      predefinedAlerts.existingTagError(
+        itemTagType === "BacklogTag"
+          ? "Backlog Tag"
+          : itemTagType === "ReqFocus"
+            ? "Requirement Focus"
+            : "Requirement Type",
+        form.name,
       );
       return;
     }
@@ -193,10 +190,7 @@ export default function CreateItemTagPopup({
         color: generateRandomTagColor(),
       });
     } catch {
-      alert("Error", `Failed to create ${itemTagType}`, {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.failedToCreateTag(itemTagType);
     }
   };
 

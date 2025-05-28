@@ -50,7 +50,7 @@ export default function CreateRequirementPopup({
   });
 
   const confirm = useConfirmation();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -64,18 +64,12 @@ export default function CreateRequirementPopup({
 
   const handleCreateRequirement = async () => {
     if (!createForm.name) {
-      alert("Oops...", "The requirement must have a name.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.requirementNameError();
       return;
     }
 
     if (createForm.requirementType?.id === undefined) {
-      alert("Oops...", "The requirement must have a type.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.requirementTypeError();
       return;
     }
 
@@ -112,12 +106,8 @@ export default function CreateRequirementPopup({
 
       // Close the popup
       setShowPopup(false);
-    } catch (error) {
-      alert("Error", "Failed to create requirement. Please try again.", {
-        type: "error",
-        duration: 5000,
-      });
-      console.error("Error creating requirement:", error);
+    } catch {
+      predefinedAlerts.requirementNameError();
     } finally {
       setIsSubmitting(false);
     }

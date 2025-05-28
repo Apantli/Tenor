@@ -51,7 +51,7 @@ const sizeColor: Record<Size, string> = {
 export default function ProjectScrumPreferences() {
   // HOOKS
   const { projectId } = useParams();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const confirm = useConfirmation();
   const invalidateQueriesScrumPreferences =
     useInvalidateQueriesScrumPreferences();
@@ -179,14 +179,7 @@ export default function ProjectScrumPreferences() {
     if (value < maxInputNumber) return false;
     if (numberWarningShown) return true;
 
-    alert(
-      "Number too large",
-      `Please only input numbers less or equal than ${maxInputNumber.toLocaleString()}.`,
-      {
-        type: "warning",
-        duration: 3000,
-      },
-    );
+    predefinedAlerts.sizePointsUpperBoundError(maxInputSizeNumber);
     return true;
   };
 
@@ -241,17 +234,11 @@ export default function ProjectScrumPreferences() {
   const handleSave = async () => {
     if (isUpdatePending) return;
     if (form.sprintDuration < 1 || form.sprintDuration > 365) {
-      alert("Oops...", "Sprint duration must be between 1 and 365 total days", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.sprintDurationError();
       return;
     }
     if (form.maximumSprintStoryPoints < 1) {
-      alert("Oops...", "Maximum sprint story points must be greater than 0", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.storyPointsError();
       return;
     }
 
@@ -259,24 +246,13 @@ export default function ProjectScrumPreferences() {
     for (let i = 0; i < sizeData.length; i++) {
       const current = sizeData[i];
       if (current && current.value <= 0) {
-        alert(
-          "Invalid size values",
-          `The value of ${current.name} must be greater than 0.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
+        predefinedAlerts.sizePointsLowerBoundError(current.name);
         return;
       }
       if (i > 0 && current && current.value <= (sizeData[i - 1]?.value ?? 0)) {
-        alert(
-          "Invalid order",
-          `${current.name} must be greater than or equal to ${sizeData[i - 1]?.name ?? "previous size"}.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
+        predefinedAlerts.sizeOrderError(
+          current.name,
+          sizeData[i - 1]?.name ?? "previous size",
         );
         return;
       }
@@ -285,27 +261,16 @@ export default function ProjectScrumPreferences() {
         current &&
         current.value > (sizeData[i + 1]?.value ?? maxInputSizeNumber)
       ) {
-        alert(
-          "Invalid order",
-          `${sizeData[i + 1]?.name ?? " size"} must be more than to ${current.name}.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
+        predefinedAlerts.sizeOrderError(
+          current.name,
+          sizeData[i + 1]?.name ?? "next size",
         );
         return;
       }
     }
 
     if ((sizeData[sizeData.length - 1]?.value ?? 0) > maxInputSizeNumber) {
-      alert(
-        "Number too large",
-        `Please only input numbers less or equal than ${maxInputSizeNumber.toLocaleString()}.`,
-        {
-          type: "warning",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.sizePointsUpperBoundError(maxInputSizeNumber);
       return;
     }
 
@@ -346,10 +311,7 @@ export default function ProjectScrumPreferences() {
 
     await invalidateQueriesScrumPreferences(projectId as string);
 
-    alert("Success", "Scrum settings have been updated successfully", {
-      type: "success",
-      duration: 5000,
-    });
+    predefinedAlerts.scrumSettingsSuccess();
   };
 
   return (

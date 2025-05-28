@@ -43,7 +43,7 @@ export default function MemberTable({
 }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const [tableSearchValue, setTableSearchValue] = useState("");
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const { data: users } = api.users.getGlobalUsers.useQuery({
     filter: searchValue,
   });
@@ -100,10 +100,7 @@ export default function MemberTable({
               if (row.roleId !== "owner") {
                 handleEditMemberRole(row.id, item.id);
               } else {
-                alert("Oops...", "You cannot edit the role of the owner.", {
-                  type: "error",
-                  duration: 5000,
-                });
+                predefinedAlerts.ownerRoleError();
               }
             }}
           />

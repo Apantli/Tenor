@@ -110,7 +110,7 @@ export default function IssueDetailPopup({
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const formatIssueScrumId = useFormatIssueScrumId();
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
@@ -375,10 +375,7 @@ export default function IssueDetailPopup({
           };
           if (updatedData.name === "") {
             setEditMode(true);
-            alert("Oops", "Please provide a name for the issue.", {
-              type: "error",
-              duration: 5000,
-            });
+            predefinedAlerts.issueNameError();
             return;
           }
           await handleSave(updatedData);

@@ -39,7 +39,6 @@ export default function HappinessForm({
   const userId = user?.uid ?? "";
   const params = useParams();
   const projectId = params.projectId as string;
-  const { alert } = useAlert();
   const { predefinedAlerts } = useAlert();
 
   const [renderConversation, showConversation, setShowConversation] =
@@ -171,14 +170,7 @@ export default function HappinessForm({
       (!savedFields.improvementSuggestion &&
         responses.improvementSuggestion.trim() !== "");
     if (!hasNewUnsavedContent) {
-      alert(
-        "Oops...",
-        "Please enter at least one response to a missing question.",
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.formCompletionError();
       return;
     }
 

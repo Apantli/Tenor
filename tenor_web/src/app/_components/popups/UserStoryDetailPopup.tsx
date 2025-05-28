@@ -137,7 +137,8 @@ export default function UserStoryDetailPopup({
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const { alert, predefinedAlerts } = useAlert();
+
+  const { predefinedAlerts } = useAlert();
 
   const changeVisibleUserStory = async (userStoryId: string) => {
     setUserStoryId("");
@@ -554,10 +555,7 @@ export default function UserStoryDetailPopup({
           };
           if (updatedData.name === "") {
             setEditMode(true);
-            alert("Oops", "Please enter a name for the user story.", {
-              type: "error",
-              duration: 5000,
-            });
+            predefinedAlerts.userStoryNameError();
             return;
           }
           await handleSave(updatedData, true); // Pass true to save the edit form
