@@ -20,7 +20,7 @@ import { UserPicker } from "~/app/_components/inputs/pickers/UserPicker";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
-import { acceptableTagColors } from "~/utils/helpers/colorUtils";
+import { acceptableTagColors, getPillColorByActivityType } from "~/utils/helpers/colorUtils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";

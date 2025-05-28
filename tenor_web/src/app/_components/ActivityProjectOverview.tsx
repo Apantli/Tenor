@@ -1,6 +1,5 @@
 "use client";
 import { api } from "~/trpc/react";
-import SearchBar from "./SearchBar";
 import { useState } from "react";
 import ProfilePicture from "./ProfilePicture";
 import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
@@ -20,6 +19,7 @@ import TagComponent from "./TagComponent";
 import { getRelativeTimeString } from "~/utils/helpers/firestoreTimestamp";
 import { useActivityItemsMap } from "~/lib/types/activityMappint";
 import { getTypeDisplayName } from "~/utils/helpers/typeDisplayName";
+import SearchBar from "./inputs/search/SearchBar";
 
 const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const { data: activities, isLoading: activitiesLoading } =
