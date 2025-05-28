@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "~/trpc/react";
-import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
+import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/utils";
@@ -18,7 +18,7 @@ import {
   useInvalidateQueriesAllUserStories,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
-import IssueDetailPopup from "../issues/IssueDetailPopup";
+import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import {
   type Permission,
   permissionNumbers,

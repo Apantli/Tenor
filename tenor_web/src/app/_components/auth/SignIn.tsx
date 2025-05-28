@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import FloatingLabelInput from "../FloatingLabelInput";
-import PrimaryButton from "../buttons/PrimaryButton";
+import FloatingLabelInput from "../inputs/FloatingLabelInput";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "~/utils/firebaseClient";
 import { useRouter } from "next/navigation";

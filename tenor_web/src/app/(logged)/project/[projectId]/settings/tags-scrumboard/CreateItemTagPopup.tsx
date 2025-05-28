@@ -2,16 +2,15 @@
 
 import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
-
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 interface Props {
   showPopup: boolean;
   setShowPopup: (show: boolean) => void;

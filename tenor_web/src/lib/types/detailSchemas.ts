@@ -3,6 +3,7 @@
 import type {
   Permission,
   Size,
+  Sprint,
   StatusTag,
   Tag,
   WithId,
@@ -51,7 +52,7 @@ export type UserStoryDetail = {
   status?: StatusTag; // It is a statusTag, but in the detail we don't need the detail info!
   dependencies: UserStoryPreview[];
   requiredBy: UserStoryPreview[];
-  sprint?: SprintPreview;
+  sprint?: WithId<Sprint>;
 };
 
 export interface UserStoryDetailWithTasks extends UserStoryDetail {
@@ -71,7 +72,7 @@ export type IssueDetail = {
   status?: StatusTag;
   relatedUserStory?: UserStoryPreview;
   tasks: TaskPreview[];
-  sprint?: SprintPreview;
+  sprint?: WithId<Sprint>;
 };
 
 export type TaskDetail = {
@@ -95,5 +96,6 @@ export type RoleDetail = {
   scrumboard: Permission; // scrumboard, tasks status, calendar
   issues: Permission; // issues, tasks
   backlog: Permission; // requirements, epics, user stories, tasks
+  reviews: Permission; // sprint reviews
   retrospective: Permission; // sprint retrospective
 };
