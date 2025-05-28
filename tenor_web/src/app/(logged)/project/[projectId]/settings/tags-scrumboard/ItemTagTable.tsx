@@ -3,10 +3,10 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useMemo, useState } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import CreateItemTagPopup from "./CreateItemTagPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import ItemTagDetailPopup from "./ItemTagDetailPopup";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import Table, { type TableColumns } from "~/app/_components/table/Table";

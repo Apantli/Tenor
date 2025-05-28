@@ -3,9 +3,9 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useMemo, useRef, useState } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";

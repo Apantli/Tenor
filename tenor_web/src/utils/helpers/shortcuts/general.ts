@@ -24,6 +24,7 @@ import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { TYPE_COLLECTION_MAP } from "../typeDisplayName";
+import { Timestamp } from "firebase-admin/firestore";
 
 /**
  * @function getProjectsRef
@@ -294,6 +295,10 @@ export const getTopProjects = async (firestore: Firestore, userId: string) => {
     await getGlobalUserRef(firestore, userId).get()
   ).data() as z.infer<typeof UserSchema>;
 
+  if (!user?.projectIds || user.projectIds.length === 0) {
+    return [];
+  }
+
   const projectSprintsPromises = user.projectIds.map(async (projectId) => {
     const sprint = await getCurrentSprint(firestore, projectId);
     return { sprint, projectId };
@@ -312,6 +317,51 @@ export const getTopProjects = async (firestore: Firestore, userId: string) => {
 
   // Return just the projectIds in the same order as the sorted sprints
   return sortedProjectSprintPairs.map((pair) => pair.projectId);
+};
+
+export const computeTopProjectStatus = async (
+  firestore: FirebaseFirestore.Firestore,
+  adminFirestore: admin.app.App,
+  userId: string,
+  count: number,
+) => {
+  let projects = await getTopProjects(firestore, userId);
+  if (projects.length === 0) {
+    return undefined;
+  }
+
+  projects = projects.slice(0, count);
+
+  let projectStatus = await Promise.all(
+    projects.map(async (projectId) => {
+      const status = await getProjectStatus(
+        firestore,
+        projectId,
+        adminFirestore,
+      );
+
+      return {
+        id: projectId,
+        status,
+      };
+    }),
+  );
+
+  // Filter out projects with no tasks
+  projectStatus = projectStatus.filter(
+    (project) => project.status.taskCount !== 0,
+  );
+
+  const topProjects = {
+    fetchDate: Timestamp.now(),
+    topProjects: projectStatus.map((project) => ({
+      projectId: project.id,
+      taskCount: project.status.taskCount,
+      completedCount: project.status.completedCount,
+    })),
+  };
+
+  return topProjects;
 };
 
 export const getActivityRef = (

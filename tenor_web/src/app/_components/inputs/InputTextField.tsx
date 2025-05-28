@@ -1,5 +1,4 @@
 import React from "react";
-
 import InputField, {
   type Props as InputFieldProps,
 } from "./GenericTextInputField";
