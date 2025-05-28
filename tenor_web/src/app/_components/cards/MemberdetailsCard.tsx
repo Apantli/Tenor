@@ -92,8 +92,6 @@ export const MemberDetailsCard = ({
     }
   }
 
-  timePercentageDifference = 10;
-
   const formattedData = sortedAverageTime.map((time, index) => ({
     x: index,
     y: time,

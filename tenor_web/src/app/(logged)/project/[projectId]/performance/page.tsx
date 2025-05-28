@@ -21,7 +21,7 @@ export default function ProjectPerformance() {
   const [selectedMember, setSelectedMember] = useState<UserCol | null>(null);
 
   return (
-    <div className="flex h-full flex-1 flex-col gap-x-7 overflow-hidden pt-0 md:flex-row">
+    <div className="flex h-full flex-1 flex-col gap-x-7 overflow-scroll pt-0 xl:flex-row xl:overflow-hidden">
       <div className="flex w-[50vw] max-w-[50vw] shrink-0 flex-col items-baseline gap-3 pb-4">
         <div className="flex w-full flex-row justify-between">
           <h1 className="text-3xl font-semibold">Team Performance</h1>
