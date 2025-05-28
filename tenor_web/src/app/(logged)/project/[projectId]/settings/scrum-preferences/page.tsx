@@ -2,14 +2,14 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TimeMultiselect, {
   type TimeFrame,
   timeframeMultiplier,
 } from "~/app/_components/inputs/TimeMultiselect";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import SettingsSizeTable from "~/app/_components/sections/SizeTable";
+import SettingsSizeTable from "~/app/(logged)/project/[projectId]/settings/scrum-preferences/SettingsSizeTable";
 import { useInvalidateQueriesScrumPreferences } from "~/app/_hooks/invalidateHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -397,9 +397,8 @@ export default function ProjectScrumPreferences() {
         </>
       )}
       {settingFetchLoading && (
-        <div className="mt-5 flex flex-row gap-x-3">
-          <LoadingSpinner />
-          <p className="text-lg">Loading...</p>
+        <div className="flex h-full w-full flex-col items-center">
+          <LoadingSpinner color="primary" />
         </div>
       )}
     </div>

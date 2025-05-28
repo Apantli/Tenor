@@ -99,6 +99,19 @@ export default function BacklogTagList({ tags, onChange, disabled }: Props) {
             </DropdownItem>
             <div className="w-full whitespace-nowrap text-left">
               <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg">
+                {!allTags?.some(
+                  (tag) =>
+                    tag.name.trim().toLowerCase() ===
+                    searchValue.trim().toLowerCase(),
+                ) &&
+                  searchValue !== "" && (
+                    <DropdownButton
+                      onClick={handleCreateTag}
+                      className="max-w-52 items-center gap-2 truncate border-b border-app-border px-2 py-2 last:border-none"
+                    >
+                      Create tag &quot;{searchValue}&quot;
+                    </DropdownButton>
+                  )}
                 {filteredTags?.map((tag) => (
                   <DropdownButton
                     onClick={() => handleTagClick(tag)}
@@ -128,29 +141,22 @@ export default function BacklogTagList({ tags, onChange, disabled }: Props) {
                     No tags exist
                   </div>
                 )}
-                {filteredTags?.length === 0 && searchValue !== "" && (
-                  <DropdownButton
-                    onClick={handleCreateTag}
-                    className="max-w-52 truncate"
-                  >
-                    Create tag &quot;{searchValue}&quot;
-                  </DropdownButton>
-                )}
               </div>
             </div>
           </Dropdown>
         )}
       </div>
-      <div className="no-scrollbar flex gap-2 overflow-x-auto">
+      <div className="no-scrollbar flex flex-row flex-wrap gap-2">
         {tags.map((tag) => (
-          <TagComponent
-            color={tag.color}
-            onDelete={() => handleTagClick(tag)}
-            expanded
-            key={tag.id}
-          >
-            {tag.name}
-          </TagComponent>
+          <div className="w-min max-w-full" key={tag.id}>
+            <TagComponent
+              color={tag.color}
+              onDelete={() => handleTagClick(tag)}
+              expanded
+            >
+              {tag.name}
+            </TagComponent>
+          </div>
         ))}
       </div>
     </div>

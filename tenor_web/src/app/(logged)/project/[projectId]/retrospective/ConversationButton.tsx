@@ -4,7 +4,7 @@ import { cn } from "~/lib/utils";
 import HeadphonesIcon from "@mui/icons-material/Headphones";
 import BaseButton, {
   type BaseButtonProps,
-} from "~/app/_components/buttons/BaseButton";
+} from "~/app/_components/inputs/buttons/BaseButton";
 
 export default function ConversationButton({
   className,

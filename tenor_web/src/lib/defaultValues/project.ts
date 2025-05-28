@@ -16,12 +16,6 @@ export const emptySettings: Settings = {
     5, // XL
     6, // XXL
   ],
-  // requirementFocusTags: [],
-  // requirementTypeTags: [],
-  // backlogTags: [],
-  // priorityTypes: [],
-  // statusTabs: [],
-  // roles: [],
 };
 
 export const defaultMaximumSprintStoryPoints = 300;

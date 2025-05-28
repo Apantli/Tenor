@@ -6,7 +6,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import CloseSidebarIcon from "@mui/icons-material/LastPage";
 import { type ClassNameValue } from "tailwind-merge";
-import PrimaryButton from "./buttons/PrimaryButton";
+import PrimaryButton from "./inputs/buttons/PrimaryButton";
 import { useSearchParam } from "../_hooks/useSearchParam";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import usePersistentState from "../_hooks/usePersistentState";

@@ -3,9 +3,9 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useMemo, useRef, useState } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CreateStatusPopup from "./CreateStatusPopup";
 import StatusDetailPopup from "./StatusDetailPopup";
@@ -76,13 +76,10 @@ export default function StatusTable() {
     }),
   );
 
-  const {
-    data: status,
-    isLoading: isLoadingTags,
-    refetch: refetch,
-  } = api.settings.getStatusTypes.useQuery({
-    projectId: projectId as string,
-  });
+  const { data: status, isLoading: isLoadingTags } =
+    api.settings.getStatusTypes.useQuery({
+      projectId: projectId as string,
+    });
 
   const { mutateAsync: modifyStatus } =
     api.settings.modifyStatusType.useMutation();
@@ -144,7 +141,7 @@ export default function StatusTable() {
         projectId: projectId as string,
         statusId: statusId,
       });
-      await refetch();
+      await invalidateQueriesAllStatuses(projectId as string);
     }
   };
 
@@ -198,7 +195,6 @@ export default function StatusTable() {
     });
 
     await invalidateQueriesAllStatuses(projectId as string);
-    await refetch();
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -240,7 +236,7 @@ export default function StatusTable() {
           statusIds: newOrder.map((item) => item.id),
         });
 
-        await refetch();
+        await invalidateQueriesAllStatuses(projectId as string);
       }
     }
   };

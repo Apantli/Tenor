@@ -1,8 +1,8 @@
 import React, { useId } from "react";
 import { cn } from "~/lib/utils";
 import Dropdown, { DropdownButton } from "../Dropdown";
-import InputTextField from "./InputTextField";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import InputTextField from "./text/InputTextField";
 
 export type TimeFrame = "Days" | "Weeks";
 export const timeframeMultiplier = {

@@ -2,14 +2,13 @@
 import { ProductivityCard } from "~/app/_components/cards/ProductivityCard";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { useParams } from "next/navigation";
-import { MemberDetailsCard } from "~/app/_components/cards/MemberdetailsCard";
+import { MemberDetailsCard } from "~/app/(logged)/project/[projectId]/performance/MemberDetailsCard";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
-
-import { MemberList } from "~/app/_components/MemberList";
+import { MemberList } from "~/app/(logged)/project/[projectId]/performance/MemberList";
 
 export default function ProjectPerformance() {
   const { projectId } = useParams();
@@ -21,8 +20,8 @@ export default function ProjectPerformance() {
   const [selectedMember, setSelectedMember] = useState<UserCol | null>(null);
 
   return (
-    <div className="flex h-full flex-1 flex-col gap-x-7 overflow-scroll pt-0 xl:flex-row xl:overflow-hidden">
-      <div className="flex w-[50vw] max-w-[50vw] shrink-0 flex-col items-baseline gap-3 pb-4">
+    <div className="flex h-full w-full flex-col gap-x-16 md:flex-row">
+      <div className="flex w-[55vw] flex-col items-baseline gap-3 pb-4">
         <div className="flex w-full flex-row justify-between">
           <h1 className="text-3xl font-semibold">Team Performance</h1>
           <div className="min-w-[300px]">

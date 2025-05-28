@@ -1,6 +1,6 @@
 import { useParams } from "next/navigation";
 import React from "react";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { api } from "~/trpc/react";
 

@@ -132,7 +132,7 @@ export default function BasicNode({
         <hr className="mb-2 mt-1 border-t border-slate-400" />
         {/* Padding bottom of 1 ridiculous pixel is due to a visual bug that causes the underline to disappear without it */}
         <div
-          className="line-clamp-2 cursor-pointer truncate px-2 pb-[1px] text-left text-xs underline-offset-4 hover:text-app-primary hover:underline"
+          className="line-clamp-1 w-full cursor-pointer text-ellipsis break-all px-2 pb-[1px] text-left text-xs underline-offset-4 hover:text-app-primary hover:underline"
           onClick={handleDetailClick}
         >
           {title}

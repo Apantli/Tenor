@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import RoleTable from "~/app/_components/sections/RoleTable";
+import RoleTable from "~/app/(logged)/project/[projectId]/settings/users/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { checkPermissions } from "~/lib/defaultValues/permission";
@@ -274,9 +274,8 @@ export default function ProjectUsers() {
             />
           )}
           {!teamMembers && !userTypes && !roles && (
-            <div className="mt-5 flex flex-row gap-x-3">
-              <LoadingSpinner />
-              <p className="text-lg">Loading...</p>
+            <div className="flex h-full w-full flex-col items-center">
+              <LoadingSpinner color="primary" />
             </div>
           )}
         </>
@@ -294,9 +293,8 @@ export default function ProjectUsers() {
             ></RoleTable>
           )}
           {!roles && (
-            <div className="flex h-40 w-full items-center justify-center">
+            <div className="flex h-full w-full flex-col items-center">
               <LoadingSpinner color="primary" />
-              <p className="text-lg">Loading...</p>
             </div>
           )}
         </>

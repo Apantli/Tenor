@@ -211,7 +211,7 @@ export const getUserStoryDetail = async (
 
   const tasks = await getTaskTable(admin, firestore, projectId, userStory.id);
 
-  const userStoryDetail: WithId<UserStoryDetail> & { tasks: TaskPreview[] } = {
+  const userStoryDetail: UserStoryDetail & { tasks: TaskPreview[] } = {
     ...userStory,
     sprint,
     priority,
