@@ -1,5 +1,5 @@
 "use client";
-import RequirementsTable from "~/app/_components/sections/RequirementsTable";
+import RequirementsTable from "~/app/(logged)/project/[projectId]/requirements/RequirementsTable";
 
 export default function ProjectRequirements() {
   return (

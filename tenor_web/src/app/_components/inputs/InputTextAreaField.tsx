@@ -1,8 +1,8 @@
 import React from "react";
-
 import InputField, {
   type Props as InputFieldProps,
 } from "./GenericTextInputField";
+
 interface Props {
   label?: string | React.ReactNode;
   labelClassName?: string;

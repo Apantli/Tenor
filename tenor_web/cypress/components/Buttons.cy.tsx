@@ -1,6 +1,6 @@
 import { mount } from "cypress/react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 
 describe("Buttons", () => {
   it("Test Primary Button", () => {

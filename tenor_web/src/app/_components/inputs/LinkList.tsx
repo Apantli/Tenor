@@ -3,13 +3,12 @@ import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/utils";
 import InsertLinkIcon from "@mui/icons-material/InsertLink";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
-import PrimaryButton from "../buttons/PrimaryButton";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
-import InputTextField from "./InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CloseIcon from "@mui/icons-material/Cancel";
-
 import { type Links } from "~/server/api/routers/settings";
+import InputTextField from "~/app/_components/inputs/InputTextField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 interface Props {
   label: string;

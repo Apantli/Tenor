@@ -1,5 +1,5 @@
 "use client";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import Navbar from "~/app/_components/Navbar";
 import Link from "next/link";
 import Tabbar from "~/app/_components/Tabbar";
