@@ -29,7 +29,7 @@ import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
 import {
   type BacklogItemAndTaskDetailType,
-  type BacklogItemType,
+  type AnyBacklogItemType,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
@@ -285,7 +285,7 @@ export default function ProjectSprints() {
       sprintId,
       items: itemIds.map((itemId) => ({
         id: itemId,
-        itemType: items[itemId]!.itemType as BacklogItemType,
+        itemType: items[itemId]!.itemType as AnyBacklogItemType,
       })),
     });
 
@@ -298,7 +298,7 @@ export default function ProjectSprints() {
       projectId as string,
       itemIds.map((id) => ({
         itemId: id,
-        itemType: items[id]!.itemType as BacklogItemType,
+        itemType: items[id]!.itemType as AnyBacklogItemType,
       })),
     );
   };
@@ -405,7 +405,7 @@ export default function ProjectSprints() {
       sprintId,
       items: itemIds.map((itemId) => ({
         id: itemId,
-        itemType: items[itemId]!.itemType as BacklogItemType,
+        itemType: items[itemId]!.itemType as AnyBacklogItemType,
       })),
     });
 
@@ -421,7 +421,7 @@ export default function ProjectSprints() {
         projectId as string,
         itemIds.map((id) => ({
           itemId: id,
-          itemType: items[id]!.itemType as BacklogItemType,
+          itemType: items[id]!.itemType as AnyBacklogItemType,
         })),
       );
     }

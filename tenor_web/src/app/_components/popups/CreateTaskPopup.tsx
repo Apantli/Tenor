@@ -11,7 +11,7 @@ import type {
   StatusTag,
   WithId,
   Size,
-  BacklogItemType,
+  AnyBacklogItemType,
 } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../inputs/pickers/StatusPicker";
@@ -30,7 +30,7 @@ import DependencyListTask from "../inputs/DependencyListTask";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
-  itemType: BacklogItemType;
+  itemType: AnyBacklogItemType;
   itemId: string;
   addTaskToGhost?: (task: TaskDetail) => void;
 }
