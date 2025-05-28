@@ -175,7 +175,7 @@ export default function CreateUserStoryPopup({
           />
 
           <div className="mt-4 flex gap-2">
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Priority</h3>
               <PriorityPicker
                 priority={createForm.priority}
@@ -184,7 +184,7 @@ export default function CreateUserStoryPopup({
                 }
               />
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
                 currentSize={createForm.size}
