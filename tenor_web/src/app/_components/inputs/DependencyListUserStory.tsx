@@ -76,6 +76,10 @@ export default function DependencyListUserStory({
     return false;
   };
 
+  const getUserStoryId = (userStory: UserStoryPreview) => {
+    return formatUserStoryScrumId(userStory.scrumId);
+  };
+
   return (
     <div>
       <div className="mt-4 flex items-center justify-between">
@@ -125,12 +129,17 @@ export default function DependencyListUserStory({
                       "opacity-0": !isSelected(userStory),
                     })}
                   ></Check>
-                  <span className="flex w-full gap-1 px-2">
-                    <span className="font-medium">
-                      US{userStory.scrumId.toString().padStart(3, "0")}:
+                  <div className="flex flex-col justify-start gap-0 overflow-x-hidden">
+                    {userStory && (
+                      <span className="w-full truncate text-xs font-semibold">
+                        {getUserStoryId(userStory)}:
+                      </span>
+                    )}
+                    <span className="w-full truncate">
+                      {userStory?.name ??
+                        (disabled ? "None" : "Choose user story")}
                     </span>
-                    <span className="flex-1 truncate">{userStory.name}</span>
-                  </span>
+                  </div>
                 </DropdownButton>
               ))}
               {allUserStoriesExceptCurrent?.length === 0 && (

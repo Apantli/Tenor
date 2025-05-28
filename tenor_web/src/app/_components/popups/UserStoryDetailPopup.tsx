@@ -21,7 +21,6 @@ import EpicPicker from "~/app/_components/inputs/pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
-  useFormatSprintNumber,
   useFormatTaskScrumId,
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
@@ -36,7 +35,6 @@ import {
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import StatusPicker from "~/app/_components/inputs/pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
-import HelpIcon from "@mui/icons-material/Help";
 import {
   type Permission,
   permissionNumbers,
@@ -47,6 +45,9 @@ import { CreateTaskForm } from "./CreateTaskPopup";
 import TasksTable, { type BacklogItemWithTasks } from "../TasksTable";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
+import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
+import { SprintPicker } from "../inputs/pickers/SprintPicker";
 
 interface Props {
   userStoryId: string;
@@ -85,6 +86,11 @@ export default function UserStoryDetailPopup({
   );
 
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
+
+  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
+    projectId: projectId as string,
+    itemId: userStoryId,
+  });
 
   const {
     data: fetchedUserStory,
@@ -134,8 +140,8 @@ export default function UserStoryDetailPopup({
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
   const formatUserStoryScrumId = useFormatUserStoryScrumId();
+
   const { predefinedAlerts } = useAlert();
-  const formatSprintNumber = useFormatSprintNumber();
 
   const changeVisibleUserStory = async (userStoryId: string) => {
     setUserStoryId("");
@@ -328,11 +334,7 @@ export default function UserStoryDetailPopup({
     };
   };
 
-  const showAutomaticDetails = () => {
-    return (
-      userStoryDetail?.status === undefined || userStoryDetail?.status?.id == ""
-    );
-  };
+  const checkTitleLimit = useCharacterLimit("User story title", 80);
 
   return (
     <Popup
@@ -353,6 +355,15 @@ export default function UserStoryDetailPopup({
                   epic={userStoryDetail?.epic}
                   onChange={async (epic) => {
                     await handleSave({ ...userStoryDetail, epic });
+                  }}
+                />
+
+                <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+                <SprintPicker
+                  disabled={permission < permissionNumbers.write}
+                  sprint={userStoryDetail.sprint}
+                  onChange={async (sprint) => {
+                    await handleSave({ ...userStoryDetail, sprint });
                   }}
                 />
 
@@ -379,34 +390,41 @@ export default function UserStoryDetailPopup({
                   </div>
                 </div>
 
-                {/* Only show if its not a ghost! */}
-                {userStoryData === undefined && (
-                  <div className="mt-4 flex-1">
-                    <div className="flex">
-                      <h3 className="text-lg font-semibold">Status</h3>
-                      {showAutomaticDetails() && (
-                        <HelpIcon
-                          className="ml-[3px] text-gray-500"
-                          data-tooltip-id="tooltip"
-                          data-tooltip-content="A status is assigned based on the progress of all its tasks."
-                          data-tooltip-place="top-start"
-                          style={{ width: "15px" }}
-                        />
-                      )}
-                    </div>
-                    <StatusPicker
-                      disabled={permission < permissionNumbers.write}
-                      status={userStoryDetail.status}
-                      onChange={async (status) => {
-                        await handleSave({ ...userStoryDetail, status });
-                      }}
-                      showAutomaticStatus={true}
-                    />
-                    {showAutomaticDetails() && (
-                      <ItemAutomaticStatus itemId={userStoryId} />
-                    )}
+                <div className="mt-4 flex-1">
+                  <div className="flex">
+                    <h3 className="text-lg font-semibold">Status</h3>
                   </div>
-                )}
+                  <StatusPicker
+                    disabled={
+                      permission < permissionNumbers.write ||
+                      isAutomatic(userStoryDetail.status)
+                    }
+                    status={
+                      isAutomatic(userStoryDetail.status)
+                        ? automaticStatus
+                        : userStoryDetail.status
+                    }
+                    onChange={async (status) => {
+                      await handleSave({ ...userStoryDetail, status });
+                    }}
+                  />
+                  <ItemAutomaticStatus
+                    isAutomatic={isAutomatic(userStoryDetail.status)}
+                    onChange={async (automatic) => {
+                      if (automatic) {
+                        await handleSave({
+                          ...userStoryDetail,
+                          status: automaticTag,
+                        });
+                      } else {
+                        await handleSave({
+                          ...userStoryDetail,
+                          status: automaticStatus,
+                        });
+                      }
+                    }}
+                  />
+                </div>
 
                 <BacklogTagList
                   disabled={permission < permissionNumbers.write}
@@ -415,11 +433,6 @@ export default function UserStoryDetailPopup({
                     await handleSave({ ...userStoryDetail, tags });
                   }}
                 />
-
-                <h3 className="mt-4 text-lg">
-                  <span className="font-semibold">Sprint: </span>
-                  {formatSprintNumber(userStoryDetail.sprint?.number)}
-                </h3>
 
                 <DependencyListUserStory
                   disabled={permission < permissionNumbers.write}
@@ -559,7 +572,11 @@ export default function UserStoryDetailPopup({
             id="story-name-field"
             label="Story name"
             value={editForm.name}
-            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setEditForm({ ...editForm, name: e.target.value });
+              }
+            }}
             placeholder="Short summary of the story..."
             containerClassName="mb-4"
           />

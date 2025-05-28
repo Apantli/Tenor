@@ -35,6 +35,7 @@ import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import DependencyListTask from "../inputs/DependencyListTask";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 interface Props {
   taskId: string;
@@ -232,6 +233,8 @@ export default function TaskDetailPopup({
 
   const { resetParam } = useSearchParam();
 
+  const checkTitleLimit = useCharacterLimit("Task name", 80);
+
   return (
     <SidebarPopup
       show={showDetail}
@@ -316,7 +319,11 @@ export default function TaskDetailPopup({
             id="task-name-field"
             label="Task Name"
             value={editForm.name}
-            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setEditForm({ ...editForm, name: e.target.value });
+              }
+            }}
             placeholder="Task Objective"
             containerClassName="mb-4"
           />

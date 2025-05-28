@@ -342,6 +342,8 @@ export const tasksRouter = createTRPCRouter({
         }),
       );
 
+      await getTaskRef(ctx.firestore, projectId, taskId).update(taskData);
+
       await LogProjectActivity({
         firestore: ctx.firestore,
         projectId: input.projectId,
@@ -351,7 +353,6 @@ export const tasksRouter = createTRPCRouter({
         action: "update",
       });
 
-      await getTaskRef(ctx.firestore, projectId, taskId).update(taskData);
       return {
         updatedTaskds: [
           ...addedDependencies,
@@ -705,6 +706,14 @@ ${tagContext}\n\n`;
         "add",
         "requiredByIds",
       );
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: parentTaskId,
+        type: "TS",
+        action: "update",
+      });
       return { success: true };
     }),
 
@@ -742,6 +751,14 @@ ${tagContext}\n\n`;
         "remove",
         "requiredByIds",
       );
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: parentTaskId,
+        type: "TS",
+        action: "update",
+      });
       return { success: true };
     }),
   /**

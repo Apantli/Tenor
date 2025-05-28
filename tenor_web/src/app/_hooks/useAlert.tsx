@@ -246,10 +246,6 @@ export const useAlert = () => {
       context.alert(
         "Oops...",
         "Sprint duration must be between 1 and 365 total days",
-        {
-          type: "error",
-          duration: 5000,
-        },
       ),
     sprintDateCollideError: (sprintNumber: number) =>
       context.alert("Oops...", `Dates collide with Sprint ${sprintNumber}.`, {
@@ -441,6 +437,16 @@ export const useAlert = () => {
           duration: 5000,
         },
       ),
+    tooLongText: (label: string, limit: number) => {
+      context.alert(
+        "Oops...",
+        `${label} can't be longer than ${limit} characters.`,
+        {
+          type: "error",
+          duration: 5000,
+        },
+      );
+    },
   };
 
   return { alert: context.alert, predefinedAlerts };

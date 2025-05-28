@@ -22,6 +22,7 @@ import type {
   UserPreview,
 } from "~/lib/types/detailSchemas";
 import { TRPCClientError } from "@trpc/client";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
@@ -166,6 +167,8 @@ export function CreateTaskForm({
     }
   };
 
+  const checkTitleLimit = useCharacterLimit("Task name", 80);
+
   return (
     <div className="max-w-2xl p-2 pt-0">
       <h2 className="mb-4 text-2xl font-semibold">Add New Task</h2>
@@ -175,9 +178,11 @@ export function CreateTaskForm({
           <InputTextField
             id="task-name-field"
             value={createForm.name}
-            onChange={(e) =>
-              setCreateForm({ ...createForm, name: e.target.value })
-            }
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setCreateForm({ ...createForm, name: e.target.value });
+              }
+            }}
             placeholder="Enter task name..."
             required
             className="w-full"
