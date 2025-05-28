@@ -251,7 +251,7 @@ export default function ProjectCreator() {
       </Navbar>
       <Tabbar disabled mainPageName="Project Creator" />
       <main className="m-6 p-4">
-        <div className="header flex w-full justify-between pb-6">
+        <div className="header flex w-full items-center justify-between pb-6">
           <h1 className="text-2xl font-semibold">Project Creator</h1>
           <PrimaryButton
             onClick={handleCreateProject}
