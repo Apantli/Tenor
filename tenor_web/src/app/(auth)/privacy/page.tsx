@@ -4,7 +4,7 @@ export default function Terms() {
       <div className="max-w-2xl p-4">
         <div className="mb-6 flex w-full items-center justify-center">
           <img
-            src={"/primary_logo.png"}
+            src={"/logos/primary_logo.png"}
             alt="Tenor Logo"
             className="h-[120px] w-auto pb-10"
           />
