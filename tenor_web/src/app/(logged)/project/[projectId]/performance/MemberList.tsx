@@ -125,7 +125,14 @@ const MemberItem = ({
         hideTooltip
         pictureClassName="min-h-20 min-w-20 h-20 w-20 mx-5 my-auto text-4xl"
       />
-      <h3 className="my-auto min-w-[100px] truncate text-xl font-semibold capitalize xl:min-w-[200px]">
+      <h3
+        className={cn(
+          "my-auto min-w-[100px] truncate text-xl font-semibold capitalize xl:min-w-[200px]",
+          {
+            "w-full": !formattedData || formattedData?.length === 0,
+          },
+        )}
+      >
         {member.displayName}
       </h3>
 

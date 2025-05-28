@@ -103,7 +103,7 @@ export const MemberDetailsCard = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex w-full max-w-full flex-col gap-y-4 rounded-md border-2 p-4 py-12 overflow-hidden",
+        "relative mx-auto flex w-full flex-col gap-y-4 overflow-hidden rounded-md border-2 p-4 py-12",
         className,
       )}
     >
@@ -112,21 +112,21 @@ export const MemberDetailsCard = ({
         className="absolute right-2 top-2 ml-auto text-gray-500"
         fontSize="large"
       />
-      <div className="flex flex-row gap-3 min-w-0">
+      <div className="flex flex-row gap-3">
         <ProfilePicture
           user={member}
           hideTooltip
-          pictureClassName="h-32 w-32 ml-5 my-auto text-5xl flex-shrink-0"
+          pictureClassName="h-32 w-32 ml-5 my-auto text-5xl"
         />
-        <div className="my-auto flex flex-col justify-start overflow-hidden pl-4 pr-4 min-w-0 flex-1">
-          <h3 className="my-[7px] truncate text-2xl font-semibold capitalize">
+        <div className="my-auto flex flex-col justify-start overflow-hidden pl-4 pr-4">
+          <h3 className="my-[7px] max-w-[500px] truncate text-2xl font-semibold capitalize">
             {member.displayName}
           </h3>
           <p className="line-clamp-2 text-xl capitalize text-gray-500">
             {isLoading ? "Loading..." : roleString}
           </p>
         </div>
-        <div className="mx-auto my-auto text-6xl flex-shrink-0">
+        <div className="mx-auto my-auto text-6xl">
           <SentimentSatisfiedAltIcon
             fontSize="inherit"
             className="text-app-green"
@@ -148,7 +148,7 @@ export const MemberDetailsCard = ({
         {!loadingContributions && (
           <>
             {contributionTotal > 0 ? (
-              <div className="flex flex-row items-center justify-around gap-8">
+              <div className="flex flex-col items-center justify-around gap-8 xl:flex-row">
                 <ContributionPieChart data={formattedUserContributions} />
                 <ContributionLegend data={formattedUserContributions} />
               </div>
