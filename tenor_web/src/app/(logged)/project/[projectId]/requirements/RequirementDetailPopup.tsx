@@ -214,8 +214,8 @@ export default function RequirementDetailPopup({
       show={showDetail}
       reduceTopPadding={!requirementDetail || !canWrite}
       size="small"
-      className={cn("h-[300px] max-h-[700px] w-[600px]", {
-        "h-[400px]": editMode,
+      className={cn("h-[450px] max-h-[700px] w-[600px]", {
+        "h-[420px]": editMode,
       })}
       disablePassiveDismiss={editMode && isModified()}
       dismiss={dismissPopup}
@@ -269,11 +269,11 @@ export default function RequirementDetailPopup({
         !isLoading &&
         requirementDetail && (
           <div
-            className="flex w-full flex-col gap-4"
+            className="flex w-full flex-col gap-6 px-2"
             data-cy="requirement-popup-footer"
           >
-            <div className="flex w-full gap-2">
-              <div className="w-36 space-y-2">
+            <div className="flex w-full gap-4">
+              <div className="w-36 space-y-1">
                 <label className="font-semibold">Type</label>
                 <RequirementTypePicker
                   disabled={!canWrite}
@@ -281,7 +281,7 @@ export default function RequirementDetailPopup({
                   onChange={handleTypeChange}
                 />
               </div>
-              <div className="w-36 space-y-2">
+              <div className="w-36 space-y-1">
                 <label className="font-semibold">Priority</label>
                 <PriorityPicker
                   disabled={!canWrite}
@@ -289,7 +289,7 @@ export default function RequirementDetailPopup({
                   onChange={handlePriorityChange}
                 />
               </div>
-              <div className="w-36 space-y-2">
+              <div className="w-36 space-y-1">
                 <label className="font-semibold">Focus</label>
                 <RequirementFocusPicker
                   disabled={!canWrite}
@@ -336,6 +336,7 @@ export default function RequirementDetailPopup({
           {editMode ? (
             <div className="pt-4">
               <InputTextField
+                id="requirement-title"
                 label="Title"
                 containerClassName="mb-4"
                 value={editForm.name}
@@ -350,8 +351,10 @@ export default function RequirementDetailPopup({
                 data-cy="requirement-name-input"
               />
               <InputTextAreaField
+                id="requirement-description"
+                chatPosition="right"
                 label="Description"
-                className="min-h-[120px] w-full resize-none"
+                className="min-h-[165px] w-full resize-none"
                 value={editForm.description}
                 onChange={(e) =>
                   setEditForm((prev) => ({
