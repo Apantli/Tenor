@@ -692,7 +692,7 @@ export default function RequirementsTable() {
           generatedRequirements={generatedRequirements.current}
           updateGeneratedRequirement={(id, data) => {
             generatedRequirements.current = generatedRequirements.current?.map(
-              (req) => (req.id === id ? data : req),
+              (req) => (req.id === id ? (data as AIGeneratedRequirement) : req),
             );
           }}
           onAccept={async () => {
