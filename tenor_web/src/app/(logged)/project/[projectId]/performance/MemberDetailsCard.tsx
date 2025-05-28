@@ -16,6 +16,7 @@ import { cn } from "~/lib/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { formatSeconds } from "~/utils/helpers/parsers";
 import { AverageTimeChart } from "~/app/(logged)/project/[projectId]/performance/AverageTimeChart";
+import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
 
 export const MemberDetailsCard = ({
   member,
@@ -125,6 +126,12 @@ export const MemberDetailsCard = ({
             {isLoading ? "Loading..." : roleString}
           </p>
         </div>
+        <div className="mx-auto my-auto text-6xl">
+          <SentimentSatisfiedAltIcon
+            fontSize="inherit"
+            className="text-app-green"
+          />
+        </div>
       </div>
 
       <div className="mx-8 flex flex-col pt-4">
@@ -178,6 +185,7 @@ export const MemberDetailsCard = ({
                         "text-red-400": timePercentageDifference > 0,
                       })}
                     >
+                      {timePercentageDifference >= 0 && "+"}
                       {timePercentageDifference}%
                     </p>
                     {timePercentageDifference <= 0 ? (

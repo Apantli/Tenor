@@ -42,7 +42,7 @@ export const MemberList = ({
   return (
     <div className="mr-10 w-full">
       <ul
-        className="h-fit max-h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto pb-5 xl:h-[calc(100vh-250px)]"
+        className="h-fit max-h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto pb-10 xl:h-[calc(100vh-250px)]"
         data-cy="member-list"
       >
         {filteredMembers && filteredMembers?.length > 0 ? (
