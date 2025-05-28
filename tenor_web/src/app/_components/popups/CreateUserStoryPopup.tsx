@@ -6,7 +6,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import DependencyListUserStory from "../inputs/DependencyListUserStory";
 import EpicPicker from "~/app/_components/inputs/pickers/EpicPicker";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
@@ -15,6 +15,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 import { TRPCClientError } from "@trpc/client";
+import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 
@@ -44,6 +45,7 @@ export default function CreateUserStoryPopup({
     priority?: Tag;
     size?: Size;
     epic?: ExistingEpic;
+    sprint?: WithId<Sprint>;
     dependencies: UserStoryPreview[];
     requiredBy: UserStoryPreview[];
   }>({
@@ -54,6 +56,7 @@ export default function CreateUserStoryPopup({
     priority: undefined,
     size: undefined,
     epic: undefined,
+    sprint: undefined,
     dependencies: [],
     requiredBy: [],
   });
@@ -67,6 +70,8 @@ export default function CreateUserStoryPopup({
     if (createForm.acceptanceCriteria !== "") return true;
     if (createForm.size !== undefined) return true;
     if (createForm.epic !== undefined) return true;
+    if (createForm.priority !== undefined) return true;
+    if (createForm.sprint !== undefined) return true;
     if (createForm.dependencies.length > 0) return true;
     if (createForm.requiredBy.length > 0) return true;
     if (createForm.tags.length > 0) return true;
@@ -100,6 +105,7 @@ export default function CreateUserStoryPopup({
           priorityId: createForm.priority?.id,
           size: createForm.size,
           epicId: createForm.epic?.id ?? "",
+          sprintId: createForm.sprint?.id ?? "",
           requiredByIds: createForm.requiredBy.map((us) => us.id),
           dependencyIds: createForm.dependencies.map((us) => us.id),
         },
@@ -157,6 +163,12 @@ export default function CreateUserStoryPopup({
             onChange={(epic) => {
               setCreateForm({ ...createForm, epic });
             }}
+          />
+
+          <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+          <SprintPicker
+            sprint={createForm.sprint}
+            onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
           />
 
           <div className="mt-4 flex gap-2">

@@ -101,7 +101,7 @@ export default function PillComponent({
         }}
       >
         <span className="truncate">{tag.name}</span>
-        <span className={cn("basis-[5px]", disabled ? "hidden" : "")}>
+        <span className={cn("basis-[5px]", disabled ? "opacity-0" : "")}>
           <ArrowDropDownIcon />
         </span>
       </div>
