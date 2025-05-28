@@ -42,7 +42,7 @@ export default function CardColumn({
   const lastSelectedCard = useRef<number>();
   const ref = useRef<HTMLDivElement>(null);
 
-  useClickOutside(ref, () => {
+  useClickOutside([ref.current], () => {
     lastSelectedCard.current = undefined;
   });
 

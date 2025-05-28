@@ -33,8 +33,6 @@ export function matchesSearchFilters(
   const { tags, sizes, priorities, assignee, sprint } = advancedFilters;
   if (val === undefined) return false;
 
-  console.log(assignee, val.assigneeIds);
-
   if (filter && !val.name.toLowerCase().includes(filter.toLowerCase()))
     return false;
   if (
