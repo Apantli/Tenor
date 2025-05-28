@@ -21,7 +21,7 @@ export default function ProjectPerformance() {
 
   return (
     <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 lg:flex-row lg:gap-16 lg:p-6 xl:overflow-hidden">
-      <div className="flex w-full flex-col items-baseline gap-3 pb-4 lg:w-[55%] xl:w-[55vw]">
+      <div className="flex w-full flex-col items-baseline gap-3 pb-4 lg:w-[55%] lg:min-w-0 lg:flex-shrink">
         <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h1 className="text-2xl font-semibold sm:text-3xl">
             Team Performance
@@ -50,7 +50,7 @@ export default function ProjectPerformance() {
           selectedMember={selectedMember}
         />
       </div>
-      <div className="w-full lg:w-[45%] xl:w-[36vw]">
+      <div className="w-full lg:w-[36%] lg:min-w-0 lg:flex-shrink-0">
         {selectedMember ? (
           <MemberDetailsCard
             member={selectedMember}
