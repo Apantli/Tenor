@@ -3,15 +3,16 @@
 import { useParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { toBase64 } from "~/utils/helpers/base64";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import FileList from "~/app/_components/inputs/FileList";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import LinkList from "~/app/_components/inputs/LinkList";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { api } from "~/trpc/react";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
+import HelpIcon from "@mui/icons-material/Help";
 import { type Links } from "~/server/api/routers/settings";
 import {
   type Permission,
@@ -25,7 +26,7 @@ export default function ProjectAIConfig() {
   const [newText, setNewText] = useState("");
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const { alert } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
 
   // Fetch
   const { data: role } = api.settings.getMyRole.useQuery({
@@ -74,16 +75,13 @@ export default function ProjectAIConfig() {
   // Add
   const { mutateAsync: addLink } = api.settings.addLink.useMutation({
     onError: async (error) => {
-      alert("Error", error.message, { type: "error", duration: 5000 });
+      alertTemplates.error(error.message);
       await utils.settings.getContextLinks.invalidate({
         projectId: projectId as string,
       });
     },
     onSuccess: async () => {
-      alert("Success", "Link added successfully.", {
-        type: "success",
-        duration: 5000,
-      });
+      predefinedAlerts.linkUploadSuccess();
       await utils.settings.getContextLinks.invalidate({
         projectId: projectId as string,
       });
@@ -103,10 +101,7 @@ export default function ProjectAIConfig() {
     if (!links) return;
 
     if (links.some((l) => l.link === link.link)) {
-      alert("Link exists", "This link is already added to the context.", {
-        type: "warning",
-        duration: 3000,
-      });
+      predefinedAlerts.linkExistsError();
       return;
     }
 
@@ -133,15 +128,7 @@ export default function ProjectAIConfig() {
       if (!link.valid) invalidLinks.push(link);
     }
     if (invalidLinks.length > 0) {
-      const plural = invalidLinks.length > 1 ? "s" : "";
-      alert(
-        `Invalid link${plural}`,
-        `${invalidLinks.length} link${plural} ${plural ? "are" : "is"} invalid.`,
-        {
-          type: "warning",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.linkInvalidError(invalidLinks.length);
     }
   }, [links]);
 
@@ -206,10 +193,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
 
-    alert("Success", "A new file was added to your project AI context.", {
-      type: "success",
-      duration: 5000,
-    });
+    predefinedAlerts.fileUploadSuccess();
   };
 
   const handleRemoveFile = async (file: File) => {
@@ -254,10 +238,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
 
-    alert("Success", "Project AI context has been updated successfully.", {
-      type: "success",
-      duration: 5000,
-    });
+    predefinedAlerts.contextUpdateSuccess();
   };
 
   const isModified = () => {
@@ -284,7 +265,16 @@ export default function ProjectAIConfig() {
     <div className="flex h-full max-w-[600px] flex-col">
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
-          <h1 className="mb-4 text-3xl font-semibold">AI Context</h1>
+          <div className="mb-4 flex items-center gap-2">
+            <h1 className="text-3xl font-semibold">AI Context</h1>
+            <HelpIcon
+              className="text-gray-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content="The data shared, including files and links, is private and used solely as context for the AI."
+              data-tooltip-place="top-start"
+              style={{ width: "20px" }}
+            />
+          </div>
           {(isModified() || isContextUpdatePending) &&
             links &&
             loadedFiles &&
@@ -334,9 +324,8 @@ export default function ProjectAIConfig() {
           ></LinkList>
         </div>
       ) : (
-        <div className="mt-5 flex flex-row gap-x-3">
-          <LoadingSpinner />
-          <p className="text-lg">Loading...</p>
+        <div className="flex h-full w-full flex-col items-center">
+          <LoadingSpinner color="primary" />
         </div>
       )}
     </div>

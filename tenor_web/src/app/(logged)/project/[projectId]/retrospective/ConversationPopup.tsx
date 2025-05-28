@@ -6,8 +6,8 @@ import SoundPlayer from "~/app/_components/SoundPlayer";
 import MusicIcon from "@mui/icons-material/Headphones";
 import MicOffIcon from "@mui/icons-material/MicOff";
 import MicOnIcon from "@mui/icons-material/Mic";
-import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 
 import { zipSamples, MuseClient } from "muse-js";
@@ -15,11 +15,11 @@ import { zipSamples, MuseClient } from "muse-js";
 import { epoch, addInfo, fft, powerByBand } from "@neurosity/pipes";
 import { addSignalQuality } from "~/lib/eeg/addSignalQuality";
 import { cn } from "~/lib/utils";
-import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrivacyPopup from "./PrivacyPopup";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
-import { useSpeechRecognition } from "./SpeechToText";
+import { useSpeechRecognition } from "./useSpeechRecognition";
 import RetrospectiveConversationAnswers from "./RetrospectiveConversationAnswers";
 import { classifyEmotion, mode } from "~/lib/eeg/classifyEmotion";
 import { api } from "~/trpc/react";
@@ -99,7 +99,7 @@ export default function ConversationPopup({
 
   const startTime = useRef<Date>();
 
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const confirm = useConfirmation();
 
   const museClientRef = React.useRef<MuseClient | null>(null);
@@ -136,10 +136,7 @@ export default function ConversationPopup({
   // MUSE CALLBACKS
   const museConnectionCallback = (status: boolean) => {
     if (!status) {
-      alert("We're sorry...", "Muse headset got disconnected.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.headSetDisconnected();
       setHeadsetStatus("disconnected");
       setStep(1);
       resetTranscripts();
@@ -247,14 +244,7 @@ export default function ConversationPopup({
         // eslint-disable-next-line
         .subscribe(museEEGCallback as any);
     } catch {
-      alert(
-        "We're sorry...",
-        "Failed to connect to Muse headset, please try again.",
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.headSetConnectionError();
       setHeadsetStatus("disconnected");
     }
   };

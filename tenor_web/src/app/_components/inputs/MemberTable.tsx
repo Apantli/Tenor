@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import { cn } from "~/lib/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import Table, { type TableColumns } from "../table/Table";
-import PrimaryButton from "../buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import ProfilePicture from "../ProfilePicture";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
-import PillPickerComponent from "../PillPickerComponent";
-import SearchBar from "../SearchBar";
+import PillPickerComponent from "./pickers/PillPickerComponent";
+import SearchBar from "./search/SearchBar";
 import { useAlert } from "~/app/_hooks/useAlert";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { UserCol } from "~/lib/types/columnTypes";
@@ -43,7 +43,7 @@ export default function MemberTable({
 }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const [tableSearchValue, setTableSearchValue] = useState("");
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const { data: users } = api.users.getGlobalUsers.useQuery({
     filter: searchValue,
   });
@@ -100,10 +100,7 @@ export default function MemberTable({
               if (row.roleId !== "owner") {
                 handleEditMemberRole(row.id, item.id);
               } else {
-                alert("Oops...", "You cannot edit the role of the owner.", {
-                  type: "error",
-                  duration: 5000,
-                });
+                predefinedAlerts.ownerRoleError();
               }
             }}
           />

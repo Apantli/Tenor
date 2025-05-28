@@ -13,7 +13,7 @@ interface PerformanceData {
 }
 
 export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
-  const { alert } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   const utils = api.useUtils();
 
   const {
@@ -34,10 +34,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
   } = api.performance.recomputeProductivity.useMutation({
     onSuccess: async () => {
       // Handle success, e.g., show a toast notification
-      alert("Success", "Productivity has been reloaded.", {
-        type: "success",
-        duration: 5000,
-      });
+      predefinedAlerts.productivityUpdateSuccess();
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,
@@ -45,10 +42,8 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
     },
     onError: async (error) => {
       // Handle success, e.g., show a toast notification
-      alert("Alert", error.message, {
-        type: "warning",
-        duration: 5000,
-      });
+
+      alertTemplates.warning(error.message);
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,
@@ -81,15 +76,14 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
   const userStoriesStrokeDasharray = `${(userStoriesPercent / 100) * c1} ${c1}`;
   const issuesStrokeDasharray = `${(issuesPercent / 100) * c2} ${c2}`;
   return (
-    <div className="box-content flex h-[400px] w-[700px] min-w-[600px] flex-col rounded-md border-2 p-4">
+    <div className="flex min-h-[420px] w-full flex-col rounded-md border-2 p-4">
       <h1 className="mb-6 border-b-2 pb-4 text-3xl font-bold">Productivity</h1>
       {isLoading ? (
-        <div className="flex flex-row gap-3 align-middle">
-          <LoadingSpinner />
-          <p className="text-lg font-semibold">Loading project statistics...</p>
+        <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
+          <LoadingSpinner color="primary" />
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-8 rounded-lg bg-white p-4 md:flex-row">
+        <div className="flex flex-col items-center justify-center gap-8 rounded-lg bg-white p-4 lg:flex-row">
           {error?.message ? (
             <p>{error.message}</p>
           ) : (
@@ -156,7 +150,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3 text-gray-500">
                 <div className="h-4 w-4 rounded-full bg-[#88BB87]"></div>
-                <span className="text-lg">
+                <span className="max-w-30 line-clamp-2 text-ellipsis text-lg">
                   User Stories {userStoriesPercent}%
                 </span>
               </div>
@@ -187,7 +181,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
           {isPending ? (
             <>
               <LoadingSpinner />
-              <p className="font-semibold">Refreshing Productivity</p>
+              <p>Refreshing project status...</p>
             </>
           ) : (
             <p>Updated {timestampToDate(stats.fetchDate).toLocaleString()}</p>

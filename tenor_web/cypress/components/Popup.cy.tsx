@@ -1,9 +1,9 @@
 import React from "react";
 import Popup from "~/app/_components/Popup";
-import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
-import "~/styles/globals.css";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { mount } from "cypress/react";
+import "~/styles/globals.css";
 
 describe("<Popup />", () => {
   it("renders and visible", () => {

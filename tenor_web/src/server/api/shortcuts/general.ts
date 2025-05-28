@@ -1,11 +1,14 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type {
+  ActivityItem,
+  ProjectActivity,
   Role,
   Size,
   StatusTag,
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import {
+  ActivitySchema,
   ProjectSchema,
   SettingsSchema,
   type UserSchema,
@@ -19,6 +22,9 @@ import { getCurrentSprint } from "./sprints";
 import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { TYPE_COLLECTION_MAP } from "../typeDisplayName";
+import { Timestamp } from "firebase-admin/firestore";
 
 /**
  * @function getProjectsRef
@@ -289,6 +295,10 @@ export const getTopProjects = async (firestore: Firestore, userId: string) => {
     await getGlobalUserRef(firestore, userId).get()
   ).data() as z.infer<typeof UserSchema>;
 
+  if (!user?.projectIds || user.projectIds.length === 0) {
+    return [];
+  }
+
   const projectSprintsPromises = user.projectIds.map(async (projectId) => {
     const sprint = await getCurrentSprint(firestore, projectId);
     return { sprint, projectId };
@@ -307,4 +317,165 @@ export const getTopProjects = async (firestore: Firestore, userId: string) => {
 
   // Return just the projectIds in the same order as the sorted sprints
   return sortedProjectSprintPairs.map((pair) => pair.projectId);
+};
+
+export const computeTopProjectStatus = async (
+  firestore: FirebaseFirestore.Firestore,
+  adminFirestore: admin.app.App,
+  userId: string,
+  count: number,
+) => {
+  let projects = await getTopProjects(firestore, userId);
+  if (projects.length === 0) {
+    return undefined;
+  }
+
+  projects = projects.slice(0, count);
+
+  let projectStatus = await Promise.all(
+    projects.map(async (projectId) => {
+      const status = await getProjectStatus(
+        firestore,
+        projectId,
+        adminFirestore,
+      );
+
+      return {
+        id: projectId,
+        status,
+      };
+    }),
+  );
+
+  // Filter out projects with no tasks
+  projectStatus = projectStatus.filter(
+    (project) => project.status.taskCount !== 0,
+  );
+
+  const topProjects = {
+    fetchDate: Timestamp.now(),
+    topProjects: projectStatus.map((project) => ({
+      projectId: project.id,
+      taskCount: project.status.taskCount,
+      completedCount: project.status.completedCount,
+    })),
+  };
+
+  return topProjects;
+};
+
+export const getActivityRef = (
+  firestore: Firestore,
+  projectId: string,
+  activityId: string,
+) => {
+  return getActivitiesRef(firestore, projectId).doc(activityId);
+};
+
+export const getActivity = async (
+  firestore: Firestore,
+  projectId: string,
+  activityId: string,
+) => {
+  const activityRef = getActivityRef(firestore, projectId, activityId);
+  const activitySnapshot = await activityRef.get();
+  if (!activitySnapshot.exists) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Activity not found",
+    });
+  }
+
+  return {
+    id: activitySnapshot.id,
+    ...ActivitySchema.parse(activitySnapshot.data()),
+  } as WithId<ProjectActivity>;
+};
+
+export const getActivitiesRef = (firestore: Firestore, projectId: string) => {
+  return getProjectRef(firestore, projectId).collection("activity");
+};
+
+export const getProjectActivities = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const activitiesRef = getActivitiesRef(firestore, projectId);
+  const activitiesSnapshot = await activitiesRef
+    .orderBy("date", "desc")
+    .limit(5)
+    .get();
+  const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map(
+    (activityData) => {
+      return {
+        id: activityData.id,
+        ...ActivitySchema.parse(activityData.data()),
+      } as WithId<ProjectActivity>;
+    },
+  );
+  return activities;
+};
+
+export const getItemActivityDetails = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  // Get activities
+  const activities = await getProjectActivities(firestore, projectId);
+
+  // Array to hold the results
+  const results = {
+    tasks: [] as ActivityItem[],
+    issues: [] as ActivityItem[],
+    userStories: [] as ActivityItem[],
+    epics: [] as ActivityItem[],
+    sprints: [] as ActivityItem[],
+  }
+
+  // Iterate in the activityMap to get the item type and itemId
+  for (const activity of activities) {
+    if (!activity.itemId || !activity.type) continue;
+    
+    const itemType = activity.type.toUpperCase();
+    const itemId = activity.itemId;
+
+    if (!(itemType in TYPE_COLLECTION_MAP)) continue;
+
+    // Save the collection name based on the item type
+    const collectionName =  TYPE_COLLECTION_MAP[itemType];
+    
+    // Check if collectionName is defined before using it
+    if (!collectionName) continue;
+    
+    // Make the reference
+    const itemRef = getProjectRef(firestore, projectId).collection(collectionName).doc(itemId);
+    const docSnap = await itemRef.get();
+
+    // If the document does not exist, continue to the next iteration
+    if (!docSnap.exists) continue;
+
+    // Get the item data
+    const data = { id: itemId, ...docSnap.data(), activity: activity } as ActivityItem;
+
+    switch (collectionName) {
+      case "tasks":
+        results.tasks.push(data);
+        break;
+      case "issues":
+        results.issues.push(data);
+        break;
+      case "userStories":
+        results.userStories.push(data);
+        break;
+      case "epics":
+        results.epics.push(data);
+        break;
+      case "sprints":
+        results.sprints.push(data);
+        break;
+      default:
+    }
+  }
+
+  return results;
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TasksKanban from "./TasksKanban";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
@@ -14,10 +14,10 @@ import {
   type Permission,
 } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
-import SearchBar from "~/app/_components/SearchBar";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
-import AdvancedSearch from "../../../../_components/AdvancedSearch";
+import AdvancedSearch from "../../../../_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
@@ -48,7 +48,8 @@ export default function ProjectKanban() {
   );
   const [filter, setFilter] = useState("");
 
-  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
+  const [advancedFilters, setAdvancedFilters] =
+    useAdvancedSearchFilters("scrumboard");
 
   // HANDLES
   const onListAdded = async () => {

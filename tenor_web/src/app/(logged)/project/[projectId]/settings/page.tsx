@@ -5,10 +5,10 @@ import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { toBase64 } from "~/utils/helpers/base64";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -29,7 +29,7 @@ export default function ProjectGeneralSettings() {
   };
   const router = useRouter();
   const utils = api.useUtils();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const [mounted, setMouted] = useState(false);
 
@@ -110,10 +110,7 @@ export default function ProjectGeneralSettings() {
   const handleSave = async () => {
     if (!projectId) return;
     if (!editForm.name) {
-      alert("Oops...", "Please enter a project name.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
+      predefinedAlerts.projectNameError();
       return;
     }
     if (modifyingProject) return;
@@ -128,10 +125,7 @@ export default function ProjectGeneralSettings() {
     // update project in the cache
     setIcon(null);
 
-    alert("Success", "Project settings have been updated successfully.", {
-      type: "success",
-      duration: 5000,
-    });
+    predefinedAlerts.projectSettingsSuccess();
     return;
   };
 
@@ -235,7 +229,7 @@ export default function ProjectGeneralSettings() {
           </div>
         </div>
       ) : (
-        <div className="flex h-40 w-full items-center justify-center">
+        <div className="flex h-40 w-full justify-center">
           <LoadingSpinner color="primary" />
         </div>
       )}

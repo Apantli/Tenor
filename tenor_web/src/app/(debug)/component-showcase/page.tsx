@@ -2,33 +2,36 @@
 
 import Link from "next/link";
 import React, { useState } from "react";
-import SecondaryButton from "~/app/_components/buttons/SecondaryButton";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import { useAlert } from "~/app/_hooks/useAlert";
 import HideIcon from "@mui/icons-material/HideImageOutlined";
 import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
-import PillComponent from "~/app/_components/PillComponent";
+import PillComponent from "~/app/_components/inputs/pickers/PillComponent";
 import Popup, { SidebarPopup } from "~/app/_components/Popup";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import FileList from "~/app/_components/inputs/FileList";
 import LinkList from "~/app/_components/inputs/LinkList";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import InputFileField from "~/app/_components/inputs/InputFileField";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
-import { DatePicker } from "~/app/_components/DatePicker";
-import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
+import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
 import TagComponent from "~/app/_components/TagComponent";
-import { UserPicker } from "~/app/_components/specific-pickers/UserPicker";
+import { UserPicker } from "~/app/_components/inputs/pickers/UserPicker";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import { acceptableTagColors } from "~/utils/helpers/colorUtils";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
+import {
+  acceptableTagColors,
+  getPillColorByActivityType,
+} from "~/utils/helpers/colorUtils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
 
 // Z index documentation:
@@ -117,7 +120,7 @@ function AlertShowcase() {
   // Add the useAlert hook to any client component where you want to show alerts
   // Then you can use the alert function wherever you want
   // You can also use predefined alerts, or even add another predefined alert (in useAlert.tsx) if you want to repeat the same message in multiple places
-  const { alert, predefinedAlerts } = useAlert();
+  const { alertTemplates, predefinedAlerts } = useAlert();
 
   return (
     <div>
@@ -126,48 +129,35 @@ function AlertShowcase() {
       <div className="flex gap-2">
         {/* Different types of alerts: info, success, error and warning*/}
         <SecondaryButton
-          onClick={() => alert("Info Alert title", "Alert description")} // The info type is the default
+          onClick={() =>
+            alertTemplates.info("Info Alert title", "Alert description")
+          } // The info type is the default
         >
           Show Info Alert
         </SecondaryButton>
 
         <SecondaryButton
-          onClick={() =>
-            alert("Success Alert title", "Alert description", {
-              type: "success",
-            })
-          }
+          onClick={() => alertTemplates.success("Alert description")}
         >
           Show Success Alert
         </SecondaryButton>
 
         <SecondaryButton
-          onClick={() =>
-            alert("Error Alert title", "Alert description", { type: "error" })
-          }
+          onClick={() => alertTemplates.error("Alert description")}
         >
           Show Error Alert
         </SecondaryButton>
 
         <SecondaryButton
-          onClick={() =>
-            alert("Warning Alert title", "Alert description", {
-              type: "warning",
-            })
-          }
+          onClick={() => alertTemplates.oops("Alert description")}
         >
-          Show Warning Alert
+          Show Oops Alert
         </SecondaryButton>
 
         <SecondaryButton
-          onClick={() =>
-            alert("Timed alert title", "Alert description", {
-              type: "error",
-              duration: 5000, // time in ms (5 seconds)
-            })
-          }
+          onClick={() => alertTemplates.warning("Alert description")}
         >
-          Show Timed Alert
+          Show Warning Alert
         </SecondaryButton>
 
         {/* Use predefined alerts if one exists for your use case already, like unexpected errors */}
@@ -472,6 +462,18 @@ function TagShowcase() {
         <TagComponent onDelete={() => console.log("HELLO")}>US003</TagComponent>
         <TagComponent onDelete={() => console.log("HELLO")} color="#009719">
           Login
+        </TagComponent>
+      </div>
+      <br />
+      <div className="flex justify-start gap-2">
+        <TagComponent color={getPillColorByActivityType("create")}>
+          Create
+        </TagComponent>
+        <TagComponent color={getPillColorByActivityType("update")}>
+          Update
+        </TagComponent>
+        <TagComponent color={getPillColorByActivityType("delete")}>
+          Delete
         </TagComponent>
       </div>
     </div>

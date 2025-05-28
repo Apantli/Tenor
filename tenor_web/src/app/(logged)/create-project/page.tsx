@@ -1,16 +1,17 @@
 "use client";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import Navbar from "~/app/_components/Navbar";
 import Link from "next/link";
 import Tabbar from "~/app/_components/Tabbar";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import InputFileField from "~/app/_components/inputs/InputFileField";
 import LinkList from "~/app/_components/inputs/LinkList";
 import FileList from "~/app/_components/inputs/FileList";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import HelpIcon from "@mui/icons-material/Help";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { type Links } from "~/server/api/routers/settings";
 import { toBase64 } from "~/utils/helpers/base64";
@@ -27,7 +28,7 @@ export default function ProjectCreator() {
   const { mutateAsync: createProject, isPending } =
     api.projects.createProject.useMutation();
 
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const handleCreateProject = async () => {
     // Block project creation if there is a pending request
     if (isPending) {
@@ -35,10 +36,7 @@ export default function ProjectCreator() {
     }
 
     if (!form.name) {
-      alert("Oops...", "Project Name must have a value.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
+      predefinedAlerts.projectNameError();
       return;
     }
 
@@ -85,14 +83,7 @@ export default function ProjectCreator() {
       router.push(`/project/${response.projectId}`);
       await utils.projects.listProjects.invalidate();
     } else {
-      alert(
-        "Oops...",
-        "There was an error creating the project. Try again later.",
-        {
-          type: "error",
-          duration: 5000, // time in ms (5 seconds)
-        },
-      );
+      predefinedAlerts.projectCreateError();
     }
   };
 
@@ -134,10 +125,7 @@ export default function ProjectCreator() {
 
     // Check file size
     if (file.size > logoSizeLimit) {
-      alert("File too large", "Logo image must be smaller than 3MB", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.projectLogoSizeError();
       setIsValidatingImage(false);
       return;
     }
@@ -150,14 +138,7 @@ export default function ProjectCreator() {
       URL.revokeObjectURL(objectUrl);
 
       if (img.width > logoMaxDimensions || img.height > logoMaxDimensions) {
-        alert(
-          "Image too large",
-          `Logo dimensions must be 1024x1024 pixels or smaller. This image is ${img.width}x${img.height}.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
+        predefinedAlerts.projectLogoDimensionsError(img.height, img.width);
         setIsValidatingImage(false);
       } else {
         // If all validations pass, set the image
@@ -168,10 +149,7 @@ export default function ProjectCreator() {
 
     img.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      alert("Invalid image", "Please upload a valid image file", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.projectLogoError();
       setIsValidatingImage(false);
     };
 
@@ -191,10 +169,7 @@ export default function ProjectCreator() {
   function handleLinkAdd(link: Links) {
     // Check if the link already exists
     if (links.some((l) => l.link === link.link)) {
-      alert("Link exists", "This link is already added to the context.", {
-        type: "warning",
-        duration: 3000,
-      });
+      predefinedAlerts.linkExistsError();
       return;
     } else {
       setLinks((prev) => [...prev, link]);
@@ -217,13 +192,8 @@ export default function ProjectCreator() {
       value.length > maxProjectNameLength &&
       !nameWarningShown
     ) {
-      alert(
-        "Limit exceeded",
-        `The project name can't be longer than ${maxProjectNameLength} characters.`,
-        {
-          type: "warning",
-          duration: 3000,
-        },
+      predefinedAlerts.projectNameLengthError(
+        maxProjectNameLength.toLocaleString(),
       );
       setNameWarningShown(true);
     }
@@ -250,7 +220,7 @@ export default function ProjectCreator() {
       </Navbar>
       <Tabbar disabled mainPageName="Project Creator" />
       <main className="m-6 p-4">
-        <div className="header flex w-full justify-between pb-6">
+        <div className="header flex w-full items-center justify-between pb-6">
           <h1 className="text-2xl font-semibold">Project Creator</h1>
           <PrimaryButton
             onClick={handleCreateProject}
@@ -324,8 +294,18 @@ export default function ProjectCreator() {
             {/* Context Text */}
             <InputTextAreaField
               id="project-context-field"
-              className="min-h-[180px]"
-              label="Context"
+              label={
+                <span className="flex items-center gap-1">
+                  Context
+                  <HelpIcon
+                    className="text-gray-500"
+                    data-tooltip-id="tooltip"
+                    data-tooltip-content="The data shared, including files and links, is private and used solely as context for the AI."
+                    data-tooltip-place="top-start"
+                    style={{ width: "15px" }}
+                  />
+                </span>
+              }
               html-rows="20"
               placeholder="Tell us about your project..."
               value={form.context}

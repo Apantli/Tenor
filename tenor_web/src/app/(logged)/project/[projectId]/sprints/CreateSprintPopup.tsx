@@ -1,13 +1,13 @@
 import { Timestamp } from "firebase/firestore";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import { DatePicker } from "~/app/_components/DatePicker";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
 import Popup from "~/app/_components/Popup";
-import { type AlertFunction, useAlert } from "~/app/_hooks/useAlert";
 import { api } from "~/trpc/react";
 import { showReorderAlert } from "./EditSprintPopup";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import { useAlert } from "~/app/_hooks/useAlert";
 
 export interface SprintDates {
   id: string;
@@ -22,43 +22,12 @@ interface Props {
   otherSprints?: SprintDates[];
 }
 
-export function CheckNewSprintDates(
-  startDate: Date,
-  endDate: Date,
-  otherSprints: SprintDates[],
-  alert: AlertFunction,
-) {
-  if (endDate <= startDate) {
-    alert("Oops...", "Start date must be before end date.", {
-      type: "error",
-      duration: 5000,
-    });
-    return false;
-  }
-
-  for (const sprint of otherSprints ?? []) {
-    if (
-      (sprint.startDate <= startDate && sprint.endDate >= startDate) ||
-      (sprint.startDate <= endDate && sprint.endDate >= endDate) ||
-      (startDate <= sprint.startDate && endDate >= sprint.startDate) ||
-      (startDate <= sprint.endDate && endDate >= sprint.endDate)
-    ) {
-      alert("Oops...", `Dates collide with Sprint ${sprint.number}.`, {
-        type: "error",
-        duration: 5000,
-      });
-      return false;
-    }
-  }
-  return true;
-}
-
 export default function CreateSprintPopup({
   showSmallPopup,
   setShowSmallPopup,
   otherSprints,
 }: Props) {
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const { projectId } = useParams();
 
   const { mutateAsync: createSprint, isPending } =
@@ -123,22 +92,24 @@ export default function CreateSprintPopup({
 
     // Validate dates
     if (newSprintStartDate >= newSprintEndDate) {
-      alert("Oops...", "Dates are invalid.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
+      predefinedAlerts.sprintDatesError();
       return;
     }
 
-    if (
-      !CheckNewSprintDates(
-        newSprintStartDate,
-        newSprintEndDate,
-        otherSprints ?? [],
-        alert,
-      )
-    ) {
-      return;
+    for (const sprint of otherSprints ?? []) {
+      if (
+        (sprint.startDate <= newSprintStartDate &&
+          sprint.endDate >= newSprintStartDate) ||
+        (sprint.startDate <= newSprintEndDate &&
+          sprint.endDate >= newSprintEndDate) ||
+        (newSprintStartDate <= sprint.startDate &&
+          newSprintEndDate >= sprint.startDate) ||
+        (newSprintStartDate <= sprint.endDate &&
+          newSprintEndDate >= sprint.endDate)
+      ) {
+        predefinedAlerts.sprintDateCollideError(sprint.number);
+        return;
+      }
     }
 
     const response = await createSprint({

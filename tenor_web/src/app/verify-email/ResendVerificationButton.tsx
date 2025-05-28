@@ -5,13 +5,13 @@ import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import { sendEmailVerification } from "firebase/auth";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
-import SecondaryButton from "../_components/buttons/SecondaryButton";
+import SecondaryButton from "../_components/inputs/buttons/SecondaryButton";
 import { useAlert } from "../_hooks/useAlert";
 
 export default function ResendVerificationButton() {
   const router = useRouter();
 
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const { user, loading } = useFirebaseAuth();
   const { data: verificationResult } = api.auth.checkVerification.useQuery(
@@ -44,10 +44,7 @@ export default function ResendVerificationButton() {
 
     try {
       await sendEmailVerification(user);
-      alert("Email sent!", "Please wait for it to arrive to your inbox", {
-        type: "success",
-        duration: 7000,
-      });
+      predefinedAlerts.emailSent();
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
         console.log("FIREBASE ERROR:", err.code);

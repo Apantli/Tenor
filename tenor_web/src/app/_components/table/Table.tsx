@@ -264,7 +264,7 @@ function TableInternal<
     setFilters({ ...filters });
   };
 
-  useClickOutside(internalScrollContainerRef, () => {
+  useClickOutside([internalScrollContainerRef.current], () => {
     lastSelectedIdRef.current = undefined;
   });
 

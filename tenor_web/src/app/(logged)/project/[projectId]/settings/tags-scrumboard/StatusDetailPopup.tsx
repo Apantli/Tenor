@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import HelpIcon from "@mui/icons-material/Help";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
 interface Props {
   showPopup: boolean;
@@ -36,7 +36,6 @@ export default function StatusDetailPopup({
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
-  const { alert } = useAlert();
 
   const { projectId } = useParams();
   const [form, setForm] = useState<{
@@ -98,10 +97,7 @@ export default function StatusDetailPopup({
 
   const handleSave = async (updatedData: NonNullable<typeof statusDetail>) => {
     if (form.name === "") {
-      alert("Oops...", "Please enter a name for the status.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.statusNameError();
       return;
     }
 
@@ -111,25 +107,19 @@ export default function StatusDetailPopup({
 
     if (protectedNames.includes(originalNameLower)) {
       if (originalNameLower !== newNameLower) {
-        alert(
-          "Default Status",
-          `You cannot change the name of a default status. You can only modify its capitalization.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
+        predefinedAlerts.statusNameNotEditableError();
+        setForm({
+          ...form,
+          name: statusDetail?.name ?? "",
+        });
         return;
       }
     } else if (protectedNames.includes(newNameLower)) {
-      alert(
-        "Default Status Name",
-        `"${form.name}" is a reserved name for default statuses and cannot be used.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.statusNameReservedError(form.name);
+      setForm({
+        ...form,
+        name: statusDetail?.name ?? "",
+      });
       return;
     }
 
@@ -146,14 +136,7 @@ export default function StatusDetailPopup({
       );
 
       if (statusWithSameNameExists) {
-        alert(
-          "Duplicate Status Name",
-          `A status with name "${form.name}" already exists.`,
-          {
-            type: "error",
-            duration: 5000,
-          },
-        );
+        predefinedAlerts.existingStatusError(form.name);
         return;
       }
     }
@@ -226,14 +209,7 @@ export default function StatusDetailPopup({
 
   const handleDelete = async () => {
     if (statusDetail && ["Todo", "Doing", "Done"].includes(statusDetail.name)) {
-      alert(
-        "Cannot delete default status",
-        `The status "${statusDetail.name}" is a default status and cannot be deleted.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.statusNameNotEditableError();
       return;
     }
 
@@ -328,6 +304,29 @@ export default function StatusDetailPopup({
                 label=""
               />
             </div>
+          </div>
+          <div className="mt-2 flex items-baseline">
+            <InputCheckbox
+              disabled={disabled}
+              checked={form.marksTaskAsDone}
+              onChange={(value) => setForm({ ...form, marksTaskAsDone: value })}
+              className={`m-0 mr-2 ${!disabled ? "cursor-pointer" : "cursor-default"}`}
+            />
+            <button
+              disabled={disabled}
+              onClick={() =>
+                setForm({ ...form, marksTaskAsDone: !form.marksTaskAsDone })
+              }
+            >
+              Marks tasks as resolved
+            </button>
+            <HelpIcon
+              className="ml-[3px] text-gray-500"
+              data-tooltip-id="tooltip"
+              data-tooltip-content="Tasks moved to this status will be considered as a completed task"
+              data-tooltip-place="top-start"
+              style={{ width: "15px" }}
+            />
           </div>
         </div>
       )}

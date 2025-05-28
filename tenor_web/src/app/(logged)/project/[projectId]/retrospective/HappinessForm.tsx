@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import ConversationButton from "./ConversationButton";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import ConversationPopup from "./ConversationPopup";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -39,7 +39,6 @@ export default function HappinessForm({
   const userId = user?.uid ?? "";
   const params = useParams();
   const projectId = params.projectId as string;
-  const { alert } = useAlert();
   const { predefinedAlerts } = useAlert();
 
   const [renderConversation, showConversation, setShowConversation] =
@@ -171,14 +170,7 @@ export default function HappinessForm({
       (!savedFields.improvementSuggestion &&
         responses.improvementSuggestion.trim() !== "");
     if (!hasNewUnsavedContent) {
-      alert(
-        "Oops...",
-        "Please enter at least one response to a missing question.",
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.formCompletionError();
       return;
     }
 

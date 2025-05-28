@@ -4,10 +4,10 @@ import { cn } from "~/lib/utils";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import DescriptionIcon from "@mui/icons-material/Description";
-import PrimaryButton from "../buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CloseIcon from "@mui/icons-material/Cancel";
+import PrimaryButton from "./buttons/PrimaryButton";
 
 interface Props {
   label: string;
@@ -40,7 +40,7 @@ export default function FileList({
     return files.reduce((total, item) => total + item.size, 0);
   }
 
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const confirm = useConfirmation();
 
   return (
@@ -82,10 +82,7 @@ export default function FileList({
               );
 
               if (filesSumSize() + filesSize > memoryLimit) {
-                alert("Oops...", "You exceeded the file size limit.", {
-                  type: "error",
-                  duration: 5000, // time in ms (5 seconds)
-                });
+                predefinedAlerts.fileLimitExceeded();
                 return;
               }
 

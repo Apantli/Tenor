@@ -67,7 +67,7 @@ export default function SelectableCard({
   return (
     <div
       className={cn(
-        "group relative flex h-fit min-h-fit w-full cursor-pointer select-none overflow-hidden rounded-lg border border-app-border bg-white p-2 pb-3 shadow-xl transition-all duration-100",
+        "group relative flex w-full shrink-0 cursor-pointer select-none overflow-hidden rounded-lg border border-app-border bg-white p-2 pb-3 shadow-xl transition-all duration-100",
         {
           "ring-2 ring-app-secondary": selected,
           "opacity-60": isDragging,

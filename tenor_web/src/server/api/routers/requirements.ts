@@ -186,12 +186,14 @@ export const requirementsRouter = createTRPCRouter({
           requirementId,
         ).get();
         await requirementDoc?.ref.update(requirementData);
+        return { id: requirementId };
       } else {
         requirementData.scrumId = await getRequirementNewId(
           ctx.firestore,
           projectId,
         );
-        await getRequirementsRef(ctx.firestore, projectId).add(requirementData);
+        const docRef = await getRequirementsRef(ctx.firestore, projectId).add(requirementData);
+        return { id: docRef.id };
       }
     }),
 

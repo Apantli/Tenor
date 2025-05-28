@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
 interface TagDetail {
   id: string;
@@ -54,9 +54,8 @@ export default function ItemTagDetailPopup({
 }: Props) {
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const { predefinedAlerts } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
-  const { alert } = useAlert();
 
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
     BacklogTag: {
@@ -287,10 +286,7 @@ export default function ItemTagDetailPopup({
     const errorName = currentConfig.emptyNameError;
 
     if (form.name === "") {
-      alert("Oops...", errorName, {
-        type: "error",
-        duration: 5000,
-      });
+      alertTemplates.error(errorName);
       return;
     }
 
@@ -331,13 +327,9 @@ export default function ItemTagDetailPopup({
     );
 
     if (tagWithSameNameExists) {
-      alert(
-        "Duplicate Name",
+      predefinedAlerts.existingTagError(
         `A ${itemTagType === "BacklogTag" ? "tag" : itemTagType === "ReqFocus" ? "focus area" : "requirement type"} with this name already exists.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
+        form.name,
       );
       return;
     }

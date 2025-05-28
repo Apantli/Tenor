@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import MemberTable from "~/app/_components/inputs/MemberTable";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import RoleTable from "~/app/_components/sections/RoleTable";
+import RoleTable from "~/app/(logged)/project/[projectId]/settings/users/RoleTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { checkPermissions } from "~/lib/defaultValues/permission";
@@ -20,7 +20,7 @@ import { api } from "~/trpc/react";
 
 export default function ProjectUsers() {
   const { projectId } = useParams();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const [section, setSection] = useState("Users");
   const { data: userTypes } = api.projects.getUserTypes.useQuery({
     projectId: projectId as string,
@@ -52,14 +52,7 @@ export default function ProjectUsers() {
       const role =
         roles?.find((role) => role.id === variables.roleId)?.label ??
         "NOT FOUND";
-      alert(
-        "Oops...",
-        `You cannot delete the ${role} role because it is assigned to a user.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.assignedRoleError(role);
     },
   });
   const { mutateAsync: updateRoleTabPermissions } =
@@ -107,10 +100,7 @@ export default function ProjectUsers() {
     ids = ids.filter((id) => {
       const user = teamMembers.find((user) => user.id === id);
       if (user?.roleId === "owner") {
-        alert("Oops...", "You cannot remove the owner of the project.", {
-          type: "error",
-          duration: 5000,
-        });
+        predefinedAlerts.removeOwnerError();
         return false;
       }
       return true;
@@ -171,23 +161,13 @@ export default function ProjectUsers() {
   // Role handlers
   const handleRoleAdd = async function (label: string) {
     if (label === "") {
-      alert("Error", "Please enter a role name.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.roleNameError();
       return;
     }
     if (
       roles?.some((role) => role.label.toLowerCase() === label.toLowerCase())
     ) {
-      alert(
-        "Error",
-        `A role with the name "${label}" already exists. Please choose a different name.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.existingRoleError(label);
       return;
     }
 
@@ -274,9 +254,8 @@ export default function ProjectUsers() {
             />
           )}
           {!teamMembers && !userTypes && !roles && (
-            <div className="mt-5 flex flex-row gap-x-3">
-              <LoadingSpinner />
-              <p className="text-lg">Loading...</p>
+            <div className="flex h-full w-full flex-col items-center">
+              <LoadingSpinner color="primary" />
             </div>
           )}
         </>
@@ -294,9 +273,8 @@ export default function ProjectUsers() {
             ></RoleTable>
           )}
           {!roles && (
-            <div className="flex h-40 w-full items-center justify-center">
+            <div className="flex h-full w-full flex-col items-center">
               <LoadingSpinner color="primary" />
-              <p className="text-lg">Loading...</p>
             </div>
           )}
         </>

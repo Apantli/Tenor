@@ -83,16 +83,12 @@ export const epicsRouter = createTRPCRouter({
         });
       } else {
         epicData.scrumId = await getEpicNewId(ctx.firestore, projectId);
-        await getEpicsRef(ctx.firestore, projectId).add(epicData);
+        const createEpic = await getEpicsRef(ctx.firestore, projectId).add(epicData);
         await LogProjectActivity({
           firestore: ctx.firestore,
           projectId: input.projectId,
           userId: ctx.session.user.uid,
-          itemId: getEpicRef(
-            ctx.firestore,
-            projectId,
-            epicData.scrumId.toString(),
-          ).id,
+          itemId: createEpic.id,
           type: "EP",
           action: "create",
         });

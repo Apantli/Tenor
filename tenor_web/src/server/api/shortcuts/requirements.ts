@@ -101,10 +101,41 @@ export const getRequirement = async (
       message: "Requirement not found",
     });
   }
-  return {
+
+  const requirement = {
     id: requirementSnapshot.id,
     ...RequirementSchema.parse(requirementSnapshot.data()),
-  } as WithId<Requirement>;
+  };
+
+  const requirementType: Tag =
+    (await getRequirementType(
+      firestore,
+      projectId,
+      requirement.requirementTypeId,
+    )) ?? noTag;
+
+  const requirementFocus: Tag | undefined =
+    requirement.requirementFocusId !== ""
+      ? await getRequirementFocus(
+          firestore,
+          projectId,
+          requirement.requirementFocusId,
+        )
+      : undefined;
+
+  const priority: Tag | undefined =
+    requirement.priorityId !== ""
+      ? await getPriority(firestore, projectId, requirement.priorityId)
+      : undefined;
+
+  const requirementCol: RequirementCol = {
+    ...requirement,
+    priority,
+    requirementType,
+    requirementFocus,
+  };
+
+  return requirementCol;
 };
 
 /**

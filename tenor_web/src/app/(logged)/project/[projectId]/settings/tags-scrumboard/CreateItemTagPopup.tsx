@@ -2,16 +2,15 @@
 
 import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import DropdownColorPicker from "~/app/_components/inputs/DropdownColorPicker";
+import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
-
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 interface Props {
   showPopup: boolean;
   setShowPopup: (show: boolean) => void;
@@ -38,7 +37,7 @@ export default function CreateItemTagPopup({
   const confirm = useConfirmation();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
   const { projectId } = useParams();
-  const { alert } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   const utils = api.useUtils();
 
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
@@ -114,10 +113,7 @@ export default function CreateItemTagPopup({
 
   const handleCreateTag = async () => {
     if (form.name === "") {
-      alert("Oops...", currentConfig.errorEmptyName, {
-        type: "error",
-        duration: 5000,
-      });
+      alertTemplates.error(currentConfig.errorEmptyName);
       return;
     }
 
@@ -146,13 +142,13 @@ export default function CreateItemTagPopup({
     );
 
     if (tagAlreadyExists) {
-      alert(
-        "Duplicate Name",
-        `A ${itemTagType === "BacklogTag" ? "tag" : itemTagType === "ReqFocus" ? "focus area" : "requirement type"} with this name already exists.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
+      predefinedAlerts.existingTagError(
+        itemTagType === "BacklogTag"
+          ? "Backlog Tag"
+          : itemTagType === "ReqFocus"
+            ? "Requirement Focus"
+            : "Requirement Type",
+        form.name,
       );
       return;
     }
@@ -194,10 +190,7 @@ export default function CreateItemTagPopup({
         color: generateRandomTagColor(),
       });
     } catch {
-      alert("Error", `Failed to create ${itemTagType}`, {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.failedToCreateTag(itemTagType);
     }
   };
 

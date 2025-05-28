@@ -2,10 +2,10 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
-import SearchBar from "~/app/_components/SearchBar";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { api } from "~/trpc/react";
-import UserStoryDetailPopup from "../user-stories/UserStoryDetailPopup";
+import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
@@ -25,7 +25,7 @@ import {
   useInvalidateQueriesBacklogItems,
 } from "~/app/_hooks/invalidateHooks";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
-import IssueDetailPopup from "../issues/IssueDetailPopup";
+import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
 import {
   type BacklogItemAndTaskDetailType,
@@ -36,7 +36,7 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import CreateSprintPopup from "./CreateSprintPopup";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
 import { type KanbanCard } from "~/lib/types/kanbanTypes";
-import AdvancedSearch from "~/app/_components/AdvancedSearch";
+import AdvancedSearch from "~/app/_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 
 export type BacklogItems = inferRouterOutputs<
@@ -182,9 +182,9 @@ export default function ProjectSprints() {
     useQueryIdForPopup("id");
 
   // Check if all unassigned items are selected
-  const allUnassignedSelected = filteredUnassignedItems.every((itemId) =>
-    selectedItems.has(itemId),
-  );
+  const allUnassignedSelected =
+    filteredUnassignedItems.length > 0 &&
+    filteredUnassignedItems.every((itemId) => selectedItems.has(itemId));
 
   const toggleSelectAllUnassigned = () => {
     const newSelection = new Set(selectedItems);
@@ -434,7 +434,8 @@ export default function ProjectSprints() {
     setLastDraggedBacklogItemId(null);
   }, [sprintSearchValue]);
 
-  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
+  const [advancedFilters, setAdvancedFilters] =
+    useAdvancedSearchFilters("sprints");
 
   return (
     <>
@@ -488,7 +489,7 @@ export default function ProjectSprints() {
                   {permission >= permissionNumbers.write && (
                     <button
                       className={cn(
-                        "rounded-lg px-1 text-app-text transition",
+                        "rounded-lg px-1 text-app-text transition hover:text-app-primary",
                         {
                           "text-app-secondary":
                             filteredUnassignedItems.length > 0 &&
@@ -496,11 +497,14 @@ export default function ProjectSprints() {
                         },
                       )}
                       onClick={toggleSelectAllUnassigned}
+                      data-tooltip-id="tooltip"
+                      data-tooltip-content="Toggle select all"
+                      data-tooltip-delay-show={500}
                     >
                       {allUnassignedSelected ? (
-                        <CheckNone fontSize="small" />
+                        <CheckNone fontSize="medium" />
                       ) : (
-                        <CheckAll fontSize="small" />
+                        <CheckAll fontSize="medium" />
                       )}
                     </button>
                   )}

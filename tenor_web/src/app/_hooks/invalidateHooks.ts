@@ -31,6 +31,18 @@ export const useInvalidateQueriesAllTasks = () => {
     await utils.tasks.getTaskDependencies.invalidate({
       projectId: projectId,
     });
+
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+
+    await utils.tasks.getTasks.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -42,6 +54,9 @@ export const useInvalidateQueriesTaskDetails = () => {
       projectId: projectId,
     });
     await utils.kanban.getTasksForKanban.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getProjectActivities.invalidate({
       projectId: projectId,
     });
     await Promise.all(
@@ -59,6 +74,14 @@ export const useInvalidateQueriesAllEpics = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
     await utils.epics.getEpics.invalidate({
+      projectId: projectId,
+    });
+
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+
+    await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
   };
@@ -79,6 +102,15 @@ export const useInvalidateQueriesAllUserStories = () => {
     await utils.userStories.getUserStoryDependencies.invalidate({
       projectId: projectId,
     });
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.userStories.getUserStories.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -86,6 +118,9 @@ export const useInvalidateQueriesUserStoriesDetails = () => {
   const utils = api.useUtils();
   return async (projectId: string, userStoryIds: string[]) => {
     await utils.userStories.getUserStoryDependencies.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getProjectActivities.invalidate({
       projectId: projectId,
     });
     await Promise.all(
@@ -147,6 +182,12 @@ export const useInvalidateQueriesAllIssues = () => {
     await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
       projectId: projectId,
     });
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -161,10 +202,14 @@ export const useInvalidateQueriesIssueDetails = () => {
         });
       }),
     );
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
 export const useInvalidateQueriesBacklogItems = () => {
+  const utils = api.useUtils();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesAllEpics = useInvalidateQueriesAllEpics();
@@ -182,6 +227,9 @@ export const useInvalidateQueriesBacklogItems = () => {
         break;
     }
     // TODO: Add one for general backlog items, when they are implemented
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
@@ -248,6 +296,12 @@ export const useInvalidateQueriesAllStatuses = () => {
     await utils.settings.getStatusTypes.invalidate({
       projectId: projectId,
     });
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
+      projectId,
+    });
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId,
+    });
   };
 };
 
@@ -255,6 +309,12 @@ export const useInvalidateQueriesAllSprints = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
     await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
   };
@@ -266,6 +326,9 @@ export const useInvalidateQueriesSingleSprint = () => {
     await utils.sprints.getSprint.invalidate({
       projectId: projectId,
       sprintId: sprintId,
+    });
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
     });
   };
 };

@@ -16,7 +16,6 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "../trpc";
-import { issuePermissions } from "~/lib/defaultValues/permission";
 import {
   deleteIssueAndGetModified,
   getIssue,
@@ -28,6 +27,7 @@ import {
   getIssueTable,
 } from "../shortcuts/issues";
 import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
+import { issuePermissions } from "~/lib/defaultValues/permission";
 
 export const issuesRouter = createTRPCRouter({
   /**

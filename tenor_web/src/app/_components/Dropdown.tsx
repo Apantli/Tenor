@@ -14,7 +14,7 @@ import useClickOutside from "../_hooks/useClickOutside";
 import { type ClassNameValue } from "tailwind-merge";
 import useWindowResize from "../_hooks/useWindowResize";
 import useAfterScroll from "../_hooks/useAfterScroll";
-import BaseButton, { type BaseButtonProps } from "./buttons/BaseButton";
+import BaseButton, { type BaseButtonProps } from "./inputs/buttons/BaseButton";
 import Portal from "./Portal";
 import usePersistentState from "../_hooks/usePersistentState";
 
@@ -328,13 +328,16 @@ export default function Dropdown({
   }, []);
 
   // Used to close the menu when the user clicks outside of it
-  useClickOutside(Array.from(dropdownElements), () => {
-    if (isOpen) {
-      setIsOpen(false);
-      setOpenState?.(false);
-      handleClose();
-    }
-  });
+  useClickOutside(
+    Array.from(dropdownElements).map((ref) => ref.current),
+    () => {
+      if (isOpen) {
+        setIsOpen(false);
+        setOpenState?.(false);
+        handleClose();
+      }
+    },
+  );
 
   return (
     <DropdownTreeContext.Provider value={dropdownTreeApi}>

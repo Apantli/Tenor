@@ -39,7 +39,13 @@ export default function Navbar({ children }: PropsWithChildren) {
       </div>
       <div className="flex items-center gap-4">
         <Dropdown
-          label={<ProfilePicture user={user} hideTooltip />}
+          label={
+            <ProfilePicture
+              user={user}
+              hideTooltip
+              className="cursor-pointer"
+            />
+          }
           menuClassName="w-56 mt-2"
         >
           <DropdownButton className="flex items-center justify-between">
@@ -55,7 +61,7 @@ export default function Navbar({ children }: PropsWithChildren) {
             <span className="text-app-fail">Sign out</span>
             <LogoutIcon htmlColor="red" fontSize="small" />
           </DropdownButton>
-          {shiftClicked && (
+          {shiftClicked && process.env.NODE_ENV === "development" && (
             <DropdownButton
               className="text-sm text-gray-500"
               onClick={handleCopyUID}
@@ -63,8 +69,11 @@ export default function Navbar({ children }: PropsWithChildren) {
               Copy your user id
             </DropdownButton>
           )}
-          {shiftClicked && (
-            <DropdownButton onClick={() => router.push("/component-showcase")}>
+          {shiftClicked && process.env.NODE_ENV === "development" && (
+            <DropdownButton
+              onClick={() => router.push("/component-showcase")}
+              className="text-sm text-gray-500"
+            >
               Component showcase
             </DropdownButton>
           )}
