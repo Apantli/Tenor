@@ -11,7 +11,8 @@ import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePicker } from "~/app/_components/inputs/pickers/SizePicker";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import UserStoryPicker from "~/app/_components/inputs/pickers/UserStoryPicker";
+import UserStoryPicker from "../inputs/pickers/UserStoryPicker";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
@@ -96,6 +97,8 @@ export default function CreateIssuePopup({
     // Invalidation is done on the parent component
   };
 
+  const checkTitleLimit = useCharacterLimit("Issue name", 80);
+
   return (
     <Popup
       show={showPopup}
@@ -172,7 +175,11 @@ export default function CreateIssuePopup({
         id="issue-name-field"
         label="Issue name"
         value={createForm.name}
-        onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+        onChange={(e) => {
+          if (checkTitleLimit(e.target.value)) {
+            setCreateForm({ ...createForm, name: e.target.value });
+          }
+        }}
         placeholder="Short summary of the issue..."
         containerClassName="mb-4"
       />

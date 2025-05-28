@@ -45,6 +45,7 @@ import { CreateTaskForm } from "./CreateTaskPopup";
 import TasksTable, { type BacklogItemWithTasks } from "../TasksTable";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
 
@@ -332,6 +333,8 @@ export default function UserStoryDetailPopup({
     };
   };
 
+  const checkTitleLimit = useCharacterLimit("User story title", 80);
+
   return (
     <Popup
       scrollRef={scrollContainerRef}
@@ -571,7 +574,11 @@ export default function UserStoryDetailPopup({
             id="story-name-field"
             label="Story name"
             value={editForm.name}
-            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setEditForm({ ...editForm, name: e.target.value });
+              }
+            }}
             placeholder="Short summary of the story..."
             containerClassName="mb-4"
           />

@@ -21,6 +21,7 @@ import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import { emptyRole } from "~/lib/defaultValues/roles";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 export const ProjectEpics = () => {
   // #region Hooks
@@ -148,6 +149,7 @@ export const ProjectEpics = () => {
     }
   };
 
+  const checkTitleLimit = useCharacterLimit("Epic name", 80);
   // #endregion
 
   return (
@@ -256,7 +258,11 @@ export const ProjectEpics = () => {
             placeholder="Briefly describe your epic..."
             label="Epic name"
             value={newEpicName}
-            onChange={(e) => setNewEpicName(e.target.value)}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setNewEpicName(e.target.value);
+              }
+            }}
           />
           <InputTextAreaField
             id="epic-description-field"
@@ -422,7 +428,11 @@ export const ProjectEpics = () => {
                 type="text"
                 placeholder="Your epic name"
                 value={editEpicName}
-                onChange={(e) => setEditEpicName(e.target.value)}
+                onChange={(e) => {
+                  if (checkTitleLimit(e.target.value)) {
+                    setEditEpicName(e.target.value);
+                  }
+                }}
               />
               <InputTextAreaField
                 id="epic-description-field"

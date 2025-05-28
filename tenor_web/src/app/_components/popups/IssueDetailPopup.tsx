@@ -40,6 +40,7 @@ import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import { CreateTaskForm } from "./CreateTaskPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import StatusPicker from "../inputs/pickers/StatusPicker";
@@ -230,6 +231,8 @@ export default function IssueDetailPopup({
     }
   };
 
+  const checkTitleLimit = useCharacterLimit("Issue name", 80);
+
   return (
     <Popup
       setSidebarOpen={setSidebarOpen}
@@ -392,7 +395,11 @@ export default function IssueDetailPopup({
             id="issue-name-field"
             label="Issue name"
             value={editForm.name}
-            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setEditForm({ ...editForm, name: e.target.value });
+              }
+            }}
             placeholder="Short summary of the issue..."
             containerClassName=""
           />
