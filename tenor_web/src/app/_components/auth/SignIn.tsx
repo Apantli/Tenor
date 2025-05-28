@@ -22,7 +22,7 @@ export default function SignIn() {
   });
   const [loading, setLoading] = useState(false);
   const { mutateAsync: login } = api.auth.login.useMutation();
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const handleInput: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });

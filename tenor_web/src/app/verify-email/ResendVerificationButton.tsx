@@ -11,7 +11,7 @@ import { useAlert } from "../_hooks/useAlert";
 export default function ResendVerificationButton() {
   const router = useRouter();
 
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const { user, loading } = useFirebaseAuth();
   const { data: verificationResult } = api.auth.checkVerification.useQuery(

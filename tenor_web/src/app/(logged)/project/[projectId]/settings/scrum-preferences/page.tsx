@@ -179,9 +179,7 @@ export default function ProjectScrumPreferences() {
     if (value < maxInputNumber) return false;
     if (numberWarningShown) return true;
 
-    predefinedAlerts.sizePointsUpperBoundError(
-      maxInputSizeNumber.toLocaleString(),
-    );
+    predefinedAlerts.sizePointsUpperBoundError(maxInputSizeNumber);
     return true;
   };
 
@@ -272,9 +270,7 @@ export default function ProjectScrumPreferences() {
     }
 
     if ((sizeData[sizeData.length - 1]?.value ?? 0) > maxInputSizeNumber) {
-      predefinedAlerts.sizePointsUpperBoundError(
-        maxInputSizeNumber.toLocaleString(),
-      );
+      predefinedAlerts.sizePointsUpperBoundError(maxInputSizeNumber);
       return;
     }
 

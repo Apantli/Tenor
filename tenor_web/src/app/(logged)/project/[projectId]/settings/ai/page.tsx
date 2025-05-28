@@ -26,7 +26,7 @@ export default function ProjectAIConfig() {
   const [newText, setNewText] = useState("");
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
 
   // Fetch
   const { data: role } = api.settings.getMyRole.useQuery({
@@ -75,7 +75,7 @@ export default function ProjectAIConfig() {
   // Add
   const { mutateAsync: addLink } = api.settings.addLink.useMutation({
     onError: async (error) => {
-      alert("Error", error.message, { type: "error", duration: 5000 });
+      alertTemplates.error(error.message);
       await utils.settings.getContextLinks.invalidate({
         projectId: projectId as string,
       });
@@ -128,15 +128,7 @@ export default function ProjectAIConfig() {
       if (!link.valid) invalidLinks.push(link);
     }
     if (invalidLinks.length > 0) {
-      const plural = invalidLinks.length > 1 ? "s" : "";
-      alert(
-        `Invalid link${plural}`,
-        `${invalidLinks.length} link${plural} ${plural ? "are" : "is"} invalid.`,
-        {
-          type: "warning",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.linkInvalidError(invalidLinks.length);
     }
   }, [links]);
 

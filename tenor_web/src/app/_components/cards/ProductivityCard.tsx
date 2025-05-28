@@ -13,7 +13,7 @@ interface PerformanceData {
 }
 
 export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
-  const { predefinedAlerts } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   const utils = api.useUtils();
 
   const {
@@ -43,7 +43,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
     onError: async (error) => {
       // Handle success, e.g., show a toast notification
 
-      predefinedAlerts.warning(error.message);
+      alertTemplates.warning(error.message);
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,

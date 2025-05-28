@@ -129,31 +129,38 @@ export const useAlert = () => {
     throw new Error("useAlert must be used within an AlertProvider");
   }
 
-  const predefinedAlerts = {
-    warning: (message: string) =>
-      context.alert("Warning", message, {
-        type: "warning",
-        duration: 5000,
-      }),
+  const alertTemplates = {
+    // Used for unexpected errors, like server errors and contract errors
     error: (message: string) =>
       context.alert("Error", message, {
         type: "error",
         duration: 5000,
       }),
+    // Used for user errors, like form validation
+    oops: (message: string) =>
+      context.alert("Oops...", message, {
+        type: "error",
+        duration: 5000,
+      }),
+    success: (message: string) =>
+      context.alert("Success", message, {
+        type: "success",
+        duration: 5000,
+      }),
+    warning: (message: string) =>
+      context.alert("Warning", message, {
+        type: "warning",
+        duration: 5000,
+      }),
+    info: (title: string, message: string) => context.alert(title, message),
+  };
+
+  const predefinedAlerts = {
     unexpectedError: () =>
       context.alert(
         "We're sorry",
         "There was an unexpected error. Please try again",
         { type: "error", duration: 7000 },
-      ),
-    cyclicDependency: () =>
-      context.alert(
-        "Oops...",
-        "You created dependency cycle. Change reverted.",
-        {
-          type: "error",
-          duration: 10000,
-        },
       ),
     emailSent: () =>
       context.alert(
@@ -164,292 +171,204 @@ export const useAlert = () => {
           duration: 7000,
         },
       ),
-    emailInUseError: () =>
-      context.alert("Oops...", "This email is already in use", {
-        type: "error",
-        duration: 7000,
-      }),
+    cyclicDependency: () =>
+      alertTemplates.oops("You created a dependency cycle. Change reverted."),
+    emailInUseError: () => alertTemplates.oops("This email is already in use"),
     loginError: () =>
-      context.alert("Oops...", "Incorrect email or password", {
-        type: "error",
-        duration: 7000,
-      }),
+      alertTemplates.oops("Incorrect email or password. Please try again."),
+    // #region User Stories
     userStoryNameError: () =>
-      context.alert("Oops", "Please enter a name for the user story.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops(
+        "Please enter a name for the user story. It should be between 1 and 100 characters.",
+      ),
     userStoryCreateError: () =>
-      context.alert("Error", "Failed to create user story. Please try again.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.error("Failed to create user story. Please try again."),
+    // #endregion
+    // #region Issues
     issueNameError: () =>
-      context.alert("Oops", "Please provide a name for the issue.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops(
+        "Please provide a name for the issue. It should be between 1 and 100 characters.",
+      ),
     issueStoryCreateError: () =>
-      context.alert("Error", "Failed to create task. Please try again.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.error("Failed to create issue. Please try again."),
+    // #endregion
+    // #region Epic
     epicNameError: () =>
-      context.alert("Oops...", "Please enter a name for the epic.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops(
+        "Please enter a name for the epic. It should be between 1 and 100 characters.",
+      ),
+    // #endregion
+    // #region Requirements
     requirementNameError: () =>
-      context.alert("Oops...", "Please enter a name for the requirement.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops(
+        "Please enter a name for the requirement. It should be between 1 and 100 characters.",
+      ),
     requirementTypeError: () =>
-      context.alert("Oops...", "Please select a type for the requirement.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops("Please select a type for the requirement."),
+    // #endregion
+    // #region Roles
     roleNameError: () =>
-      context.alert("Oops...", "Please enter a name for the role.", {
-        type: "error",
-        duration: 5000,
-      }),
-    statusNameError: () =>
-      context.alert("Oops...", "Please enter a name for the status.", {
-        type: "error",
-        duration: 5000,
-      }),
-    statusNameReservedError: (statusName: string) =>
-      context.alert(
-        "Default status name",
-        `The status name "${statusName}" is reserved for default statuses and cannot be created manually.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
+      alertTemplates.oops(
+        "Please enter a name for the role. It should be between 1 and 100 characters.",
       ),
-    existingStatusError: (statusName: string) =>
-      context.alert(
-        "Error",
-        `A status with the name "${statusName}" already exists. Please choose a different name.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      ),
-    sprintDatesError: () =>
-      context.alert("Oops...", "Please select valid start and end dates.", {
-        type: "error",
-        duration: 5000,
-      }),
-    sprintDurationError: () =>
-      context.alert(
-        "Oops...",
-        "Sprint duration must be between 1 and 365 total days",
-      ),
-    sprintDateCollideError: (sprintNumber: number) =>
-      context.alert("Oops...", `Dates collide with Sprint ${sprintNumber}.`, {
-        type: "error",
-        duration: 5000,
-      }),
     ownerRoleError: () =>
-      context.alert("Oops...", "You cannot edit the role of the owner.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops("You cannot edit the role of the owner."),
     assignedRoleError: (roleName: string) =>
-      context.alert(
-        "Oops...",
+      alertTemplates.error(
         `You cannot delete the ${roleName} role because it is assigned to a user.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
       ),
     existingRoleError: (roleName: string) =>
-      context.alert(
-        "Error",
+      alertTemplates.oops(
         `A role with the name "${roleName}" already exists. Please choose a different name.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
       ),
-    removeOwnerError: () =>
-      context.alert("Oops...", "You cannot remove the owner of the project.", {
-        type: "error",
-        duration: 5000,
-      }),
+    // #endregion
+    // #region Statuses
+    statusNameNotEditableError: () =>
+      alertTemplates.oops(
+        "You cannot edit nor delete the name of a default status. Please create a new status if you want to change it.",
+      ),
+    statusNameError: () =>
+      alertTemplates.oops(
+        "Please enter a name for the status. It should be between 1 and 100 characters.",
+      ),
+    statusNameReservedError: (statusName?: string) =>
+      alertTemplates.oops(
+        `The status name "${statusName}" is reserved for default statuses and cannot be created manually.`,
+      ),
+    existingStatusError: (statusName: string) =>
+      alertTemplates.oops(
+        `A status with the name "${statusName}" already exists. Please choose a different name.`,
+      ),
+    // #endregion
+    // #region Sprints
+    sprintDatesError: () =>
+      alertTemplates.oops(
+        "Please select valid start and end dates for the sprint.",
+      ),
+    sprintDurationError: () =>
+      alertTemplates.oops("Sprint duration must be between 1 and 365 days."),
+    sprintDateCollideError: (sprintNumber: number) =>
+      alertTemplates.oops(
+        `The selected dates collide with Sprint ${sprintNumber}. Please choose different dates.`,
+      ),
+    // #endregion
+    // #region Context
     contextUpdateSuccess: () =>
-      context.alert(
-        "Success",
+      alertTemplates.success(
         "Project AI context has been updated successfully.",
-        {
-          type: "success",
-          duration: 5000,
-        },
       ),
     fileUploadSuccess: () =>
-      context.alert(
-        "Success",
-        "A new file was added to your project AI context.",
-        {
-          type: "success",
-          duration: 5000,
-        },
+      alertTemplates.success(
+        "File uploaded successfully. It will be processed shortly.",
       ),
     fileLimitExceeded: () =>
-      context.alert("Oops...", "You exceeded the file size limit.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      }),
+      alertTemplates.oops(
+        "You exceeded the file size limit. Please upload a smaller file or delete existing ones.",
+      ),
     linkUploadSuccess: () =>
-      context.alert("Success", "Link added successfully.", {
-        type: "success",
-        duration: 5000,
-      }),
+      alertTemplates.success(
+        "Link added successfully. It will be processed shortly.",
+      ),
     linkExistsError: () =>
-      context.alert(
-        "Link exists",
-        "This link is already added to the context.",
-        {
-          type: "warning",
-          duration: 3000,
-        },
+      alertTemplates.oops("This link is already added to the context."),
+    linkInvalidError: (length: number) =>
+      alertTemplates.oops(
+        `${length} link${length > 0 && "s"} ${length > 0 ? "are" : "is"} invalid.`,
+      ),
+
+    // #endregion
+    // #region Scrum Settings
+    existingTagError: (itemTagType: string, tagName: string) =>
+      alertTemplates.oops(
+        `A ${itemTagType} with the name "${tagName}" already exists. Please choose a different name.`,
+      ),
+    failedToCreateTag: (itemTagType: string) =>
+      alertTemplates.error(
+        `Failed to create ${itemTagType}. Please try again.`,
       ),
     storyPointsError: () =>
-      context.alert(
-        "Oops...",
-        "Maximum sprint story points must be greater than 0",
-        {
-          type: "error",
-          duration: 5000,
-        },
+      alertTemplates.oops(
+        "Maximum sprint story points must be greater than 0.",
       ),
     sizePointsLowerBoundError: (size: string) =>
-      context.alert(
-        "Invalid size values",
-        `The value of ${size} must be greater than 0.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      ),
-    sizePointsUpperBoundError: (upperBound: string) =>
-      context.alert(
-        "Invalid size values",
-        `Please only input numbers less or equal than ${upperBound}.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
+      alertTemplates.oops(`The value of ${size} must be greater than 0.`),
+    sizePointsUpperBoundError: (upperBound: number) =>
+      alertTemplates.oops(
+        `The value of size points must be less than or equal to ${upperBound}.`,
       ),
     sizeOrderError: (size: string, prev: string) =>
-      context.alert(
-        "Invalid order",
-        `${size} must be greater than or equal to ${prev}.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      ),
+      alertTemplates.oops(`${size} must be greater than or equal to ${prev}.`),
     scrumSettingsSuccess: () =>
-      context.alert(
-        "Success",
-        "Scrum settings have been updated successfully",
-        {
-          type: "success",
-          duration: 5000,
-        },
-      ),
+      alertTemplates.success("Scrum settings have been updated successfully."),
     listNameError: () =>
-      context.alert("Oops...", "Please enter a name for the list.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops("Please enter a name for the list."),
+    // #endregion
+    // #region Project Settings
+    removeOwnerError: () =>
+      alertTemplates.oops(
+        "You cannot remove the owner of the project. Please assign a new owner first.",
+      ),
     projectNameError: () =>
-      context.alert("Oops...", "Please enter a project name.", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops(
+        "Please enter a project name. It should be between 1 and 100 characters.",
+      ),
     projectNameLengthError: (upperBound: string) =>
-      context.alert(
-        "Limit exceeded",
+      alertTemplates.oops(
         `The project name can't be longer than ${upperBound} characters.`,
-        {
-          type: "warning",
-          duration: 3000,
-        },
       ),
     projectCreateError: () =>
-      context.alert(
-        "Oops...",
-        "There was an error creating the project. Try again later.",
-        {
-          type: "error",
-          duration: 5000, // time in ms (5 seconds)
-        },
+      alertTemplates.error(
+        "There was an error creating the project. Please try again later.",
       ),
     projectLogoError: () =>
-      context.alert("Invalid image", "Please upload a valid image file", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops(
+        "Please upload a valid image file for the project logo.",
+      ),
     projectLogoSizeError: () =>
-      context.alert("File too large", "Logo image must be smaller than 3MB", {
-        type: "error",
-        duration: 5000,
-      }),
+      alertTemplates.oops("Logo image must be smaller than 3MB."),
     projectLogoDimensionsError: (height: number, width: number) =>
-      context.alert(
-        "Image too large",
+      alertTemplates.oops(
         `Logo dimensions must be 1024x1024 pixels or smaller. This image is ${width}x${height}.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
       ),
     projectSettingsSuccess: () =>
-      context.alert(
-        "Success",
+      alertTemplates.success(
         "Project settings have been updated successfully.",
-        {
-          type: "success",
-          duration: 5000,
-        },
       ),
+    // #endregion
+    // #region Reloads
     productivityUpdateSuccess: () =>
-      context.alert("Success", "Productivity has been reloaded.", {
-        type: "success",
-        duration: 5000,
-      }),
+      alertTemplates.success("Productivity has been updated."),
+    statusUpdateSuccess: () =>
+      alertTemplates.success("Status has been updated successfully."),
+    // #endregion
+    // #region Muse Headset
     headSetDisconnected: () =>
-      context.alert("We're sorry...", "Muse headset got disconnected.", {
-        type: "error",
-        duration: 5000,
-      }),
-    headSetConnectionError: () =>
-      context.alert(
-        "We're sorry...",
-        "Failed to connect to the Muse headset.",
-        {
-          type: "error",
-          duration: 5000,
-        },
+      alertTemplates.oops(
+        "Muse headset got disconnected. Please reconnect it to continue.",
       ),
-    tooLongText: (label: string, limit: number) => {
-      context.alert(
-        "Oops...",
-        `${label} can't be longer than ${limit} characters.`,
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
-    },
+    headSetConnectionError: () =>
+      alertTemplates.oops(
+        "Failed to connect to the Muse headset. Please try again.",
+      ),
+    // #endregion
+
+    // #region Completions
+    completionWarning: () =>
+      alertTemplates.warning(
+        "Please wait until the current completion finishes.",
+      ),
+    formCompletionError: () =>
+      alertTemplates.oops(
+        "Please enter at least one response to a missing question.",
+      ),
+    // #endregion
+    // #region Other
+    tooLongText: (label: string, limit: number) =>
+      alertTemplates.oops(`${label} can't be longer than ${limit} characters.`),
+    // #endregion
   };
 
-  return { alert: context.alert, predefinedAlerts };
+  return { predefinedAlerts, alertTemplates };
 };
 
 let alertContextRef: AlertFunction | null = null;

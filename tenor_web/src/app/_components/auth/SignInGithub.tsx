@@ -11,7 +11,7 @@ export default function SignInGithub() {
   const router = useRouter();
   const { mutateAsync: login } = api.auth.login.useMutation();
 
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const handleSignIn = async () => {
     const provider = new GithubAuthProvider();

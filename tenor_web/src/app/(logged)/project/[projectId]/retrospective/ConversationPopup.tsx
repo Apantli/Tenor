@@ -244,14 +244,7 @@ export default function ConversationPopup({
         // eslint-disable-next-line
         .subscribe(museEEGCallback as any);
     } catch {
-      alert(
-        "We're sorry...",
-        "Failed to connect to Muse headset, please try again.",
-        {
-          type: "error",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.headSetConnectionError();
       setHeadsetStatus("disconnected");
     }
   };
