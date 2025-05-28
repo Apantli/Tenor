@@ -1,4 +1,4 @@
-import { StatusTag } from "../types/firebaseSchemas";
+import { type StatusTag } from "../types/firebaseSchemas";
 
 export const todoTagName = "Todo";
 export const doingTagName = "Doing";
