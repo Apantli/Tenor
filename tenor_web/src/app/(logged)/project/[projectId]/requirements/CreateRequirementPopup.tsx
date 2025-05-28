@@ -2,18 +2,18 @@
 
 import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import type { Tag } from "~/lib/types/firebaseSchemas";
-import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
-import RequirementTypePicker from "~/app/_components/specific-pickers/RequirementTypePicker";
-import RequirementFocusPicker from "~/app/_components/specific-pickers/RequirementFocusPicker";
 import { useInvalidateQueriesAllRequirements } from "~/app/_hooks/invalidateHooks";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import RequirementTypePicker from "~/app/_components/inputs/pickers/RequirementTypePicker";
+import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
+import RequirementFocusPicker from "~/app/_components/inputs/pickers/RequirementFocusPicker";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 interface Props {
   showPopup: boolean;

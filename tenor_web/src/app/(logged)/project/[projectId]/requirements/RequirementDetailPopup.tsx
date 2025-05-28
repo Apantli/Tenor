@@ -2,29 +2,29 @@
 
 import React, { useEffect, useState } from "react";
 import Popup from "~/app/_components/Popup";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import DeleteButton from "~/app/_components/buttons/DeleteButton";
+import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import Markdown from "react-markdown";
 import { UseFormatForAssignReqTypeScrumId } from "~/app/_hooks/requirementHook";
-import PriorityPicker from "~/app/_components/specific-pickers/PriorityPicker";
-import RequirementTypePicker from "~/app/_components/specific-pickers/RequirementTypePicker";
-import RequirementFocusPicker from "~/app/_components/specific-pickers/RequirementFocusPicker";
+import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
+import RequirementTypePicker from "~/app/_components/inputs/pickers/RequirementTypePicker";
+import RequirementFocusPicker from "~/app/_components/inputs/pickers/RequirementFocusPicker";
 import AiIcon from "@mui/icons-material/AutoAwesome";
-import TertiaryButton from "~/app/_components/buttons/TertiaryButton";
-import PrimaryButton from "~/app/_components/buttons/PrimaryButton";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 import type { Tag } from "~/lib/types/firebaseSchemas";
 import {
   useInvalidateQueriesAllRequirements,
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
-import type { AIGeneratedRequirement } from "~/app/_components/sections/RequirementsTable";
+import type { AIGeneratedRequirement } from "./RequirementsTable";
 import { cn } from "~/lib/utils";
 
 interface Props {
@@ -214,8 +214,8 @@ export default function RequirementDetailPopup({
       show={showDetail}
       reduceTopPadding={!requirementDetail || !canWrite}
       size="small"
-      className={cn("h-[450px] max-h-[700px] w-[600px]", {
-        "h-[420px]": editMode,
+      className={cn("h-[380px] max-h-[700px] w-[600px]", {
+        "h-[380px]": editMode,
       })}
       disablePassiveDismiss={editMode && isModified()}
       dismiss={dismissPopup}
@@ -354,7 +354,7 @@ export default function RequirementDetailPopup({
                 id="requirement-description"
                 chatPosition="right"
                 label="Description"
-                className="min-h-[165px] w-full resize-none"
+                className="min-h-[120px] w-full resize-none"
                 value={editForm.description}
                 onChange={(e) =>
                   setEditForm((prev) => ({
