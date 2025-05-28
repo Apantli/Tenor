@@ -38,9 +38,10 @@ export default function Terms() {
         <p className="mb-4">
           We take the security of your personal information seriously and
           implement reasonable measures to protect it from unauthorized access,
-          use, or disclosure. However, no method of transmission over the
-          internet or method of electronic storage is 100% secure, and we cannot
-          guarantee its absolute security.
+          use, or disclosure. While we follow industry best practices to
+          safeguard your data, no system can be completely secure. We
+          continuously evaluate and improve our security practices to help
+          protect your information.
         </p>
         <h2 className="mb-2 text-xl font-semibold">
           4. Sharing Your Information
