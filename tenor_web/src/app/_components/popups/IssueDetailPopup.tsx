@@ -34,8 +34,8 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import { CreateTaskForm } from "./CreateTaskPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";

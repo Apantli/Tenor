@@ -37,8 +37,10 @@ import { z } from "zod";
 import { isBase64Valid } from "~/utils/helpers/base64";
 import { defaultActivity, emptySettings } from "~/lib/defaultValues/project";
 import {
+  getItemActivityDetails,
   computeTopProjectStatus,
   getProject,
+  getProjectActivities,
   getProjectRef,
   getProjectsRef,
   getProjectStatus,
@@ -492,5 +494,21 @@ export const projectsRouter = createTRPCRouter({
       await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
         topProjects,
       );
+    }),
+
+  getProjectActivities: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getProjectActivities( ctx.firestore, projectId);
+    }),
+
+  getActivityDetails: protectedProcedure
+    .input(z.object({ 
+      projectId: z.string(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      return await getItemActivityDetails(ctx.firestore, projectId);
     }),
 });

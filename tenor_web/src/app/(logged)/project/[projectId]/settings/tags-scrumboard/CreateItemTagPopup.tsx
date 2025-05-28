@@ -9,7 +9,7 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import { useInvalidateQueriesAllTags } from "~/app/_hooks/invalidateHooks";
-import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 interface Props {
   showPopup: boolean;

@@ -7,7 +7,7 @@ import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CloseIcon from "@mui/icons-material/Cancel";
 import { type Links } from "~/server/api/routers/settings";
-import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 
 interface Props {

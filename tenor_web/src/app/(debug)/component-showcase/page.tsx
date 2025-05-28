@@ -20,12 +20,12 @@ import { UserPicker } from "~/app/_components/inputs/pickers/UserPicker";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import useGhostTableStateManager from "~/app/_hooks/useGhostTableStateManager";
 import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
-import { acceptableTagColors } from "~/utils/helpers/colorUtils";
+import { acceptableTagColors, getPillColorByActivityType } from "~/utils/helpers/colorUtils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
@@ -473,6 +473,12 @@ function TagShowcase() {
         <TagComponent onDelete={() => console.log("HELLO")} color="#009719">
           Login
         </TagComponent>
+      </div>
+      <br />
+      <div className="flex justify-start gap-2">
+        <TagComponent color={getPillColorByActivityType("create")}>Create</TagComponent>
+        <TagComponent color={getPillColorByActivityType("update")}>Update</TagComponent>
+        <TagComponent color={getPillColorByActivityType("delete")}>Delete</TagComponent>
       </div>
     </div>
   );

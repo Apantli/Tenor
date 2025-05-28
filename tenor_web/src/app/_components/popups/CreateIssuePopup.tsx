@@ -12,9 +12,9 @@ import { SizePicker } from "~/app/_components/inputs/pickers/SizePicker";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import UserStoryPicker from "~/app/_components/inputs/pickers/UserStoryPicker";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
-import InputTextField from "~/app/_components/inputs/InputTextField";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
 interface Props {
   showPopup: boolean;

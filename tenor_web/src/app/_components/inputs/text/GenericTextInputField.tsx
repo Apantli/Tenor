@@ -3,18 +3,18 @@ import React, { useState, useRef, useEffect } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import AIIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
-import PrimaryButton from "./buttons/PrimaryButton";
+import PrimaryButton from "../buttons/PrimaryButton";
 import SendIcon from "@mui/icons-material/Send";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import { api } from "~/trpc/react";
 import type { AIMessage } from "~/lib/types/firebaseSchemas";
 import { useAlert } from "~/app/_hooks/useAlert";
-import Dropdown, { DropdownItem, useCloseDropdown } from "./../Dropdown";
-import ProfilePicture from "./../ProfilePicture";
-import DeleteButton from "./buttons/DeleteButton";
+import Dropdown, { DropdownItem, useCloseDropdown } from "../../Dropdown";
+import ProfilePicture from "../../ProfilePicture";
+import DeleteButton from "../buttons/DeleteButton";
 
 export interface Props {
-  label?: string;
+  label?: string | React.ReactNode;
   labelClassName?: string;
   containerClassName?: string;
   disableAI?: boolean;

@@ -156,6 +156,7 @@ export interface Role {
   scrumboard: Permission; // scrumboard, tasks status, calendar
   issues: Permission; // issues, tasks
   backlog: Permission; // requirements, epics, user stories, tasks
+  reviews: Permission; // sprint reviews
   retrospective: Permission; // sprint retrospective
 }
 
@@ -178,9 +179,16 @@ export type IssueType = "IS";
 // export type GenericItemType = "IT"; // NOT IMPLEMENTED YET
 export type TaskType = "TS";
 export type EpicType = "EP";
+export type ProjectType = "PJ"; // For project activities
+export type SprintType = "SP"; // For requirements, not implemented yet
 
 export type BacklogItemType = UserStoryType | IssueType;
-export type AllBasicItemType = BacklogItemType | TaskType | EpicType;
+export type AllBasicItemType =
+  | BacklogItemType
+  | TaskType
+  | EpicType
+  | ProjectType
+  | SprintType;
 export type BacklogItemAndTaskType = BacklogItemType | TaskType;
 
 export type TaskDetailType = `${BacklogItemType}-${TaskType}`; // Used for simplification of moving info around
@@ -254,14 +262,30 @@ export interface ProjectStatusCache {
   fetchDate: Timestamp;
   topProjects: ProjectStatus[];
 }
-type ActivityType = "US" | "EP" | "IS" | "TS" | "SP";
-type ActionType = "create" | "update" | "delete";
+
+export type ActionType = "create" | "update" | "delete";
 
 export interface LogProjectActivityParams {
   firestore: Firestore;
   projectId: string;
   itemId: string;
   userId: string;
-  type: ActivityType;
+  type: AllBasicItemType;
   action: ActionType;
+}
+
+export interface ProjectActivity {
+  itemId: string;
+  userId: string;
+  type: AllBasicItemType;
+  date?: Date;
+  action: ActionType;
+}
+
+export interface ActivityItem {
+  id: string;
+  name: string;
+  type: AllBasicItemType;
+  scrumId?: number
+  activity: WithId<ProjectActivity>;
 }

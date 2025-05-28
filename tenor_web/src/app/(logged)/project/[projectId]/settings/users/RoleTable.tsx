@@ -18,7 +18,7 @@ import Dropdown, {
   DropdownItem,
 } from "~/app/_components/Dropdown";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
-import InputTextField from "~/app/_components/inputs/InputTextField";
+import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
 interface Props {
   label?: string;
@@ -52,6 +52,7 @@ export default function RoleTable({
   const defaultWidth = 100;
   const columns: TableColumns<WithId<RoleDetail>> = {
     id: { visible: false },
+    reviews: { visible: false },
     label: {
       label: "Name",
       width: 120,
