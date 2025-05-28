@@ -4,10 +4,16 @@ import Markdown from "react-markdown";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 
-export default function ProjectInfo({ projectId }: { projectId: string }) {
-  const { data: project, isLoading } = api.projects.getGeneralConfig.useQuery({
-    projectId,
-  });
+
+export default function ProjectInfo({
+  projectId, 
+  onExpandChange
+}: {
+  projectId: string;
+  onExpandChange?: (expanded: boolean) => void;
+}) {
+
+  const { data: project, isLoading } = api.projects.getGeneralConfig.useQuery({projectId});
   const [showDescription, setShowDescription] = useState(false);
 
   const projectTitle = project?.name ?? "Project Name";
@@ -18,7 +24,7 @@ export default function ProjectInfo({ projectId }: { projectId: string }) {
   }
 
   // Define the length of the preview text
-  const previewLength = 255;
+  const previewLength = 270;
 
   // Check if the description is longer than the preview length
   // If it is, truncate it and add "..." at the end
@@ -29,6 +35,16 @@ export default function ProjectInfo({ projectId }: { projectId: string }) {
 
   // Show full description if explicitly requested or if we shouldn't truncate
   const shouldShowFullDescription = showDescription || !shouldTruncate;
+
+  const handleExpandToggle = () => {
+    const newExpandedState = !showDescription;
+    setShowDescription(newExpandedState);
+    
+    // Notify parent component
+    if (onExpandChange) {
+      onExpandChange(newExpandedState);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -58,16 +74,16 @@ export default function ProjectInfo({ projectId }: { projectId: string }) {
           <h1 className="text-2xl font-semibold">{projectTitle}</h1>
         </div>
       </div>
-      <div className="w-full">
-        <div className="flex w-full flex-col gap-2 text-left">
+      <div className="w-full h-full overflow-y-auto relative">
+        <div className="flex flex-col gap-2 w-full text-left">
           <Markdown>
             {shouldShowFullDescription ? projectDescription : previewText}
           </Markdown>
         </div>
-        <div className="flex w-full justify-end">
+        <div className="w-full flex justify-end -mt-3">
           {shouldTruncate && (
             <TertiaryButton
-              onClick={() => setShowDescription(!showDescription)}
+              onClick={handleExpandToggle}
             >
               {showDescription ? "Read less" : "Read more"}
             </TertiaryButton>

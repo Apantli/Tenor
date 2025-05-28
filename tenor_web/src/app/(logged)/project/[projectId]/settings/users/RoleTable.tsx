@@ -52,6 +52,7 @@ export default function RoleTable({
   const defaultWidth = 100;
   const columns: TableColumns<WithId<RoleDetail>> = {
     id: { visible: false },
+    reviews: { visible: false },
     label: {
       label: "Name",
       width: 120,
