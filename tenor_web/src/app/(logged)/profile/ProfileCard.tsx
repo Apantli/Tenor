@@ -61,6 +61,9 @@ export default function ProfileCard({ user }: ProfileCardProps) {
           </div>
           <PrimaryButton
             onClick={() => {
+              if (!editMode) {
+                setUserName(user?.displayName ?? "");
+              }
               setEditMode(!editMode);
             }}
           >
