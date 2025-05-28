@@ -50,7 +50,7 @@ export default function ProjectPerformance() {
           selectedMember={selectedMember}
         />
       </div>
-      <div className="w-full lg:w-[36%] lg:min-w-0 lg:flex-shrink-0">
+      <div className="mx-auto w-full lg:w-[36%] lg:min-w-0 lg:flex-shrink-0">
         {selectedMember ? (
           <MemberDetailsCard
             member={selectedMember}

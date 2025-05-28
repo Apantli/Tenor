@@ -98,12 +98,10 @@ export const MemberDetailsCard = ({
     y: time,
   }));
 
-  console.log("formattedData:", formattedData);
-
   return (
     <div
       className={cn(
-        "relative mx-auto flex w-full flex-col gap-y-4 overflow-hidden rounded-md border-2 p-4 py-12",
+        "relative mx-auto flex w-full max-h-[90vh] flex-col gap-y-4 overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 py-12",
         className,
       )}
     >
@@ -142,22 +140,25 @@ export const MemberDetailsCard = ({
         {loadingContributions && (
           <div className="flex flex-row gap-2">
             <LoadingSpinner />
-            <p className="text-xl text-gray-500">Loading contributions...</p>
           </div>
         )}
         {!loadingContributions && (
-          <>
+          <div className="mb-6">
             {contributionTotal > 0 ? (
-              <div className="flex flex-col items-center justify-around gap-8 xl:flex-row">
-                <ContributionPieChart data={formattedUserContributions} />
-                <ContributionLegend data={formattedUserContributions} />
+              <div className="flex flex-col items-center justify-around gap-4 xl:flex-row xl:gap-8">
+                <div className="h-44 w-44 flex-shrink-0 sm:h-48 sm:w-48">
+                  <ContributionPieChart data={formattedUserContributions} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <ContributionLegend data={formattedUserContributions} />
+                </div>
               </div>
             ) : (
               <p className="text-xl text-gray-500">
                 No user contributions in the selected time.
               </p>
             )}
-          </>
+          </div>
         )}
         <h4 className="mb-4 mt-6 text-xl font-bold">Average time per task</h4>
         <div
@@ -168,18 +169,17 @@ export const MemberDetailsCard = ({
           {loadingAverageTime ? (
             <div className="flex flex-row items-center gap-2">
               <LoadingSpinner />
-              <p className="text-xl text-gray-500">Loading average time...</p>
             </div>
           ) : (
             <>
               <div className="flex flex-col gap-3">
                 <h4
                   className={cn("text-3xl font-bold", {
-                    "text-lg font-normal text-gray-500": !Boolean(lastTime),
+                    "text-xl font-normal text-gray-500": !Boolean(lastTime),
                   })}
                 >
                   {lastTime ??
-                    "No tasks completed by this user during the last 5 weeks"}
+                    "No tasks completed by this user during the last 5 weeks."}
                 </h4>
                 {timePercentageDifference && (
                   <div className="flex flex-row gap-2">

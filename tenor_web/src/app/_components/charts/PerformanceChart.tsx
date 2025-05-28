@@ -120,7 +120,6 @@ export const PerformanceChart = ({
 
     // Update dimensions if container has been measured
     if (containerDimensions.width > 0) {
-      console.log("ContainerDimensions", containerDimensions);
       specCopy.width = containerDimensions.width;
       specCopy.height = containerDimensions.height;
     }

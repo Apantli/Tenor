@@ -89,7 +89,7 @@ export default function ProjectList() {
 
               {(projects?.length ?? 0) > 0 ? (
                 <p className="text-sm text-gray-500">
-                  Try changing the search query.
+                  Try changing the search.
                 </p>
               ) : (
                 <p className="text-sm text-gray-500">
