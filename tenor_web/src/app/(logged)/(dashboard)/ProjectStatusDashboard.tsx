@@ -9,7 +9,7 @@ import {
 import BarChartIcon from "@mui/icons-material/BarChart";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { timestampToDate } from "~/utils/helpers/parsers";
+import { timestampToDate } from "~/lib/helpers/parsers";
 import { cn } from "~/lib/utils";
 
 export const ProjectStatusDashboard = ({

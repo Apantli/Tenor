@@ -12,7 +12,7 @@ import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { getPreviousSprint } from "../shortcuts/sprints";
 import { reviewPermissions } from "~/lib/defaultValues/permission";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import { TRPCError } from "@trpc/server";
 import { getSprintRetrospectiveTextAnswersContext } from "../shortcuts/sprintRetrospectives";
 

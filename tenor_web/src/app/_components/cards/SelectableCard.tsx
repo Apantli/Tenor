@@ -2,7 +2,7 @@ import React, { useEffect, useRef, type PropsWithChildren } from "react";
 import { cn } from "~/lib/utils";
 import InputCheckbox from "../inputs/InputCheckbox";
 import { useDraggable } from "@dnd-kit/react";
-import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
+import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";
 import type { BacklogItemAndTaskDetailType } from "~/lib/types/firebaseSchemas";
 
 interface Props {

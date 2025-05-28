@@ -32,8 +32,8 @@ import {
   getRequirementTypes,
   getRequirementTypesRef,
 } from "../shortcuts/requirements";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
-import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
+import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
+import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 import { getPriorityByNameOrId } from "../shortcuts/tags";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 

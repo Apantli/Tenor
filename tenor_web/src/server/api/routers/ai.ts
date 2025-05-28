@@ -14,7 +14,7 @@
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 
 export const ContextObjectSchema = z.record(z.string(), z.any());
 export type ContextObject = z.infer<typeof ContextObjectSchema>;

@@ -17,7 +17,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import z from "zod";
 import { fetchHTML } from "~/utils/webcontent";
-import { fetchMultipleFiles } from "~/utils/helpers/filecontent";
+import { fetchMultipleFiles } from "~/lib/helpers/filecontent";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import {
   defaultMaximumSprintStoryPoints,

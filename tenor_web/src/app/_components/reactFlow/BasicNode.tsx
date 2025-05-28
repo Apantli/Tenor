@@ -1,7 +1,7 @@
 "use client";
 
 import { Handle, Position } from "@xyflow/react";
-import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
+import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";
 import { cn } from "~/lib/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";

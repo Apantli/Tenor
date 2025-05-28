@@ -23,7 +23,7 @@ import {
   roleRequiredProcedure,
 } from "~/server/api/trpc";
 import { fetchMultipleHTML } from "~/utils/webcontent";
-import { fetchMultipleFiles } from "~/utils/helpers/filecontent";
+import { fetchMultipleFiles } from "~/lib/helpers/filecontent";
 import {
   uploadBase64File,
   getLogoPath,
@@ -34,7 +34,7 @@ import {
   SettingsSchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { isBase64Valid } from "~/utils/helpers/base64";
+import { isBase64Valid } from "~/lib/helpers/base64";
 import { defaultActivity, emptySettings } from "~/lib/defaultValues/project";
 import {
   getItemActivityDetails,

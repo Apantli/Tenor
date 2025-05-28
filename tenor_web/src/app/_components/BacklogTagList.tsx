@@ -6,7 +6,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/utils";
-import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
+import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 
 interface Props {
   tags: Tag[];

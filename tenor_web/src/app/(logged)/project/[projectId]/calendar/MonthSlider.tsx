@@ -3,7 +3,7 @@
 import { useDroppable } from "@dnd-kit/react";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { dateToString } from "~/utils/helpers/parsers";
+import { dateToString } from "~/lib/helpers/parsers";
 
 interface Props {
   month: number;

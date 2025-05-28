@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
-import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
+import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";

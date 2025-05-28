@@ -19,7 +19,7 @@ import type {
   UserStoryDetail,
   UserStoryPreview,
 } from "~/lib/types/detailSchemas";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import { FieldValue } from "firebase-admin/firestore";
 import {
   backlogPermissions,

@@ -3,7 +3,7 @@
 import { cn } from "~/lib/utils";
 import type { Task, WithId } from "~/lib/types/firebaseSchemas";
 import CalendarCell from "./CalendarCell";
-import { dateToString } from "~/utils/helpers/parsers";
+import { dateToString } from "~/lib/helpers/parsers";
 
 interface Props {
   editable: boolean;

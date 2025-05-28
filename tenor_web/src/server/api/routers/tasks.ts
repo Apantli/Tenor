@@ -22,7 +22,7 @@ import {
   TaskSchema,
   TimestampType,
 } from "~/lib/types/zodFirebaseSchema";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import {
   deleteTaskAndGetModified,
   getTask,
@@ -53,7 +53,7 @@ import {
 } from "~/lib/defaultValues/permission";
 import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
-import { dateToString } from "~/utils/helpers/parsers";
+import { dateToString } from "~/lib/helpers/parsers";
 
 export const tasksRouter = createTRPCRouter({
   /**
