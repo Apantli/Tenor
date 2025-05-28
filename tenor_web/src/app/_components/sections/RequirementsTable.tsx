@@ -33,6 +33,10 @@ import { emptyRole } from "~/lib/defaultValues/roles";
 
 export const heightOfContent = "h-[calc(100vh-285px)]";
 
+export type AIGeneratedRequirement = WithId<
+  inferRouterOutputs<typeof requirementsRouter>["generateRequirements"][number]
+>;
+
 export default function RequirementsTable() {
   const { projectId } = useParams();
   const utils = api.useUtils();
@@ -52,14 +56,7 @@ export default function RequirementsTable() {
   const [searchValue, setSearchValue] = useState("");
 
   // Hooks
-  const generatedRequirements =
-    useRef<
-      WithId<
-        inferRouterOutputs<
-          typeof requirementsRouter
-        >["generateRequirements"][number]
-      >[]
-    >();
+  const generatedRequirements = useRef<AIGeneratedRequirement[]>();
 
   const invalidateAllRequirements = useInvalidateQueriesAllRequirements();
   const confirm = useConfirmation();
@@ -693,14 +690,7 @@ export default function RequirementsTable() {
           }}
           canWrite={permission >= permissionNumbers.write}
           generatedRequirements={generatedRequirements.current}
-          updateGeneratedRequirement={(
-            id,
-            data: WithId<
-              inferRouterOutputs<
-                typeof requirementsRouter
-              >["generateRequirements"][number]
-            >,
-          ) => {
+          updateGeneratedRequirement={(id, data) => {
             generatedRequirements.current = generatedRequirements.current?.map(
               (req) => (req.id === id ? data : req),
             );

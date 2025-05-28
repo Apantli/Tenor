@@ -24,6 +24,8 @@ import {
   useInvalidateQueriesAllRequirements,
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
+import type { AIGeneratedRequirement } from "~/app/_components/sections/RequirementsTable";
+import { cn } from "~/lib/utils";
 
 interface Props {
   requirementId: string;
@@ -34,8 +36,11 @@ interface Props {
   onAccept?: () => void;
   onReject?: () => void;
   canWrite: boolean;
-  generatedRequirements?: any[];
-  updateGeneratedRequirement?: (id: string, data: any) => void;
+  generatedRequirements?: AIGeneratedRequirement[];
+  updateGeneratedRequirement?: (
+    id: string,
+    data: AIGeneratedRequirement,
+  ) => void;
 }
 
 export default function RequirementDetailPopup({
@@ -132,9 +137,9 @@ export default function RequirementDetailPopup({
       setRequirementData?.(finalData);
       updateGeneratedRequirement?.(requirementId, {
         ...finalData,
-        priorityId: finalData.priority?.id ?? "",
-        requirementTypeId: finalData.requirementType.id ?? "",
-        requirementFocusId: finalData.requirementFocus?.id ?? "",
+        priority: finalData.priority,
+        requirementType: finalData.requirementType,
+        requirementFocus: finalData.requirementFocus,
       });
       return;
     }
@@ -209,7 +214,9 @@ export default function RequirementDetailPopup({
       show={showDetail}
       reduceTopPadding={!requirementDetail || !canWrite}
       size="small"
-      className="h-[300px] max-h-[700px] w-[600px]"
+      className={cn("h-[300px] max-h-[700px] w-[600px]", {
+        "h-[400px]": editMode,
+      })}
       disablePassiveDismiss={editMode && isModified()}
       dismiss={dismissPopup}
       setEditMode={
@@ -293,7 +300,7 @@ export default function RequirementDetailPopup({
             </div>
             {canWrite &&
               (isGhost ? (
-                <div className="flex items-center gap-2">
+                <div className="ml-auto flex items-center gap-2">
                   <AiIcon
                     className="animate-pulse text-app-secondary"
                     data-tooltip-id="tooltip"
