@@ -12,7 +12,6 @@ import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
-import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import {
   useInvalidateQueriesAllStatuses,
   useInvalidateQueriesAllTasks,
@@ -32,9 +31,9 @@ import { checkPermissions } from "~/lib/defaultValues/permission";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";
-import MoveLeftIcon from "@mui/icons-material/West";
-import MoveRightIcon from "@mui/icons-material/East";
-import EditIcon from "@mui/icons-material/Edit";
+import MoveLeftIcon from "@mui/icons-material/ArrowBackIos";
+import MoveRightIcon from "@mui/icons-material/ArrowForwardIos";
+import EditIcon from "@mui/icons-material/EditOutlined";
 
 interface Props {
   filter: string;
@@ -351,56 +350,77 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
                   )}
                   header={
                     <div className="flex flex-col items-start pr-1">
-                      <div className="flex w-full justify-between">
-                        <h1 className="text-2xl font-medium">{column.name}</h1>
+                      <div className="flex w-full justify-between gap-2">
+                        <div className="flex flex-1 items-center gap-3 overflow-hidden">
+                          <div
+                            className="h-5 w-5 shrink-0 rounded-full"
+                            style={{
+                              borderColor: `${column.color}90`,
+                              borderWidth: "1.4px",
+                              backgroundColor: `${column.color}3E`,
+                            }}
+                          ></div>
+                          <h1 className="flex-1 truncate text-2xl font-medium">
+                            {column.name}
+                          </h1>
+                        </div>
                         {permission >= permissionNumbers.write && (
-                          <div className="flex gap-2">
+                          <div className="flex shrink-0 gap-1">
                             <button
                               className={cn(
-                                "rounded-lg px-1 text-app-text transition",
+                                "rounded-lg px-1 text-app-text transition hover:text-app-primary",
                                 {
                                   "text-app-secondary": allSelected,
                                 },
                               )}
                               onClick={toggleSelectAll}
+                              data-tooltip-id="tooltip"
+                              data-tooltip-content="Toggle select all"
+                              data-tooltip-delay-show={500}
                             >
                               {allSelected ? (
-                                <CheckNone fontSize="small" />
+                                <CheckNone fontSize="medium" />
                               ) : (
-                                <CheckAll fontSize="small" />
+                                <CheckAll fontSize="medium" />
                               )}
                             </button>
-                            <Dropdown label={"• • •"}>
-                              <DropdownButton
-                                onClick={() => {
-                                  setShowStatusPopup(true);
-                                  setSelectedStatusId(column.id);
-                                }}
-                                className="flex items-center justify-between gap-8"
-                              >
-                                <span>Edit</span>
-                                <EditIcon />
-                              </DropdownButton>
+                            <button
+                              className="rounded-lg px-1 text-app-text transition hover:text-app-primary"
+                              onClick={() => {
+                                setShowStatusPopup(true);
+                                setSelectedStatusId(column.id);
+                              }}
+                              data-tooltip-id="tooltip"
+                              data-tooltip-content="Edit status"
+                              data-tooltip-delay-show={500}
+                            >
+                              <EditIcon fontSize="medium" />
+                            </button>
+                            <div className="ml-2 flex gap-0">
                               {column.orderIndex != 0 && (
-                                <DropdownButton
-                                  className="flex items-center justify-between gap-8"
+                                <button
+                                  className="rounded-lg text-app-text transition hover:text-app-primary"
                                   onClick={() => moveStatus(column.id, -1)}
+                                  data-tooltip-id="tooltip"
+                                  data-tooltip-content="Move left"
+                                  data-tooltip-delay-show={500}
                                 >
-                                  <span>Move left</span>
-                                  <MoveLeftIcon />
-                                </DropdownButton>
+                                  <MoveLeftIcon fontSize="small" />
+                                </button>
                               )}
                               {column.orderIndex !==
                                 tasksAndColumnsData.columns.length - 1 && (
-                                <DropdownButton
-                                  className="flex items-center justify-between gap-8"
+                                <button
+                                  className="rounded-lg text-app-text transition hover:text-app-primary"
                                   onClick={() => moveStatus(column.id, 1)}
+                                  data-tooltip-id="tooltip"
+                                  data-tooltip-content="Move right"
+                                  data-tooltip-delay-show={500}
                                 >
-                                  <span>Move right</span>
-                                  <MoveRightIcon />
-                                </DropdownButton>
+                                  <MoveRightIcon fontSize="small" />
+                                </button>
                               )}
-                            </Dropdown>
+                            </div>
                           </div>
                         )}
                       </div>
