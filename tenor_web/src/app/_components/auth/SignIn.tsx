@@ -69,10 +69,7 @@ export default function SignIn() {
             setError({ ...newError, email: "Enter a valid email" });
             break;
           case "auth/invalid-credential":
-            alert("Oops...", "Incorrect email or password", {
-              type: "error",
-              duration: 7000,
-            });
+            predefinedAlerts.loginError();
             break;
           default:
             predefinedAlerts.unexpectedError();

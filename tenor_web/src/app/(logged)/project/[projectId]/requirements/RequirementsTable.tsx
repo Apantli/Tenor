@@ -147,7 +147,7 @@ export default function RequirementsTable() {
 
   const confirm = useConfirmation();
 
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const { mutateAsync: createOrModifyRequirement, isPending } =
     api.requirements.createOrModifyRequirement.useMutation();
@@ -158,17 +158,12 @@ export default function RequirementsTable() {
 
   const handleCreateRequirement = async () => {
     if (!newRequirement.name) {
-      alert("Oops...", "The requirement must have a name.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
+      predefinedAlerts.requirementNameError();
+      return;
     }
 
     if (newRequirement.requirementType?.id === undefined) {
-      alert("Oops...", "The requirement must have a type.", {
-        type: "error",
-        duration: 5000, // time in ms (5 seconds)
-      });
+      predefinedAlerts.requirementTypeError();
     }
 
     if (
@@ -205,10 +200,7 @@ export default function RequirementsTable() {
       requirement;
     if (checkValues) {
       if (!name) {
-        alert("Oops...", "Requirement must have a name.", {
-          type: "error",
-          duration: 5000, // time in ms (5 seconds)
-        });
+        predefinedAlerts.requirementNameError();
         return;
       }
     }
@@ -882,10 +874,7 @@ export default function RequirementsTable() {
                     const { name } = editForm;
                     if (editingRequirement) {
                       if (!name) {
-                        alert("Oops...", "The requirement must have a name.", {
-                          type: "error",
-                          duration: 5000, // time in ms (5 seconds)
-                        });
+                        predefinedAlerts.requirementNameError();
                         return;
                       }
 

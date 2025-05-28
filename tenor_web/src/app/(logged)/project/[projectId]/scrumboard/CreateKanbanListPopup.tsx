@@ -30,7 +30,7 @@ export default function CreateKanbanListPopup({
 
   // REACT
   const { projectId } = useParams();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const [form, setForm] = useState<{
     name: string;
@@ -59,10 +59,7 @@ export default function CreateKanbanListPopup({
 
   const handleCreateList = async () => {
     if (form.name === "") {
-      alert("Oops...", "Please enter a name for the list.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.listNameError();
       return;
     }
 

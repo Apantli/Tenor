@@ -359,10 +359,7 @@ export default function IssueDetailPopup({
           };
           if (updatedData.name === "") {
             setEditMode(true);
-            alert("Oops", "Please provide a name for the issue.", {
-              type: "error",
-              duration: 5000,
-            });
+            predefinedAlerts.issueNameError();
             return;
           }
           await handleSave(updatedData);

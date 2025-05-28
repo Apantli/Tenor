@@ -59,7 +59,7 @@ export default function CreateUserStoryPopup({
   });
 
   const confirm = useConfirmation();
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -75,10 +75,7 @@ export default function CreateUserStoryPopup({
 
   const handleCreateUserStory = async () => {
     if (createForm.name === "") {
-      alert("Oops...", "Please enter a name for the user story.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.userStoryNameError();
       return;
     }
 
@@ -120,10 +117,7 @@ export default function CreateUserStoryPopup({
         predefinedAlerts.cyclicDependency();
         return;
       }
-      alert("Error", "Failed to create user story. Please try again.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.userStoryCreateError();
       console.error("Error creating user story:", error);
     } finally {
       setIsSubmitting(false);

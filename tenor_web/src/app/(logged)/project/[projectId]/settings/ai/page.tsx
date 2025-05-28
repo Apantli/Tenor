@@ -26,7 +26,7 @@ export default function ProjectAIConfig() {
   const [newText, setNewText] = useState("");
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const { alert } = useAlert();
+  const { alert, predefinedAlerts } = useAlert();
 
   // Fetch
   const { data: role } = api.settings.getMyRole.useQuery({
@@ -81,10 +81,7 @@ export default function ProjectAIConfig() {
       });
     },
     onSuccess: async () => {
-      alert("Success", "Link added successfully.", {
-        type: "success",
-        duration: 5000,
-      });
+      predefinedAlerts.linkUploadSuccess();
       await utils.settings.getContextLinks.invalidate({
         projectId: projectId as string,
       });
@@ -104,10 +101,7 @@ export default function ProjectAIConfig() {
     if (!links) return;
 
     if (links.some((l) => l.link === link.link)) {
-      alert("Link exists", "This link is already added to the context.", {
-        type: "warning",
-        duration: 3000,
-      });
+      predefinedAlerts.linkExistsError();
       return;
     }
 
@@ -207,10 +201,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
 
-    alert("Success", "A new file was added to your project AI context.", {
-      type: "success",
-      duration: 5000,
-    });
+    predefinedAlerts.fileUploadSuccess();
   };
 
   const handleRemoveFile = async (file: File) => {
@@ -255,10 +246,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
 
-    alert("Success", "Project AI context has been updated successfully.", {
-      type: "success",
-      duration: 5000,
-    });
+    predefinedAlerts.contextUpdateSuccess();
   };
 
   const isModified = () => {

@@ -38,10 +38,7 @@ export default function SignInGithub() {
     } catch (error) {
       if (typeof error === "object" && error !== null && "code" in error) {
         if (error.code === "auth/account-exists-with-different-credential") {
-          alert("Oops...", "This email is already in use", {
-            type: "error",
-            duration: 7000,
-          });
+          predefinedAlerts.emailInUseError();
         }
       }
     }

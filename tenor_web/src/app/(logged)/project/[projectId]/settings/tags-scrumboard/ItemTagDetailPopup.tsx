@@ -287,10 +287,7 @@ export default function ItemTagDetailPopup({
     const errorName = currentConfig.emptyNameError;
 
     if (form.name === "") {
-      alert("Oops...", errorName, {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.error(errorName);
       return;
     }
 

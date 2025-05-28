@@ -13,7 +13,7 @@ interface PerformanceData {
 }
 
 export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const utils = api.useUtils();
 
   const {
@@ -34,10 +34,7 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
   } = api.performance.recomputeProductivity.useMutation({
     onSuccess: async () => {
       // Handle success, e.g., show a toast notification
-      alert("Success", "Productivity has been reloaded.", {
-        type: "success",
-        duration: 5000,
-      });
+      predefinedAlerts.productivityUpdateSuccess();
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,
@@ -45,10 +42,8 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
     },
     onError: async (error) => {
       // Handle success, e.g., show a toast notification
-      alert("Alert", error.message, {
-        type: "warning",
-        duration: 5000,
-      });
+
+      predefinedAlerts.warning(error.message);
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,

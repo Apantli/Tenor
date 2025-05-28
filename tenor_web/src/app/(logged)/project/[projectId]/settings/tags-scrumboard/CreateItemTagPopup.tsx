@@ -37,7 +37,7 @@ export default function CreateItemTagPopup({
   const confirm = useConfirmation();
   const invalidateQueriesAllTags = useInvalidateQueriesAllTags();
   const { projectId } = useParams();
-  const { alert } = useAlert();
+  const { alert, predefinedAlerts } = useAlert();
   const utils = api.useUtils();
 
   const tagTypeConfigs: Record<Props["itemTagType"], TagTypeConfig> = {
@@ -113,10 +113,7 @@ export default function CreateItemTagPopup({
 
   const handleCreateTag = async () => {
     if (form.name === "") {
-      alert("Oops...", currentConfig.errorEmptyName, {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.error(currentConfig.errorEmptyName);
       return;
     }
 

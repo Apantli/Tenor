@@ -44,10 +44,7 @@ export default function ResendVerificationButton() {
 
     try {
       await sendEmailVerification(user);
-      alert("Email sent!", "Please wait for it to arrive to your inbox", {
-        type: "success",
-        duration: 7000,
-      });
+      predefinedAlerts.emailSent();
     } catch (err) {
       if (typeof err === "object" && err !== null && "code" in err) {
         console.log("FIREBASE ERROR:", err.code);

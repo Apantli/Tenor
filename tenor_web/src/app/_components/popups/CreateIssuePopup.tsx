@@ -50,7 +50,7 @@ export default function CreateIssuePopup({
   });
 
   const confirm = useConfirmation();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -65,10 +65,7 @@ export default function CreateIssuePopup({
 
   const handleCreateIssue = async () => {
     if (createForm.name === "") {
-      alert("Oops...", "Please enter a name for the Issue.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.issueNameError();
       return;
     }
 

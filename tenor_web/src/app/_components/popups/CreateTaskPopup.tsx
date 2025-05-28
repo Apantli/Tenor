@@ -54,7 +54,7 @@ export function CreateTaskForm({
     projectId: projectIdString,
   });
 
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const [createForm, setCreateForm] = useState<{
     name: string;
@@ -102,10 +102,7 @@ export function CreateTaskForm({
 
   const handleCreateTask = async () => {
     if (createForm.name.trim() === "") {
-      alert("Oops...", "Please enter a name for the task.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.issueNameError();
       return;
     }
 
@@ -164,10 +161,7 @@ export function CreateTaskForm({
         predefinedAlerts.cyclicDependency();
         return;
       }
-      alert("Error", "Failed to create task. Please try again.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.issueStoryCreateError();
       console.error("Error creating task:", error);
     }
   };
