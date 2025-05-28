@@ -5,7 +5,7 @@ import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import ConversationButton from "./ConversationButton";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import ConversationPopup from "./ConversationPopup";
-import InputTextAreaField from "~/app/_components/inputs/InputTextAreaField";
+import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import { api } from "~/trpc/react";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
