@@ -38,6 +38,11 @@ import { Timestamp } from "firebase-admin/firestore";
 import { getStatusTypes } from "~/utils/helpers/shortcuts/tags";
 import { getCurrentSprint } from "~/utils/helpers/shortcuts/sprints";
 import { TRPCError } from "@trpc/server";
+import {
+  getActivityPartition,
+  getAverageTime,
+  getContributionOverview,
+} from "~/utils/helpers/shortcuts/performance";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -48,12 +53,8 @@ export const performanceRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return await recomputePerformance(
-        ctx,
-        input.projectId,
-        input.time,
-        false,
-      );
+      // SR3: Always show up-to-date productivity data
+      return await recomputePerformance(ctx, input.projectId, input.time, true);
     }),
 
   recomputeProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -68,14 +69,37 @@ export const performanceRouter = createTRPCRouter({
     }),
 
   getUserContributions: roleRequiredProcedure(performancePermissions, "read")
-    .input(z.object({ projectId: z.string(), time: z.string() }))
-    .query(async ({ ctx }) => {
-      const useruid = ctx.session.user.uid;
-      console.log("useruid", useruid);
-      // TODO: compute and return user contributions
-      return [];
-      // return projects;
+    .input(
+      z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
+    )
+    .query(async ({ ctx, input }) => {
+      const activities = await getActivityPartition(
+        ctx.firestore,
+        input.projectId,
+        input.userId,
+        input.time,
+      );
+      return activities;
     }),
+  getContributionOverview: roleRequiredProcedure(performancePermissions, "read")
+    .input(
+      z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
+    )
+    .query(async ({ ctx, input }) => {
+      const contributionOverview = await getContributionOverview(
+        ctx.firestore,
+        input.projectId,
+        input.userId,
+        input.time,
+      );
+      return contributionOverview;
+    }),
+  getAverageTimeTask: roleRequiredProcedure(performancePermissions, "read")
+    .input(z.object({ projectId: z.string(), userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await getAverageTime(ctx.firestore, input.projectId, input.userId);
+    }),
+
   getProjectStatus: protectedProcedure.query(async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     console.log("useruid", useruid);
@@ -161,7 +185,10 @@ const computePerformanceTime = async (
   } else {
     const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
     if (!currentSprint) {
-      throw new TRPCError({ code: "NOT_FOUND", message: "No active sprint" });
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No productivity data available, there is no active sprint.",
+      });
     }
     userStories = await getSprintUserStories(
       ctx.firestore,

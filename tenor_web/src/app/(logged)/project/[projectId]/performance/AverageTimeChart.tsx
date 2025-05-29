@@ -4,8 +4,8 @@ import { cn } from "~/lib/utils";
 
 const spec1: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
-  description: "Line chart to see team performance.",
-  width: 300,
+  description: "Line chart to see average time per task.",
+  width: 250,
   height: 100,
   padding: 5,
 
@@ -17,7 +17,7 @@ const spec1: VisualizationSpec = {
   scales: [
     {
       name: "x",
-      type: "time",
+      type: "linear",
       range: "width",
       domain: { data: "table", field: "x" },
       nice: true,
@@ -34,46 +34,18 @@ const spec1: VisualizationSpec = {
 
   marks: [
     {
-      type: "area",
-      from: { data: "table" },
-      encode: {
-        enter: {
-          x: { scale: "x", field: "x" },
-          y: { scale: "y", field: "y" },
-          y2: { scale: "y", value: 0 },
-          fill: { value: "#1a6e44" },
-        },
-        update: {
-          interpolate: { value: "basis" },
-          fillOpacity: { value: 0.2 },
-        },
-      },
-    },
-    {
       type: "line",
+
       from: { data: "table" },
       encode: {
         enter: {
           x: { scale: "x", field: "x" },
           y: { scale: "y", field: "y" },
-          stroke: { value: "#1a6e44" },
-          strokeWidth: { value: 3 },
+          stroke: { value: "#04CE00" },
+          strokeWidth: { value: 5 },
         },
         update: {
-          interpolate: { value: "basis" },
-        },
-      },
-    },
-    {
-      name: "points",
-      type: "symbol",
-      from: { data: "table" },
-      encode: {
-        enter: {
-          x: { scale: "x", field: "x" },
-          y: { scale: "y", field: "y" },
-          size: { value: 400 },
-          fillOpacity: { value: 0 },
+          interpolate: { value: "linear" },
         },
       },
     },
@@ -83,11 +55,13 @@ const spec1: VisualizationSpec = {
 type PerformanceChartProps = {
   data?: typeof SamplePerformanceData | undefined;
   className?: string;
+  isGreen?: boolean;
 };
 
-export const PerformanceChart = ({
+export const AverageTimeChart = ({
   data = SamplePerformanceData,
   className = "",
+  isGreen = true,
 }: PerformanceChartProps) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = React.useState({
@@ -101,11 +75,11 @@ export const PerformanceChart = ({
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const width = entry.contentRect.width * 0.8;
+        const width = entry.contentRect.width * 0.9;
         const height = entry.contentRect.height - 50;
         setContainerDimensions({
-          width: Math.max(width, 0),
-          height: Math.max(height, 100),
+          width: Math.max(width, 200),
+          height: Math.max(height, 50),
         });
       }
     });
@@ -114,7 +88,7 @@ export const PerformanceChart = ({
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Modify spec with dynamic width, height
+  // Modify spec with dynamic width, height and color
   const modifiedSpec = React.useMemo(() => {
     const specCopy = structuredClone(spec1);
 
@@ -124,8 +98,14 @@ export const PerformanceChart = ({
       specCopy.height = containerDimensions.height;
     }
 
+    // Update color based on isGreen prop
+    const strokeColor = isGreen ? "#04CE00" : "#F87171";
+    if (specCopy.marks?.[0]?.encode?.enter) {
+      specCopy.marks[0].encode.enter.stroke = { value: strokeColor };
+    }
+
     return specCopy;
-  }, [containerDimensions]);
+  }, [containerDimensions, isGreen]);
 
   // Create the component with the modified spec
   const PerformanceChart = React.useMemo(
@@ -153,14 +133,9 @@ export const PerformanceChart = ({
 };
 
 export const SamplePerformanceData = [
-  { x: new Date("2025-05-01"), y: 20 },
-  { x: new Date("2025-05-02"), y: 43.1231 },
-  { x: new Date("2025-05-03"), y: 81 },
-  { x: new Date("2025-05-04"), y: 19 },
-  { x: new Date("2025-05-05"), y: 52 },
-  { x: new Date("2025-05-06"), y: 24 },
-  { x: new Date("2025-05-07"), y: 87 },
-  { x: new Date("2025-05-08"), y: 17 },
-  { x: new Date("2025-05-09"), y: 68 },
-  { x: new Date("2025-05-10"), y: 49 },
+  { x: 1, y: 10 },
+  { x: 2, y: 43.1231 },
+  { x: 3, y: 81 },
+  { x: 4, y: 19 },
+  { x: 5, y: 52 },
 ];
