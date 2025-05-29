@@ -29,7 +29,7 @@ export default function CreateBacklogItemPopup({
 }: Props) {
   // #region Hooks
   const { projectId } = useParams();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const confirm = useConfirmation();
   const invalidateQueriesAllGenericBacklogItems =
     useInvalidateQueriesAllGenericBacklogItems();
@@ -73,10 +73,7 @@ export default function CreateBacklogItemPopup({
 
   const handleCreateBacklogItem = async () => {
     if (createForm.name === "") {
-      alert("Oops...", "Please enter a name for the backlog item.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.backlogItemNameError();
       return;
     }
 
@@ -107,10 +104,7 @@ export default function CreateBacklogItemPopup({
       // Close the popup
       setShowPopup(false);
     } catch (error) {
-      alert("Error", "Failed to create backlog item. Please try again.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.backlogItemCreateError();
       console.error("Error creating backlog item:", error);
     } finally {
       setIsSubmitting(false);
@@ -148,7 +142,7 @@ export default function CreateBacklogItemPopup({
           />
 
           <div className="mt-4 flex gap-2">
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Priority</h3>
               <PriorityPicker
                 priority={createForm.priority}
@@ -157,7 +151,7 @@ export default function CreateBacklogItemPopup({
                 }
               />
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
                 currentSize={createForm.size}

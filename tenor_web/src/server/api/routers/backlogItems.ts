@@ -12,12 +12,12 @@ import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { BacklogItemSchema } from "~/lib/types/zodFirebaseSchema";
 import { backlogPermissions } from "~/lib/defaultValues/permission";
 import type { BacklogItem, WithId } from "~/lib/types/firebaseSchemas";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
 import {
   getBacklogItemNewId,
   getBacklogItems,
   getBacklogItemsRef,
-} from "~/utils/helpers/shortcuts/backlogItems";
+} from "../shortcuts/backlogItems";
+import { LogProjectActivity } from "../lib/projectEventLogger";
 
 export const backlogItemsRouter = createTRPCRouter({
   /**

@@ -184,6 +184,14 @@ export const useAlert = () => {
     userStoryCreateError: () =>
       alertTemplates.error("Failed to create user story. Please try again."),
     // #endregion
+    // #region Backlog Items
+    backlogItemNameError: () =>
+      alertTemplates.oops(
+        "Please enter a name for the backlog item. It should be between 1 and 100 characters.",
+      ),
+    backlogItemCreateError: () =>
+      alertTemplates.error("Failed to create backlog item. Please try again."),
+    // #endregion
     // #region Issues
     issueNameError: () =>
       alertTemplates.oops(
