@@ -28,6 +28,7 @@ import {
   getUserTable,
 } from "../shortcuts/users";
 import { emptyRole } from "~/lib/defaultValues/roles";
+import { uploadBase64File } from "~/lib/db/firebaseBucket";
 
 export const userRouter = createTRPCRouter({
   /**
@@ -189,5 +190,32 @@ export const userRouter = createTRPCRouter({
 
       const userRef = getUserRef(ctx.firestore, projectId, userId);
       await userRef.update({ roleId });
+    }),
+  updateUser: protectedProcedure
+    .input(
+      z.object({
+        displayName: z.string().optional(),
+        photoBase64: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { displayName, photoBase64 } = input;
+      const user = ctx.session.user;
+      const updateData: { displayName?: string; photoURL?: string } = {};
+
+      if (displayName !== undefined) {
+        updateData.displayName = displayName;
+      } else {
+        updateData.displayName = user.displayName;
+      }
+
+      if (photoBase64 !== undefined) {
+        const newUrl = await uploadBase64File(crypto.randomUUID(), photoBase64);
+        updateData.photoURL = newUrl;
+      } else {
+        updateData.photoURL = user.photoURL;
+      }
+
+      await ctx.firebaseAdmin.auth().updateUser(user.uid, updateData);
     }),
 });

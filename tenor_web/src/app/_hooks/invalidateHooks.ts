@@ -333,4 +333,14 @@ export const useInvalidateQueriesSingleSprint = () => {
   };
 };
 
+export const useInvalidateQueriesUser = () => {
+  const utils = api.useUtils();
+  return async (userId: string) => {
+    await utils.users.getGlobalUser.invalidate({
+      userId: userId,
+    });
+    await utils.users.getGlobalUsers.invalidate();
+  };
+};
+
 // TODO: Add one for all other stuff and use it in code
