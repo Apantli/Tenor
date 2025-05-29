@@ -75,7 +75,7 @@ export default function ProfileCard({ show, setShow }: ProfileCardProps) {
                 handleImageChange={(file) => {
                   setImage(file);
                 }}
-                displayText="Change project icon..."
+                displayText="Change profile picture..."
               />
             </div>
             <InputTextField
