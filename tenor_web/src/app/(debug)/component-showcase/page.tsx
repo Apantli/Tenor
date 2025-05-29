@@ -23,7 +23,7 @@ import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorP
 import {
   acceptableTagColors,
   getPillColorByActivityType,
-} from "~/utils/helpers/colorUtils";
+} from "~/lib/helpers/colorUtils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
@@ -120,7 +120,7 @@ function AlertShowcase() {
   // Add the useAlert hook to any client component where you want to show alerts
   // Then you can use the alert function wherever you want
   // You can also use predefined alerts, or even add another predefined alert (in useAlert.tsx) if you want to repeat the same message in multiple places
-  const { alert, predefinedAlerts } = useAlert();
+  const { alertTemplates, predefinedAlerts } = useAlert();
 
   return (
     <div>
@@ -129,48 +129,35 @@ function AlertShowcase() {
       <div className="flex gap-2">
         {/* Different types of alerts: info, success, error and warning*/}
         <SecondaryButton
-          onClick={() => alert("Info Alert title", "Alert description")} // The info type is the default
+          onClick={() =>
+            alertTemplates.info("Info Alert title", "Alert description")
+          } // The info type is the default
         >
           Show Info Alert
         </SecondaryButton>
 
         <SecondaryButton
-          onClick={() =>
-            alert("Success Alert title", "Alert description", {
-              type: "success",
-            })
-          }
+          onClick={() => alertTemplates.success("Alert description")}
         >
           Show Success Alert
         </SecondaryButton>
 
         <SecondaryButton
-          onClick={() =>
-            alert("Error Alert title", "Alert description", { type: "error" })
-          }
+          onClick={() => alertTemplates.error("Alert description")}
         >
           Show Error Alert
         </SecondaryButton>
 
         <SecondaryButton
-          onClick={() =>
-            alert("Warning Alert title", "Alert description", {
-              type: "warning",
-            })
-          }
+          onClick={() => alertTemplates.oops("Alert description")}
         >
-          Show Warning Alert
+          Show Oops Alert
         </SecondaryButton>
 
         <SecondaryButton
-          onClick={() =>
-            alert("Timed alert title", "Alert description", {
-              type: "error",
-              duration: 5000, // time in ms (5 seconds)
-            })
-          }
+          onClick={() => alertTemplates.warning("Alert description")}
         >
-          Show Timed Alert
+          Show Warning Alert
         </SecondaryButton>
 
         {/* Use predefined alerts if one exists for your use case already, like unexpected errors */}

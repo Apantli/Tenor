@@ -105,9 +105,9 @@ export const loginProcedure = publicProcedure
  * @http POST /api/trpc/auth.logout
  */
 export const logoutProcedure = publicProcedure.mutation(async ({ ctx }) => {
-  if (!ctx.session) throw new TRPCError({ code: "UNAUTHORIZED" });
-
-  await ctx.firebaseAdmin.auth().revokeRefreshTokens(ctx.session.uid);
+  if (ctx.session) {
+    await ctx.firebaseAdmin.auth().revokeRefreshTokens(ctx.session.uid);
+  }
 
   const cookie = await cookies();
   cookie.set("token", "", {

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { storageAdmin, dbAdmin } from "~/utils/firebaseAdmin";
+import { storageAdmin, dbAdmin } from "~/lib/db/firebaseAdmin";
 import { auth } from '~/server/auth';
 import { FieldValue } from 'firebase-admin/firestore'; // Import FieldValue
 import { env } from '~/env';

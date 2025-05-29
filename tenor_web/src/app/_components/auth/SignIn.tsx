@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import FloatingLabelInput from "../inputs/FloatingLabelInput";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "~/utils/firebaseClient";
+import { auth } from "~/lib/db/firebaseClient";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
@@ -22,7 +22,7 @@ export default function SignIn() {
   });
   const [loading, setLoading] = useState(false);
   const { mutateAsync: login } = api.auth.login.useMutation();
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const handleInput: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -69,10 +69,7 @@ export default function SignIn() {
             setError({ ...newError, email: "Enter a valid email" });
             break;
           case "auth/invalid-credential":
-            alert("Oops...", "Incorrect email or password", {
-              type: "error",
-              duration: 7000,
-            });
+            predefinedAlerts.loginError();
             break;
           default:
             predefinedAlerts.unexpectedError();

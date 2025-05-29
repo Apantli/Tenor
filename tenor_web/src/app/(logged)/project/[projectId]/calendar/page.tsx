@@ -18,7 +18,7 @@ import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import { dateToString } from "~/utils/helpers/parsers";
+import { dateToString } from "~/lib/helpers/parsers";
 import { Timestamp } from "firebase/firestore";
 import CloseIcon from "@mui/icons-material/Close";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";

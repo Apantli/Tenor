@@ -9,8 +9,8 @@ import {
 import BarChartIcon from "@mui/icons-material/BarChart";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { timestampToDate } from "~/utils/helpers/parsers";
-import { cn } from "~/lib/utils";
+import { timestampToDate } from "~/lib/helpers/parsers";
+import { cn } from "~/lib/helpers/utils";
 
 export const ProjectStatusDashboard = ({
   className,
@@ -19,24 +19,18 @@ export const ProjectStatusDashboard = ({
 }) => {
   // #region Hooks
   const utils = api.useUtils();
-  const { alert } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   // #endregion
 
   // #region TRPC
   const { mutateAsync: recomputeTopProjectStatus, isPending } =
     api.projects.recomputeTopProjectStatus.useMutation({
       onSuccess: async () => {
-        alert("Success", "Project status has been reloaded.", {
-          type: "success",
-          duration: 5000,
-        });
+        predefinedAlerts.statusUpdateSuccess();
         await utils.projects.getTopProjectStatus.invalidate();
       },
       onError: async (error) => {
-        alert("Alert", error.message, {
-          type: "warning",
-          duration: 5000,
-        });
+        alertTemplates.warning(error.message);
       },
       retry: 0,
     });

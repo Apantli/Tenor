@@ -22,19 +22,19 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import { fetchMultipleHTML } from "~/utils/webcontent";
-import { fetchMultipleFiles } from "~/utils/helpers/filecontent";
+import { fetchMultipleHTML } from "~/server/api/lib/webcontent";
+import { fetchMultipleFiles } from "~/lib/helpers/filecontent";
 import {
   uploadBase64File,
   getLogoPath,
   deleteStartsWith,
-} from "~/utils/firebaseBucket";
+} from "~/lib/db/firebaseBucket";
 import {
   ProjectSchemaCreator,
   SettingsSchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { isBase64Valid } from "~/utils/helpers/base64";
+import { isBase64Valid } from "~/lib/helpers/base64";
 import { defaultActivity, emptySettings } from "~/lib/defaultValues/project";
 import {
   getItemActivityDetails,
@@ -48,22 +48,23 @@ import {
   getRolesRef,
   getSettingsRef,
   getTopProjectStatusCacheRef,
-} from "~/utils/helpers/shortcuts/general";
+} from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
-import { getGlobalUserRef, getUsersRef } from "~/utils/helpers/shortcuts/users";
+import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
 import {
   getPrioritiesRef,
   getStatusTypesRef,
-} from "~/utils/helpers/shortcuts/tags";
-import { getRequirementTypesRef } from "~/utils/helpers/shortcuts/requirements";
-import { shouldRecomputeTopProjects } from "~/lib/cache";
-import { getActivityRef } from "~/utils/helpers/shortcuts/performance";
+} from "../shortcuts/tags";
+import { getRequirementTypesRef } from "../shortcuts/requirements";
+import { shouldRecomputeTopProjects } from "~/lib/helpers/cache";
+import { getActivityRef } from "../shortcuts/performance";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
 import {
   defaultPriorityTypes,
   defaultRequerimentTypes,
 } from "~/lib/defaultValues/requirementTypes";
 import { defaultStatusTags } from "~/lib/defaultValues/status";
+import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -230,7 +231,7 @@ export const projectsRouter = createTRPCRouter({
         );
       } else {
         // Use default icon
-        input.logo = "/defaultProject.png";
+        input.logo = defaultProjectIconPath;
       }
 
       try {
@@ -368,7 +369,7 @@ export const projectsRouter = createTRPCRouter({
       if (projectData.logo !== input.logo) {
         const isLogoValid = isBase64Valid(input.logo);
 
-        if (isLogoValid && projectData.logo !== "/defaultProject.png") {
+        if (isLogoValid && projectData.logo !== defaultProjectIconPath) {
           // Delete previous logo, assume the name starts with the projectId
           await deleteStartsWith(
             getLogoPath({ logo: input.projectId, projectId: input.projectId }),
@@ -383,7 +384,7 @@ export const projectsRouter = createTRPCRouter({
           );
         } else {
           // Use default icon
-          input.logo = "/defaultProject.png";
+          input.logo = defaultProjectIconPath;
         }
       }
 

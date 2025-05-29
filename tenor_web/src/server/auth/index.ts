@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { firebaseAdmin } from "~/utils/firebaseAdmin";
+import { firebaseAdmin } from "~/lib/db/firebaseAdmin";
 import { cache } from "react";
 
 export async function uncachedAuth() {

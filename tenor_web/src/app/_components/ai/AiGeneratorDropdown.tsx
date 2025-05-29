@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import Dropdown, { DropdownItem, useCloseDropdown } from "../Dropdown";
 import FloatingLabelInput from "../inputs/FloatingLabelInput";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import AiButton from "../inputs/buttons/AiButton";
 

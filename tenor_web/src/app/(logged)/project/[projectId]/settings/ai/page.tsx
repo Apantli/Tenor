@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
-import { toBase64 } from "~/utils/helpers/base64";
+import { toBase64 } from "~/lib/helpers/base64";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import FileList from "~/app/_components/inputs/FileList";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
@@ -26,7 +26,7 @@ export default function ProjectAIConfig() {
   const [newText, setNewText] = useState("");
   const confirm = useConfirmation();
   const utils = api.useUtils();
-  const { alert } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
 
   // Fetch
   const { data: role } = api.settings.getMyRole.useQuery({
@@ -75,16 +75,13 @@ export default function ProjectAIConfig() {
   // Add
   const { mutateAsync: addLink } = api.settings.addLink.useMutation({
     onError: async (error) => {
-      alert("Error", error.message, { type: "error", duration: 5000 });
+      alertTemplates.error(error.message);
       await utils.settings.getContextLinks.invalidate({
         projectId: projectId as string,
       });
     },
     onSuccess: async () => {
-      alert("Success", "Link added successfully.", {
-        type: "success",
-        duration: 5000,
-      });
+      predefinedAlerts.linkUploadSuccess();
       await utils.settings.getContextLinks.invalidate({
         projectId: projectId as string,
       });
@@ -104,10 +101,7 @@ export default function ProjectAIConfig() {
     if (!links) return;
 
     if (links.some((l) => l.link === link.link)) {
-      alert("Link exists", "This link is already added to the context.", {
-        type: "warning",
-        duration: 3000,
-      });
+      predefinedAlerts.linkExistsError();
       return;
     }
 
@@ -134,15 +128,7 @@ export default function ProjectAIConfig() {
       if (!link.valid) invalidLinks.push(link);
     }
     if (invalidLinks.length > 0) {
-      const plural = invalidLinks.length > 1 ? "s" : "";
-      alert(
-        `Invalid link${plural}`,
-        `${invalidLinks.length} link${plural} ${plural ? "are" : "is"} invalid.`,
-        {
-          type: "warning",
-          duration: 5000,
-        },
-      );
+      predefinedAlerts.linkInvalidError(invalidLinks.length);
     }
   }, [links]);
 
@@ -207,10 +193,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
 
-    alert("Success", "A new file was added to your project AI context.", {
-      type: "success",
-      duration: 5000,
-    });
+    predefinedAlerts.fileUploadSuccess();
   };
 
   const handleRemoveFile = async (file: File) => {
@@ -255,10 +238,7 @@ export default function ProjectAIConfig() {
       projectId: projectId as string,
     });
 
-    alert("Success", "Project AI context has been updated successfully.", {
-      type: "success",
-      duration: 5000,
-    });
+    predefinedAlerts.contextUpdateSuccess();
   };
 
   const isModified = () => {

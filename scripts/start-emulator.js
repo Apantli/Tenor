@@ -1,15 +1,15 @@
-const { spawn } = require('child_process');
+const { spawn } = require("child_process");
 
 const emulator = spawn(
-  'npx',
-  ['firebase', 'emulators:start', '--only', 'auth,firestore'],
+  "npx",
+  ["firebase", "emulators:start", "--only", "auth,firestore,storage,functions"],
   {
-    stdio: 'inherit',
+    stdio: "inherit",
     shell: true,
   }
 );
 
-process.on('SIGINT', () => {
-  emulator.kill('SIGINT');
+process.on("SIGINT", () => {
+  emulator.kill("SIGINT");
   process.exit();
 });

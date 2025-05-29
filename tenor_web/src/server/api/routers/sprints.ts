@@ -28,18 +28,18 @@ import {
   getSprints,
   getSprintsRef,
   updateSprintNumberOrder,
-} from "~/utils/helpers/shortcuts/sprints";
+} from "../shortcuts/sprints";
 import { sprintPermissions } from "~/lib/defaultValues/permission";
 import {
   getUserStories,
   getUserStoriesRef,
-} from "~/utils/helpers/shortcuts/userStories";
-import { getIssues, getIssuesRef } from "~/utils/helpers/shortcuts/issues";
-import { getBacklogTags } from "~/utils/helpers/shortcuts/tags";
-import { getProjectRef } from "~/utils/helpers/shortcuts/general";
+} from "../shortcuts/userStories";
+import { getIssues, getIssuesRef } from "../shortcuts/issues";
+import { getBacklogTags } from "../shortcuts/tags";
+import { getProjectRef } from "../shortcuts/general";
 import { TRPCError } from "@trpc/server";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
-import { getTasksRef } from "~/utils/helpers/shortcuts/tasks";
+import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
+import { getTasksRef } from "../shortcuts/tasks";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")

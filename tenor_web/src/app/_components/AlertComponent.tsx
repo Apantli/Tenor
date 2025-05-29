@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { type Alert } from "../_hooks/useAlert";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import useShiftKey from "../_hooks/useShiftKey";
 
 interface Props {

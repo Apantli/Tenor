@@ -13,7 +13,7 @@ export const LogProjectActivity = async ({
       .collection("projects")
       .doc(projectId)
       .collection("activity");
-    
+
     await activeRef.add({
       itemId,
       userId,
@@ -25,4 +25,4 @@ export const LogProjectActivity = async ({
     console.error("Error logging project activity:", error);
     throw new Error("Failed to log project activity");
   }
-}
+};

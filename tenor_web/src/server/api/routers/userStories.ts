@@ -19,7 +19,7 @@ import type {
   UserStoryDetail,
   UserStoryPreview,
 } from "~/lib/types/detailSchemas";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import { FieldValue } from "firebase-admin/firestore";
 import {
   backlogPermissions,
@@ -38,14 +38,14 @@ import {
   getUserStoryTable,
   hasDependencyCycle,
   updateDependency,
-} from "~/utils/helpers/shortcuts/userStories";
-import { getEpic } from "~/utils/helpers/shortcuts/epics";
+} from "../shortcuts/userStories";
+import { getEpic } from "../shortcuts/epics";
 import {
   getBacklogTag,
   getPriorityByNameOrId,
-} from "~/utils/helpers/shortcuts/tags";
+} from "../shortcuts/tags";
 import type { Edge, Node } from "@xyflow/react";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
+import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 
 export const userStoriesRouter = createTRPCRouter({
   /**

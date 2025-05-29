@@ -63,7 +63,7 @@ export default function CreateUserStoryPopup({
   });
 
   const confirm = useConfirmation();
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -81,10 +81,7 @@ export default function CreateUserStoryPopup({
 
   const handleCreateUserStory = async () => {
     if (createForm.name === "") {
-      alert("Oops...", "Please enter a name for the user story.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.userStoryNameError();
       return;
     }
 
@@ -127,10 +124,7 @@ export default function CreateUserStoryPopup({
         predefinedAlerts.cyclicDependency();
         return;
       }
-      alert("Error", "Failed to create user story. Please try again.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.userStoryCreateError();
       console.error("Error creating user story:", error);
     } finally {
       setIsSubmitting(false);
@@ -175,7 +169,7 @@ export default function CreateUserStoryPopup({
           />
 
           <div className="mt-4 flex gap-2">
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Priority</h3>
               <PriorityPicker
                 priority={createForm.priority}
@@ -184,7 +178,7 @@ export default function CreateUserStoryPopup({
                 }
               />
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
                 currentSize={createForm.size}

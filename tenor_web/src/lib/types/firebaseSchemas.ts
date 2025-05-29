@@ -216,7 +216,9 @@ export interface UserStory extends BacklogItem {
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
+  assignedDate?: Timestamp;
   dueDate?: Date;
+  statusChangeDate?: Timestamp;
   finishedDate?: Date;
   size: Size;
   itemId: string;
@@ -272,6 +274,7 @@ export interface LogProjectActivityParams {
   userId: string;
   type: AllBasicItemType;
   action: ActionType;
+  date?: Timestamp;
 }
 
 export interface ProjectActivity {
