@@ -32,8 +32,8 @@ export function SprintPicker({
   return (
     <PillPickerComponent
       disabled={disabled}
-      label="Select an epic"
-      emptyLabel="No epics available"
+      label="Select an sprint"
+      emptyLabel="No sprints available"
       selectedItem={sprintToItem(selectedOption)}
       allItems={sprints?.map(sprintToItem) ?? []}
       allowClear={sprints?.length !== 0}
