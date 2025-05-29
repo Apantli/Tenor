@@ -2,7 +2,7 @@
 
 import type { ClassNameValue } from "tailwind-merge";
 import { useState } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import {
   permissionItems,
   permissionLabels,

@@ -25,7 +25,7 @@ export default function SettingsSizeTable({
   setSizeData: React.Dispatch<React.SetStateAction<SizeCol[]>>;
 }) {
   // Hook
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const [numberWarningShown, setNumberWarningShown] = useState(false);
 
@@ -33,14 +33,7 @@ export default function SettingsSizeTable({
     if (value < maxInputSizeNumber) return false;
     if (numberWarningShown) return true;
 
-    alert(
-      "Number too large",
-      `Please only input numbers less or equal than ${maxInputSizeNumber.toLocaleString()}.`,
-      {
-        type: "warning",
-        duration: 3000,
-      },
-    );
+    predefinedAlerts.sizePointsUpperBoundError(maxInputSizeNumber);
     return true;
   };
 

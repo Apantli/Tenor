@@ -6,7 +6,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import DependencyListUserStory from "../inputs/DependencyListUserStory";
 import EpicPicker from "~/app/_components/inputs/pickers/EpicPicker";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { ExistingEpic, UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
@@ -15,6 +15,8 @@ import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllUserStories } from "~/app/_hooks/invalidateHooks";
 import { TRPCClientError } from "@trpc/client";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
+import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 
@@ -44,6 +46,7 @@ export default function CreateUserStoryPopup({
     priority?: Tag;
     size?: Size;
     epic?: ExistingEpic;
+    sprint?: WithId<Sprint>;
     dependencies: UserStoryPreview[];
     requiredBy: UserStoryPreview[];
   }>({
@@ -54,12 +57,13 @@ export default function CreateUserStoryPopup({
     priority: undefined,
     size: undefined,
     epic: undefined,
+    sprint: undefined,
     dependencies: [],
     requiredBy: [],
   });
 
   const confirm = useConfirmation();
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -67,6 +71,8 @@ export default function CreateUserStoryPopup({
     if (createForm.acceptanceCriteria !== "") return true;
     if (createForm.size !== undefined) return true;
     if (createForm.epic !== undefined) return true;
+    if (createForm.priority !== undefined) return true;
+    if (createForm.sprint !== undefined) return true;
     if (createForm.dependencies.length > 0) return true;
     if (createForm.requiredBy.length > 0) return true;
     if (createForm.tags.length > 0) return true;
@@ -75,10 +81,7 @@ export default function CreateUserStoryPopup({
 
   const handleCreateUserStory = async () => {
     if (createForm.name === "") {
-      alert("Oops...", "Please enter a name for the user story.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.userStoryNameError();
       return;
     }
 
@@ -100,6 +103,7 @@ export default function CreateUserStoryPopup({
           priorityId: createForm.priority?.id,
           size: createForm.size,
           epicId: createForm.epic?.id ?? "",
+          sprintId: createForm.sprint?.id ?? "",
           requiredByIds: createForm.requiredBy.map((us) => us.id),
           dependencyIds: createForm.dependencies.map((us) => us.id),
         },
@@ -120,15 +124,14 @@ export default function CreateUserStoryPopup({
         predefinedAlerts.cyclicDependency();
         return;
       }
-      alert("Error", "Failed to create user story. Please try again.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.userStoryCreateError();
       console.error("Error creating user story:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const checkTitleLimit = useCharacterLimit("User story title", 80);
 
   return (
     <Popup
@@ -159,8 +162,14 @@ export default function CreateUserStoryPopup({
             }}
           />
 
+          <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+          <SprintPicker
+            sprint={createForm.sprint}
+            onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
+          />
+
           <div className="mt-4 flex gap-2">
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Priority</h3>
               <PriorityPicker
                 priority={createForm.priority}
@@ -169,7 +178,7 @@ export default function CreateUserStoryPopup({
                 }
               />
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
                 currentSize={createForm.size}
@@ -215,7 +224,11 @@ export default function CreateUserStoryPopup({
         id="story-name-field"
         label="Story name"
         value={createForm.name}
-        onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+        onChange={(e) => {
+          if (checkTitleLimit(e.target.value)) {
+            setCreateForm({ ...createForm, name: e.target.value });
+          }
+        }}
         placeholder="Short summary of the story..."
         containerClassName="mb-4"
       />

@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { HexColorInput, HexColorPicker } from "react-colorful";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Dropdown, { DropdownItem } from "../../Dropdown";
@@ -54,7 +54,12 @@ export default function DropdownColorPicker({
       ) : (
         <Dropdown
           label={
-            <>
+            <div
+              className={cn(
+                "block w-full rounded-md border border-gray-300 px-4 py-2 pb-3 shadow-sm outline-none focus:border-blue-500",
+                className,
+              )}
+            >
               <div className="mt-1 flex items-center gap-2">
                 <div
                   className="h-6 w-6 rounded-md"
@@ -63,12 +68,8 @@ export default function DropdownColorPicker({
                 <span>{value}</span>
                 <ArrowDropDownIcon className="ml-auto" />
               </div>
-            </>
+            </div>
           }
-          className={cn(
-            "block w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm outline-none focus:border-blue-500",
-            className,
-          )}
           {...props}
         >
           <DropdownItem>

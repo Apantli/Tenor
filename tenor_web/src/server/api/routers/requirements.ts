@@ -31,10 +31,10 @@ import {
   getRequirementTypeRef,
   getRequirementTypes,
   getRequirementTypesRef,
-} from "~/utils/helpers/shortcuts/requirements";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
-import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
-import { getPriorityByNameOrId } from "~/utils/helpers/shortcuts/tags";
+} from "../shortcuts/requirements";
+import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
+import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
+import { getPriorityByNameOrId } from "../shortcuts/tags";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 
 export const requirementsRouter = createTRPCRouter({
@@ -186,12 +186,14 @@ export const requirementsRouter = createTRPCRouter({
           requirementId,
         ).get();
         await requirementDoc?.ref.update(requirementData);
+        return { id: requirementId };
       } else {
         requirementData.scrumId = await getRequirementNewId(
           ctx.firestore,
           projectId,
         );
-        await getRequirementsRef(ctx.firestore, projectId).add(requirementData);
+        const docRef = await getRequirementsRef(ctx.firestore, projectId).add(requirementData);
+        return { id: docRef.id };
       }
     }),
 

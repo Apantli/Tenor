@@ -23,7 +23,6 @@ export interface SprintInfo {
 
 // This sprint is modifiable
 export interface Sprint extends SprintInfo {
-  id?: string;
   userStoryIds: string[];
   issueIds: string[];
   genericItemIds: string[];
@@ -217,7 +216,9 @@ export interface UserStory extends BacklogItem {
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
+  assignedDate?: Timestamp;
   dueDate?: Date;
+  statusChangeDate?: Timestamp;
   finishedDate?: Date;
   size: Size;
   itemId: string;
@@ -273,6 +274,7 @@ export interface LogProjectActivityParams {
   userId: string;
   type: AllBasicItemType;
   action: ActionType;
+  date?: Timestamp;
 }
 
 export interface ProjectActivity {
@@ -287,6 +289,6 @@ export interface ActivityItem {
   id: string;
   name: string;
   type: AllBasicItemType;
-  scrumId?: number
+  scrumId?: number;
   activity: WithId<ProjectActivity>;
 }

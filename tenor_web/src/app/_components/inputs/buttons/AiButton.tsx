@@ -1,6 +1,6 @@
 import React from "react";
 import BaseButton, { type BaseButtonProps } from "./BaseButton";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 
 interface Props {

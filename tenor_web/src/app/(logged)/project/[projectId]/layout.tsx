@@ -5,7 +5,7 @@ import React, { useMemo, type PropsWithChildren } from "react";
 import InterceptedLink from "~/app/_components/InterceptableLink";
 import Navbar from "~/app/_components/Navbar";
 import Tabbar from "~/app/_components/Tabbar";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { api } from "~/trpc/react";
 import { tabsMetaInformation, tabsToLinks } from "~/lib/tabs";
 import SearchOffIcon from "@mui/icons-material/SearchOff";

@@ -21,13 +21,14 @@ import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import { emptyRole } from "~/lib/defaultValues/roles";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 export const ProjectEpics = () => {
   // #region Hooks
   const { projectId } = useParams();
   const utils = api.useUtils();
   const confirm = useConfirmation();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const formatEpicScrumId = useFormatEpicScrumId();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   // #endregion
@@ -127,10 +128,7 @@ export const ProjectEpics = () => {
 
   const handleCreateEpic = async () => {
     if (newEpicName === "") {
-      alert("Oops...", "Please enter a name for the epic.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.epicNameError();
       return;
     }
 
@@ -148,6 +146,7 @@ export const ProjectEpics = () => {
     }
   };
 
+  const checkTitleLimit = useCharacterLimit("Epic name", 80);
   // #endregion
 
   return (
@@ -256,7 +255,11 @@ export const ProjectEpics = () => {
             placeholder="Briefly describe your epic..."
             label="Epic name"
             value={newEpicName}
-            onChange={(e) => setNewEpicName(e.target.value)}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setNewEpicName(e.target.value);
+              }
+            }}
           />
           <InputTextAreaField
             id="epic-description-field"
@@ -297,10 +300,7 @@ export const ProjectEpics = () => {
           if (epic?.scrumId) {
             if (!creatingEpic) {
               if (editEpicName === "") {
-                alert("Oops...", "Please enter a name for the epic.", {
-                  type: "error",
-                  duration: 5000,
-                });
+                predefinedAlerts.epicNameError();
                 return;
               }
 
@@ -422,7 +422,11 @@ export const ProjectEpics = () => {
                 type="text"
                 placeholder="Your epic name"
                 value={editEpicName}
-                onChange={(e) => setEditEpicName(e.target.value)}
+                onChange={(e) => {
+                  if (checkTitleLimit(e.target.value)) {
+                    setEditEpicName(e.target.value);
+                  }
+                }}
               />
               <InputTextAreaField
                 id="epic-description-field"

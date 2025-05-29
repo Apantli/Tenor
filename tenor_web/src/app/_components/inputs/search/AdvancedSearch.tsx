@@ -10,7 +10,7 @@ import TagComponent from "~/app/_components/TagComponent";
 import { UserPicker } from "~/app/_components/inputs/pickers/UserPicker";
 import { SprintPicker } from "~/app/_components/inputs/pickers/SprintPicker";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import type { AdvancedSearchFilters } from "../../../_hooks/useAdvancedSearchFilters";
 import type { SetStateAction } from "react";
 import { sizeTags } from "~/lib/defaultValues/size";
@@ -30,10 +30,6 @@ export default function AdvancedSearch({
   const { projectId } = useParams();
 
   const { data: users } = api.users.getUsers.useQuery({
-    projectId: projectId as string,
-  });
-
-  const { data: sprintsData } = api.sprints.getProjectSprintsOverview.useQuery({
     projectId: projectId as string,
   });
 
@@ -164,6 +160,7 @@ export default function AdvancedSearch({
             <UserPicker
               className="h-10 max-w-[170px]"
               selectedOption={advancedFilters.assignee}
+              placeholder="Select assignee"
               options={users ?? []}
               onChange={(assignee) => {
                 setAdvancedFilters({
@@ -173,13 +170,12 @@ export default function AdvancedSearch({
               }}
               allowSetSelf
             />
+
             {!hideSprint && (
               <>
                 <h1 className="mt-2 font-semibold">Sprint</h1>
                 <SprintPicker
-                  className="h-10 max-w-[170px]"
-                  selectedOption={advancedFilters.sprint}
-                  options={sprintsData ?? []}
+                  sprint={advancedFilters.sprint}
                   onChange={(sprint) => {
                     setAdvancedFilters({
                       ...advancedFilters,

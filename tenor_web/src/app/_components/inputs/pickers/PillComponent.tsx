@@ -8,8 +8,8 @@ import type { Tag } from "~/lib/types/firebaseSchemas";
 import Dropdown, { DropdownButton, DropdownItem } from "../../Dropdown";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";
-import { cn } from "~/lib/utils";
-import { generateRandomTagColor } from "~/utils/helpers/colorUtils";
+import { cn } from "~/lib/helpers/utils";
+import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 
 interface Props {
   currentTag?: Tag;
@@ -101,7 +101,7 @@ export default function PillComponent({
         }}
       >
         <span className="truncate">{tag.name}</span>
-        <span className={cn("basis-[5px]", disabled ? "hidden" : "")}>
+        <span className={cn("basis-[5px]", disabled ? "opacity-0" : "")}>
           <ArrowDropDownIcon />
         </span>
       </div>

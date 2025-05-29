@@ -4,14 +4,16 @@ import React, { useState } from "react";
 import Popup from "~/app/_components/Popup";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
-import type { Size, Tag } from "~/lib/types/firebaseSchemas";
+import type { Size, Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePicker } from "~/app/_components/inputs/pickers/SizePicker";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
-import UserStoryPicker from "~/app/_components/inputs/pickers/UserStoryPicker";
+import UserStoryPicker from "../inputs/pickers/UserStoryPicker";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
+import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 
@@ -37,6 +39,7 @@ export default function CreateIssuePopup({
     stepsToRecreate: string;
     tags: Tag[];
     priority?: Tag;
+    sprint?: WithId<Sprint>;
     size?: Size;
     relatedUserStory?: UserStoryPreview;
   }>({
@@ -46,11 +49,12 @@ export default function CreateIssuePopup({
     tags: [],
     priority: undefined,
     size: undefined,
+    sprint: undefined,
     relatedUserStory: undefined,
   });
 
   const confirm = useConfirmation();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -59,16 +63,14 @@ export default function CreateIssuePopup({
     if (createForm.tags.length > 0) return true;
     if (createForm.priority !== undefined) return true;
     if (createForm.size !== undefined) return true;
+    if (createForm.sprint !== undefined) return true;
     if (createForm.relatedUserStory !== undefined) return true;
     return false;
   };
 
   const handleCreateIssue = async () => {
     if (createForm.name === "") {
-      alert("Oops...", "Please enter a name for the Issue.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.issueNameError();
       return;
     }
 
@@ -82,6 +84,7 @@ export default function CreateIssuePopup({
           .filter((val) => val !== undefined),
         priorityId: createForm.priority?.id ?? "",
         size: createForm.size,
+        sprintId: createForm.sprint?.id ?? "",
         relatedUserStoryId: createForm.relatedUserStory?.id ?? "", // FIXME
         stepsToRecreate: createForm.stepsToRecreate, // FIXME
       },
@@ -90,6 +93,8 @@ export default function CreateIssuePopup({
 
     // Invalidation is done on the parent component
   };
+
+  const checkTitleLimit = useCharacterLimit("Issue name", 80);
 
   return (
     <Popup
@@ -121,8 +126,14 @@ export default function CreateIssuePopup({
             }}
           />
 
+          <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+          <SprintPicker
+            sprint={createForm.sprint}
+            onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
+          />
+
           <div className="mt-4 flex gap-2">
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Priority</h3>
               <PriorityPicker
                 priority={createForm.priority}
@@ -131,7 +142,7 @@ export default function CreateIssuePopup({
                 }
               />
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1">
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
                 currentSize={createForm.size}
@@ -161,7 +172,11 @@ export default function CreateIssuePopup({
         id="issue-name-field"
         label="Issue name"
         value={createForm.name}
-        onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+        onChange={(e) => {
+          if (checkTitleLimit(e.target.value)) {
+            setCreateForm({ ...createForm, name: e.target.value });
+          }
+        }}
         placeholder="Short summary of the issue..."
         containerClassName="mb-4"
       />

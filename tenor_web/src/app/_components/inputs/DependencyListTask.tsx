@@ -11,7 +11,7 @@ import TagComponent from "~/app/_components/TagComponent";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import { api } from "~/trpc/react";
 import Check from "@mui/icons-material/Check";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 
@@ -81,6 +81,10 @@ export default function DependencyListTask({
     return false;
   };
 
+  const getTaskId = (task: Task) => {
+    return formatTaskScrumId(task.scrumId);
+  };
+
   return (
     <div>
       <div className="mt-4 flex items-center justify-between">
@@ -134,12 +138,16 @@ export default function DependencyListTask({
                       "opacity-0": !isSelected(task),
                     })}
                   ></Check>
-                  <span className="flex w-full gap-1 px-2">
-                    <span className="font-medium">
-                      TS{task.scrumId.toString().padStart(2, "0")}:
+                  <div className="flex flex-col justify-start gap-0 overflow-x-hidden">
+                    {task && (
+                      <span className="w-full truncate text-xs font-semibold">
+                        {getTaskId(task)}:
+                      </span>
+                    )}
+                    <span className="w-full truncate">
+                      {task?.name ?? (disabled ? "None" : "Choose user story")}
                     </span>
-                    <span className="flex-1 truncate">{task.name}</span>
-                  </span>
+                  </div>
                 </DropdownButton>
               ))}
               {allTasksExpectCurrent?.length === 0 && (

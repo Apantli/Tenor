@@ -4,7 +4,7 @@ import { useDraggable } from "@dnd-kit/react";
 import ProfilePicture from "~/app/_components/ProfilePicture";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import type { Task, WithId } from "~/lib/types/firebaseSchemas";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { api } from "~/trpc/react";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useState } from "react";

@@ -6,7 +6,7 @@ import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import {
   useFormatIssueScrumId,
@@ -15,8 +15,8 @@ import {
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
-import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import {
+  useInvalidateQueriesAllStatuses,
   useInvalidateQueriesBacklogItemDetails,
   useInvalidateQueriesBacklogItems,
 } from "~/app/_hooks/invalidateHooks";
@@ -30,6 +30,11 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import { usePopupVisibilityState } from "~/app/_components/Popup";
+import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";
+import MoveLeftIcon from "@mui/icons-material/ArrowBackIos";
+import MoveRightIcon from "@mui/icons-material/ArrowForwardIos";
+import EditIcon from "@mui/icons-material/EditOutlined";
 
 interface Props {
   filter: string;
@@ -45,6 +50,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
+  const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
 
   // TRPC
   const { data: itemsAndColumnsData, isLoading } =
@@ -69,6 +75,9 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   const { mutateAsync: modifyIssuesTags } =
     api.issues.modifyIssuesTags.useMutation();
 
+  const { mutateAsync: reorderStatus } =
+    api.settings.reorderStatusTypes.useMutation();
+
   // REACT
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [lastDraggedItemId, setLastDraggedItemId] = useState<string | null>(
@@ -80,6 +89,11 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // Detail item and parent
   const detailItem = itemsAndColumnsData?.cardItems[detailItemId];
   const detailItemType = detailItem?.cardType;
+
+  const [renderStatusPopup, showStatusPopup, setShowStatusPopup] =
+    usePopupVisibilityState();
+  const [selectedStatusId, setSelectedStatusId] = useState<string | null>();
+  const [statusEditMode, setStatusEditMode] = useState(false);
 
   // UTILITY
   const getCorrectFormatter = (itemType: string) => {
@@ -239,6 +253,48 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
     await moveItemsToColumn(itemIds, columnId);
   };
 
+  const moveStatus = async (statusId: string, dir: 1 | -1) => {
+    const statuses = itemsAndColumnsData?.columns;
+    if (!statuses) return;
+
+    const statusIndex = statuses.findIndex((status) => status.id === statusId);
+    const newIndex = statusIndex + dir;
+
+    if (newIndex < 0 || newIndex >= statuses.length) return;
+
+    // Swap statusIndex and newIndex;
+    const otherStatus = statuses[newIndex]!;
+    statuses[newIndex] = statuses[statusIndex]!;
+    statuses[statusIndex] = otherStatus;
+
+    await utils.kanban.getBacklogItemsForKanban.cancel({
+      projectId: projectId as string,
+    });
+
+    utils.kanban.getBacklogItemsForKanban.setData(
+      {
+        projectId: projectId as string,
+      },
+      (oldData) => {
+        if (!oldData) return oldData;
+        return {
+          cardItems: oldData.cardItems,
+          columns: statuses.map((status, index) => ({
+            ...status,
+            orderIndex: index,
+          })),
+        };
+      },
+    );
+
+    await reorderStatus({
+      projectId: projectId as string,
+      statusIds: statuses.map((status) => status.id),
+    });
+
+    await invalidateQueriesAllStatuses(projectId as string);
+  };
+
   return (
     <>
       <DragDropProvider
@@ -310,10 +366,22 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
                   }}
                   header={
                     <div className="flex flex-col items-start pr-1">
-                      <div className="flex w-full justify-between">
-                        <h1 className="text-2xl font-medium">{column.name}</h1>
+                      <div className="flex w-full justify-between gap-2">
+                        <div className="flex flex-1 items-center gap-3 overflow-hidden">
+                          <div
+                            className="h-5 w-5 shrink-0 rounded-full"
+                            style={{
+                              borderColor: `${column.color}90`,
+                              borderWidth: "1.4px",
+                              backgroundColor: `${column.color}3E`,
+                            }}
+                          ></div>
+                          <h1 className="flex-1 truncate text-2xl font-medium">
+                            {column.name}
+                          </h1>
+                        </div>
                         {permission >= permissionNumbers.write && (
-                          <div className="flex gap-2">
+                          <div className="flex shrink-0 gap-1">
                             <button
                               className={cn(
                                 "rounded-lg px-1 text-app-text transition",
@@ -324,14 +392,48 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
                               onClick={toggleSelectAll}
                             >
                               {allSelected ? (
-                                <CheckNone fontSize="small" />
+                                <CheckNone fontSize="medium" />
                               ) : (
-                                <CheckAll fontSize="small" />
+                                <CheckAll fontSize="medium" />
                               )}
                             </button>
-                            <Dropdown label={"• • •"}>
-                              <DropdownButton>Edit status</DropdownButton>
-                            </Dropdown>
+                            <button
+                              className="rounded-lg px-1 text-app-text transition hover:text-app-primary"
+                              onClick={() => {
+                                setShowStatusPopup(true);
+                                setSelectedStatusId(column.id);
+                              }}
+                              data-tooltip-id="tooltip"
+                              data-tooltip-content="Edit status"
+                              data-tooltip-delay-show={500}
+                            >
+                              <EditIcon fontSize="medium" />
+                            </button>
+                            <div className="ml-2 flex gap-0">
+                              {column.orderIndex != 0 && (
+                                <button
+                                  className="rounded-lg text-app-text transition hover:text-app-primary"
+                                  onClick={() => moveStatus(column.id, -1)}
+                                  data-tooltip-id="tooltip"
+                                  data-tooltip-content="Move left"
+                                  data-tooltip-delay-show={500}
+                                >
+                                  <MoveLeftIcon fontSize="small" />
+                                </button>
+                              )}
+                              {column.orderIndex !==
+                                itemsAndColumnsData.columns.length - 1 && (
+                                <button
+                                  className="rounded-lg text-app-text transition hover:text-app-primary"
+                                  onClick={() => moveStatus(column.id, 1)}
+                                  data-tooltip-id="tooltip"
+                                  data-tooltip-content="Move right"
+                                  data-tooltip-delay-show={500}
+                                >
+                                  <MoveRightIcon fontSize="small" />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -375,6 +477,21 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
           setDetailId={setDetailItemId}
           showDetail={showDetail}
           issueId={detailItemId}
+        />
+      )}
+
+      {renderStatusPopup && selectedStatusId && (
+        <StatusDetailPopup
+          editMode={statusEditMode}
+          setEditMode={setStatusEditMode}
+          setShowPopup={(show) => {
+            if (!show) {
+              setTimeout(() => setStatusEditMode(false), 200);
+            }
+            setShowStatusPopup(show);
+          }}
+          showPopup={showStatusPopup}
+          statusId={selectedStatusId}
         />
       )}
     </>

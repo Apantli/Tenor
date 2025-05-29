@@ -23,7 +23,7 @@ import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { TYPE_COLLECTION_MAP } from "../typeDisplayName";
+import { TYPE_COLLECTION_MAP } from "~/lib/helpers/typeDisplayName";
 import { Timestamp } from "firebase-admin/firestore";
 
 /**

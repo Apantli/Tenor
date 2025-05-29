@@ -9,7 +9,7 @@ import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetail
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import SprintCardColumn from "./SprintCardColumn";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import {
@@ -182,9 +182,9 @@ export default function ProjectSprints() {
     useQueryIdForPopup("id");
 
   // Check if all unassigned items are selected
-  const allUnassignedSelected = filteredUnassignedItems.every((itemId) =>
-    selectedItems.has(itemId),
-  );
+  const allUnassignedSelected =
+    filteredUnassignedItems.length > 0 &&
+    filteredUnassignedItems.every((itemId) => selectedItems.has(itemId));
 
   const toggleSelectAllUnassigned = () => {
     const newSelection = new Set(selectedItems);
@@ -434,7 +434,8 @@ export default function ProjectSprints() {
     setLastDraggedBacklogItemId(null);
   }, [sprintSearchValue]);
 
-  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
+  const [advancedFilters, setAdvancedFilters] =
+    useAdvancedSearchFilters("sprints");
 
   return (
     <>
@@ -488,7 +489,7 @@ export default function ProjectSprints() {
                   {permission >= permissionNumbers.write && (
                     <button
                       className={cn(
-                        "rounded-lg px-1 text-app-text transition",
+                        "rounded-lg px-1 text-app-text transition hover:text-app-primary",
                         {
                           "text-app-secondary":
                             filteredUnassignedItems.length > 0 &&
@@ -496,11 +497,14 @@ export default function ProjectSprints() {
                         },
                       )}
                       onClick={toggleSelectAllUnassigned}
+                      data-tooltip-id="tooltip"
+                      data-tooltip-content="Toggle select all"
+                      data-tooltip-delay-show={500}
                     >
                       {allUnassignedSelected ? (
-                        <CheckNone fontSize="small" />
+                        <CheckNone fontSize="medium" />
                       ) : (
-                        <CheckAll fontSize="small" />
+                        <CheckAll fontSize="medium" />
                       )}
                     </button>
                   )}

@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import Popup, {
-  SidebarPopup,
-  usePopupVisibilityState,
-} from "~/app/_components/Popup";
+import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import Markdown from "react-markdown";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
@@ -15,7 +12,6 @@ import { SizePicker } from "~/app/_components/inputs/pickers/SizePicker";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
-  useFormatSprintNumber,
   useFormatIssueScrumId,
   useFormatTaskScrumId,
 } from "~/app/_hooks/scrumIdHooks";
@@ -27,9 +23,8 @@ import {
   useInvalidateQueriesIssueDetails,
   useInvalidateQueriesTaskDetails,
 } from "~/app/_hooks/invalidateHooks";
-import StatusPicker from "~/app/_components/inputs/pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
-import HelpIcon from "@mui/icons-material/Help";
+
 import {
   permissionNumbers,
   type Permission,
@@ -39,9 +34,13 @@ import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
-import { CreateTaskForm } from "./CreateTaskPopup";
+import { CreateTaskPopup } from "./CreateTaskPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
+import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
+import { SprintPicker } from "../inputs/pickers/SprintPicker";
+import StatusPicker from "../inputs/pickers/StatusPicker";
 
 interface Props {
   issueId: string;
@@ -90,6 +89,11 @@ export default function IssueDetailPopup({
     api.issues.deleteIssue.useMutation();
   const utils = api.useUtils();
 
+  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
+    projectId: projectId as string,
+    itemId: issueId,
+  });
+
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -106,9 +110,8 @@ export default function IssueDetailPopup({
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const formatIssueScrumId = useFormatIssueScrumId();
-  const formatSprintNumber = useFormatSprintNumber();
   useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
@@ -224,9 +227,8 @@ export default function IssueDetailPopup({
       await dismissPopup();
     }
   };
-  const showAutomaticDetails = () => {
-    return issueDetail?.status === undefined || issueDetail?.status?.id == "";
-  };
+
+  const checkTitleLimit = useCharacterLimit("Issue name", 80);
 
   return (
     <Popup
@@ -250,6 +252,15 @@ export default function IssueDetailPopup({
                       ...issueDetail,
                       relatedUserStory: userStory,
                     });
+                  }}
+                />
+
+                <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+                <SprintPicker
+                  disabled={permission < permissionNumbers.write}
+                  sprint={issueDetail.sprint}
+                  onChange={async (sprint) => {
+                    await handleSave({ ...issueDetail, sprint });
                   }}
                 />
 
@@ -279,27 +290,37 @@ export default function IssueDetailPopup({
                 <div className="mt-4 flex-1">
                   <div className="flex">
                     <h3 className="text-lg font-semibold">Status</h3>
-                    {showAutomaticDetails() && (
-                      <HelpIcon
-                        className="ml-[3px] text-gray-500"
-                        data-tooltip-id="tooltip"
-                        data-tooltip-content="A status is assigned based on the progress of all its tasks."
-                        data-tooltip-place="top-start"
-                        style={{ width: "15px" }}
-                      />
-                    )}
                   </div>
                   <StatusPicker
-                    disabled={permission < permissionNumbers.write}
-                    status={issueDetail.status}
+                    disabled={
+                      permission < permissionNumbers.write ||
+                      isAutomatic(issueDetail.status)
+                    }
+                    status={
+                      isAutomatic(issueDetail.status)
+                        ? automaticStatus
+                        : issueDetail.status
+                    }
                     onChange={async (status) => {
                       await handleSave({ ...issueDetail, status });
                     }}
-                    showAutomaticStatus={true}
                   />
-                  {showAutomaticDetails() && (
-                    <ItemAutomaticStatus itemId={issueId} />
-                  )}
+                  <ItemAutomaticStatus
+                    isAutomatic={isAutomatic(issueDetail.status)}
+                    onChange={async (automatic) => {
+                      if (automatic) {
+                        await handleSave({
+                          ...issueDetail,
+                          status: automaticTag,
+                        });
+                      } else {
+                        await handleSave({
+                          ...issueDetail,
+                          status: automaticStatus,
+                        });
+                      }
+                    }}
+                  />
                 </div>
 
                 <BacklogTagList
@@ -309,11 +330,6 @@ export default function IssueDetailPopup({
                     await handleSave({ ...issueDetail, tags });
                   }}
                 />
-
-                <h3 className="mt-4 text-lg">
-                  <span className="font-semibold">Sprint: </span>
-                  {formatSprintNumber(issueDetail.sprint?.number)}
-                </h3>
               </>
             )}
           </>
@@ -359,10 +375,7 @@ export default function IssueDetailPopup({
           };
           if (updatedData.name === "") {
             setEditMode(true);
-            alert("Oops", "Please provide a name for the issue.", {
-              type: "error",
-              duration: 5000,
-            });
+            predefinedAlerts.issueNameError();
             return;
           }
           await handleSave(updatedData);
@@ -376,7 +389,11 @@ export default function IssueDetailPopup({
             id="issue-name-field"
             label="Issue name"
             value={editForm.name}
-            onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setEditForm({ ...editForm, name: e.target.value });
+              }
+            }}
             placeholder="Short summary of the issue..."
             containerClassName=""
           />
@@ -454,16 +471,13 @@ export default function IssueDetailPopup({
       )}
 
       {renderCreateTaskPopup && (
-        <SidebarPopup
+        <CreateTaskPopup
+          itemId={issueId}
+          itemType="IS"
+          onTaskAdded={() => setShowCreateTaskPopup(false)}
           show={showCreateTaskPopup}
           dismiss={() => setShowCreateTaskPopup(false)}
-        >
-          <CreateTaskForm
-            itemId={issueId}
-            itemType="IS"
-            onTaskAdded={() => setShowCreateTaskPopup(false)}
-          />
-        </SidebarPopup>
+        />
       )}
     </Popup>
   );

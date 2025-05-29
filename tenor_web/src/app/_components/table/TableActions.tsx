@@ -1,6 +1,6 @@
 import React from "react";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 import { type DeleteOptions, type TableOptions } from "./Table";
 

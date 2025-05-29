@@ -9,7 +9,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import useClickOutside from "../_hooks/useClickOutside";
 import { type ClassNameValue } from "tailwind-merge";
 import useWindowResize from "../_hooks/useWindowResize";
@@ -328,13 +328,16 @@ export default function Dropdown({
   }, []);
 
   // Used to close the menu when the user clicks outside of it
-  useClickOutside(Array.from(dropdownElements), () => {
-    if (isOpen) {
-      setIsOpen(false);
-      setOpenState?.(false);
-      handleClose();
-    }
-  });
+  useClickOutside(
+    Array.from(dropdownElements).map((ref) => ref.current),
+    () => {
+      if (isOpen) {
+        setIsOpen(false);
+        setOpenState?.(false);
+        handleClose();
+      }
+    },
+  );
 
   return (
     <DropdownTreeContext.Provider value={dropdownTreeApi}>

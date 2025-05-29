@@ -7,6 +7,7 @@
  *
  * @category API
  */
+import { Timestamp } from "firebase-admin/firestore";
 
 import { z } from "zod";
 import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
@@ -22,7 +23,7 @@ import {
   TaskSchema,
   TimestampType,
 } from "~/lib/types/zodFirebaseSchema";
-import { askAiToGenerate } from "~/utils/aiTools/aiGeneration";
+import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import {
   deleteTaskAndGetModified,
   getTask,
@@ -35,25 +36,25 @@ import {
   getTaskTable,
   hasDependencyCycle,
   updateDependency,
-} from "~/utils/helpers/shortcuts/tasks";
+} from "../shortcuts/tasks";
 import {
   generateTaskContext,
   getGenericBacklogItemContext,
-} from "~/utils/helpers/shortcuts/general";
+} from "../shortcuts/general";
 import {
   getBacklogTagsContext,
   getTodoStatusTag,
-} from "~/utils/helpers/shortcuts/tags";
-import { getUserStoryContextSolo } from "~/utils/helpers/shortcuts/userStories";
-import { getIssueContextSolo } from "~/utils/helpers/shortcuts/issues";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
+} from "../shortcuts/tags";
+import { getUserStoryContextSolo } from "../shortcuts/userStories";
+import { getIssueContextSolo } from "../shortcuts/issues";
+import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 import {
   backlogPermissions,
   taskPermissions,
 } from "~/lib/defaultValues/permission";
 import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
-import { dateToString } from "~/utils/helpers/parsers";
+import { dateToString } from "~/lib/helpers/parsers";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -352,7 +353,22 @@ export const tasksRouter = createTRPCRouter({
         type: "TS",
         action: "update",
       });
+      let assignedDate = oldTaskData.assignedDate;
 
+      if (taskData.assigneeId !== oldTaskData.assigneeId) {
+        assignedDate = Timestamp.fromDate(new Date());
+      }
+
+      let statusChangeDate = oldTaskData.statusChangeDate;
+      if (taskData.statusId !== oldTaskData.statusId) {
+        statusChangeDate = Timestamp.fromDate(new Date());
+      }
+
+      await getTaskRef(ctx.firestore, projectId, taskId).update({
+        ...taskData,
+        assignedDate,
+        statusChangeDate,
+      });
       return {
         updatedTaskds: [
           ...addedDependencies,
@@ -391,7 +407,11 @@ export const tasksRouter = createTRPCRouter({
         type: "TS",
         action: "update",
       });
-      await taskRef.update({ statusId });
+
+      await taskRef.update({
+        statusId,
+        statusChangeDate: Timestamp.fromDate(new Date()),
+      });
     }),
 
   /**

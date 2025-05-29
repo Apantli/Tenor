@@ -296,6 +296,12 @@ export const useInvalidateQueriesAllStatuses = () => {
     await utils.settings.getStatusTypes.invalidate({
       projectId: projectId,
     });
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
+      projectId,
+    });
+    await utils.kanban.getTasksForKanban.invalidate({
+      projectId,
+    });
   };
 };
 
@@ -324,6 +330,16 @@ export const useInvalidateQueriesSingleSprint = () => {
     await utils.projects.getProjectActivities.invalidate({
       projectId: projectId,
     });
+  };
+};
+
+export const useInvalidateQueriesUser = () => {
+  const utils = api.useUtils();
+  return async (userId: string) => {
+    await utils.users.getGlobalUser.invalidate({
+      userId: userId,
+    });
+    await utils.users.getGlobalUsers.invalidate();
   };
 };
 

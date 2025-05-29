@@ -14,7 +14,7 @@ import {
 import TableFilter from "./TableFilter";
 import TableActions from "./TableActions";
 import InputCheckbox from "../inputs/InputCheckbox";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import useShiftKey from "~/app/_hooks/useShiftKey";
 
 interface TableHeaderProps<I, T> {

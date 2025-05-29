@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type PropsWithChildren, useRef } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import CloseSidebarIcon from "@mui/icons-material/LastPage";
@@ -327,9 +327,9 @@ export function SidebarPopup({
           )}
           ref={containerRef}
         >
-          <div className="flex h-full grow flex-col justify-between pt-0">
+          <div className="flex h-full grow flex-col justify-between overflow-y-hidden pt-0">
             <div className="flex flex-1 shrink grow justify-between overflow-y-hidden">
-              <div className="flex flex-1 flex-col overflow-hidden p-2">
+              <div className="flex flex-1 flex-col overflow-y-hidden p-2">
                 <div className="flex justify-between gap-2">
                   {title !== undefined && title}
                   {title === undefined && <div></div>}
