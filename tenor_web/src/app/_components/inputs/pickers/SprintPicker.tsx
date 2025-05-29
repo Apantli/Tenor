@@ -32,7 +32,7 @@ export function SprintPicker({
   return (
     <PillPickerComponent
       disabled={disabled}
-      label="Select an sprint"
+      label="Select a sprint"
       emptyLabel="No sprints available"
       selectedItem={sprintToItem(selectedOption)}
       allItems={sprints?.map(sprintToItem) ?? []}
