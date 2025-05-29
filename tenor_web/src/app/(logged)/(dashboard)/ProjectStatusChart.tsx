@@ -2,7 +2,6 @@
 import { createClassFromSpec, type VisualizationSpec } from "react-vega";
 import React from "react";
 import { cn } from "~/lib/helpers/utils";
-
 interface VegaScale {
   name: string;
   type: string;

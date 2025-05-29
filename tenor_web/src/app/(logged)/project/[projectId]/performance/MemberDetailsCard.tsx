@@ -4,10 +4,7 @@ import ProfilePicture from "~/app/_components/ProfilePicture";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
-import {
-  ContributionPieChart,
-  ContributionLegend,
-} from "~/app/(logged)/project/[projectId]/performance/ContributionPieChart";
+import { ContributionLegend } from "~/app/(logged)/project/[projectId]/performance/ContributionPieChart";
 import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
 import { api } from "~/trpc/react";
@@ -15,8 +12,27 @@ import { emptyRole } from "~/lib/defaultValues/roles";
 import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { formatSeconds } from "~/lib/helpers/parsers";
-import { AverageTimeChart } from "~/app/(logged)/project/[projectId]/performance/AverageTimeChart";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
+import dynamic from "next/dynamic";
+
+const DynamicContributionPieChart = dynamic(
+  () =>
+    import(
+      "~/app/(logged)/project/[projectId]/performance/ContributionPieChart"
+    ).then((m) => m.ContributionPieChart),
+  {
+    ssr: false,
+  },
+);
+const DynamicAverageTimeChart = dynamic(
+  () =>
+    import(
+      "~/app/(logged)/project/[projectId]/performance/AverageTimeChart"
+    ).then((m) => m.AverageTimeChart),
+  {
+    ssr: false,
+  },
+);
 
 export const MemberDetailsCard = ({
   member,
@@ -148,7 +164,9 @@ export const MemberDetailsCard = ({
           <div className="">
             {contributionTotal > 0 ? (
               <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
-                <ContributionPieChart data={formattedUserContributions} />
+                <DynamicContributionPieChart
+                  data={formattedUserContributions}
+                />
                 <ContributionLegend data={formattedUserContributions} />
               </div>
             ) : (
@@ -202,7 +220,7 @@ export const MemberDetailsCard = ({
               </div>
               {timePercentageDifference && (
                 <div className="flex flex-col">
-                  <AverageTimeChart
+                  <DynamicAverageTimeChart
                     data={formattedData}
                     isGreen={timePercentageDifference <= 0}
                   />
