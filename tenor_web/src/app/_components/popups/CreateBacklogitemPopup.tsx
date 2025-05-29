@@ -183,7 +183,6 @@ export default function CreateBacklogItemPopup({
           await handleCreateBacklogItem();
       }}
       disablePassiveDismiss={isModified()}
-      footer={<div></div>} // TODO: Add links to US or IS popups, if possible
     >
       <InputTextField
         id="item-name-field"
@@ -206,6 +205,7 @@ export default function CreateBacklogItemPopup({
         }
         placeholder="Explain the item in detail..."
         containerClassName="mb-4"
+        className="h-[45vh] max-h-[50vh]"
       />
     </Popup>
   );
