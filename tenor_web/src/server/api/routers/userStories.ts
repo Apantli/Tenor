@@ -45,7 +45,7 @@ import {
   getPriorityByNameOrId,
 } from "../shortcuts/tags";
 import type { Edge, Node } from "@xyflow/react";
-import { LogProjectActivity } from "~/server/middleware/projectEventLogger";
+import { LogProjectActivity } from "~/server/api/projectEventLogger";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
