@@ -46,7 +46,7 @@ import {
 } from "../shortcuts/tags";
 import { getUserStoryContextSolo } from "../shortcuts/userStories";
 import { getIssueContextSolo } from "../shortcuts/issues";
-import { LogProjectActivity } from "~/server/api/projectEventLogger";
+import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 import {
   backlogPermissions,
   taskPermissions,

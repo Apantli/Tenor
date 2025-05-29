@@ -22,13 +22,13 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import { fetchMultipleHTML } from "~/utils/webcontent";
+import { fetchMultipleHTML } from "~/server/api/lib/webcontent";
 import { fetchMultipleFiles } from "~/lib/helpers/filecontent";
 import {
   uploadBase64File,
   getLogoPath,
   deleteStartsWith,
-} from "~/utils/firebaseBucket";
+} from "~/lib/db/firebaseBucket";
 import {
   ProjectSchemaCreator,
   SettingsSchema,

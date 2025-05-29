@@ -1,4 +1,4 @@
-import { storageAdmin } from "~/utils/firebaseAdmin";
+import { storageAdmin } from "~/lib/db/firebaseAdmin";
 import { env } from "~/env";
 import { base64ToBuffer } from "~/lib/helpers/base64";
 

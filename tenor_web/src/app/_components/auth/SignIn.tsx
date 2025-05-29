@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import FloatingLabelInput from "../inputs/FloatingLabelInput";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "~/utils/firebaseClient";
+import { auth } from "~/lib/db/firebaseClient";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";

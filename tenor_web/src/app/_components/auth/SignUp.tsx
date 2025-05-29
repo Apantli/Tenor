@@ -8,7 +8,7 @@ import {
   updateProfile,
   type User,
 } from "firebase/auth";
-import { auth } from "~/utils/firebaseClient";
+import { auth } from "~/lib/db/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";

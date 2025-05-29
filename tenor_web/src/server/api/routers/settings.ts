@@ -16,7 +16,7 @@ import {
   TagSchema,
 } from "~/lib/types/zodFirebaseSchema";
 import z from "zod";
-import { fetchHTML } from "~/utils/webcontent";
+import { fetchHTML } from "~/server/api/lib/webcontent";
 import { fetchMultipleFiles } from "~/lib/helpers/filecontent";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import {

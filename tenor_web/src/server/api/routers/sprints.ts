@@ -38,7 +38,7 @@ import { getIssues, getIssuesRef } from "../shortcuts/issues";
 import { getBacklogTags } from "../shortcuts/tags";
 import { getProjectRef } from "../shortcuts/general";
 import { TRPCError } from "@trpc/server";
-import { LogProjectActivity } from "~/server/api/projectEventLogger";
+import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 import { getTasksRef } from "../shortcuts/tasks";
 
 export const sprintsRouter = createTRPCRouter({

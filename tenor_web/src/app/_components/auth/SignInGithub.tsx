@@ -1,6 +1,6 @@
 "use client";
 
-import { auth } from "~/utils/firebaseClient";
+import { auth } from "~/lib/db/firebaseClient";
 import { signInWithPopup, GithubAuthProvider } from "firebase/auth";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { api } from "~/trpc/react";
