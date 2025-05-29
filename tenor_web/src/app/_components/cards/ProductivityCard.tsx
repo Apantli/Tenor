@@ -6,7 +6,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { timestampToDate } from "~/lib/helpers/parsers";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 interface PerformanceData {
   time: z.infer<typeof PerformanceTime>;
   projectId: string;

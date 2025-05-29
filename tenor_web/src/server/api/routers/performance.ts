@@ -42,7 +42,7 @@ import {
   getActivityPartition,
   getAverageTime,
   getContributionOverview,
-} from "~/utils/helpers/shortcuts/performance";
+} from "../shortcuts/performance";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")

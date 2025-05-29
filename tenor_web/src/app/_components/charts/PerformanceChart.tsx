@@ -1,6 +1,6 @@
 import React from "react";
 import { createClassFromSpec, type VisualizationSpec } from "react-vega";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 const spec1: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
