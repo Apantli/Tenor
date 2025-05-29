@@ -3,13 +3,14 @@
 import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown, { DropdownButton } from "./Dropdown";
-import { type PropsWithChildren } from "react";
+import { useState, type PropsWithChildren } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import useShiftKey from "../_hooks/useShiftKey";
 import useLogout from "../_hooks/useLogout";
 import { useRouter } from "next/navigation";
 import InterceptedLink from "./InterceptableLink";
 import { whiteLogoPath } from "~/lib/defaultValues/publicPaths";
+import ProfileCard from "./ProfileCard";
 
 export default function Navbar({ children }: PropsWithChildren) {
   const { user } = useFirebaseAuth();
@@ -17,7 +18,7 @@ export default function Navbar({ children }: PropsWithChildren) {
   const router = useRouter();
 
   const shiftClicked = useShiftKey();
-
+  const [show, setShow] = useState(false);
   const handleLogout = async () => {
     await logout();
   };
@@ -46,12 +47,15 @@ export default function Navbar({ children }: PropsWithChildren) {
           menuClassName="w-56 mt-2"
         >
           <DropdownButton>
-            <a href="/profile" className="flex items-center justify-between">
+            <div
+              className="flex items-center justify-between"
+              onClick={() => setShow(true)}
+            >
               <span>Profile</span>
               <span className="w-[120px] truncate text-right text-sm opacity-50">
                 {user?.displayName ?? ""}
               </span>
-            </a>
+            </div>
           </DropdownButton>
           <DropdownButton
             className="flex items-center justify-between gap-2"
@@ -78,6 +82,7 @@ export default function Navbar({ children }: PropsWithChildren) {
           )}
         </Dropdown>
       </div>
+      <ProfileCard show={show} setShow={setShow} />
     </nav>
   );
 }
