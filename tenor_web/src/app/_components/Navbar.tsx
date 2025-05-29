@@ -3,7 +3,7 @@
 import LogoutIcon from "@mui/icons-material/Logout";
 import ProfilePicture from "./ProfilePicture";
 import Dropdown, { DropdownButton } from "./Dropdown";
-import { useState, type PropsWithChildren } from "react";
+import { type PropsWithChildren } from "react";
 import { useFirebaseAuth } from "../_hooks/useFirebaseAuth";
 import useShiftKey from "../_hooks/useShiftKey";
 import useLogout from "../_hooks/useLogout";
@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import InterceptedLink from "./InterceptableLink";
 import { whiteLogoPath } from "~/lib/defaultValues/publicPaths";
 import ProfileCard from "./ProfileCard";
+import { usePopupVisibilityState } from "./Popup";
 
 export default function Navbar({ children }: PropsWithChildren) {
   const { user } = useFirebaseAuth();
@@ -18,7 +19,7 @@ export default function Navbar({ children }: PropsWithChildren) {
   const router = useRouter();
 
   const shiftClicked = useShiftKey();
-  const [show, setShow] = useState(false);
+  const [render, show, setShow] = usePopupVisibilityState();
   const handleLogout = async () => {
     await logout();
   };
@@ -82,7 +83,7 @@ export default function Navbar({ children }: PropsWithChildren) {
           )}
         </Dropdown>
       </div>
-      <ProfileCard show={show} setShow={setShow} />
+      {render && <ProfileCard show={show} setShow={setShow} />}
     </nav>
   );
 }
