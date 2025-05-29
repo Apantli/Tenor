@@ -10,18 +10,18 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
 import type { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
-import { getTasks, getTasksRef } from "~/utils/helpers/shortcuts/tasks";
+import { getTasks, getTasksRef } from "../shortcuts/tasks";
 import {
   getAutomaticStatusId,
   getBacklogTag,
   getStatusTypes,
   getStatusTypesRef,
-} from "~/utils/helpers/shortcuts/tags";
+} from "../shortcuts/tags";
 import {
   getUserStoriesRef,
   getUserStory,
-} from "~/utils/helpers/shortcuts/userStories";
-import { getIssue, getIssuesRef } from "~/utils/helpers/shortcuts/issues";
+} from "../shortcuts/userStories";
+import { getIssue, getIssuesRef } from "../shortcuts/issues";
 
 export const kanbanRouter = createTRPCRouter({
   getTasksForKanban: protectedProcedure

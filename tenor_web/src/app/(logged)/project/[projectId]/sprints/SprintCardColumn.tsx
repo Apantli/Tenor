@@ -1,6 +1,6 @@
 import type { inferRouterOutputs } from "@trpc/server";
 import React from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";

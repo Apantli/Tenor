@@ -25,7 +25,7 @@ import {
   getLayoutedElements,
   loadFlowFromLocalStorage,
   saveFlowToLocalStorage,
-} from "~/utils/reactFlow";
+} from "~/lib/helpers/reactFlow";
 import SecondaryButton from "../../../../_components/inputs/buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import UserStoryDetailPopup from "~/app/_components/popups/UserStoryDetailPopup";

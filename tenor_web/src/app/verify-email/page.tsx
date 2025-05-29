@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import React from "react";
 import { auth } from "~/server/auth";
 import ResendVerificationButton from "./ResendVerificationButton";
+import { primaryLogoPath } from "~/lib/defaultValues/publicPaths";
 
 export default async function VerifyEmailPage() {
   const session = await auth();
@@ -14,11 +15,7 @@ export default async function VerifyEmailPage() {
 
   return (
     <div className="mx-auto flex h-screen max-w-[450px] flex-col items-center justify-center gap-4">
-      <img
-        className="h-[80px] w-auto"
-        src="/primary_logo.png"
-        alt="Tenor logo"
-      />
+      <img className="h-[80px] w-auto" src={primaryLogoPath} alt="Tenor logo" />
       <h1 className="text-xl font-semibold text-app-text">
         Verify your email address
       </h1>

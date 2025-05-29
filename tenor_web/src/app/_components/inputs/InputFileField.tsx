@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import React, { useRef } from "react";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 

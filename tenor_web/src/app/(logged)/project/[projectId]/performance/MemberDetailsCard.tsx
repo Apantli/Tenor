@@ -12,9 +12,9 @@ import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
 import { api } from "~/trpc/react";
 import { emptyRole } from "~/lib/defaultValues/roles";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { formatSeconds } from "~/utils/helpers/parsers";
+import { formatSeconds } from "~/lib/helpers/parsers";
 import { AverageTimeChart } from "~/app/(logged)/project/[projectId]/performance/AverageTimeChart";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
 

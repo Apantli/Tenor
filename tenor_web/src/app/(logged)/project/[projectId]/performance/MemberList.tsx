@@ -4,7 +4,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import ProfilePicture from "~/app/_components/ProfilePicture";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { PerformanceChart } from "~/app/_components/charts/PerformanceChart";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import type { UserCol } from "~/lib/types/columnTypes";
 
 export const MemberList = ({

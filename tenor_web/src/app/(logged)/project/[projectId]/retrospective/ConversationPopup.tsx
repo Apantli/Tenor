@@ -14,7 +14,7 @@ import { zipSamples, MuseClient } from "muse-js";
 // @ts-expect-error @neurosity/pipes is a JS library without types
 import { epoch, addInfo, fft, powerByBand } from "@neurosity/pipes";
 import { addSignalQuality } from "~/lib/eeg/addSignalQuality";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrivacyPopup from "./PrivacyPopup";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
@@ -25,6 +25,11 @@ import { classifyEmotion, mode } from "~/lib/eeg/classifyEmotion";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import {
+  conversationAudioPath,
+  museHeadsetImagePath,
+  museSensorsImagePath,
+} from "~/lib/defaultValues/publicPaths";
 
 interface Props {
   showPopup: boolean;
@@ -418,7 +423,7 @@ export default function ConversationPopup({
                 and press the button below to connect to it.
               </p>
               <img
-                src="/muse_headset.png"
+                src={museHeadsetImagePath}
                 className="my-10 h-36"
                 alt="Muse Headset"
               />
@@ -451,7 +456,7 @@ export default function ConversationPopup({
                 correctly. We&apos;ll let you know when you&apos;re ready to go!
               </p>
               <img
-                src="/muse_sensors.png"
+                src={museSensorsImagePath}
                 alt="Muse Sensors"
                 className="h-80"
                 onClick={() => setStep(3)}
@@ -532,7 +537,7 @@ export default function ConversationPopup({
                   </p>
                 </div>
                 <SoundPlayer
-                  soundSrc="/conversation_mode.mp3"
+                  soundSrc={conversationAudioPath}
                   setPlaying={(playing) => {
                     setPlaying(playing);
                     if (playing) {

@@ -1,6 +1,6 @@
 import React, { type PropsWithChildren } from "react";
 import BaseButton, { type BaseButtonProps } from "./BaseButton";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 export default function TertiaryButton({
   children,

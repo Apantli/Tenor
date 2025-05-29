@@ -9,7 +9,7 @@ import {
 import type { requirementsRouter } from "~/server/api/routers/requirements";
 import { api } from "~/trpc/react";
 import Table, { type TableColumns } from "../../../../_components/table/Table";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import PriorityPicker from "../../../../_components/inputs/pickers/PriorityPicker";
 import RequirementTypePicker from "../../../../_components/inputs/pickers/RequirementTypePicker";
 import RequirementFocusPicker from "../../../../_components/inputs/pickers/RequirementFocusPicker";

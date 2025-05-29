@@ -1,7 +1,7 @@
 import type { z } from "zod";
-import type { FlagsRequired } from "./defaultValues/permission";
-import type { RoleSchema } from "./types/zodFirebaseSchema";
-import type { Permission } from "./types/firebaseSchemas";
+import type { FlagsRequired } from "../defaultValues/permission";
+import type { RoleSchema } from "../types/zodFirebaseSchema";
+import type { Permission } from "../types/firebaseSchemas";
 
 export const checkPermissions = (
   flags: FlagsRequired,

@@ -16,9 +16,9 @@ import {
 } from "~/server/api/trpc";
 import { performancePermissions } from "~/lib/defaultValues/permission";
 import { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
-import { getProductivityRef } from "~/utils/helpers/shortcuts/general";
+import { getProductivityRef } from "../shortcuts/general";
 
-import { shouldRecomputeProductivity } from "~/lib/cache";
+import { shouldRecomputeProductivity } from "~/lib/helpers/cache";
 import type {
   Issue,
   Productivity,
@@ -28,21 +28,21 @@ import type {
 import {
   getSprintUserStories,
   getUserStoriesAfter,
-} from "~/utils/helpers/shortcuts/userStories";
+} from "../shortcuts/userStories";
 import {
   getIssuesAfter,
   getSprintIssues,
-} from "~/utils/helpers/shortcuts/issues";
+} from "../shortcuts/issues";
 import { Timestamp } from "firebase-admin/firestore";
 
-import { getStatusTypes } from "~/utils/helpers/shortcuts/tags";
-import { getCurrentSprint } from "~/utils/helpers/shortcuts/sprints";
+import { getStatusTypes } from "../shortcuts/tags";
+import { getCurrentSprint } from "../shortcuts/sprints";
 import { TRPCError } from "@trpc/server";
 import {
   getActivityPartition,
   getAverageTime,
   getContributionOverview,
-} from "~/utils/helpers/shortcuts/performance";
+} from "../shortcuts/performance";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")

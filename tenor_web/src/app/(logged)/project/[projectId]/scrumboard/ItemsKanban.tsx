@@ -6,7 +6,7 @@ import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import {
   useFormatIssueScrumId,

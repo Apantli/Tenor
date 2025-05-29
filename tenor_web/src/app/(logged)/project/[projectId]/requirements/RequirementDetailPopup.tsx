@@ -25,7 +25,7 @@ import {
   useInvalidateQueriesRequirementDetails,
 } from "~/app/_hooks/invalidateHooks";
 import type { AIGeneratedRequirement } from "./RequirementsTable";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 interface Props {
   requirementId: string;

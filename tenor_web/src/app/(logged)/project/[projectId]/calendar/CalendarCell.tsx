@@ -1,8 +1,8 @@
 import type { Task, WithId } from "~/lib/types/firebaseSchemas";
 import { TaskCalendarCard } from "./TaskCalendarCard";
 import { useDroppable } from "@dnd-kit/react";
-import { cn } from "~/lib/utils";
-import { dateToString } from "~/utils/helpers/parsers";
+import { cn } from "~/lib/helpers/utils";
+import { dateToString } from "~/lib/helpers/parsers";
 
 interface Props {
   editable: boolean;

@@ -9,6 +9,7 @@ import useShiftKey from "../_hooks/useShiftKey";
 import useLogout from "../_hooks/useLogout";
 import { useRouter } from "next/navigation";
 import InterceptedLink from "./InterceptableLink";
+import { whiteLogoPath } from "~/lib/defaultValues/publicPaths";
 
 export default function Navbar({ children }: PropsWithChildren) {
   const { user } = useFirebaseAuth();
@@ -29,11 +30,7 @@ export default function Navbar({ children }: PropsWithChildren) {
     <nav className="flex h-16 items-center justify-between bg-app-primary px-8">
       <div className="flex flex-grow items-center gap-8 text-white">
         <InterceptedLink className="flex items-center" href="/">
-          <img
-            src={"/white_logo.png"}
-            alt="Tenor Logo"
-            className="h-7 w-auto"
-          />
+          <img src={whiteLogoPath} alt="Tenor Logo" className="h-7 w-auto" />
         </InterceptedLink>
         {children}
       </div>

@@ -9,7 +9,7 @@ import {
   type Size,
   type Tag,
 } from "~/lib/types/firebaseSchemas";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "../../../../_components/LoadingSpinner";
 import { useFormatIssueScrumId } from "~/app/_hooks/scrumIdHooks";
 import PriorityPicker from "../../../../_components/inputs/pickers/PriorityPicker";

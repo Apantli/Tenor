@@ -6,7 +6,7 @@ import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import LabelOutlinedIcon from "@mui/icons-material/LabelOutlined";
 import RouteIcon from "@mui/icons-material/Route";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import path from "path";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
