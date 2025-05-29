@@ -2,6 +2,7 @@
 
 import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatusDashboard";
 import ProjectList from "./ProjectList";
+import { recentActivityMockupPath } from "~/lib/defaultValues/publicPaths";
 
 export default function ProjectPage() {
   return (
@@ -16,7 +17,7 @@ export default function ProjectPage() {
         <div
           className="mt-4 h-[38vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
           style={{
-            backgroundImage: 'url("/mockups/recent_activity_mockup.png")',
+            backgroundImage: `url(${recentActivityMockupPath})`,
           }}
           aria-label="Dashboard mockup"
         />

@@ -9,10 +9,11 @@ import { AlertProvider } from "./_hooks/useAlert";
 import TooltipClientWrapper from "./_components/TooltipClientWrapper";
 import { ConfirmationProvider } from "./_hooks/useConfirmation";
 import { NavigationGuardProvider } from "./_hooks/useNavigationGuard";
+import { favIconPath } from "~/lib/defaultValues/publicPaths";
 
 export const metadata: Metadata = {
   title: "Tenor",
-  icons: [{ rel: "icon", url: "/icons/favicon.ico" }],
+  icons: [{ rel: "icon", url: favIconPath }],
 };
 
 export default async function RootLayout({

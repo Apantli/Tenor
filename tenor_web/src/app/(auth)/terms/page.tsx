@@ -1,10 +1,12 @@
+import { primaryLogoPath } from "~/lib/defaultValues/publicPaths";
+
 export default function Terms() {
   return (
     <div className="my-20 flex h-full w-full items-center justify-center">
       <div className="max-w-2xl p-4">
         <div className="mb-6 flex w-full items-center justify-center">
           <img
-            src={"/logos/primary_logo.png"}
+            src={primaryLogoPath}
             alt="Tenor Logo"
             className="h-[120px] w-auto pb-10"
           />

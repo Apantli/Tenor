@@ -64,6 +64,7 @@ import {
   defaultRequerimentTypes,
 } from "~/lib/defaultValues/requirementTypes";
 import { defaultStatusTags } from "~/lib/defaultValues/status";
+import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -230,7 +231,7 @@ export const projectsRouter = createTRPCRouter({
         );
       } else {
         // Use default icon
-        input.logo = "/icons/defaultProject.png";
+        input.logo = defaultProjectIconPath;
       }
 
       try {
@@ -368,7 +369,7 @@ export const projectsRouter = createTRPCRouter({
       if (projectData.logo !== input.logo) {
         const isLogoValid = isBase64Valid(input.logo);
 
-        if (isLogoValid && projectData.logo !== "/icons/defaultProject.png") {
+        if (isLogoValid && projectData.logo !== defaultProjectIconPath) {
           // Delete previous logo, assume the name starts with the projectId
           await deleteStartsWith(
             getLogoPath({ logo: input.projectId, projectId: input.projectId }),
@@ -383,7 +384,7 @@ export const projectsRouter = createTRPCRouter({
           );
         } else {
           // Use default icon
-          input.logo = "/icons/defaultProject.png";
+          input.logo = defaultProjectIconPath;
         }
       }
 
