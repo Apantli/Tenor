@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { type ClassNameValue } from "tailwind-merge";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import DescriptionIcon from "@mui/icons-material/Description";

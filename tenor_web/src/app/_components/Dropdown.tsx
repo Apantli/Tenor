@@ -9,7 +9,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import useClickOutside from "../_hooks/useClickOutside";
 import { type ClassNameValue } from "tailwind-merge";
 import useWindowResize from "../_hooks/useWindowResize";

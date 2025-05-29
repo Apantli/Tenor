@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import type { ClassNameValue } from "tailwind-merge";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import InsertLinkIcon from "@mui/icons-material/InsertLink";
 import LinkOffIcon from "@mui/icons-material/LinkOff";
 import Dropdown, { DropdownButton, DropdownItem } from "../Dropdown";

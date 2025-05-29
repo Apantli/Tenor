@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, type PropsWithChildren } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import InputCheckbox from "../inputs/InputCheckbox";
 import { useDraggable } from "@dnd-kit/react";
 import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";

@@ -4,7 +4,7 @@ import SelectableCard from "./SelectableCard";
 import useShiftKey from "~/app/_hooks/useShiftKey";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 import type { ClassNameValue } from "tailwind-merge";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { useDroppable } from "@dnd-kit/react";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 

@@ -18,7 +18,7 @@ import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { usePopupVisibilityState } from "../../../../_components/Popup";
 import UserStoryDetailPopup from "~/app/_components/popups/UserStoryDetailPopup";
 import { SizePicker } from "../../../../_components/inputs/pickers/SizePicker";

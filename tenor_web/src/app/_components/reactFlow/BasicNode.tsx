@@ -2,7 +2,7 @@
 
 import { Handle, Position } from "@xyflow/react";
 import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import type { VisualBasicNodeData } from "~/lib/types/reactFlowTypes";

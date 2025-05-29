@@ -7,7 +7,7 @@ import {
   SampleData,
   PerformanceChart,
 } from "~/app/_components/charts/PerformanceChart";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import type { UserCol } from "~/lib/types/columnTypes";
 
 export const MemberList = ({

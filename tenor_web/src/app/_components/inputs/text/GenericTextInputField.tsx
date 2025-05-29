@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import React, { useState, useRef, useEffect } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import AIIcon from "@mui/icons-material/AutoAwesome";

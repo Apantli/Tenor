@@ -1,5 +1,5 @@
 import React, { type PropsWithChildren } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import TagComponent from "../TagComponent";
 import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";

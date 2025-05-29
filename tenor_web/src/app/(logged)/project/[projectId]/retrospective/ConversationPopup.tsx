@@ -14,7 +14,7 @@ import { zipSamples, MuseClient } from "muse-js";
 // @ts-expect-error @neurosity/pipes is a JS library without types
 import { epoch, addInfo, fft, powerByBand } from "@neurosity/pipes";
 import { addSignalQuality } from "~/lib/eeg/addSignalQuality";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrivacyPopup from "./PrivacyPopup";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import type { Task, WithId } from "~/lib/types/firebaseSchemas";
 import CalendarCell from "./CalendarCell";
 import { dateToString } from "~/lib/helpers/parsers";

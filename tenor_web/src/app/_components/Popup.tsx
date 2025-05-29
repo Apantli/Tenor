@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type PropsWithChildren, useRef } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import CloseSidebarIcon from "@mui/icons-material/LastPage";

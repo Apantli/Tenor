@@ -18,7 +18,7 @@ import { performancePermissions } from "~/lib/defaultValues/permission";
 import { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import { getProductivityRef } from "../shortcuts/general";
 
-import { shouldRecomputeProductivity } from "~/lib/cache";
+import { shouldRecomputeProductivity } from "~/lib/helpers/cache";
 import type {
   Issue,
   Productivity,

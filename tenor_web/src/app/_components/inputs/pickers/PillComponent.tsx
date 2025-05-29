@@ -8,7 +8,7 @@ import type { Tag } from "~/lib/types/firebaseSchemas";
 import Dropdown, { DropdownButton, DropdownItem } from "../../Dropdown";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 
 interface Props {

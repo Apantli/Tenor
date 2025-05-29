@@ -56,7 +56,7 @@ import {
   getStatusTypesRef,
 } from "../shortcuts/tags";
 import { getRequirementTypesRef } from "../shortcuts/requirements";
-import { shouldRecomputeTopProjects } from "~/lib/cache";
+import { shouldRecomputeTopProjects } from "~/lib/helpers/cache";
 import { getActivityRef } from "../shortcuts/performance";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
 import {
