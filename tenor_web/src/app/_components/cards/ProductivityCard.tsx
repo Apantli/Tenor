@@ -30,7 +30,7 @@ export const ProductivityCard = ({
       projectId: projectId,
       time: time,
     },
-    { retry: 0 },
+    { retry: 0, refetchOnWindowFocus: true },
   );
   const {
     mutateAsync: recomputeProductivity,
