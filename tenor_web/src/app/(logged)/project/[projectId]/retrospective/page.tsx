@@ -72,9 +72,9 @@ export default function ProjectSprintRetrospectivePage() {
     !userClickedShowAnswers;
 
   return (
-    <div className="flex h-full flex-col justify-start overflow-y-auto">
+    <div className="flex h-full flex-col justify-start">
       <h1 className="text-3xl font-semibold">
-        Sprint retrospective for Sprint {sprintNumber && `${sprintNumber}`}
+        Sprint Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
       </h1>
       <p className="mb-5 text-gray-600">
         Congratulations on finishing another sprint! Let&apos;s take a look at
