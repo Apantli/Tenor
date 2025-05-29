@@ -23,7 +23,7 @@ import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorP
 import {
   acceptableTagColors,
   getPillColorByActivityType,
-} from "~/utils/helpers/colorUtils";
+} from "~/lib/helpers/colorUtils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";

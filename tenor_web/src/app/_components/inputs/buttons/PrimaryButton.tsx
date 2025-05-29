@@ -1,5 +1,5 @@
 import React, { type PropsWithChildren } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import BaseButton, { type BaseButtonProps } from "./BaseButton";
 import LoadingSpinner from "../../LoadingSpinner";
 

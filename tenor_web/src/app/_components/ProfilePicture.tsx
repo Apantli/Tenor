@@ -2,7 +2,7 @@ import type { User } from "firebase/auth";
 import type { UserRecord } from "node_modules/firebase-admin/lib/auth/user-record";
 import React from "react";
 import type { ClassNameValue } from "tailwind-merge";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import * as crypto from "crypto";
 
 interface Props {

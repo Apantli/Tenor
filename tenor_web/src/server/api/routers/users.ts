@@ -26,7 +26,7 @@ import {
   getUserRef,
   getUsers,
   getUserTable,
-} from "~/utils/helpers/shortcuts/users";
+} from "../shortcuts/users";
 import { emptyRole } from "~/lib/defaultValues/roles";
 
 export const userRouter = createTRPCRouter({

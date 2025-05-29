@@ -1,6 +1,6 @@
 import React from "react";
 import { type ClassNameValue } from "tailwind-merge";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import Check from "@mui/icons-material/Check";
 
 interface Props {

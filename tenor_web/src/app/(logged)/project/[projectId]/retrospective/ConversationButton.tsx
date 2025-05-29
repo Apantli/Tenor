@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import HeadphonesIcon from "@mui/icons-material/Headphones";
 import BaseButton, {
   type BaseButtonProps,

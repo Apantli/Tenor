@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { type ClassNameValue } from "tailwind-merge";
 
 import TableHeader from "./TableHeader";

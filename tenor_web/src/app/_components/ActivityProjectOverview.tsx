@@ -14,11 +14,11 @@ import type {
 import {
   getAccentColorByCardType,
   getPillColorByActivityType,
-} from "~/utils/helpers/colorUtils";
+} from "~/lib/helpers/colorUtils";
 import TagComponent from "./TagComponent";
-import { getRelativeTimeString } from "~/utils/helpers/firestoreTimestamp";
+import { getRelativeTimeString } from "~/lib/helpers/firestoreTimestamp";
 import { useActivityItemsMap } from "~/lib/types/activityMappint";
-import { getTypeDisplayName } from "~/utils/helpers/typeDisplayName";
+import { getTypeDisplayName } from "~/lib/helpers/typeDisplayName";
 import SearchBar from "./inputs/search/SearchBar";
 
 const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
@@ -67,9 +67,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const getScrumId = (activity: WithId<ProjectActivity>) => {
     const item = getItemDetails(activity);
     if (!item) return null;
-    return (
-      formatAnyScrumId(item.scrumId ?? 0, activity.type) + ":"
-    );
+    return formatAnyScrumId(item.scrumId ?? 0, activity.type) + ":";
   };
 
   // 2. NOW USE THE FUNCTIONS IN FILTERS AND SORTING
@@ -85,7 +83,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     const typeStr = activity.type ?? "";
 
     // Add readable type label for search
-    const typeLabel = getTypeDisplayName(activity.type, 'search');
+    const typeLabel = getTypeDisplayName(activity.type, "search");
 
     // Get user information if available
     const user = activity.userId ? userMap[activity.userId] : undefined;

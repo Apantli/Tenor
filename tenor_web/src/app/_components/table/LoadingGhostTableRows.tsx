@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import useStutterLoading from "~/app/_hooks/useStutterLoading";
 import LoadingGhostTableRow from "./LoadingGhostTableRow";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import useAfterResize from "~/app/_hooks/useAfterResize";
 
 interface Props {

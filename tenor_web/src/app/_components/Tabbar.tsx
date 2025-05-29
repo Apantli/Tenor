@@ -2,7 +2,7 @@
 
 import { useParams, usePathname } from "next/navigation";
 import React, { type MouseEventHandler } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import InterceptedLink from "./InterceptableLink";
 import { api } from "~/trpc/react";
 import { tabs, tabsMetaInformation } from "~/lib/tabs";

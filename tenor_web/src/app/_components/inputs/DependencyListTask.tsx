@@ -11,7 +11,7 @@ import TagComponent from "~/app/_components/TagComponent";
 import type { TaskPreview } from "~/lib/types/detailSchemas";
 import { api } from "~/trpc/react";
 import Check from "@mui/icons-material/Check";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { useFormatTaskScrumId } from "~/app/_hooks/scrumIdHooks";
 import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 

@@ -2,7 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { type ClassNameValue } from "tailwind-merge";
 import useClickOutside from "~/app/_hooks/useClickOutside";
 

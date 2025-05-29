@@ -29,7 +29,7 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "./Popup";
 import type { TaskCol } from "~/lib/types/columnTypes";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import CollapsableSearchBar from "./inputs/search/CollapsableSearchBar";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TaskDetailPopup from "./popups/TaskDetailPopup";
