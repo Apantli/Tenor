@@ -269,7 +269,7 @@ export default function BacklogItemDetailPopup({
         projectId as string,
         updatedBacklogItemIds, // for example, if you delete a backlog item, all its dependencies will be updated
       );
-      // for example, if you delete a backlog item, all its tasks that were related to any of the US tasks will be updated
+      // for example, if you delete a backlog item, all its tasks that were related to any of the IT tasks will be updated
       await invalidateQueriesTaskDetails(projectId as string, modifiedTaskIds);
       await dismissPopup();
     }
@@ -539,7 +539,7 @@ export default function BacklogItemDetailPopup({
             sidebarOpen={sidebarOpen}
             scrollContainerRef={scrollContainerRef}
             itemId={backlogItemId}
-            itemType="US"
+            itemType="IT"
             fetchedTasks={backlogItemDetail.tasks}
             setSelectedGhostTask={setSelectedGhostTaskId}
             setShowAddTaskPopup={setShowCreateTaskPopup}
@@ -594,7 +594,7 @@ export default function BacklogItemDetailPopup({
           itemId={backlogItemId}
           show={showCreateTaskPopup}
           dismiss={() => setShowCreateTaskPopup(false)}
-          itemType="US"
+          itemType="IT"
           onTaskAdded={() => setShowCreateTaskPopup(false)}
           addTaskToGhost={
             backlogItemData !== undefined

@@ -34,6 +34,7 @@ import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";
 import MoveLeftIcon from "@mui/icons-material/ArrowBackIos";
 import MoveRightIcon from "@mui/icons-material/ArrowForwardIos";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
 
 interface Props {
   filter: string;
@@ -477,6 +478,15 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
           setDetailId={setDetailItemId}
           showDetail={showDetail}
           issueId={detailParentItemId}
+          taskIdToOpenImmediately={detailItemId}
+        />
+      )}
+
+      {renderDetail && detailItemType === "IT" && detailParentItemId && (
+        <BacklogItemDetailPopup
+          setDetailId={setDetailItemId}
+          showDetail={showDetail}
+          backlogItemId={detailParentItemId}
           taskIdToOpenImmediately={detailItemId}
         />
       )}
