@@ -424,22 +424,26 @@ export default function ProjectSprints() {
     await cancelBacklogItemsPreviewQuery();
 
     // Only fetch again if this is the last operation
-    if (dndOperationsInProgress == 1) {
-      setLastDraggedBacklogItemId(null);
-      await invalidateQueriesBacklogItems(projectId as string, "US");
-      await invalidateQueriesBacklogItems(projectId as string, "IS");
-      await invalidateQueriesBacklogItems(projectId as string, "IT");
-      await invalidateQueriesBacklogItemDetails(
-        projectId as string,
-        itemIds.map((id) => ({
-          itemId: id,
-          itemType: items[id]!.itemType,
-        })),
-      );
-    }
+    setTimeout(() => {
+      void (async () => {
+        if (dndOperationsInProgress == 1) {
+          setLastDraggedBacklogItemId(null);
+          await invalidateQueriesBacklogItems(projectId as string, "US");
+          await invalidateQueriesBacklogItems(projectId as string, "IS");
+          await invalidateQueriesBacklogItems(projectId as string, "IT");
+          await invalidateQueriesBacklogItemDetails(
+            projectId as string,
+            itemIds.map((id) => ({
+              itemId: id,
+              itemType: items[id]!.itemType,
+            })),
+          );
+        }
 
-    // Mark operation as finished
-    dndOperationsInProgress -= 1;
+        // Mark operation as finished
+        dndOperationsInProgress -= 1;
+      })();
+    }, 1000);
   };
   // #endregion
 
