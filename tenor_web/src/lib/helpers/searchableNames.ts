@@ -10,10 +10,10 @@ export const itemTypeToSearchableName = (itemType: AnyBacklogItemType) => {
   // Only supports backlog items for now, but if needed you can extend the typing and add new cases
   switch (itemType) {
     case "US":
-      return "Type:Story Type:UserStory Type:User Story";
+      return "Type:US Type:Story Type:UserStory Type:User Story";
     case "IS":
-      return "Type:Issue Type:Bug";
+      return "Type:IS Type:Issue Type:Bug";
     case "IT":
-      return "Type:Item Type:BacklogItem Type:Backlog Item Type:Generic Backlog Item Type:Generic Item";
+      return "Type:IT Type:Item Type:BacklogItem Type:Backlog Item Type:Generic Backlog Item Type:Generic Item";
   }
 };

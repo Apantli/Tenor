@@ -25,7 +25,7 @@ export const useFormatUserStoryScrumId = () => {
       : `US${String(scrumId).padStart(calculatePaddingNeeded(userStoryCount), "0")}`;
 };
 
-export const useFormatUserGenericBacklogItemScrumId = () => {
+export const useFormatGenericBacklogItemScrumId = () => {
   const { projectId } = useParams();
   const { data: backlogItemsCount } =
     api.backlogItems.getBacklogItemCount.useQuery({
@@ -103,8 +103,7 @@ export const useFormatAnyScrumId = () => {
   const formatEpicScrumId = useFormatEpicScrumId();
   const formatTaskScrumId = useFormatTaskScrumId();
   const formatIssueScrumId = useFormatIssueScrumId();
-  const formatUserGenericBacklogItemScrumId =
-    useFormatUserGenericBacklogItemScrumId();
+  const formatGenericBacklogItemScrumId = useFormatGenericBacklogItemScrumId();
 
   return (scrumId: number, type: AllBasicItemType) => {
     switch (type) {
@@ -117,7 +116,7 @@ export const useFormatAnyScrumId = () => {
       case "IS":
         return formatIssueScrumId(scrumId);
       case "IT":
-        return formatUserGenericBacklogItemScrumId(scrumId);
+        return formatGenericBacklogItemScrumId(scrumId);
     }
     return "IT..."; // Fallback for unknown types
   };

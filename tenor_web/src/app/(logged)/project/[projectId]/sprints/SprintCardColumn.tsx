@@ -5,19 +5,19 @@ import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
-import { type BacklogItems } from "./page";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import EditSprintPopup from "./EditSprintPopup";
 import type { SprintDates } from "./CreateSprintPopup";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import type { BacklogItemDetail } from "~/lib/types/detailSchemas";
 
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
   >["getBacklogItemPreviewsBySprint"]["sprints"][number];
-  backlogItems: BacklogItems;
+  backlogItems: Record<string, BacklogItemDetail>;
   selectedItems: Set<string>;
   setSelectedItems: (newSelection: Set<string>) => void;
   setDetailItemId: (detailId: string) => void;

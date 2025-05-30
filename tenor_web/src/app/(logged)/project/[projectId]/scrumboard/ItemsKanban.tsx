@@ -96,12 +96,6 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // #endregion
 
   // #region UTILITY
-  const getCorrectFormatter = (itemType: AnyBacklogItemType) => {
-    return (scrumId: number) => {
-      return formatAnyScrumId(scrumId, itemType);
-    };
-  };
-
   let updateOperationsInProgress = 0;
 
   const handleDragEnd = async (itemId: string, columnId: string) => {
@@ -363,14 +357,16 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetailItemId}
                   renderCard={(item: KanbanCard) => {
-                    const formatter = getCorrectFormatter(
-                      item.cardType as AnyBacklogItemType,
-                    );
                     return (
                       <ItemCardRender
                         disabled={permission < permissionNumbers.write}
                         item={item}
-                        scrumIdFormatter={formatter}
+                        scrumIdFormatter={(scrumId: number) => {
+                          return formatAnyScrumId(
+                            scrumId,
+                            item.cardType as AnyBacklogItemType,
+                          );
+                        }}
                       />
                     );
                   }}
@@ -462,12 +458,14 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
             if (!itemId) return null;
             const draggingItem = itemsAndColumnsData?.cardItems[itemId];
             if (!draggingItem) return null;
-            const formatter = getCorrectFormatter(draggingItem.cardType);
+
             return (
               <ItemCardRender
                 item={draggingItem}
                 showBackground={true}
-                scrumIdFormatter={formatter}
+                scrumIdFormatter={(scrumId: number) => {
+                  return formatAnyScrumId(scrumId, draggingItem.cardType);
+                }}
               />
             );
           }}
