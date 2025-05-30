@@ -333,6 +333,16 @@ export const useInvalidateQueriesSingleSprint = () => {
   };
 };
 
+export const useInvalidateQueriesUser = () => {
+  const utils = api.useUtils();
+  return async (userId: string) => {
+    await utils.users.getGlobalUser.invalidate({
+      userId: userId,
+    });
+    await utils.users.getGlobalUsers.invalidate();
+  };
+};
+
 export const useInvalidateQueriesAllGenericBacklogItems = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {

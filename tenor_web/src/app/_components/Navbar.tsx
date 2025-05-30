@@ -10,6 +10,8 @@ import useLogout from "../_hooks/useLogout";
 import { useRouter } from "next/navigation";
 import InterceptedLink from "./InterceptableLink";
 import { whiteLogoPath } from "~/lib/defaultValues/publicPaths";
+import ProfileCard from "./ProfileCard";
+import { usePopupVisibilityState } from "./Popup";
 
 export default function Navbar({ children }: PropsWithChildren) {
   const { user } = useFirebaseAuth();
@@ -17,7 +19,7 @@ export default function Navbar({ children }: PropsWithChildren) {
   const router = useRouter();
 
   const shiftClicked = useShiftKey();
-
+  const [render, show, setShow] = usePopupVisibilityState();
   const handleLogout = async () => {
     await logout();
   };
@@ -45,11 +47,16 @@ export default function Navbar({ children }: PropsWithChildren) {
           }
           menuClassName="w-56 mt-2"
         >
-          <DropdownButton className="flex items-center justify-between">
-            <span>Profile</span>
-            <span className="w-[120px] truncate text-right text-sm opacity-50">
-              {user?.displayName ?? ""}
-            </span>
+          <DropdownButton>
+            <div
+              className="flex items-center justify-between"
+              onClick={() => setShow(true)}
+            >
+              <span>Profile</span>
+              <span className="w-[120px] truncate text-right text-sm opacity-50">
+                {user?.displayName ?? ""}
+              </span>
+            </div>
           </DropdownButton>
           <DropdownButton
             className="flex items-center justify-between gap-2"
@@ -76,6 +83,7 @@ export default function Navbar({ children }: PropsWithChildren) {
           )}
         </Dropdown>
       </div>
+      {render && <ProfileCard show={show} setShow={setShow} />}
     </nav>
   );
 }
