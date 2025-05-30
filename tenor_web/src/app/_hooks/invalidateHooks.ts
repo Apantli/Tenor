@@ -351,9 +351,6 @@ export const useInvalidateQueriesUser = () => {
 export const useInvalidateQueriesAllGenericBacklogItems = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
-    // await utils.backlogItems.getUserStoryTable.invalidate({
-    //   projectId: projectId,
-    // });
     await utils.backlogItems.getBacklogItems.invalidate({
       projectId: projectId,
     });
@@ -372,5 +369,23 @@ export const useInvalidateQueriesAllGenericBacklogItems = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
+  };
+};
+
+export const useInvalidateQueriesGenericBacklogItemDetails = () => {
+  const utils = api.useUtils();
+
+  return async (projectId: string, backlogItemIds: string[]) => {
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+    await Promise.all(
+      backlogItemIds.map(async (backlogItemId) => {
+        await utils.backlogItems.getBacklogItemDetail.invalidate({
+          projectId: projectId,
+          backlogItemId,
+        });
+      }),
+    );
   };
 };

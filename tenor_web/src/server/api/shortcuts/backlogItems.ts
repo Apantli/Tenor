@@ -1,9 +1,22 @@
-import type { BacklogItem, WithId } from "~/lib/types/firebaseSchemas";
+import type {
+  BacklogItem,
+  Sprint,
+  StatusTag,
+  Tag,
+  WithId,
+} from "~/lib/types/firebaseSchemas";
 import { getProjectRef } from "./general";
 import { BacklogItemSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import type { Firestore } from "firebase-admin/firestore";
 import admin from "firebase-admin";
+import { deleteTaskAndGetModified, getTasksRef, getTaskTable } from "./tasks";
+import { getBacklogTag, getPriority, getStatusType } from "./tags";
+import { getSprint } from "./sprints";
+import type {
+  BacklogItemFullDetail,
+  TaskPreview,
+} from "~/lib/types/detailSchemas";
 
 /**
  * @function getBacklogItemsRef
@@ -140,45 +153,45 @@ export const getBacklogItem = async (
  * @param {string} backlogItemId - The ID of the backlog item to retrieve details for
  * @returns {Promise<BacklogItemDetail>} The backlog item detail object
  */
-// export const getBacklogItemDetail = async (
-//   admin: admin.app.App,
-//   firestore: Firestore,
-//   projectId: string,
-//   backlogItemId: string,
-// ) => {
-//   const backlogItem = await getBacklogItem(firestore, projectId, backlogItemId);
+export const getBacklogItemDetail = async (
+  admin: admin.app.App,
+  firestore: Firestore,
+  projectId: string,
+  backlogItemId: string,
+) => {
+  const backlogItem = await getBacklogItem(firestore, projectId, backlogItemId);
 
-//   const priority: Tag | undefined = backlogItem.priorityId
-//     ? await getPriority(firestore, projectId, backlogItem.priorityId)
-//     : undefined;
+  const priority: Tag | undefined = backlogItem.priorityId
+    ? await getPriority(firestore, projectId, backlogItem.priorityId)
+    : undefined;
 
-//   const status: StatusTag | undefined = backlogItem.statusId
-//     ? await getStatusType(firestore, projectId, backlogItem.statusId)
-//     : undefined;
+  const status: StatusTag | undefined = backlogItem.statusId
+    ? await getStatusType(firestore, projectId, backlogItem.statusId)
+    : undefined;
 
-//   const tags: Tag[] = await Promise.all(
-//     backlogItem.tagIds.map(async (tagId) => {
-//       return await getBacklogTag(firestore, projectId, tagId);
-//     }),
-//   );
+  const tags: Tag[] = await Promise.all(
+    backlogItem.tagIds.map(async (tagId) => {
+      return await getBacklogTag(firestore, projectId, tagId);
+    }),
+  );
 
-//   const sprint: WithId<Sprint> | undefined = backlogItem.sprintId
-//     ? await getSprint(firestore, projectId, backlogItem.sprintId)
-//     : undefined;
+  const sprint: WithId<Sprint> | undefined = backlogItem.sprintId
+    ? await getSprint(firestore, projectId, backlogItem.sprintId)
+    : undefined;
 
-//   const tasks = await getTaskTable(admin, firestore, projectId, backlogItem.id);
+  const tasks = await getTaskTable(admin, firestore, projectId, backlogItem.id);
 
-//   const backlogItemDetail: BacklogItemDetail & { tasks: TaskPreview[] } = {
-//     ...backlogItem,
-//     sprint,
-//     priority,
-//     status,
-//     tags,
-//     tasks,
-//   };
+  const backlogItemDetail: BacklogItemFullDetail & { tasks: TaskPreview[] } = {
+    ...backlogItem,
+    sprint,
+    priority,
+    status,
+    tags,
+    tasks,
+  };
 
-//   return backlogItemDetail;
-// };
+  return backlogItemDetail;
+};
 
 /**
  * @function getSprintBacklogItems
@@ -217,53 +230,47 @@ export const getSprintBacklogItems = async (
  * @param {string} backlogItemId - The ID of the backlog item to delete
  * @returns {Promise<{modifiedBacklogItems: string[], modifiedTasks: string[]}>} Object containing arrays of modified backlog item and task IDs
  */
-// export const deleteBacklogItemAndGetModified = async (
-//   firestore: Firestore,
-//   projectId: string,
-//   backlogItemId: string,
-// ): Promise<{ modifiedBacklogItems: string[]; modifiedTasks: string[] }> => {
-//   const backlogItemRef = getBacklogItemRef(firestore, projectId, backlogItemId);
-//   const backlogItem = await getBacklogItem(firestore, projectId, backlogItemId);
+export const deleteBacklogItemAndGetModified = async (
+  firestore: Firestore,
+  projectId: string,
+  backlogItemId: string,
+): Promise<{ modifiedBacklogItems: string[]; modifiedTasks: string[] }> => {
+  const backlogItemRef = getBacklogItemRef(firestore, projectId, backlogItemId);
 
-//   const modifiedBacklogItems = backlogItem.dependencyIds.concat(
-//     backlogItem.requiredByIds,
-//     backlogItemId,
-//   );
+  // Mark the backlog item as deleted
+  await backlogItemRef.update({ deleted: true });
 
-//   // Mark the backlog item as deleted
-//   await backlogItemRef.update({ deleted: true });
+  // Delete associated tasks
+  const tasksSnapshot = await getTasksRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .where("itemType", "==", "US")
+    .where("itemId", "==", backlogItemId)
+    .get();
 
-//   // Delete associated tasks
-//   const tasksSnapshot = await getTasksRef(firestore, projectId)
-//     .where("deleted", "==", false)
-//     .where("itemType", "==", "US")
-//     .where("itemId", "==", backlogItemId)
-//     .get();
+  const allModifiedTasks = new Set<string>();
+  const batch = firestore.batch();
 
-//   const allModifiedTasks = new Set<string>();
-//   const batch = firestore.batch();
+  // Process each task and its dependencies
+  await Promise.all(
+    tasksSnapshot.docs.map(async (taskDoc) => {
+      const taskId = taskDoc.id;
+      allModifiedTasks.add(taskId);
 
-//   // Process each task and its dependencies
-//   await Promise.all(
-//     tasksSnapshot.docs.map(async (taskDoc) => {
-//       const taskId = taskDoc.id;
-//       allModifiedTasks.add(taskId);
+      const tempModifiedTasks = await deleteTaskAndGetModified(
+        firestore,
+        projectId,
+        taskId,
+      );
+      tempModifiedTasks.forEach((task) => {
+        allModifiedTasks.add(task);
+      });
+    }),
+  );
 
-//       const tempModifiedTasks = await deleteTaskAndGetModified(
-//         firestore,
-//         projectId,
-//         taskId,
-//       );
-//       tempModifiedTasks.forEach((task) => {
-//         allModifiedTasks.add(task);
-//       });
-//     }),
-//   );
+  await batch.commit();
 
-//   await batch.commit();
-
-//   return {
-//     modifiedBacklogItems,
-//     modifiedTasks: Array.from(allModifiedTasks),
-//   };
-// };
+  return {
+    modifiedBacklogItems: [backlogItemId],
+    modifiedTasks: Array.from(allModifiedTasks),
+  };
+};
