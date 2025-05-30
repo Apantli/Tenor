@@ -4,7 +4,7 @@ import ProfilePicture from "~/app/_components/ProfilePicture";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
-import { ContributionLegend } from "~/app/(logged)/project/[projectId]/performance/ContributionPieChart";
+import { ContributionLegend } from "~/app/(logged)/project/[projectId]/performance/ContributionLegend";
 import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
 import { api } from "~/trpc/react";
