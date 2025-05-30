@@ -293,6 +293,9 @@ export const sprintsRouter = createTRPCRouter({
           } else if (item.itemType === "IS") {
             collectionName = "issues";
             fieldName = "issueIds";
+          } else if (item.itemType === "IT") {
+            collectionName = "backlogItems";
+            fieldName = "backlogItemIds";
           }
 
           // Obtain user story data
@@ -332,6 +335,9 @@ export const sprintsRouter = createTRPCRouter({
       const addedIssueIds = items
         .filter((item) => item.itemType === "IS")
         .map((item) => item.id);
+      const addedBacklogItemIds = items
+        .filter((item) => item.itemType === "IT")
+        .map((item) => item.id);
 
       // Assign to the requested sprint
       if (sprintId && sprintId !== "") {
@@ -344,6 +350,11 @@ export const sprintsRouter = createTRPCRouter({
         if (addedIssueIds.length > 0) {
           await sprintRef.update({
             issueIds: FieldValue.arrayUnion(...addedIssueIds),
+          });
+        }
+        if (addedBacklogItemIds.length > 0) {
+          await sprintRef.update({
+            backlogItemIds: FieldValue.arrayUnion(...addedBacklogItemIds),
           });
         }
       }
