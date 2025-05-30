@@ -9,6 +9,8 @@ export const SampleContributionData = [
   { category: "User Stories", value: 25 },
 ];
 
+export type SampleContributionDataType = typeof SampleContributionData;
+
 const pieChartSpec: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
   description: "Contribution Pie Chart",
@@ -140,38 +142,6 @@ export const ContributionPieChart = ({
       {containerDimensions.width > 0 && containerDimensions.height > 0 && (
         <ContributionPieChart data={{ table: data }} actions={false} />
       )}
-    </div>
-  );
-};
-
-export const ContributionLegend: React.FC<{
-  data?: typeof SampleContributionData;
-}> = ({ data = SampleContributionData }) => {
-  const colorMap: Record<string, string> = {
-    Tasks: "#88BB87",
-    Issues: "#15734F",
-    "User Stories": "#13918A",
-  };
-
-  const totalValue = data.reduce((sum, item) => sum + item.value, 0);
-
-  return (
-    <div className="ml-4 flex flex-col gap-2">
-      {data.map((item) => (
-        <div key={item.category} className="flex items-center gap-5">
-          <div
-            className="h-4 min-h-4 w-4 min-w-4 rounded-sm"
-            style={{ backgroundColor: colorMap[item.category] }}
-          />
-          <span className="text-sm">{item.category}</span>
-          <span className="ml-auto text-sm text-gray-500">
-            {parseFloat(
-              ((item.value / totalValue) * 100).toFixed(2),
-            ).toString()}
-            %
-          </span>
-        </div>
-      ))}
     </div>
   );
 };
