@@ -8,10 +8,7 @@ import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import {
-  useFormatIssueScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
+import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
@@ -23,6 +20,7 @@ import {
 import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import {
+  type AnyBacklogItemType,
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
@@ -45,8 +43,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatIssueScrumId = useFormatIssueScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
@@ -96,13 +93,10 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   const [statusEditMode, setStatusEditMode] = useState(false);
 
   // UTILITY
-  const getCorrectFormatter = (itemType: string) => {
-    if (itemType === "US") {
-      return formatUserStoryScrumId;
-    } else if (itemType === "IS") {
-      return formatIssueScrumId;
-    }
-    return formatUserStoryScrumId;
+  const getCorrectFormatter = (itemType: AnyBacklogItemType) => {
+    return (scrumId: number) => {
+      return formatAnyScrumId(scrumId, itemType);
+    };
   };
 
   let updateOperationsInProgress = 0;
@@ -355,7 +349,9 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetailItemId}
                   renderCard={(item: KanbanCard) => {
-                    const formatter = getCorrectFormatter(item.cardType);
+                    const formatter = getCorrectFormatter(
+                      item.cardType as AnyBacklogItemType,
+                    );
                     return (
                       <ItemCardRender
                         disabled={permission < permissionNumbers.write}
