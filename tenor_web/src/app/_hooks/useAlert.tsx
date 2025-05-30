@@ -178,39 +178,35 @@ export const useAlert = () => {
       alertTemplates.oops("Incorrect email or password. Please try again."),
     // #region User Stories
     userStoryNameError: () =>
-      alertTemplates.oops(
-        "Please enter a name for the user story. It should be between 1 and 100 characters.",
-      ),
+      alertTemplates.oops("Please enter a name for the user story."),
     userStoryCreateError: () =>
       alertTemplates.error("Failed to create user story. Please try again."),
     // #endregion
+    // #region Backlog Items
+    backlogItemNameError: () =>
+      alertTemplates.oops("Please enter a name for the backlog item."),
+    backlogItemCreateError: () =>
+      alertTemplates.error("Failed to create backlog item. Please try again."),
+    // #endregion
     // #region Issues
     issueNameError: () =>
-      alertTemplates.oops(
-        "Please provide a name for the issue. It should be between 1 and 100 characters.",
-      ),
+      alertTemplates.oops("Please provide a name for the issue."),
     issueStoryCreateError: () =>
       alertTemplates.error("Failed to create issue. Please try again."),
     // #endregion
     // #region Epic
     epicNameError: () =>
-      alertTemplates.oops(
-        "Please enter a name for the epic. It should be between 1 and 100 characters.",
-      ),
+      alertTemplates.oops("Please enter a name for the epic."),
     // #endregion
     // #region Requirements
     requirementNameError: () =>
-      alertTemplates.oops(
-        "Please enter a name for the requirement. It should be between 1 and 100 characters.",
-      ),
+      alertTemplates.oops("Please enter a name for the requirement."),
     requirementTypeError: () =>
       alertTemplates.oops("Please select a type for the requirement."),
     // #endregion
     // #region Roles
     roleNameError: () =>
-      alertTemplates.oops(
-        "Please enter a name for the role. It should be between 1 and 100 characters.",
-      ),
+      alertTemplates.oops("Please enter a name for the role."),
     ownerRoleError: () =>
       alertTemplates.oops("You cannot edit the role of the owner."),
     assignedRoleError: (roleName: string) =>
@@ -228,9 +224,7 @@ export const useAlert = () => {
         "You cannot edit nor delete the name of a default status. Please create a new status if you want to change it.",
       ),
     statusNameError: () =>
-      alertTemplates.oops(
-        "Please enter a name for the status. It should be between 1 and 100 characters.",
-      ),
+      alertTemplates.oops("Please enter a name for the status."),
     statusNameReservedError: (statusName?: string) =>
       alertTemplates.oops(
         `The status name "${statusName}" is reserved for default statuses and cannot be created manually.`,
@@ -308,10 +302,7 @@ export const useAlert = () => {
       alertTemplates.oops(
         "You cannot remove the owner of the project. Please assign a new owner first.",
       ),
-    projectNameError: () =>
-      alertTemplates.oops(
-        "Please enter a project name. It should be between 1 and 100 characters.",
-      ),
+    projectNameError: () => alertTemplates.oops("Please enter a project name."),
     projectNameLengthError: (upperBound: string) =>
       alertTemplates.oops(
         `The project name can't be longer than ${upperBound} characters.`,

@@ -9,7 +9,7 @@ import {
   useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
-import type { BacklogItemType } from "~/lib/types/firebaseSchemas";
+import type { AnyBacklogItemType } from "~/lib/types/firebaseSchemas";
 import {
   type AdvancedSearchFilters,
   matchesSearchFilters,
@@ -52,7 +52,7 @@ export default function BacklogItemCardColumn({
       size: item.size,
       tags: item.tags,
       columnId: item.sprintId,
-      cardType: item.itemType as BacklogItemType,
+      cardType: item.itemType as AnyBacklogItemType,
       assigneeIds: item.assigneeIds,
       sprintId: item.sprintId,
       priorityId: item.priorityId,
