@@ -247,23 +247,28 @@ export const useInvalidateQueriesBacklogItemDetails = () => {
   const invalidateQueriesUserStoriesDetails =
     useInvalidateQueriesUserStoriesDetails();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
+  const invalidateQueriesGenericBacklogItemDetails =
+    useInvalidateQueriesGenericBacklogItemDetails();
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   return async (projectId: string, item: CondenseItem[]) => {
     const userStories = item.filter((i) => i.itemType === "US");
     const issues = item.filter((i) => i.itemType === "IS");
+    const genericItems = item.filter((i) => i.itemType === "IT");
     const tasks = item.filter((i) => i.itemType === "TS");
 
     await invalidateQueriesUserStoriesDetails(
       projectId,
       userStories.map((i) => i.itemId),
     );
-
     await invalidateQueriesIssueDetails(
       projectId,
       issues.map((i) => i.itemId),
     );
-
+    await invalidateQueriesGenericBacklogItemDetails(
+      projectId,
+      genericItems.map((i) => i.itemId),
+    );
     await invalidateQueriesTaskDetails(
       projectId,
       tasks.map((i) => i.itemId),

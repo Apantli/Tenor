@@ -24,7 +24,6 @@ import AiIcon from "@mui/icons-material/AutoAwesome";
 import StatusPicker from "~/app/_components/inputs/pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
 import { permissionNumbers } from "~/lib/types/firebaseSchemas";
-import { TRPCClientError } from "@trpc/client";
 import { CreateTaskPopup } from "./CreateTaskPopup";
 import TasksTable, { type BacklogItemWithTasks } from "../TasksTable";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
@@ -147,7 +146,6 @@ export default function BacklogItemDetailPopup({
   const isModified = () => {
     if (editForm.name !== backlogItemDetail?.name) return true;
     if (editForm.description !== backlogItemDetail?.description) return true;
-    return true;
     return false;
   };
 
@@ -239,15 +237,8 @@ export default function BacklogItemDetailPopup({
         projectId as string,
         updatedBacklogItemIds,
       );
-    } catch (error) {
-      if (
-        error instanceof TRPCClientError &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        error.data?.code === "BAD_REQUEST"
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        predefinedAlerts.cyclicDependency();
-      }
+    } catch {
+      predefinedAlerts.unexpectedError();
       await refetch();
       return;
     }
