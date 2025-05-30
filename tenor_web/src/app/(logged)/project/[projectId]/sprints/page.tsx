@@ -22,10 +22,7 @@ import {
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
-import {
-  type AnyBacklogItemType,
-  permissionNumbers,
-} from "~/lib/types/firebaseSchemas";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import CreateSprintPopup from "./CreateSprintPopup";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
@@ -34,6 +31,7 @@ import AdvancedSearch from "~/app/_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 import CreateBacklogItemPopup from "~/app/_components/popups/CreateBacklogitemPopup";
 import { itemTypeToSearchableName } from "~/lib/helpers/searchableNames";
+import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
 
 const noSprintId = "noSprintId";
 
@@ -211,27 +209,10 @@ export default function ProjectSprints() {
       (oldData) => {
         if (!oldData) return undefined;
 
-        const sortByScrumId = (a: string, b: string) => {
-          const itemA = items[a];
-          const itemB = items[b];
-          if (itemA?.scrumId === itemB?.scrumId) {
-            const typeOrder: Record<AnyBacklogItemType, number> = {
-              US: 0,
-              IS: 1,
-              IT: 2,
-            };
-            return (
-              typeOrder[itemA?.itemType ?? "IT"] -
-              typeOrder[itemB?.itemType ?? "IT"]
-            );
-          }
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
-        };
-
         const sprints = oldData.sprints.map((sprint) => {
           if (sprint.sprint.id === sprintId) {
             const sortedItemIds = [...sprint.backlogItemIds, ...itemIds].sort(
-              sortByScrumId,
+              sortByItemTypeAndScrumId(items),
             );
             return {
               ...sprint,
@@ -252,7 +233,7 @@ export default function ProjectSprints() {
           newUnassignedItemIds = [
             ...oldData.unassignedItemIds,
             ...itemIds,
-          ].sort(sortByScrumId);
+          ].sort(sortByItemTypeAndScrumId(items));
         } else {
           newUnassignedItemIds = oldData.unassignedItemIds.filter(
             (itemId) => !itemIds.includes(itemId),
@@ -314,7 +295,17 @@ export default function ProjectSprints() {
   // #endregion
 
   // #region Drag and Drop Utils
-  let dndOperationsInProgress = 0;
+  const [dndOperationsInProgress, setDndOperationsInProgress] = useState(0);
+
+  useEffect(() => {
+    // Only fetch again if this is the last operation. Prevents buggy behavior in UI
+    if (dndOperationsInProgress == 0) {
+      setLastDraggedBacklogItemId(null);
+      void invalidateQueriesBacklogItems(projectId as string, "US");
+      void invalidateQueriesBacklogItems(projectId as string, "IS");
+      void invalidateQueriesBacklogItems(projectId as string, "IT");
+    }
+  }, [dndOperationsInProgress]);
 
   // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (itemId: string, sprintId: string) => {
@@ -324,7 +315,7 @@ export default function ProjectSprints() {
     const items = backlogItemsBySprint?.backlogItems;
     if (!items || items[itemId]?.sprintId === sprintId) return;
 
-    dndOperationsInProgress += 1;
+    setDndOperationsInProgress((prev) => prev + 1);
     // Cancel previous fetches for the sprint data
     await cancelBacklogItemsPreviewQuery();
 
@@ -338,29 +329,12 @@ export default function ProjectSprints() {
       (oldData) => {
         if (!oldData) return undefined;
 
-        const sortByScrumId = (a: string, b: string) => {
-          const itemA = items[a];
-          const itemB = items[b];
-          if (itemA?.scrumId === itemB?.scrumId) {
-            const typeOrder: Record<AnyBacklogItemType, number> = {
-              US: 0,
-              IS: 1,
-              IT: 2,
-            };
-            return (
-              typeOrder[itemA?.itemType ?? "IT"] -
-              typeOrder[itemB?.itemType ?? "IT"]
-            );
-          }
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
-        };
-
         const sprints = oldData.sprints.map((sprint) => {
           if (sprint.sprint.id === sprintId) {
             const sortedBacklogItemIds = [
               ...sprint.backlogItemIds,
               itemId,
-            ].sort(sortByScrumId);
+            ].sort(sortByItemTypeAndScrumId(items));
             return {
               ...sprint,
               backlogItemIds: sortedBacklogItemIds,
@@ -380,7 +354,7 @@ export default function ProjectSprints() {
           newUnassignedItemIds = [
             ...oldData.unassignedItemIds,
             ...itemIds,
-          ].sort(sortByScrumId);
+          ].sort(sortByItemTypeAndScrumId(items));
         } else {
           newUnassignedItemIds = oldData.unassignedItemIds.filter(
             (itemId) => !itemIds.includes(itemId),
@@ -423,27 +397,21 @@ export default function ProjectSprints() {
     // Cancel previous fetches for the sprint data
     await cancelBacklogItemsPreviewQuery();
 
-    // Only fetch again if this is the last operation
-    setTimeout(() => {
-      void (async () => {
-        if (dndOperationsInProgress == 1) {
-          setLastDraggedBacklogItemId(null);
-          await invalidateQueriesBacklogItems(projectId as string, "US");
-          await invalidateQueriesBacklogItems(projectId as string, "IS");
-          await invalidateQueriesBacklogItems(projectId as string, "IT");
-          await invalidateQueriesBacklogItemDetails(
-            projectId as string,
-            itemIds.map((id) => ({
-              itemId: id,
-              itemType: items[id]!.itemType,
-            })),
-          );
-        }
+    await invalidateQueriesBacklogItemDetails(
+      projectId as string,
+      itemIds.map((id) => ({
+        itemId: id,
+        itemType: items[id]!.itemType,
+      })),
+    );
 
-        // Mark operation as finished
-        dndOperationsInProgress -= 1;
-      })();
-    }, 1000);
+    // Update the operations in progress count
+    setTimeout(() => {
+      setLastDraggedBacklogItemId(null);
+    }, 1500);
+    setTimeout(() => {
+      setDndOperationsInProgress((prev) => prev - 1);
+    }, 3000);
   };
   // #endregion
 

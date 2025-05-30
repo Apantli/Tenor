@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import CheckAll from "@mui/icons-material/DoneAll";
@@ -33,6 +33,7 @@ import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";
 import MoveLeftIcon from "@mui/icons-material/ArrowBackIos";
 import MoveRightIcon from "@mui/icons-material/ArrowForwardIos";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import { sortByCardTypeAndScrumId } from "~/lib/helpers/sort";
 
 interface Props {
   filter: string;
@@ -96,7 +97,17 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // #endregion
 
   // #region UTILITY
-  let updateOperationsInProgress = 0;
+  const [dndOperationsInProgress, setDndOperationsInProgress] = useState(0);
+
+  useEffect(() => {
+    // Only fetch again if this is the last operation. Prevents buggy behavior in UI
+    if (dndOperationsInProgress == 0) {
+      setLastDraggedItemId(null);
+      void invalidateQueriesBacklogItems(projectId as string, "US");
+      void invalidateQueriesBacklogItems(projectId as string, "IS");
+      void invalidateQueriesBacklogItems(projectId as string, "IT");
+    }
+  }, [dndOperationsInProgress]);
 
   const handleDragEnd = async (itemId: string, columnId: string) => {
     setLastDraggedItemId(null);
@@ -110,7 +121,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
 
   const moveItemsToColumn = async (itemIds: string[], columnId: string) => {
     if (itemsAndColumnsData == undefined) return;
-    updateOperationsInProgress += 1;
+    setDndOperationsInProgress((prev) => prev + 1);
     const cardItems = itemsAndColumnsData.cardItems;
     await utils.kanban.getBacklogItemsForKanban.cancel({
       projectId: projectId as string,
@@ -122,12 +133,6 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
       },
       (oldData) => {
         if (!oldData) return undefined;
-
-        const sortByScrumId = (a: string, b: string) => {
-          const itemA = cardItems[a];
-          const itemB = cardItems[b];
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
-        };
 
         const unorderedColumns = oldData.columns.map((column) => {
           if (column.id === columnId) {
@@ -150,7 +155,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
           if (column.id === columnId) {
             return {
               ...column,
-              itemIds: column.itemIds.sort(sortByScrumId),
+              itemIds: column.itemIds.sort(sortByCardTypeAndScrumId(cardItems)),
             };
           }
           return column;
@@ -218,30 +223,20 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
       }),
     );
 
-    if (updateOperationsInProgress == 1) {
-      setTimeout(() => {
-        setLastDraggedItemId(null);
-      }, 1500);
+    await invalidateQueriesBacklogItemDetails(
+      projectId as string,
+      itemIds.map((itemId) => ({
+        itemId: itemId,
+        itemType: itemsAndColumnsData.cardItems[itemId]?.cardType ?? "US",
+      })),
+    );
 
-      for (const itemType of ["US", "IS", "IT"] as const) {
-        const itemsOfType = itemIds.filter(
-          (itemId) =>
-            itemsAndColumnsData.cardItems[itemId]?.cardType === itemType,
-        );
-        if (itemsOfType.length > 0) {
-          await invalidateQueriesBacklogItems(projectId as string, itemType);
-        }
-      }
-      await invalidateQueriesBacklogItemDetails(
-        projectId as string,
-        itemIds.map((itemId) => ({
-          itemId: itemId,
-          itemType: itemsAndColumnsData.cardItems[itemId]?.cardType ?? "US",
-        })),
-      );
-    }
-
-    updateOperationsInProgress--;
+    setTimeout(() => {
+      setLastDraggedItemId(null);
+    }, 1500);
+    setTimeout(() => {
+      setDndOperationsInProgress((prev) => prev - 1);
+    }, 3000);
   };
 
   const assignSelectionToColumn = async (columnId: string) => {

@@ -20,6 +20,7 @@ import {
 import { getUserStories, getUserStory } from "../shortcuts/userStories";
 import { getIssue, getIssues } from "../shortcuts/issues";
 import { getBacklogItems } from "../shortcuts/backlogItems";
+import { sortByCardTypeAndScrumId } from "~/lib/helpers/sort";
 
 export const kanbanRouter = createTRPCRouter({
   getTasksForKanban: protectedProcedure
@@ -206,6 +207,10 @@ export const kanbanRouter = createTRPCRouter({
         }),
       );
 
+      const cardItems = Object.fromEntries(
+        itemsWithStatus.map((item) => [item.id, item]),
+      );
+
       // Group items by status
       const columnsWithItems = activeColumns
         .map((column) => ({
@@ -216,16 +221,14 @@ export const kanbanRouter = createTRPCRouter({
 
           itemIds: itemsWithStatus
             .filter((item) => item.columnId === column.id)
-            .sort((a, b) => (a?.scrumId ?? 0) - (b?.scrumId ?? 0))
-            .map((item) => item.id),
+            .map((item) => item.id)
+            .sort(sortByCardTypeAndScrumId(cardItems)),
         }))
         .sort((a, b) => (a.orderIndex < b.orderIndex ? -1 : 1));
 
       return {
         columns: columnsWithItems,
-        cardItems: Object.fromEntries(
-          itemsWithStatus.map((item) => [item.id, item]),
-        ),
+        cardItems: cardItems,
       };
     }),
 

@@ -43,6 +43,7 @@ import type {
 } from "~/lib/types/detailSchemas";
 import type { AnyBacklogItemType } from "~/lib/types/firebaseSchemas";
 import { getBacklogItems } from "../shortcuts/backlogItems";
+import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")
@@ -242,6 +243,10 @@ export const sprintsRouter = createTRPCRouter({
         return 0;
       });
 
+      const backlogItemsObject = Object.fromEntries(
+        backlogItemDetails.map((item) => [item.id, item]),
+      );
+
       // Organize the user stories by sprint
       const sprintsWithItems = sprints.map((sprint) => ({
         sprint: {
@@ -253,19 +258,19 @@ export const sprintsRouter = createTRPCRouter({
         },
         backlogItemIds: backlogItemDetails
           .filter((item) => item.sprintId === sprint.id)
-          .map((item) => item.id),
+          .map((item) => item.id)
+          .sort(sortByItemTypeAndScrumId(backlogItemsObject)),
       }));
 
       const unassignedItemIds = backlogItemDetails
         .filter((item) => item.sprintId === "")
-        .map((item) => item.id);
+        .map((item) => item.id)
+        .sort(sortByItemTypeAndScrumId(backlogItemsObject));
 
       return {
         sprints: sprintsWithItems,
         unassignedItemIds,
-        backlogItems: Object.fromEntries(
-          backlogItemDetails.map((item) => [item.id, item]),
-        ),
+        backlogItems: backlogItemsObject,
       };
     }),
 
