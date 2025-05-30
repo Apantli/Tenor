@@ -318,6 +318,32 @@ export const getTaskProgress = async (
 };
 
 /**
+ * @function getTasksAssignesIdsFromItem
+ * @description Retrieves unique assignee IDs from all tasks associated with a specific item
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} itemId - The ID of the item to get task assignees from
+ * @returns {Promise<string[]>} An array of unique assignee IDs from the item's tasks
+ */
+export const getTasksAssignesIdsFromItem = async (
+  firestore: Firestore,
+  projectId: string,
+  itemId: string,
+): Promise<string[]> => {
+  if (!itemId) {
+    return [];
+  }
+  const tasks = await getTasksFromItem(firestore, projectId, itemId);
+
+  const userIds = tasks
+    .map((task) => task.assigneeId)
+    .filter((id): id is string => Boolean(id));
+
+  const uniqueUserIds: string[] = [...new Set(userIds)];
+  return uniqueUserIds;
+};
+
+/**
  * @function getTaskAssignUsers
  * @description Retrieves unique users assigned to tasks in a specific item
  * @param {admin.app.App} admin - The Firebase Admin instance
@@ -335,11 +361,13 @@ export const getTasksAssignUsers = async (
   if (!itemId) {
     return [];
   }
-  const tasks = await getTasksFromItem(firestore, projectId, itemId);
 
-  const userIds = tasks
-    .map((task) => task.assigneeId)
-    .filter((id): id is string => Boolean(id));
+  // Unique user IDs
+  const userIds = await getTasksAssignesIdsFromItem(
+    firestore,
+    projectId,
+    itemId,
+  );
 
   const users: WithId<UserPreview>[] = await Promise.all(
     userIds.map(async (userId) => {
@@ -358,11 +386,7 @@ export const getTasksAssignUsers = async (
     Boolean(user?.id),
   );
 
-  const uniqueUsers: UserPreview[] = Array.from(
-    new Map(filteredUsers.map((user) => [user.id, user])).values(),
-  );
-
-  return uniqueUsers;
+  return filteredUsers;
 };
 
 /**

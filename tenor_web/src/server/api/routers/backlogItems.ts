@@ -1,14 +1,18 @@
 /**
- * User Stories Router - Tenor API Endpoints for User Story Management
+ * Backlog Items Router - Tenor API Endpoints for Backlog Item Management
  *
  * @packageDocumentation
- * This file defines the TRPC router and procedures for managing User Stories in the Tenor application.
- * It provides endpoints to create, modify, and retrieve user stories.
+ * This file defines the TRPC router and procedures for managing Backlog Items in the Tenor application.
+ * It provides endpoints to create, modify, and retrieve backlog items.
  *
  * @category API
  */
 import { z } from "zod";
-import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  roleRequiredProcedure,
+} from "~/server/api/trpc";
 import { BacklogItemSchema } from "~/lib/types/zodFirebaseSchema";
 import { backlogPermissions } from "~/lib/defaultValues/permission";
 import type { BacklogItem, WithId } from "~/lib/types/firebaseSchemas";
@@ -22,9 +26,9 @@ import { LogProjectActivity } from "../lib/projectEventLogger";
 export const backlogItemsRouter = createTRPCRouter({
   /**
    * @function getBacklogItems
-   * @description Retrieves all user stories for a given project.
-   * @param {string} projectId - The ID of the project to retrieve user stories for.
-   * @returns {Promise<WithId<BacklogItem>[]>} - A promise that resolves to an array of user stories.
+   * @description Retrieves all backlog items for a given project.
+   * @param {string} projectId - The ID of the project to retrieve backlog items for.
+   * @returns {Promise<WithId<BacklogItem>[]>} - A promise that resolves to an array of backlog items.
    */
   getBacklogItems: roleRequiredProcedure(backlogPermissions, "read")
     .input(z.object({ projectId: z.string() }))
@@ -32,18 +36,6 @@ export const backlogItemsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getBacklogItems(ctx.firestore, projectId);
     }),
-  /**
-   * @function getBacklogItemTable
-   * @description Retrieves a table of user stories for a given project.
-   * @param {string} projectId - The ID of the project to retrieve user stories for.
-   * @returns {Promise<BacklogItemCol[]>} - A promise that resolves to an array of user stories.
-   */
-  //   getBacklogItemTable: roleRequiredProcedure(backlogPermissions, "read")
-  //     .input(z.object({ projectId: z.string() }))
-  //     .query(async ({ ctx, input }) => {
-  //       const { projectId } = input;
-  //       return await getBacklogItemTable(ctx.firestore, projectId);
-  //     }),
 
   /**
    * @function getBacklogItemDetail
@@ -105,13 +97,28 @@ export const backlogItemsRouter = createTRPCRouter({
         ...backlogItemData,
       } as WithId<BacklogItem>;
     }),
+
+  /**
+   * @function getBacklogItemCount
+   * @description Retrieves the number of backlog items inside a given project, regardless of their deleted status.
+   * @param {string} projectId - The ID of the project.
+   * @returns {number} - The number of backlog items in the project.
+   */
+  getBacklogItemCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const backlogItemsRef = getBacklogItemsRef(ctx.firestore, projectId);
+      const countSnapshot = await backlogItemsRef.count().get();
+      return countSnapshot.data().count;
+    }),
   /**
    * @function modifyBacklogItem
    * @description Modifies an existing backlog item.
    * @param {string} projectId - The ID of the project to which the backlog item belongs.
    * @param {string} backlogItemId - The ID of the backlog item to modify.
    * @param {BacklogItemSchema} backlogItemData - The data for the backlog item to modify.
-   * @returns {Promise<{ success: boolean, updatedBacklogItemIds: string[] }>} - A promise that resolves to an object indicating success and the IDs of updated user stories.
+   * @returns {Promise<{ success: boolean, updatedBacklogItemIds: string[] }>} - A promise that resolves to an object indicating success and the IDs of updated backlog items.
    */
   //   modifyBacklogItem: roleRequiredProcedure(backlogPermissions, "write")
   //     .input(
@@ -191,9 +198,9 @@ export const backlogItemsRouter = createTRPCRouter({
 
   /**
    * @function deleteBacklogItems
-   * @description Deletes multiple user stories by marking them as deleted.
+   * @description Deletes multiple backlog items by marking them as deleted.
    * @param {string} projectId - The ID of the project
-   * @param {string[]} backlogItemIds - The IDs of the user stories to delete
+   * @param {string[]} backlogItemIds - The IDs of the backlog items to delete
    */
   //   deleteBacklogItems: roleRequiredProcedure(backlogPermissions, "write")
   //     .input(
@@ -280,21 +287,5 @@ export const backlogItemsRouter = createTRPCRouter({
   //         type: "US",
   //         action: "update",
   //       });
-  //     }),
-  /**
-   * @function generateBacklogItems
-   * @description Generates user stories using AI based on a given prompt.
-   * @param {string} projectId - The ID of the project to which the user stories belong.
-   * @param {number} amount - The number of user stories to generate.
-   * @param {string} prompt - The prompt to use for generating user stories.
-   * @returns {Promise<WithId<BacklogItemDetail>[]>} - A promise that resolves to an array of generated user stories.
-   */
-  //   getBacklogItemCount: protectedProcedure
-  //     .input(z.object({ projectId: z.string() }))
-  //     .query(async ({ ctx, input }) => {
-  //       const { projectId } = input;
-  //       const backlogItemsRef = getBacklogItemsRef(ctx.firestore, projectId);
-  //       const countSnapshot = await backlogItemsRef.count().get();
-  //       return countSnapshot.data().count;
   //     }),
 });

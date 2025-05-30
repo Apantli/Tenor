@@ -30,16 +30,19 @@ import {
   updateSprintNumberOrder,
 } from "../shortcuts/sprints";
 import { sprintPermissions } from "~/lib/defaultValues/permission";
-import {
-  getUserStories,
-  getUserStoriesRef,
-} from "../shortcuts/userStories";
+import { getUserStories, getUserStoriesRef } from "../shortcuts/userStories";
 import { getIssues, getIssuesRef } from "../shortcuts/issues";
 import { getBacklogTags } from "../shortcuts/tags";
 import { getProjectRef } from "../shortcuts/general";
 import { TRPCError } from "@trpc/server";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
-import { getTasksRef } from "../shortcuts/tasks";
+import { getTasksAssignesIdsFromItem } from "../shortcuts/tasks";
+import type {
+  BacklogItemDetail,
+  BacklogItemPreview,
+} from "~/lib/types/detailSchemas";
+import type { AnyBacklogItemType } from "~/lib/types/firebaseSchemas";
+import { getBacklogItems } from "../shortcuts/backlogItems";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")
@@ -181,82 +184,55 @@ export const sprintsRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      const [userStories, issues, sprints, backlogTags] = await Promise.all([
-        getUserStories(ctx.firestore, projectId),
-        getIssues(ctx.firestore, projectId),
-        getSprints(ctx.firestore, projectId),
-        getBacklogTags(ctx.firestore, projectId),
-      ]);
+      const [userStories, issues, backlogItems, sprints, backlogTags] =
+        await Promise.all([
+          getUserStories(ctx.firestore, projectId),
+          getIssues(ctx.firestore, projectId),
+          getBacklogItems(ctx.firestore, projectId),
+          getSprints(ctx.firestore, projectId),
+          getBacklogTags(ctx.firestore, projectId),
+        ]);
 
-      // FIXME: turn into backlogItem list
-      const userStoriesPreviews = await Promise.all(
-        userStories.map(async (userStory) => {
-          const assigneeIds = await getTasksRef(ctx.firestore, projectId)
-            .where("itemId", "==", userStory.id)
-            .get()
-            .then((tasksSnapshot) =>
-              tasksSnapshot.docs
-                .map((taskDoc) => {
-                  const taskData = taskDoc.data();
-                  return (taskData.assigneeId as string) ?? null;
-                })
-                .filter((id): id is string => id !== null),
-            );
+      const backlogItemPreviews = [
+        ...userStories.map((userStory) => ({
+          ...userStory,
+          itemType: "US" as AnyBacklogItemType,
+        })),
+        ...issues.map((issue) => ({
+          ...issue,
+          itemType: "IS" as AnyBacklogItemType,
+        })),
+        ...backlogItems.map((item) => ({
+          ...item,
+          itemType: "IT" as AnyBacklogItemType,
+        })),
+      ] as BacklogItemPreview[];
 
-          return {
-            id: userStory.id,
-            scrumId: userStory.scrumId,
-            name: userStory.name,
-            sprintId: userStory.sprintId,
-            size: userStory.size,
-            tags: userStory.tagIds
-              .map((tagId) => {
-                const tag = backlogTags.find((tag) => tag.id === tagId);
-                return tag;
-              })
-              .filter((tag) => tag !== undefined),
-            itemType: "US",
-            assigneeIds,
-            priorityId: userStory.priorityId,
-          };
-        }),
-      );
-      const issuesPreviews = await Promise.all(
-        issues.map(async (issue) => {
-          const assigneeIds = await getTasksRef(ctx.firestore, projectId)
-            .where("itemId", "==", issue.id)
-            .get()
-            .then((tasksSnapshot) =>
-              tasksSnapshot.docs
-                .map((taskDoc) => {
-                  const taskData = taskDoc.data();
-                  return (taskData.assigneeId as string) ?? null;
-                })
-                .filter((id): id is string => id !== null),
-            );
+      const backlogItemDetails = (await Promise.all(
+        backlogItemPreviews.map(async (item) => ({
+          id: item.id,
+          scrumId: item.scrumId,
+          name: item.name,
+          sprintId: item.sprintId,
+          size: item.size,
+          tags: item.tagIds
+            .map((tagId) => {
+              const tag = backlogTags.find((tag) => tag.id === tagId);
+              return tag;
+            })
+            .filter((tag) => tag !== undefined),
+          itemType: item.itemType,
+          assigneeIds: await getTasksAssignesIdsFromItem(
+            ctx.firestore,
+            projectId,
+            item.id,
+          ),
+          priorityId: item.priorityId,
+        })),
+      )) as BacklogItemDetail[];
 
-          return {
-            id: issue.id,
-            scrumId: issue.scrumId,
-            name: issue.name,
-            sprintId: issue.sprintId,
-            size: issue.size,
-            tags: issue.tagIds
-              .map((tagId) => {
-                const tag = backlogTags.find((tag) => tag.id === tagId);
-                return tag;
-              })
-              .filter((tag) => tag !== undefined),
-            itemType: "IS",
-            assigneeIds,
-            priorityId: issue.priorityId,
-          };
-        }),
-      );
-
-      const allItems = [...userStoriesPreviews, ...issuesPreviews];
       // Sort the items by scrumId
-      allItems.sort((a, b) => {
+      backlogItemDetails.sort((a, b) => {
         if (a.scrumId < b.scrumId) {
           return -1;
         }
@@ -275,12 +251,12 @@ export const sprintsRouter = createTRPCRouter({
           startDate: sprint.startDate,
           endDate: sprint.endDate,
         },
-        backlogItemIds: allItems
+        backlogItemIds: backlogItemDetails
           .filter((item) => item.sprintId === sprint.id)
           .map((item) => item.id),
       }));
 
-      const unassignedItemIds = allItems
+      const unassignedItemIds = backlogItemDetails
         .filter((item) => item.sprintId === "")
         .map((item) => item.id);
 
@@ -288,7 +264,7 @@ export const sprintsRouter = createTRPCRouter({
         sprints: sprintsWithItems,
         unassignedItemIds,
         backlogItems: Object.fromEntries(
-          allItems.map((item) => [item.id, item]),
+          backlogItemDetails.map((item) => [item.id, item]),
         ),
       };
     }),

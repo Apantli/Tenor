@@ -53,9 +53,9 @@ export const getBacklogItemNewId = async (
 
 /**
  * @function getBacklogItems
- * @description Retrieves all non-deleted user stories associated with a specific project
+ * @description Retrieves all non-deleted backlog items associated with a specific project
  * @param {Firestore} firestore - The Firestore instance
- * @param {string} projectId - The ID of the project to retrieve user stories from
+ * @param {string} projectId - The ID of the project to retrieve backlog items from
  * @returns {Promise<WithId<BacklogItem>[]>} An array of backlog item objects with their IDs
  */
 export const getBacklogItems = async (
@@ -79,10 +79,10 @@ export const getBacklogItems = async (
 
 /**
  * @function getBacklogItemsAfter
- * @description Retrieves all non-deleted user stories after a specified date
+ * @description Retrieves all non-deleted backlog items after a specified date
  * @param {Firestore} firestore - The Firestore instance
- * @param {string} projectId - The ID of the project to retrieve user stories from
- * @param {Date} date - The date to filter user stories
+ * @param {string} projectId - The ID of the project to retrieve backlog items from
+ * @param {Date} date - The date to filter backlog items
  * @returns {Promise<WithId<BacklogItem>[]>} An array of backlog item objects with their IDs
  */
 export const getBacklogItemsAfter = async (
@@ -181,56 +181,11 @@ export const getBacklogItem = async (
 // };
 
 /**
- * @function getBacklogItemTable
- * @description Retrieves all non-deleted backlog item previews associated with a specific project
- * @param {Firestore} firestore - The Firestore instance
- * @param {string} projectId - The ID of the project to retrieve backlog item previews from
- * @returns {Promise<WithId<BacklogItemCol>[]>} An array of backlog item objects with their IDs
- */
-// export const getBacklogItemTable = async (
-//   firestore: Firestore,
-//   projectId: string,
-// ) => {
-//   const backlogItems = await getBacklogItems(firestore, projectId);
-//   const backlogItemCols: BacklogItemCol[] = await Promise.all(
-//     backlogItems.map(async (backlogItem): Promise<BacklogItemCol> => {
-//       const priority: Tag | undefined = backlogItem.priorityId
-//         ? await getPriority(firestore, projectId, backlogItem.priorityId)
-//         : undefined;
-
-//       const epicScrumId: number | undefined = backlogItem.epicId
-//         ? (await getEpic(firestore, projectId, backlogItem.epicId)).scrumId
-//         : undefined;
-
-//       const sprint: WithId<Sprint> | undefined = backlogItem.sprintId
-//         ? await getSprint(firestore, projectId, backlogItem.sprintId)
-//         : undefined;
-
-//       const taskProgress = await getTaskProgress(
-//         firestore,
-//         projectId,
-//         backlogItem.id,
-//       );
-
-//       const backlogItemCol: BacklogItemCol = {
-//         ...backlogItem,
-//         sprintNumber: sprint?.number,
-//         epicScrumId,
-//         priority,
-//         taskProgress,
-//       };
-//       return backlogItemCol;
-//     }),
-//   );
-//   return backlogItemCols;
-// };
-
-/**
  * @function getSprintBacklogItems
- * @description Retrieves all non-deleted user stories associated with a specific project and sprint
+ * @description Retrieves all non-deleted backlog items associated with a specific project and sprint
  * @param {Firestore} firestore - The Firestore instance
- * @param {string} projectId - The ID of the project to retrieve user stories from
- * @param {string} sprintId - The ID of the sprint to retrieve user stories from
+ * @param {string} projectId - The ID of the project to retrieve backlog items from
+ * @param {string} sprintId - The ID of the sprint to retrieve backlog items from
  * @returns {Promise<WithId<BacklogItem>[]>} An array of backlog item objects with their IDs
  */
 export const getSprintBacklogItems = async (

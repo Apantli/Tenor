@@ -1,4 +1,8 @@
-import type { ActionType, AllBasicItemType, BacklogItemAndTaskDetailType } from "~/lib/types/firebaseSchemas";
+import type {
+  ActionType,
+  AllBasicItemType,
+  BacklogItemAndTaskDetailType,
+} from "~/lib/types/firebaseSchemas";
 
 export const acceptableTagColors = [
   "#d9543d",
@@ -36,20 +40,22 @@ export function getAccentColorByCardType(
       return "bg-app-secondary";
     case "IS":
       return "bg-yellow-500/80";
+    case "IT":
+      return "bg-cyan-600";
     case "TS":
       return "bg-cyan-700";
     case "US-TS":
-      return "bg-cyan-700";
+      return "bg-app-secondary-dark";
     case "IS-TS":
       return "bg-yellow-700/80";
+    case "IT-TS":
+      return "bg-cyan-700";
     default:
       return "bg-app-secondary";
   }
 }
 
-export function getPillColorByActivityType(
-  type: ActionType,
-) : string {
+export function getPillColorByActivityType(type: ActionType): string {
   switch (type) {
     case "create":
       return "bg-green-500";

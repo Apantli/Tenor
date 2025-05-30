@@ -1,6 +1,7 @@
 // Data types for returning detailed or preview information from the backend
 
 import type {
+  AnyBacklogItemType,
   Permission,
   Size,
   Sprint,
@@ -98,4 +99,27 @@ export type RoleDetail = {
   backlog: Permission; // requirements, epics, user stories, tasks
   reviews: Permission; // sprint reviews
   retrospective: Permission; // sprint retrospective
+};
+
+export type BacklogItemPreview = {
+  id: string;
+  scrumId: number;
+  name: string;
+  sprintId: string;
+  size: Size;
+  tagIds: string[];
+  itemType: AnyBacklogItemType;
+  priorityId: string;
+};
+
+export type BacklogItemDetail = {
+  id: string;
+  scrumId: number;
+  name: string;
+  sprintId: string;
+  size: Size;
+  tags: WithId<Tag>[];
+  itemType: AnyBacklogItemType;
+  assigneeIds: string[];
+  priorityId: string;
 };
