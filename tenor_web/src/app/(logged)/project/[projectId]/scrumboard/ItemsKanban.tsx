@@ -40,7 +40,7 @@ interface Props {
 }
 
 export default function ItemsKanban({ filter, advancedFilters }: Props) {
-  // GENERAL
+  // #region HOOKS
   const { projectId } = useParams();
   const utils = api.useUtils();
   const formatAnyScrumId = useFormatAnyScrumId();
@@ -48,8 +48,9 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  // #endregion
 
-  // TRPC
+  // #region TRPC
   const { data: itemsAndColumnsData, isLoading } =
     api.kanban.getBacklogItemsForKanban.useQuery({
       projectId: projectId as string,
@@ -68,14 +69,15 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
 
   const { mutateAsync: modifyUserStoryTags } =
     api.userStories.modifyUserStoryTags.useMutation();
-
   const { mutateAsync: modifyIssuesTags } =
     api.issues.modifyIssuesTags.useMutation();
-
+  const { mutateAsync: modifyBacklogItemTags } =
+    api.backlogItems.modifyBacklogItemTags.useMutation();
   const { mutateAsync: reorderStatus } =
     api.settings.reorderStatusTypes.useMutation();
+  // #endregion
 
-  // REACT
+  // #region REACT
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [lastDraggedItemId, setLastDraggedItemId] = useState<string | null>(
     null,
@@ -91,8 +93,9 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
     usePopupVisibilityState();
   const [selectedStatusId, setSelectedStatusId] = useState<string | null>();
   const [statusEditMode, setStatusEditMode] = useState(false);
+  // #endregion
 
-  // UTILITY
+  // #region UTILITY
   const getCorrectFormatter = (itemType: AnyBacklogItemType) => {
     return (scrumId: number) => {
       return formatAnyScrumId(scrumId, itemType);
@@ -193,18 +196,30 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
     await Promise.all(
       itemIds.map(async (itemId) => {
         const item = itemsAndColumnsData.cardItems[itemId];
-        if (item?.cardType === "US") {
-          await modifyUserStoryTags({
-            projectId: projectId as string,
-            userStoryId: item.id,
-            statusId: columnId,
-          });
-        } else if (item?.cardType === "IS") {
-          await modifyIssuesTags({
-            projectId: projectId as string,
-            issueId: item.id,
-            statusId: columnId,
-          });
+        switch (item?.cardType) {
+          case "US":
+            await modifyUserStoryTags({
+              projectId: projectId as string,
+              userStoryId: item.id,
+              statusId: columnId,
+            });
+            break;
+
+          case "IS":
+            await modifyIssuesTags({
+              projectId: projectId as string,
+              issueId: item.id,
+              statusId: columnId,
+            });
+            break;
+
+          case "IT":
+            await modifyBacklogItemTags({
+              projectId: projectId as string,
+              backlogItemId: item.id,
+              statusId: columnId,
+            });
+            break;
         }
       }),
     );
@@ -213,17 +228,15 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
       setTimeout(() => {
         setLastDraggedItemId(null);
       }, 1500);
-      const userStories = itemIds.filter(
-        (itemId) => itemsAndColumnsData.cardItems[itemId]?.cardType === "US",
-      );
-      const issues = itemIds.filter(
-        (itemId) => itemsAndColumnsData.cardItems[itemId]?.cardType === "IS",
-      );
-      if (userStories.length > 0) {
-        await invalidateQueriesBacklogItems(projectId as string, "US");
-      }
-      if (issues.length > 0) {
-        await invalidateQueriesBacklogItems(projectId as string, "IS");
+
+      for (const itemType of ["US", "IS", "IT"] as const) {
+        const itemsOfType = itemIds.filter(
+          (itemId) =>
+            itemsAndColumnsData.cardItems[itemId]?.cardType === itemType,
+        );
+        if (itemsOfType.length > 0) {
+          await invalidateQueriesBacklogItems(projectId as string, itemType);
+        }
       }
       await invalidateQueriesBacklogItemDetails(
         projectId as string,
@@ -288,6 +301,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
 
     await invalidateQueriesAllStatuses(projectId as string);
   };
+  // #endregion
 
   return (
     <>

@@ -14,14 +14,19 @@ import {
   roleRequiredProcedure,
 } from "~/server/api/trpc";
 import { BacklogItemSchema } from "~/lib/types/zodFirebaseSchema";
-import { backlogPermissions } from "~/lib/defaultValues/permission";
+import {
+  backlogPermissions,
+  tagPermissions,
+} from "~/lib/defaultValues/permission";
 import type { BacklogItem, WithId } from "~/lib/types/firebaseSchemas";
 import {
   getBacklogItemNewId,
+  getBacklogItemRef,
   getBacklogItems,
   getBacklogItemsRef,
 } from "../shortcuts/backlogItems";
 import { LogProjectActivity } from "../lib/projectEventLogger";
+import { TRPCError } from "@trpc/server";
 
 export const backlogItemsRouter = createTRPCRouter({
   /**
@@ -243,49 +248,49 @@ export const backlogItemsRouter = createTRPCRouter({
    * @param {string} [size] - The size of the backlog item (optional).
    * @param {string} [statusId] - The ID of the status tag to set (optional).
    */
-  //   modifyBacklogItemTags: roleRequiredProcedure(tagPermissions, "write")
-  //     .input(
-  //       z.object({
-  //         projectId: z.string(),
-  //         backlogItemId: z.string(),
-  //         priorityId: z.string().optional(),
-  //         size: z.string().optional(),
-  //         statusId: z.string().optional(),
-  //       }),
-  //     )
-  //     .mutation(async ({ ctx, input }) => {
-  //       const { projectId, backlogItemId, priorityId, size, statusId } = input;
-  //       if (
-  //         priorityId === undefined &&
-  //         size === undefined &&
-  //         statusId === undefined
-  //       ) {
-  //         return;
-  //       }
+  modifyBacklogItemTags: roleRequiredProcedure(tagPermissions, "write")
+    .input(
+      z.object({
+        projectId: z.string(),
+        backlogItemId: z.string(),
+        priorityId: z.string().optional(),
+        size: z.string().optional(),
+        statusId: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, backlogItemId, priorityId, size, statusId } = input;
+      if (
+        priorityId === undefined &&
+        size === undefined &&
+        statusId === undefined
+      ) {
+        return;
+      }
 
-  //       const backlogItemRef = getBacklogItemRef(
-  //         ctx.firestore,
-  //         projectId,
-  //         backlogItemId,
-  //       );
-  //       const backlogItemSnapshot = await backlogItemRef.get();
-  //       if (!backlogItemSnapshot.exists) {
-  //         throw new TRPCError({ code: "NOT_FOUND" });
-  //       }
+      const backlogItemRef = getBacklogItemRef(
+        ctx.firestore,
+        projectId,
+        backlogItemId,
+      );
+      const backlogItemSnapshot = await backlogItemRef.get();
+      if (!backlogItemSnapshot.exists) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
 
-  //       await backlogItemRef.update({
-  //         priorityId: priorityId,
-  //         size: size,
-  //         statusId: statusId,
-  //       });
+      await backlogItemRef.update({
+        priorityId: priorityId,
+        size: size,
+        statusId: statusId,
+      });
 
-  //       await LogProjectActivity({
-  //         firestore: ctx.firestore,
-  //         projectId: input.projectId,
-  //         userId: ctx.session.user.uid,
-  //         itemId: backlogItemId,
-  //         type: "US",
-  //         action: "update",
-  //       });
-  //     }),
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: backlogItemId,
+        type: "IT",
+        action: "update",
+      });
+    }),
 });
