@@ -41,7 +41,7 @@ export function getAccentColorByCardType(
     case "IS":
       return "bg-yellow-500/80";
     case "IT":
-      return "bg-cyan-600";
+      return "bg-sky-500";
     case "TS":
       return "bg-cyan-700";
     case "US-TS":
@@ -49,7 +49,7 @@ export function getAccentColorByCardType(
     case "IS-TS":
       return "bg-yellow-700/80";
     case "IT-TS":
-      return "bg-cyan-700";
+      return "bg-sky-600";
     default:
       return "bg-app-secondary";
   }
