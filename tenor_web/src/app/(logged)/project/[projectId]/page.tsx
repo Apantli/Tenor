@@ -5,6 +5,7 @@ import ProjectInfo from "~/app/(logged)/project/[projectId]/ProjectInfo";
 import ProjectStatus from "~/app/(logged)/project/[projectId]/ProjectStatusOverview";
 import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
 import { useState } from "react";
+import BurndownChart from "./BurndownChart";
 
 export default function ProjectOverview() {
   const params = useParams();
@@ -37,6 +38,7 @@ export default function ProjectOverview() {
         </div>
         <div className="flex flex-col rounded-lg border-2 border-[#BECAD4] p-3">
           {/* Future content */}
+          <BurndownChart className="max-h-64"/>
         </div>
       </div>
     </div>
