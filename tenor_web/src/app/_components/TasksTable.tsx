@@ -9,7 +9,7 @@ import { api } from "~/trpc/react";
 import StatusPicker from "./inputs/pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import {
-  type BacklogItemType,
+  type AnyBacklogItemType,
   permissionNumbers,
   type BacklogItem,
   type Permission,
@@ -43,7 +43,7 @@ export type BacklogItemWithTasks = BacklogItem & {
 
 interface Props<T extends BacklogItemWithTasks> {
   itemId: string;
-  itemType: BacklogItemType;
+  itemType: AnyBacklogItemType;
   setShowAddTaskPopup: (show: boolean) => void;
   setSelectedGhostTask: (taskId: string) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;

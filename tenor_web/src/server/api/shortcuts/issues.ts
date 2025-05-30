@@ -55,7 +55,7 @@ export const getIssueRef = (
   return getIssuesRef(firestore, projectId).doc(issueId);
 };
 
-// TODO: This may overlap, this isnt quite right
+// FIXME: This may overlap, this isnt quite right
 /**
  * @function getIssueNewId
  * @description Gets the next available issue ID for a specific project

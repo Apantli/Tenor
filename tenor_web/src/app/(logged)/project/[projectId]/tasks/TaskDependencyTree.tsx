@@ -35,7 +35,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import {
-  type BacklogItemType,
+  type AnyBacklogItemType,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
@@ -327,7 +327,7 @@ export default function TaskDependencyTree() {
   const [parentId, taskId, parentType] = detailItemId.split("-") as [
     string,
     string,
-    BacklogItemType,
+    AnyBacklogItemType,
   ];
 
   // #endregion
