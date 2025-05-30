@@ -13,9 +13,8 @@ interface Props {
 }
 export default function Tabbar({ disabled, mainPageName }: Props) {
   const pathname = usePathname();
-  const params = useParams();
-  const projectId = params.projectId as string;
-  const projectPath = `/project/${projectId}`;
+  const { projectId } = useParams();
+  const projectPath = `/project/${projectId as string}`;
   let cutPathname = pathname.slice(projectPath.length) || "/";
 
   if (cutPathname.split("/").length > 2) {
@@ -30,13 +29,18 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
   };
 
   const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId ?? "",
+    projectId: (projectId as string) ?? "",
   });
 
   const { data: previousSprint, isLoading: isLoadingPreviousSprint } =
-    api.sprintRetrospectives.getPreviousSprint.useQuery({
-      projectId: projectId,
-    });
+    api.sprintRetrospectives.getPreviousSprint.useQuery(
+      {
+        projectId: projectId as string,
+      },
+      {
+        enabled: !!projectId,
+      },
+    );
 
   return (
     <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
@@ -47,7 +51,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
 
         const { title, link, enabled, flags } = meta;
 
-        if (id === "sprintRetrospective") {
+        if (id === "retrospective") {
           if (isLoadingPreviousSprint || !previousSprint) {
             return null;
           }
