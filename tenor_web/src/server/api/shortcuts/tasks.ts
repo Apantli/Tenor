@@ -1,14 +1,14 @@
-import type { Firestore } from "firebase-admin/firestore";
-import { getProjectRef } from "./general";
-import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
-import { TaskSchema } from "~/lib/types/zodFirebaseSchema";
-import { getStatusType, getTodoStatusTag } from "./tags";
+import type { Firestore, Timestamp } from "firebase-admin/firestore";
+import { getActivitiesRef, getProjectRef } from "./general";
+import type {StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
+import { ActivitySchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
+import { getStatusType, getStatusTypes, getTodoStatusTag } from "./tags";
 import type {
   TaskDetail,
   TaskPreview,
   UserPreview,
 } from "~/lib/types/detailSchemas";
-import type * as admin from "firebase-admin";
+import * as admin from "firebase-admin";
 import type { TaskCol } from "~/lib/types/columnTypes";
 import { getGlobalUserPreview } from "./users";
 import { FieldValue } from "firebase-admin/firestore";
@@ -536,4 +536,93 @@ export const deleteTaskAndGetModified = async (
   await taskRef.update({ deleted: true });
 
   return modifiedTasks;
+};
+
+/**
+ * @function getItemActivityTask
+ * @description Retrieves the number of completed tasks for a specific item on a given date
+ * @param firestore - The Firestore instance
+ * @param projectId - The ID of the project
+ * @param date - The date to filter activities by
+ * @return {Promise<number>} The number of completed tasks for the item on the specified date
+ */
+export const getItemActivityTask = async (
+  firestore: Firestore,
+  projectId: string,
+  date: Timestamp,
+): Promise<number> => {
+  const activitiesRef = getActivitiesRef(firestore, projectId);
+  const activitiesSnapshot = await activitiesRef
+    .orderBy("date", "desc")
+    .where("date", "==" , date)
+    .where("type", "==", "TS")
+    .get();
+
+  // Extract task ids from the activities
+  const taskIds = new Set<string>();
+  activitiesSnapshot.docs.forEach(doc => {
+    const activity = ActivitySchema.parse(doc.data());
+    if (activity.itemId) {
+      taskIds.add(activity.itemId);
+    }
+  });
+
+  // No tasks found
+  if (taskIds.size === 0) {
+    return 0;
+  }
+
+  // Fetch the tasks to check their status
+  const tasksRef = getTasksRef(firestore, projectId)
+    .where("deleted", "==", false);
+  
+  const tasks: WithId<Task>[] = [];
+
+  // Process in batches of 10 (Firestore limit for 'in' queries)
+  const taskIdsArray = Array.from(taskIds);
+  for (let i = 0; i < taskIdsArray.length; i += 10) {
+    const batch = taskIdsArray.slice(i, i + 10);
+    const batchSnapshot = await tasksRef
+      .where(admin.firestore.FieldPath.documentId(), "in", batch)
+      .get();
+    
+    batchSnapshot.docs.forEach(doc => {
+      tasks.push({
+        id: doc.id,
+        ...TaskSchema.parse(doc.data()),
+      } as WithId<Task>);
+    });
+  }
+
+  // Get all status IDs from tasks
+  const statusIds = tasks
+    .map(task => task.statusId)
+    .filter((id): id is string => !!id);
+  
+  // If no status IDs, no completed tasks
+  if (statusIds.length === 0) {
+    return 0;
+  }
+
+  // Use getStatusTypes to get all status tags at once (more efficient)
+  const statusTypes = await getStatusTypes(firestore, projectId);
+  const statusTagsMap = new Map<string, StatusTag>();
+  
+  // Create a map for O(1) lookups
+  statusTypes.forEach(statusTag => {
+    statusTagsMap.set(statusTag.id, statusTag);
+  });
+
+  // Count completed tasks
+  const completedCount = tasks.reduce((count, task) => {
+    if (!task.statusId) return count;
+    
+    const statusTag = statusTagsMap.get(task.statusId);
+    if (statusTag?.marksTaskAsDone) {
+      return count + 1;
+    }
+    return count;
+  }, 0);
+
+  return completedCount;
 };

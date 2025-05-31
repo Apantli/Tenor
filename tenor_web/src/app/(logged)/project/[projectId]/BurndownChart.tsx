@@ -2,27 +2,163 @@
 import React from "react";
 import { createClassFromSpec, type VisualizationSpec } from "react-vega";
 import { cn } from "~/lib/helpers/utils";
+import { api } from "~/trpc/react";
+import { differenceInDays, parseISO } from "date-fns";
+
+// Create a more specific type for your Vega specification
+type VegaSpec = VisualizationSpec & {
+  data?: Array<{
+    name: string;
+    values?: unknown;
+    [key: string]: unknown;
+  }>;
+  scales?: Array<{
+    name: string;
+    type?: string;
+    domain?: unknown;
+    range?: unknown;
+    [key: string]: unknown;
+  }>;
+  width?: number;
+  height?: number;
+};
+
+// Generates burndown chart data from project status information
+export function useBurndownData(projectId: string): BurndownData {
+  const { data: status, isLoading } = api.projects.getProjectStatus.useQuery({
+    projectId,
+  });
+
+  // Calculate sprint dates directly from status
+  const sprintDates = React.useMemo(() => {
+    if (
+      !status ||
+      isLoading ||
+      !status.currentSprintStartDate ||
+      !status.currentSprintEndDate
+    ) {
+      return null;
+    }
+
+    const startDate =
+      typeof status.currentSprintStartDate === "string"
+        ? status.currentSprintStartDate
+        : status.currentSprintStartDate.toISOString();
+    
+    // Only fetch up to today
+    const endDate = new Date().toISOString(); 
+
+    return { start: startDate, end: endDate };
+  }, [status, isLoading]);
+
+  // Fetch historical data
+  const { data: burndownHistory } = api.tasks.getSprintBurndownHistory.useQuery(
+    {
+      projectId,
+      startDate: sprintDates?.start ?? "",
+      endDate: sprintDates?.end ?? "",
+    },
+    {
+      enabled: !!sprintDates,
+    },
+  );
+
+  return React.useMemo(() => {
+    if (!status || isLoading) return SampleBurndownData;
+
+    // Check if we have sprint data
+    if (!status.currentSprintStartDate || !status.currentSprintEndDate) {
+      return SampleBurndownData; // Use sample data if no sprint is defined
+    }
+
+    const startDate =
+      typeof status.currentSprintStartDate === "string"
+        ? parseISO(status.currentSprintStartDate)
+        : new Date(status.currentSprintStartDate);
+
+    const endDate =
+      typeof status.currentSprintEndDate === "string"
+        ? parseISO(status.currentSprintEndDate)
+        : new Date(status.currentSprintEndDate);
+
+    // Calculate sprint duration in days
+    const sprintDuration = differenceInDays(endDate, startDate) + 1;
+    const today = new Date();
+    const currentDay = Math.min(
+      differenceInDays(today, startDate),
+      sprintDuration - 1,
+    );
+
+    // Total tasks/story points to complete
+    const totalTasks = status.taskCount;
+    const completedTasks = status.completedCount;
+    const remainingTasks = totalTasks - completedTasks;
+
+    // Create ideal burndown line (unchanged)
+    const idealBurndown: BurndownData = [];
+    for (let day = 0; day < sprintDuration; day++) {
+      const idealRemaining = totalTasks * (1 - day / (sprintDuration - 1));
+      idealBurndown.push({
+        x: day,
+        y: idealRemaining,
+        c: 0, // 0 for ideal line
+      });
+    }
+
+    // Create actual burndown line using historical data
+    const actualBurndown: BurndownData = [];
+
+    if (burndownHistory && burndownHistory.length > 0) {
+      // Sort historical data by day to ensure correct line drawing
+      const sortedHistory = [...burndownHistory].sort((a, b) => a.day - b.day);
+      // Use actual historical data
+      sortedHistory.forEach((data: BurndownDataPoint) => {
+        if (data === undefined || typeof data.completedCount !== "number") {
+          console.warn("Invalid data point:", data);
+          return;
+        }
+
+        const remaining = totalTasks - data.completedCount;
+
+        actualBurndown.push({
+          x: data.day,
+          y: remaining,
+          c: 1,
+        });
+      });
+    }
+
+    // For the current day, use the actual remaining count
+    if (actualBurndown.length > 0) {
+      actualBurndown[actualBurndown.length - 1] = {
+        x: currentDay,
+        y: remainingTasks,
+        c: 1,
+      };
+    }
+
+    // Combine both lines
+    return [...idealBurndown, ...actualBurndown];
+  }, [status, isLoading, projectId, burndownHistory]);
+}
 
 // Define the data type for burndown chart
 export type BurndownData = Array<{
   x: number;
   y: number;
-  c: number; // 0 for ideal, 1 for actual
+  c: number;
 }>;
 
-// Sample data
-export const SampleBurndownData: BurndownData = [
-  {"x": 0, "y": 28, "c": 0}, {"x": 0, "y": 20, "c": 1},
-  {"x": 1, "y": 43, "c": 0}, {"x": 1, "y": 35, "c": 1},
-  {"x": 2, "y": 81, "c": 0}, {"x": 2, "y": 10, "c": 1},
-  {"x": 3, "y": 19, "c": 0}, {"x": 3, "y": 15, "c": 1},
-  {"x": 4, "y": 52, "c": 0}, {"x": 4, "y": 48, "c": 1},
-  {"x": 5, "y": 24, "c": 0}, {"x": 5, "y": 28, "c": 1},
-  {"x": 6, "y": 87, "c": 0}, {"x": 6, "y": 66, "c": 1},
-  {"x": 7, "y": 17, "c": 0}, {"x": 7, "y": 27, "c": 1},
-  {"x": 8, "y": 68, "c": 0}, {"x": 8, "y": 16, "c": 1},
-  {"x": 9, "y": 49, "c": 0}, {"x": 9, "y": 25, "c": 1}
-];
+// The data from the x need to be the total days of the sprint
+// The data from the y need to be the total story points
+export type BurndownDataPoint = {
+  day: number;
+  completedCount: number;
+  date?: string;
+};
+
+// Sample burndown data for initial rendering
+const SampleBurndownData: BurndownData = [{ x: 0, y: 0, c: 0 }];
 
 // Base Vega specification for burndown chart
 const burndownSpec: VisualizationSpec = {
@@ -39,15 +175,15 @@ const burndownSpec: VisualizationSpec = {
   signals: [
     {
       name: "interpolate",
-      value: "linear"
-    }
+      value: "linear",
+    },
   ],
 
   data: [
     {
       name: "table",
-      values: SampleBurndownData
-    }
+      values: SampleBurndownData,
+    },
   ],
 
   scales: [
@@ -55,7 +191,7 @@ const burndownSpec: VisualizationSpec = {
       name: "x",
       type: "point",
       range: "width",
-      domain: { data: "table", field: "x" }
+      domain: { data: "table", field: "x" },
     },
     {
       name: "y",
@@ -63,14 +199,14 @@ const burndownSpec: VisualizationSpec = {
       range: "height",
       nice: true,
       zero: true,
-      domain: { data: "table", field: "y" }
+      domain: { data: "table", field: "y" },
     },
     {
       name: "color",
       type: "ordinal",
-      range: ["#13918A", "#8BC48A"],
-      domain: { data: "table", field: "c" }
-    }
+      range: [" #8BC48A", "#13918A"],
+      domain: { data: "table", field: "c" },
+    },
   ],
 
   axes: [
@@ -101,7 +237,7 @@ const burndownSpec: VisualizationSpec = {
       labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
       labelColor: "#6B7280",
       labelFontWeight: 600,
-    }
+    },
   ],
 
   marks: [
@@ -111,8 +247,8 @@ const burndownSpec: VisualizationSpec = {
         facet: {
           name: "series",
           data: "table",
-          groupby: "c"
-        }
+          groupby: "c",
+        },
       },
       marks: [
         {
@@ -123,16 +259,16 @@ const burndownSpec: VisualizationSpec = {
               x: { scale: "x", field: "x" },
               y: { scale: "y", field: "y" },
               stroke: { scale: "color", field: "c" },
-              strokeWidth: { value: 3 }
+              strokeWidth: { value: 3 },
             },
             update: {
               interpolate: { signal: "interpolate" },
-              strokeOpacity: { value: 1 }
+              strokeOpacity: { value: 1 },
             },
             hover: {
-              strokeOpacity: { value: 0.7 }
-            }
-          }
+              strokeOpacity: { value: 0.7 },
+            },
+          },
         },
         {
           type: "symbol",
@@ -142,26 +278,30 @@ const burndownSpec: VisualizationSpec = {
               x: { scale: "x", field: "x" },
               y: { scale: "y", field: "y" },
               fill: { scale: "color", field: "c" },
-              size: { value: 50 }
-            }
-          }
-        }
-      ]
-    }
-  ]
+              size: { value: 50 },
+            },
+          },
+        },
+      ],
+    },
+  ],
 };
 
-interface BurndownChartProps {
-  data?: BurndownData;
+const BurndownChart: React.FC<{
+  projectId: string;
   className?: string;
-  domain?: [number, number];
-}
+}> = ({ projectId, className = "" }) => {
+  // Use the data generation hook
+  const burndownData = useBurndownData(projectId);
 
-const BurndownChart: React.FC<BurndownChartProps> = ({
-  data = SampleBurndownData,
-  className = "",
-  domain,
-}) => {
+  // Calculate appropriate domain based on data
+  const maxY = React.useMemo(() => {
+    if (!burndownData.length) return 100;
+    return Math.max(...burndownData.map((d) => d.y));
+  }, [burndownData]);
+
+  const domain: [number, number] = [0, maxY];
+
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = React.useState({
     width: 0,
@@ -190,15 +330,26 @@ const BurndownChart: React.FC<BurndownChartProps> = ({
 
   // Modify spec with dynamic width, height and domain
   const modifiedSpec = React.useMemo(() => {
-    const specCopy = JSON.parse(JSON.stringify(burndownSpec));
+    const specCopy = JSON.parse(JSON.stringify(burndownSpec)) as VegaSpec;
 
-    // Update the y-scale domain if provided
-    if (domain) {
-      const yscaleIndex = specCopy.scales.findIndex(
-        (scale: any) => scale.name === "y"
+    // Update the data values
+    if (specCopy.data && Array.isArray(specCopy.data)) {
+      const tableData = specCopy.data.find((d) => d.name === "table");
+      if (tableData) {
+        // Use type assertion to safely set the values
+        (tableData as { values?: BurndownData }).values = burndownData;
+      }
+    }
+
+    // Update the y-scale domain
+    if (specCopy.scales && Array.isArray(specCopy.scales)) {
+      const yScale = specCopy.scales.find(
+        (scale) =>
+          typeof scale === "object" && scale !== null && scale.name === "y",
       );
-      if (yscaleIndex !== -1 && specCopy.scales[yscaleIndex]) {
-        specCopy.scales[yscaleIndex].domain = domain;
+
+      if (yScale) {
+        yScale.domain = domain;
       }
     }
 
@@ -209,7 +360,7 @@ const BurndownChart: React.FC<BurndownChartProps> = ({
     }
 
     return specCopy;
-  }, [domain, containerDimensions]);
+  }, [domain, containerDimensions, burndownData]);
 
   // Create the component with the modified spec
   const LineChartComponent = React.useMemo(
@@ -218,39 +369,41 @@ const BurndownChart: React.FC<BurndownChartProps> = ({
         mode: "vega",
         spec: modifiedSpec,
       }),
-    [modifiedSpec]
+    [modifiedSpec],
   );
 
   return (
     <div
       ref={containerRef}
       className={cn(
-        "relative mx-auto flex h-full w-full flex-col rounded-lg p-4 pb-0 pt-0",
-        className
+        "relative mx-auto flex h-full max-h-64 w-full flex-col rounded-lg p-4 pb-0 pt-0",
+        className,
       )}
     >
+      <div>
+        <h3 className="text-lg font-bold">Burndown Chart</h3>
+      </div>
       {containerDimensions.width > 0 && containerDimensions.height > 0 && (
         <>
           <div className="absolute right-4 top-4 z-10 flex flex-row gap-4">
             <div className="flex items-center gap-2">
               <div
                 className="h-4 w-4 rounded-sm"
-                style={{ backgroundColor: "#13918A" }}
+                style={{ backgroundColor: "#8BC48A" }}
               />
               <span className="text-sm font-semibold text-gray-600">Ideal</span>
             </div>
             <div className="flex items-center gap-2">
               <div
                 className="h-4 w-4 rounded-sm"
-                style={{ backgroundColor: "#8BC48A" }}
+                style={{ backgroundColor: " #13918A" }}
               />
               <span className="text-sm font-semibold text-gray-600">
                 Actual
               </span>
             </div>
           </div>
-          <h3 className="ml-4 mt-2 text-lg font-medium text-gray-700">Sprint Burndown</h3>
-          <LineChartComponent data={{ table: data }} actions={false} />
+          <LineChartComponent actions={false} />
         </>
       )}
     </div>
@@ -258,11 +411,3 @@ const BurndownChart: React.FC<BurndownChartProps> = ({
 };
 
 export default BurndownChart;
-
-
-
-
-
-
-
-

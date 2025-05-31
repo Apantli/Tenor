@@ -36,9 +36,8 @@ export default function ProjectOverview() {
         <div className="flex h-64 flex-col gap-5 rounded-lg border-2 border-[#BECAD4] p-5">
           <ProjectStatus projectId={projectId} />
         </div>
-        <div className="flex flex-col rounded-lg border-2 border-[#BECAD4] p-3">
-          {/* Future content */}
-          <BurndownChart className="max-h-64"/>
+        <div className="flex h-full flex-col rounded-lg border-2 border-[#BECAD4] p-3">
+          <BurndownChart projectId={projectId} />
         </div>
       </div>
     </div>
