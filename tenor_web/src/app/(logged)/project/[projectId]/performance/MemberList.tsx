@@ -3,9 +3,19 @@ import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import ProfilePicture from "~/app/_components/ProfilePicture";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import { PerformanceChart } from "~/app/_components/charts/PerformanceChart";
 import { cn } from "~/lib/helpers/utils";
 import type { UserCol } from "~/lib/types/columnTypes";
+import dynamic from "next/dynamic";
+
+const DynamicPerformanceChart = dynamic(
+  () =>
+    import("~/app/_components/charts/PerformanceChart").then(
+      (m) => m.PerformanceChart,
+    ),
+  {
+    ssr: false,
+  },
+);
 
 export const MemberList = ({
   searchValue,
@@ -134,7 +144,7 @@ const MemberItem = ({
         {member.displayName}
       </h3>
 
-      <PerformanceChart data={formattedData ?? []} className="" />
+      <DynamicPerformanceChart data={formattedData ?? []} className="" />
       <ArrowForwardIosIcon
         className={cn("my-auto ml-auto hidden text-gray-500", {
           invisible: selectedMember?.id === member.id,

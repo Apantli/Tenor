@@ -213,6 +213,8 @@ export const useInvalidateQueriesBacklogItems = () => {
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesAllEpics = useInvalidateQueriesAllEpics();
+  const invalidateQueriesAllGenericBacklogItems =
+    useInvalidateQueriesAllGenericBacklogItems();
 
   return async (projectId: string, itemType: AnyBacklogItemType | "EP") => {
     switch (itemType) {
@@ -225,8 +227,11 @@ export const useInvalidateQueriesBacklogItems = () => {
       case "IS":
         await invalidateQueriesAllIssues(projectId);
         break;
+      case "IT":
+        await invalidateQueriesAllGenericBacklogItems(projectId);
+        break;
     }
-    // TODO: Add one for general backlog items, when they are implemented
+
     await utils.projects.getProjectActivities.invalidate({
       projectId: projectId,
     });

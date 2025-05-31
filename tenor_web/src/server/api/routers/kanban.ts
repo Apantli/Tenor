@@ -2,26 +2,25 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
 import type {
-  Issue,
+  AnyBacklogItemType,
   StatusTag,
   Tag,
-  UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
 import type { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
-import { getTasks, getTasksRef } from "../shortcuts/tasks";
+import { getTasks, getTasksAssignesIdsFromItem } from "../shortcuts/tasks";
 import {
   getAutomaticStatusId,
   getBacklogTag,
+  getBacklogTags,
   getStatusTypes,
   getStatusTypesRef,
 } from "../shortcuts/tags";
-import {
-  getUserStoriesRef,
-  getUserStory,
-} from "../shortcuts/userStories";
-import { getIssue, getIssuesRef } from "../shortcuts/issues";
+import { getUserStories, getUserStory } from "../shortcuts/userStories";
+import { getIssue, getIssues } from "../shortcuts/issues";
+import { getBacklogItems } from "../shortcuts/backlogItems";
+import { sortByCardTypeAndScrumId } from "~/lib/helpers/sort";
 
 export const kanbanRouter = createTRPCRouter({
   getTasksForKanban: protectedProcedure
@@ -140,127 +139,62 @@ export const kanbanRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Fetch user stories
-      // FIXME: This view should only include items assigned to the current sprint
       const { projectId } = input;
 
-      const userStoriesRef = getUserStoriesRef(ctx.firestore, projectId).where(
-        "deleted",
-        "==",
-        false,
-      );
-      const userStoriesSnapshot = await userStoriesRef.get();
+      const [userStories, issues, backlogItems, backlogTags] =
+        await Promise.all([
+          getUserStories(ctx.firestore, projectId),
+          getIssues(ctx.firestore, projectId),
+          getBacklogItems(ctx.firestore, projectId),
+          getBacklogTags(ctx.firestore, projectId),
+        ]);
 
-      const memoTags = new Map<string, WithId<Tag>>();
-      const userStories = await Promise.all(
-        userStoriesSnapshot.docs.map(async (doc) => {
-          const data = doc.data() as UserStory;
-          const tags = await Promise.all(
-            data.tagIds.map(async (tagId: string) => {
-              if (memoTags.has(tagId)) {
-                return memoTags.get(tagId);
-              }
-              const tag = await getBacklogTag(ctx.firestore, projectId, tagId);
-              if (!tag) {
-                return null;
-              }
-              memoTags.set(tagId, tag);
+      const backlogItemPreviews = [
+        ...userStories.map((userStory) => ({
+          ...userStory,
+          itemType: "US" as AnyBacklogItemType,
+        })),
+        ...issues.map((issue) => ({
+          ...issue,
+          itemType: "IS" as AnyBacklogItemType,
+        })),
+        ...backlogItems.map((item) => ({
+          ...item,
+          itemType: "IT" as AnyBacklogItemType,
+        })),
+      ];
+
+      const backlogItemDetails = (await Promise.all(
+        backlogItemPreviews.map(async (item) => ({
+          id: item.id,
+          cardType: item.itemType,
+          scrumId: item.scrumId,
+          name: item.name,
+          size: item.size,
+          tags: item.tagIds
+            .map((tagId) => {
+              const tag = backlogTags.find((tag) => tag.id === tagId);
               return tag;
-            }),
-          );
-
-          const assigneeIds = await getTasksRef(ctx.firestore, projectId)
-            .where("itemId", "==", doc.id)
-            .get()
-            .then((tasksSnapshot) =>
-              tasksSnapshot.docs
-                .map((taskDoc) => {
-                  const taskData = taskDoc.data();
-                  return (taskData.assigneeId as string) ?? null;
-                })
-                .filter((id): id is string => id !== null),
-            );
-
-          return {
-            id: doc.id,
-            cardType: "US",
-            scrumId: data.scrumId,
-            name: data.name,
-            description: data.description,
-            size: data.size,
-            tags: tags,
-            columnId: data.statusId ?? "",
-            assigneeIds: assigneeIds,
-            sprintId: data.sprintId,
-            priorityId: data.priorityId,
-          } as KanbanItemCard;
-        }),
-      );
-
-      // Fetch issues
-      const issuesRef = getIssuesRef(ctx.firestore, projectId).where(
-        "deleted",
-        "==",
-        false,
-      );
-
-      const issuesSnapshot = await issuesRef.get();
-
-      const issues = await Promise.all(
-        issuesSnapshot.docs.map(async (doc) => {
-          const data = doc.data() as Issue;
-          const tags = await Promise.all(
-            data.tagIds.map(async (tagId: string) => {
-              if (memoTags.has(tagId)) {
-                return memoTags.get(tagId);
-              }
-              const tag = await getBacklogTag(ctx.firestore, projectId, tagId);
-              if (!tag) {
-                return null;
-              }
-              memoTags.set(tagId, tag);
-              return tag;
-            }),
-          );
-
-          const assigneeIds = await getTasksRef(ctx.firestore, projectId)
-            .where("itemId", "==", doc.id)
-            .get()
-            .then((tasksSnapshot) =>
-              tasksSnapshot.docs
-                .map((taskDoc) => {
-                  const taskData = taskDoc.data();
-                  return (taskData.assigneeId as string) ?? null;
-                })
-                .filter((id): id is string => id !== null),
-            );
-
-          return {
-            id: doc.id,
-            cardType: "IS",
-            scrumId: data.scrumId,
-            name: data.name,
-            description: data.description,
-            size: data.size,
-            tags,
-            columnId: data.statusId ?? "",
-            assigneeIds: assigneeIds,
-            sprintId: data.sprintId,
-            priorityId: data.priorityId,
-          } as KanbanItemCard;
-        }),
-      );
-
-      // Combine both types of backlog items
-      const backlogItems = [...userStories, ...issues];
+            })
+            .filter((tag) => tag !== undefined),
+          columnId: item.statusId,
+          assigneeIds: await getTasksAssignesIdsFromItem(
+            ctx.firestore,
+            projectId,
+            item.id,
+          ),
+          sprintId: item.sprintId,
+          priorityId: item.priorityId,
+        })),
+      )) as KanbanItemCard[];
 
       // Get all statuses
       const activeColumns = await getStatusTypes(ctx.firestore, projectId);
 
       // Assign automatic status to items with undefined status
       const itemsWithStatus = await Promise.all(
-        backlogItems.map(async (item) => {
-          if (item.columnId === "") {
+        backlogItemDetails.map(async (item) => {
+          if (item.columnId === "" || item.columnId === undefined) {
             const newCol = await getAutomaticStatusId(
               ctx.firestore,
               projectId,
@@ -273,6 +207,10 @@ export const kanbanRouter = createTRPCRouter({
         }),
       );
 
+      const cardItems = Object.fromEntries(
+        itemsWithStatus.map((item) => [item.id, item]),
+      );
+
       // Group items by status
       const columnsWithItems = activeColumns
         .map((column) => ({
@@ -283,16 +221,14 @@ export const kanbanRouter = createTRPCRouter({
 
           itemIds: itemsWithStatus
             .filter((item) => item.columnId === column.id)
-            .sort((a, b) => (a?.scrumId ?? 0) - (b?.scrumId ?? 0))
-            .map((item) => item.id),
+            .map((item) => item.id)
+            .sort(sortByCardTypeAndScrumId(cardItems)),
         }))
         .sort((a, b) => (a.orderIndex < b.orderIndex ? -1 : 1));
 
       return {
         columns: columnsWithItems,
-        cardItems: Object.fromEntries(
-          itemsWithStatus.map((item) => [item.id, item]),
-        ),
+        cardItems: cardItems,
       };
     }),
 
