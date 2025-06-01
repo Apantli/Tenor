@@ -166,6 +166,7 @@ export const MemberDetailsCard = ({
               <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
                 <DynamicContributionPieChart
                   data={formattedUserContributions}
+                  scaleFactor={formattedData.length > 0 ? 0.8 : 1}
                 />
                 <ContributionLegend data={formattedUserContributions} />
               </div>
@@ -177,7 +178,7 @@ export const MemberDetailsCard = ({
           </div>
         )}
         <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
-          Average time per task
+          Average time per task (Past 5 weeks)
         </h4>
         <div
           className={cn("flex flex-row gap-8", {
@@ -190,9 +191,9 @@ export const MemberDetailsCard = ({
             </div>
           ) : (
             <>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col">
                 <h4
-                  className={cn("text-3xl font-bold", {
+                  className={cn("text-2xl font-bold", {
                     "text-base font-normal text-gray-500 xl:text-xl":
                       !Boolean(lastTime),
                   })}
