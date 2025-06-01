@@ -7,7 +7,6 @@ import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/helpers/utils";
 import { useDroppable } from "@dnd-kit/react";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
-import { useWindowRect } from "~/app/_hooks/useWindowResize";
 
 interface Props {
   selection: Set<string>;
