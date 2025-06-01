@@ -48,14 +48,16 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 
-export const heightOfContent = "h-[calc(100vh-285px)]";
+export const heightOfContent = "h-full";
 
 interface Props {
   setAllowSegmentedControlChange: (value: boolean) => void;
+  showEpics: boolean;
 }
 
 export default function UserStoryTable({
   setAllowSegmentedControlChange,
+  showEpics,
 }: Props) {
   // #region Hooks
   const { projectId } = useParams();
@@ -334,7 +336,11 @@ export default function UserStoryTable({
   const getTable = () => {
     if (userStories == undefined || isLoadingUS) {
       return (
-        <div className="flex h-full w-full flex-1 items-start justify-center p-10">
+        <div
+          className={cn(
+            "flex h-full w-full flex-1 items-start justify-center p-10",
+          )}
+        >
           <LoadingSpinner color="primary" />
         </div>
       );
@@ -601,7 +607,9 @@ export default function UserStoryTable({
     return (
       <Table
         emptyMessage="No user stories found"
-        className={cn("w-[calc(100vw-504px)] overflow-auto", heightOfContent)}
+        className={cn("w-[calc(100vw-130px)] overflow-auto", heightOfContent, {
+          "xl:w-[calc(100vw-465px)]": showEpics,
+        })}
         data={userStoryData}
         columns={tableColumns}
         onDelete={handleDelete}

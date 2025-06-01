@@ -136,134 +136,136 @@ export default function ProjectCalendar() {
   };
 
   return (
-    <DragDropProvider
-      onDragEnd={async (event) => {
-        const { operation, canceled } = event;
-        const { source, target } = operation;
+    <div className="m-6 flex-1 p-4">
+      <DragDropProvider
+        onDragEnd={async (event) => {
+          const { operation, canceled } = event;
+          const { source, target } = operation;
 
-        if (!source || canceled || !target) {
-          return;
-        }
+          if (!source || canceled || !target) {
+            return;
+          }
 
-        await handleDragEnd(source.id as string, target.id as string);
-      }}
-    >
-      <div
-        className="flex h-full flex-col overflow-y-scroll"
-        style={{ minHeight: 0 }}
+          await handleDragEnd(source.id as string, target.id as string);
+        }}
       >
-        <div className="mr-3 flex items-center justify-between pb-2">
-          <h1 className="text-3xl font-semibold">Calendar</h1>
-          <div className="flex items-center gap-2">
-            {(selectedTasksId.length > 0 || selectedDate) && (
-              <div className="bg-primary flex items-center gap-2">
-                <CloseIcon
-                  className="cursor-pointer"
-                  onClick={() => {
-                    setSelectedTasksId([]);
-                    setSelectedDate(undefined);
-                  }}
-                />
-                <PrimaryButton
-                  disabled={!selectedDate || selectedTasksId.length === 0}
-                  className="max-h-8 text-xs font-semibold"
-                  onClick={async () => {
-                    if (!selectedDate) {
-                      return;
-                    }
+        <div
+          className="flex h-full flex-col overflow-y-scroll"
+          style={{ minHeight: 0 }}
+        >
+          <div className="mr-3 flex items-center justify-between pb-2">
+            <h1 className="text-3xl font-semibold">Calendar</h1>
+            <div className="flex items-center gap-2">
+              {(selectedTasksId.length > 0 || selectedDate) && (
+                <div className="bg-primary flex items-center gap-2">
+                  <CloseIcon
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setSelectedTasksId([]);
+                      setSelectedDate(undefined);
+                    }}
+                  />
+                  <PrimaryButton
+                    disabled={!selectedDate || selectedTasksId.length === 0}
+                    className="max-h-8 text-xs font-semibold"
+                    onClick={async () => {
+                      if (!selectedDate) {
+                        return;
+                      }
 
-                    const tasks = selectedTasksId;
-                    const date = selectedDate;
+                      const tasks = selectedTasksId;
+                      const date = selectedDate;
 
-                    setSelectedTasksId([]);
-                    setSelectedDate(undefined);
+                      setSelectedTasksId([]);
+                      setSelectedDate(undefined);
 
-                    setMonth(date.getMonth());
-                    setYear(date.getFullYear());
+                      setMonth(date.getMonth());
+                      setYear(date.getFullYear());
 
-                    await handleDateChange(tasks, date);
-                  }}
-                >
-                  Move {selectedTasksId.length} tasks to
-                </PrimaryButton>
-                <DatePicker
-                  selectedDate={selectedDate}
-                  onChange={(date) => {
-                    if (!date) {
+                      await handleDateChange(tasks, date);
+                    }}
+                  >
+                    Move {selectedTasksId.length} tasks to
+                  </PrimaryButton>
+                  <DatePicker
+                    selectedDate={selectedDate}
+                    onChange={(date) => {
+                      if (!date) {
+                        setSelectedDate(date);
+                        return;
+                      }
+                      // truncate to start of the day
+                      date = new Date(
+                        date.getFullYear(),
+                        date.getMonth(),
+                        date.getDate(),
+                      );
                       setSelectedDate(date);
-                      return;
-                    }
-                    // truncate to start of the day
-                    date = new Date(
-                      date.getFullYear(),
-                      date.getMonth(),
-                      date.getDate(),
-                    );
-                    setSelectedDate(date);
-                  }}
-                  className="max-h-8 bg-white text-xs"
-                />
-              </div>
-            )}
-            <MonthSlider
+                    }}
+                    className="max-h-8 bg-white text-xs"
+                  />
+                </div>
+              )}
+              <MonthSlider
+                month={month}
+                setMonth={setMonth}
+                year={year}
+                setYear={setYear}
+              />
+            </div>
+          </div>
+          {tasksByDate ? (
+            <CalendarGrid
+              editable={permission >= permissionNumbers.write}
+              tasksByDate={tasksByDate}
               month={month}
-              setMonth={setMonth}
               year={year}
-              setYear={setYear}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
+              setTask={setTask}
+              setDetailItemId={setDetailItemId}
+              selectedTasksId={selectedTasksId}
+              setSelectedTasksId={setSelectedTasksId}
             />
-          </div>
-        </div>
-        {tasksByDate ? (
-          <CalendarGrid
-            editable={permission >= permissionNumbers.write}
-            tasksByDate={tasksByDate}
-            month={month}
-            year={year}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            setTask={setTask}
-            setDetailItemId={setDetailItemId}
-            selectedTasksId={selectedTasksId}
-            setSelectedTasksId={setSelectedTasksId}
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center">
-            <LoadingSpinner color="primary" />
-          </div>
-        )}
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <LoadingSpinner color="primary" />
+            </div>
+          )}
 
-        {renderDetail && detailItemType === "US" && detailParentItemId && (
-          <UserStoryDetailPopup
-            setUserStoryId={(newId) => {
-              if (newId === "") {
-                setDetailItemId("");
-                if (forcedDetailParentUserStoryId) {
-                  setShowDetail(false);
-                  setTimeout(() => {
-                    setForcedDetailParentUserStoryId("");
+          {renderDetail && detailItemType === "US" && detailParentItemId && (
+            <UserStoryDetailPopup
+              setUserStoryId={(newId) => {
+                if (newId === "") {
+                  setDetailItemId("");
+                  if (forcedDetailParentUserStoryId) {
                     setShowDetail(false);
-                  }, 500);
+                    setTimeout(() => {
+                      setForcedDetailParentUserStoryId("");
+                      setShowDetail(false);
+                    }, 500);
+                  }
+                } else {
+                  // User wants to open a new user story (like by clicking on a link in the dependency list)
+                  setForcedDetailParentUserStoryId(newId);
                 }
-              } else {
-                // User wants to open a new user story (like by clicking on a link in the dependency list)
-                setForcedDetailParentUserStoryId(newId);
-              }
-            }}
-            showDetail={showDetail}
-            userStoryId={detailParentItemId}
-            taskIdToOpenImmediately={detailItemId}
-          />
-        )}
+              }}
+              showDetail={showDetail}
+              userStoryId={detailParentItemId}
+              taskIdToOpenImmediately={detailItemId}
+            />
+          )}
 
-        {renderDetail && detailItemType === "IS" && detailParentItemId && (
-          <IssueDetailPopup
-            setDetailId={setDetailItemId}
-            showDetail={showDetail}
-            issueId={detailParentItemId}
-            taskIdToOpenImmediately={detailItemId}
-          />
-        )}
-      </div>
-    </DragDropProvider>
+          {renderDetail && detailItemType === "IS" && detailParentItemId && (
+            <IssueDetailPopup
+              setDetailId={setDetailItemId}
+              showDetail={showDetail}
+              issueId={detailParentItemId}
+              taskIdToOpenImmediately={detailItemId}
+            />
+          )}
+        </div>
+      </DragDropProvider>
+    </div>
   );
 }

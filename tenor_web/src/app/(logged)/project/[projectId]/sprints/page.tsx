@@ -416,7 +416,7 @@ export default function ProjectSprints() {
   // #endregion
 
   return (
-    <>
+    <div className="m-6 flex-1 p-4">
       <DragDropProvider
         onDragEnd={async (event) => {
           if (permission < permissionNumbers.write) return;
@@ -643,6 +643,6 @@ export default function ProjectSprints() {
           setShowPopup={setShowNewBacklogItem}
         />
       )}
-    </>
+    </div>
   );
 }
