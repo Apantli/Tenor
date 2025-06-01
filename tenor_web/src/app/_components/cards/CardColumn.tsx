@@ -23,6 +23,7 @@ interface Props {
   lastDraggedItemId: string | null;
 
   disabled?: boolean;
+  disableDropping?: boolean;
 }
 
 export default function CardColumn({
@@ -37,6 +38,7 @@ export default function CardColumn({
   dndId,
   lastDraggedItemId,
   disabled = false,
+  disableDropping = false,
 }: Props) {
   const shiftClick = useShiftKey();
   const lastSelectedCard = useRef<number>();
@@ -46,7 +48,10 @@ export default function CardColumn({
     lastSelectedCard.current = undefined;
   });
 
-  const { ref: refDnd, isDropTarget } = useDroppable({ id: dndId, disabled });
+  const { ref: refDnd, isDropTarget } = useDroppable({
+    id: dndId,
+    disabled: disabled || disableDropping,
+  });
 
   return (
     <div

@@ -421,6 +421,10 @@ export default function ProjectSprints() {
   };
   // #endregion
 
+  const hiddenWithoutBacklog = {
+    hidden: !showBacklog,
+  };
+
   return (
     <>
       <DragDropProvider
@@ -481,80 +485,78 @@ export default function ProjectSprints() {
                 </PrimaryButton>
               )}
             </div>
-            {showBacklog && (
-              <>
-                <div className="flex w-full items-center gap-3 pb-4">
-                  <SearchBar
-                    searchValue={searchValue}
-                    handleUpdateSearch={(e) => setSearchValue(e.target.value)}
-                    placeholder="Search by title or tag..."
-                  ></SearchBar>
-                </div>
+            <div
+              className={cn(
+                "flex w-full items-center gap-3 pb-4",
+                hiddenWithoutBacklog,
+              )}
+            >
+              <SearchBar
+                searchValue={searchValue}
+                handleUpdateSearch={(e) => setSearchValue(e.target.value)}
+                placeholder="Search by title or tag..."
+              ></SearchBar>
+            </div>
 
-                <BacklogItemCardColumn
-                  advancedFilters={advancedFilters}
-                  disabled={permission < permissionNumbers.write}
-                  lastDraggedBacklogItemId={lastDraggedBacklogItemId}
-                  dndId={noSprintId}
-                  backlogItems={
-                    filteredUnassignedItems
-                      .map(
-                        (itemId) => backlogItemsBySprint?.backlogItems[itemId],
-                      )
-                      .filter((val) => val !== undefined) ?? []
-                  }
-                  isLoading={isLoading}
-                  selection={selectedItems}
-                  setSelection={setSelectedItems}
-                  setDetailId={setDetailItemId}
-                  header={
-                    <div className="flex items-center justify-between pb-2 pr-1">
-                      <span className="text-xl font-medium">
-                        Unassigned items
-                      </span>
-                      {permission >= permissionNumbers.write && (
-                        <button
-                          className={cn(
-                            "rounded-lg px-1 text-app-text transition hover:text-app-primary",
-                            {
-                              "text-app-secondary":
-                                filteredUnassignedItems.length > 0 &&
-                                allUnassignedSelected,
-                            },
-                          )}
-                          onClick={toggleSelectAllUnassigned}
-                          data-tooltip-id="tooltip"
-                          data-tooltip-content="Toggle select all"
-                          data-tooltip-delay-show={500}
-                        >
-                          {allUnassignedSelected ? (
-                            <CheckNone fontSize="medium" />
-                          ) : (
-                            <CheckAll fontSize="medium" />
-                          )}
-                        </button>
+            <BacklogItemCardColumn
+              advancedFilters={advancedFilters}
+              disabled={permission < permissionNumbers.write}
+              lastDraggedBacklogItemId={lastDraggedBacklogItemId}
+              dndId={noSprintId}
+              backlogItems={
+                filteredUnassignedItems
+                  .map((itemId) => backlogItemsBySprint?.backlogItems[itemId])
+                  .filter((val) => val !== undefined) ?? []
+              }
+              isLoading={isLoading}
+              selection={selectedItems}
+              setSelection={setSelectedItems}
+              setDetailId={setDetailItemId}
+              className={cn(hiddenWithoutBacklog)}
+              header={
+                <div className="flex items-center justify-between pb-2 pr-1">
+                  <span className="text-xl font-medium">Unassigned items</span>
+                  {permission >= permissionNumbers.write && (
+                    <button
+                      className={cn(
+                        "rounded-lg px-1 text-app-text transition hover:text-app-primary",
+                        {
+                          "text-app-secondary":
+                            filteredUnassignedItems.length > 0 &&
+                            allUnassignedSelected,
+                        },
                       )}
-                    </div>
-                  }
-                />
-                <div
-                  className={cn(
-                    "pointer-events-none absolute bottom-0 left-0 flex w-full p-3 opacity-0 transition",
-                    {
-                      "pointer-events-auto opacity-100":
-                        availableToBeAssignedTo,
-                    },
+                      onClick={toggleSelectAllUnassigned}
+                      data-tooltip-id="tooltip"
+                      data-tooltip-content="Toggle select all"
+                      data-tooltip-delay-show={500}
+                    >
+                      {allUnassignedSelected ? (
+                        <CheckNone fontSize="medium" />
+                      ) : (
+                        <CheckAll fontSize="medium" />
+                      )}
+                    </button>
                   )}
-                >
-                  <PrimaryButton
-                    className="mx-5 mb-10 flex-1"
-                    onClick={() => assignSelectionToSprint("")}
-                  >
-                    Unassign selection
-                  </PrimaryButton>
                 </div>
-              </>
-            )}
+              }
+            />
+            <div
+              className={cn(
+                "pointer-events-none absolute bottom-0 left-0 flex w-full p-3 opacity-0 transition",
+                {
+                  "pointer-events-auto opacity-100": availableToBeAssignedTo,
+                },
+                hiddenWithoutBacklog,
+              )}
+            >
+              <PrimaryButton
+                className="mx-5 mb-10 flex-1"
+                onClick={() => assignSelectionToSprint("")}
+              >
+                Unassign selection
+              </PrimaryButton>
+            </div>
           </div>
           {/* Small screen cover */}
           {showBacklog && (
@@ -629,10 +631,8 @@ export default function ProjectSprints() {
               {filteredSprints.map((column) => (
                 <SprintCardColumn
                   advancedFilters={advancedFilters}
-                  disabled={
-                    permission < permissionNumbers.write ||
-                    (isTablet && showBacklog)
-                  }
+                  disabled={permission < permissionNumbers.write}
+                  disableDropping={showBacklog && isTablet}
                   allSprints={backlogItemsBySprint?.sprints.map(
                     (sprint) => sprint.sprint,
                   )}
