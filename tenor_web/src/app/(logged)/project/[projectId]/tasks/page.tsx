@@ -5,11 +5,13 @@ import TaskDependencyTree from "./TaskDependencyTree";
 
 export default function ProjectTasks() {
   return (
-    <div className="flex flex-1 flex-col items-start gap-3">
-      <h1 className="text-3xl font-semibold">Tasks</h1>
-      <ReactFlowProvider>
-        <TaskDependencyTree />
-      </ReactFlowProvider>
+    <div className="m-6 flex-1 p-4">
+      <div className="flex flex-1 flex-col items-start gap-3">
+        <h1 className="text-3xl font-semibold">Tasks</h1>
+        <ReactFlowProvider>
+          <TaskDependencyTree />
+        </ReactFlowProvider>
+      </div>
     </div>
   );
 }

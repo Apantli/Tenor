@@ -8,6 +8,7 @@ import { useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import usePersistentState from "~/app/_hooks/usePersistentState";
+import { cn } from "~/lib/helpers/utils";
 
 const segmentedControlOptions = ["List", "Dependency Tree"];
 
@@ -18,6 +19,9 @@ export default function ProjectUserStories() {
     segmentedControlOptions[0],
     "userStoriesView",
   );
+
+  const [showEpics, setShowEpics] = usePersistentState(true, "showEpics");
+
   const [allowSegmentedControlChange, setAllowSegmentedControlChange] =
     useState(true);
 
@@ -40,14 +44,39 @@ export default function ProjectUserStories() {
   };
 
   return (
-    <div className="flex w-full flex-row gap-4">
+    <div className="relative flex h-full w-full flex-row gap-4">
       {selectedView === "List" && (
-        <div className="shrink-0 basis-[407px] border-r-2 pr-5 pt-0">
-          <ProjectEpics />
-        </div>
+        <>
+          <div
+            className={cn(
+              "shrink-0 basis-[426px] border-r-2 bg-white pr-5 pt-10 xl:relative",
+              {
+                "w-auto basis-[50px]": !showEpics,
+                "absolute left-0 z-[100] h-full w-[426px] min-w-[426px]":
+                  showEpics,
+              },
+            )}
+          >
+            <ProjectEpics setShowEpics={setShowEpics} showEpics={showEpics} />
+          </div>
+          {showEpics && (
+            <div
+              className="absolute left-0 top-0 z-[99] h-full w-full bg-black/10 xl:hidden"
+              onClick={() => setShowEpics(false)}
+            />
+          )}
+        </>
       )}
 
-      <div className="flex flex-1 flex-col items-start gap-3">
+      <div
+        className={cn(
+          "flex flex-1 flex-col items-start gap-3 pb-10 pr-10 pt-10",
+          {
+            "pl-[88px] xl:pl-0": showEpics,
+            "pl-10": selectedView === "Dependency Tree",
+          },
+        )}
+      >
         <div className="flex w-full flex-row flex-wrap items-start justify-between self-end">
           <h1 className="text-3xl font-semibold">User Stories</h1>
           <SegmentedControl
@@ -60,6 +89,7 @@ export default function ProjectUserStories() {
 
         {selectedView === "List" && (
           <UserStoryTable
+            showEpics={showEpics}
             setAllowSegmentedControlChange={setAllowSegmentedControlChange}
           />
         )}

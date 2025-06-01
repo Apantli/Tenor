@@ -25,6 +25,7 @@ interface Props {
   lastDraggedBacklogItemId: string | null;
   allSprints: SprintDates[] | undefined;
   disabled?: boolean;
+  disableDropping?: boolean;
   advancedFilters: AdvancedSearchFilters;
 }
 
@@ -38,6 +39,7 @@ export default function SprintCardColumn({
   lastDraggedBacklogItemId,
   allSprints,
   disabled = false,
+  disableDropping = false,
   advancedFilters,
 }: Props) {
   const allSelected =
@@ -82,6 +84,7 @@ export default function SprintCardColumn({
       <BacklogItemCardColumn
         advancedFilters={advancedFilters}
         disabled={disabled}
+        disableDropping={disableDropping}
         lastDraggedBacklogItemId={lastDraggedBacklogItemId}
         dndId={column.sprint.id}
         backlogItems={
