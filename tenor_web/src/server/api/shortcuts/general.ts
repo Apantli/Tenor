@@ -20,7 +20,7 @@ import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { TYPE_COLLECTION_MAP } from "~/lib/helpers/typeDisplayName";
+import { collectionNameByType } from "~/lib/helpers/typeDisplayName";
 import { Timestamp } from "firebase-admin/firestore";
 
 /**
@@ -401,25 +401,17 @@ export const getItemActivityDetails = async (
   const activities = await getProjectActivities(firestore, projectId);
 
   // Array to hold the results
-  const results = {
-    tasks: [] as ActivityItem[],
-    issues: [] as ActivityItem[],
-    userStories: [] as ActivityItem[],
-    epics: [] as ActivityItem[],
-    sprints: [] as ActivityItem[],
-  };
+  const results = {} as Record<string, ActivityItem>;
 
   // Iterate in the activityMap to get the item type and itemId
   for (const activity of activities) {
     if (!activity.itemId || !activity.type) continue;
 
-    const itemType = activity.type.toUpperCase();
+    const itemType = activity.type;
     const itemId = activity.itemId;
 
-    if (!(itemType in TYPE_COLLECTION_MAP)) continue;
-
     // Save the collection name based on the item type
-    const collectionName = TYPE_COLLECTION_MAP[itemType];
+    const collectionName = collectionNameByType[itemType];
 
     // Check if collectionName is defined before using it
     if (!collectionName) continue;
@@ -440,24 +432,7 @@ export const getItemActivityDetails = async (
       activity: activity,
     } as ActivityItem;
 
-    switch (collectionName) {
-      case "tasks":
-        results.tasks.push(data);
-        break;
-      case "issues":
-        results.issues.push(data);
-        break;
-      case "userStories":
-        results.userStories.push(data);
-        break;
-      case "epics":
-        results.epics.push(data);
-        break;
-      case "sprints":
-        results.sprints.push(data);
-        break;
-      default:
-    }
+    results[data.id] = data;
   }
 
   return results;

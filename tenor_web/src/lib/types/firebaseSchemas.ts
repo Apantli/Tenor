@@ -288,6 +288,6 @@ export interface ActivityItem {
   id: string;
   name: string;
   type: AllBasicItemType;
-  scrumId?: number;
+  scrumId: number;
   activity: WithId<ProjectActivity>;
 }
