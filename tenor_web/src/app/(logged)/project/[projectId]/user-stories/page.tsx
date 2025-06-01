@@ -49,10 +49,11 @@ export default function ProjectUserStories() {
         <>
           <div
             className={cn(
-              "shrink-0 basis-[407px] border-r-2 bg-white pr-5 pt-10 xl:relative",
+              "shrink-0 basis-[426px] border-r-2 bg-white pr-5 pt-10 xl:relative",
               {
                 "w-auto basis-[50px]": !showEpics,
-                "absolute left-0 z-[100] h-full w-[407px]": showEpics,
+                "absolute left-0 z-[100] h-full w-[426px] min-w-[426px]":
+                  showEpics,
               },
             )}
           >
