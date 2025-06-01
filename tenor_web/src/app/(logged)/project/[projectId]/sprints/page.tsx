@@ -34,7 +34,7 @@ import { itemTypeToSearchableName } from "~/lib/helpers/searchableNames";
 import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import SidebarToggleIcon from "~/app/_components/SidebarToggleIcon";
-import { useWindowRect } from "~/app/_hooks/useWindowResize";
+import { useWindowRect } from "~/app/_hooks/windowHooks";
 
 const noSprintId = "noSprintId";
 

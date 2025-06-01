@@ -4,7 +4,7 @@ import InputCheckbox from "../inputs/InputCheckbox";
 import { useDraggable } from "@dnd-kit/react";
 import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";
 import type { BacklogItemAndTaskDetailType } from "~/lib/types/firebaseSchemas";
-import { useWindowRect } from "~/app/_hooks/useWindowResize";
+import { useWindowRect } from "~/app/_hooks/windowHooks";
 
 interface Props {
   selected: boolean;
