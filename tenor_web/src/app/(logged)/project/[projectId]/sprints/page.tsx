@@ -32,6 +32,9 @@ import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 import CreateBacklogItemPopup from "~/app/_components/popups/CreateBacklogitemPopup";
 import { itemTypeToSearchableName } from "~/lib/helpers/searchableNames";
 import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
+import usePersistentState from "~/app/_hooks/usePersistentState";
+import SidebarToggleIcon from "~/app/_components/SidebarToggleIcon";
+import { useWindowRect } from "~/app/_hooks/windowHooks";
 
 const noSprintId = "noSprintId";
 
@@ -46,6 +49,8 @@ export default function ProjectSprints() {
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
 
+  const { isTablet } = useWindowRect();
+
   const [advancedFilters, setAdvancedFilters] =
     useAdvancedSearchFilters("sprints");
   const [renderDetail, showDetail, detailItemId, setDetailItemId] =
@@ -54,6 +59,7 @@ export default function ProjectSprints() {
     usePopupVisibilityState();
   const [renderNewBacklogItem, showNewBacklogItem, setShowNewBacklogItem] =
     usePopupVisibilityState();
+  const [showBacklog, setShowBacklog] = usePersistentState(true, "showBacklog");
   // #endregion
 
   // #region TRPC
@@ -415,8 +421,12 @@ export default function ProjectSprints() {
   };
   // #endregion
 
+  const hiddenWithoutBacklog = {
+    hidden: !showBacklog,
+  };
+
   return (
-    <div className="m-6 flex-1 p-4">
+    <>
       <DragDropProvider
         onDragEnd={async (event) => {
           if (permission < permissionNumbers.write) return;
@@ -429,19 +439,58 @@ export default function ProjectSprints() {
 
           await handleDragEnd(source.id as string, target.id as string);
         }}
+        onDragMove={(e) => {
+          if ((e.to?.x ?? 1000) < 100 && !showBacklog) {
+            setShowBacklog(true);
+          } else if ((e.to?.x ?? 0) > 426 && showBacklog && isTablet) {
+            setShowBacklog(false);
+          }
+        }}
       >
-        <div className="flex h-full overflow-hidden">
-          <div className="relative flex h-full w-[407px] min-w-[407px] flex-col gap-0 overflow-hidden border-r-2 pr-5">
-            <div className="flex w-full justify-between pb-2">
-              <h1 className="text-3xl font-semibold">Product Backlog</h1>
-              {permission >= permissionNumbers.write && (
+        <div className="relative flex h-full overflow-hidden">
+          <div
+            className={cn(
+              "flex shrink-0 basis-[426px] touch-none flex-col overflow-hidden border-r-2 bg-white pb-10 pl-5 pr-5 pt-10 xl:relative",
+              {
+                "w-auto basis-[90px] pl-7": !showBacklog,
+                "absolute left-0 z-[100] h-full w-[426px] min-w-[426px]":
+                  showBacklog,
+              },
+            )}
+          >
+            <div className="flex w-full justify-between pb-5">
+              <div
+                className={cn("flex items-center gap-4", {
+                  relative: !showBacklog,
+                })}
+              >
+                <SidebarToggleIcon
+                  flipped
+                  setSidebarShown={setShowBacklog}
+                  sidebarShown={showBacklog}
+                  label="backlog"
+                />
+                {showBacklog && (
+                  <h1 className={cn("text-3xl font-semibold")}>Backlog</h1>
+                )}
+                {!showBacklog && (
+                  <h1 className="absolute -left-[13px] top-[40px] break-words font-medium text-gray-600">
+                    Backlog
+                  </h1>
+                )}
+              </div>
+              {permission >= permissionNumbers.write && showBacklog && (
                 <PrimaryButton onClick={() => setShowNewBacklogItem(true)}>
                   + Add Item
                 </PrimaryButton>
               )}
             </div>
-
-            <div className="flex w-full items-center gap-3 pb-4">
+            <div
+              className={cn(
+                "flex w-full items-center gap-3 pb-4",
+                hiddenWithoutBacklog,
+              )}
+            >
               <SearchBar
                 searchValue={searchValue}
                 handleUpdateSearch={(e) => setSearchValue(e.target.value)}
@@ -463,6 +512,7 @@ export default function ProjectSprints() {
               selection={selectedItems}
               setSelection={setSelectedItems}
               setDetailId={setDetailItemId}
+              className={cn(hiddenWithoutBacklog)}
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
                   <span className="text-xl font-medium">Unassigned items</span>
@@ -497,17 +547,32 @@ export default function ProjectSprints() {
                 {
                   "pointer-events-auto opacity-100": availableToBeAssignedTo,
                 },
+                hiddenWithoutBacklog,
               )}
             >
               <PrimaryButton
-                className="mr-5 flex-1"
+                className="mx-5 mb-10 flex-1"
                 onClick={() => assignSelectionToSprint("")}
               >
                 Unassign selection
               </PrimaryButton>
             </div>
           </div>
-          <div className="ml-5 flex h-full grow flex-col overflow-x-hidden">
+          {/* Small screen cover */}
+          {showBacklog && (
+            <div
+              className="absolute left-0 top-0 z-[99] h-full w-full bg-black/10 xl:hidden"
+              onClick={() => setShowBacklog(false)}
+            />
+          )}
+          <div
+            className={cn(
+              "ml-5 flex grow flex-col overflow-x-hidden pb-10 pr-10 pt-10",
+              {
+                "pl-[90px] xl:pl-0": showBacklog,
+              },
+            )}
+          >
             <div className="flex w-full justify-between gap-5 pb-4">
               <h1 className="text-3xl font-semibold">Sprints</h1>
               <div className="flex flex-1 items-center justify-end gap-3">
@@ -567,6 +632,7 @@ export default function ProjectSprints() {
                 <SprintCardColumn
                   advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
+                  disableDropping={showBacklog && isTablet}
                   allSprints={backlogItemsBySprint?.sprints.map(
                     (sprint) => sprint.sprint,
                   )}
@@ -643,6 +709,6 @@ export default function ProjectSprints() {
           setShowPopup={setShowNewBacklogItem}
         />
       )}
-    </div>
+    </>
   );
 }

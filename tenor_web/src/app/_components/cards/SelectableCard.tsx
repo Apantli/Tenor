@@ -4,6 +4,7 @@ import InputCheckbox from "../inputs/InputCheckbox";
 import { useDraggable } from "@dnd-kit/react";
 import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";
 import type { BacklogItemAndTaskDetailType } from "~/lib/types/firebaseSchemas";
+import { useWindowRect } from "~/app/_hooks/windowHooks";
 
 interface Props {
   selected: boolean;
@@ -36,6 +37,8 @@ export default function SelectableCard({
   );
 
   const cardRef = useRef<HTMLDivElement>(null);
+
+  const { isTablet } = useWindowRect();
 
   // Effect to scroll the card into view when it's the last dragged item
   useEffect(() => {
@@ -96,7 +99,7 @@ export default function SelectableCard({
             "shrink-0 grow basis-0 overflow-hidden py-2 opacity-0 transition-all group-hover:basis-6 group-hover:opacity-100",
             {
               "basis-6 opacity-100":
-                (selected || showCheckbox) &&
+                (selected || isTablet || showCheckbox) &&
                 !isDragging &&
                 !isDropping &&
                 !disabled,
