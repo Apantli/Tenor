@@ -366,7 +366,7 @@ export default function TaskDependencyTree() {
           <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
-            <div className="flex flex-row items-center gap-2 pr-6 pt-3">
+            <div className="flex flex-row flex-wrap-reverse items-center justify-end gap-2 pr-6 pt-3">
               <SecondaryButton
                 onClick={() => onLayout()}
                 className={"bg-white"}
