@@ -145,11 +145,9 @@ export const getStatusTypes = async (
   firestore: Firestore,
   projectId: string,
 ) => {
-  const statusesRef = getStatusTypesRef(firestore, projectId).where(
-    "deleted",
-    "==",
-    false,
-  );
+  const statusesRef = getStatusTypesRef(firestore, projectId)
+    .where("deleted", "==", false)
+    .orderBy("orderIndex", "asc");
   const statusesSnapshot = await statusesRef.get();
   const statuses: WithId<StatusTag>[] = statusesSnapshot.docs.map((doc) => {
     return {
