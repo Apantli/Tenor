@@ -21,7 +21,7 @@ export default function ProjectPerformance() {
 
   return (
     <div className="m-6 flex-1 p-4">
-      <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 lg:flex-row lg:gap-16 lg:p-6 xl:overflow-hidden">
+      <div className="flex h-full w-full flex-col gap-4 overflow-y-auto lg:flex-row lg:gap-16 xl:overflow-hidden">
         <div className="flex w-full flex-col items-baseline gap-3 pb-4 lg:w-[55%] lg:min-w-0 lg:flex-shrink">
           <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl font-semibold sm:text-3xl">

@@ -68,10 +68,13 @@ export default function ProjectUserStories() {
       )}
 
       <div
-        className={cn("flex flex-1 flex-col items-start gap-3 pr-10 pt-10", {
-          "pl-[88px] xl:pl-0": showEpics,
-          "pl-10": selectedView === "Dependency Tree",
-        })}
+        className={cn(
+          "flex flex-1 flex-col items-start gap-3 pb-10 pr-10 pt-10",
+          {
+            "pl-[88px] xl:pl-0": showEpics,
+            "pl-10": selectedView === "Dependency Tree",
+          },
+        )}
       >
         <div className="flex w-full flex-row flex-wrap items-start justify-between self-end">
           <h1 className="text-3xl font-semibold">User Stories</h1>
