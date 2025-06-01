@@ -1,6 +1,7 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type {
   ActivityItem,
+  AllBasicItemType,
   ProjectActivity,
   Role,
   Size,
@@ -15,13 +16,17 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
-import { getCurrentSprint, getTasksFromSprint } from "./sprints";
+import { getCurrentSprint, getSprint, getTasksFromSprint } from "./sprints";
 import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { collectionNameByType } from "~/lib/helpers/typeDisplayName";
 import { Timestamp } from "firebase-admin/firestore";
+import { getTask } from "./tasks";
+import { getIssue } from "./issues";
+import { getUserStory } from "./userStories";
+import { getBacklogItem } from "./backlogItems";
+import { getEpic } from "./epics";
 
 /**
  * @function getProjectsRef
@@ -410,30 +415,69 @@ export const getItemActivityDetails = async (
     const itemType = activity.type;
     const itemId = activity.itemId;
 
-    // Save the collection name based on the item type
-    const collectionName = collectionNameByType[itemType];
+    if (itemType === "PJ") {
+      // If the item type is project, we don't need to fetch it
+      continue;
+    }
 
-    // Check if collectionName is defined before using it
-    if (!collectionName) continue;
+    const item = await getActivityItemByType(
+      firestore,
+      projectId,
+      itemId,
+      itemType,
+    );
 
-    // Make the reference
-    const itemRef = getProjectRef(firestore, projectId)
-      .collection(collectionName)
-      .doc(itemId);
-    const docSnap = await itemRef.get();
-
-    // If the document does not exist, continue to the next iteration
-    if (!docSnap.exists) continue;
+    if (!item) {
+      console.warn(
+        `Item with ID ${itemId} and type ${itemType} not found for activity ${activity.id}`,
+      );
+      continue;
+    }
 
     // Get the item data
     const data = {
-      id: itemId,
-      ...docSnap.data(),
+      ...item,
       activity: activity,
+      type: itemType,
     } as ActivityItem;
 
     results[data.id] = data;
   }
 
   return results;
+};
+
+export const getActivityItemByType = async (
+  firestore: Firestore,
+  projectId: string,
+  itemId: string,
+  itemType: AllBasicItemType,
+): Promise<Omit<ActivityItem, "activity" | "type"> | undefined> => {
+  switch (itemType) {
+    case "TS": // Task
+      return await getTask(firestore, projectId, itemId);
+    case "IS": // Issue
+      return await getIssue(firestore, projectId, itemId);
+    case "US": // User Story
+      return await getUserStory(firestore, projectId, itemId);
+    case "IT": // Backlog Item
+      return await getBacklogItem(firestore, projectId, itemId);
+    case "EP": // Epic
+      return await getEpic(firestore, projectId, itemId);
+    case "PJ": // Project
+      return undefined; // No need to fetch project details here
+    case "SP": // Sprint
+      const sprint = await getSprint(firestore, projectId, itemId);
+      return {
+        ...sprint,
+        scrumId: sprint.number,
+        name: "", // Sprints don't have a name
+      };
+    default:
+      // Does not happen, but in case new types are added
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: `Item type ${itemType as string} not supported`,
+      });
+  }
 };

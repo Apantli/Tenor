@@ -60,7 +60,6 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   // Helper function to get scrum ID
   const getScrumId = (activity: WithId<ProjectActivity>) => {
     const item = getItemDetails(activity);
-    console.log("getScrumId", activity.type, ": ", item);
 
     if (!item) return null;
     return formatAnyScrumId(item.scrumId ?? 0, activity.type);
@@ -87,10 +86,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
       ? (user.displayName ?? user.email ?? user.id ?? "")
       : (activity.userId ?? "System");
 
-    // Get item title
     const itemTitle = getItemTitle(activity) ?? "";
-
-    // Get scrum ID
     const scrumId = getScrumId(activity) ?? "";
 
     // Check if any field contains the search text
@@ -140,10 +136,10 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
         )}
 
         {filteredActivities?.map((activity) => {
-          // Try to match user by userId - will work if userId matches any of our mapped fields
           const user = activity.userId ? userMap[activity.userId] : undefined;
           const itemTitle = getItemTitle(activity);
           const scrumId = getScrumId(activity);
+          if (!itemTitle && !scrumId) return null;
 
           return (
             <div
