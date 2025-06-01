@@ -23,7 +23,7 @@ import { checkPermissions } from "~/lib/defaultValues/permission";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import SidebarToggleIcon from "~/app/_components/SidebarToggleIcon";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 interface Props {
   setShowEpics: (value: boolean) => void;

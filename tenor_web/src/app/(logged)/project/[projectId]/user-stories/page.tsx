@@ -8,7 +8,7 @@ import { useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import usePersistentState from "~/app/_hooks/usePersistentState";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 const segmentedControlOptions = ["List", "Dependency Tree"];
 

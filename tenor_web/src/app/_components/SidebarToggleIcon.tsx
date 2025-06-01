@@ -1,5 +1,5 @@
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 interface Props {
   sidebarShown: boolean;
