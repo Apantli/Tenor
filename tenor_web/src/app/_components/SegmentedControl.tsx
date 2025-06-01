@@ -54,13 +54,16 @@ export function SegmentedControl({
     }
   }, [selectedOption, selected]);
 
+  // Allow the animation only after the component mounts
+  useEffect(() => {
+    setTimeout(() => {
+      setAnimationActive(true);
+    }, 10);
+  });
+
   const handleChange = (option: string) => {
     setSelected(option);
     onChange(option);
-    setAnimationActive(true);
-    setTimeout(() => {
-      setAnimationActive(false);
-    }, 300); // Duration of the animation
   };
 
   // TODO: Make this be the same size as a button (or maybe leave as is, I need second opinion)

@@ -4,7 +4,7 @@ import { ProjectEpics } from "~/app/(logged)/project/[projectId]/user-stories/Pr
 import UserStoryDependencyTree from "~/app/(logged)/project/[projectId]/user-stories/UserStoryDependencyTree";
 import UserStoryTable from "~/app/(logged)/project/[projectId]/user-stories/UserStoryTable";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import usePersistentState from "~/app/_hooks/usePersistentState";
@@ -19,6 +19,9 @@ export default function ProjectUserStories() {
     segmentedControlOptions[0],
     "userStoriesView",
   );
+  // State to control the visibility of the segmented control for smooth animations:
+  // ensures the correct view is displayed when switching between views.
+  const [selectedViewState, setSelectedViewState] = useState(selectedView);
 
   const [showEpics, setShowEpics] = usePersistentState(true, "showEpics");
 
@@ -40,12 +43,22 @@ export default function ProjectUserStories() {
       return;
     }
     setAllowSegmentedControlChange(true);
-    setSelectedView(value);
+    setSelectedViewState(value);
   };
+
+  useEffect(() => {
+    if (selectedView === selectedViewState) {
+      return;
+    }
+    // Update segmented control view only after the new segmented control is rendered
+    setTimeout(() => {
+      setSelectedView(selectedViewState);
+    }, 10);
+  }, [selectedViewState]);
 
   return (
     <div className="relative flex h-full w-full flex-row gap-4">
-      {selectedView === "List" && (
+      {selectedViewState === "List" && (
         <>
           <div
             className={cn(
@@ -69,34 +82,41 @@ export default function ProjectUserStories() {
       )}
 
       <div
-        className={cn(
-          "flex flex-1 flex-col items-start gap-3 pb-10 pr-10 pt-10",
-          {
-            "pl-[88px] xl:pl-0": showEpics,
-            "pl-10": selectedView === "Dependency Tree",
-          },
-        )}
+        className={cn("flex flex-1 flex-col items-start gap-3", {
+          "pl-[88px] xl:pl-0": showEpics,
+          "pb-10 pr-10 pt-10": selectedViewState === "List",
+        })}
       >
-        <div className="flex w-full flex-row flex-wrap items-start justify-between self-end">
-          <h1 className="text-3xl font-semibold">User Stories</h1>
-          <SegmentedControl
-            options={segmentedControlOptions}
-            selectedOption={selectedView}
-            onChange={onSegmentedControlChange}
-            className="min-w-96 max-w-96 xl:ml-auto"
-          />
-        </div>
-
-        {selectedView === "List" && (
-          <UserStoryTable
-            showEpics={showEpics}
-            setAllowSegmentedControlChange={setAllowSegmentedControlChange}
-          />
+        {selectedViewState === "List" && (
+          <>
+            <div className="flex w-full flex-row flex-wrap items-start justify-between self-end">
+              <h1 className="text-3xl font-semibold">User Stories</h1>
+              <SegmentedControl
+                options={segmentedControlOptions}
+                selectedOption={selectedView}
+                onChange={onSegmentedControlChange}
+                className="min-w-96 max-w-96 xl:ml-auto"
+              />
+            </div>
+            <UserStoryTable
+              showEpics={showEpics}
+              setAllowSegmentedControlChange={setAllowSegmentedControlChange}
+            />
+          </>
         )}
 
-        {selectedView === "Dependency Tree" && (
+        {selectedViewState === "Dependency Tree" && (
           <ReactFlowProvider>
-            <UserStoryDependencyTree />
+            <UserStoryDependencyTree
+              segmentedControl={
+                <SegmentedControl
+                  options={segmentedControlOptions}
+                  selectedOption={selectedView}
+                  onChange={onSegmentedControlChange}
+                  className="min-w-96 max-w-96 xl:ml-auto"
+                />
+              }
+            />
           </ReactFlowProvider>
         )}
       </div>

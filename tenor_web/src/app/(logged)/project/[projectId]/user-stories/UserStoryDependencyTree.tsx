@@ -42,7 +42,11 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 const flowIdentifier = "userStoryDependencyTree";
 
-export default function UserStoryDependencyTree() {
+interface Props {
+  segmentedControl: React.ReactNode;
+}
+
+export default function UserStoryDependencyTree({ segmentedControl }: Props) {
   // #region Hooks
   const { projectId } = useParams();
   const { predefinedAlerts } = useAlert();
@@ -326,12 +330,7 @@ export default function UserStoryDependencyTree() {
   // #endregion
 
   return (
-    <div className="mt-3 h-[calc(100vh-250px)] w-full">
-      {isLoadingDependencies && (
-        <div className="flex h-full w-full items-center justify-center">
-          <LoadingSpinner color="primary" />
-        </div>
-      )}
+    <div className="mt-3 h-full w-full">
       {!isLoadingDependencies && dependencyData?.nodes.length == 0 && (
         <div className="flex h-full w-full items-center justify-center">
           <div className="flex flex-col items-center gap-5">
@@ -345,7 +344,7 @@ export default function UserStoryDependencyTree() {
         </div>
       )}
 
-      {!isLoadingDependencies && dependencyData?.nodes.length != 0 && (
+      {(isLoadingDependencies || dependencyData?.nodes.length != 0) && (
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -364,7 +363,7 @@ export default function UserStoryDependencyTree() {
           <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-row items-center gap-2 pr-6 pt-3">
               <SecondaryButton
                 onClick={() => onLayout()}
                 className={"bg-white"}
@@ -379,8 +378,18 @@ export default function UserStoryDependencyTree() {
                 <InfoOutlinedIcon />
                 Toggle labels
               </SecondaryButton>
+
+              <div className="pr-[1px] pt-[1px]">{segmentedControl}</div>
             </div>
           </Panel>
+
+          {isLoadingDependencies && (
+            <Panel position="top-center">
+              <div className="mt-[40vh]">
+                <LoadingSpinner color="primary" />
+              </div>
+            </Panel>
+          )}
         </ReactFlow>
       )}
 
