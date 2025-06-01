@@ -185,7 +185,7 @@ export const backlogItemsRouter = createTRPCRouter({
         projectId: input.projectId,
         userId: ctx.session.user.uid,
         itemId: backlogItemId,
-        type: "US",
+        type: "IT",
         action: "delete",
       });
 

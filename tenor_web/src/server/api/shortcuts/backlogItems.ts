@@ -243,7 +243,7 @@ export const deleteBacklogItemAndGetModified = async (
   // Delete associated tasks
   const tasksSnapshot = await getTasksRef(firestore, projectId)
     .where("deleted", "==", false)
-    .where("itemType", "==", "US")
+    .where("itemType", "==", "IS")
     .where("itemId", "==", backlogItemId)
     .get();
 
