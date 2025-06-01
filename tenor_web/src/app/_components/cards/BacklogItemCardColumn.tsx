@@ -1,24 +1,18 @@
-import type { inferRouterOutputs } from "@trpc/server";
 import React from "react";
-import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CardColumn from "./CardColumn";
 import type { ClassNameValue } from "tailwind-merge";
 import ItemCardRender from "./ItemCardRender";
-import {
-  useFormatIssueScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
-import type { KanbanCard } from "~/lib/types/kanbanTypes";
-import type { BacklogItemType } from "~/lib/types/firebaseSchemas";
+import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
+import type { KanbanItemCard } from "~/lib/types/kanbanTypes";
 import {
   type AdvancedSearchFilters,
   matchesSearchFilters,
 } from "~/app/_hooks/useAdvancedSearchFilters";
+import type { BacklogItemDetail } from "~/lib/types/detailSchemas";
+import type { AnyBacklogItemType } from "~/lib/types/firebaseSchemas";
 
 interface Props {
-  backlogItems: inferRouterOutputs<
-    typeof sprintsRouter
-  >["getBacklogItemPreviewsBySprint"]["backlogItems"][string][];
+  backlogItems: BacklogItemDetail[];
   selection: Set<string>;
   setSelection: (newSelection: Set<string>) => void;
   setDetailId: (detailId: string) => void;
@@ -44,7 +38,7 @@ export default function BacklogItemCardColumn({
   disabled = false,
   advancedFilters,
 }: Props) {
-  const cards: KanbanCard[] = backlogItems
+  const cards: KanbanItemCard[] = backlogItems
     .map((item) => ({
       id: item.id,
       scrumId: item.scrumId,
@@ -52,17 +46,16 @@ export default function BacklogItemCardColumn({
       size: item.size,
       tags: item.tags,
       columnId: item.sprintId,
-      cardType: item.itemType as BacklogItemType,
+      cardType: item.itemType,
       assigneeIds: item.assigneeIds,
       sprintId: item.sprintId,
       priorityId: item.priorityId,
     }))
-    .filter((val: KanbanCard | undefined) => {
+    .filter((val: KanbanItemCard | undefined) => {
       return matchesSearchFilters(val, "", advancedFilters);
     });
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatIssueScrumId = useFormatIssueScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId();
 
   return (
     <CardColumn
@@ -81,9 +74,7 @@ export default function BacklogItemCardColumn({
           disabled={disabled}
           item={item}
           scrumIdFormatter={() =>
-            item.cardType === "US"
-              ? formatUserStoryScrumId(item.scrumId)
-              : formatIssueScrumId(item.scrumId)
+            formatAnyScrumId(item.scrumId, item.cardType as AnyBacklogItemType)
           }
         />
       )}

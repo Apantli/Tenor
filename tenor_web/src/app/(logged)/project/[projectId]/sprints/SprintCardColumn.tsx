@@ -1,22 +1,23 @@
 import type { inferRouterOutputs } from "@trpc/server";
 import React from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import type { sprintsRouter } from "~/server/api/routers/sprints";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
-import Dropdown, { DropdownButton } from "~/app/_components/Dropdown";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
-import { type BacklogItems } from "./page";
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import EditSprintPopup from "./EditSprintPopup";
 import type { SprintDates } from "./CreateSprintPopup";
 import type { AdvancedSearchFilters } from "~/app/_hooks/useAdvancedSearchFilters";
+import EditIcon from "@mui/icons-material/EditOutlined";
+import type { BacklogItemDetail } from "~/lib/types/detailSchemas";
+
 interface Props {
   column: inferRouterOutputs<
     typeof sprintsRouter
   >["getBacklogItemPreviewsBySprint"]["sprints"][number];
-  backlogItems: BacklogItems;
+  backlogItems: Record<string, BacklogItemDetail>;
   selectedItems: Set<string>;
   setSelectedItems: (newSelection: Set<string>) => void;
   setDetailItemId: (detailId: string) => void;
@@ -100,24 +101,34 @@ export default function SprintCardColumn({
               </h1>
               <div className="flex gap-2">
                 <button
-                  className={cn("rounded-lg px-1 text-app-text transition", {
-                    "text-app-secondary": allSelected,
-                  })}
+                  className={cn(
+                    "rounded-lg px-1 text-app-text transition hover:text-app-primary",
+                    {
+                      "text-app-secondary": allSelected,
+                    },
+                  )}
                   onClick={toggleSelectAll}
+                  data-tooltip-id="tooltip"
+                  data-tooltip-content="Toggle select all"
+                  data-tooltip-delay-show={500}
                 >
                   {allSelected ? (
-                    <CheckNone fontSize="small" />
+                    <CheckNone fontSize="medium" />
                   ) : (
-                    <CheckAll fontSize="small" />
+                    <CheckAll fontSize="medium" />
                   )}
                 </button>
-                {!disabled && (
-                  <Dropdown label={"• • •"}>
-                    <DropdownButton onClick={() => setShowEditPopup(true)}>
-                      Edit sprint
-                    </DropdownButton>
-                  </Dropdown>
-                )}
+                <button
+                  className="rounded-lg px-1 text-app-text transition hover:text-app-primary"
+                  onClick={() => {
+                    setShowEditPopup(true);
+                  }}
+                  data-tooltip-id="tooltip"
+                  data-tooltip-content="Edit sprint"
+                  data-tooltip-delay-show={500}
+                >
+                  <EditIcon fontSize="medium" />
+                </button>
               </div>
             </div>
             <span className="mb-4 text-lg text-gray-600">

@@ -21,13 +21,13 @@ export default function ProjectPerformance() {
 
   return (
     <div className="m-6 flex-1 p-4">
-      <div className="flex h-full w-full flex-col gap-x-16 md:flex-row">
-        <div className="flex w-[55vw] flex-col items-baseline gap-3 pb-4">
-          <div className="flex w-full flex-row justify-between">
-            <h1 className="grow-[1] text-3xl font-semibold">
+      <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 lg:flex-row lg:gap-16 lg:p-6 xl:overflow-hidden">
+        <div className="flex w-full flex-col items-baseline gap-3 pb-4 lg:w-[55%] lg:min-w-0 lg:flex-shrink">
+          <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h1 className="text-2xl font-semibold sm:text-3xl">
               Team Performance
             </h1>
-            <div className="min-w-[300px]">
+            <div className="w-full min-w-0 sm:w-auto sm:min-w-[280px] lg:min-w-[300px]">
               <SegmentedControl
                 options={["Week", "Month", "Sprint"]}
                 selectedOption={section}
@@ -43,24 +43,31 @@ export default function ProjectPerformance() {
             searchValue={searchValue}
             handleUpdateSearch={(e) => setSearchValue(e.target.value)}
           />
-          {/* FIXME: pass timeInterval and use it to actually compute the team performance */}
           <MemberList
             projectId={projectIdString}
             searchValue={searchValue}
-            // timeInterval={section}
+            timePartition={section}
             setSelectedMember={setSelectedMember}
             selectedMember={selectedMember}
           />
         </div>
-        <div className="flex-1">
+        <div className="mx-auto w-full lg:w-[36%] lg:min-w-0 lg:flex-shrink-0">
           {selectedMember ? (
             <MemberDetailsCard
               member={selectedMember}
-              // timeInterval={section}
+              projectId={projectIdString}
+              timeInterval={section}
+              className="my-auto mt-1"
               setSelectedMember={setSelectedMember}
             />
           ) : (
-            <ProductivityCard projectId={projectIdString} time={section} />
+            <>
+              <ProductivityCard
+                projectId={projectIdString}
+                time={section}
+                className="h-[22rem] max-h-[22rem]"
+              />
+            </>
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "../../LoadingSpinner";
 import DeleteIcon from "@mui/icons-material/DeleteOutline";
 import BaseButton, { type BaseButtonProps } from "./BaseButton";

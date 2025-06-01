@@ -9,7 +9,7 @@ import { api } from "~/trpc/react";
 import StatusPicker from "./inputs/pickers/StatusPicker";
 import { useParams } from "next/navigation";
 import {
-  type BacklogItemType,
+  type AnyBacklogItemType,
   permissionNumbers,
   type BacklogItem,
   type Permission,
@@ -29,7 +29,7 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { Timestamp } from "firebase/firestore";
 import { usePopupVisibilityState } from "./Popup";
 import type { TaskCol } from "~/lib/types/columnTypes";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import CollapsableSearchBar from "./inputs/search/CollapsableSearchBar";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TaskDetailPopup from "./popups/TaskDetailPopup";
@@ -43,7 +43,7 @@ export type BacklogItemWithTasks = BacklogItem & {
 
 interface Props<T extends BacklogItemWithTasks> {
   itemId: string;
-  itemType: BacklogItemType;
+  itemType: AnyBacklogItemType;
   setShowAddTaskPopup: (show: boolean) => void;
   setSelectedGhostTask: (taskId: string) => void;
   setUnsavedTasks?: React.Dispatch<React.SetStateAction<boolean>>;

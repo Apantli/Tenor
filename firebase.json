@@ -18,8 +18,8 @@
     }
   },
   "firestore": {
-    "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+    "rules": "firebase_config/firestore.rules",
+    "indexes": "firebase_config/firestore.indexes.json"
   },
   "functions": [
     {
@@ -35,6 +35,6 @@
     }
   ],
   "storage": {
-    "rules": "storage.rules"
+    "rules": "firebase_config/storage.rules"
   }
 }

@@ -10,7 +10,7 @@ import TagComponent from "~/app/_components/TagComponent";
 import { UserPicker } from "~/app/_components/inputs/pickers/UserPicker";
 import { SprintPicker } from "~/app/_components/inputs/pickers/SprintPicker";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import type { AdvancedSearchFilters } from "../../../_hooks/useAdvancedSearchFilters";
 import type { SetStateAction } from "react";
 import { sizeTags } from "~/lib/defaultValues/size";

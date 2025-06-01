@@ -10,8 +10,8 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { z, ZodError } from "zod";
 
-import { dbAdmin, firebaseAdmin } from "~/utils/firebaseAdmin";
-import { supabase } from "~/utils/supabase";
+import { dbAdmin, firebaseAdmin } from "~/lib/db/firebaseAdmin";
+import { supabase } from "~/lib/db/supabase";
 import { auth } from "../auth";
 
 import { permissionNumbers } from "~/lib/types/firebaseSchemas";

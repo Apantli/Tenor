@@ -48,7 +48,8 @@ export default function ProjectKanban() {
   );
   const [filter, setFilter] = useState("");
 
-  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
+  const [advancedFilters, setAdvancedFilters] =
+    useAdvancedSearchFilters("scrumboard");
 
   // HANDLES
   const onListAdded = async () => {

@@ -1,7 +1,7 @@
 import React, { type PropsWithChildren } from "react";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import TagComponent from "../TagComponent";
-import { getAccentColorByCardType } from "~/utils/helpers/colorUtils";
+import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import { sizeToColor } from "~/lib/defaultValues/size";
 
@@ -64,6 +64,8 @@ export default function ItemCardRender({
               <TagComponent
                 reducedPadding
                 data-tooltip-id="tooltip"
+                data-tooltip-hidden={false}
+                data-tooltip-delay-show={0}
                 data-tooltip-html={item.tags
                   .slice(2)
                   .map((tag) => tag.name)

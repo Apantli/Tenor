@@ -11,7 +11,7 @@ import type {
   StatusTag,
   WithId,
   Size,
-  BacklogItemType,
+  AnyBacklogItemType,
 } from "~/lib/types/firebaseSchemas";
 import { Timestamp } from "firebase/firestore";
 import StatusPicker from "../inputs/pickers/StatusPicker";
@@ -27,19 +27,24 @@ import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import DependencyListTask from "../inputs/DependencyListTask";
+import { SidebarPopup } from "../Popup";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
-  itemType: BacklogItemType;
+  itemType: AnyBacklogItemType;
   itemId: string;
   addTaskToGhost?: (task: TaskDetail) => void;
+  show: boolean;
+  dismiss: () => void;
 }
 
-export function CreateTaskForm({
+export function CreateTaskPopup({
   onTaskAdded,
   itemType,
   itemId,
   addTaskToGhost,
+  show,
+  dismiss,
 }: Props) {
   const { projectId } = useParams();
   const projectIdString = projectId as string;
@@ -55,7 +60,7 @@ export function CreateTaskForm({
     projectId: projectIdString,
   });
 
-  const { alert, predefinedAlerts } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   const [createForm, setCreateForm] = useState<{
     name: string;
@@ -103,10 +108,7 @@ export function CreateTaskForm({
 
   const handleCreateTask = async () => {
     if (createForm.name.trim() === "") {
-      alert("Oops...", "Please enter a name for the task.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.issueNameError();
       return;
     }
 
@@ -165,10 +167,7 @@ export function CreateTaskForm({
         predefinedAlerts.cyclicDependency();
         return;
       }
-      alert("Error", "Failed to create task. Please try again.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.issueStoryCreateError();
       console.error("Error creating task:", error);
     }
   };
@@ -176,117 +175,123 @@ export function CreateTaskForm({
   const checkTitleLimit = useCharacterLimit("Task name", 80);
 
   return (
-    <div className="max-w-2xl p-2 pt-0">
-      <h2 className="mb-4 text-2xl font-semibold">Add New Task</h2>
-      <div className="flex flex-col gap-2">
-        <div className="mb-2">
-          <label className="mb-1 block text-sm font-medium">Task Name</label>
-          <InputTextField
-            id="task-name-field"
-            value={createForm.name}
-            onChange={(e) => {
-              if (checkTitleLimit(e.target.value)) {
-                setCreateForm({ ...createForm, name: e.target.value });
-              }
-            }}
-            placeholder="Enter task name..."
-            required
-            className="w-full"
-          />
-        </div>
-
-        <div className="mb-2">
-          <label className="mb-1 block text-sm font-medium">Notes</label>
-          <InputTextAreaField
-            id="task-description-field"
-            value={createForm.description}
-            onChange={(e) =>
-              setCreateForm({ ...createForm, description: e.target.value })
-            }
-            placeholder="Task description"
-            className="h-24 min-h-24 w-full"
-          />
-        </div>
-
-        <div className="mb-2 flex gap-3">
-          <div className="flex-1">
-            <label className="mb-1 block text-sm font-medium">Status</label>
-            <StatusPicker
-              status={createForm.status}
-              onChange={(status) => {
-                setCreateForm({ ...createForm, status: status });
+    <SidebarPopup
+      show={show}
+      dismiss={dismiss}
+      footer={
+        <PrimaryButton
+          onClick={handleCreateTask}
+          disabled={isPending}
+          className="px-6 py-2"
+        >
+          {isPending ? "Creating..." : "Create Task"}
+        </PrimaryButton>
+      }
+    >
+      <div className="max-w-2xl p-2 pt-0">
+        <h2 className="mb-4 text-2xl font-semibold">Add New Task</h2>
+        <div className="flex h-full flex-col gap-2 overflow-y-hidden">
+          <div className="mb-2">
+            <label className="mb-1 block text-sm font-medium">Task Name</label>
+            <InputTextField
+              id="task-name-field"
+              value={createForm.name}
+              onChange={(e) => {
+                if (checkTitleLimit(e.target.value)) {
+                  setCreateForm({ ...createForm, name: e.target.value });
+                }
               }}
+              placeholder="Enter task name..."
+              required
+              className="w-full"
             />
           </div>
-          <div className="flex-1">
-            <label className="mb-1 block text-sm font-medium">Size</label>
-            <SizePicker
-              currentSize={createForm.size}
-              callback={(size) => setCreateForm({ ...createForm, size })}
+
+          <div className="mb-2">
+            <label className="mb-1 block text-sm font-medium">Notes</label>
+            <InputTextAreaField
+              id="task-description-field"
+              value={createForm.description}
+              onChange={(e) =>
+                setCreateForm({ ...createForm, description: e.target.value })
+              }
+              placeholder="Task description"
+              className="h-24 min-h-24 w-full"
             />
           </div>
-        </div>
 
-        <div className="mb-2">
-          <label className="mb-1 block text-sm font-medium">Assigned to</label>
-          <UserPicker
-            options={people}
-            selectedOption={selectedAssignee}
-            onChange={(person) => {
-              setSelectedAssignee(person ?? undefined);
-              setCreateForm({
-                ...createForm,
-                assigneeId: person?.id?.toString() ?? undefined,
-                assignee: {
-                  id: person?.id?.toString() ?? "",
-                  displayName: person?.displayName ?? "",
-                  photoURL: person?.photoURL ?? "",
-                  email: "",
-                },
-              });
-            }}
-            placeholder="Select a person"
-            className="w-full"
+          <div className="mb-2 flex gap-3">
+            <div className="flex-1">
+              <label className="mb-1 block text-sm font-medium">Status</label>
+              <StatusPicker
+                status={createForm.status}
+                onChange={(status) => {
+                  setCreateForm({ ...createForm, status: status });
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="mb-1 block text-sm font-medium">Size</label>
+              <SizePicker
+                currentSize={createForm.size}
+                callback={(size) => setCreateForm({ ...createForm, size })}
+              />
+            </div>
+          </div>
+
+          <div className="mb-2">
+            <label className="mb-1 block text-sm font-medium">
+              Assigned to
+            </label>
+            <UserPicker
+              options={people}
+              selectedOption={selectedAssignee}
+              onChange={(person) => {
+                setSelectedAssignee(person ?? undefined);
+                setCreateForm({
+                  ...createForm,
+                  assigneeId: person?.id?.toString() ?? undefined,
+                  assignee: {
+                    id: person?.id?.toString() ?? "",
+                    displayName: person?.displayName ?? "",
+                    photoURL: person?.photoURL ?? "",
+                    email: "",
+                  },
+                });
+              }}
+              placeholder="Select a person"
+              className="w-full"
+            />
+          </div>
+
+          <div className="mb-2">
+            <label className="mb-1 block text-sm font-medium">Due Date</label>
+            <DatePicker
+              selectedDate={createForm.dueDate}
+              onChange={(date) => {
+                setCreateForm({ ...createForm, dueDate: date ?? undefined });
+              }}
+              placeholder="Select a due date"
+              className="w-full"
+            />
+          </div>
+
+          <DependencyListTask
+            label="Dependencies"
+            tasks={createForm.dependencies}
+            onChange={(dependencies) =>
+              setCreateForm({ ...createForm, dependencies })
+            }
           />
-        </div>
-
-        <div className="mb-2">
-          <label className="mb-1 block text-sm font-medium">Due Date</label>
-          <DatePicker
-            selectedDate={createForm.dueDate}
-            onChange={(date) => {
-              setCreateForm({ ...createForm, dueDate: date ?? undefined });
-            }}
-            placeholder="Select a due date"
-            className="w-full"
+          <DependencyListTask
+            label="Required by"
+            tasks={createForm.requiredBy}
+            onChange={(requiredBy) =>
+              setCreateForm({ ...createForm, requiredBy })
+            }
           />
-        </div>
-
-        <DependencyListTask
-          label="Dependencies"
-          tasks={createForm.dependencies}
-          onChange={(dependencies) =>
-            setCreateForm({ ...createForm, dependencies })
-          }
-        />
-        <DependencyListTask
-          label="Required by"
-          tasks={createForm.requiredBy}
-          onChange={(requiredBy) =>
-            setCreateForm({ ...createForm, requiredBy })
-          }
-        />
-
-        <div className="mt-4 flex justify-end">
-          <PrimaryButton
-            onClick={handleCreateTask}
-            disabled={isPending}
-            className="px-6 py-2"
-          >
-            {isPending ? "Creating..." : "Create Task"}
-          </PrimaryButton>
         </div>
       </div>
-    </div>
+    </SidebarPopup>
   );
 }

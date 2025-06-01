@@ -176,23 +176,23 @@ export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
 // Any change in here, make sure to modify the zod firebase schemas too
 export type UserStoryType = "US";
 export type IssueType = "IS";
-// export type GenericItemType = "IT"; // NOT IMPLEMENTED YET
+export type BacklogItemType = "IT";
 export type TaskType = "TS";
 export type EpicType = "EP";
 export type ProjectType = "PJ"; // For project activities
-export type SprintType = "SP"; // For requirements, not implemented yet
+export type SprintType = "SP";
 
-export type BacklogItemType = UserStoryType | IssueType;
+export type AnyBacklogItemType = UserStoryType | IssueType | BacklogItemType;
 export type AllBasicItemType =
-  | BacklogItemType
+  | AnyBacklogItemType
   | TaskType
   | EpicType
   | ProjectType
   | SprintType;
-export type BacklogItemAndTaskType = BacklogItemType | TaskType;
+export type BacklogItemAndTaskType = AnyBacklogItemType | TaskType;
 
-export type TaskDetailType = `${BacklogItemType}-${TaskType}`; // Used for simplification of moving info around
-export type BacklogItemAndTaskDetailType = BacklogItemType | TaskDetailType;
+export type TaskDetailType = `${AnyBacklogItemType}-${TaskType}`; // Used for simplification of moving info around
+export type BacklogItemAndTaskDetailType = AnyBacklogItemType | TaskDetailType;
 
 export interface BacklogItem extends BasicInfo {
   sprintId: string;
@@ -216,11 +216,13 @@ export interface UserStory extends BacklogItem {
 export interface Task extends BasicInfo {
   statusId: string;
   assigneeId: string;
+  assignedDate?: Timestamp;
   dueDate?: Date;
+  statusChangeDate?: Timestamp;
   finishedDate?: Date;
   size: Size;
   itemId: string;
-  itemType: BacklogItemType;
+  itemType: AnyBacklogItemType;
   dependencyIds: string[];
   requiredByIds: string[];
 }
@@ -272,6 +274,7 @@ export interface LogProjectActivityParams {
   userId: string;
   type: AllBasicItemType;
   action: ActionType;
+  date?: Timestamp;
 }
 
 export interface ProjectActivity {
@@ -286,6 +289,6 @@ export interface ActivityItem {
   id: string;
   name: string;
   type: AllBasicItemType;
-  scrumId?: number
+  scrumId?: number;
   activity: WithId<ProjectActivity>;
 }

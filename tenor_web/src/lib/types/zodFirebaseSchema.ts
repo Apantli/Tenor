@@ -7,6 +7,7 @@ import {
 
 export const UserStoryZodType = z.literal("US");
 export const IssueZodType = z.literal("IS");
+export const BacklogItemType = z.literal("IT");
 export const TaskZodType = z.literal("TS");
 export const EpicZodType = z.literal("EP");
 export const ProjectZodType = z.literal("PJ");
@@ -15,7 +16,11 @@ export const SprintZodType = z.literal("SP");
 const maxLengthTransformation = (length: number) => (val: string) =>
   val.slice(0, length);
 
-export const BacklogItemZodType = z.union([UserStoryZodType, IssueZodType]);
+export const BacklogItemZodType = z.union([
+  UserStoryZodType,
+  IssueZodType,
+  BacklogItemType,
+]);
 export const AllBasicItemZodType = z.union([
   BacklogItemZodType,
   TaskZodType,

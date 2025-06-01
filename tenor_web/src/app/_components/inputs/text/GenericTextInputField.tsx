@@ -1,4 +1,4 @@
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import React, { useState, useRef, useEffect } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import AIIcon from "@mui/icons-material/AutoAwesome";
@@ -130,7 +130,7 @@ export default function InputField({
       }
     }
   };
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
 
   useEffect(() => {
     if (isDropdownOpen && messages.length === 0) {
@@ -394,13 +394,7 @@ export default function InputField({
                           onKeyDown={async (e) => {
                             if (e.key === "Enter") {
                               if (status === "pending") {
-                                alert(
-                                  "Warning",
-                                  "Please wait until the current completion finishes.",
-                                  {
-                                    type: "warning",
-                                  },
-                                );
+                                predefinedAlerts.completionWarning();
                               } else {
                                 e.preventDefault();
                                 await handleSendMessage();
@@ -414,13 +408,7 @@ export default function InputField({
                             className="text-gray-500 hover:cursor-pointer"
                             onClick={async () => {
                               if (status === "pending") {
-                                alert(
-                                  "Warning",
-                                  "Please wait until the current completion finishes.",
-                                  {
-                                    type: "warning",
-                                  },
-                                );
+                                predefinedAlerts.completionWarning();
                               } else {
                                 await handleSendMessage();
                               }

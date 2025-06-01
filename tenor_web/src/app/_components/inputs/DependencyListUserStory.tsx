@@ -11,7 +11,7 @@ import TagComponent from "~/app/_components/TagComponent";
 import type { UserStoryPreview } from "~/lib/types/detailSchemas";
 import { api } from "~/trpc/react";
 import Check from "@mui/icons-material/Check";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import { useFormatUserStoryScrumId } from "~/app/_hooks/scrumIdHooks";
 
 interface Props {

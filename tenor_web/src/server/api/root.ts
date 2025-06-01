@@ -16,6 +16,7 @@ import { kanbanRouter } from "./routers/kanban";
 import { aiRouter } from "./routers/ai";
 import { sprintRetrospectivesRouter } from "./routers/sprintRetrospectives";
 import { performanceRouter } from "./routers/performance";
+import { backlogItemsRouter } from "./routers/backlogItems";
 
 /**
  * This is the primary router for your server.
@@ -27,6 +28,7 @@ export const appRouter = createTRPCRouter({
   logs: logsRouter,
   projects: projectsRouter,
   userStories: userStoriesRouter,
+  backlogItems: backlogItemsRouter,
   requirements: requirementsRouter,
   frida: fridaRouter,
   files: filesRouter,

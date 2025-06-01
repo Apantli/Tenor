@@ -9,15 +9,10 @@ import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetail
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import SprintCardColumn from "./SprintCardColumn";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import {
-  useFormatIssueScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
-import type { sprintsRouter } from "~/server/api/routers/sprints";
-import type { inferRouterOutputs } from "@trpc/server";
+import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import {
@@ -27,65 +22,72 @@ import {
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
-import {
-  type BacklogItemAndTaskDetailType,
-  type BacklogItemType,
-  permissionNumbers,
-} from "~/lib/types/firebaseSchemas";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import CreateSprintPopup from "./CreateSprintPopup";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
-import { type KanbanCard } from "~/lib/types/kanbanTypes";
+import { type KanbanItemCard } from "~/lib/types/kanbanTypes";
 import AdvancedSearch from "~/app/_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
-
-export type BacklogItems = inferRouterOutputs<
-  typeof sprintsRouter
->["getBacklogItemPreviewsBySprint"]["backlogItems"];
+import CreateBacklogItemPopup from "~/app/_components/popups/CreateBacklogitemPopup";
+import { itemTypeToSearchableName } from "~/lib/helpers/searchableNames";
+import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
 
 const noSprintId = "noSprintId";
 
-// FIXME: Use the general AssignableCardColumn instead of specific columns
-
 export default function ProjectSprints() {
+  // #region Hooks
+  const utils = api.useUtils();
   const { projectId } = useParams();
-
   const permission = useGetPermission({ flags: ["backlog"] });
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatIssueScrumId = useFormatIssueScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId();
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
 
+  const [advancedFilters, setAdvancedFilters] =
+    useAdvancedSearchFilters("sprints");
+  const [renderDetail, showDetail, detailItemId, setDetailItemId] =
+    useQueryIdForPopup("id");
+  const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
+    usePopupVisibilityState();
+  const [renderNewBacklogItem, showNewBacklogItem, setShowNewBacklogItem] =
+    usePopupVisibilityState();
+  // #endregion
+
+  // #region TRPC
   const { data: backlogItemsBySprint, isLoading } =
     api.sprints.getBacklogItemPreviewsBySprint.useQuery({
       projectId: projectId as string,
     });
+  const { mutateAsync: assignItemsToSprint } =
+    api.sprints.assignItemsToSprint.useMutation();
+  // #endregion
+
+  // #region React
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
-  // Drag and drop state
   const [lastDraggedBacklogItemId, setLastDraggedBacklogItemId] = useState<
     string | null
   >(null);
-
   const [searchValue, setSearchValue] = useState("");
   const [sprintSearchValue, setSprintSearchValue] = useState("");
 
+  useEffect(() => {
+    setLastDraggedBacklogItemId(null);
+  }, [sprintSearchValue]);
+  // #endregion
+
+  // #region Utils
   const filteredUnassignedItems =
     backlogItemsBySprint?.unassignedItemIds.filter((itemId) => {
       const item = backlogItemsBySprint?.backlogItems[itemId];
       if (!item) return false;
 
       const tagsList = item.tags.map((tag) => "Tag:" + tag.name).join(" ");
-      let formatter = formatUserStoryScrumId;
-      if (item.itemType === "IS") {
-        formatter = formatIssueScrumId;
-      }
-      const itemTypeName =
-        item.itemType === "US"
-          ? "Type:Story Type:UserStory Type:User Story"
-          : "Type:Issue Type:Bug";
-      const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
+
+      const itemTypeName = itemTypeToSearchableName(item.itemType);
+      const fullItemName = `${formatAnyScrumId(item.scrumId, item.itemType)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
       return fullItemName.toLowerCase().includes(searchValue.toLowerCase());
     }) ?? [];
 
@@ -146,16 +148,10 @@ export default function ProjectSprints() {
         const item = backlogItemsBySprint?.backlogItems[id];
         if (!item) return false;
 
+        // FIXME: Make this its own hook so that it can be reusable and consistent
         const tagsList = item.tags.map((tag) => "Tag:" + tag.name).join(" ");
-        let formatter = formatUserStoryScrumId;
-        if (item.itemType === "IS") {
-          formatter = formatIssueScrumId;
-        }
-        const itemTypeName =
-          item.itemType === "US"
-            ? "Type:Story Type:UserStory Type:User Story"
-            : "Type:Issue Type:Bug";
-        const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
+        const itemTypeName = itemTypeToSearchableName(item.itemType);
+        const fullItemName = `${formatAnyScrumId(item.scrumId, item.itemType)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
 
         return fullItemName
           .toLowerCase()
@@ -165,26 +161,23 @@ export default function ProjectSprints() {
       return hasMatchingItem;
     }) ?? [];
 
-  const utils = api.useUtils();
-  const [renderSmallPopup, showSmallPopup, setShowSmallPopup] =
-    usePopupVisibilityState();
+  const availableToBeAssignedTo =
+    selectedItems.size > 0 &&
+    Array.from(selectedItems).every(
+      (selectedId) =>
+        backlogItemsBySprint?.backlogItems[selectedId]?.sprintId !== "",
+    );
+
+  // Check if all unassigned items are selected
+  const allUnassignedSelected =
+    filteredUnassignedItems.length > 0 &&
+    filteredUnassignedItems.every((itemId) => selectedItems.has(itemId));
 
   const cancelBacklogItemsPreviewQuery = async () => {
     await utils.sprints.getBacklogItemPreviewsBySprint.cancel({
       projectId: projectId as string,
     });
   };
-
-  const { mutateAsync: assignItemsToSprint } =
-    api.sprints.assignItemsToSprint.useMutation();
-
-  const [renderDetail, showDetail, detailItemId, setDetailItemId] =
-    useQueryIdForPopup("id");
-
-  // Check if all unassigned items are selected
-  const allUnassignedSelected = filteredUnassignedItems.every((itemId) =>
-    selectedItems.has(itemId),
-  );
 
   const toggleSelectAllUnassigned = () => {
     const newSelection = new Set(selectedItems);
@@ -216,19 +209,10 @@ export default function ProjectSprints() {
       (oldData) => {
         if (!oldData) return undefined;
 
-        const sortByScrumId = (a: string, b: string) => {
-          const itemA = items[a];
-          const itemB = items[b];
-          if (itemA?.scrumId === itemB?.scrumId) {
-            return itemA?.itemType === "US" ? -1 : 1;
-          }
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
-        };
-
         const sprints = oldData.sprints.map((sprint) => {
           if (sprint.sprint.id === sprintId) {
             const sortedItemIds = [...sprint.backlogItemIds, ...itemIds].sort(
-              sortByScrumId,
+              sortByItemTypeAndScrumId(items),
             );
             return {
               ...sprint,
@@ -249,7 +233,7 @@ export default function ProjectSprints() {
           newUnassignedItemIds = [
             ...oldData.unassignedItemIds,
             ...itemIds,
-          ].sort(sortByScrumId);
+          ].sort(sortByItemTypeAndScrumId(items));
         } else {
           newUnassignedItemIds = oldData.unassignedItemIds.filter(
             (itemId) => !itemIds.includes(itemId),
@@ -285,7 +269,7 @@ export default function ProjectSprints() {
       sprintId,
       items: itemIds.map((itemId) => ({
         id: itemId,
-        itemType: items[itemId]!.itemType as BacklogItemType,
+        itemType: items[itemId]!.itemType,
       })),
     });
 
@@ -294,24 +278,34 @@ export default function ProjectSprints() {
 
     await invalidateQueriesBacklogItems(projectId as string, "US");
     await invalidateQueriesBacklogItems(projectId as string, "IS");
+    await invalidateQueriesBacklogItems(projectId as string, "IT");
     await invalidateQueriesBacklogItemDetails(
       projectId as string,
       itemIds.map((id) => ({
         itemId: id,
-        itemType: items[id]!.itemType as BacklogItemType,
+        itemType: items[id]!.itemType,
       })),
     );
   };
 
-  const availableToBeAssignedTo =
-    selectedItems.size > 0 &&
-    Array.from(selectedItems).every(
-      (selectedId) =>
-        backlogItemsBySprint?.backlogItems[selectedId]?.sprintId !== "",
-    );
+  const onItemAdded = async (_backlogItemId: string) => {
+    setShowNewBacklogItem(false);
+    // setUserStoryId(userStoryId); // TODO: Implement when detail popup is ready
+  };
+  // #endregion
 
-  //// Drag and drop operations
-  let dndOperationsInProgress = 0;
+  // #region Drag and Drop Utils
+  const [dndOperationsInProgress, setDndOperationsInProgress] = useState(0);
+
+  useEffect(() => {
+    // Only fetch again if this is the last operation. Prevents buggy behavior in UI
+    if (dndOperationsInProgress == 0) {
+      setLastDraggedBacklogItemId(null);
+      void invalidateQueriesBacklogItems(projectId as string, "US");
+      void invalidateQueriesBacklogItems(projectId as string, "IS");
+      void invalidateQueriesBacklogItems(projectId as string, "IT");
+    }
+  }, [dndOperationsInProgress]);
 
   // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (itemId: string, sprintId: string) => {
@@ -321,7 +315,7 @@ export default function ProjectSprints() {
     const items = backlogItemsBySprint?.backlogItems;
     if (!items || items[itemId]?.sprintId === sprintId) return;
 
-    dndOperationsInProgress += 1;
+    setDndOperationsInProgress((prev) => prev + 1);
     // Cancel previous fetches for the sprint data
     await cancelBacklogItemsPreviewQuery();
 
@@ -335,21 +329,12 @@ export default function ProjectSprints() {
       (oldData) => {
         if (!oldData) return undefined;
 
-        const sortByScrumId = (a: string, b: string) => {
-          const itemA = items[a];
-          const itemB = items[b];
-          if (itemA?.scrumId === itemB?.scrumId) {
-            return itemA?.itemType === "US" ? -1 : 1;
-          }
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
-        };
-
         const sprints = oldData.sprints.map((sprint) => {
           if (sprint.sprint.id === sprintId) {
             const sortedBacklogItemIds = [
               ...sprint.backlogItemIds,
               itemId,
-            ].sort(sortByScrumId);
+            ].sort(sortByItemTypeAndScrumId(items));
             return {
               ...sprint,
               backlogItemIds: sortedBacklogItemIds,
@@ -369,7 +354,7 @@ export default function ProjectSprints() {
           newUnassignedItemIds = [
             ...oldData.unassignedItemIds,
             ...itemIds,
-          ].sort(sortByScrumId);
+          ].sort(sortByItemTypeAndScrumId(items));
         } else {
           newUnassignedItemIds = oldData.unassignedItemIds.filter(
             (itemId) => !itemIds.includes(itemId),
@@ -405,36 +390,30 @@ export default function ProjectSprints() {
       sprintId,
       items: itemIds.map((itemId) => ({
         id: itemId,
-        itemType: items[itemId]!.itemType as BacklogItemType,
+        itemType: items[itemId]!.itemType,
       })),
     });
 
     // Cancel previous fetches for the sprint data
     await cancelBacklogItemsPreviewQuery();
 
-    // Only fetch again if this is the last operation
-    if (dndOperationsInProgress == 1) {
+    await invalidateQueriesBacklogItemDetails(
+      projectId as string,
+      itemIds.map((id) => ({
+        itemId: id,
+        itemType: items[id]!.itemType,
+      })),
+    );
+
+    // Update the operations in progress count
+    setTimeout(() => {
       setLastDraggedBacklogItemId(null);
-      await invalidateQueriesBacklogItems(projectId as string, "US");
-      await invalidateQueriesBacklogItems(projectId as string, "IS");
-      await invalidateQueriesBacklogItemDetails(
-        projectId as string,
-        itemIds.map((id) => ({
-          itemId: id,
-          itemType: items[id]!.itemType as BacklogItemType,
-        })),
-      );
-    }
-
-    // Mark operation as finished
-    dndOperationsInProgress -= 1;
+    }, 1500);
+    setTimeout(() => {
+      setDndOperationsInProgress((prev) => prev - 1);
+    }, 3000);
   };
-
-  useEffect(() => {
-    setLastDraggedBacklogItemId(null);
-  }, [sprintSearchValue]);
-
-  const [advancedFilters, setAdvancedFilters] = useAdvancedSearchFilters();
+  // #endregion
 
   return (
     <div className="m-6 flex-1 p-4">
@@ -456,7 +435,9 @@ export default function ProjectSprints() {
             <div className="flex w-full justify-between pb-2">
               <h1 className="text-3xl font-semibold">Product Backlog</h1>
               {permission >= permissionNumbers.write && (
-                <PrimaryButton onClick={() => {}}>+ Add Item</PrimaryButton>
+                <PrimaryButton onClick={() => setShowNewBacklogItem(true)}>
+                  + Add Item
+                </PrimaryButton>
               )}
             </div>
 
@@ -488,7 +469,7 @@ export default function ProjectSprints() {
                   {permission >= permissionNumbers.write && (
                     <button
                       className={cn(
-                        "rounded-lg px-1 text-app-text transition",
+                        "rounded-lg px-1 text-app-text transition hover:text-app-primary",
                         {
                           "text-app-secondary":
                             filteredUnassignedItems.length > 0 &&
@@ -496,11 +477,14 @@ export default function ProjectSprints() {
                         },
                       )}
                       onClick={toggleSelectAllUnassigned}
+                      data-tooltip-id="tooltip"
+                      data-tooltip-content="Toggle select all"
+                      data-tooltip-delay-show={500}
                     >
                       {allUnassignedSelected ? (
-                        <CheckNone fontSize="small" />
+                        <CheckNone fontSize="medium" />
                       ) : (
-                        <CheckAll fontSize="small" />
+                        <CheckAll fontSize="medium" />
                       )}
                     </button>
                   )}
@@ -606,23 +590,20 @@ export default function ProjectSprints() {
             if (!itemId) return null;
             const draggingItem = backlogItemsBySprint?.backlogItems[itemId];
             if (!draggingItem) return null;
-            const item: KanbanCard = {
+            const item: KanbanItemCard = {
               ...draggingItem,
               columnId: draggingItem.sprintId,
               assigneeIds: [],
               priorityId: undefined,
               sprintId: draggingItem.sprintId,
-              cardType:
-                (draggingItem.itemType as BacklogItemAndTaskDetailType) ?? "US",
+              cardType: draggingItem.itemType ?? "US",
             };
             return (
               <ItemCardRender
                 item={item}
                 showBackground={true}
-                scrumIdFormatter={() =>
-                  item.cardType === "US"
-                    ? formatUserStoryScrumId(item.scrumId)
-                    : formatIssueScrumId(item.scrumId)
+                scrumIdFormatter={(scrumId: number) =>
+                  formatAnyScrumId(scrumId, item.cardType)
                 }
               />
             );
@@ -653,6 +634,13 @@ export default function ProjectSprints() {
           otherSprints={backlogItemsBySprint?.sprints?.map(
             (sprint) => sprint.sprint,
           )}
+        />
+      )}
+      {renderNewBacklogItem && (
+        <CreateBacklogItemPopup
+          onItemAdded={onItemAdded}
+          showPopup={showNewBacklogItem}
+          setShowPopup={setShowNewBacklogItem}
         />
       )}
     </div>

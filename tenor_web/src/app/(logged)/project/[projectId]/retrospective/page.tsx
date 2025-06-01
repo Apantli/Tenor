@@ -4,16 +4,23 @@ import React, { useState } from "react";
 import HappinessForm from "./HappinessForm";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import ProfilePicture from "~/app/_components/ProfilePicture";
-import {
-  SampleData,
-  PerformanceChart,
-} from "~/app/_components/charts/PerformanceChart";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import CheckIcon from "@mui/icons-material/Check";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
+import dynamic from "next/dynamic";
+
+const DynamicPerformanceChart = dynamic(
+  () =>
+    import("~/app/_components/charts/PerformanceChart").then(
+      (m) => m.PerformanceChart,
+    ),
+  {
+    ssr: false,
+  },
+);
 
 export default function ProjectSprintRetrospectivePage() {
   const { user } = useFirebaseAuth();
@@ -121,11 +128,7 @@ export default function ProjectSprintRetrospectivePage() {
             </div>
 
             <div className="flex flex-1 flex-col">
-              <PerformanceChart
-                data={SampleData}
-                actions={false}
-                className="ml-8"
-              />
+              <DynamicPerformanceChart className="ml-8" />
             </div>
           </div>
 

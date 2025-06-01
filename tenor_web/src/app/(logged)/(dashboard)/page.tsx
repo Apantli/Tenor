@@ -2,6 +2,7 @@
 
 import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatusDashboard";
 import ProjectList from "./ProjectList";
+import { recentActivityMockupPath } from "~/lib/defaultValues/publicPaths";
 
 export default function ProjectPage() {
   return (
@@ -15,7 +16,9 @@ export default function ProjectPage() {
         {/* FIXME: Remove when recent activity is ready */}
         <div
           className="mt-4 h-[38vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
-          style={{ backgroundImage: 'url("/recent_activity_mockup.png")' }}
+          style={{
+            backgroundImage: `url(${recentActivityMockupPath})`,
+          }}
           aria-label="Dashboard mockup"
         />
       </div>

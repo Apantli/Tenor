@@ -1,6 +1,6 @@
 // Use this hooks to invalidate the queries related to a specific item, task, project, etc.
 
-import type { BacklogItemType } from "~/lib/types/firebaseSchemas";
+import type { AnyBacklogItemType } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
 export const useInvalidateQueriesAllTasks = () => {
@@ -213,8 +213,10 @@ export const useInvalidateQueriesBacklogItems = () => {
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesAllEpics = useInvalidateQueriesAllEpics();
+  const invalidateQueriesAllGenericBacklogItems =
+    useInvalidateQueriesAllGenericBacklogItems();
 
-  return async (projectId: string, itemType: BacklogItemType | "EP") => {
+  return async (projectId: string, itemType: AnyBacklogItemType | "EP") => {
     switch (itemType) {
       case "US":
         await invalidateQueriesAllUserStories(projectId);
@@ -225,8 +227,11 @@ export const useInvalidateQueriesBacklogItems = () => {
       case "IS":
         await invalidateQueriesAllIssues(projectId);
         break;
+      case "IT":
+        await invalidateQueriesAllGenericBacklogItems(projectId);
+        break;
     }
-    // TODO: Add one for general backlog items, when they are implemented
+
     await utils.projects.getProjectActivities.invalidate({
       projectId: projectId,
     });
@@ -235,7 +240,7 @@ export const useInvalidateQueriesBacklogItems = () => {
 
 interface CondenseItem {
   itemId: string;
-  itemType: BacklogItemType | "TS";
+  itemType: AnyBacklogItemType | "TS";
 }
 
 export const useInvalidateQueriesBacklogItemDetails = () => {
@@ -333,4 +338,39 @@ export const useInvalidateQueriesSingleSprint = () => {
   };
 };
 
-// TODO: Add one for all other stuff and use it in code
+export const useInvalidateQueriesUser = () => {
+  const utils = api.useUtils();
+  return async (userId: string) => {
+    await utils.users.getGlobalUser.invalidate({
+      userId: userId,
+    });
+    await utils.users.getGlobalUsers.invalidate();
+  };
+};
+
+export const useInvalidateQueriesAllGenericBacklogItems = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    // await utils.backlogItems.getUserStoryTable.invalidate({
+    //   projectId: projectId,
+    // });
+    await utils.backlogItems.getBacklogItems.invalidate({
+      projectId: projectId,
+    });
+
+    await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
+      projectId: projectId,
+    });
+
+    await utils.kanban.getBacklogItemsForKanban.invalidate({
+      projectId: projectId,
+    });
+
+    await utils.projects.getProjectActivities.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+  };
+};

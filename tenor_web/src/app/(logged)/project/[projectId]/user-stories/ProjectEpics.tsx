@@ -35,7 +35,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
   const { projectId } = useParams();
   const utils = api.useUtils();
   const confirm = useConfirmation();
-  const { alert } = useAlert();
+  const { predefinedAlerts } = useAlert();
   const formatEpicScrumId = useFormatEpicScrumId();
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   // #endregion
@@ -135,10 +135,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
 
   const handleCreateEpic = async () => {
     if (newEpicName === "") {
-      alert("Oops...", "Please enter a name for the epic.", {
-        type: "error",
-        duration: 5000,
-      });
+      predefinedAlerts.epicNameError();
       return;
     }
 
@@ -333,10 +330,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
               if (epic?.scrumId) {
                 if (!creatingEpic) {
                   if (editEpicName === "") {
-                    alert("Oops...", "Please enter a name for the epic.", {
-                      type: "error",
-                      duration: 5000,
-                    });
+                    predefinedAlerts.epicNameError();
                     return;
                   }
 

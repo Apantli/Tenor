@@ -5,7 +5,7 @@ import React from "react";
 import { api } from "~/trpc/react";
 import PillComponent from "./PillComponent";
 import type { StatusTag, Tag } from "~/lib/types/firebaseSchemas";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 interface Props {
   status?: Tag;

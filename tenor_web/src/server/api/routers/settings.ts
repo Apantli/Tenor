@@ -16,8 +16,8 @@ import {
   TagSchema,
 } from "~/lib/types/zodFirebaseSchema";
 import z from "zod";
-import { fetchHTML } from "~/utils/webcontent";
-import { fetchMultipleFiles } from "~/utils/helpers/filecontent";
+import { fetchHTML } from "~/server/api/lib/webcontent";
+import { fetchMultipleFiles } from "~/lib/helpers/filecontent";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import {
   defaultMaximumSprintStoryPoints,
@@ -51,14 +51,14 @@ import {
   getStatusTypes,
   getStatusTypesRef,
   getTodoStatusTag,
-} from "~/utils/helpers/shortcuts/tags";
+} from "../shortcuts/tags";
 import {
   getRoleRef,
   getRolesRef,
   getSettings,
   getSettingsRef,
-} from "~/utils/helpers/shortcuts/general";
-import { getUserRef } from "~/utils/helpers/shortcuts/users";
+} from "../shortcuts/general";
+import { getUserRef } from "../shortcuts/users";
 import { TRPCError } from "@trpc/server";
 import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
 

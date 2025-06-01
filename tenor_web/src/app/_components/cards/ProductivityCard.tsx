@@ -3,17 +3,22 @@ import { api } from "~/trpc/react";
 import type { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { timestampToDate } from "~/utils/helpers/parsers";
+import { timestampToDate } from "~/lib/helpers/parsers";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
-
+import { cn } from "~/lib/helpers/utils";
 interface PerformanceData {
   time: z.infer<typeof PerformanceTime>;
   projectId: string;
+  className?: string;
 }
 
-export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
-  const { alert } = useAlert();
+export const ProductivityCard = ({
+  projectId,
+  time,
+  className,
+}: PerformanceData) => {
+  const { predefinedAlerts, alertTemplates } = useAlert();
   const utils = api.useUtils();
 
   const {
@@ -25,30 +30,24 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
       projectId: projectId,
       time: time,
     },
-    { retry: 0 },
+    { retry: 0, refetchOnWindowFocus: true },
   );
   const {
     mutateAsync: recomputeProductivity,
     isPending,
     // error,
   } = api.performance.recomputeProductivity.useMutation({
+    retry: 0,
     onSuccess: async () => {
       // Handle success, e.g., show a toast notification
-      alert("Success", "Productivity has been reloaded.", {
-        type: "success",
-        duration: 5000,
-      });
+      predefinedAlerts.productivityUpdateSuccess();
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,
       });
     },
     onError: async (error) => {
-      // Handle success, e.g., show a toast notification
-      alert("Alert", error.message, {
-        type: "warning",
-        duration: 5000,
-      });
+      alertTemplates.warning(error.message);
       await utils.performance.getProductivity.invalidate({
         projectId: projectId,
         time: time,
@@ -81,18 +80,23 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
   const userStoriesStrokeDasharray = `${(userStoriesPercent / 100) * c1} ${c1}`;
   const issuesStrokeDasharray = `${(issuesPercent / 100) * c2} ${c2}`;
   return (
-    <div className="flex min-h-[420px] w-full flex-col rounded-md border-2 p-4">
-      <h1 className="mb-6 border-b-2 pb-4 text-3xl font-bold">Productivity</h1>
+    <div
+      className={cn(
+        "mt-1 box-content flex flex-col rounded-md border-2 p-4",
+        className,
+      )}
+    >
+      <h1 className="mx-6 text-2xl font-bold">Productivity</h1>
       {isLoading ? (
         <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
           <LoadingSpinner color="primary" />
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center gap-8 rounded-lg bg-white p-4 lg:flex-row">
+        <div className="flex h-full flex-row items-center justify-center gap-8 rounded-lg bg-white p-4">
           {error?.message ? (
-            <p>{error.message}</p>
+            <p className="text-xl text-gray-500">{error.message}</p>
           ) : (
-            <div className="relative h-64 w-64">
+            <div className="relative h-60 w-60">
               {/* Background circles */}
               <svg
                 className="absolute left-0 top-0 h-full w-full"
@@ -149,31 +153,34 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
             </div>
           )}
 
-          <div className="flex flex-col">
-            <h2 className="mb-6 text-xl font-semibold">Completed</h2>
+          {!error && (
+            <div className="flex h-full flex-col">
+              <h2 className="mb-6 text-xl font-semibold">Completed</h2>
 
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3 text-gray-500">
-                <div className="h-4 w-4 rounded-full bg-[#88BB87]"></div>
-                <span className="max-w-30 line-clamp-2 text-ellipsis text-lg">
-                  User Stories {userStoriesPercent}%
-                </span>
-              </div>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3 text-gray-500">
+                  <div className="h-4 w-4 rounded-full bg-[#88BB87]"></div>
+                  <span className="max-w-30 line-clamp-2 text-ellipsis text-lg">
+                    User Stories {userStoriesPercent}%
+                  </span>
+                </div>
 
-              {/* Issues */}
-              <div className="flex items-center gap-3 text-gray-500">
-                <div className="h-4 w-4 rounded-full bg-[#184723]"></div>
-                <span className="text-lg">Issues {issuesPercent}%</span>
+                {/* Issues */}
+                <div className="flex items-center gap-3 text-gray-500">
+                  <div className="h-4 w-4 rounded-full bg-[#184723]"></div>
+                  <span className="text-lg">Issues {issuesPercent}%</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       )}
       {stats?.fetchDate && (
-        <div className="mx-auto flex flex-row gap-2 text-gray-500">
+        <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
           {!isPending && (
             <RefreshIcon
               onClick={async () => {
+                if (isPending) return;
                 await recomputeProductivity({
                   projectId: projectId,
                   time: time,
@@ -186,7 +193,6 @@ export const ProductivityCard = ({ projectId, time }: PerformanceData) => {
           {isPending ? (
             <>
               <LoadingSpinner />
-              <p>Refreshing project status...</p>
             </>
           ) : (
             <p>Updated {timestampToDate(stats.fetchDate).toLocaleString()}</p>

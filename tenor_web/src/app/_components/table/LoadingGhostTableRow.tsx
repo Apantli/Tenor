@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import BubbleIcon from "@mui/icons-material/BubbleChart";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 
 interface LoadingGhostTableRowProps<> {
   multiselect?: boolean;

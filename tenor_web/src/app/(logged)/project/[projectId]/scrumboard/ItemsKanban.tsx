@@ -1,17 +1,14 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api } from "~/trpc/react";
 import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import CheckAll from "@mui/icons-material/DoneAll";
 import CheckNone from "@mui/icons-material/RemoveDone";
-import { cn } from "~/lib/utils";
+import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import {
-  useFormatIssueScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
+import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import AssignableCardColumn from "~/app/_components/cards/AssignableCardColumn";
@@ -23,6 +20,7 @@ import {
 import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import {
+  type AnyBacklogItemType,
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
@@ -35,6 +33,7 @@ import StatusDetailPopup from "../settings/tags-scrumboard/StatusDetailPopup";
 import MoveLeftIcon from "@mui/icons-material/ArrowBackIos";
 import MoveRightIcon from "@mui/icons-material/ArrowForwardIos";
 import EditIcon from "@mui/icons-material/EditOutlined";
+import { sortByCardTypeAndScrumId } from "~/lib/helpers/sort";
 
 interface Props {
   filter: string;
@@ -42,17 +41,17 @@ interface Props {
 }
 
 export default function ItemsKanban({ filter, advancedFilters }: Props) {
-  // GENERAL
+  // #region HOOKS
   const { projectId } = useParams();
   const utils = api.useUtils();
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatIssueScrumId = useFormatIssueScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  // #endregion
 
-  // TRPC
+  // #region TRPC
   const { data: itemsAndColumnsData, isLoading } =
     api.kanban.getBacklogItemsForKanban.useQuery({
       projectId: projectId as string,
@@ -71,14 +70,15 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
 
   const { mutateAsync: modifyUserStoryTags } =
     api.userStories.modifyUserStoryTags.useMutation();
-
   const { mutateAsync: modifyIssuesTags } =
     api.issues.modifyIssuesTags.useMutation();
-
+  const { mutateAsync: modifyBacklogItemTags } =
+    api.backlogItems.modifyBacklogItemTags.useMutation();
   const { mutateAsync: reorderStatus } =
     api.settings.reorderStatusTypes.useMutation();
+  // #endregion
 
-  // REACT
+  // #region REACT
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [lastDraggedItemId, setLastDraggedItemId] = useState<string | null>(
     null,
@@ -94,18 +94,20 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
     usePopupVisibilityState();
   const [selectedStatusId, setSelectedStatusId] = useState<string | null>();
   const [statusEditMode, setStatusEditMode] = useState(false);
+  // #endregion
 
-  // UTILITY
-  const getCorrectFormatter = (itemType: string) => {
-    if (itemType === "US") {
-      return formatUserStoryScrumId;
-    } else if (itemType === "IS") {
-      return formatIssueScrumId;
+  // #region UTILITY
+  const [dndOperationsInProgress, setDndOperationsInProgress] = useState(0);
+
+  useEffect(() => {
+    // Only fetch again if this is the last operation. Prevents buggy behavior in UI
+    if (dndOperationsInProgress == 0) {
+      setLastDraggedItemId(null);
+      void invalidateQueriesBacklogItems(projectId as string, "US");
+      void invalidateQueriesBacklogItems(projectId as string, "IS");
+      void invalidateQueriesBacklogItems(projectId as string, "IT");
     }
-    return formatUserStoryScrumId;
-  };
-
-  let updateOperationsInProgress = 0;
+  }, [dndOperationsInProgress]);
 
   const handleDragEnd = async (itemId: string, columnId: string) => {
     setLastDraggedItemId(null);
@@ -119,7 +121,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
 
   const moveItemsToColumn = async (itemIds: string[], columnId: string) => {
     if (itemsAndColumnsData == undefined) return;
-    updateOperationsInProgress += 1;
+    setDndOperationsInProgress((prev) => prev + 1);
     const cardItems = itemsAndColumnsData.cardItems;
     await utils.kanban.getBacklogItemsForKanban.cancel({
       projectId: projectId as string,
@@ -131,12 +133,6 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
       },
       (oldData) => {
         if (!oldData) return undefined;
-
-        const sortByScrumId = (a: string, b: string) => {
-          const itemA = cardItems[a];
-          const itemB = cardItems[b];
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
-        };
 
         const unorderedColumns = oldData.columns.map((column) => {
           if (column.id === columnId) {
@@ -159,7 +155,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
           if (column.id === columnId) {
             return {
               ...column,
-              itemIds: column.itemIds.sort(sortByScrumId),
+              itemIds: column.itemIds.sort(sortByCardTypeAndScrumId(cardItems)),
             };
           }
           return column;
@@ -199,48 +195,48 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
     await Promise.all(
       itemIds.map(async (itemId) => {
         const item = itemsAndColumnsData.cardItems[itemId];
-        if (item?.cardType === "US") {
-          await modifyUserStoryTags({
-            projectId: projectId as string,
-            userStoryId: item.id,
-            statusId: columnId,
-          });
-        } else if (item?.cardType === "IS") {
-          await modifyIssuesTags({
-            projectId: projectId as string,
-            issueId: item.id,
-            statusId: columnId,
-          });
+        switch (item?.cardType) {
+          case "US":
+            await modifyUserStoryTags({
+              projectId: projectId as string,
+              userStoryId: item.id,
+              statusId: columnId,
+            });
+            break;
+
+          case "IS":
+            await modifyIssuesTags({
+              projectId: projectId as string,
+              issueId: item.id,
+              statusId: columnId,
+            });
+            break;
+
+          case "IT":
+            await modifyBacklogItemTags({
+              projectId: projectId as string,
+              backlogItemId: item.id,
+              statusId: columnId,
+            });
+            break;
         }
       }),
     );
 
-    if (updateOperationsInProgress == 1) {
-      setTimeout(() => {
-        setLastDraggedItemId(null);
-      }, 1500);
-      const userStories = itemIds.filter(
-        (itemId) => itemsAndColumnsData.cardItems[itemId]?.cardType === "US",
-      );
-      const issues = itemIds.filter(
-        (itemId) => itemsAndColumnsData.cardItems[itemId]?.cardType === "IS",
-      );
-      if (userStories.length > 0) {
-        await invalidateQueriesBacklogItems(projectId as string, "US");
-      }
-      if (issues.length > 0) {
-        await invalidateQueriesBacklogItems(projectId as string, "IS");
-      }
-      await invalidateQueriesBacklogItemDetails(
-        projectId as string,
-        itemIds.map((itemId) => ({
-          itemId: itemId,
-          itemType: itemsAndColumnsData.cardItems[itemId]?.cardType ?? "US",
-        })),
-      );
-    }
+    await invalidateQueriesBacklogItemDetails(
+      projectId as string,
+      itemIds.map((itemId) => ({
+        itemId: itemId,
+        itemType: itemsAndColumnsData.cardItems[itemId]?.cardType ?? "US",
+      })),
+    );
 
-    updateOperationsInProgress--;
+    setTimeout(() => {
+      setLastDraggedItemId(null);
+    }, 1500);
+    setTimeout(() => {
+      setDndOperationsInProgress((prev) => prev - 1);
+    }, 3000);
   };
 
   const assignSelectionToColumn = async (columnId: string) => {
@@ -294,6 +290,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
 
     await invalidateQueriesAllStatuses(projectId as string);
   };
+  // #endregion
 
   return (
     <>
@@ -355,12 +352,16 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
                   setSelectedItems={setSelectedItems}
                   setDetailItemId={setDetailItemId}
                   renderCard={(item: KanbanCard) => {
-                    const formatter = getCorrectFormatter(item.cardType);
                     return (
                       <ItemCardRender
                         disabled={permission < permissionNumbers.write}
                         item={item}
-                        scrumIdFormatter={formatter}
+                        scrumIdFormatter={(scrumId: number) => {
+                          return formatAnyScrumId(
+                            scrumId,
+                            item.cardType as AnyBacklogItemType,
+                          );
+                        }}
                       />
                     );
                   }}
@@ -452,12 +453,14 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
             if (!itemId) return null;
             const draggingItem = itemsAndColumnsData?.cardItems[itemId];
             if (!draggingItem) return null;
-            const formatter = getCorrectFormatter(draggingItem.cardType);
+
             return (
               <ItemCardRender
                 item={draggingItem}
                 showBackground={true}
-                scrumIdFormatter={formatter}
+                scrumIdFormatter={(scrumId: number) => {
+                  return formatAnyScrumId(scrumId, draggingItem.cardType);
+                }}
               />
             );
           }}

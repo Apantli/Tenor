@@ -1,6 +1,6 @@
 import type {
   BacklogItemAndTaskDetailType,
-  BacklogItemType,
+  AnyBacklogItemType,
   Size,
 } from "./firebaseSchemas";
 import type { Tag, WithId } from "./firebaseSchemas";
@@ -21,8 +21,8 @@ export interface KanbanCard {
 
 export interface KanbanTaskCard extends KanbanCard {
   itemId: string;
-  itemType: BacklogItemType;
+  itemType: AnyBacklogItemType;
 }
 export interface KanbanItemCard extends KanbanCard {
-  cardType: BacklogItemType;
+  cardType: AnyBacklogItemType;
 }

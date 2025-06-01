@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type SetStateAction, useState } from "react";
 
 function usePersistentState<T>(initialValue: T, key: string) {
   const fullKey = `persistent_value:${key}`;
@@ -19,7 +19,11 @@ function usePersistentState<T>(initialValue: T, key: string) {
     localStorage.removeItem(fullKey);
   };
 
-  return [value, wrappedSetValue, resetValue] as const;
+  return [
+    value,
+    wrappedSetValue as React.Dispatch<SetStateAction<T>>,
+    resetValue,
+  ] as const;
 }
 
 export default usePersistentState;

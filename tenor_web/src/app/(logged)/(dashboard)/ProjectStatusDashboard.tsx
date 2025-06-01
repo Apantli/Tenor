@@ -2,15 +2,23 @@
 
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import {
-  StatusBarChart,
-  type ProjectStatusData,
-} from "~/app/(logged)/(dashboard)/ProjectStatusChart";
+import type { ProjectStatusData } from "~/app/(logged)/(dashboard)/ProjectStatusChart";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { timestampToDate } from "~/utils/helpers/parsers";
-import { cn } from "~/lib/utils";
+import { timestampToDate } from "~/lib/helpers/parsers";
+import { cn } from "~/lib/helpers/utils";
+import dynamic from "next/dynamic";
+
+const DynamicStatusBarChart = dynamic(
+  () =>
+    import("~/app/(logged)/(dashboard)/ProjectStatusChart").then(
+      (m) => m.StatusBarChart,
+    ),
+  {
+    ssr: false,
+  },
+);
 
 export const ProjectStatusDashboard = ({
   className,
@@ -19,24 +27,18 @@ export const ProjectStatusDashboard = ({
 }) => {
   // #region Hooks
   const utils = api.useUtils();
-  const { alert } = useAlert();
+  const { predefinedAlerts, alertTemplates } = useAlert();
   // #endregion
 
   // #region TRPC
   const { mutateAsync: recomputeTopProjectStatus, isPending } =
     api.projects.recomputeTopProjectStatus.useMutation({
       onSuccess: async () => {
-        alert("Success", "Project status has been reloaded.", {
-          type: "success",
-          duration: 5000,
-        });
+        predefinedAlerts.statusUpdateSuccess();
         await utils.projects.getTopProjectStatus.invalidate();
       },
       onError: async (error) => {
-        alert("Alert", error.message, {
-          type: "warning",
-          duration: 5000,
-        });
+        alertTemplates.warning(error.message);
       },
       retry: 0,
     });
@@ -97,7 +99,7 @@ export const ProjectStatusDashboard = ({
           </h1>
         </div>
       ) : (
-        <StatusBarChart data={barCharData} domain={[0, domainMax]} />
+        <DynamicStatusBarChart data={barCharData} domain={[0, domainMax]} />
       )}
 
       <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">

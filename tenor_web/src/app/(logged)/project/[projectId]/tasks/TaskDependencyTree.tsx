@@ -25,7 +25,7 @@ import {
   getLayoutedElements,
   loadFlowFromLocalStorage,
   saveFlowToLocalStorage,
-} from "~/utils/reactFlow";
+} from "~/lib/helpers/reactFlow";
 import SecondaryButton from "../../../../_components/inputs/buttons/SecondaryButton";
 import NoteAddIcon from "@mui/icons-material/NoteAdd";
 import UserStoryDetailPopup from "~/app/_components/popups/UserStoryDetailPopup";
@@ -35,7 +35,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import {
-  type BacklogItemType,
+  type AnyBacklogItemType,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
@@ -327,7 +327,7 @@ export default function TaskDependencyTree() {
   const [parentId, taskId, parentType] = detailItemId.split("-") as [
     string,
     string,
-    BacklogItemType,
+    AnyBacklogItemType,
   ];
 
   // #endregion
