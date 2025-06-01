@@ -20,45 +20,49 @@ export default function ProjectPerformance() {
   const [selectedMember, setSelectedMember] = useState<UserCol | null>(null);
 
   return (
-    <div className="flex h-full w-full flex-col gap-x-16 md:flex-row">
-      <div className="flex w-[55vw] flex-col items-baseline gap-3 pb-4">
-        <div className="flex w-full flex-row justify-between">
-          <h1 className="grow-[1] text-3xl font-semibold">Team Performance</h1>
-          <div className="min-w-[300px]">
-            <SegmentedControl
-              options={["Week", "Month", "Sprint"]}
-              selectedOption={section}
-              onChange={(value) => {
-                setSection(value as z.infer<typeof PerformanceTime>);
-                localStorage.setItem("performance-section", value);
-              }}
-            />
+    <div className="m-6 flex-1 p-4">
+      <div className="flex h-full w-full flex-col gap-x-16 md:flex-row">
+        <div className="flex w-[55vw] flex-col items-baseline gap-3 pb-4">
+          <div className="flex w-full flex-row justify-between">
+            <h1 className="grow-[1] text-3xl font-semibold">
+              Team Performance
+            </h1>
+            <div className="min-w-[300px]">
+              <SegmentedControl
+                options={["Week", "Month", "Sprint"]}
+                selectedOption={section}
+                onChange={(value) => {
+                  setSection(value as z.infer<typeof PerformanceTime>);
+                  localStorage.setItem("performance-section", value);
+                }}
+              />
+            </div>
           </div>
-        </div>
-        <SearchBar
-          placeholder="Find a team member..."
-          searchValue={searchValue}
-          handleUpdateSearch={(e) => setSearchValue(e.target.value)}
-        />
-        {/* FIXME: pass timeInterval and use it to actually compute the team performance */}
-        <MemberList
-          projectId={projectIdString}
-          searchValue={searchValue}
-          // timeInterval={section}
-          setSelectedMember={setSelectedMember}
-          selectedMember={selectedMember}
-        />
-      </div>
-      <div className="flex-1">
-        {selectedMember ? (
-          <MemberDetailsCard
-            member={selectedMember}
+          <SearchBar
+            placeholder="Find a team member..."
+            searchValue={searchValue}
+            handleUpdateSearch={(e) => setSearchValue(e.target.value)}
+          />
+          {/* FIXME: pass timeInterval and use it to actually compute the team performance */}
+          <MemberList
+            projectId={projectIdString}
+            searchValue={searchValue}
             // timeInterval={section}
             setSelectedMember={setSelectedMember}
+            selectedMember={selectedMember}
           />
-        ) : (
-          <ProductivityCard projectId={projectIdString} time={section} />
-        )}
+        </div>
+        <div className="flex-1">
+          {selectedMember ? (
+            <MemberDetailsCard
+              member={selectedMember}
+              // timeInterval={section}
+              setSelectedMember={setSelectedMember}
+            />
+          ) : (
+            <ProductivityCard projectId={projectIdString} time={section} />
+          )}
+        </div>
       </div>
     </div>
   );

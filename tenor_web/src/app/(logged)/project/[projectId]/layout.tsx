@@ -85,7 +85,9 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
       {!isLoadingRole && (
         <>
           {permitted ? (
-            <main className="m-6 flex-1 overflow-hidden p-4">{children}</main>
+            <main className="flex flex-1 flex-col overflow-hidden">
+              {children}
+            </main>
           ) : (
             <div className="flex h-full flex-col items-center justify-center text-center">
               <SearchOffIcon style={{ fontSize: 100, color: "gray" }} />

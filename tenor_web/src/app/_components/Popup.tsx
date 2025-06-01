@@ -8,8 +8,8 @@ import CloseSidebarIcon from "@mui/icons-material/LastPage";
 import { type ClassNameValue } from "tailwind-merge";
 import PrimaryButton from "./inputs/buttons/PrimaryButton";
 import { useSearchParam } from "../_hooks/useSearchParam";
-import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import usePersistentState from "../_hooks/usePersistentState";
+import SidebarToggleIcon from "./SidebarToggleIcon";
 
 interface Props {
   show: boolean;
@@ -198,24 +198,15 @@ export default function Popup({
             )}
           >
             {sidebar !== undefined && (
-              <button
-                className="text-3xl text-gray-600"
-                onClick={() => {
-                  setShowSidebar(!showSidebar);
-                  setSidebarOpen?.(!showSidebar);
+              <SidebarToggleIcon
+                sidebarShown={showSidebar}
+                setSidebarShown={(newShowSidebar) => {
+                  setShowSidebar(newShowSidebar);
+                  setSidebarOpen?.(newShowSidebar);
                 }}
-                data-tooltip-id="tooltip"
-                data-tooltip-content={
-                  showSidebar ? "Hide details" : "Show details"
-                }
+                className="block"
                 data-tooltip-place="left"
-                data-tooltip-delay-show={500}
-              >
-                <MenuOpenIcon
-                  fontSize="inherit"
-                  className={cn({ "rotate-180": showSidebar })}
-                />
-              </button>
+              />
             )}
             <button onClick={dismiss} data-cy="popup-close-button">
               <CloseIcon fontSize="inherit" />

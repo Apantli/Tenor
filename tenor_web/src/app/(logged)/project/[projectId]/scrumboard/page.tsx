@@ -57,59 +57,61 @@ export default function ProjectKanban() {
   };
 
   return (
-    <div className="flex h-full flex-col justify-start overflow-hidden pt-0">
-      <div className="flex items-baseline justify-between gap-3 pb-4">
-        <h1 className="grow-[1] text-3xl font-semibold">Scrum Board</h1>
-        <div className="flex w-[400px] gap-2 pl-3">
-          <SearchBar
-            handleUpdateSearch={(e) => setFilter(e.target.value)}
-            searchValue={filter}
-            placeholder="Search..."
-          />
-          <AdvancedSearch
+    <div className="m-6 flex-1 p-4">
+      <div className="flex h-full flex-col justify-start overflow-hidden pt-0">
+        <div className="flex items-baseline justify-between gap-3 pb-4">
+          <h1 className="grow-[1] text-3xl font-semibold">Scrum Board</h1>
+          <div className="flex w-[400px] gap-2 pl-3">
+            <SearchBar
+              handleUpdateSearch={(e) => setFilter(e.target.value)}
+              searchValue={filter}
+              placeholder="Search..."
+            />
+            <AdvancedSearch
+              advancedFilters={advancedFilters}
+              setAdvancedFilters={setAdvancedFilters}
+            />
+          </div>
+
+          <div className="min-w-[300px]">
+            <SegmentedControl
+              options={["Tasks", "Backlog Items"]}
+              selectedOption={section}
+              onChange={(value) => {
+                setSection(value as ScrumboardSections);
+                localStorage.setItem("scrumboard-section", value);
+              }}
+            />
+          </div>
+
+          {permission >= permissionNumbers.write && (
+            <PrimaryButton onClick={() => setShowNewList(true)}>
+              + Add list
+            </PrimaryButton>
+          )}
+        </div>
+
+        {section === "Tasks" && (
+          <TasksKanban
+            filter={filter}
             advancedFilters={advancedFilters}
-            setAdvancedFilters={setAdvancedFilters}
-          />
-        </div>
+          ></TasksKanban>
+        )}
+        {section === "Backlog Items" && (
+          <ItemsKanban
+            filter={filter}
+            advancedFilters={advancedFilters}
+          ></ItemsKanban>
+        )}
 
-        <div className="min-w-[300px]">
-          <SegmentedControl
-            options={["Tasks", "Backlog Items"]}
-            selectedOption={section}
-            onChange={(value) => {
-              setSection(value as ScrumboardSections);
-              localStorage.setItem("scrumboard-section", value);
-            }}
+        {renderNewList && (
+          <CreateKanbanListPopup
+            onListAdded={onListAdded}
+            showPopup={showNewList}
+            setShowPopup={setShowNewList}
           />
-        </div>
-
-        {permission >= permissionNumbers.write && (
-          <PrimaryButton onClick={() => setShowNewList(true)}>
-            + Add list
-          </PrimaryButton>
         )}
       </div>
-
-      {section === "Tasks" && (
-        <TasksKanban
-          filter={filter}
-          advancedFilters={advancedFilters}
-        ></TasksKanban>
-      )}
-      {section === "Backlog Items" && (
-        <ItemsKanban
-          filter={filter}
-          advancedFilters={advancedFilters}
-        ></ItemsKanban>
-      )}
-
-      {renderNewList && (
-        <CreateKanbanListPopup
-          onListAdded={onListAdded}
-          showPopup={showNewList}
-          setShowPopup={setShowNewList}
-        />
-      )}
     </div>
   );
 }

@@ -52,57 +52,60 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
   const rootPath = pathName.slice(0, dirIndex);
 
   return (
-    <div className="flex h-full flex-row">
-      <div className="flex h-full w-[450px] basis-[400px] flex-col border-r-2 pr-10">
-        <h1 className="mb-5 text-3xl font-semibold">Project Settings</h1>
+    // FIXME: This is a temporary fix for the layout issues, it needs to be a responsive sidebar as well
+    <div className="m-6 flex-1 p-4">
+      <div className="flex h-full flex-row">
+        <div className="flex h-full w-[450px] basis-[400px] flex-col border-r-2 pr-10">
+          <h1 className="mb-5 text-3xl font-semibold">Project Settings</h1>
 
-        {pages.map(({ title, link, icon: Icon }, i) => {
-          if (title === "General") {
-            if (role?.id !== "owner") {
-              return null;
+          {pages.map(({ title, link, icon: Icon }, i) => {
+            if (title === "General") {
+              if (role?.id !== "owner") {
+                return null;
+              }
             }
-          }
 
-          return (
-            <InterceptedLink
-              key={link}
-              className={cn(
-                "flex items-center gap-3 border-t-2 p-4 hover:bg-gray-100",
-                i === pages.length - 1 && "border-b-2",
-                joinPath(rootPath, link) === pathName && "bg-gray-100",
-              )}
-              href={joinPath(rootPath, link)}
-            >
-              <Icon fontSize="large" />
-              <span
-                className={cn({
-                  "font-semibold": joinPath(rootPath, link) === pathName,
-                })}
-                onClick={async () => {
-                  if (joinPath(rootPath, link) === pathName) return;
-                  if (isModified.current) {
-                    const confirmation = await confirm(
-                      "Are you sure?",
-                      "Your changes will be discarded.",
-                      "Discard changes",
-                      "Keep Editing",
-                    );
-                    if (!confirmation) return;
-                  }
-                  isModified.current = false;
-                  router.push(joinPath(rootPath, link));
-                }}
+            return (
+              <InterceptedLink
+                key={link}
+                className={cn(
+                  "flex items-center gap-3 border-t-2 p-4 hover:bg-gray-100",
+                  i === pages.length - 1 && "border-b-2",
+                  joinPath(rootPath, link) === pathName && "bg-gray-100",
+                )}
+                href={joinPath(rootPath, link)}
               >
-                {title}
-              </span>
-              {joinPath(rootPath, link) !== pathName && (
-                <ArrowForwardIosIcon className="ml-auto text-gray-300" />
-              )}
-            </InterceptedLink>
-          );
-        })}
+                <Icon fontSize="large" />
+                <span
+                  className={cn({
+                    "font-semibold": joinPath(rootPath, link) === pathName,
+                  })}
+                  onClick={async () => {
+                    if (joinPath(rootPath, link) === pathName) return;
+                    if (isModified.current) {
+                      const confirmation = await confirm(
+                        "Are you sure?",
+                        "Your changes will be discarded.",
+                        "Discard changes",
+                        "Keep Editing",
+                      );
+                      if (!confirmation) return;
+                    }
+                    isModified.current = false;
+                    router.push(joinPath(rootPath, link));
+                  }}
+                >
+                  {title}
+                </span>
+                {joinPath(rootPath, link) !== pathName && (
+                  <ArrowForwardIosIcon className="ml-auto text-gray-300" />
+                )}
+              </InterceptedLink>
+            );
+          })}
+        </div>
+        <div className="ml-10 flex-1 overflow-auto">{children}</div>
       </div>
-      <div className="ml-10 flex-1 overflow-auto">{children}</div>
     </div>
   );
 }

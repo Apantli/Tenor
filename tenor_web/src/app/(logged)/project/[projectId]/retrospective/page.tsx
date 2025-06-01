@@ -75,85 +75,87 @@ export default function ProjectSprintRetrospectivePage() {
     !userClickedShowAnswers;
 
   return (
-    <div className="flex h-full flex-col justify-start overflow-y-auto">
-      <h1 className="text-3xl font-semibold">
-        Sprint retrospective for Sprint {sprintNumber && `${sprintNumber}`}
-      </h1>
-      <p className="mb-5 text-gray-600">
-        Congratulations on finishing another sprint! Let&apos;s take a look at
-        how it went.
-      </p>
+    <div className="m-6 flex-1 p-4">
+      <div className="flex h-full flex-col justify-start overflow-y-auto">
+        <h1 className="text-3xl font-semibold">
+          Sprint retrospective for Sprint {sprintNumber && `${sprintNumber}`}
+        </h1>
+        <p className="mb-5 text-gray-600">
+          Congratulations on finishing another sprint! Let&apos;s take a look at
+          how it went.
+        </p>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row">
-        <div className="flex h-full w-full flex-col rounded-lg border border-app-border bg-white p-6 shadow-sm lg:w-1/2">
-          <h2 className="mb-4 text-2xl font-semibold">Team Progress</h2>
-          <div className="mb-6">
-            <p className="mb-2 font-medium">90% of user stories completed</p>
-            <div className="h-8 w-full overflow-hidden rounded-md bg-gray-200">
-              <div
-                className="h-full bg-app-secondary"
-                style={{ width: `${teamProgress}%` }}
-              />
-            </div>
-          </div>
-
-          <h2 className="mb-4 text-2xl font-semibold">Personal Progress</h2>
-          <div className="mb-6">
-            <p className="mb-2 font-medium">100% of your tasks completed</p>
-            <div className="h-8 w-full overflow-hidden rounded-md bg-gray-200">
-              <div
-                className="h-full bg-app-light"
-                style={{ width: `${personalProgress}%` }}
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <ProfilePicture
-              user={user}
-              className="h-16 w-16 min-w-16 text-xl"
-              hideTooltip
-            />
-            <div>
-              <p className="text-xl font-semibold">{userName}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-1 flex-col">
-            <PerformanceChart
-              data={SampleData}
-              actions={false}
-              className="ml-8"
-            />
-          </div>
-        </div>
-
-        <div className="relative h-full w-full lg:w-1/2">
-          <HappinessForm
-            sprintRetrospectiveId={sprintRetrospectiveId}
-            onAnsweredCountChange={setAnsweredQuestionsCount}
-          />
-
-          {showMessageOverlay && (
-            <div className="absolute bottom-1 left-1 right-1 top-1 z-10 flex flex-col items-center justify-center rounded-lg bg-white bg-opacity-75 p-4 text-center backdrop-blur-sm">
-              <div className="mb-4 flex items-center justify-center">
-                {notFinishedYet ? (
-                  <QuestionMarkIcon sx={{ fontSize: 60 }} />
-                ) : (
-                  <CheckIcon sx={{ fontSize: 60 }} />
-                )}
+        <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row">
+          <div className="flex h-full w-full flex-col rounded-lg border border-app-border bg-white p-6 shadow-sm lg:w-1/2">
+            <h2 className="mb-4 text-2xl font-semibold">Team Progress</h2>
+            <div className="mb-6">
+              <p className="mb-2 font-medium">90% of user stories completed</p>
+              <div className="h-8 w-full overflow-hidden rounded-md bg-gray-200">
+                <div
+                  className="h-full bg-app-secondary"
+                  style={{ width: `${teamProgress}%` }}
+                />
               </div>
-              <p className="mb-4 text-xl font-semibold">
-                You have completed {answeredQuestionsCount}/3 answers for your
-                happiness survey.
-              </p>
-              <PrimaryButton onClick={() => setUserClickedShowAnswers(true)}>
-                {answeredQuestionsCount === 3
-                  ? "Retrospective Answers"
-                  : "Show Answers"}
-              </PrimaryButton>
             </div>
-          )}
+
+            <h2 className="mb-4 text-2xl font-semibold">Personal Progress</h2>
+            <div className="mb-6">
+              <p className="mb-2 font-medium">100% of your tasks completed</p>
+              <div className="h-8 w-full overflow-hidden rounded-md bg-gray-200">
+                <div
+                  className="h-full bg-app-light"
+                  style={{ width: `${personalProgress}%` }}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+              <ProfilePicture
+                user={user}
+                className="h-16 w-16 min-w-16 text-xl"
+                hideTooltip
+              />
+              <div>
+                <p className="text-xl font-semibold">{userName}</p>
+              </div>
+            </div>
+
+            <div className="flex flex-1 flex-col">
+              <PerformanceChart
+                data={SampleData}
+                actions={false}
+                className="ml-8"
+              />
+            </div>
+          </div>
+
+          <div className="relative h-full w-full lg:w-1/2">
+            <HappinessForm
+              sprintRetrospectiveId={sprintRetrospectiveId}
+              onAnsweredCountChange={setAnsweredQuestionsCount}
+            />
+
+            {showMessageOverlay && (
+              <div className="absolute bottom-1 left-1 right-1 top-1 z-10 flex flex-col items-center justify-center rounded-lg bg-white bg-opacity-75 p-4 text-center backdrop-blur-sm">
+                <div className="mb-4 flex items-center justify-center">
+                  {notFinishedYet ? (
+                    <QuestionMarkIcon sx={{ fontSize: 60 }} />
+                  ) : (
+                    <CheckIcon sx={{ fontSize: 60 }} />
+                  )}
+                </div>
+                <p className="mb-4 text-xl font-semibold">
+                  You have completed {answeredQuestionsCount}/3 answers for your
+                  happiness survey.
+                </p>
+                <PrimaryButton onClick={() => setUserClickedShowAnswers(true)}>
+                  {answeredQuestionsCount === 3
+                    ? "Retrospective Answers"
+                    : "Show Answers"}
+                </PrimaryButton>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
