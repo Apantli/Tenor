@@ -14,7 +14,10 @@ import { getPreviousSprint } from "../shortcuts/sprints";
 import { reviewPermissions } from "~/lib/defaultValues/permission";
 import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import { TRPCError } from "@trpc/server";
-import { getSprintRetrospectiveTextAnswersContext } from "../shortcuts/sprintRetrospectives";
+import {
+  getSprintRetrospectiveTextAnswersContext,
+  getSprintTeamProgress,
+} from "../shortcuts/sprintRetrospectives";
 
 type RetrospectiveAnswers = Record<string, string>;
 
@@ -180,5 +183,20 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         ),
       );
       return { success: true };
+    }),
+  getRetrospectiveTeamProgess: roleRequiredProcedure(reviewPermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const progress = await getSprintTeamProgress(
+        ctx.firestore,
+        input.projectId,
+        input.sprintId,
+      );
+      return progress;
     }),
 });

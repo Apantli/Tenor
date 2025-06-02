@@ -1,3 +1,5 @@
+import { getSettingsRef } from "./general";
+
 export const getSprintRetrospectiveTextAnswersContext = (
   textAnswers: string[],
 ) => {
@@ -32,4 +34,82 @@ ${textAnswers[2]}
 
 ### End of Answer 3
 `;
+};
+
+export const getCompletedStatusIds = async (
+  firestore: FirebaseFirestore.Firestore,
+  projectId: string,
+): Promise<string[]> => {
+  const settingsRef = getSettingsRef(firestore, projectId);
+  const statusTypesCollectionRef = settingsRef.collection("statusTypes");
+  const snapshot = await statusTypesCollectionRef
+    .where("marksTaskAsDone", "==", true)
+    .where("deleted", "==", false)
+    .get();
+
+  if (snapshot.empty) {
+    return [];
+  }
+
+  const completedIds: string[] = [];
+  snapshot.forEach((doc) => {
+    completedIds.push(doc.id);
+  });
+  return completedIds;
+};
+
+export const getSprintTeamProgress = async (
+  firestore: FirebaseFirestore.Firestore,
+  projectId: string,
+  sprintId: string,
+): Promise<{
+  totalIssues: number;
+  completedIssues: number;
+  totalUserStories: number;
+  completedUserStories: number;
+}> => {
+  const completedStatusIds = await getCompletedStatusIds(firestore, projectId);
+
+  const projectRef = firestore.collection("projects").doc(projectId);
+  const issuesCollectionRef = projectRef.collection("issues");
+  const userStoriesCollectionRef = projectRef.collection("userStories");
+
+  const totalIssuesQuery = issuesCollectionRef
+    .where("sprintId", "==", sprintId)
+    .where("deleted", "==", false);
+  const totalIssuesSnapshot = await totalIssuesQuery.get();
+  const totalIssues = totalIssuesSnapshot.size;
+
+  let completedIssues = 0;
+  if (completedStatusIds.length > 0) {
+    const completedIssuesQuery = issuesCollectionRef
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false)
+      .where("statusId", "in", completedStatusIds);
+    const completedIssuesSnapshot = await completedIssuesQuery.get();
+    completedIssues = completedIssuesSnapshot.size;
+  }
+
+  const totalUserStoriesQuery = userStoriesCollectionRef
+    .where("sprintId", "==", sprintId)
+    .where("deleted", "==", false);
+  const totalUserStoriesSnapshot = await totalUserStoriesQuery.get();
+  const totalUserStories = totalUserStoriesSnapshot.size;
+
+  let completedUserStories = 0;
+  if (completedStatusIds.length > 0) {
+    const completedUserStoriesQuery = userStoriesCollectionRef
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false)
+      .where("statusId", "in", completedStatusIds);
+    const completedUserStoriesSnapshot = await completedUserStoriesQuery.get();
+    completedUserStories = completedUserStoriesSnapshot.size;
+  }
+
+  return {
+    totalIssues,
+    completedIssues,
+    totalUserStories,
+    completedUserStories,
+  };
 };

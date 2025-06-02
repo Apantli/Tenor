@@ -33,6 +33,7 @@ import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
+import { ProgressBar } from "~/app/_components/ProgressBar";
 
 // Z index documentation:
 // 0-1000: Default z-index range for most elements (feel free to contribute to the documentation)
@@ -63,6 +64,7 @@ export default function ComponentShowcasePage() {
         <InputComponents />
         <DatePickerShowcase />
         <EditableBoxShowCase />
+        <ProgressBarShowcase />
         <SegmentedControlShowcase />
         <DropdownColorPickerShowcase />
       </div>
@@ -816,6 +818,28 @@ function DropdownColorPickerShowcase() {
         onChange={setColor}
         className="w-48"
       />
+    </div>
+  );
+}
+
+function ProgressBarShowcase() {
+  const [value, setValue] = useState(40);
+  return (
+    <div>
+      <hr />
+      <h2 className="my-2 text-2xl font-medium">Progress Bar</h2>
+      <ProgressBar
+        min={0}
+        max={100}
+        value={value}
+        progressBarColor="#086A72"
+        emptyBarColor="#CCCCCC"
+      />
+      <div className="mt-4">
+        <SecondaryButton onClick={() => setValue(value + 10)}>
+          Increase Progress
+        </SecondaryButton>
+      </div>
     </div>
   );
 }
