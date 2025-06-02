@@ -12,6 +12,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import ProgressBar from "~/app/_components/ProgressBar";
 import dynamic from "next/dynamic";
+import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
 
 const DynamicPerformanceChart = dynamic(
   () =>
@@ -37,6 +38,9 @@ export default function ProjectSprintRetrospectivePage() {
     });
 
   const previousSprintId = previousSprint?.id ?? "";
+  const { timeRemaining } = useRetrospectiveCountdown(
+    previousSprint?.endDate ?? null,
+  );
 
   const { data: sprint, isLoading: loadingSprint } =
     api.sprints.getSprint.useQuery(
@@ -105,10 +109,17 @@ export default function ProjectSprintRetrospectivePage() {
   return (
     <div className="flex h-full flex-col">
       <header className="px-6 pb-4 pt-6">
-        <h1 className="mb-2 text-3xl font-semibold">
-          Sprint Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
-        </h1>
-        <p className="text-gray-600">
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-semibold">
+            Sprint Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
+          </h1>
+          {timeRemaining && (
+            <span className="text-sm text-gray-500">
+              Ends in {timeRemaining}
+            </span>
+          )}
+        </div>
+        <p className="mt-2 text-gray-600">
           Congratulations on finishing another sprint! Let&apos;s take a look at
           how it went.
         </p>
