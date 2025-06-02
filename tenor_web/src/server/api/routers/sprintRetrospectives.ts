@@ -18,6 +18,8 @@ import {
   getSprintRetrospectiveTextAnswersContext,
   getSprintTeamProgress,
   getSprintPersonalProgress,
+  ensureSprintTeamProgress,
+  ensureSprintPersonalProgress,
 } from "../shortcuts/sprintRetrospectives";
 
 type RetrospectiveAnswers = Record<string, string>;
@@ -220,5 +222,44 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         input.userId,
       );
       return personalProgress;
+    }),
+  ensureRetrospectiveTeamProgress: roleRequiredProcedure(
+    reviewPermissions,
+    "read",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ensureSprintTeamProgress(
+        ctx.firestore,
+        input.projectId,
+        input.sprintId,
+      );
+      return { success: true };
+    }),
+
+  ensureRetrospectivePersonalProgress: roleRequiredProcedure(
+    reviewPermissions,
+    "read",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ensureSprintPersonalProgress(
+        ctx.firestore,
+        input.projectId,
+        input.sprintId,
+        input.userId,
+      );
+      return { success: true };
     }),
 });

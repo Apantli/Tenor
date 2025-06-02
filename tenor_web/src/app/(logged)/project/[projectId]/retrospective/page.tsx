@@ -72,8 +72,6 @@ export default function ProjectSprintRetrospectivePage() {
       },
       {
         enabled: !!previousSprintId,
-        refetchOnWindowFocus: "always",
-        staleTime: 0,
       },
     );
 
@@ -85,9 +83,7 @@ export default function ProjectSprintRetrospectivePage() {
         userId: user?.uid ?? "",
       },
       {
-        enabled: !!previousSprintId,
-        refetchOnWindowFocus: "always",
-        staleTime: 0,
+        enabled: !!previousSprintId && !!user?.uid,
       },
     );
 
@@ -124,7 +120,7 @@ export default function ProjectSprintRetrospectivePage() {
           Sprint Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
           {timeRemaining && (
             <span className="ml-3 text-sm font-normal text-gray-500">
-              Ends in {timeRemaining}
+              This retrospective ends in {timeRemaining}
             </span>
           )}
         </h1>

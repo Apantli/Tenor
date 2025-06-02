@@ -60,7 +60,7 @@ export const getCompletedStatusIds = async (
   return completedIds;
 };
 
-export const getSprintTeamProgress = async (
+export const computeSprintTeamProgress = async (
   firestore: Firestore,
   projectId: string,
   sprintId: string,
@@ -122,7 +122,7 @@ export const getSprintTeamProgress = async (
   };
 };
 
-export const getSprintPersonalProgress = async (
+export const computeSprintPersonalProgress = async (
   firestore: Firestore,
   projectId: string,
   sprintId: string,
@@ -214,4 +214,180 @@ export const getSprintPersonalProgress = async (
   });
 
   return { totalAssignedTasks, completedAssignedTasks };
+};
+
+export const postSprintTeamProgress = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  const projectRef = firestore.collection("projects").doc(projectId);
+  const teamRetrospectivesRef = projectRef
+    .collection("teamRetrospectives")
+    .doc(sprintId);
+
+  const data = await computeSprintTeamProgress(firestore, projectId, sprintId);
+
+  await teamRetrospectivesRef.set({
+    ...data,
+    updatedAt: new Date(),
+  });
+};
+
+export const postSprintPersonalProgress = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+  userId: string,
+) => {
+  const projectRef = firestore.collection("projects").doc(projectId);
+  const personalRetrospectivesRef = projectRef
+    .collection("personalRetrospectives")
+    .doc(userId);
+
+  const data = await computeSprintPersonalProgress(
+    firestore,
+    projectId,
+    sprintId,
+    userId,
+  );
+
+  await personalRetrospectivesRef.set({
+    ...data,
+    sprintId,
+    updatedAt: new Date(),
+  });
+};
+
+export const getSprintTeamProgress = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+): Promise<{
+  totalIssues: number;
+  completedIssues: number;
+  totalUserStories: number;
+  completedUserStories: number;
+}> => {
+  const projectRef = firestore.collection("projects").doc(projectId);
+  const teamRetrospectivesRef = projectRef
+    .collection("teamRetrospectives")
+    .doc(sprintId);
+
+  try {
+    const doc = await teamRetrospectivesRef.get();
+
+    if (doc.exists) {
+      const data = doc.data();
+      return {
+        totalIssues: data?.totalIssues as number,
+        completedIssues: data?.completedIssues as number,
+        totalUserStories: data?.totalUserStories as number,
+        completedUserStories: data?.completedUserStories as number,
+      };
+    }
+  } catch (error) {
+    console.error("Error getting team retrospective:", error);
+  }
+
+  await postSprintTeamProgress(firestore, projectId, sprintId);
+
+  const doc = await teamRetrospectivesRef.get();
+  const data = doc.data();
+
+  return {
+    totalIssues: data?.totalIssues as number,
+    completedIssues: data?.completedIssues as number,
+    totalUserStories: data?.totalUserStories as number,
+    completedUserStories: data?.completedUserStories as number,
+  };
+};
+
+export const getSprintPersonalProgress = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+  userId: string,
+): Promise<{
+  totalAssignedTasks: number;
+  completedAssignedTasks: number;
+}> => {
+  const projectRef = firestore.collection("projects").doc(projectId);
+  const personalRetrospectivesRef = projectRef
+    .collection("personalRetrospectives")
+    .doc(userId);
+
+  try {
+    const doc = await personalRetrospectivesRef.get();
+
+    if (doc.exists) {
+      const data = doc.data();
+      if (data?.sprintId === sprintId) {
+        return {
+          totalAssignedTasks: data?.totalAssignedTasks as number,
+          completedAssignedTasks: data?.completedAssignedTasks as number,
+        };
+      }
+    }
+  } catch (error) {
+    console.error("Error getting personal retrospective:", error);
+  }
+
+  await postSprintPersonalProgress(firestore, projectId, sprintId, userId);
+
+  const doc = await personalRetrospectivesRef.get();
+  const data = doc.data();
+
+  return {
+    totalAssignedTasks: data?.totalAssignedTasks as number,
+    completedAssignedTasks: data?.completedAssignedTasks as number,
+  };
+};
+
+export const ensureSprintTeamProgress = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+): Promise<void> => {
+  const projectRef = firestore.collection("projects").doc(projectId);
+  const teamRetrospectivesRef = projectRef
+    .collection("teamRetrospectives")
+    .doc(sprintId);
+
+  try {
+    const doc = await teamRetrospectivesRef.get();
+    if (doc.exists) {
+      return;
+    }
+  } catch (error) {
+    console.error("Error checking team retrospective:", error);
+  }
+
+  await postSprintTeamProgress(firestore, projectId, sprintId);
+};
+
+export const ensureSprintPersonalProgress = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+  userId: string,
+): Promise<void> => {
+  const projectRef = firestore.collection("projects").doc(projectId);
+  const personalRetrospectivesRef = projectRef
+    .collection("personalRetrospectives")
+    .doc(userId);
+
+  try {
+    const doc = await personalRetrospectivesRef.get();
+    if (doc.exists) {
+      const data = doc.data();
+      if (data?.sprintId === sprintId) {
+        return;
+      }
+    }
+  } catch (error) {
+    console.error("Error checking personal retrospective:", error);
+  }
+
+  await postSprintPersonalProgress(firestore, projectId, sprintId, userId);
 };
