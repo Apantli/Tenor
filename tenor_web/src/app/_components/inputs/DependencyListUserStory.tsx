@@ -45,7 +45,7 @@ export default function DependencyListUserStory({
     (userStory) => userStory.id !== userStoryId,
   );
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatUserStoryScrumId = useFormatUserStoryScrumId(projectId as string);
 
   const filteredUserStories = allUserStoriesExceptCurrent?.filter(
     (userStory) => {

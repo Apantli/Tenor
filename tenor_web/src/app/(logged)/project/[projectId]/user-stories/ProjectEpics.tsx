@@ -36,7 +36,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
   const utils = api.useUtils();
   const confirm = useConfirmation();
   const { predefinedAlerts } = useAlert();
-  const formatEpicScrumId = useFormatEpicScrumId();
+  const formatEpicScrumId = useFormatEpicScrumId(projectId as string);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   // #endregion
 

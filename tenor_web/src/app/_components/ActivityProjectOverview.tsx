@@ -30,7 +30,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
 
   const [searchText, setSearchText] = useState("");
 
-  const formatAnyScrumId = useFormatAnyScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId(projectId);
 
   const firebaseTimestampToDate = getRelativeTimeString;
 
@@ -111,16 +111,8 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
 
   const isLoading = activitiesLoading || usersLoading;
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <LoadingSpinner color="primary" />
-      </div>
-    );
-  }
-
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-3">
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
         <h1 className="w-full self-center text-2xl font-semibold">
           Recent Project Activity
@@ -142,79 +134,86 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
             </div>
           </div>
         )}
+        {isLoading ? (
+          <div className="flex h-full w-full items-center justify-center py-24">
+            <LoadingSpinner color="primary" />
+          </div>
+        ) : (
+          filteredActivities?.map((activity) => {
+            // Try to match user by userId - will work if userId matches any of our mapped fields
+            const user = activity.userId ? userMap[activity.userId] : undefined;
+            const itemTitle = getItemTitle(activity);
+            const scrumId = getScrumId(activity);
 
-        {filteredActivities?.map((activity) => {
-          // Try to match user by userId - will work if userId matches any of our mapped fields
-          const user = activity.userId ? userMap[activity.userId] : undefined;
-          const itemTitle = getItemTitle(activity);
-          const scrumId = getScrumId(activity);
-
-          return (
-            <div
-              key={activity.id}
-              className="flex w-full flex-row border-b-2 px-3 py-4 transition hover:bg-gray-100"
-            >
-              <div className="flex w-3/4 flex-col items-start">
-                <h3 className="line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
-                  {activity.type === "SP" && <span>Sprint</span>}
-                  {scrumId && (
-                    <>
-                      {scrumId}{" "}
-                      <span className="font-normal">{itemTitle}</span>{" "}
-                    </>
-                  )}
-                </h3>
-                <div className="flex w-full flex-row items-center justify-start">
-                  {user ? (
-                    <ProfilePicture
-                      pictureClassName="self-center"
-                      user={user}
-                    />
-                  ) : activity.userId ? (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
-                      <span title={`Unknown user: ${activity.userId}`}>?</span>
-                    </div>
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs text-gray-400">
-                      <span>-</span>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col pl-2">
-                    {/* Show generic user label or system */}
-                    <p className="text-xs text-gray-600">
-                      {activity.userId ? "" : "System"}
-                    </p>
-
-                    {/* Show date */}
-                    {activity.date && (
-                      <p className="text-s text-blakc self-center">
-                        {firebaseTimestampToDate(activity.date)}
-                      </p>
+            return (
+              <div
+                key={activity.id}
+                className="flex w-full flex-row border-b-2 px-3 py-4 transition hover:bg-gray-100"
+              >
+                <div className="flex w-3/4 flex-col items-start">
+                  <h3 className="line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
+                    {activity.type === "SP" && <span>Sprint</span>}
+                    {scrumId && (
+                      <>
+                        {scrumId}{" "}
+                        <span className="font-normal">{itemTitle}</span>{" "}
+                      </>
                     )}
+                  </h3>
+                  <div className="flex w-full flex-row items-center justify-start">
+                    {user ? (
+                      <ProfilePicture
+                        pictureClassName="self-center"
+                        user={user}
+                      />
+                    ) : activity.userId ? (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
+                        <span title={`Unknown user: ${activity.userId}`}>
+                          ?
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs text-gray-400">
+                        <span>-</span>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col pl-2">
+                      {/* Show generic user label or system */}
+                      <p className="text-xs text-gray-600">
+                        {activity.userId ? "" : "System"}
+                      </p>
+
+                      {/* Show date */}
+                      {activity.date && (
+                        <p className="text-s text-blakc self-center">
+                          {firebaseTimestampToDate(activity.date)}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex w-1/4 flex-row items-end justify-end gap-3">
-                {/* Action tag with dynamic background color */}
-                <TagComponent
-                  className={`rounded-lg text-white ${getPillColorByActivityType(
-                    activity.action?.toLowerCase() as ActionType,
-                  )}`}
-                >
-                  {capitalize(activity.action || "")}
-                </TagComponent>
+                <div className="flex w-1/4 flex-row items-end justify-end gap-3">
+                  {/* Action tag with dynamic background color */}
+                  <TagComponent
+                    className={`rounded-lg text-white ${getPillColorByActivityType(
+                      activity.action?.toLowerCase() as ActionType,
+                    )}`}
+                  >
+                    {capitalize(activity.action || "")}
+                  </TagComponent>
 
-                {/* Type badges - keep as is */}
-                <TagComponent
-                  className={`rounded-lg text-white ${getAccentColorByCardType(activity.type as BacklogItemAndTaskDetailType)}`}
-                >
-                  {getTypeDisplayName(activity.type)}
-                </TagComponent>
+                  {/* Type badges - keep as is */}
+                  <TagComponent
+                    className={`rounded-lg text-white ${getAccentColorByCardType(activity.type as BacklogItemAndTaskDetailType)}`}
+                  >
+                    {getTypeDisplayName(activity.type)}
+                  </TagComponent>
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

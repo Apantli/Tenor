@@ -2,23 +2,15 @@
 
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import type { ProjectStatusData } from "~/app/(logged)/(dashboard)/ProjectStatusChart";
+import {
+  StatusBarChart,
+  type ProjectStatusData,
+} from "~/app/(logged)/(dashboard)/ProjectStatusChart";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { timestampToDate } from "~/lib/helpers/parsers";
 import { cn } from "~/lib/helpers/utils";
-import dynamic from "next/dynamic";
-
-const DynamicStatusBarChart = dynamic(
-  () =>
-    import("~/app/(logged)/(dashboard)/ProjectStatusChart").then(
-      (m) => m.StatusBarChart,
-    ),
-  {
-    ssr: false,
-  },
-);
 
 export const ProjectStatusDashboard = ({
   className,
@@ -74,7 +66,7 @@ export const ProjectStatusDashboard = ({
   return (
     <div
       className={cn(
-        "flex h-[40vh] w-full flex-col items-start justify-start rounded-md border-2 p-4",
+        "flex h-full flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-3",
         className,
       )}
     >
@@ -99,7 +91,7 @@ export const ProjectStatusDashboard = ({
           </h1>
         </div>
       ) : (
-        <DynamicStatusBarChart data={barCharData} domain={[0, domainMax]} />
+        <StatusBarChart data={barCharData} domain={[0, domainMax]} />
       )}
 
       <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">

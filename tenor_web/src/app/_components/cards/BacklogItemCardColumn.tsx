@@ -10,6 +10,7 @@ import {
 } from "~/app/_hooks/useAdvancedSearchFilters";
 import type { BacklogItemDetail } from "~/lib/types/detailSchemas";
 import type { AnyBacklogItemType } from "~/lib/types/firebaseSchemas";
+import { useParams } from "next/navigation";
 
 interface Props {
   backlogItems: BacklogItemDetail[];
@@ -57,7 +58,8 @@ export default function BacklogItemCardColumn({
       return matchesSearchFilters(val, "", advancedFilters);
     });
 
-  const formatAnyScrumId = useFormatAnyScrumId();
+  const { projectId } = useParams();
+  const formatAnyScrumId = useFormatAnyScrumId(projectId as string);
 
   return (
     <CardColumn

@@ -26,9 +26,8 @@ export default function ProjectOverview() {
               onExpandChange={setIsProjectInfoExpanded}
             />
           </div>
-          <div className="flex h-full flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-3">
-            <ActivityProjectOverview projectId={projectId} />
-          </div>
+
+          <ActivityProjectOverview projectId={projectId} />
         </div>
 
         {/* Second col - col 2 */}

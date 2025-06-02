@@ -1,6 +1,5 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import type { AllBasicItemType } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 
@@ -9,10 +8,9 @@ const calculatePaddingNeeded = (maxNumber: number) => {
   return Math.max(Math.floor(Math.log10(maxNumber)) + 1, 2);
 };
 
-export const useFormatUserStoryScrumId = () => {
-  const { projectId } = useParams();
+export const useFormatUserStoryScrumId = (projectId: string) => {
   const { data: userStoryCount } = api.userStories.getUserStoryCount.useQuery({
-    projectId: projectId as string,
+    projectId: projectId,
   });
 
   if (userStoryCount === undefined) {
@@ -25,11 +23,10 @@ export const useFormatUserStoryScrumId = () => {
       : `US${String(scrumId).padStart(calculatePaddingNeeded(userStoryCount), "0")}`;
 };
 
-export const useFormatGenericBacklogItemScrumId = () => {
-  const { projectId } = useParams();
+export const useFormatGenericBacklogItemScrumId = (projectId: string) => {
   const { data: backlogItemsCount } =
     api.backlogItems.getBacklogItemCount.useQuery({
-      projectId: projectId as string,
+      projectId: projectId,
     });
 
   if (backlogItemsCount === undefined) {
@@ -42,10 +39,9 @@ export const useFormatGenericBacklogItemScrumId = () => {
       : `IT${String(scrumId).padStart(calculatePaddingNeeded(backlogItemsCount), "0")}`;
 };
 
-export const useFormatEpicScrumId = () => {
-  const { projectId } = useParams();
+export const useFormatEpicScrumId = (projectId: string) => {
   const { data: epicCount } = api.epics.getEpicCount.useQuery({
-    projectId: projectId as string,
+    projectId: projectId,
   });
 
   if (epicCount === undefined) {
@@ -66,10 +62,9 @@ export const useFormatSprintNumber = () => {
   };
 };
 
-export const useFormatTaskScrumId = () => {
-  const { projectId } = useParams();
+export const useFormatTaskScrumId = (projectId: string) => {
   const { data: taskCount } = api.tasks.getTaskCount.useQuery({
-    projectId: projectId as string,
+    projectId: projectId,
   });
 
   if (taskCount === undefined) {
@@ -82,10 +77,9 @@ export const useFormatTaskScrumId = () => {
       : `TS${String(scrumId).padStart(calculatePaddingNeeded(taskCount), "0")}`;
 };
 
-export const useFormatIssueScrumId = () => {
-  const { projectId } = useParams();
+export const useFormatIssueScrumId = (projectId: string) => {
   const { data: issueCount } = api.issues.getIssueCount.useQuery({
-    projectId: projectId as string,
+    projectId: projectId,
   });
 
   if (issueCount === undefined) {
@@ -98,12 +92,13 @@ export const useFormatIssueScrumId = () => {
       : `IS${String(issueId).padStart(calculatePaddingNeeded(issueCount), "0")}`;
 };
 
-export const useFormatAnyScrumId = () => {
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatEpicScrumId = useFormatEpicScrumId();
-  const formatTaskScrumId = useFormatTaskScrumId();
-  const formatIssueScrumId = useFormatIssueScrumId();
-  const formatGenericBacklogItemScrumId = useFormatGenericBacklogItemScrumId();
+export const useFormatAnyScrumId = (projectId: string) => {
+  const formatUserStoryScrumId = useFormatUserStoryScrumId(projectId);
+  const formatEpicScrumId = useFormatEpicScrumId(projectId);
+  const formatTaskScrumId = useFormatTaskScrumId(projectId);
+  const formatIssueScrumId = useFormatIssueScrumId(projectId);
+  const formatGenericBacklogItemScrumId =
+    useFormatGenericBacklogItemScrumId(projectId);
 
   return (scrumId: number, type: AllBasicItemType) => {
     switch (type) {

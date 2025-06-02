@@ -82,7 +82,7 @@ export default function UserStoryDetailPopup({
     taskIdToOpenImmediately ?? "",
   );
 
-  useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
+  useFormatTaskScrumId(projectId as string); // preload the task format function before the user sees the loading state
 
   const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
     projectId: projectId as string,
@@ -136,7 +136,7 @@ export default function UserStoryDetailPopup({
 
   const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatUserStoryScrumId = useFormatUserStoryScrumId(projectId as string);
 
   const { predefinedAlerts } = useAlert();
 

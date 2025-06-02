@@ -6,8 +6,14 @@ import { useState, type ChangeEventHandler } from "react";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import { cn } from "~/lib/helpers/utils";
 
-export default function ProjectList() {
+interface Props {
+  projectId: string | null;
+  setProjectId: (projectId: string | null) => void;
+}
+
+export default function ProjectList({ projectId, setProjectId }: Props) {
   const { data: projects, isLoading } = api.projects.listProjects.useQuery();
   const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
@@ -60,9 +66,18 @@ export default function ProjectList() {
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
-              className="flex flex-row justify-start border-b-2 py-[16px] pr-8 hover:cursor-pointer"
+              className={cn(
+                "flex flex-row justify-start border-b-2 py-[16px] pr-8 hover:cursor-pointer",
+                projectId === project.id && "bg-gray-100 pl-[20px]",
+              )}
               key={project.id}
-              onClick={() => handleOpenProject(project.id)}
+              onClick={() => {
+                if (projectId === project.id) {
+                  handleOpenProject(project.id);
+                } else {
+                  setProjectId(project.id);
+                }
+              }}
             >
               <div className="flex h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
                 {loadingImages[project.id] !== false && (

@@ -111,7 +111,7 @@ export default function TaskDetailPopup({
     description: "",
   });
 
-  const formatTaskScrumId = useFormatTaskScrumId();
+  const formatTaskScrumId = useFormatTaskScrumId(projectId as string);
 
   const { predefinedAlerts } = useAlert();
 

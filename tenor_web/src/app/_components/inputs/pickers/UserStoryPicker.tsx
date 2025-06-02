@@ -24,7 +24,7 @@ export default function UserStoryPicker({
     projectId: projectId as string,
   });
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
+  const formatUserStoryScrumId = useFormatUserStoryScrumId(projectId as string);
 
   const getUserStoryId = (userStory: UserStoryPreview) => {
     return formatUserStoryScrumId(userStory.scrumId);
