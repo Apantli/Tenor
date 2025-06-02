@@ -153,12 +153,11 @@ export default function HappinessForm({
   const handleSubmit = async () => {
     if (!sprintRetrospectiveId || !userId) return;
 
-    const hasNewUnsavedContent =
-      (!savedFields.roleFeeling && responses.roleFeeling.trim() !== "") ||
-      (!savedFields.companyFeeling && responses.companyFeeling.trim() !== "") ||
-      (!savedFields.improvementSuggestion &&
-        responses.improvementSuggestion.trim() !== "");
-    if (!hasNewUnsavedContent) {
+    const missingFields =
+      responses.roleFeeling.trim() === "" ||
+      responses.companyFeeling.trim() === "" ||
+      responses.improvementSuggestion.trim() === "";
+    if (missingFields) {
       predefinedAlerts.formCompletionError();
       return;
     }
@@ -263,8 +262,9 @@ export default function HappinessForm({
               savedFields.companyFeeling &&
               savedFields.improvementSuggestion)
           }
+          loading={isSubmitting}
         >
-          {isSubmitting ? "Saving..." : "Send report"}
+          Send report
         </PrimaryButton>
       </div>
 

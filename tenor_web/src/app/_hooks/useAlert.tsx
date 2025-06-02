@@ -349,9 +349,7 @@ export const useAlert = () => {
         "Please wait until the current completion finishes.",
       ),
     formCompletionError: () =>
-      alertTemplates.oops(
-        "Please enter at least one response to a missing question.",
-      ),
+      alertTemplates.oops("Please anwer all questions."),
     // #endregion
     // #region Other
     tooLongText: (label: string, limit: number) =>
