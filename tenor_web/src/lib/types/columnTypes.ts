@@ -7,7 +7,7 @@ export interface UserStoryCol {
   name: string;
   epicScrumId?: number;
   priority?: Tag;
-  size: Size;
+  size?: Size | "";
   sprintNumber?: number;
   taskProgress: [number | undefined, number | undefined];
 }
@@ -62,7 +62,7 @@ export interface IssueCol {
   relatedUserStory?: ExistingUserStory;
   tags: Tag[];
   stepsToRecreate?: string;
-  size: Size;
+  size?: Size | "";
   sprint?: Sprint;
   assignUsers: {
     uid: string;

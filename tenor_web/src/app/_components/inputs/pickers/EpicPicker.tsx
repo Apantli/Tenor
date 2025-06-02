@@ -11,9 +11,15 @@ interface Props {
   epic?: ExistingEpic;
   onChange: (epic?: ExistingEpic) => void;
   disabled?: boolean;
+  noSelectionLabel?: string;
 }
 
-export default function EpicPicker({ epic, onChange, disabled }: Props) {
+export default function EpicPicker({
+  epic,
+  onChange,
+  disabled,
+  noSelectionLabel = "Unassgined",
+}: Props) {
   const { projectId } = useParams();
 
   const { data: epics } = api.epics.getEpics.useQuery({
@@ -28,7 +34,7 @@ export default function EpicPicker({ epic, onChange, disabled }: Props) {
 
   const epicToItem = (epic?: ExistingEpic) => ({
     id: epic?.scrumId.toString() ?? "",
-    label: epic?.name ?? "Choose epic",
+    label: epic?.name ?? noSelectionLabel,
     prefix: epic ? getEpicId(epic) : undefined,
   });
 

@@ -48,7 +48,7 @@ export default function CreateBacklogItemPopup({
     description: string;
     tags: Tag[];
     priority?: Tag;
-    size?: Size;
+    size?: Size | "";
     sprint?: WithId<Sprint>;
   }>({
     name: "",
@@ -154,7 +154,9 @@ export default function CreateBacklogItemPopup({
             <div className="flex-1">
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
-                currentSize={createForm.size}
+                currentSize={
+                  createForm.size === "" ? undefined : createForm.size
+                }
                 callback={(size) => setCreateForm({ ...createForm, size })}
               />
             </div>

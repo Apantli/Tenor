@@ -23,6 +23,7 @@ interface Props {
   label?: string;
   emptyLabel?: string;
   disabled?: boolean;
+  noSelectionLabel?: string;
 }
 
 export default function PillPickerComponent({
@@ -35,6 +36,7 @@ export default function PillPickerComponent({
   label = "Select an item",
   emptyLabel = "No items available",
   disabled = false,
+  noSelectionLabel = "Unassigned",
 }: Props) {
   const [searchValue, setSearchValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -105,7 +107,7 @@ export default function PillPickerComponent({
                   className={cn({ "opacity-0": selectedItem.id !== "" })}
                 ></Check>
                 <div className="flex flex-col justify-start gap-0">
-                  <span className="w-full truncate">Unassigned</span>
+                  <span className="w-full truncate">{noSelectionLabel}</span>
                 </div>
               </DropdownButton>
             )}

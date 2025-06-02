@@ -175,6 +175,7 @@ export default function AdvancedSearch({
               <>
                 <h1 className="mt-2 font-semibold">Sprint</h1>
                 <SprintPicker
+                  noSelectionLabel={"All sprints"}
                   sprint={advancedFilters.sprint}
                   onChange={(sprint) => {
                     setAdvancedFilters({

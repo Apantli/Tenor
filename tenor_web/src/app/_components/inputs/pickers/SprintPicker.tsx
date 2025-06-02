@@ -10,12 +10,14 @@ interface EditableBoxProps {
   sprint?: WithId<Sprint> | undefined;
   onChange: (option: WithId<Sprint> | undefined) => void;
   disabled?: boolean;
+  noSelectionLabel?: string;
 }
 
 export function SprintPicker({
   sprint: selectedOption = undefined,
   onChange,
   disabled = false,
+  noSelectionLabel = "Unassgined",
 }: EditableBoxProps) {
   const { projectId } = useParams();
 
@@ -27,13 +29,16 @@ export function SprintPicker({
 
   const sprintToItem = (sprint?: WithId<Sprint>) => ({
     id: sprint?.number.toString() ?? "",
-    label: sprint?.number ? formatSprintNumber(sprint.number) : "Choose sprint",
+    label: sprint?.number
+      ? formatSprintNumber(sprint.number)
+      : noSelectionLabel,
   });
   return (
     <PillPickerComponent
       disabled={disabled}
       label="Select a sprint"
       emptyLabel="No sprints available"
+      noSelectionLabel={noSelectionLabel}
       selectedItem={sprintToItem(selectedOption)}
       allItems={sprints?.map(sprintToItem) ?? []}
       allowClear={sprints?.length !== 0}
