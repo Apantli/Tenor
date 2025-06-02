@@ -15,10 +15,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
-import { getTasks } from "./tasks";
-import { getIssues } from "./issues";
-import { getUserStories } from "./userStories";
-import { getCurrentSprint } from "./sprints";
+import { getCurrentSprint, getTasksFromSprint } from "./sprints";
 import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
@@ -208,43 +205,23 @@ export const getProjectStatus = async (
   admin: admin.app.App,
 ) => {
   // Fetch all data in parallel
-  const [
-    tasks,
-    statuses,
-    issues,
-    userStories,
-    currentSprint,
-    projectCollaborators,
-  ] = await Promise.all([
-    getTasks(firestore, projectId),
+  const [statuses, currentSprint, projectCollaborators] = await Promise.all([
     getStatusTypes(firestore, projectId),
-    getIssues(firestore, projectId),
-    getUserStories(firestore, projectId),
     getCurrentSprint(firestore, projectId),
     getUsers(admin, firestore, projectId),
   ]);
 
-  // Filter out deleted entries
-  const activeTasks = tasks.filter((task) => !task.deleted);
-  const activeIssues = issues.filter((issue) => !issue.deleted);
-  const activeUserStories = userStories.filter((us) => !us.deleted);
+  if (!currentSprint) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Current sprint not found",
+    });
+  }
 
-  // Collect IDs linked to the current sprint
-  const spruntIssuesIds = new Set(
-    activeIssues
-      .filter((issue) => issue.sprintId === currentSprint?.id)
-      .map((issue) => issue.id),
-  );
-  const sprintUserStoriesIds = new Set(
-    activeUserStories
-      .filter((us) => us.sprintId === currentSprint?.id)
-      .map((us) => us.id),
-  );
-
-  // Filter tasks relevant to the sprint
-  const filteredTasks = activeTasks.filter(
-    (task) =>
-      spruntIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId),
+  const filteredTasks = await getTasksFromSprint(
+    firestore,
+    projectId,
+    currentSprint.id,
   );
 
   // Create a map of status types
@@ -430,32 +407,38 @@ export const getItemActivityDetails = async (
     userStories: [] as ActivityItem[],
     epics: [] as ActivityItem[],
     sprints: [] as ActivityItem[],
-  }
+  };
 
   // Iterate in the activityMap to get the item type and itemId
   for (const activity of activities) {
     if (!activity.itemId || !activity.type) continue;
-    
+
     const itemType = activity.type.toUpperCase();
     const itemId = activity.itemId;
 
     if (!(itemType in TYPE_COLLECTION_MAP)) continue;
 
     // Save the collection name based on the item type
-    const collectionName =  TYPE_COLLECTION_MAP[itemType];
-    
+    const collectionName = TYPE_COLLECTION_MAP[itemType];
+
     // Check if collectionName is defined before using it
     if (!collectionName) continue;
-    
+
     // Make the reference
-    const itemRef = getProjectRef(firestore, projectId).collection(collectionName).doc(itemId);
+    const itemRef = getProjectRef(firestore, projectId)
+      .collection(collectionName)
+      .doc(itemId);
     const docSnap = await itemRef.get();
 
     // If the document does not exist, continue to the next iteration
     if (!docSnap.exists) continue;
 
     // Get the item data
-    const data = { id: itemId, ...docSnap.data(), activity: activity } as ActivityItem;
+    const data = {
+      id: itemId,
+      ...docSnap.data(),
+      activity: activity,
+    } as ActivityItem;
 
     switch (collectionName) {
       case "tasks":

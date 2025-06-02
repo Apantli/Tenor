@@ -51,12 +51,20 @@ export const MemberDetailsCard = ({
     projectId: projectId,
   });
 
-  const { data: userContributions, isLoading: loadingContributions } =
-    api.performance.getContributionOverview.useQuery({
+  const {
+    data: userContributions,
+    error,
+    isLoading: loadingContributions,
+  } = api.performance.getContributionOverview.useQuery(
+    {
       projectId: projectId,
       userId: member.id,
       time: timeInterval,
-    });
+    },
+    {
+      retry: 0,
+    },
+  );
 
   let roleString =
     roles?.find((role) => role.id === member.roleId)?.label ?? emptyRole.label;
@@ -172,7 +180,9 @@ export const MemberDetailsCard = ({
               </div>
             ) : (
               <p className="text-xl text-gray-500">
-                No user contributions in the selected time.
+                {error
+                  ? error.message
+                  : "No user contributions in the selected time."}
               </p>
             )}
           </div>

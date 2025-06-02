@@ -3,6 +3,11 @@ import { SprintSchema } from "~/lib/types/zodFirebaseSchema";
 import { getProjectRef } from "./general";
 import { TRPCError } from "@trpc/server";
 import type { Sprint, WithId } from "~/lib/types/firebaseSchemas";
+import { getTasksFromItem } from "./tasks";
+import { getUserStoriesRef } from "./userStories";
+import { getIssuesRef } from "./issues";
+import { getBacklogItemsRef } from "./backlogItems";
+import type { BacklogItemDetail } from "~/lib/types/detailSchemas";
 
 /**
  * @function getSprintsRef
@@ -194,4 +199,58 @@ export const updateSprintNumberOrder = async (
   await batch.commit();
 
   return reorderedSprints;
+};
+
+// This includes US, IS, and IT
+export const getBacklogItemsFromSprint = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  const currentSprint = await getSprint(firestore, projectId, sprintId);
+  const userStoriesRef = await getUserStoriesRef(firestore, projectId)
+    .where("sprintId", "==", currentSprint.id)
+    .where("deleted", "==", false)
+    .get();
+  const issuesRef = await getIssuesRef(firestore, projectId)
+    .where("sprintId", "==", currentSprint.id)
+    .where("deleted", "==", false)
+    .get();
+  const itemsRef = await getBacklogItemsRef(firestore, projectId)
+    .where("sprintId", "==", currentSprint.id)
+    .where("deleted", "==", false)
+    .get();
+
+  const items = [
+    ...userStoriesRef.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      itemType: "US",
+    })),
+    ...issuesRef.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      itemType: "IS",
+    })),
+    ...itemsRef.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+      itemType: "IT",
+    })),
+  ] as BacklogItemDetail[];
+  return items;
+};
+
+export const getTasksFromSprint = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  const items = await getBacklogItemsFromSprint(firestore, projectId, sprintId);
+  const tasks = await Promise.all(
+    items.map(
+      async (item) => await getTasksFromItem(firestore, projectId, item.id),
+    ),
+  );
+  return tasks.flat();
 };
