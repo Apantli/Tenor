@@ -330,7 +330,7 @@ export default function UserStoryDependencyTree({ segmentedControl }: Props) {
   // #endregion
 
   return (
-    <div className="mt-3 h-full w-full">
+    <div className="h-full w-full">
       {!isLoadingDependencies && dependencyData?.nodes.length == 0 && (
         <div className="flex h-full w-full items-center justify-center">
           <div className="flex flex-col items-center gap-5">
@@ -363,7 +363,7 @@ export default function UserStoryDependencyTree({ segmentedControl }: Props) {
           <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
-            <div className="flex flex-row flex-wrap-reverse items-center justify-end gap-2 pr-6 pt-3">
+            <div className="flex flex-row flex-wrap-reverse items-center justify-end gap-2 pr-6 pt-6">
               <SecondaryButton
                 onClick={() => onLayout()}
                 className={"bg-white"}

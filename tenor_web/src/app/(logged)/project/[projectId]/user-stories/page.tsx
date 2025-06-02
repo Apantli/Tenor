@@ -83,7 +83,7 @@ export default function ProjectUserStories() {
 
       <div
         className={cn("flex flex-1 flex-col items-start gap-3", {
-          "pl-[88px] xl:pl-0": showEpics,
+          "pl-[88px] xl:pl-0": showEpics && selectedViewState === "List",
           "pb-10 pr-10 pt-10": selectedViewState === "List",
         })}
       >
