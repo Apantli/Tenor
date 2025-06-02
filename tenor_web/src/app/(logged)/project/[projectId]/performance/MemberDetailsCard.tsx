@@ -117,7 +117,7 @@ export const MemberDetailsCard = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex h-[40rem] max-h-[40rem] w-full flex-col overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:overflow-y-hidden 2xl:pb-12 2xl:pt-12",
+        "relative mx-auto flex w-full flex-col overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:overflow-y-hidden 2xl:pb-6 2xl:pt-6",
         className,
       )}
     >
@@ -136,11 +136,11 @@ export const MemberDetailsCard = ({
           <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold capitalize xl:text-2xl">
             {member.displayName}
           </h3>
-          <p className="line-clamp-2 text-xl capitalize text-gray-500">
+          <p className="line-clamp-2 text-base capitalize text-gray-500 xl:text-xl">
             {isLoading ? "Loading..." : roleString}
           </p>
         </div>
-        <div className="mx-auto my-auto text-3xl 2xl:text-6xl">
+        <div className="my-auto ml-auto mr-10 text-3xl 2xl:text-6xl">
           <SentimentSatisfiedAltIcon
             fontSize="inherit"
             className="text-app-green"
@@ -149,10 +149,10 @@ export const MemberDetailsCard = ({
       </div>
 
       <div className="mx-8 flex flex-col">
-        <p className="mt-2 text-xl">
+        <p className="mt-2 text-base xl:text-xl">
           <strong>Email:</strong> {member.email}
         </p>
-        <h4 className="mb-4 mt-2 text-xl font-bold 2xl:mt-6">
+        <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
           Contribution overview
         </h4>
         {loadingContributions && (
@@ -166,6 +166,7 @@ export const MemberDetailsCard = ({
               <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
                 <DynamicContributionPieChart
                   data={formattedUserContributions}
+                  scaleFactor={formattedData.length > 0 ? 0.8 : 1}
                 />
                 <ContributionLegend data={formattedUserContributions} />
               </div>
@@ -176,8 +177,8 @@ export const MemberDetailsCard = ({
             )}
           </div>
         )}
-        <h4 className="mb-4 mt-2 text-xl font-bold 2xl:mt-6">
-          Average time per task
+        <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
+          Average time per task (Past 5 weeks)
         </h4>
         <div
           className={cn("flex flex-row gap-8", {
@@ -190,10 +191,11 @@ export const MemberDetailsCard = ({
             </div>
           ) : (
             <>
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col">
                 <h4
-                  className={cn("text-3xl font-bold", {
-                    "text-xl font-normal text-gray-500": !Boolean(lastTime),
+                  className={cn("text-2xl font-bold", {
+                    "text-base font-normal text-gray-500 xl:text-xl":
+                      !Boolean(lastTime),
                   })}
                 >
                   {lastTime ??
