@@ -233,13 +233,12 @@ export default function ProjectSprintRetrospectivePage() {
                   )}
                 </div>
                 <p className="mb-4 text-xl font-semibold">
-                  You have completed {answeredQuestionsCount}/3 answers for your
-                  happiness survey.
+                  You have completed your happiness survey.
                 </p>
                 <PrimaryButton onClick={() => setUserClickedShowAnswers(true)}>
                   {answeredQuestionsCount === 3
-                    ? "Retrospective Answers"
-                    : "Show Answers"}
+                    ? "Review answers"
+                    : "Show answers"}
                 </PrimaryButton>
               </div>
             )}

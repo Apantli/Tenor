@@ -39,8 +39,7 @@ export const getRetrospectiveIdProcedure = roleRequiredProcedure(
 )
   .input(z.object({ sprintId: z.string() }))
   .query(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("get_retrospective_id", {
-      project_id_input: input.projectId,
+    const response = await ctx.supabase.rpc("get_review_id", {
       sprint_id_input: input.sprintId,
     });
 
@@ -79,23 +78,31 @@ export const saveRetrospectiveAnswersProcedure = roleRequiredProcedure(
     z.object({
       reviewId: z.number(),
       userId: z.string(),
-      questionNum: z.number(),
-      answerText: z.string(),
+      responses: z.string().array().length(3),
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("save_retrospective_answer", {
-      p_review_id: input.reviewId,
-      p_user_id: input.userId,
-      p_question_num: input.questionNum,
-      p_response_text: input.answerText,
-    });
-    if (response.error) {
-      throw new Error(
-        `Failed to save retrospective answer: ${response.error.message}`,
-      );
+    const responses = await Promise.all(
+      input.responses.map(async (response, index) => {
+        const responseText = response.trim();
+        if (!responseText) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Response for question ${index + 1} cannot be empty.`,
+          });
+        }
+        return ctx.supabase.rpc("save_retrospective_answer", {
+          p_review_id: input.reviewId,
+          p_user_id: input.userId,
+          p_question_num: index + 1,
+          p_response_text: responseText,
+        });
+      }),
+    );
+    if (responses.some((res) => res.error)) {
+      throw new Error("Failed to save retrospective answer");
     }
-    return response.data as boolean;
+    return responses.every((res) => res.data);
   });
 
 /**
@@ -105,6 +112,37 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
   getRetrospectiveId: getRetrospectiveIdProcedure,
   getRetrospectiveAnswers: getRetrospectiveAnswersProcedure,
   saveRetrospectiveAnswers: saveRetrospectiveAnswersProcedure,
+  saveHappiness: roleRequiredProcedure(reviewPermissions, "write")
+    .input(
+      z.object({
+        reviewId: z.number(),
+        happiness: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { reviewId, happiness } = input;
+
+      if (happiness < 1 || happiness > 10) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Happiness rating must be between 1 and 10.",
+        });
+      }
+
+      const response = await ctx.supabase.rpc("save_happiness", {
+        review_id_input: reviewId,
+        happiness_input: happiness,
+        user_id_input: ctx.session.user.uid,
+      });
+
+      if (response.error) {
+        throw new Error(
+          `Failed to save happiness rating: ${response.error.message}`,
+        );
+      }
+
+      return { success: true };
+    }),
   getPreviousSprint: roleRequiredProcedure(reviewPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -171,12 +209,11 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         z.object({
           answers: z.array(z.string()),
           happinessRating: z.number(),
-          happinessAnalysis: z.string(),
         }),
       );
 
-      await Promise.all(
-        synthesizedResponses.answers.map(
+      await Promise.all([
+        ...synthesizedResponses.answers.map(
           async (answer, index) =>
             await ctx.supabase.rpc("save_retrospective_answer", {
               p_review_id: input.reviewId,
@@ -185,6 +222,85 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
               p_response_text: answer,
             }),
         ),
+        ctx.supabase.rpc("save_happiness", {
+          review_id_input: input.reviewId,
+          happiness_input: synthesizedResponses.happinessRating,
+          user_id_input: ctx.session.user.uid,
+        }),
+      ]);
+      return { success: true, happiness: synthesizedResponses.happinessRating };
+    }),
+  getRetrospectiveTeamProgess: roleRequiredProcedure(reviewPermissions, "read")
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const progress = await getSprintTeamProgress(
+        ctx.firestore,
+        input.projectId,
+        input.sprintId,
+      );
+      return progress;
+    }),
+  getRetrospectivePersonalProgress: roleRequiredProcedure(
+    reviewPermissions,
+    "read",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+        userId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const personalProgress = await getSprintPersonalProgress(
+        ctx.firestore,
+        input.projectId,
+        input.sprintId,
+        input.userId,
+      );
+      return personalProgress;
+    }),
+  ensureRetrospectiveTeamProgress: roleRequiredProcedure(
+    reviewPermissions,
+    "read",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ensureSprintTeamProgress(
+        ctx.firestore,
+        input.projectId,
+        input.sprintId,
+      );
+      return { success: true };
+    }),
+
+  ensureRetrospectivePersonalProgress: roleRequiredProcedure(
+    reviewPermissions,
+    "read",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+        userId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ensureSprintPersonalProgress(
+        ctx.firestore,
+        input.projectId,
+        input.sprintId,
+        input.userId,
       );
       return { success: true };
     }),
