@@ -101,6 +101,7 @@ export function SegmentedControl({
             const target = e.currentTarget as HTMLButtonElement;
             target.scrollIntoView({
               behavior: "smooth",
+              block: "nearest",
             });
           }}
           className={`relative z-10 flex-1 whitespace-nowrap rounded-md px-4 py-2 text-center font-medium transition-colors duration-300 ${

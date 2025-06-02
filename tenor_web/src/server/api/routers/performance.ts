@@ -22,6 +22,7 @@ import { shouldRecomputeProductivity } from "~/lib/helpers/cache";
 import type {
   Issue,
   Productivity,
+  Sprint,
   UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
@@ -29,10 +30,7 @@ import {
   getSprintUserStories,
   getUserStoriesAfter,
 } from "../shortcuts/userStories";
-import {
-  getIssuesAfter,
-  getSprintIssues,
-} from "../shortcuts/issues";
+import { getIssuesAfter, getSprintIssues } from "../shortcuts/issues";
 import { Timestamp } from "firebase-admin/firestore";
 
 import { getStatusTypes } from "../shortcuts/tags";
@@ -73,11 +71,23 @@ export const performanceRouter = createTRPCRouter({
       z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
     )
     .query(async ({ ctx, input }) => {
+      let sprint: WithId<Sprint> | undefined = undefined;
+      if (input.time === "Sprint") {
+        sprint = await getCurrentSprint(ctx.firestore, input.projectId);
+        if (!sprint) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "No activity data available, there is no active sprint.",
+          });
+        }
+      }
+
       const activities = await getActivityPartition(
         ctx.firestore,
         input.projectId,
         input.userId,
         input.time,
+        sprint?.id,
       );
       return activities;
     }),
@@ -86,11 +96,23 @@ export const performanceRouter = createTRPCRouter({
       z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
     )
     .query(async ({ ctx, input }) => {
+      let sprintId: string | undefined = undefined;
+      if (input.time == "Sprint") {
+        sprintId = (await getCurrentSprint(ctx.firestore, input.projectId))?.id;
+        if (!sprintId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message:
+              "No contribution data available, there is no active sprint.",
+          });
+        }
+      }
       const contributionOverview = await getContributionOverview(
         ctx.firestore,
         input.projectId,
         input.userId,
         input.time,
+        sprintId,
       );
       return contributionOverview;
     }),
