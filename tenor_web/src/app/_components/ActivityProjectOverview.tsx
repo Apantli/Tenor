@@ -122,9 +122,9 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
-        <h1 className="w-full self-center text-2xl font-semibold">
+        <h3 className="text-lg self-center w-full font-bold">
           Recent Project Activity
-        </h1>
+        </h3>
         <SearchBar
           searchValue={searchText}
           handleUpdateSearch={(e) => setSearchText(e.target.value)}

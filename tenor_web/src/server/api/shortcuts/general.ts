@@ -15,7 +15,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
-import { getTasks } from "./tasks";
+import { getItemActivityTask, getTasks } from "./tasks";
 import { getIssues } from "./issues";
 import { getUserStories } from "./userStories";
 import { getCurrentSprint } from "./sprints";
@@ -25,6 +25,7 @@ import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { TYPE_COLLECTION_MAP } from "~/lib/helpers/typeDisplayName";
 import { Timestamp } from "firebase-admin/firestore";
+import { addDays, differenceInDays } from "date-fns";
 
 /**
  * @function getProjectsRef
@@ -479,3 +480,113 @@ export const getItemActivityDetails = async (
 
   return results;
 };
+
+export type BurndownDataPoint = {
+  day: number;
+  date: string;
+  completedCount: number;
+};
+
+export type BurndownChartData = Array<{
+  x: number;
+  y: number;
+  c: number;
+}>;
+
+export const getBurndownData = async (
+  startDate: Date,
+  endDate: Date,
+  totalTasks: number,
+  completedTasks: number,
+  burndownHistory: BurndownDataPoint[],
+): Promise<BurndownChartData> => {
+  if (totalTasks === 0) {
+    return [{ x: 0, y: 0, c: 0}];
+  }
+
+  const sprintDuration = differenceInDays(endDate, startDate) + 1;
+  const today = new Date();
+  const currentDay = Math.min(
+    differenceInDays(today, startDate),
+      sprintDuration - 1
+    );
+  
+  const remainingTasks = totalTasks - completedTasks;
+
+  const burndownLine: BurndownChartData = [];
+  for (let day = 0; day <= sprintDuration; day++) {
+    const idealRemaining = totalTasks * (1 - day / (sprintDuration));
+    burndownLine.push({
+      x: day,
+      y: idealRemaining,
+      c: 0,
+    })
+  }
+
+  const actualBurndown: BurndownChartData = [];
+
+  if (burndownHistory && burndownHistory.length > 0) {
+    for (const point of burndownHistory) {
+      const dayIndex = Math.min(point.day, sprintDuration);
+      actualBurndown.push({
+        x: dayIndex,
+        y: totalTasks - point.completedCount,
+        c: 1,
+      });
+    }
+  }
+
+  if (actualBurndown.length === 0) {
+    actualBurndown.push({
+      x: currentDay,
+      y: remainingTasks,
+      c: 1,
+    });
+  }
+
+  return [...burndownLine, ...actualBurndown];
+};
+
+export const generateBurndownHistory = async (
+  firestore: Firestore,
+  projectId: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<BurndownDataPoint[]> => {
+  // Calculate number of days
+  const result: BurndownDataPoint[] = [];
+
+  // Cap at today
+  const today = new Date();
+  const effectiveEndDate = today < endDate ? today : endDate;
+  const effectiveDays = differenceInDays(effectiveEndDate, startDate) + 1;
+
+  // For each day, get task counst
+  for (let i = 0; i < effectiveDays; i++) {
+    const date = addDays(startDate, i);
+    const timestamp = Timestamp.fromDate(date);
+    
+    try {
+      const completedCount = await getItemActivityTask(
+        firestore,
+        projectId,
+        timestamp,
+      );
+
+      result.push({
+        day: i,
+        date: date.toISOString(),
+        completedCount
+      });
+    } catch (e) {
+      console.error(`Error fetching tasks for date ${date.toISOString()}:`, e);
+      result.push({
+        day: i,
+        date: date.toISOString(),
+        completedCount: 0,
+      });
+    }
+  }
+
+  return result;
+}
