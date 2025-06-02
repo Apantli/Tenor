@@ -37,7 +37,8 @@ export const getRetrospectiveIdProcedure = roleRequiredProcedure(
 )
   .input(z.object({ sprintId: z.string() }))
   .query(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("get_review_id", {
+    const response = await ctx.supabase.rpc("get_retrospective_id", {
+      project_id_input: input.projectId,
       sprint_id_input: input.sprintId,
     });
 
@@ -56,7 +57,7 @@ export const getRetrospectiveAnswersProcedure = roleRequiredProcedure(
 )
   .input(z.object({ reviewId: z.number(), userId: z.string() }))
   .query(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("get_review_answers", {
+    const response = await ctx.supabase.rpc("get_retrospective_answers", {
       p_review_id: input.reviewId,
       p_user_id: input.userId,
     });
@@ -81,7 +82,7 @@ export const saveRetrospectiveAnswersProcedure = roleRequiredProcedure(
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("save_review_answer", {
+    const response = await ctx.supabase.rpc("save_retrospective_answer", {
       p_review_id: input.reviewId,
       p_user_id: input.userId,
       p_question_num: input.questionNum,
@@ -175,7 +176,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
       await Promise.all(
         synthesizedResponses.answers.map(
           async (answer, index) =>
-            await ctx.supabase.rpc("save_review_answer", {
+            await ctx.supabase.rpc("save_retrospective_answer", {
               p_review_id: input.reviewId,
               p_user_id: ctx.session.user.uid,
               p_question_num: index + 1,
