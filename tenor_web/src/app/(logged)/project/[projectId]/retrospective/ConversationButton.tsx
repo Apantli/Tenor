@@ -14,7 +14,7 @@ export default function ConversationButton({
   return (
     <BaseButton
       className={cn(
-        "flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border-2 border-app-primary bg-white px-3 text-app-text transition hover:bg-app-hover-border disabled:cursor-not-allowed disabled:opacity-60",
+        "flex h-10 items-center justify-center gap-2 whitespace-nowrap rounded-lg border-2 border-app-primary bg-white px-3 text-app-text transition hover:bg-app-hover-border disabled:cursor-not-allowed disabled:bg-white disabled:opacity-60",
         className,
       )}
       {...props}

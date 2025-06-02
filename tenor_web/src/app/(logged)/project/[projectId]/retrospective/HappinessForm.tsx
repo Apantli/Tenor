@@ -134,11 +134,7 @@ export default function HappinessForm({
     }
   }, [queryError]);
 
-  const saveAnswer = api.sprintRetrospectives.sendReport.useMutation({
-    onSuccess: () => {
-      void refetchAnswers();
-    },
-  });
+  const saveAnswer = api.sprintRetrospectives.sendReport.useMutation();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -247,7 +243,15 @@ export default function HappinessForm({
       </div>
 
       <div className="sticky bottom-0 flex justify-between border-t border-gray-200 bg-white p-4">
-        <ConversationButton onClick={handleConversationMode}>
+        <ConversationButton
+          onClick={handleConversationMode}
+          disabled={
+            isSubmitting ||
+            (savedFields.roleFeeling &&
+              savedFields.companyFeeling &&
+              savedFields.improvementSuggestion)
+          }
+        >
           Try conversation mode
         </ConversationButton>
         <PrimaryButton

@@ -53,7 +53,7 @@ export const getRetrospectiveAnswersProcedure = roleRequiredProcedure(
 )
   .input(z.object({ reviewId: z.number(), userId: z.string() }))
   .query(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("get_review_answers", {
+    const response = await ctx.supabase.rpc("get_retrospective_answers", {
       p_review_id: input.reviewId,
       p_user_id: input.userId,
     });
@@ -86,7 +86,7 @@ export const saveRetrospectiveAnswersProcedure = roleRequiredProcedure(
             message: `Response for question ${index + 1} cannot be empty.`,
           });
         }
-        return ctx.supabase.rpc("save_review_answer", {
+        return ctx.supabase.rpc("save_retrospective_answer", {
           p_review_id: input.reviewId,
           p_user_id: input.userId,
           p_question_num: index + 1,
@@ -204,14 +204,13 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         z.object({
           answers: z.array(z.string()),
           happinessRating: z.number(),
-          happinessAnalysis: z.string(),
         }),
       );
 
       await Promise.all([
         ...synthesizedResponses.answers.map(
           async (answer, index) =>
-            await ctx.supabase.rpc("save_review_answer", {
+            await ctx.supabase.rpc("save_retrospective_answer", {
               p_review_id: input.reviewId,
               p_user_id: ctx.session.user.uid,
               p_question_num: index + 1,
@@ -224,6 +223,6 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
           user_id_input: ctx.session.user.uid,
         }),
       ]);
-      return { success: true };
+      return { success: true, happiness: synthesizedResponses.happinessRating };
     }),
 });
