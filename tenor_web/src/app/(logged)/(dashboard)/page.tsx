@@ -3,7 +3,6 @@
 import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatusDashboard";
 import ProjectList from "./ProjectList";
 import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
-import { api } from "~/trpc/react";
 import { useState } from "react";
 
 export default function ProjectPage() {
