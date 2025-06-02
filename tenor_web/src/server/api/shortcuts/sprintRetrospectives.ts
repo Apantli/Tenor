@@ -76,37 +76,43 @@ export const getSprintTeamProgress = async (
   const issuesCollectionRef = projectRef.collection("issues");
   const userStoriesCollectionRef = projectRef.collection("userStories");
 
-  const totalIssuesQuery = issuesCollectionRef
-    .where("sprintId", "==", sprintId)
-    .where("deleted", "==", false);
-  const totalIssuesSnapshot = await totalIssuesQuery.get();
-  const totalIssues = totalIssuesSnapshot.size;
+  // Parallel query
+  const [issuesSnapshot, userStoriesSnapshot] = await Promise.all([
+    issuesCollectionRef
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false)
+      .get(),
+    userStoriesCollectionRef
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false)
+      .get(),
+  ]);
 
+  const totalIssues = issuesSnapshot.size;
   let completedIssues = 0;
-  if (completedStatusIds.length > 0) {
-    const completedIssuesQuery = issuesCollectionRef
-      .where("sprintId", "==", sprintId)
-      .where("deleted", "==", false)
-      .where("statusId", "in", completedStatusIds);
-    const completedIssuesSnapshot = await completedIssuesQuery.get();
-    completedIssues = completedIssuesSnapshot.size;
-  }
 
-  const totalUserStoriesQuery = userStoriesCollectionRef
-    .where("sprintId", "==", sprintId)
-    .where("deleted", "==", false);
-  const totalUserStoriesSnapshot = await totalUserStoriesQuery.get();
-  const totalUserStories = totalUserStoriesSnapshot.size;
+  issuesSnapshot.forEach((doc) => {
+    const issueData = doc.data() as { statusId?: string };
+    if (
+      issueData?.statusId &&
+      completedStatusIds.includes(issueData.statusId)
+    ) {
+      completedIssues++;
+    }
+  });
 
+  const totalUserStories = userStoriesSnapshot.size;
   let completedUserStories = 0;
-  if (completedStatusIds.length > 0) {
-    const completedUserStoriesQuery = userStoriesCollectionRef
-      .where("sprintId", "==", sprintId)
-      .where("deleted", "==", false)
-      .where("statusId", "in", completedStatusIds);
-    const completedUserStoriesSnapshot = await completedUserStoriesQuery.get();
-    completedUserStories = completedUserStoriesSnapshot.size;
-  }
+
+  userStoriesSnapshot.forEach((doc) => {
+    const userStoryData = doc.data() as { statusId?: string };
+    if (
+      userStoryData?.statusId &&
+      completedStatusIds.includes(userStoryData.statusId)
+    ) {
+      completedUserStories++;
+    }
+  });
 
   return {
     totalIssues,
