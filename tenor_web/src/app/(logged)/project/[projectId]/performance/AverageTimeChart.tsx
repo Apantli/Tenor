@@ -56,12 +56,14 @@ type PerformanceChartProps = {
   data?: typeof SamplePerformanceData | undefined;
   className?: string;
   isGreen?: boolean;
+  scaleFactor?: number;
 };
 
 export const AverageTimeChart = ({
   data = SamplePerformanceData,
   className = "",
   isGreen = true,
+  scaleFactor = 1,
 }: PerformanceChartProps) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = React.useState({
@@ -75,10 +77,10 @@ export const AverageTimeChart = ({
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const width = entry.contentRect.width * 0.9;
+        const width = entry.contentRect.width * 0.85;
         const height = entry.contentRect.height - 50;
         setContainerDimensions({
-          width: Math.max(width, 200),
+          width: Math.max(width, 100),
           height: Math.max(height, 50),
         });
       }
@@ -94,8 +96,8 @@ export const AverageTimeChart = ({
 
     // Update dimensions if container has been measured
     if (containerDimensions.width > 0) {
-      specCopy.width = containerDimensions.width;
-      specCopy.height = containerDimensions.height;
+      specCopy.width = containerDimensions.width * scaleFactor;
+      specCopy.height = containerDimensions.height * scaleFactor;
     }
 
     // Update color based on isGreen prop

@@ -54,7 +54,7 @@ export default function CalendarGrid({
   };
 
   return (
-    <div>
+    <div className="h-full">
       <div className="grid grid-cols-7 text-left text-sm font-semibold">
         {daysOfWeek.map((day) => (
           <div key={day}>{day}</div>
@@ -65,7 +65,7 @@ export default function CalendarGrid({
           <div
             key={day ? dateKey(day) : idx.toString()}
             className={cn(
-              "h-[108px] border border-gray-300",
+              "h-[8vw] min-h-[110px] border border-gray-300",
               !day && "bg-gray-200",
             )}
           >

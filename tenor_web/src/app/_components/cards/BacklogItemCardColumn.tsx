@@ -22,6 +22,7 @@ interface Props {
   dndId: string;
   lastDraggedBacklogItemId: string | null;
   disabled?: boolean;
+  disableDropping?: boolean;
   advancedFilters: AdvancedSearchFilters;
 }
 
@@ -36,6 +37,7 @@ export default function BacklogItemCardColumn({
   dndId,
   lastDraggedBacklogItemId,
   disabled = false,
+  disableDropping = false,
   advancedFilters,
 }: Props) {
   const cards: KanbanItemCard[] = backlogItems
@@ -60,6 +62,7 @@ export default function BacklogItemCardColumn({
   return (
     <CardColumn
       disabled={disabled}
+      disableDropping={disableDropping}
       lastDraggedItemId={lastDraggedBacklogItemId}
       dndId={dndId}
       cards={cards}

@@ -34,6 +34,7 @@ import MoveLeftIcon from "@mui/icons-material/ArrowBackIos";
 import MoveRightIcon from "@mui/icons-material/ArrowForwardIos";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import { sortByCardTypeAndScrumId } from "~/lib/helpers/sort";
+import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
 
 interface Props {
   filter: string;
@@ -480,6 +481,14 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
           setDetailId={setDetailItemId}
           showDetail={showDetail}
           issueId={detailItemId}
+        />
+      )}
+
+      {renderDetail && detailItemType === "IT" && (
+        <BacklogItemDetailPopup
+          setDetailId={setDetailItemId}
+          showDetail={showDetail}
+          backlogItemId={detailItemId}
         />
       )}
 
