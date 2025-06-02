@@ -1,6 +1,8 @@
 import { getSettingsRef } from "./general";
 import type { Firestore, QuerySnapshot } from "firebase-admin/firestore";
 import { FieldPath } from "firebase-admin/firestore";
+import { getAutomaticStatusId } from "./tags";
+import { getStatusTypes } from "./tags";
 
 export const getSprintRetrospectiveTextAnswersContext = (
   textAnswers: string[],
@@ -77,22 +79,46 @@ export const computeSprintTeamProgress = async (
   const userStoriesCollectionRef = projectRef.collection("userStories");
 
   // Parallel query
-  const [issuesSnapshot, userStoriesSnapshot] = await Promise.all([
-    issuesCollectionRef
-      .where("sprintId", "==", sprintId)
-      .where("deleted", "==", false)
-      .get(),
-    userStoriesCollectionRef
-      .where("sprintId", "==", sprintId)
-      .where("deleted", "==", false)
-      .get(),
-  ]);
+  const [issuesSnapshot, userStoriesSnapshot, statusSnapshot] =
+    await Promise.all([
+      issuesCollectionRef
+        .where("sprintId", "==", sprintId)
+        .where("deleted", "==", false)
+        .get(),
+      userStoriesCollectionRef
+        .where("sprintId", "==", sprintId)
+        .where("deleted", "==", false)
+        .get(),
+      getStatusTypes(firestore, projectId),
+    ]);
 
   const totalIssues = issuesSnapshot.size;
   let completedIssues = 0;
 
-  issuesSnapshot.forEach((doc) => {
-    const issueData = doc.data() as { statusId?: string };
+  const issuesDoc = await Promise.all(
+    issuesSnapshot.docs.map(async (doc) => {
+      const issueData = doc.data() as { statusId?: string };
+      let statusId: string;
+      if (issueData?.statusId) {
+        statusId = issueData.statusId;
+      } else {
+        statusId =
+          (await getAutomaticStatusId(
+            firestore,
+            projectId,
+            doc.id,
+            statusSnapshot,
+          )) ?? "";
+      }
+      return {
+        ...issueData,
+        id: doc.id,
+        statusId,
+      };
+    }),
+  );
+
+  issuesDoc.forEach((issueData) => {
     if (
       issueData?.statusId &&
       completedStatusIds.includes(issueData.statusId)
@@ -104,8 +130,30 @@ export const computeSprintTeamProgress = async (
   const totalUserStories = userStoriesSnapshot.size;
   let completedUserStories = 0;
 
-  userStoriesSnapshot.forEach((doc) => {
-    const userStoryData = doc.data() as { statusId?: string };
+  const userStoriesDoc = await Promise.all(
+    userStoriesSnapshot.docs.map(async (doc) => {
+      const userStoryData = doc.data() as { statusId?: string };
+      let statusId: string;
+      if (userStoryData?.statusId) {
+        statusId = userStoryData.statusId;
+      } else {
+        statusId =
+          (await getAutomaticStatusId(
+            firestore,
+            projectId,
+            doc.id,
+            statusSnapshot,
+          )) ?? "";
+      }
+      return {
+        ...userStoryData,
+        id: doc.id,
+        statusId,
+      };
+    }),
+  );
+
+  userStoriesDoc.forEach((userStoryData) => {
     if (
       userStoryData?.statusId &&
       completedStatusIds.includes(userStoryData.statusId)
