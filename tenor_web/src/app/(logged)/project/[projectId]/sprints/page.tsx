@@ -35,6 +35,7 @@ import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import SidebarToggleIcon from "~/app/_components/SidebarToggleIcon";
 import { useWindowRect } from "~/app/_hooks/windowHooks";
+import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
 
 const noSprintId = "noSprintId";
 
@@ -691,6 +692,14 @@ export default function ProjectSprints() {
             setDetailId={setDetailItemId}
             showDetail={showDetail}
             issueId={detailItemId}
+          />
+        )}
+      {renderDetail &&
+        backlogItemsBySprint?.backlogItems[detailItemId]?.itemType === "IT" && (
+          <BacklogItemDetailPopup
+            setDetailId={setDetailItemId}
+            showDetail={showDetail}
+            backlogItemId={detailItemId}
           />
         )}
       {renderSmallPopup && (
