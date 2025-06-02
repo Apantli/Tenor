@@ -332,8 +332,12 @@ export default function UserStoryDependencyTree({ segmentedControl }: Props) {
   return (
     <div className="h-full w-full">
       {!isLoadingDependencies && dependencyData?.nodes.length == 0 && (
-        <div className="flex h-full w-full items-center justify-center">
-          <div className="flex flex-col items-center gap-5">
+        <div className="p-10">
+          <div className="flex w-full flex-row flex-wrap items-start justify-between self-end">
+            <h1 className="text-3xl font-semibold">User Stories</h1>
+            {segmentedControl}
+          </div>
+          <div className="mt-[22vh] flex flex-col items-center gap-5">
             <span className="-mb-8 text-[100px] text-gray-500">
               <NoteAddIcon fontSize="inherit" />
             </span>
@@ -360,7 +364,9 @@ export default function UserStoryDependencyTree({ segmentedControl }: Props) {
           nodesConnectable={permission >= permissionNumbers.write}
           elementsSelectable={permission >= permissionNumbers.write}
         >
-          <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
+          {!isLoadingDependencies && (
+            <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
+          )}
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
             <div className="flex flex-row flex-wrap-reverse items-center justify-end gap-2 pr-6 pt-6">
