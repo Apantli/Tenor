@@ -17,7 +17,7 @@ export const getActivityPartition = async (
   firestore: Firestore,
   projectId: string,
   userId: string,
-  time: string,
+  time?: string,
   sprintId?: string,
 ) => {
   let activityRef = null;
@@ -103,7 +103,7 @@ export const getContributionOverview = async (
   firestore: Firestore,
   projectId: string,
   userId: string,
-  time: string,
+  time?: string,
   sprintId?: string,
 ) => {
   let activityRef = null;
