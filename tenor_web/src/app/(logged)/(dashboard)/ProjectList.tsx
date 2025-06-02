@@ -7,7 +7,6 @@ import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { cn } from "~/lib/helpers/utils";
-import CloseIcon from "@mui/icons-material/Close";
 
 interface Props {
   projectId: string | null;
