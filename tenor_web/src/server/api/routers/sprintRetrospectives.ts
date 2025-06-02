@@ -107,6 +107,37 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
   getRetrospectiveId: getRetrospectiveIdProcedure,
   getRetrospectiveAnswers: getRetrospectiveAnswersProcedure,
   saveRetrospectiveAnswers: saveRetrospectiveAnswersProcedure,
+  saveHappiness: roleRequiredProcedure(reviewPermissions, "write")
+    .input(
+      z.object({
+        reviewId: z.number(),
+        happiness: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { reviewId, happiness } = input;
+
+      if (happiness < 1 || happiness > 10) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Happiness rating must be between 1 and 10.",
+        });
+      }
+
+      const response = await ctx.supabase.rpc("save_happiness", {
+        review_id_input: reviewId,
+        happiness_input: happiness,
+        user_id_input: ctx.session.user.uid,
+      });
+
+      if (response.error) {
+        throw new Error(
+          `Failed to save happiness rating: ${response.error.message}`,
+        );
+      }
+
+      return { success: true };
+    }),
   getPreviousSprint: roleRequiredProcedure(reviewPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
@@ -177,8 +208,8 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         }),
       );
 
-      await Promise.all(
-        synthesizedResponses.answers.map(
+      await Promise.all([
+        ...synthesizedResponses.answers.map(
           async (answer, index) =>
             await ctx.supabase.rpc("save_review_answer", {
               p_review_id: input.reviewId,
@@ -187,7 +218,12 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
               p_response_text: answer,
             }),
         ),
-      );
+        ctx.supabase.rpc("save_happiness", {
+          review_id_input: input.reviewId,
+          happiness_input: synthesizedResponses.happinessRating,
+          user_id_input: ctx.session.user.uid,
+        }),
+      ]);
       return { success: true };
     }),
 });

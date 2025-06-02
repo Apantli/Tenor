@@ -134,12 +134,11 @@ export default function HappinessForm({
     }
   }, [queryError]);
 
-  const saveAnswer =
-    api.sprintRetrospectives.saveRetrospectiveAnswers.useMutation({
-      onSuccess: () => {
-        void refetchAnswers();
-      },
-    });
+  const saveAnswer = api.sprintRetrospectives.sendReport.useMutation({
+    onSuccess: () => {
+      void refetchAnswers();
+    },
+  });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -174,12 +173,13 @@ export default function HappinessForm({
       await saveAnswer.mutateAsync({
         projectId: projectId,
         reviewId: sprintRetrospectiveId,
-        userId,
-        responses: [
-          responses.roleFeeling,
-          responses.companyFeeling,
-          responses.improvementSuggestion,
-        ],
+        data: {
+          textAnswers: [
+            responses.roleFeeling,
+            responses.companyFeeling,
+            responses.improvementSuggestion,
+          ],
+        },
       });
 
       await refetchAnswers();

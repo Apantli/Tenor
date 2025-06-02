@@ -133,6 +133,8 @@ export default function ConversationPopup({
     mutateAsync: saveRetrospectiveAnswer,
     isPending: isSendingProcessedReport,
   } = api.sprintRetrospectives.saveRetrospectiveAnswers.useMutation();
+  const { mutateAsync: saveHappiness } =
+    api.sprintRetrospectives.saveHappiness.useMutation();
   const { mutateAsync: sendReport, isPending: isSendingReport } =
     api.sprintRetrospectives.sendReport.useMutation();
 
@@ -269,14 +271,19 @@ export default function ConversationPopup({
 
     if (!processedAnswers) return;
 
-    console.log("Processed answers", processedAnswers);
-
-    await saveRetrospectiveAnswer({
-      projectId: projectId as string,
-      userId: user.uid,
-      reviewId: sprintRetrospectiveId,
-      responses: processedAnswers.answers,
-    });
+    await Promise.all([
+      saveRetrospectiveAnswer({
+        projectId: projectId as string,
+        userId: user.uid,
+        reviewId: sprintRetrospectiveId,
+        responses: processedAnswers.answers,
+      }),
+      saveHappiness({
+        happiness: processedAnswers.happinessRating,
+        projectId: projectId as string,
+        reviewId: sprintRetrospectiveId,
+      }),
+    ]);
 
     await utils.sprintRetrospectives.getRetrospectiveAnswers.invalidate({
       projectId: projectId as string,
