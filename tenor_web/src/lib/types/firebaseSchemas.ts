@@ -162,17 +162,6 @@ export interface Role {
 
 /// Backlog items
 
-export interface BasicInfo {
-  scrumId: number;
-  name: string;
-  description: string; // Markdown
-  deleted: boolean;
-  createdAt?: Timestamp;
-}
-
-// TODO: Make function to transform into number size (fibonacci)
-export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
-
 // Any change in here, make sure to modify the zod firebase schemas too
 export type UserStoryType = "US";
 export type IssueType = "IS";
@@ -193,6 +182,16 @@ export type BacklogItemAndTaskType = AnyBacklogItemType | TaskType;
 
 export type TaskDetailType = `${AnyBacklogItemType}-${TaskType}`; // Used for simplification of moving info around
 export type BacklogItemAndTaskDetailType = AnyBacklogItemType | TaskDetailType;
+
+export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
+
+export interface BasicInfo {
+  scrumId: number;
+  name: string;
+  description: string; // Markdown
+  deleted: boolean;
+  createdAt?: Timestamp;
+}
 
 export interface BacklogItem extends BasicInfo {
   sprintId: string;

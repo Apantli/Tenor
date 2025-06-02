@@ -159,7 +159,19 @@ export const refreshSessionProcedure = publicProcedure
 
     const cookie = await cookies();
     try {
-      await ctx.firebaseAdmin.auth().verifyIdToken(token);
+      const user = await ctx.firebaseAdmin.auth().verifyIdToken(token);
+      const userDoc = await ctx.firestore
+        .collection("users")
+        .doc(user.uid)
+        .get();
+
+      if (!userDoc.exists) {
+        await ctx.firebaseAdmin.auth().revokeRefreshTokens(user.uid);
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not found in firestore",
+        });
+      }
 
       cookie.set("token", token, {
         httpOnly: true,

@@ -54,13 +54,16 @@ export function SegmentedControl({
     }
   }, [selectedOption, selected]);
 
+  // Allow the animation only after the component mounts
+  useEffect(() => {
+    setTimeout(() => {
+      setAnimationActive(true);
+    }, 10);
+  });
+
   const handleChange = (option: string) => {
     setSelected(option);
     onChange(option);
-    setAnimationActive(true);
-    setTimeout(() => {
-      setAnimationActive(false);
-    }, 300); // Duration of the animation
   };
 
   // TODO: Make this be the same size as a button (or maybe leave as is, I need second opinion)
@@ -98,6 +101,7 @@ export function SegmentedControl({
             const target = e.currentTarget as HTMLButtonElement;
             target.scrollIntoView({
               behavior: "smooth",
+              block: "nearest",
             });
           }}
           className={`relative z-10 flex-1 whitespace-nowrap rounded-md px-4 py-2 text-center font-medium transition-colors duration-300 ${

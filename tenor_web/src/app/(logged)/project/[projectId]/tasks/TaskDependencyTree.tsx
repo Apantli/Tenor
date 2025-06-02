@@ -333,12 +333,7 @@ export default function TaskDependencyTree() {
   // #endregion
 
   return (
-    <div className="mt-3 h-[calc(100vh-250px)] w-full">
-      {isLoadingDependencies && (
-        <div className="flex h-full w-full items-center justify-center">
-          <LoadingSpinner color="primary" />
-        </div>
-      )}
+    <div className="h-full w-full">
       {!isLoadingDependencies && dependencyData?.nodes.length == 0 && (
         <div className="flex h-full w-full items-center justify-center">
           <div className="flex flex-col items-center gap-5">
@@ -352,7 +347,7 @@ export default function TaskDependencyTree() {
         </div>
       )}
 
-      {!isLoadingDependencies && dependencyData?.nodes.length != 0 && (
+      {(isLoadingDependencies || dependencyData?.nodes.length != 0) && (
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -371,7 +366,7 @@ export default function TaskDependencyTree() {
           <Controls fitViewOptions={fitViewOptions} showInteractive={false} />
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-row flex-wrap-reverse items-center justify-end gap-2 pr-6 pt-6">
               <SecondaryButton
                 onClick={() => onLayout()}
                 className={"bg-white"}
@@ -388,6 +383,14 @@ export default function TaskDependencyTree() {
               </SecondaryButton>
             </div>
           </Panel>
+
+          {isLoadingDependencies && (
+            <Panel position="top-center">
+              <div className="mt-[40vh]">
+                <LoadingSpinner color="primary" />
+              </div>
+            </Panel>
+          )}
         </ReactFlow>
       )}
 

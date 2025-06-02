@@ -32,28 +32,24 @@ export const ProductivityCard = ({
     },
     { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 },
   );
-  const {
-    mutateAsync: recomputeProductivity,
-    isPending,
-    // error,
-  } = api.performance.recomputeProductivity.useMutation({
-    retry: 0,
-    onSuccess: async () => {
-      // Handle success, e.g., show a toast notification
-      predefinedAlerts.productivityUpdateSuccess();
-      await utils.performance.getProductivity.invalidate({
-        projectId: projectId,
-        time: time,
-      });
-    },
-    onError: async (error) => {
-      alertTemplates.warning(error.message);
-      await utils.performance.getProductivity.invalidate({
-        projectId: projectId,
-        time: time,
-      });
-    },
-  });
+  const { mutateAsync: recomputeProductivity, isPending } =
+    api.performance.recomputeProductivity.useMutation({
+      retry: 0,
+      onSuccess: async () => {
+        predefinedAlerts.productivityUpdateSuccess();
+        await utils.performance.getProductivity.invalidate({
+          projectId: projectId,
+          time: time,
+        });
+      },
+      onError: async (error) => {
+        alertTemplates.warning(error.message);
+        await utils.performance.getProductivity.invalidate({
+          projectId: projectId,
+          time: time,
+        });
+      },
+    });
 
   const radius = 70;
 
