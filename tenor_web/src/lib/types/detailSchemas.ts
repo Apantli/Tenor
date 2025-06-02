@@ -129,7 +129,7 @@ export type BacklogItemFullDetail = {
   scrumId: number;
   name: string;
   description: string;
-  size?: Size;
+  size: Size | "";
   tags: Tag[];
   priority?: Tag;
   status?: StatusTag;
