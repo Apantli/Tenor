@@ -86,7 +86,7 @@ export default function ProjectUserStories() {
 
       <div
         className={cn("flex flex-1 flex-col items-start gap-3", {
-          "pl-[88px] xl:pl-0": showEpics && selectedViewState === "List",
+          "pl-[72px] xl:pl-0": showEpics && selectedViewState === "List",
           "pb-10 pt-10": selectedViewState === "List",
         })}
       >
@@ -120,7 +120,12 @@ export default function ProjectUserStories() {
                   options={segmentedControlOptions}
                   selectedOption={selectedView}
                   onChange={onSegmentedControlChange}
-                  className="min-w-96 max-w-96 xl:ml-auto xl:mr-10"
+                  className={cn(
+                    "mr-[8px] min-w-96 max-w-96 xl:ml-auto xl:mr-[48px]",
+                    {
+                      "xl:mr-[2px]": showEpics,
+                    },
+                  )}
                 />
               }
             />
