@@ -224,7 +224,7 @@ export default function ProjectSprintRetrospectivePage() {
             />
 
             {showMessageOverlay && (
-              <div className="absolute bottom-1 left-1 right-1 top-1 z-10 flex flex-col items-center justify-center rounded-lg bg-white bg-opacity-75 p-4 text-center backdrop-blur-sm">
+              <div className="absolute bottom-0 left-0 right-0 top-0 z-10 flex flex-col items-center justify-center rounded-lg border border-app-border bg-white bg-opacity-75 p-4 text-center backdrop-blur-sm">
                 <div className="mb-4 flex items-center justify-center">
                   {notFinishedYet ? (
                     <QuestionMarkIcon sx={{ fontSize: 60 }} />
