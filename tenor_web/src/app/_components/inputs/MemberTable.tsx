@@ -26,6 +26,7 @@ interface Props {
   roleList: { id: string; label: string }[];
   isSearchable?: boolean;
   labelClassName?: string;
+  tableClassName?: string;
   disabled?: boolean;
 }
 
@@ -38,6 +39,7 @@ export default function MemberTable({
   className,
   roleList,
   labelClassName,
+  tableClassName,
   isSearchable = false,
   disabled = false,
 }: Props) {
@@ -181,7 +183,7 @@ export default function MemberTable({
 
       <Table
         emptyMessage="No members found"
-        className="w-full"
+        className={cn("w-full", tableClassName)}
         data={filteredTeamMembers} // filter tableSearchValue by name or email
         columns={columns}
         multiselect={!disabled}

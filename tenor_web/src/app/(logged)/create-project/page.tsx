@@ -209,7 +209,7 @@ export default function ProjectCreator() {
   };
 
   return (
-    <div>
+    <div className="flex h-screen flex-col overflow-y-auto">
       <Navbar>
         <div className="flex gap-1">
           <Link href="/" className="font-semibold">
@@ -280,6 +280,7 @@ export default function ProjectCreator() {
               <MemberTable
                 label="Team Members"
                 labelClassName="text-lg font-semibold"
+                tableClassName="max-h-[300px] overflow-y-auto"
                 teamMembers={teamMembers}
                 className="w-full"
                 handleMemberAdd={handleAddTeamMember}

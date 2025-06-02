@@ -608,7 +608,7 @@ export default function UserStoryTable({
       <Table
         emptyMessage="No user stories found"
         className={cn("w-[calc(100vw-130px)] overflow-auto", heightOfContent, {
-          "xl:w-[calc(100vw-465px)]": showEpics,
+          "xl:w-[calc(100vw-485px)]": showEpics,
         })}
         data={userStoryData}
         columns={tableColumns}
