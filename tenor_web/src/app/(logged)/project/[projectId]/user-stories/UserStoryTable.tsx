@@ -512,10 +512,13 @@ export default function UserStoryTable({
             XXL: 5,
           };
 
-          return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
+          return (a.size ? (sizeOrder[a.size] ?? 99) : 99) <
+            (b.size ? (sizeOrder[b.size] ?? 99) : 99)
+            ? -1
+            : 1;
         },
         render(row, _, isGhost) {
-          const handleSizeChange = async (size: Size) => {
+          const handleSizeChange = async (size: Size | "") => {
             const rowIndex = userStoryData.indexOf(row);
             if (!userStoryData[rowIndex]) {
               return; // No update needed
@@ -550,10 +553,10 @@ export default function UserStoryTable({
             ]);
           };
 
-          const handleGhostSizeChange = (size: Size) => {
+          const handleGhostSizeChange = (size: Size | "") => {
             updateGhostRow(row.id, (oldData) => ({
               ...oldData,
-              size: size,
+              size,
             }));
             generatedUserStories.current = generatedUserStories.current?.map(
               (story) => {
@@ -571,7 +574,7 @@ export default function UserStoryTable({
           return (
             <SizePicker
               disabled={permission < permissionNumbers.write}
-              currentSize={row.size}
+              currentSize={row.size === "" ? undefined : row.size}
               callback={isGhost ? handleGhostSizeChange : handleSizeChange}
             />
           );

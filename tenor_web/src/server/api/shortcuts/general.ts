@@ -159,7 +159,7 @@ export const getGenericBacklogItemContext = async (
   name: string,
   description: string,
   priorityId?: string,
-  size?: Size,
+  size?: Size | "",
 ) => {
   const priority = priorityId
     ? await getPriority(firestore, projectId, priorityId)

@@ -10,6 +10,7 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/helpers/utils";
 import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
+import { noneSelectedTag } from "~/lib/defaultValues/tags";
 
 interface Props {
   currentTag?: Tag;
@@ -19,6 +20,7 @@ interface Props {
   hideSearch?: boolean;
   addTag?: (tag: Tag) => Promise<Tag>;
   disabled?: boolean;
+  nullable?: boolean;
 }
 
 export default function PillComponent({
@@ -30,15 +32,10 @@ export default function PillComponent({
   className,
   addTag,
   disabled,
+  nullable = false,
 }: Props & ButtonHTMLAttributes<HTMLButtonElement>) {
   const [searchValue, setSearchValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-
-  const noneSelectedTag = {
-    name: "None",
-    color: "#333333",
-    deleted: false,
-  };
 
   const filteredTags = allTags.filter((tag) => {
     if (
@@ -132,6 +129,7 @@ export default function PillComponent({
       )}
       <div className="w-52 whitespace-nowrap text-left">
         <div className="flex max-h-48 flex-col overflow-y-auto rounded-b-lg">
+          {nullable && createOptionPill(noneSelectedTag)}
           {filteredTags.map((tag) => createOptionPill(tag))}
           {addTag === undefined && filteredTags.length == 0 && (
             <span className="w-full px-2 py-1 text-sm text-gray-500">

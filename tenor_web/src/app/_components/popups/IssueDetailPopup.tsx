@@ -279,7 +279,9 @@ export default function IssueDetailPopup({
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePicker
                       disabled={permission < permissionNumbers.write}
-                      currentSize={issueDetail.size}
+                      currentSize={
+                        issueDetail.size === "" ? undefined : issueDetail.size
+                      }
                       callback={async (size) => {
                         await handleSave({ ...issueDetail, size });
                       }}

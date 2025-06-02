@@ -11,7 +11,7 @@ export interface KanbanCard {
   cardType: BacklogItemAndTaskDetailType;
   scrumId: number;
   name: string;
-  size: Size | undefined;
+  size: Size | "";
   tags: WithId<Tag>[];
   columnId: string;
   assigneeIds: string[];
