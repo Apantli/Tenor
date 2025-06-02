@@ -29,6 +29,7 @@ export default function PriorityPicker({
       allTags={priorities ?? []}
       callBack={onChange}
       labelClassName="w-full"
+      nullable
     />
   );
 }

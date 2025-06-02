@@ -11,12 +11,14 @@ interface Props {
   userStory?: UserStoryPreview;
   onChange: (userStory?: UserStoryPreview) => void;
   disabled?: boolean;
+  noSelectionLabel?: string;
 }
 
 export default function UserStoryPicker({
   userStory,
   onChange,
   disabled,
+  noSelectionLabel = "Unassgined",
 }: Props) {
   const { projectId } = useParams();
 
@@ -32,7 +34,7 @@ export default function UserStoryPicker({
 
   const userStoryToItem = (userStory?: UserStoryPreview) => ({
     id: userStory?.scrumId.toString() ?? "",
-    label: userStory?.name ?? (disabled ? "None" : "Choose user story"),
+    label: userStory?.name ?? (disabled ? "None" : noSelectionLabel),
     prefix: userStory ? getUserStoryId(userStory) : undefined,
   });
 

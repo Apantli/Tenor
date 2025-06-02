@@ -89,6 +89,7 @@ export default function CalendarCell({
                 setSelectedTasksId={setSelectedTasksId}
                 setTask={setTask}
                 setDetailItemId={setDetailItemId}
+                dateSelected={!!selectedDate}
               />
             </div>
           ))}

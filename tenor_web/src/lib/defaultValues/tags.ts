@@ -1,3 +1,5 @@
+import type { Tag, WithId } from "../types/firebaseSchemas";
+
 export const defaultRequerimentTypes = [
   {
     name: "Functional",
@@ -28,3 +30,10 @@ export const defaultPriorityTypes = [
     deleted: false,
   },
 ];
+
+export const noneSelectedTag: WithId<Tag> = {
+  id: "",
+  name: "None",
+  color: "#333333",
+  deleted: false,
+};

@@ -5,7 +5,7 @@ import { sizeTags, sizeToInt } from "~/lib/defaultValues/size";
 interface Props {
   projectId?: string;
   currentSize?: Size;
-  callback: (size: Size) => void;
+  callback: (size: Size | "") => void;
   className?: string;
   disabled?: boolean;
 }
@@ -24,8 +24,15 @@ export function SizePicker({
       disabled={disabled}
       allTags={sizeTags}
       currentTag={currentTag}
-      callBack={(tag) => callback(tag.name as Size)}
+      callBack={(tag) => {
+        if (tag.name === "None") {
+          callback("");
+          return;
+        }
+        callback(tag.name as Size);
+      }}
       labelClassName=""
+      nullable
       className={className ?? ""}
     />
   );

@@ -327,6 +327,9 @@ export const useInvalidateQueriesAllSprints = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
+    await utils.sprints.getProjectSprintsOverview.invalidate({
+      projectId: projectId,
+    });
   };
 };
 
