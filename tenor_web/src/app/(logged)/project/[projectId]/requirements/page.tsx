@@ -3,7 +3,7 @@ import RequirementsTable from "~/app/(logged)/project/[projectId]/requirements/R
 
 export default function ProjectRequirements() {
   return (
-    <div>
+    <div className="m-6 flex-1 p-4">
       <RequirementsTable />
     </div>
   );

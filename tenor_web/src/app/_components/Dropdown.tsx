@@ -12,7 +12,7 @@ import React, {
 import { cn } from "~/lib/helpers/utils";
 import useClickOutside from "../_hooks/useClickOutside";
 import { type ClassNameValue } from "tailwind-merge";
-import useWindowResize from "../_hooks/useWindowResize";
+import useWindowResize from "../_hooks/windowHooks";
 import useAfterScroll from "../_hooks/useAfterScroll";
 import BaseButton, { type BaseButtonProps } from "./inputs/buttons/BaseButton";
 import Portal from "./Portal";

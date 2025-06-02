@@ -12,12 +12,7 @@ import CheckNone from "@mui/icons-material/RemoveDone";
 import { cn } from "~/lib/helpers/utils";
 import SprintCardColumn from "./SprintCardColumn";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import {
-  useFormatIssueScrumId,
-  useFormatUserStoryScrumId,
-} from "~/app/_hooks/scrumIdHooks";
-import type { sprintsRouter } from "~/server/api/routers/sprints";
-import type { inferRouterOutputs } from "@trpc/server";
+import { useFormatAnyScrumId } from "~/app/_hooks/scrumIdHooks";
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import ItemCardRender from "~/app/_components/cards/ItemCardRender";
 import {
@@ -27,22 +22,19 @@ import {
 import BacklogItemCardColumn from "~/app/_components/cards/BacklogItemCardColumn";
 import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import ColumnsIcon from "@mui/icons-material/ViewWeek";
-import {
-  type BacklogItemAndTaskDetailType,
-  type AnyBacklogItemType,
-  permissionNumbers,
-} from "~/lib/types/firebaseSchemas";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import CreateSprintPopup from "./CreateSprintPopup";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
-import { type KanbanCard } from "~/lib/types/kanbanTypes";
+import { type KanbanItemCard } from "~/lib/types/kanbanTypes";
 import AdvancedSearch from "~/app/_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 import CreateBacklogItemPopup from "~/app/_components/popups/CreateBacklogitemPopup";
-
-export type BacklogItems = inferRouterOutputs<
-  typeof sprintsRouter
->["getBacklogItemPreviewsBySprint"]["backlogItems"];
+import { itemTypeToSearchableName } from "~/lib/helpers/searchableNames";
+import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
+import usePersistentState from "~/app/_hooks/usePersistentState";
+import SidebarToggleIcon from "~/app/_components/SidebarToggleIcon";
+import { useWindowRect } from "~/app/_hooks/windowHooks";
 
 const noSprintId = "noSprintId";
 
@@ -52,11 +44,12 @@ export default function ProjectSprints() {
   const { projectId } = useParams();
   const permission = useGetPermission({ flags: ["backlog"] });
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatIssueScrumId = useFormatIssueScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId();
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
+
+  const { isTablet } = useWindowRect();
 
   const [advancedFilters, setAdvancedFilters] =
     useAdvancedSearchFilters("sprints");
@@ -66,6 +59,7 @@ export default function ProjectSprints() {
     usePopupVisibilityState();
   const [renderNewBacklogItem, showNewBacklogItem, setShowNewBacklogItem] =
     usePopupVisibilityState();
+  const [showBacklog, setShowBacklog] = usePersistentState(true, "showBacklog");
   // #endregion
 
   // #region TRPC
@@ -97,15 +91,9 @@ export default function ProjectSprints() {
       if (!item) return false;
 
       const tagsList = item.tags.map((tag) => "Tag:" + tag.name).join(" ");
-      let formatter = formatUserStoryScrumId;
-      if (item.itemType === "IS") {
-        formatter = formatIssueScrumId;
-      }
-      const itemTypeName =
-        item.itemType === "US"
-          ? "Type:Story Type:UserStory Type:User Story"
-          : "Type:Issue Type:Bug";
-      const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
+
+      const itemTypeName = itemTypeToSearchableName(item.itemType);
+      const fullItemName = `${formatAnyScrumId(item.scrumId, item.itemType)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
       return fullItemName.toLowerCase().includes(searchValue.toLowerCase());
     }) ?? [];
 
@@ -166,16 +154,10 @@ export default function ProjectSprints() {
         const item = backlogItemsBySprint?.backlogItems[id];
         if (!item) return false;
 
+        // FIXME: Make this its own hook so that it can be reusable and consistent
         const tagsList = item.tags.map((tag) => "Tag:" + tag.name).join(" ");
-        let formatter = formatUserStoryScrumId;
-        if (item.itemType === "IS") {
-          formatter = formatIssueScrumId;
-        }
-        const itemTypeName =
-          item.itemType === "US"
-            ? "Type:Story Type:UserStory Type:User Story"
-            : "Type:Issue Type:Bug";
-        const fullItemName = `${formatter(item.scrumId)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
+        const itemTypeName = itemTypeToSearchableName(item.itemType);
+        const fullItemName = `${formatAnyScrumId(item.scrumId, item.itemType)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
 
         return fullItemName
           .toLowerCase()
@@ -233,19 +215,10 @@ export default function ProjectSprints() {
       (oldData) => {
         if (!oldData) return undefined;
 
-        const sortByScrumId = (a: string, b: string) => {
-          const itemA = items[a];
-          const itemB = items[b];
-          if (itemA?.scrumId === itemB?.scrumId) {
-            return itemA?.itemType === "US" ? -1 : 1;
-          }
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
-        };
-
         const sprints = oldData.sprints.map((sprint) => {
           if (sprint.sprint.id === sprintId) {
             const sortedItemIds = [...sprint.backlogItemIds, ...itemIds].sort(
-              sortByScrumId,
+              sortByItemTypeAndScrumId(items),
             );
             return {
               ...sprint,
@@ -266,7 +239,7 @@ export default function ProjectSprints() {
           newUnassignedItemIds = [
             ...oldData.unassignedItemIds,
             ...itemIds,
-          ].sort(sortByScrumId);
+          ].sort(sortByItemTypeAndScrumId(items));
         } else {
           newUnassignedItemIds = oldData.unassignedItemIds.filter(
             (itemId) => !itemIds.includes(itemId),
@@ -302,7 +275,7 @@ export default function ProjectSprints() {
       sprintId,
       items: itemIds.map((itemId) => ({
         id: itemId,
-        itemType: items[itemId]!.itemType as AnyBacklogItemType,
+        itemType: items[itemId]!.itemType,
       })),
     });
 
@@ -311,11 +284,12 @@ export default function ProjectSprints() {
 
     await invalidateQueriesBacklogItems(projectId as string, "US");
     await invalidateQueriesBacklogItems(projectId as string, "IS");
+    await invalidateQueriesBacklogItems(projectId as string, "IT");
     await invalidateQueriesBacklogItemDetails(
       projectId as string,
       itemIds.map((id) => ({
         itemId: id,
-        itemType: items[id]!.itemType as AnyBacklogItemType,
+        itemType: items[id]!.itemType,
       })),
     );
   };
@@ -327,7 +301,17 @@ export default function ProjectSprints() {
   // #endregion
 
   // #region Drag and Drop Utils
-  let dndOperationsInProgress = 0;
+  const [dndOperationsInProgress, setDndOperationsInProgress] = useState(0);
+
+  useEffect(() => {
+    // Only fetch again if this is the last operation. Prevents buggy behavior in UI
+    if (dndOperationsInProgress == 0) {
+      setLastDraggedBacklogItemId(null);
+      void invalidateQueriesBacklogItems(projectId as string, "US");
+      void invalidateQueriesBacklogItems(projectId as string, "IS");
+      void invalidateQueriesBacklogItems(projectId as string, "IT");
+    }
+  }, [dndOperationsInProgress]);
 
   // Similar but not equal to assignSelectionToSprint
   const handleDragEnd = async (itemId: string, sprintId: string) => {
@@ -337,7 +321,7 @@ export default function ProjectSprints() {
     const items = backlogItemsBySprint?.backlogItems;
     if (!items || items[itemId]?.sprintId === sprintId) return;
 
-    dndOperationsInProgress += 1;
+    setDndOperationsInProgress((prev) => prev + 1);
     // Cancel previous fetches for the sprint data
     await cancelBacklogItemsPreviewQuery();
 
@@ -351,21 +335,12 @@ export default function ProjectSprints() {
       (oldData) => {
         if (!oldData) return undefined;
 
-        const sortByScrumId = (a: string, b: string) => {
-          const itemA = items[a];
-          const itemB = items[b];
-          if (itemA?.scrumId === itemB?.scrumId) {
-            return itemA?.itemType === "US" ? -1 : 1;
-          }
-          return (itemA?.scrumId ?? 0) - (itemB?.scrumId ?? 0);
-        };
-
         const sprints = oldData.sprints.map((sprint) => {
           if (sprint.sprint.id === sprintId) {
             const sortedBacklogItemIds = [
               ...sprint.backlogItemIds,
               itemId,
-            ].sort(sortByScrumId);
+            ].sort(sortByItemTypeAndScrumId(items));
             return {
               ...sprint,
               backlogItemIds: sortedBacklogItemIds,
@@ -385,7 +360,7 @@ export default function ProjectSprints() {
           newUnassignedItemIds = [
             ...oldData.unassignedItemIds,
             ...itemIds,
-          ].sort(sortByScrumId);
+          ].sort(sortByItemTypeAndScrumId(items));
         } else {
           newUnassignedItemIds = oldData.unassignedItemIds.filter(
             (itemId) => !itemIds.includes(itemId),
@@ -421,31 +396,34 @@ export default function ProjectSprints() {
       sprintId,
       items: itemIds.map((itemId) => ({
         id: itemId,
-        itemType: items[itemId]!.itemType as AnyBacklogItemType,
+        itemType: items[itemId]!.itemType,
       })),
     });
 
     // Cancel previous fetches for the sprint data
     await cancelBacklogItemsPreviewQuery();
 
-    // Only fetch again if this is the last operation
-    if (dndOperationsInProgress == 1) {
-      setLastDraggedBacklogItemId(null);
-      await invalidateQueriesBacklogItems(projectId as string, "US");
-      await invalidateQueriesBacklogItems(projectId as string, "IS");
-      await invalidateQueriesBacklogItemDetails(
-        projectId as string,
-        itemIds.map((id) => ({
-          itemId: id,
-          itemType: items[id]!.itemType as AnyBacklogItemType,
-        })),
-      );
-    }
+    await invalidateQueriesBacklogItemDetails(
+      projectId as string,
+      itemIds.map((id) => ({
+        itemId: id,
+        itemType: items[id]!.itemType,
+      })),
+    );
 
-    // Mark operation as finished
-    dndOperationsInProgress -= 1;
+    // Update the operations in progress count
+    setTimeout(() => {
+      setLastDraggedBacklogItemId(null);
+    }, 1500);
+    setTimeout(() => {
+      setDndOperationsInProgress((prev) => prev - 1);
+    }, 3000);
   };
   // #endregion
+
+  const hiddenWithoutBacklog = {
+    hidden: !showBacklog,
+  };
 
   return (
     <>
@@ -461,19 +439,58 @@ export default function ProjectSprints() {
 
           await handleDragEnd(source.id as string, target.id as string);
         }}
+        onDragMove={(e) => {
+          if ((e.to?.x ?? 1000) < 100 && !showBacklog) {
+            setShowBacklog(true);
+          } else if ((e.to?.x ?? 0) > 426 && showBacklog && isTablet) {
+            setShowBacklog(false);
+          }
+        }}
       >
-        <div className="flex h-full overflow-hidden">
-          <div className="relative flex h-full w-[407px] min-w-[407px] flex-col gap-0 overflow-hidden border-r-2 pr-5">
-            <div className="flex w-full justify-between pb-2">
-              <h1 className="text-3xl font-semibold">Product Backlog</h1>
-              {permission >= permissionNumbers.write && (
+        <div className="relative flex h-full overflow-hidden">
+          <div
+            className={cn(
+              "flex shrink-0 basis-[426px] touch-none flex-col overflow-hidden border-r-2 bg-white pb-10 pl-5 pr-5 pt-10 xl:relative",
+              {
+                "w-auto basis-[90px] pl-7": !showBacklog,
+                "absolute left-0 z-[100] h-full w-[426px] min-w-[426px]":
+                  showBacklog,
+              },
+            )}
+          >
+            <div className="flex w-full justify-between pb-5">
+              <div
+                className={cn("flex items-center gap-4", {
+                  relative: !showBacklog,
+                })}
+              >
+                <SidebarToggleIcon
+                  flipped
+                  setSidebarShown={setShowBacklog}
+                  sidebarShown={showBacklog}
+                  label="backlog"
+                />
+                {showBacklog && (
+                  <h1 className={cn("text-3xl font-semibold")}>Backlog</h1>
+                )}
+                {!showBacklog && (
+                  <h1 className="absolute -left-[13px] top-[40px] break-words font-medium text-gray-600">
+                    Backlog
+                  </h1>
+                )}
+              </div>
+              {permission >= permissionNumbers.write && showBacklog && (
                 <PrimaryButton onClick={() => setShowNewBacklogItem(true)}>
                   + Add Item
                 </PrimaryButton>
               )}
             </div>
-
-            <div className="flex w-full items-center gap-3 pb-4">
+            <div
+              className={cn(
+                "flex w-full items-center gap-3 pb-4",
+                hiddenWithoutBacklog,
+              )}
+            >
               <SearchBar
                 searchValue={searchValue}
                 handleUpdateSearch={(e) => setSearchValue(e.target.value)}
@@ -495,6 +512,7 @@ export default function ProjectSprints() {
               selection={selectedItems}
               setSelection={setSelectedItems}
               setDetailId={setDetailItemId}
+              className={cn(hiddenWithoutBacklog)}
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
                   <span className="text-xl font-medium">Unassigned items</span>
@@ -529,17 +547,32 @@ export default function ProjectSprints() {
                 {
                   "pointer-events-auto opacity-100": availableToBeAssignedTo,
                 },
+                hiddenWithoutBacklog,
               )}
             >
               <PrimaryButton
-                className="mr-5 flex-1"
+                className="mx-5 mb-10 flex-1"
                 onClick={() => assignSelectionToSprint("")}
               >
                 Unassign selection
               </PrimaryButton>
             </div>
           </div>
-          <div className="ml-5 flex h-full grow flex-col overflow-x-hidden">
+          {/* Small screen cover */}
+          {showBacklog && (
+            <div
+              className="absolute left-0 top-0 z-[99] h-full w-full bg-black/10 xl:hidden"
+              onClick={() => setShowBacklog(false)}
+            />
+          )}
+          <div
+            className={cn(
+              "ml-5 flex grow flex-col overflow-x-hidden pb-10 pr-10 pt-10",
+              {
+                "pl-[90px] xl:pl-0": showBacklog,
+              },
+            )}
+          >
             <div className="flex w-full justify-between gap-5 pb-4">
               <h1 className="text-3xl font-semibold">Sprints</h1>
               <div className="flex flex-1 items-center justify-end gap-3">
@@ -599,6 +632,7 @@ export default function ProjectSprints() {
                 <SprintCardColumn
                   advancedFilters={advancedFilters}
                   disabled={permission < permissionNumbers.write}
+                  disableDropping={showBacklog && isTablet}
                   allSprints={backlogItemsBySprint?.sprints.map(
                     (sprint) => sprint.sprint,
                   )}
@@ -622,23 +656,20 @@ export default function ProjectSprints() {
             if (!itemId) return null;
             const draggingItem = backlogItemsBySprint?.backlogItems[itemId];
             if (!draggingItem) return null;
-            const item: KanbanCard = {
+            const item: KanbanItemCard = {
               ...draggingItem,
               columnId: draggingItem.sprintId,
               assigneeIds: [],
               priorityId: undefined,
               sprintId: draggingItem.sprintId,
-              cardType:
-                (draggingItem.itemType as BacklogItemAndTaskDetailType) ?? "US",
+              cardType: draggingItem.itemType ?? "US",
             };
             return (
               <ItemCardRender
                 item={item}
                 showBackground={true}
-                scrumIdFormatter={() =>
-                  item.cardType === "US"
-                    ? formatUserStoryScrumId(item.scrumId)
-                    : formatIssueScrumId(item.scrumId)
+                scrumIdFormatter={(scrumId: number) =>
+                  formatAnyScrumId(scrumId, item.cardType)
                 }
               />
             );

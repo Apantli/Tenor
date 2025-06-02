@@ -11,6 +11,7 @@ export default {
       colors: {
         "app-primary": "#086A72",
         "app-secondary": "#13918A",
+        "app-secondary-dark": "#0E766F",
         "app-tertiary": "#15634F",
         "app-dark": "#012112",
         "app-light": "#88BB87",
