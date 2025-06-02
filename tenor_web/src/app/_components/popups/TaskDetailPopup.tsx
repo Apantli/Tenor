@@ -362,7 +362,11 @@ export default function TaskDetailPopup({
               <label className="mb-1 block text-sm font-medium">Size</label>
               <SizePicker
                 disabled={permission < permissionNumbers.write}
-                currentSize={taskDetail.size}
+                currentSize={
+                  taskDetail.size === undefined || taskDetail.size === ""
+                    ? undefined
+                    : taskDetail.size
+                }
                 callback={async (size) => {
                   await handleSave({ ...taskDetail, size });
                 }}

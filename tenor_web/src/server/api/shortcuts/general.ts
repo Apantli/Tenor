@@ -162,7 +162,7 @@ export const getGenericBacklogItemContext = async (
   name: string,
   description: string,
   priorityId?: string,
-  size?: Size,
+  size?: Size | "",
 ) => {
   const priority = priorityId
     ? await getPriority(firestore, projectId, priorityId)
@@ -430,32 +430,38 @@ export const getItemActivityDetails = async (
     userStories: [] as ActivityItem[],
     epics: [] as ActivityItem[],
     sprints: [] as ActivityItem[],
-  }
+  };
 
   // Iterate in the activityMap to get the item type and itemId
   for (const activity of activities) {
     if (!activity.itemId || !activity.type) continue;
-    
+
     const itemType = activity.type.toUpperCase();
     const itemId = activity.itemId;
 
     if (!(itemType in TYPE_COLLECTION_MAP)) continue;
 
     // Save the collection name based on the item type
-    const collectionName =  TYPE_COLLECTION_MAP[itemType];
-    
+    const collectionName = TYPE_COLLECTION_MAP[itemType];
+
     // Check if collectionName is defined before using it
     if (!collectionName) continue;
-    
+
     // Make the reference
-    const itemRef = getProjectRef(firestore, projectId).collection(collectionName).doc(itemId);
+    const itemRef = getProjectRef(firestore, projectId)
+      .collection(collectionName)
+      .doc(itemId);
     const docSnap = await itemRef.get();
 
     // If the document does not exist, continue to the next iteration
     if (!docSnap.exists) continue;
 
     // Get the item data
-    const data = { id: itemId, ...docSnap.data(), activity: activity } as ActivityItem;
+    const data = {
+      id: itemId,
+      ...docSnap.data(),
+      activity: activity,
+    } as ActivityItem;
 
     switch (collectionName) {
       case "tasks":

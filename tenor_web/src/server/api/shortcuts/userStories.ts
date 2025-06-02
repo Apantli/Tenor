@@ -100,7 +100,9 @@ export const getUserStories = async (
         ...UserStorySchema.parse({
           ...doc.data(),
           size:
-            (doc.data().size as string) !== "" ? doc.data().size : undefined,
+            (((doc.data().size as string) !== ""
+              ? doc.data().size
+              : undefined) as string) || undefined,
         }),
       } as WithId<UserStory>;
     },
@@ -132,7 +134,9 @@ export const getUserStoriesAfter = async (
         ...UserStorySchema.parse({
           ...doc.data(),
           size:
-            (doc.data().size as string) !== "" ? doc.data().size : undefined,
+            (((doc.data().size as string) !== ""
+              ? doc.data().size
+              : undefined) as string) || undefined,
         }),
       } as WithId<UserStory>;
     },
@@ -166,9 +170,9 @@ export const getUserStory = async (
     ...UserStorySchema.parse({
       ...userStorySnapshot.data(),
       size:
-        (userStorySnapshot.data()?.size as string) !== ""
+        (((userStorySnapshot.data()?.size as string) !== ""
           ? userStorySnapshot.data()?.size
-          : undefined,
+          : undefined) as string) || undefined,
     }),
   } as WithId<UserStory>;
 };
