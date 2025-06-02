@@ -64,7 +64,7 @@ export default function ProjectSprintRetrospectivePage() {
       },
     );
 
-  const { data: teamProgressData } =
+  const { data: teamProgressData, isLoading: loadingTeamProgress } =
     api.sprintRetrospectives.getRetrospectiveTeamProgess.useQuery(
       {
         projectId: projectId,
@@ -77,7 +77,7 @@ export default function ProjectSprintRetrospectivePage() {
       },
     );
 
-  const { data: personalProgressData } =
+  const { data: personalProgressData, isLoading: loadingPersonalProgress } =
     api.sprintRetrospectives.getRetrospectivePersonalProgress.useQuery(
       {
         projectId: projectId,
@@ -95,7 +95,13 @@ export default function ProjectSprintRetrospectivePage() {
   const userName =
     user?.displayName ?? user?.email ?? "No name or email provided";
 
-  if (loadingprevSprint || loadingSprint || loadingRetrospectiveId) {
+  if (
+    loadingprevSprint ||
+    loadingSprint ||
+    loadingRetrospectiveId ||
+    loadingTeamProgress ||
+    loadingPersonalProgress
+  ) {
     return (
       <div className="flex h-full flex-col items-center justify-center">
         <LoadingSpinner color="primary" />
@@ -178,6 +184,16 @@ export default function ProjectSprintRetrospectivePage() {
               </div>
 
               <h2 className="mb-4 text-2xl font-semibold">Personal Progress</h2>
+              <div className="mb-6 flex items-center gap-6">
+                <ProfilePicture
+                  user={user}
+                  className="h-16 w-16 min-w-16 text-xl"
+                  hideTooltip
+                />
+                <div>
+                  <p className="text-xl font-semibold">{userName}</p>
+                </div>
+              </div>
               <div className="mb-6">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="font-medium">Assigned Tasks</p>
@@ -191,22 +207,11 @@ export default function ProjectSprintRetrospectivePage() {
                     min={0}
                     max={personalProgressData?.totalAssignedTasks ?? 100}
                     value={personalProgressData?.completedAssignedTasks ?? 0}
-                    progressBarColor="#88BB87"
+                    progressBarColor="#198A5F"
                     emptyBarColor="#E5E5E5"
                     className="h-8"
                     compact={true}
                   />
-                </div>
-              </div>
-
-              <div className="mb-6 flex items-center gap-6">
-                <ProfilePicture
-                  user={user}
-                  className="h-16 w-16 min-w-16 text-xl"
-                  hideTooltip
-                />
-                <div>
-                  <p className="text-xl font-semibold">{userName}</p>
                 </div>
               </div>
 
