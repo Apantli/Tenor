@@ -3,8 +3,9 @@ import React from "react";
 import { createClassFromSpec, type VisualizationSpec } from "react-vega";
 import { cn } from "~/lib/helpers/utils";
 import { api } from "~/trpc/react";
-import { differenceInDays, parseISO } from "date-fns";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import BarChartIcon from "@mui/icons-material/BarChart";
+
 
 // Create a more specific type for your Vega specification
 type VegaSpec = VisualizationSpec & {
@@ -26,14 +27,15 @@ type VegaSpec = VisualizationSpec & {
 
 // Generates burndown chart data from project status information
 export function useBurndownData(projectId: string) {
-  const { data, isLoading } = api.projects.getBurndownData.useQuery(
+  const { data, isLoading, isError } = api.projects.getBurndownData.useQuery(
     { projectId },
-    { staleTime: 5 * 60 * 1000 } // Cache for 5 minutes
+    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 } // Cache for 5 minutes
   );
   
   return {
-    data: data || [{ x: 0, y: 0, c: 0 }],
-    isLoading
+    data: data,
+    isLoading,
+    isError
   };
 }
 
@@ -186,7 +188,7 @@ const BurndownChart: React.FC<{
   className?: string;
 }> = ({ projectId, className = "" }) => {
   // Use the data generation hook
-  const { data: burndownData, isLoading } = useBurndownData(projectId);
+  const { data: burndownData, isLoading, isError } = useBurndownData(projectId);
 
   // Calculate appropriate domain based on data
   const maxY = React.useMemo(() => {
@@ -283,13 +285,6 @@ const BurndownChart: React.FC<{
     [modifiedSpec],
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full w-full items-center justify-center">
-        <LoadingSpinner color="primary" />
-      </div>
-    );
-  }
 
   return (
     <div
@@ -321,9 +316,26 @@ const BurndownChart: React.FC<{
               </span>
             </div>
           </div>
+          { isLoading ? (
+            <div className="mx-auto my-auto flex flex-col items-center">
+              <span className="mx-auto text-[100px] text-gray-500">
+                <LoadingSpinner color="primary" />
+              </span>
+            </div>
+          ): isError || !burndownData || domain[1] === 0 ? (
+            <div className="mx-auto my-auto flex flex-col items-center">
+              <span className="mx-auto text-[100px] text-gray-500">
+                <BarChartIcon fontSize="inherit" />
+              </span>
+              <h1 className="mb-5 text-xl font-semibold text-gray-500">
+                No tasks in current sprint.
+              </h1>
+            </div>
+          ):
           <div className="h-full">
             <LineChartComponent actions={false} />
           </div>
+          }
         </>
     </div>
   );

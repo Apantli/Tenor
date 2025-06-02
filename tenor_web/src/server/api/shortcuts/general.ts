@@ -15,9 +15,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
-import { getItemActivityTask, getTasks } from "./tasks";
-import { getIssues } from "./issues";
-import { getUserStories } from "./userStories";
+import { getItemActivityTask } from "./tasks";
 import { getCurrentSprint, getTasksFromSprint } from "./sprints";
 import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
@@ -486,6 +484,10 @@ export const getBurndownData = async (
   completedTasks: number,
   burndownHistory: BurndownDataPoint[],
 ): Promise<BurndownChartData> => {
+  if (!startDate || !endDate) {
+    return [{ x: 0, y: 0, c: 0 }];
+  }
+
   if (totalTasks === 0) {
     return [{ x: 0, y: 0, c: 0}];
   }
@@ -528,6 +530,16 @@ export const getBurndownData = async (
       y: remainingTasks,
       c: 1,
     });
+  } else {
+    // We have historical data
+    for (const point of burndownHistory) {
+      const dayIndex = Math.min(point.day, sprintDuration);
+      actualBurndown.push({
+        x: dayIndex,
+        y: totalTasks - point.completedCount,
+        c: 1,
+      });
+    }
   }
 
   return [...burndownLine, ...actualBurndown];
