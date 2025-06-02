@@ -6,6 +6,8 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { getTasksRef } from "./tasks";
 import { getStatusTypesRef } from "./tags";
+import { getSprint } from "./sprints";
+import { TRPCError } from "@trpc/server";
 
 export const getActivityRef = (firestore: Firestore, projectId: string) => {
   return getProjectRef(firestore, projectId).collection("activity");
@@ -16,6 +18,7 @@ export const getActivityPartition = async (
   projectId: string,
   userId: string,
   time: string,
+  sprintId?: string,
 ) => {
   let activityRef = null;
   if (time === "Week") {
@@ -31,11 +34,23 @@ export const getActivityPartition = async (
       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
     );
   } else {
-    activityRef = getActivityRef(firestore, projectId).where(
-      "date",
-      ">=",
-      new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-    );
+    if (!sprintId) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No activity data available, no sprint specified.",
+      });
+    }
+    // Get start and end date from sprint
+    const sprint = await getSprint(firestore, projectId, sprintId);
+    if (!sprint) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No activity data available, sprint not found.",
+      });
+    }
+    activityRef = getActivityRef(firestore, projectId)
+      .where("date", ">=", sprint?.startDate)
+      .where("date", "<=", sprint.endDate);
   }
   const activitySnapshot = await activityRef
     .where("userId", "==", userId)
@@ -89,6 +104,7 @@ export const getContributionOverview = async (
   projectId: string,
   userId: string,
   time: string,
+  sprintId?: string,
 ) => {
   let activityRef = null;
   if (time === "Week") {
@@ -104,11 +120,23 @@ export const getContributionOverview = async (
       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
     );
   } else {
-    activityRef = getActivityRef(firestore, projectId).where(
-      "date",
-      ">=",
-      new Date(Date.now() - 14 * 24 * 60 * 60 * 1000),
-    );
+    if (!sprintId) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No contribution data available, no sprint specified.",
+      });
+    }
+    // Get start and end date from sprint
+    const sprint = await getSprint(firestore, projectId, sprintId);
+    if (!sprint) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No contribution data available, sprint not found.",
+      });
+    }
+    activityRef = getActivityRef(firestore, projectId)
+      .where("date", ">=", sprint?.startDate)
+      .where("date", "<=", sprint.endDate);
   }
   const activitySnapshot = await activityRef
     .where("userId", "==", userId)
