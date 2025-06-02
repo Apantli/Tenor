@@ -20,8 +20,8 @@ export default function ProjectPerformance() {
   const [selectedMember, setSelectedMember] = useState<UserCol | null>(null);
 
   return (
-    <div className="m-6 flex-1 p-4">
-      <div className="flex h-full w-full flex-col gap-4 overflow-y-auto lg:flex-row lg:gap-16 xl:overflow-hidden">
+    <div className="m-6 flex-1 overflow-y-auto p-4">
+      <div className="flex h-full w-full flex-col gap-4 overflow-y-auto p-4 lg:flex-row lg:gap-16 xl:overflow-hidden">
         <div className="flex w-full flex-col items-baseline gap-3 pb-4 lg:w-[55%] lg:min-w-0 lg:flex-shrink">
           <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h1 className="text-2xl font-semibold sm:text-3xl">
@@ -51,13 +51,13 @@ export default function ProjectPerformance() {
             selectedMember={selectedMember}
           />
         </div>
-        <div className="mx-auto w-full lg:w-[36%] lg:min-w-0 lg:flex-shrink-0">
+        <div className="mx-auto w-full lg:w-[40%]">
           {selectedMember ? (
             <MemberDetailsCard
               member={selectedMember}
               projectId={projectIdString}
               timeInterval={section}
-              className="my-auto mt-1"
+              className="my-auto mt-1 pb-4"
               setSelectedMember={setSelectedMember}
             />
           ) : (

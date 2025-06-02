@@ -71,10 +71,12 @@ const pieChartSpec: VisualizationSpec = {
 type ContributionPieChartProps = {
   data?: typeof SampleContributionData;
   className?: string;
+  scaleFactor?: number;
 };
 
 export const ContributionPieChart = ({
   data = SampleContributionData,
+  scaleFactor = 1,
   className = "",
 }: ContributionPieChartProps) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -90,9 +92,7 @@ export const ContributionPieChart = ({
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const width = entry.contentRect.width * 0.6;
-        const height = entry.contentRect.height;
 
-        console.log(`Container resized: width=${width}, height=${height}`);
         setContainerDimensions({
           width: Math.min(Math.max(width, 50), 200),
           height: Math.min(Math.max(width, 50), 200),
@@ -114,8 +114,8 @@ export const ContributionPieChart = ({
         containerDimensions.width,
         containerDimensions.height,
       );
-      specCopy.width = size;
-      specCopy.height = size;
+      specCopy.width = size * scaleFactor;
+      specCopy.height = size * scaleFactor;
     }
 
     return specCopy;
