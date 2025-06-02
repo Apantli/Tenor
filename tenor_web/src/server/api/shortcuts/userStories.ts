@@ -97,13 +97,7 @@ export const getUserStories = async (
     (doc) => {
       return {
         id: doc.id,
-        ...UserStorySchema.parse({
-          ...doc.data(),
-          size:
-            (((doc.data().size as string) !== ""
-              ? doc.data().size
-              : undefined) as string) || undefined,
-        }),
+        ...UserStorySchema.parse(doc.data()),
       } as WithId<UserStory>;
     },
   );
@@ -131,13 +125,7 @@ export const getUserStoriesAfter = async (
     (doc) => {
       return {
         id: doc.id,
-        ...UserStorySchema.parse({
-          ...doc.data(),
-          size:
-            (((doc.data().size as string) !== ""
-              ? doc.data().size
-              : undefined) as string) || undefined,
-        }),
+        ...UserStorySchema.parse(doc.data()),
       } as WithId<UserStory>;
     },
   );
@@ -167,13 +155,7 @@ export const getUserStory = async (
   }
   return {
     id: userStorySnapshot.id,
-    ...UserStorySchema.parse({
-      ...userStorySnapshot.data(),
-      size:
-        (((userStorySnapshot.data()?.size as string) !== ""
-          ? userStorySnapshot.data()?.size
-          : undefined) as string) || undefined,
-    }),
+    ...UserStorySchema.parse(userStorySnapshot.data()),
   } as WithId<UserStory>;
 };
 
