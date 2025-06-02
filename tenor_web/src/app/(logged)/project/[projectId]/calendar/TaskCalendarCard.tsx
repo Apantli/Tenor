@@ -18,6 +18,7 @@ interface Props {
   setDetailItemId: (id: string) => void;
   selectedTasksId: string[];
   setSelectedTasksId: (ids: string[]) => void;
+  dateSelected?: boolean;
 }
 
 export const TaskCalendarCard = ({
@@ -27,6 +28,7 @@ export const TaskCalendarCard = ({
   setDetailItemId,
   selectedTasksId,
   setSelectedTasksId,
+  dateSelected = true,
 }: Props) => {
   const { projectId } = useParams();
   const { ref, isDragging } = useDraggable({
@@ -75,7 +77,8 @@ export const TaskCalendarCard = ({
               className={cn(
                 "w-0 shrink-0 grow basis-0 overflow-hidden opacity-0 transition-all group-hover:basis-4 group-hover:opacity-100",
                 {
-                  "basis-5 opacity-100": selectedTasksId.length > 0 || hovering,
+                  "basis-5 opacity-100":
+                    dateSelected || selectedTasksId.length > 0 || hovering,
                 },
               )}
             >
