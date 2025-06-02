@@ -47,7 +47,7 @@ export type UserStoryDetail = {
   description: string;
   acceptanceCriteria: string;
   epic?: ExistingEpic;
-  size?: Size | "";
+  size: Size | "";
   tags: Tag[];
   priority?: Tag;
   status?: StatusTag; // It is a statusTag, but in the detail we don't need the detail info!
@@ -69,7 +69,7 @@ export type IssueDetail = {
   stepsToRecreate: string;
   tags: Tag[];
   priority?: Tag;
-  size?: Size | "";
+  size: Size | "";
   status?: StatusTag;
   relatedUserStory?: UserStoryPreview;
   tasks: TaskPreview[];
@@ -82,7 +82,7 @@ export type TaskDetail = {
   name: string;
   description: string;
   status: StatusTag;
-  size?: Size | "";
+  size: Size | "";
   assignee?: WithId<UserPreview>;
   dueDate?: Date;
   dependencies: TaskPreview[];
@@ -106,7 +106,7 @@ export type BacklogItemPreview = {
   scrumId: number;
   name: string;
   sprintId: string;
-  size: Size;
+  size: Size | "";
   tagIds: string[];
   itemType: AnyBacklogItemType;
   priorityId: string;
@@ -117,7 +117,7 @@ export type BacklogItemDetail = {
   scrumId: number;
   name: string;
   sprintId: string;
-  size: Size;
+  size: Size | "";
   tags: WithId<Tag>[];
   itemType: AnyBacklogItemType;
   assigneeIds: string[];

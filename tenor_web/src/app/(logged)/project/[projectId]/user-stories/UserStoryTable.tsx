@@ -574,9 +574,7 @@ export default function UserStoryTable({
           return (
             <SizePicker
               disabled={permission < permissionNumbers.write}
-              currentSize={
-                row.size == undefined || row.size === "" ? undefined : row.size
-              }
+              currentSize={row.size === "" ? undefined : row.size}
               callback={isGhost ? handleGhostSizeChange : handleSizeChange}
             />
           );

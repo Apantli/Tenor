@@ -146,9 +146,7 @@ export default function CreateIssuePopup({
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
                 currentSize={
-                  createForm.size === undefined || createForm.size === ""
-                    ? undefined
-                    : createForm.size
+                  createForm.size === "" ? undefined : createForm.size
                 }
                 callback={(size) => setCreateForm({ ...createForm, size })}
               />

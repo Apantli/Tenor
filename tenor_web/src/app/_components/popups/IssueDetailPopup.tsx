@@ -280,10 +280,7 @@ export default function IssueDetailPopup({
                     <SizePicker
                       disabled={permission < permissionNumbers.write}
                       currentSize={
-                        issueDetail.size === undefined ||
-                        issueDetail.size === ""
-                          ? undefined
-                          : issueDetail.size
+                        issueDetail.size === "" ? undefined : issueDetail.size
                       }
                       callback={async (size) => {
                         await handleSave({ ...issueDetail, size });

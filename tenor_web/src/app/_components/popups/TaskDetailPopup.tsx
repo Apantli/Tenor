@@ -363,9 +363,7 @@ export default function TaskDetailPopup({
               <SizePicker
                 disabled={permission < permissionNumbers.write}
                 currentSize={
-                  taskDetail.size === undefined || taskDetail.size === ""
-                    ? undefined
-                    : taskDetail.size
+                  taskDetail.size === "" ? undefined : taskDetail.size
                 }
                 callback={async (size) => {
                   await handleSave({ ...taskDetail, size });
