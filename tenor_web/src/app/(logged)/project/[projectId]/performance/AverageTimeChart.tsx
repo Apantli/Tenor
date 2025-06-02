@@ -77,10 +77,10 @@ export const AverageTimeChart = ({
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const width = entry.contentRect.width * 0.9;
+        const width = entry.contentRect.width * 0.85;
         const height = entry.contentRect.height - 50;
         setContainerDimensions({
-          width: Math.max(width, 200),
+          width: Math.max(width, 100),
           height: Math.max(height, 50),
         });
       }
