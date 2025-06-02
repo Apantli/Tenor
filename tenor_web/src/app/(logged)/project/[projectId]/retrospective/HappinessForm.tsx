@@ -24,12 +24,6 @@ export interface HappinessResponses {
   improvementSuggestion: string;
 }
 
-const questionMapping = {
-  roleFeeling: 1,
-  companyFeeling: 2,
-  improvementSuggestion: 3,
-};
-
 export default function HappinessForm({
   sprintRetrospectiveId,
   onSubmit,
@@ -140,12 +134,7 @@ export default function HappinessForm({
     }
   }, [queryError]);
 
-  const saveAnswer =
-    api.sprintRetrospectives.saveRetrospectiveAnswers.useMutation({
-      onSuccess: () => {
-        void refetchAnswers();
-      },
-    });
+  const saveAnswer = api.sprintRetrospectives.sendReport.useMutation();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -164,12 +153,11 @@ export default function HappinessForm({
   const handleSubmit = async () => {
     if (!sprintRetrospectiveId || !userId) return;
 
-    const hasNewUnsavedContent =
-      (!savedFields.roleFeeling && responses.roleFeeling.trim() !== "") ||
-      (!savedFields.companyFeeling && responses.companyFeeling.trim() !== "") ||
-      (!savedFields.improvementSuggestion &&
-        responses.improvementSuggestion.trim() !== "");
-    if (!hasNewUnsavedContent) {
+    const missingFields =
+      responses.roleFeeling.trim() === "" ||
+      responses.companyFeeling.trim() === "" ||
+      responses.improvementSuggestion.trim() === "";
+    if (missingFields) {
       predefinedAlerts.formCompletionError();
       return;
     }
@@ -177,33 +165,25 @@ export default function HappinessForm({
     setIsSubmitting(true);
 
     try {
-      const savePromises = Object.entries(responses).map(
-        async ([field, value]) => {
-          const fieldKey = field as keyof HappinessResponses;
-
-          if (value && !savedFields[fieldKey]) {
-            await saveAnswer.mutateAsync({
-              projectId: projectId,
-              reviewId: sprintRetrospectiveId,
-              userId,
-              questionNum: questionMapping[fieldKey],
-              answerText: value as string,
-            });
-            setSavedFields((prev) => ({
-              ...prev,
-              [fieldKey]: true,
-            }));
-          }
+      await saveAnswer.mutateAsync({
+        projectId: projectId,
+        reviewId: sprintRetrospectiveId,
+        data: {
+          textAnswers: [
+            responses.roleFeeling,
+            responses.companyFeeling,
+            responses.improvementSuggestion,
+          ],
         },
-      );
+      });
 
-      await Promise.all(savePromises);
       await refetchAnswers();
 
       if (onSubmit) {
         onSubmit(responses);
       }
     } catch (error) {
+      predefinedAlerts.unexpectedError();
       console.error("Error saving responses:", error);
     } finally {
       setIsSubmitting(false);
@@ -262,7 +242,15 @@ export default function HappinessForm({
       </div>
 
       <div className="sticky bottom-0 flex justify-between border-t border-gray-200 bg-white p-4">
-        <ConversationButton onClick={handleConversationMode}>
+        <ConversationButton
+          onClick={handleConversationMode}
+          disabled={
+            isSubmitting ||
+            (savedFields.roleFeeling &&
+              savedFields.companyFeeling &&
+              savedFields.improvementSuggestion)
+          }
+        >
           Try conversation mode
         </ConversationButton>
         <PrimaryButton
@@ -274,8 +262,9 @@ export default function HappinessForm({
               savedFields.companyFeeling &&
               savedFields.improvementSuggestion)
           }
+          loading={isSubmitting}
         >
-          {isSubmitting ? "Saving..." : "Send report"}
+          Send report
         </PrimaryButton>
       </div>
 

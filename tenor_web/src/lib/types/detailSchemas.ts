@@ -123,3 +123,18 @@ export type BacklogItemDetail = {
   assigneeIds: string[];
   priorityId: string;
 };
+
+export type BacklogItemFullDetail = {
+  id: string;
+  scrumId: number;
+  name: string;
+  description: string;
+  size?: Size;
+  tags: Tag[];
+  priority?: Tag;
+  status?: StatusTag;
+  sprint?: WithId<Sprint>;
+};
+export interface BacklogItemFullDetailWithTasks extends BacklogItemFullDetail {
+  tasks: TaskDetail[];
+}

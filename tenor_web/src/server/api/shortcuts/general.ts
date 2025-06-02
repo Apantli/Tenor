@@ -15,10 +15,7 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
-import { getTasks } from "./tasks";
-import { getIssues } from "./issues";
-import { getUserStories } from "./userStories";
-import { getCurrentSprint } from "./sprints";
+import { getCurrentSprint, getTasksFromSprint } from "./sprints";
 import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
@@ -208,43 +205,23 @@ export const getProjectStatus = async (
   admin: admin.app.App,
 ) => {
   // Fetch all data in parallel
-  const [
-    tasks,
-    statuses,
-    issues,
-    userStories,
-    currentSprint,
-    projectCollaborators,
-  ] = await Promise.all([
-    getTasks(firestore, projectId),
+  const [statuses, currentSprint, projectCollaborators] = await Promise.all([
     getStatusTypes(firestore, projectId),
-    getIssues(firestore, projectId),
-    getUserStories(firestore, projectId),
     getCurrentSprint(firestore, projectId),
     getUsers(admin, firestore, projectId),
   ]);
 
-  // Filter out deleted entries
-  const activeTasks = tasks.filter((task) => !task.deleted);
-  const activeIssues = issues.filter((issue) => !issue.deleted);
-  const activeUserStories = userStories.filter((us) => !us.deleted);
+  if (!currentSprint) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "Current sprint not found",
+    });
+  }
 
-  // Collect IDs linked to the current sprint
-  const spruntIssuesIds = new Set(
-    activeIssues
-      .filter((issue) => issue.sprintId === currentSprint?.id)
-      .map((issue) => issue.id),
-  );
-  const sprintUserStoriesIds = new Set(
-    activeUserStories
-      .filter((us) => us.sprintId === currentSprint?.id)
-      .map((us) => us.id),
-  );
-
-  // Filter tasks relevant to the sprint
-  const filteredTasks = activeTasks.filter(
-    (task) =>
-      spruntIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId),
+  const filteredTasks = await getTasksFromSprint(
+    firestore,
+    projectId,
+    currentSprint.id,
   );
 
   // Create a map of status types
