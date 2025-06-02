@@ -33,7 +33,8 @@ export const getRetrospectiveIdProcedure = roleRequiredProcedure(
 )
   .input(z.object({ sprintId: z.string() }))
   .query(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("get_review_id", {
+    const response = await ctx.supabase.rpc("get_retrospective_id", {
+      project_id_input: input.projectId,
       sprint_id_input: input.sprintId,
     });
 
@@ -72,23 +73,31 @@ export const saveRetrospectiveAnswersProcedure = roleRequiredProcedure(
     z.object({
       reviewId: z.number(),
       userId: z.string(),
-      questionNum: z.number(),
-      answerText: z.string(),
+      responses: z.string().array().length(3),
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("save_review_answer", {
-      p_review_id: input.reviewId,
-      p_user_id: input.userId,
-      p_question_num: input.questionNum,
-      p_response_text: input.answerText,
-    });
-    if (response.error) {
-      throw new Error(
-        `Failed to save retrospective answer: ${response.error.message}`,
-      );
+    const responses = await Promise.all(
+      input.responses.map(async (response, index) => {
+        const responseText = response.trim();
+        if (!responseText) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Response for question ${index + 1} cannot be empty.`,
+          });
+        }
+        return ctx.supabase.rpc("save_review_answer", {
+          p_review_id: input.reviewId,
+          p_user_id: input.userId,
+          p_question_num: index + 1,
+          p_response_text: responseText,
+        });
+      }),
+    );
+    if (responses.some((res) => res.error)) {
+      throw new Error("Failed to save retrospective answer");
     }
-    return response.data as boolean;
+    return responses.every((res) => res.data);
   });
 
 /**

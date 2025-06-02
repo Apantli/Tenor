@@ -24,12 +24,6 @@ export interface HappinessResponses {
   improvementSuggestion: string;
 }
 
-const questionMapping = {
-  roleFeeling: 1,
-  companyFeeling: 2,
-  improvementSuggestion: 3,
-};
-
 export default function HappinessForm({
   sprintRetrospectiveId,
   onSubmit,
@@ -177,33 +171,24 @@ export default function HappinessForm({
     setIsSubmitting(true);
 
     try {
-      const savePromises = Object.entries(responses).map(
-        async ([field, value]) => {
-          const fieldKey = field as keyof HappinessResponses;
+      await saveAnswer.mutateAsync({
+        projectId: projectId,
+        reviewId: sprintRetrospectiveId,
+        userId,
+        responses: [
+          responses.roleFeeling,
+          responses.companyFeeling,
+          responses.improvementSuggestion,
+        ],
+      });
 
-          if (value && !savedFields[fieldKey]) {
-            await saveAnswer.mutateAsync({
-              projectId: projectId,
-              reviewId: sprintRetrospectiveId,
-              userId,
-              questionNum: questionMapping[fieldKey],
-              answerText: value as string,
-            });
-            setSavedFields((prev) => ({
-              ...prev,
-              [fieldKey]: true,
-            }));
-          }
-        },
-      );
-
-      await Promise.all(savePromises);
       await refetchAnswers();
 
       if (onSubmit) {
         onSubmit(responses);
       }
     } catch (error) {
+      predefinedAlerts.unexpectedError();
       console.error("Error saving responses:", error);
     } finally {
       setIsSubmitting(false);

@@ -153,7 +153,7 @@ export default function ProjectSprintRetrospectivePage() {
                 </p>
                 <PrimaryButton onClick={() => setUserClickedShowAnswers(true)}>
                   {answeredQuestionsCount === 3
-                    ? "Retrospective Answers"
+                    ? "Review Answers"
                     : "Show Answers"}
                 </PrimaryButton>
               </div>

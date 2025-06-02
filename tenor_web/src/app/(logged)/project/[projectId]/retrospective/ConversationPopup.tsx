@@ -271,18 +271,12 @@ export default function ConversationPopup({
 
     console.log("Processed answers", processedAnswers);
 
-    await Promise.all(
-      processedAnswers.answers.map(async (answer, index) => {
-        if (answer === undefined || answer === "") return;
-        return await saveRetrospectiveAnswer({
-          projectId: projectId as string,
-          userId: user.uid,
-          reviewId: sprintRetrospectiveId,
-          questionNum: index + 1,
-          answerText: answer,
-        });
-      }),
-    );
+    await saveRetrospectiveAnswer({
+      projectId: projectId as string,
+      userId: user.uid,
+      reviewId: sprintRetrospectiveId,
+      responses: processedAnswers.answers,
+    });
 
     await utils.sprintRetrospectives.getRetrospectiveAnswers.invalidate({
       projectId: projectId as string,
