@@ -65,7 +65,7 @@ export default function ProjectSprintRetrospectivePage() {
     );
 
   const { data: teamProgressData, isLoading: loadingTeamProgress } =
-    api.sprintRetrospectives.getRetrospectiveTeamProgess.useQuery(
+    api.sprintRetrospectives.getRetrospectiveTeamProgress.useQuery(
       {
         projectId: projectId,
         sprintId: previousSprintId,
