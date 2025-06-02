@@ -72,6 +72,8 @@ export default function ProjectSprintRetrospectivePage() {
       },
       {
         enabled: !!previousSprintId,
+        refetchOnWindowFocus: "always",
+        staleTime: 0,
       },
     );
 
@@ -84,34 +86,14 @@ export default function ProjectSprintRetrospectivePage() {
       },
       {
         enabled: !!previousSprintId,
+        refetchOnWindowFocus: "always",
+        staleTime: 0,
       },
     );
 
   const sprintNumber = sprint?.number;
   const userName =
     user?.displayName ?? user?.email ?? "No name or email provided";
-
-  const teamStoriesPercentage = teamProgressData?.totalUserStories
-    ? Math.round(
-        (teamProgressData.completedUserStories /
-          teamProgressData.totalUserStories) *
-          100,
-      )
-    : 0;
-
-  const teamIssuesPercentage = teamProgressData?.totalIssues
-    ? Math.round(
-        (teamProgressData.completedIssues / teamProgressData.totalIssues) * 100,
-      )
-    : 0;
-
-  const personalTasksPercentage = personalProgressData?.totalAssignedTasks
-    ? Math.round(
-        (personalProgressData.completedAssignedTasks /
-          personalProgressData.totalAssignedTasks) *
-          100,
-      )
-    : 0;
 
   if (loadingprevSprint || loadingSprint || loadingRetrospectiveId) {
     return (
