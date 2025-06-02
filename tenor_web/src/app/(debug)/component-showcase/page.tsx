@@ -33,7 +33,7 @@ import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
-import { ProgressBar } from "~/app/_components/ProgressBar";
+import ProgressBar from "~/app/_components/ProgressBar";
 
 // Z index documentation:
 // 0-1000: Default z-index range for most elements (feel free to contribute to the documentation)
