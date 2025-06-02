@@ -17,6 +17,7 @@ import { TRPCError } from "@trpc/server";
 import {
   getSprintRetrospectiveTextAnswersContext,
   getSprintTeamProgress,
+  getSprintPersonalProgress,
 } from "../shortcuts/sprintRetrospectives";
 
 type RetrospectiveAnswers = Record<string, string>;
@@ -198,5 +199,25 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         input.sprintId,
       );
       return progress;
+    }),
+  getRetrospectivePersonalProgress: roleRequiredProcedure(
+    reviewPermissions,
+    "read",
+  )
+    .input(
+      z.object({
+        projectId: z.string(),
+        sprintId: z.string(),
+        userId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const personalProgress = await getSprintPersonalProgress(
+        ctx.firestore,
+        input.projectId,
+        input.sprintId,
+        input.userId,
+      );
+      return personalProgress;
     }),
 });

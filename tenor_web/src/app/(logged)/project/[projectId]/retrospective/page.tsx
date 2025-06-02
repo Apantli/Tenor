@@ -70,9 +70,19 @@ export default function ProjectSprintRetrospectivePage() {
         enabled: !!previousSprintId,
       },
     );
+  const { data: personalProgressData } =
+    api.sprintRetrospectives.getRetrospectivePersonalProgress.useQuery(
+      {
+        projectId: projectId,
+        sprintId: previousSprintId,
+        userId: user?.uid ?? "",
+      },
+      {
+        enabled: !!previousSprintId,
+      },
+    );
 
   const sprintNumber = sprint?.number;
-  const personalProgress = 100;
   const userName =
     user?.displayName ?? user?.email ?? "No name or email provided";
 
@@ -150,13 +160,20 @@ export default function ProjectSprintRetrospectivePage() {
               <h2 className="mb-4 text-2xl font-semibold">Personal Progress</h2>
 
               <div className="mb-6">
-                <p className="mb-2 font-medium">100% of your tasks completed</p>
-                <div className="h-8 w-full overflow-hidden rounded-md bg-gray-200">
-                  <div
-                    className="h-full bg-app-light transition-all duration-300"
-                    style={{ width: `${personalProgress}%` }}
-                  />
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="font-medium">Assigned Tasks</p>
+                  <p className="text-sm text-gray-600">
+                    {personalProgressData?.completedAssignedTasks ?? 0} of{" "}
+                    {personalProgressData?.totalAssignedTasks ?? 100} completed
+                  </p>
                 </div>
+                <ProgressBar
+                  min={0}
+                  max={personalProgressData?.totalAssignedTasks ?? 100}
+                  value={personalProgressData?.completedAssignedTasks ?? 0}
+                  progressBarColor="#13918A"
+                  emptyBarColor="#DDDDDD"
+                />
               </div>
 
               <div className="mb-6 flex items-center gap-4">

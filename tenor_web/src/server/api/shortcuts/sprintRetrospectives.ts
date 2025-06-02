@@ -1,4 +1,6 @@
 import { getSettingsRef } from "./general";
+import type { Firestore, QuerySnapshot } from "firebase-admin/firestore";
+import { FieldPath } from "firebase-admin/firestore";
 
 export const getSprintRetrospectiveTextAnswersContext = (
   textAnswers: string[],
@@ -37,7 +39,7 @@ ${textAnswers[2]}
 };
 
 export const getCompletedStatusIds = async (
-  firestore: FirebaseFirestore.Firestore,
+  firestore: Firestore,
   projectId: string,
 ): Promise<string[]> => {
   const settingsRef = getSettingsRef(firestore, projectId);
@@ -59,7 +61,7 @@ export const getCompletedStatusIds = async (
 };
 
 export const getSprintTeamProgress = async (
-  firestore: FirebaseFirestore.Firestore,
+  firestore: Firestore,
   projectId: string,
   sprintId: string,
 ): Promise<{
@@ -112,4 +114,98 @@ export const getSprintTeamProgress = async (
     totalUserStories,
     completedUserStories,
   };
+};
+
+export const getSprintPersonalProgress = async (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+  userId: string,
+): Promise<{
+  totalAssignedTasks: number;
+  completedAssignedTasks: number;
+}> => {
+  const completedStatusIds = await getCompletedStatusIds(firestore, projectId);
+
+  const projectRef = firestore.collection("projects").doc(projectId);
+  const tasksCollectionRef = projectRef.collection("tasks");
+
+  const userTasksQuery = tasksCollectionRef
+    .where("assigneeId", "==", userId)
+    .where("deleted", "==", false);
+
+  const userTasksSnapshot = await userTasksQuery.get();
+
+  let totalAssignedTasks = 0;
+  let completedAssignedTasks = 0;
+
+  const taskDataMap = new Map<
+    string,
+    { isCompleted: boolean; itemId: string }
+  >();
+
+  userTasksSnapshot.forEach((taskDoc) => {
+    const taskData = taskDoc.data() as { itemId?: string; statusId?: string };
+    const itemId = taskData?.itemId;
+
+    if (itemId) {
+      const isCompleted =
+        taskData?.statusId && completedStatusIds.includes(taskData.statusId);
+
+      taskDataMap.set(itemId, {
+        isCompleted: !!isCompleted,
+        itemId: itemId,
+      });
+    }
+  });
+
+  if (taskDataMap.size === 0) {
+    return { totalAssignedTasks: 0, completedAssignedTasks: 0 };
+  }
+
+  const issuesCollectionRef = projectRef.collection("issues");
+  const userStoriesCollectionRef = projectRef.collection("userStories");
+
+  const uniqueItemIds = [...taskDataMap.keys()];
+  const chunkSize = 30;
+
+  const allPromises: Promise<QuerySnapshot>[] = [];
+
+  for (let i = 0; i < uniqueItemIds.length; i += chunkSize) {
+    const chunk = uniqueItemIds.slice(i, i + chunkSize);
+
+    const issuesQuery = issuesCollectionRef
+      .where(FieldPath.documentId(), "in", chunk)
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false);
+
+    allPromises.push(issuesQuery.get());
+
+    const userStoriesQuery = userStoriesCollectionRef
+      .where(FieldPath.documentId(), "in", chunk)
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false);
+
+    allPromises.push(userStoriesQuery.get());
+  }
+
+  const snapshots = await Promise.all(allPromises);
+
+  const sprintItemIds = new Set<string>();
+  snapshots.forEach((snapshot) => {
+    snapshot.forEach((doc) => {
+      sprintItemIds.add(doc.id);
+    });
+  });
+
+  taskDataMap.forEach((taskInfo, itemId) => {
+    if (sprintItemIds.has(itemId)) {
+      totalAssignedTasks++;
+      if (taskInfo.isCompleted) {
+        completedAssignedTasks++;
+      }
+    }
+  });
+
+  return { totalAssignedTasks, completedAssignedTasks };
 };
