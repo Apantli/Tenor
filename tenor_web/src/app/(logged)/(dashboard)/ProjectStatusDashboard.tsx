@@ -74,7 +74,7 @@ export const ProjectStatusDashboard = ({
   return (
     <div
       className={cn(
-        "flex h-[40vh] w-full flex-col items-start justify-start rounded-md border-2 p-4",
+        "flex h-full flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-3",
         className,
       )}
     >

@@ -7,6 +7,7 @@ import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { cn } from "~/lib/helpers/utils";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface Props {
   projectId: string | null;
@@ -44,7 +45,7 @@ export default function ProjectList({ projectId, setProjectId }: Props) {
   });
 
   return (
-    <div className="mr-10">
+    <div className="h-full lg:mr-10">
       <div className="flex h-full w-full justify-between gap-x-3 border-b-2 pb-3">
         <SearchBar
           searchValue={searchValue}
@@ -60,17 +61,12 @@ export default function ProjectList({ projectId, setProjectId }: Props) {
         </PrimaryButton>
       </div>
       <ul
-        className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto"
+        className="h-[calc(100vh-250px)] overflow-hidden overflow-y-auto"
         data-cy="project-list"
       >
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
-              className={cn(
-                "flex flex-row justify-start border-b-2 py-[16px] pr-8 hover:cursor-pointer",
-                projectId === project.id && "bg-gray-100 pl-[20px]",
-              )}
-              key={project.id}
               onClick={() => {
                 if (projectId === project.id) {
                   handleOpenProject(project.id);
@@ -78,6 +74,11 @@ export default function ProjectList({ projectId, setProjectId }: Props) {
                   setProjectId(project.id);
                 }
               }}
+              className={cn(
+                "flex flex-row justify-start border-b-2 py-[16px] hover:cursor-pointer md:pr-8",
+                projectId === project.id && "bg-gray-100 pl-[16px]",
+              )}
+              key={project.id}
             >
               <div className="flex h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
                 {loadingImages[project.id] !== false && (
@@ -110,7 +111,7 @@ export default function ProjectList({ projectId, setProjectId }: Props) {
                 />
               </div>
               <div className="flex flex-1 flex-col justify-start overflow-hidden pl-4 pr-4">
-                <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold">
+                <h3 className="my-[7px] truncate text-lg font-semibold md:w-full lg:max-w-[200px]">
                   {project.name}
                 </h3>
                 <p className="line-clamp-2 text-base">{project.description}</p>
