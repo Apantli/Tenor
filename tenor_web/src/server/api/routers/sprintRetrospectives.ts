@@ -37,9 +37,10 @@ export const getRetrospectiveIdProcedure = roleRequiredProcedure(
   reviewPermissions,
   "read",
 )
-  .input(z.object({ sprintId: z.string() }))
+  .input(z.object({ projectId: z.string(), sprintId: z.string() }))
   .query(async ({ ctx, input }) => {
-    const response = await ctx.supabase.rpc("get_review_id", {
+    const response = await ctx.supabase.rpc("get_retrospective_id", {
+      project_id_input: input.projectId,
       sprint_id_input: input.sprintId,
     });
 
@@ -56,7 +57,13 @@ export const getRetrospectiveAnswersProcedure = roleRequiredProcedure(
   reviewPermissions,
   "read",
 )
-  .input(z.object({ reviewId: z.number(), userId: z.string() }))
+  .input(
+    z.object({
+      projectId: z.string(),
+      reviewId: z.number(),
+      userId: z.string(),
+    }),
+  )
   .query(async ({ ctx, input }) => {
     const response = await ctx.supabase.rpc("get_retrospective_answers", {
       p_review_id: input.reviewId,
@@ -76,33 +83,26 @@ export const saveRetrospectiveAnswersProcedure = roleRequiredProcedure(
 )
   .input(
     z.object({
+      projectId: z.string(),
       reviewId: z.number(),
       userId: z.string(),
-      responses: z.string().array().length(3),
+      questionNum: z.number(),
+      answerText: z.string(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const responses = await Promise.all(
-      input.responses.map(async (response, index) => {
-        const responseText = response.trim();
-        if (!responseText) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Response for question ${index + 1} cannot be empty.`,
-          });
-        }
-        return ctx.supabase.rpc("save_retrospective_answer", {
-          p_review_id: input.reviewId,
-          p_user_id: input.userId,
-          p_question_num: index + 1,
-          p_response_text: responseText,
-        });
-      }),
-    );
-    if (responses.some((res) => res.error)) {
-      throw new Error("Failed to save retrospective answer");
+    const response = await ctx.supabase.rpc("save_retrospective_answer", {
+      p_review_id: input.reviewId,
+      p_user_id: input.userId,
+      p_question_num: input.questionNum,
+      p_response_text: input.answerText,
+    });
+    if (response.error) {
+      throw new Error(
+        `Failed to save retrospective answer: ${response.error.message}`,
+      );
     }
-    return responses.every((res) => res.data);
+    return response.data as boolean;
   });
 
 /**
@@ -209,11 +209,12 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         z.object({
           answers: z.array(z.string()),
           happinessRating: z.number(),
+          happinessAnalysis: z.string(),
         }),
       );
 
-      await Promise.all([
-        ...synthesizedResponses.answers.map(
+      await Promise.all(
+        synthesizedResponses.answers.map(
           async (answer, index) =>
             await ctx.supabase.rpc("save_retrospective_answer", {
               p_review_id: input.reviewId,
@@ -222,13 +223,8 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
               p_response_text: answer,
             }),
         ),
-        ctx.supabase.rpc("save_happiness", {
-          review_id_input: input.reviewId,
-          happiness_input: synthesizedResponses.happinessRating,
-          user_id_input: ctx.session.user.uid,
-        }),
-      ]);
-      return { success: true, happiness: synthesizedResponses.happinessRating };
+      );
+      return { success: true };
     }),
   getRetrospectiveTeamProgress: roleRequiredProcedure(reviewPermissions, "read")
     .input(

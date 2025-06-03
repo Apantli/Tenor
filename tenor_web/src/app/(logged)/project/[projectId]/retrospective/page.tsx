@@ -9,7 +9,6 @@ import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import CheckIcon from "@mui/icons-material/Check";
-import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import ProgressBar from "~/app/_components/ProgressBar";
 import dynamic from "next/dynamic";
 import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
@@ -29,7 +28,7 @@ export default function ProjectSprintRetrospectivePage() {
   const params = useParams();
   const projectId = params.projectId as string;
 
-  const [answeredQuestionsCount, setAnsweredQuestionsCount] = useState(0);
+  const [isFormCompleted, setIsFormCompleted] = useState(false);
   const [userClickedShowAnswers, setUserClickedShowAnswers] = useState(false);
 
   const { data: previousSprint, isLoading: loadingprevSprint } =
@@ -105,13 +104,7 @@ export default function ProjectSprintRetrospectivePage() {
     );
   }
 
-  const showMessageOverlay =
-    answeredQuestionsCount > 0 && !userClickedShowAnswers;
-
-  const notFinishedYet =
-    answeredQuestionsCount > 0 &&
-    answeredQuestionsCount < 3 &&
-    !userClickedShowAnswers;
+  const showMessageOverlay = isFormCompleted && !userClickedShowAnswers;
 
   return (
     <div className="flex h-full flex-col">
@@ -220,25 +213,19 @@ export default function ProjectSprintRetrospectivePage() {
           <div className="relative h-full w-full lg:w-1/2">
             <HappinessForm
               sprintRetrospectiveId={sprintRetrospectiveId}
-              onAnsweredCountChange={setAnsweredQuestionsCount}
+              onCompletionChange={setIsFormCompleted}
             />
 
             {showMessageOverlay && (
               <div className="absolute bottom-0 left-0 right-0 top-0 z-10 flex flex-col items-center justify-center rounded-lg border border-app-border bg-white bg-opacity-75 p-4 text-center backdrop-blur-sm">
                 <div className="mb-4 flex items-center justify-center">
-                  {notFinishedYet ? (
-                    <QuestionMarkIcon sx={{ fontSize: 60 }} />
-                  ) : (
-                    <CheckIcon sx={{ fontSize: 60 }} />
-                  )}
+                  <CheckIcon sx={{ fontSize: 60 }} />
                 </div>
                 <p className="mb-4 text-xl font-semibold">
                   You have completed your happiness survey.
                 </p>
                 <PrimaryButton onClick={() => setUserClickedShowAnswers(true)}>
-                  {answeredQuestionsCount === 3
-                    ? "Review answers"
-                    : "Show answers"}
+                  Review answers
                 </PrimaryButton>
               </div>
             )}

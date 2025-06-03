@@ -15,7 +15,7 @@ import { useAlert } from "~/app/_hooks/useAlert";
 interface HappinessFormProps {
   sprintRetrospectiveId?: number;
   onSubmit?: (responses: HappinessResponses) => void;
-  onAnsweredCountChange?: (answeredCount: number) => void;
+  onCompletionChange?: (isCompleted: boolean) => void;
 }
 
 export interface HappinessResponses {
@@ -24,10 +24,16 @@ export interface HappinessResponses {
   improvementSuggestion: string;
 }
 
+const questionMapping = {
+  roleFeeling: 1,
+  companyFeeling: 2,
+  improvementSuggestion: 3,
+};
+
 export default function HappinessForm({
   sprintRetrospectiveId,
   onSubmit,
-  onAnsweredCountChange,
+  onCompletionChange,
 }: HappinessFormProps) {
   const { user } = useFirebaseAuth();
   const userId = user?.uid ?? "";
@@ -44,22 +50,13 @@ export default function HappinessForm({
     improvementSuggestion: "",
   });
 
-  const [savedFields, setSavedFields] = useState({
-    roleFeeling: false,
-    companyFeeling: false,
-    improvementSuggestion: false,
-  });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const [derivedAnsweredCount, setDerivedAnsweredCount] = useState(0);
 
   const {
     data: existingAnswers,
-    refetch: refetchAnswers,
-    isLoading: queryIsLoading,
+    isLoading: retrospectiveAnswersLoading,
     error: queryError,
+    refetch: refetchAnswers,
   } = api.sprintRetrospectives.getRetrospectiveAnswers.useQuery(
     {
       projectId: projectId,
@@ -71,70 +68,29 @@ export default function HappinessForm({
     },
   );
 
-  useEffect(() => {
-    if (existingAnswers) {
-      const newResponsesData: Partial<HappinessResponses> = {};
-      const newSavedFieldsData: Partial<typeof savedFields> = {};
-      let answeredCount = 0;
+  const isCompleted = !!(
+    existingAnswers?.["1"] &&
+    existingAnswers?.["2"] &&
+    existingAnswers?.["3"]
+  );
 
-      if (existingAnswers["1"]) {
-        newResponsesData.roleFeeling = existingAnswers["1"];
-        newSavedFieldsData.roleFeeling = true;
-        answeredCount++;
-      }
-      if (existingAnswers["2"]) {
-        newResponsesData.companyFeeling = existingAnswers["2"];
-        newSavedFieldsData.companyFeeling = true;
-        answeredCount++;
-      }
-      if (existingAnswers["3"]) {
-        newResponsesData.improvementSuggestion = existingAnswers["3"];
-        newSavedFieldsData.improvementSuggestion = true;
-        answeredCount++;
-      }
-
-      setResponses((prev) => ({ ...prev, ...newResponsesData }));
-      setSavedFields((prev) => ({ ...prev, ...newSavedFieldsData }));
-      setDerivedAnsweredCount(answeredCount);
-    } else if (!queryIsLoading) {
-      setResponses({
-        roleFeeling: "",
-        companyFeeling: "",
-        improvementSuggestion: "",
-      });
-      setSavedFields({
-        roleFeeling: false,
-        companyFeeling: false,
-        improvementSuggestion: false,
-      });
-      setDerivedAnsweredCount(0);
-    }
-  }, [existingAnswers, queryIsLoading]);
+  const displayResponses =
+    isCompleted && existingAnswers
+      ? {
+          roleFeeling: existingAnswers["1"],
+          companyFeeling: existingAnswers["2"],
+          improvementSuggestion: existingAnswers["3"],
+        }
+      : responses;
 
   useEffect(() => {
-    if (onAnsweredCountChange) {
-      onAnsweredCountChange(derivedAnsweredCount);
+    if (onCompletionChange) {
+      onCompletionChange(isCompleted);
     }
-  }, [derivedAnsweredCount, onAnsweredCountChange]);
+  }, [isCompleted, onCompletionChange]);
 
-  useEffect(() => {
-    if (!queryIsLoading) {
-      setIsLoading(false);
-    }
-  }, [queryIsLoading]);
-
-  useEffect(() => {
-    if (queryError) {
-      predefinedAlerts.unexpectedError();
-      console.error(
-        "Error fetching retrospective answers:",
-        queryError.message,
-      );
-      setIsLoading(false);
-    }
-  }, [queryError]);
-
-  const saveAnswer = api.sprintRetrospectives.sendReport.useMutation();
+  const saveAnswer =
+    api.sprintRetrospectives.saveRetrospectiveAnswers.useMutation();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -151,13 +107,13 @@ export default function HappinessForm({
   };
 
   const handleSubmit = async () => {
-    if (!sprintRetrospectiveId || !userId) return;
+    if (!sprintRetrospectiveId || !userId || isCompleted) return;
 
-    const missingFields =
-      responses.roleFeeling.trim() === "" ||
-      responses.companyFeeling.trim() === "" ||
-      responses.improvementSuggestion.trim() === "";
-    if (missingFields) {
+    if (
+      !responses.roleFeeling.trim() ||
+      !responses.companyFeeling.trim() ||
+      !responses.improvementSuggestion.trim()
+    ) {
       predefinedAlerts.formCompletionError();
       return;
     }
@@ -165,38 +121,42 @@ export default function HappinessForm({
     setIsSubmitting(true);
 
     try {
-      await saveAnswer.mutateAsync({
-        projectId: projectId,
-        reviewId: sprintRetrospectiveId,
-        data: {
-          textAnswers: [
-            responses.roleFeeling,
-            responses.companyFeeling,
-            responses.improvementSuggestion,
-          ],
-        },
-      });
-
-      await refetchAnswers();
+      await Promise.all(
+        Object.entries(responses).map(([field, value]) => {
+          const fieldKey = field as keyof HappinessResponses;
+          return saveAnswer.mutateAsync({
+            projectId: projectId,
+            reviewId: sprintRetrospectiveId,
+            userId,
+            questionNum: questionMapping[fieldKey],
+            answerText: value as string,
+          });
+        }),
+      );
 
       if (onSubmit) {
         onSubmit(responses);
       }
+
+      void refetchAnswers();
     } catch (error) {
-      predefinedAlerts.unexpectedError();
       console.error("Error saving responses:", error);
+      predefinedAlerts.unexpectedError();
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isLoading || queryIsLoading) {
+  if (retrospectiveAnswersLoading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center gap-4">
+      <div className="flex h-full flex-col items-center justify-center rounded-lg border border-app-border bg-white shadow-sm">
         <LoadingSpinner color="primary" />
-        <p className="text-lg font-semibold">Loading happiness form...</p>
       </div>
     );
+  }
+
+  if (queryError) {
+    console.error("Error fetching retrospective answers:", queryError.message);
   }
 
   return (
@@ -212,30 +172,30 @@ export default function HappinessForm({
             <InputTextAreaField
               label="1. How do you feel about your current role and responsibilities within the project?"
               placeholder="Write 2 to 3 sentences answering the question..."
-              value={responses.roleFeeling}
+              value={displayResponses.roleFeeling}
               onChange={(e) => handleChange(e, "roleFeeling")}
               disableAI={true}
-              disabled={savedFields.roleFeeling}
+              disabled={isCompleted}
             />
           </div>
           <div>
             <InputTextAreaField
               label="2. How do you feel about the company culture and team collaboration?"
               placeholder="Write 2 to 3 sentences answering the question..."
-              value={responses.companyFeeling}
+              value={displayResponses.companyFeeling}
               onChange={(e) => handleChange(e, "companyFeeling")}
               disableAI={true}
-              disabled={savedFields.companyFeeling}
+              disabled={isCompleted}
             />
           </div>
           <div>
             <InputTextAreaField
               label="3. What are your suggestions for improvement for the next sprint and what would make you happier?"
               placeholder="Write 2 to 3 sentences answering the question..."
-              value={responses.improvementSuggestion}
+              value={displayResponses.improvementSuggestion}
               onChange={(e) => handleChange(e, "improvementSuggestion")}
               disableAI={true}
-              disabled={savedFields.improvementSuggestion}
+              disabled={isCompleted}
             />
           </div>
         </div>
@@ -244,24 +204,14 @@ export default function HappinessForm({
       <div className="sticky bottom-0 flex justify-between border-t border-gray-200 bg-white p-4">
         <ConversationButton
           onClick={handleConversationMode}
-          disabled={
-            isSubmitting ||
-            (savedFields.roleFeeling &&
-              savedFields.companyFeeling &&
-              savedFields.improvementSuggestion)
-          }
+          disabled={isSubmitting || isCompleted}
         >
           Try conversation mode
         </ConversationButton>
         <PrimaryButton
           type="button"
           onClick={handleSubmit}
-          disabled={
-            isSubmitting ||
-            (savedFields.roleFeeling &&
-              savedFields.companyFeeling &&
-              savedFields.improvementSuggestion)
-          }
+          disabled={isSubmitting || isCompleted}
           loading={isSubmitting}
         >
           Send report
