@@ -10,12 +10,12 @@ export default function ProjectPage() {
     count: 1,
   });
   return (
-    <div className="h-full w-full flex-col items-start lg:flex lg:flex-row">
+    <div className="h-full w-full flex-col items-start overflow-hidden lg:flex lg:flex-row">
       <div className="lg:w-[50%]">
         <h1 className="mb-3 w-full text-3xl font-semibold">Projects</h1>
         <ProjectList />
       </div>
-      <div className="h-full flex-1 py-10">
+      <div className="h-[80vh] flex-1">
         <ProjectStatusDashboard />
         <div className="my-6" />
         {projects?.topProjects[0] && (

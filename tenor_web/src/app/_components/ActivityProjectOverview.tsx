@@ -4,7 +4,6 @@ import { useState } from "react";
 import ProfilePicture from "./ProfilePicture";
 import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
 import { capitalize } from "@mui/material";
-import LoadingSpinner from "./LoadingSpinner";
 import type { ProjectActivity, WithId } from "~/lib/types/firebaseSchemas";
 import {
   getAccentHexColorByCardType,
@@ -104,7 +103,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const isLoading = activitiesLoading || usersLoading;
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-3">
+    <div className="flex h-[40vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
         <h3 className="w-full self-center text-lg font-bold">
           Recent Project Activity

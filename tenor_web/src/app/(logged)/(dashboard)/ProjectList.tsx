@@ -39,7 +39,7 @@ export default function ProjectList() {
   });
 
   return (
-    <div className="h-full lg:mr-10">
+    <div className="h-full p-4 lg:mr-10 lg:p-0">
       <div className="flex h-full w-full justify-between gap-x-3 border-b-2 pb-3">
         <SearchBar
           searchValue={searchValue}
@@ -55,7 +55,7 @@ export default function ProjectList() {
         </PrimaryButton>
       </div>
       <ul
-        className="max-h-[calc(120vh-120px)] overflow-hidden overflow-y-auto"
+        className="max-h-[calc(80vh-90px)] overflow-hidden overflow-y-auto"
         data-cy="project-list"
       >
         {filteredProjects && filteredProjects?.length > 0 ? (
