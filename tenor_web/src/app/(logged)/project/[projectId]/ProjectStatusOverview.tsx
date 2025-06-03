@@ -62,7 +62,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
       if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? "s" : ""}`);
       if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
 
-      if (remainingDays <= 3 && isBelowHalf) {
+      if (remainingDays <= 2 && isBelowHalf) {
         message = (
           <>
             <span className="text-app-primary">Running behind •</span> {parts.join(", ")} left.
