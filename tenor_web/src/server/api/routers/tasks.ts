@@ -43,10 +43,7 @@ import {
   generateTaskContext,
   getGenericBacklogItemContext,
 } from "../shortcuts/general";
-import {
-  getBacklogTagsContext,
-  getTodoStatusTag,
-} from "../shortcuts/tags";
+import { getBacklogTagsContext, getTodoStatusTag } from "../shortcuts/tags";
 import { getUserStoryContextSolo } from "../shortcuts/userStories";
 import { getIssueContextSolo } from "../shortcuts/issues";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
@@ -838,40 +835,42 @@ ${tagContext}\n\n`;
     }),
 
   getSprintBurndownHistory: protectedProcedure
-    .input(z.object({
-      projectId: z.string(),
-      startDate: z.string(),
-      endDate: z.string()
-    }))
+    .input(
+      z.object({
+        projectId: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const { projectId, startDate, endDate } = input;
-      
+
       // Convert strings to dates
       const start = new Date(startDate);
       const end = new Date(endDate);
-      
+
       // Calculate number of days
       const days = differenceInDays(end, start) + 1;
       const result = [];
-      
+
       // For each day, get task counts
       for (let i = 0; i < days; i++) {
         const date = addDays(start, i);
         const timestamp = admin.firestore.Timestamp.fromDate(date);
-        
+
         const completedCount = await getItemActivityTask(
           ctx.firestore,
           projectId,
-          timestamp
+          timestamp,
         );
-        
+
         result.push({
           day: i,
           date: date.toISOString(),
-          completedCount
+          completedCount,
         });
       }
-      
+
       return result;
     }),
 });
