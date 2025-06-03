@@ -111,8 +111,8 @@ export default function IssueDetailPopup({
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
 
   const { predefinedAlerts } = useAlert();
-  const formatIssueScrumId = useFormatIssueScrumId();
-  useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
+  const formatIssueScrumId = useFormatIssueScrumId(projectId as string);
+  useFormatTaskScrumId(projectId as string); // preload the task format function before the user sees the loading state
   const invalidateQueriesAllIssues = useInvalidateQueriesAllIssues();
   const invalidateQueriesIssueDetails = useInvalidateQueriesIssueDetails();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
@@ -279,7 +279,9 @@ export default function IssueDetailPopup({
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePicker
                       disabled={permission < permissionNumbers.write}
-                      currentSize={issueDetail.size}
+                      currentSize={
+                        issueDetail.size === "" ? undefined : issueDetail.size
+                      }
                       callback={async (size) => {
                         await handleSave({ ...issueDetail, size });
                       }}

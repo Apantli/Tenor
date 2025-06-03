@@ -11,7 +11,6 @@ import FileList from "~/app/_components/inputs/FileList";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "~/trpc/react";
-import HelpIcon from "@mui/icons-material/Help";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { type Links } from "~/server/api/routers/settings";
 import { toBase64 } from "~/lib/helpers/base64";
@@ -20,6 +19,7 @@ import MemberTable from "~/app/_components/inputs/MemberTable";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
 import { defaultRoleList, emptyRole } from "~/lib/defaultValues/roles";
+import AIDisclaimer from "~/app/_components/helps/predefined/AIDisclaimer";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();
@@ -209,7 +209,7 @@ export default function ProjectCreator() {
   };
 
   return (
-    <div>
+    <div className="flex h-screen flex-col overflow-y-auto">
       <Navbar>
         <div className="flex gap-1">
           <Link href="/" className="font-semibold">
@@ -280,6 +280,7 @@ export default function ProjectCreator() {
               <MemberTable
                 label="Team Members"
                 labelClassName="text-lg font-semibold"
+                tableClassName="max-h-[300px] overflow-y-auto"
                 teamMembers={teamMembers}
                 className="w-full"
                 handleMemberAdd={handleAddTeamMember}
@@ -297,13 +298,7 @@ export default function ProjectCreator() {
               label={
                 <span className="flex items-center gap-1">
                   Context
-                  <HelpIcon
-                    className="text-gray-500"
-                    data-tooltip-id="tooltip"
-                    data-tooltip-content="The data shared, including files and links, is private and used solely as context for the AI."
-                    data-tooltip-place="top-start"
-                    style={{ width: "15px" }}
-                  />
+                  <AIDisclaimer />
                 </span>
               }
               html-rows="20"

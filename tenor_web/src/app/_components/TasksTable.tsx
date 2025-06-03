@@ -189,7 +189,7 @@ export default function TasksTable<T extends BacklogItemWithTasks>({
       return a.scrumId < b.scrumId ? 1 : -1;
     });
 
-  const formatTaskScrumId = useFormatTaskScrumId();
+  const formatTaskScrumId = useFormatTaskScrumId(projectId as string);
   const completedTasks = transformedTasks.filter(
     (task) => task.status?.marksTaskAsDone,
   ).length;

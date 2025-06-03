@@ -48,13 +48,12 @@ import {
   getRolesRef,
   getSettingsRef,
   getTopProjectStatusCacheRef,
+  generateBurndownHistory,
+  getBurndownData,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
-import {
-  getPrioritiesRef,
-  getStatusTypesRef,
-} from "../shortcuts/tags";
+import { getPrioritiesRef, getStatusTypesRef } from "../shortcuts/tags";
 import { getRequirementTypesRef } from "../shortcuts/requirements";
 import { shouldRecomputeTopProjects } from "~/lib/helpers/cache";
 import { getActivityRef } from "../shortcuts/performance";
@@ -62,9 +61,10 @@ import { defaultRoleList } from "~/lib/defaultValues/roles";
 import {
   defaultPriorityTypes,
   defaultRequerimentTypes,
-} from "~/lib/defaultValues/requirementTypes";
+} from "~/lib/defaultValues/tags";
 import { defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
+import { parseISO } from "date-fns";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -501,15 +501,55 @@ export const projectsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      return await getProjectActivities( ctx.firestore, projectId);
+      return await getProjectActivities(ctx.firestore, projectId);
     }),
 
   getActivityDetails: protectedProcedure
-    .input(z.object({ 
-      projectId: z.string(),
-    }))
+    .input(
+      z.object({
+        projectId: z.string(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
+
+  getBurndownData: protectedProcedure
+    .input(z.object({ projectId: z.string()}))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      
+      const status = await getProjectStatus(
+        ctx.firestore, projectId, ctx.firebaseAdmin.app())
+
+      const startDate = typeof status.currentSprintStartDate === "string"
+        ? parseISO(status.currentSprintStartDate)
+        : status.currentSprintStartDate
+          ? new Date(status.currentSprintStartDate)
+          : new Date();
+        
+      const endDate = typeof status.currentSprintEndDate === "string"
+        ? parseISO(status.currentSprintEndDate)
+        : status.currentSprintEndDate
+          ? new Date(status.currentSprintEndDate)
+          : new Date();
+        
+      // Generate historical data
+      const burndownHistory = await generateBurndownHistory(
+        ctx.firestore,
+        projectId,
+        startDate,
+        new Date() // Only up to today
+      )
+
+      
+      return getBurndownData(
+        startDate,
+        endDate,
+        status.taskCount,
+        status.completedCount,
+        burndownHistory
+      )
+    })
 });

@@ -45,7 +45,7 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
   // GENERAL
   const { projectId } = useParams();
   const utils = api.useUtils();
-  const formatTaskScrumId = useFormatTaskScrumId();
+  const formatTaskScrumId = useFormatTaskScrumId(projectId as string);
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
   const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();

@@ -52,7 +52,7 @@ export default function BasicNode({
   const confirm = useConfirmation();
   const [, , , setDetailItemId] = useQueryIdForPopup("id");
 
-  const formatAnyScrumId = useFormatAnyScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId(projectId as string);
   const deleteItemByType = useDeleteItemByType();
 
   // #endregion

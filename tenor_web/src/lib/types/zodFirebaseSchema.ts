@@ -124,7 +124,7 @@ export const BacklogItemSchema = BasicInfoSchema.extend({
   taskIds: z.array(z.string()).default([]),
   complete: z.boolean().default(false),
   tagIds: z.array(z.string()).describe("List of backlog tag ids"),
-  size: SizeSchema.optional(),
+  size: z.union([SizeSchema, z.literal("")]).default(""),
   priorityId: z
     .string()
     .optional()
@@ -200,7 +200,7 @@ export const TaskSchema = BasicInfoSchema.extend({
     .describe(
       "You can use valid markdown. Describe what needs to be done to complete the task in detail.",
     ),
-  size: SizeSchema.optional(),
+  size: z.union([SizeSchema, z.literal("")]).default(""),
   // reviewerId: z.string(), // Scope creep. Ignore for now
   dependencyIds: z
     .array(z.string())

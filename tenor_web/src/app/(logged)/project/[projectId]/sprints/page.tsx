@@ -30,7 +30,7 @@ import { type KanbanItemCard } from "~/lib/types/kanbanTypes";
 import AdvancedSearch from "~/app/_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
 import CreateBacklogItemPopup from "~/app/_components/popups/CreateBacklogitemPopup";
-import { itemTypeToSearchableName } from "~/lib/helpers/searchableNames";
+import { getSearchableNameByType } from "~/lib/helpers/searchableNames";
 import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import SidebarToggleIcon from "~/app/_components/SidebarToggleIcon";
@@ -45,7 +45,7 @@ export default function ProjectSprints() {
   const { projectId } = useParams();
   const permission = useGetPermission({ flags: ["backlog"] });
 
-  const formatAnyScrumId = useFormatAnyScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId(projectId as string);
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
@@ -93,7 +93,7 @@ export default function ProjectSprints() {
 
       const tagsList = item.tags.map((tag) => "Tag:" + tag.name).join(" ");
 
-      const itemTypeName = itemTypeToSearchableName(item.itemType);
+      const itemTypeName = getSearchableNameByType(item.itemType);
       const fullItemName = `${formatAnyScrumId(item.scrumId, item.itemType)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
       return fullItemName.toLowerCase().includes(searchValue.toLowerCase());
     }) ?? [];
@@ -157,7 +157,7 @@ export default function ProjectSprints() {
 
         // FIXME: Make this its own hook so that it can be reusable and consistent
         const tagsList = item.tags.map((tag) => "Tag:" + tag.name).join(" ");
-        const itemTypeName = itemTypeToSearchableName(item.itemType);
+        const itemTypeName = getSearchableNameByType(item.itemType);
         const fullItemName = `${formatAnyScrumId(item.scrumId, item.itemType)}: ${item.name} ${tagsList} Size:${item.size} ${itemTypeName}`;
 
         return fullItemName

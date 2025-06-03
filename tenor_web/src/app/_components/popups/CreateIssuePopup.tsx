@@ -40,7 +40,7 @@ export default function CreateIssuePopup({
     tags: Tag[];
     priority?: Tag;
     sprint?: WithId<Sprint>;
-    size?: Size;
+    size?: Size | "";
     relatedUserStory?: UserStoryPreview;
   }>({
     name: "",
@@ -145,7 +145,9 @@ export default function CreateIssuePopup({
             <div className="flex-1">
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
-                currentSize={createForm.size}
+                currentSize={
+                  createForm.size === "" ? undefined : createForm.size
+                }
                 callback={(size) => setCreateForm({ ...createForm, size })}
               />
             </div>

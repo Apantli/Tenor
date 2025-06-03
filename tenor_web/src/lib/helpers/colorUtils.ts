@@ -55,15 +55,31 @@ export function getAccentColorByCardType(
   }
 }
 
+// Used in activity overview for the tag colors
+export function getAccentHexColorByCardType(type: AllBasicItemType): string {
+  switch (type) {
+    case "US":
+      return "#16918A";
+    case "IS":
+      return "#ffd859";
+    case "IT":
+      return "#0FA6E9";
+    case "TS":
+      return "#0e7490";
+    default:
+      return "#13918A"; // TODO: Define all colors, not leave default
+  }
+}
+
 export function getPillColorByActivityType(type: ActionType): string {
   switch (type) {
     case "create":
-      return "bg-green-500";
+      return "#20C55E";
     case "update":
-      return "bg-amber-500";
+      return "#F59E0D";
     case "delete":
-      return "bg-red-500";
-    default:
-      return "bg-gray-500";
+      return "#F04444";
   }
 }
+
+export const badContrastColors = [getAccentHexColorByCardType("IS")];

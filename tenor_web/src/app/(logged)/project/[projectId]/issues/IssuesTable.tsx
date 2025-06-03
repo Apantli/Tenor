@@ -56,7 +56,7 @@ export default function IssuesTable() {
   const [renderDetail, showDetail, selectedIS, setSelectedIS] =
     useQueryIdForPopup("id");
 
-  const formatIssueScrumId = useFormatIssueScrumId();
+  const formatIssueScrumId = useFormatIssueScrumId(projectId as string);
 
   const confirm = useConfirmation();
   const deleteItemByType = useDeleteItemByType();
@@ -288,10 +288,13 @@ export default function IssuesTable() {
             XXL: 5,
           };
 
-          return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
+          return (a.size ? (sizeOrder[a.size] ?? 99) : 99) <
+            (b.size ? (sizeOrder[b.size] ?? 99) : 99)
+            ? -1
+            : 1;
         },
         render(row) {
-          const handleSizeChange = async (size: Size) => {
+          const handleSizeChange = async (size: Size | "") => {
             const rowIndex = issueData.indexOf(row);
             if (!issueData[rowIndex]) {
               return; // No update needed
@@ -327,7 +330,7 @@ export default function IssuesTable() {
           return (
             <SizePicker
               disabled={permission < permissionNumbers.write}
-              currentSize={row.size}
+              currentSize={row.size === "" ? undefined : row.size}
               callback={handleSizeChange}
             />
           );

@@ -74,8 +74,10 @@ export default function BacklogItemDetailPopup({
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
   const invalidateQueriesGenericBacklogItemDetails =
     useInvalidateQueriesGenericBacklogItemDetails();
-  const formatGenericBacklogItemScrumId = useFormatGenericBacklogItemScrumId();
-  useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
+  const formatGenericBacklogItemScrumId = useFormatGenericBacklogItemScrumId(
+    projectId as string,
+  );
+  useFormatTaskScrumId(projectId as string); // preload the task format function before the user sees the loading state
 
   const [unsavedTasks, setUnsavedTasks] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
@@ -335,7 +337,11 @@ export default function BacklogItemDetailPopup({
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePicker
                       disabled={permission < permissionNumbers.write}
-                      currentSize={backlogItemDetail.size}
+                      currentSize={
+                        backlogItemDetail.size === ""
+                          ? undefined
+                          : backlogItemDetail.size
+                      }
                       callback={async (size) => {
                         await handleSave({ ...backlogItemDetail, size });
                       }}

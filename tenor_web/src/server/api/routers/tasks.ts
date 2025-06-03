@@ -8,7 +8,8 @@
  * @category API
  */
 import { Timestamp } from "firebase-admin/firestore";
-
+import admin from "firebase-admin";
+import { differenceInDays, addDays } from "date-fns";
 import { z } from "zod";
 import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import {
@@ -26,6 +27,7 @@ import {
 import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import {
   deleteTaskAndGetModified,
+  getItemActivityTask,
   getTask,
   getTaskContextFromItem,
   getTaskDetail,
@@ -41,10 +43,7 @@ import {
   generateTaskContext,
   getGenericBacklogItemContext,
 } from "../shortcuts/general";
-import {
-  getBacklogTagsContext,
-  getTodoStatusTag,
-} from "../shortcuts/tags";
+import { getBacklogTagsContext, getTodoStatusTag } from "../shortcuts/tags";
 import { getUserStoryContextSolo } from "../shortcuts/userStories";
 import { getIssueContextSolo } from "../shortcuts/issues";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
@@ -55,6 +54,7 @@ import {
 import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
 import { dateToString } from "~/lib/helpers/parsers";
+import { getBacklogItemContextSolo } from "../shortcuts/backlogItems";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -565,22 +565,31 @@ export const tasksRouter = createTRPCRouter({
       // LOAD US or IS or IT corresponding to the itemId
       if ("itemId" in input) {
         const { itemId } = input;
-        if (input.itemType === "US") {
-          itemTypeName = "user story";
-          itemContext = await getUserStoryContextSolo(
-            ctx.firestore,
-            projectId,
-            itemId,
-          );
-        } else if (input.itemType === "IS") {
-          itemTypeName = "issue";
-          itemContext = await getIssueContextSolo(
-            ctx.firestore,
-            projectId,
-            itemId,
-          );
-        } else {
-          itemTypeName = "backlog item";
+        switch (input.itemType) {
+          case "US":
+            itemTypeName = "user story";
+            itemContext = await getUserStoryContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
+          case "IS":
+            itemTypeName = "issue";
+            itemContext = await getIssueContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
+          case "IT":
+            itemTypeName = "backlog item";
+            itemContext = await getBacklogItemContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
         }
 
         tasksContext = await getTaskContextFromItem(
@@ -589,15 +598,20 @@ export const tasksRouter = createTRPCRouter({
           itemId,
         );
       } else {
+        // extra data, if exists
         let extra = "";
         const itemData = input.itemDetail;
-        if (input.itemType === "IS") {
-          itemTypeName = "issue";
-          extra = `- steps to recreate: ${itemData.extra}`;
-        } else {
-          itemTypeName = "user story";
-          extra = `- acceptance criteria: ${itemData.extra}`;
+        switch (input.itemType) {
+          case "US":
+            itemTypeName = "user story";
+            extra = `- acceptance criteria: ${itemData.extra}`;
+            break;
+          case "IS":
+            itemTypeName = "issue";
+            extra = `- steps to recreate: ${itemData.extra}`;
+            break;
         }
+
         // Item context
         itemContext = await getGenericBacklogItemContext(
           ctx.firestore,
@@ -833,5 +847,45 @@ ${tagContext}\n\n`;
       );
 
       return { nodes, edges };
+    }),
+
+  getSprintBurndownHistory: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { projectId, startDate, endDate } = input;
+
+      // Convert strings to dates
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      // Calculate number of days
+      const days = differenceInDays(end, start) + 1;
+      const result = [];
+
+      // For each day, get task counts
+      for (let i = 0; i < days; i++) {
+        const date = addDays(start, i);
+        const timestamp = admin.firestore.Timestamp.fromDate(date);
+
+        const completedCount = await getItemActivityTask(
+          ctx.firestore,
+          projectId,
+          timestamp,
+        );
+
+        result.push({
+          day: i,
+          date: date.toISOString(),
+          completedCount,
+        });
+      }
+
+      return result;
     }),
 });

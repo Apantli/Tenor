@@ -48,7 +48,7 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 
-export const heightOfContent = "h-full";
+export const heightOfContent = "h-[calc(100vh-264px)]";
 
 interface Props {
   setAllowSegmentedControlChange: (value: boolean) => void;
@@ -69,8 +69,8 @@ export default function UserStoryTable({
   const [renderDetail, showDetail, selectedUS, setUserStoryId, setShowDetail] =
     useQueryIdForPopup("id");
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatEpicScrumId = useFormatEpicScrumId();
+  const formatUserStoryScrumId = useFormatUserStoryScrumId(projectId as string);
+  const formatEpicScrumId = useFormatEpicScrumId(projectId as string);
   const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
 
@@ -512,10 +512,13 @@ export default function UserStoryTable({
             XXL: 5,
           };
 
-          return (sizeOrder[a.size] ?? 99) < (sizeOrder[b.size] ?? 99) ? -1 : 1;
+          return (a.size ? (sizeOrder[a.size] ?? 99) : 99) <
+            (b.size ? (sizeOrder[b.size] ?? 99) : 99)
+            ? -1
+            : 1;
         },
         render(row, _, isGhost) {
-          const handleSizeChange = async (size: Size) => {
+          const handleSizeChange = async (size: Size | "") => {
             const rowIndex = userStoryData.indexOf(row);
             if (!userStoryData[rowIndex]) {
               return; // No update needed
@@ -550,10 +553,10 @@ export default function UserStoryTable({
             ]);
           };
 
-          const handleGhostSizeChange = (size: Size) => {
+          const handleGhostSizeChange = (size: Size | "") => {
             updateGhostRow(row.id, (oldData) => ({
               ...oldData,
-              size: size,
+              size,
             }));
             generatedUserStories.current = generatedUserStories.current?.map(
               (story) => {
@@ -571,7 +574,7 @@ export default function UserStoryTable({
           return (
             <SizePicker
               disabled={permission < permissionNumbers.write}
-              currentSize={row.size}
+              currentSize={row.size === "" ? undefined : row.size}
               callback={isGhost ? handleGhostSizeChange : handleSizeChange}
             />
           );
@@ -607,9 +610,13 @@ export default function UserStoryTable({
     return (
       <Table
         emptyMessage="No user stories found"
-        className={cn("w-[calc(100vw-130px)] overflow-auto", heightOfContent, {
-          "xl:w-[calc(100vw-465px)]": showEpics,
-        })}
+        className={cn(
+          "w-[calc(100vw-134px)] overflow-auto pb-10 lg:w-[calc(100vw-154px)] xl:w-[calc(100vw-234px)]",
+          heightOfContent,
+          {
+            "xl:w-[calc(100vw-480px)]": showEpics,
+          },
+        )}
         data={userStoryData}
         columns={tableColumns}
         onDelete={handleDelete}
@@ -636,7 +643,7 @@ export default function UserStoryTable({
 
   return (
     <>
-      <div className="flex w-full items-center gap-1 pb-2">
+      <div className="flex w-full items-center gap-1 pb-5">
         <SearchBar
           searchValue={searchValue}
           handleUpdateSearch={handleUpdateSearch}

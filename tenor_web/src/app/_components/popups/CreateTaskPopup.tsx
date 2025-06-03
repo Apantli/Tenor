@@ -68,7 +68,7 @@ export function CreateTaskPopup({
     status: StatusTag;
     assigneeId?: string;
     assignee?: WithId<UserPreview>;
-    size?: Size;
+    size: Size | "";
     dueDate?: Date;
     dependencies: TaskPreview[];
     requiredBy: TaskPreview[];
@@ -85,7 +85,7 @@ export function CreateTaskPopup({
     },
     assigneeId: "",
     assignee: undefined,
-    size: undefined,
+    size: "",
     dueDate: undefined,
     dependencies: [],
     requiredBy: [],
@@ -233,7 +233,9 @@ export function CreateTaskPopup({
             <div className="flex-1">
               <label className="mb-1 block text-sm font-medium">Size</label>
               <SizePicker
-                currentSize={createForm.size}
+                currentSize={
+                  createForm.size === "" ? undefined : createForm.size
+                }
                 callback={(size) => setCreateForm({ ...createForm, size })}
               />
             </div>
