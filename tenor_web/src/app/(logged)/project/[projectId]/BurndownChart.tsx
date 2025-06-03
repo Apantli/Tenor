@@ -28,9 +28,9 @@ type VegaSpec = VisualizationSpec & {
 
 // Generates burndown chart data from project status information
 export function useBurndownData(projectId: string) {
-  const { data, isLoading, isError } = api.projects.getBurndownData.useQuery(
+  const { data, isLoading, isError } = api.projects.getGraphBurndownData.useQuery(
     { projectId },
-    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 } // Cache for 5 minutes
+    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 }
   );
   
   return {
