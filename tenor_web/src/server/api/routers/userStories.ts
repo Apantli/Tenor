@@ -40,12 +40,10 @@ import {
   updateDependency,
 } from "../shortcuts/userStories";
 import { getEpic } from "../shortcuts/epics";
-import {
-  getBacklogTag,
-  getPriorityByNameOrId,
-} from "../shortcuts/tags";
+import { getBacklogTag, getPriorityByNameOrId } from "../shortcuts/tags";
 import type { Edge, Node } from "@xyflow/react";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
+import { getSprintRef } from "../shortcuts/sprints";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -148,6 +146,18 @@ export const userStoriesRouter = createTRPCRouter({
           });
         }),
       );
+
+      // Add to sprint if it is assigned to one
+      if (userStoryData.sprintId && userStoryData.sprintId !== "") {
+        const sprintRef = getSprintRef(
+          ctx.firestore,
+          projectId,
+          userStoryData.sprintId,
+        );
+        sprintRef.update({
+          userStoryIds: FieldValue.arrayUnion(userStory.id),
+        });
+      }
 
       await LogProjectActivity({
         firestore: ctx.firestore,
