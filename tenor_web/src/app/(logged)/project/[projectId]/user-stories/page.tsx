@@ -9,6 +9,7 @@ import { ReactFlowProvider } from "@xyflow/react";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import { cn } from "~/lib/helpers/utils";
+import { useWindowRect } from "~/app/_hooks/windowHooks";
 
 const segmentedControlOptions = ["List", "Dependency Tree"];
 
@@ -56,8 +57,10 @@ export default function ProjectUserStories() {
     }, 10);
   }, [selectedViewState]);
 
+  const { isTablet } = useWindowRect();
+
   return (
-    <div className="relative flex h-full w-full flex-row gap-4">
+    <div className="relative flex h-full w-full flex-row gap-0">
       {selectedViewState === "List" && (
         <>
           <div
@@ -83,13 +86,17 @@ export default function ProjectUserStories() {
 
       <div
         className={cn("flex flex-1 flex-col items-start gap-3", {
-          "pl-[88px] xl:pl-0": showEpics && selectedViewState === "List",
-          "pb-10 pr-10 pt-10": selectedViewState === "List",
+          "pl-[72px] xl:pl-0": showEpics && selectedViewState === "List",
+          "overflow-hidden pb-10 pt-10": selectedViewState === "List",
         })}
       >
         {selectedViewState === "List" && (
-          <>
-            <div className="flex w-full flex-row flex-wrap items-start justify-between self-end">
+          <div
+            className={cn("flex w-full flex-1 flex-col pl-5 pr-10", {
+              "lg:px-10 lg:pr-10 xl:px-20": !showEpics || isTablet,
+            })}
+          >
+            <div className="flex w-full flex-row flex-wrap items-start justify-between self-end pb-3">
               <h1 className="text-3xl font-semibold">User Stories</h1>
               <SegmentedControl
                 options={segmentedControlOptions}
@@ -102,7 +109,7 @@ export default function ProjectUserStories() {
               showEpics={showEpics}
               setAllowSegmentedControlChange={setAllowSegmentedControlChange}
             />
-          </>
+          </div>
         )}
 
         {selectedViewState === "Dependency Tree" && (
@@ -113,7 +120,12 @@ export default function ProjectUserStories() {
                   options={segmentedControlOptions}
                   selectedOption={selectedView}
                   onChange={onSegmentedControlChange}
-                  className="min-w-96 max-w-96 xl:ml-auto"
+                  className={cn(
+                    "mr-[8px] min-w-96 max-w-96 xl:ml-auto xl:mr-[48px]",
+                    {
+                      "xl:mr-[8px]": showEpics,
+                    },
+                  )}
                 />
               }
             />

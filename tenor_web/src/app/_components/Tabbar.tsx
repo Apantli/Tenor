@@ -43,7 +43,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     );
 
   return (
-    <div className="no-scrollbar flex h-8 w-screen items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
+    <div className="no-scrollbar flex h-8 min-h-8 w-screen shrink-0 items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
       {tabs.map((id) => {
         const meta =
           tabsMetaInformation[id as keyof typeof tabsMetaInformation];
