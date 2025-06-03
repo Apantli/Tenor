@@ -26,6 +26,12 @@ export default function ProjectKanban() {
   const { projectId } = useParams();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
+  const { data: sprint } = api.sprints.getActiveSprint.useQuery({
+    projectId: projectId as string,
+  });
+
+  // when loaded, set advanced filters to current sprint
+
   // TRPC
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: projectId as string,
@@ -50,6 +56,14 @@ export default function ProjectKanban() {
 
   const [advancedFilters, setAdvancedFilters] =
     useAdvancedSearchFilters("scrumboard");
+  useMemo(() => {
+    if (sprint) {
+      setAdvancedFilters({
+        ...advancedFilters,
+        sprint,
+      });
+    }
+  }, [sprint]);
 
   // HANDLES
   const onListAdded = async () => {

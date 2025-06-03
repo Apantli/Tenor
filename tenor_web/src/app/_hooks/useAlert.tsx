@@ -235,6 +235,10 @@ export const useAlert = () => {
       ),
     // #endregion
     // #region Sprints
+    sprintReordered: () =>
+      alertTemplates.success(
+        "The remaining sprints have been renumbered to stay in order.",
+      ),
     sprintDatesError: () =>
       alertTemplates.oops(
         "Please select valid start and end dates for the sprint.",

@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
 import Popup from "~/app/_components/Popup";
 import { api } from "~/trpc/react";
-import { showReorderAlert } from "./EditSprintPopup";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
@@ -126,7 +125,7 @@ export default function CreateSprintPopup({
       },
     });
     if (response.reorderedSprints) {
-      showReorderAlert(alert);
+      predefinedAlerts.sprintReordered();
     }
 
     await invalidateQueriesAllSprints(projectId as string);

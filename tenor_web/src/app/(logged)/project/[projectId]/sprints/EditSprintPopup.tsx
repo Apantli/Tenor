@@ -7,7 +7,7 @@ import {
   useInvalidateQueriesAllSprints,
   useInvalidateQueriesSingleSprint,
 } from "~/app/_hooks/invalidateHooks";
-import { type AlertFunction, useAlert } from "~/app/_hooks/useAlert";
+import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
 import { type SprintDates } from "./CreateSprintPopup";
@@ -21,17 +21,6 @@ interface Props {
   setShowPopup: (show: boolean) => void;
   otherSprints: SprintDates[] | undefined;
 }
-
-export const showReorderAlert = (alert: AlertFunction) => {
-  alert(
-    "Sprints updated",
-    "The remaining sprints have been renumbered to stay in order.",
-    {
-      type: "success",
-      duration: 8000,
-    },
-  );
-};
 
 export default function EditSprintPopup({
   sprintId,
@@ -115,7 +104,7 @@ export default function EditSprintPopup({
       },
     });
     if (result.reorderedSprints) {
-      showReorderAlert(alert);
+      predefinedAlerts.sprintReordered();
     }
     setShowPopup(false);
     await invalidateQueriesSingleSprint(projectId as string, sprintData.id);
@@ -138,7 +127,7 @@ export default function EditSprintPopup({
         sprintId: sprintData.id,
       });
       if (result.reorderedSprints) {
-        showReorderAlert(alert);
+        predefinedAlerts.sprintReordered();
       }
       setShowPopup(false);
       await invalidateQueriesAllSprints(projectId as string);
