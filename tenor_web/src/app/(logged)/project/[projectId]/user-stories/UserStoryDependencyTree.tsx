@@ -369,7 +369,7 @@ export default function UserStoryDependencyTree({ segmentedControl }: Props) {
           )}
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
-            <div className="flex flex-row flex-wrap-reverse items-center justify-end gap-2 pr-6 pt-6">
+            <div className="flex flex-row flex-wrap-reverse items-center justify-end gap-2 pr-4 pt-6">
               <SecondaryButton
                 onClick={() => onLayout()}
                 className={"bg-white"}
