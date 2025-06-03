@@ -47,7 +47,7 @@ import {
   getRoles,
   getRolesRef,
   getSettingsRef,
-  getTopProjectStatusCacheRef
+  getTopProjectStatusCacheRef,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
@@ -66,6 +66,7 @@ import { parseISO } from "date-fns";
 import { dailyProgressData, getBurndownData } from "../shortcuts/tasks";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import { doc } from "firebase/firestore";
+import { BurndownChartData } from "~/lib/defaultValues/burndownChart";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -520,24 +521,29 @@ export const projectsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-    
+
       const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
-    
+
       if (!currentSprint || !currentSprint.id) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No current sprint found for the project",
         });
       }
-    
-      const burndownData = await getBurndownData(
-        ctx.firestore,
-        projectId,
-        currentSprint.id
-      );
-    
-      console.log('projectId:', projectId);
-      console.log('currentSprint:', currentSprint);
+
+      let burndownData: BurndownChartData | undefined;
+      try {
+        burndownData = await getBurndownData(
+          ctx.firestore,
+          projectId,
+          currentSprint.id,
+        );
+      } catch (error) {
+        console.log("ERROR HERE", error);
+      }
+
+      console.log("projectId:", projectId);
+      console.log("currentSprint:", currentSprint);
 
       return burndownData;
     }),
