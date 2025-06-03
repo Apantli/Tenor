@@ -8,7 +8,8 @@
  * @category API
  */
 import { Timestamp } from "firebase-admin/firestore";
-
+import admin from "firebase-admin";
+import { differenceInDays, addDays } from "date-fns";
 import { z } from "zod";
 import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import {
@@ -26,6 +27,7 @@ import {
 import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import {
   deleteTaskAndGetModified,
+  getItemActivityTask,
   getTask,
   getTaskContextFromItem,
   getTaskDetail,
@@ -833,5 +835,43 @@ ${tagContext}\n\n`;
       );
 
       return { nodes, edges };
+    }),
+
+  getSprintBurndownHistory: protectedProcedure
+    .input(z.object({
+      projectId: z.string(),
+      startDate: z.string(),
+      endDate: z.string()
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, startDate, endDate } = input;
+      
+      // Convert strings to dates
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      
+      // Calculate number of days
+      const days = differenceInDays(end, start) + 1;
+      const result = [];
+      
+      // For each day, get task counts
+      for (let i = 0; i < days; i++) {
+        const date = addDays(start, i);
+        const timestamp = admin.firestore.Timestamp.fromDate(date);
+        
+        const completedCount = await getItemActivityTask(
+          ctx.firestore,
+          projectId,
+          timestamp
+        );
+        
+        result.push({
+          day: i,
+          date: date.toISOString(),
+          completedCount
+        });
+      }
+      
+      return result;
     }),
 });
