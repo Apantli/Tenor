@@ -88,7 +88,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
   return (
     <div className="flex h-full w-full flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <h2 className="text-lg font-bold">Status</h2>
+        <h2 className="text-xl font-semibold">Status</h2>
         <div className="flex items-center gap-2">
           <span className="max-w-[90%] overflow-hidden truncate whitespace-nowrap text-lg font-semibold">
             {sprintTitle}
