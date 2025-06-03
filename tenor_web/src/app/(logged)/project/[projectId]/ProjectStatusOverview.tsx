@@ -44,6 +44,12 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
   let message = null;
 
   if (remainingDays !== null) {
+
+    // Calculate if the total tasks are below half
+    const isBelowHalf = projectStatus?.completedCount !== undefined && projectStatus?.taskCount > 0
+    ? projectStatus.completedCount < projectStatus?.taskCount * 0.5
+    : false;
+
     if (remainingDays <= 0) {
       message = "The sprint is complete.";
     } else {
@@ -56,7 +62,18 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
       if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? "s" : ""}`);
       if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
 
-      message = `${parts.join(", ")} left.`;
+      if (remainingDays <= 3 && isBelowHalf) {
+        message = (
+          <>
+            <span className="text-app-primary">Running behind •</span> {parts.join(", ")} left.
+          </>
+      )} else {
+        message = (
+          <>
+            <span className="text-app-primary">On track •</span> {parts.join(", ")} left.
+          </>
+        );
+      }
     }
   }
 
@@ -87,11 +104,13 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
           <AssignUsersList users={projectStatus?.assignedUssers} />
         </div>
         <div className="mt-4 flex w-full justify-start md:mt-0 md:justify-end">
-          {message && (
-            <p className="text-m font-semibold text-gray-500">
-              <span className="text-app-primary">On track •</span> {message}
-            </p>
-          )}
+          <p className="text-m font-semibold text-gray-500">
+            {message && (
+              <>
+                {message}
+              </>
+            )}
+          </p>
         </div>
       </div>
     </div>
