@@ -315,7 +315,7 @@ export default function ProjectScrumPreferences() {
   };
 
   return (
-    <div className="flex h-full max-w-[600px] flex-col gap-4">
+    <div className="flex h-full flex-col gap-4 lg:max-w-[600px]">
       <div className="flex w-full items-center justify-between">
         <h1 className="mb-2 text-3xl font-semibold">Scrum Preferences</h1>
         {hasBeenModified() && (

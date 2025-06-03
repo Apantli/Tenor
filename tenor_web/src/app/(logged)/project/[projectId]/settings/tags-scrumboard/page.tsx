@@ -37,6 +37,7 @@ export default function ProjectTags() {
           options={options}
           selectedOption={selectedOption}
           onChange={setSelectedOption}
+          dontAnimateAlways
         />
       </div>
       <div>

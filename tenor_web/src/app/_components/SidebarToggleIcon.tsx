@@ -6,6 +6,7 @@ interface Props {
   setSidebarShown: (value: boolean) => void;
   flipped?: boolean;
   label?: string;
+  showTooltip?: boolean;
 }
 
 export default function SidebarToggleIcon({
@@ -13,6 +14,7 @@ export default function SidebarToggleIcon({
   setSidebarShown,
   flipped,
   label = "details",
+  showTooltip = false,
   ...props
 }: Props & React.HTMLAttributes<HTMLButtonElement>) {
   return (
@@ -21,7 +23,7 @@ export default function SidebarToggleIcon({
       onClick={() => {
         setSidebarShown(!sidebarShown);
       }}
-      data-tooltip-id="tooltip"
+      data-tooltip-id={showTooltip ? "tooltip" : ""}
       data-tooltip-content={sidebarShown ? `Hide ${label}` : `Show ${label}`}
       data-tooltip-delay-show={500}
       {...props}
