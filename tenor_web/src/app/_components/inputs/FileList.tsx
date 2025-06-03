@@ -144,7 +144,7 @@ export default function FileList({
           <HelpIcon
             className="ml-2 text-gray-500"
             data-tooltip-id="tooltip"
-            data-tooltip-content="Our AI models can process up to 200,000 tokens of context. We convert files to text and count tokens to ensure you stay within this limit."
+            data-tooltip-content="We process your files before measuring storage, so size depends on the content, not just file size."
             data-tooltip-place="top-start"
             style={{ width: "20px" }}
           />
