@@ -8,6 +8,7 @@ interface SegmentedControlProps {
   selectedOption?: string;
   onChange: (value: string) => void;
   className?: string;
+  dontAnimateAlways?: boolean;
 }
 
 export function SegmentedControl({
@@ -15,6 +16,7 @@ export function SegmentedControl({
   selectedOption,
   onChange,
   className = "",
+  dontAnimateAlways = false,
 }: SegmentedControlProps) {
   const defaultOption = options.length > 0 ? options[0] : "";
   const [selected, setSelected] = useState<string>(
@@ -42,11 +44,20 @@ export function SegmentedControl({
 
   useEffect(() => {
     calculateIndicatorPosition();
-    window.addEventListener("resize", calculateIndicatorPosition);
 
-    return () =>
-      window.removeEventListener("resize", calculateIndicatorPosition);
-  }, [selected, options]);
+    // Recalculate the indicator position when the container ref resizes
+    const resizeObserver = new ResizeObserver(() => {
+      calculateIndicatorPosition();
+    });
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    return () => {
+      if (containerRef.current) {
+        resizeObserver.unobserve(containerRef.current);
+      }
+    };
+  }, [containerRef.current, selected]);
 
   useEffect(() => {
     if (selectedOption && selected !== selectedOption) {
@@ -56,14 +67,22 @@ export function SegmentedControl({
 
   // Allow the animation only after the component mounts
   useEffect(() => {
-    setTimeout(() => {
-      setAnimationActive(true);
-    }, 10);
+    if (!dontAnimateAlways) {
+      setTimeout(() => {
+        setAnimationActive(true);
+      }, 10);
+    }
   });
 
   const handleChange = (option: string) => {
     setSelected(option);
     onChange(option);
+    if (dontAnimateAlways) {
+      setAnimationActive(true);
+      setTimeout(() => {
+        setAnimationActive(false);
+      }, 200);
+    }
   };
 
   // TODO: Make this be the same size as a button (or maybe leave as is, I need second opinion)
