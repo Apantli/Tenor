@@ -58,7 +58,7 @@ export default function ProjectKanban() {
   };
 
   return (
-    <div className="m-6 flex-1 p-4">
+    <div className="m-6 flex-1 overflow-hidden p-4">
       <div className="flex h-full flex-col justify-start overflow-hidden pt-0">
         <div className="flex items-baseline justify-between gap-3 pb-4">
           <h1 className="grow-[1] text-3xl font-semibold">Scrum Board</h1>

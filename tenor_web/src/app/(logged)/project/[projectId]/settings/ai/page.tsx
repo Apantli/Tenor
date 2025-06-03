@@ -12,7 +12,6 @@ import { api } from "~/trpc/react";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
-import HelpIcon from "@mui/icons-material/Help";
 import { type Links } from "~/server/api/routers/settings";
 import {
   type Permission,
@@ -20,6 +19,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import AIDisclaimer from "~/app/_components/helps/predefined/AIDisclaimer";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();
@@ -267,13 +267,7 @@ export default function ProjectAIConfig() {
         <div className="flex w-full items-center justify-between">
           <div className="mb-4 flex items-center gap-2">
             <h1 className="text-3xl font-semibold">AI Context</h1>
-            <HelpIcon
-              className="text-gray-500"
-              data-tooltip-id="tooltip"
-              data-tooltip-content="The data shared, including files and links, is private and used solely as context for the AI."
-              data-tooltip-place="top-start"
-              style={{ width: "20px" }}
-            />
+            <AIDisclaimer size="medium" />
           </div>
           {(isModified() || isContextUpdatePending) &&
             links &&

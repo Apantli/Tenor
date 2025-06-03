@@ -8,6 +8,7 @@ import { showReorderAlert } from "./EditSprintPopup";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { useInvalidateQueriesAllSprints } from "~/app/_hooks/invalidateHooks";
 
 export interface SprintDates {
   id: string;
@@ -33,7 +34,7 @@ export default function CreateSprintPopup({
   const { mutateAsync: createSprint, isPending } =
     api.sprints.createSprint.useMutation();
 
-  const utils = api.useUtils();
+  const invalidateQueriesAllSprints = useInvalidateQueriesAllSprints();
 
   // New sprint variables
   const [newSprintDescription, setNewSprintDescription] = useState("");
@@ -128,9 +129,7 @@ export default function CreateSprintPopup({
       showReorderAlert(alert);
     }
 
-    await utils.sprints.getBacklogItemPreviewsBySprint.invalidate({
-      projectId: projectId as string,
-    });
+    await invalidateQueriesAllSprints(projectId as string);
 
     setNewSprintDescription("");
     setNewSprintStartDate(defaultSprintInitialDate);

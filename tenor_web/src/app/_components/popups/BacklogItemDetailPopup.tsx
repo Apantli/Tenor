@@ -337,7 +337,11 @@ export default function BacklogItemDetailPopup({
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePicker
                       disabled={permission < permissionNumbers.write}
-                      currentSize={backlogItemDetail.size}
+                      currentSize={
+                        backlogItemDetail.size === ""
+                          ? undefined
+                          : backlogItemDetail.size
+                      }
                       callback={async (size) => {
                         await handleSave({ ...backlogItemDetail, size });
                       }}

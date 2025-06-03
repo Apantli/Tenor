@@ -112,7 +112,10 @@ export const useFormatAnyScrumId = (projectId: string) => {
         return formatIssueScrumId(scrumId);
       case "IT":
         return formatGenericBacklogItemScrumId(scrumId);
+      case "SP":
+        return `Sprint ${scrumId}`; // Sprints are usually just numbers
     }
-    return "IT..."; // Fallback for unknown types
+    // If we reach here, it means the type was not recognized, plase add a new case above
+    throw new Error(`Unknown item type: ${type}`);
   };
 };

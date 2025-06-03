@@ -379,9 +379,16 @@ export default function UserStoryDetailPopup({
                     <h3 className="text-lg font-semibold">Size</h3>
                     <SizePicker
                       disabled={permission < permissionNumbers.write}
-                      currentSize={userStoryDetail.size}
+                      currentSize={
+                        userStoryDetail.size === ""
+                          ? undefined
+                          : userStoryDetail.size
+                      }
                       callback={async (size) => {
-                        await handleSave({ ...userStoryDetail, size });
+                        await handleSave({
+                          ...userStoryDetail,
+                          size: size,
+                        });
                       }}
                     />
                   </div>

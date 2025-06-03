@@ -41,11 +41,10 @@ export function matchesSearchFilters(
     return false;
   if (
     priorities.length > 0 &&
-    val.priorityId &&
     !priorities.some((tag) => tag.id === val.priorityId)
   )
     return false;
-  if (sizes.length > 0 && val.size && !sizes.some((tag) => tag.id === val.size))
+  if (sizes.length > 0 && !sizes.some((tag) => tag.id === val.size))
     return false;
   if (assignee && !val.assigneeIds.includes(assignee.id)) return false;
   if (sprint && val.sprintId !== sprint.id) return false;

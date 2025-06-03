@@ -198,7 +198,7 @@ export interface BacklogItem extends BasicInfo {
   taskIds: string[];
   complete: boolean;
   tagIds: string[];
-  size: Size;
+  size: Size | "";
   priorityId: string;
   statusId: string;
 }
@@ -219,7 +219,7 @@ export interface Task extends BasicInfo {
   dueDate?: Date;
   statusChangeDate?: Timestamp;
   finishedDate?: Date;
-  size: Size;
+  size: Size | "";
   itemId: string;
   itemType: AnyBacklogItemType;
   dependencyIds: string[];
@@ -232,7 +232,7 @@ export interface Issue extends BacklogItem {
 }
 
 export interface Requirement extends BasicInfo {
-  size: Size;
+  size: Size | "";
   priorityId: string;
   requirementTypeId: string;
   requirementFocusId: string;
@@ -288,6 +288,6 @@ export interface ActivityItem {
   id: string;
   name: string;
   type: AllBasicItemType;
-  scrumId?: number;
+  scrumId: number;
   activity: WithId<ProjectActivity>;
 }
