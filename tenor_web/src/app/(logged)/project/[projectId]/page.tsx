@@ -41,7 +41,7 @@ export default function ProjectOverview() {
             <ProjectStatus projectId={projectId} />
           </div>
 
-          <div className="flex max-h-[calc(100%-280px)] min-h-48 flex-col rounded-lg border-2 border-[#BECAD4] p-5">
+          <div className="flex h-full max-h-[calc(100%-280px)] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
             <DynamicBurdownChart projectId={projectId} />
           </div>
         </div>
