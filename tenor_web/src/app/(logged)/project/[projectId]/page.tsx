@@ -18,7 +18,7 @@ export default function ProjectOverview() {
   });
 
   return (
-    <div className="m-6 flex-1 p-4">
+    <div className="m-6 h-[calc(100%-2.5rem)] flex-1 px-4">
       <div className="flex h-[calc(100vh-64px)] max-h-full w-full grid-cols-2 grid-rows-[auto_1fr] flex-row gap-4 p-4">
         {/* First col - col 1 */}
         <div className="flex w-full flex-col gap-4">
@@ -40,7 +40,7 @@ export default function ProjectOverview() {
           <div className="flex h-64 flex-col gap-5 rounded-lg border-2 border-[#BECAD4] p-5">
             <ProjectStatus projectId={projectId} />
           </div>
-          <div className="flex h-[38.7vh] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
+          <div className="flex max-h-[calc(100%-280px)] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
             <DynamicBurdownChart projectId={projectId} />
           </div>
         </div>

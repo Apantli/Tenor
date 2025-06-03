@@ -261,7 +261,7 @@ const BurndownChart: React.FC<{
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = React.useState({
     width: 450,
-    height: 230,
+    height: 220,
   });
 
   // Resize graph on container dimension changes
