@@ -617,9 +617,9 @@ export const tasksRouter = createTRPCRouter({
         );
 
         itemContext = `# ${itemTypeName.toUpperCase()} DETAILS\n
-        ${itemContext}
-        ${extra}
-        ${tagContext}\n\n`;
+${itemContext}
+${extra}
+${tagContext}\n\n`;
 
         tasksContext =
           itemData.tasks.length > 0

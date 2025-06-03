@@ -35,7 +35,7 @@ export default function ProjectOverview() {
               onExpandChange={setIsProjectInfoExpanded}
             />
           </div>
-          <div className="flex h-[47vh] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
+          <div className="flex h-[47vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
             <ActivityProjectOverview projectId={projectId} />
           </div>
         </div>
@@ -45,7 +45,7 @@ export default function ProjectOverview() {
           <div className="flex h-64 flex-col gap-5 rounded-lg border-2 border-[#BECAD4] p-5">
             <ProjectStatus projectId={projectId} />
           </div>
-          <div className="flex h-[38vh] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
+          <div className="flex h-[38.7vh] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
             <DynamicBurdownChart projectId={projectId} />
           </div>
         </div>

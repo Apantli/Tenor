@@ -24,6 +24,7 @@ import { TRPCError } from "@trpc/server";
 import { TYPE_COLLECTION_MAP } from "~/lib/helpers/typeDisplayName";
 import { Timestamp } from "firebase-admin/firestore";
 import { addDays, differenceInDays } from "date-fns";
+import { BurndownChartData, BurndownDataPoint } from "~/lib/defaultValues/burndownChart";
 
 /**
  * @function getProjectsRef
@@ -213,11 +214,19 @@ export const getProjectStatus = async (
     getUsers(admin, firestore, projectId),
   ]);
 
+  // If no statuses are found, return an empty project status
   if (!currentSprint) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Current sprint not found",
-    });
+    return {
+      projectId: projectId,
+      taskCount: 0,
+      completedCount: 0,
+      currentSprintId: "",
+      currentSprintNumber: "",
+      currentSprintStartDate: "",
+      currentSprintEndDate: "",
+      currentSprintDescription: "",
+      assignedUssers: [],
+    };
   }
 
   const filteredTasks = await getTasksFromSprint(
@@ -465,18 +474,6 @@ export const getItemActivityDetails = async (
   return results;
 };
 
-export type BurndownDataPoint = {
-  day: number;
-  date: string;
-  completedCount: number;
-};
-
-export type BurndownChartData = Array<{
-  x: number;
-  y: number;
-  c: number;
-}>;
-
 export const getBurndownData = async (
   startDate: Date,
   endDate: Date,
@@ -484,31 +481,22 @@ export const getBurndownData = async (
   completedTasks: number,
   burndownHistory: BurndownDataPoint[],
 ): Promise<BurndownChartData> => {
-  if (!startDate || !endDate) {
-    return [{ x: 0, y: 0, c: 0 }];
-  }
-
-  if (totalTasks === 0) {
-    return [{ x: 0, y: 0, c: 0}];
+  if (!startDate || !endDate || totalTasks === 0) {
+    return [{ sprintDay: 0, storyPoints: 0, seriesType: 0 }];
   }
 
   const sprintDuration = differenceInDays(endDate, startDate) + 1;
   const today = new Date();
-  const currentDay = Math.min(
-    differenceInDays(today, startDate),
-      sprintDuration - 1
-    );
-  
-  const remainingTasks = totalTasks - completedTasks;
+  const currentDay = Math.min(differenceInDays(today, startDate), sprintDuration - 1);
 
   const burndownLine: BurndownChartData = [];
   for (let day = 0; day <= sprintDuration; day++) {
-    const idealRemaining = totalTasks * (1 - day / (sprintDuration));
+    const idealRemaining = totalTasks * (1 - day / sprintDuration);
     burndownLine.push({
-      x: day,
-      y: idealRemaining,
-      c: 0,
-    })
+      sprintDay: day,
+      storyPoints: idealRemaining,
+      seriesType: 0,
+    });
   }
 
   const actualBurndown: BurndownChartData = [];
@@ -517,32 +505,21 @@ export const getBurndownData = async (
     for (const point of burndownHistory) {
       const dayIndex = Math.min(point.day, sprintDuration);
       actualBurndown.push({
-        x: dayIndex,
-        y: totalTasks - point.completedCount,
-        c: 1,
+        sprintDay: dayIndex,
+        storyPoints: totalTasks - point.completedCount,
+        seriesType: 1,
       });
     }
-  }
-
-  if (actualBurndown.length === 0) {
-    actualBurndown.push({
-      x: currentDay,
-      y: remainingTasks,
-      c: 1,
-    });
   } else {
-    // We have historical data
-    for (const point of burndownHistory) {
-      const dayIndex = Math.min(point.day, sprintDuration);
-      actualBurndown.push({
-        x: dayIndex,
-        y: totalTasks - point.completedCount,
-        c: 1,
-      });
-    }
+    const remainingTasks = totalTasks - completedTasks;
+    actualBurndown.push({
+      sprintDay: currentDay,
+      storyPoints: remainingTasks,
+      seriesType: 1,
+    });
   }
 
-  return [...burndownLine, ...actualBurndown];
+  return [...burndownLine, ...actualBurndown].sort((a, b) => a.sprintDay - b.sprintDay);
 };
 
 export const generateBurndownHistory = async (

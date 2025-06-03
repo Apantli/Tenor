@@ -5,6 +5,7 @@ import { cn } from "~/lib/helpers/utils";
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import BarChartIcon from "@mui/icons-material/BarChart";
+import { BurndownChartData, SampleBurndownData } from "~/lib/defaultValues/burndownChart";
 
 
 // Create a more specific type for your Vega specification
@@ -39,24 +40,6 @@ export function useBurndownData(projectId: string) {
   };
 }
 
-// Define the data type for burndown chart
-export type BurndownData = Array<{
-  x: number;
-  y: number;
-  c: number;
-}>;
-
-// The data from the x need to be the total days of the sprint
-// The data from the y need to be the total story points
-export type BurndownDataPoint = {
-  day: number;
-  completedCount: number;
-  date?: string;
-};
-
-// Sample burndown data for initial rendering
-const SampleBurndownData: BurndownData = [{ x: 0, y: 0, c: 0 }];
-
 // Base Vega specification for burndown chart
 const burndownSpec: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
@@ -74,20 +57,62 @@ const burndownSpec: VisualizationSpec = {
       name: "interpolate",
       value: "linear",
     },
+    {
+      name: "pulse",
+      value: 1,
+      on: [
+        {
+          events: {type: "timer", throttle: 500},
+          update: "(sin(now() * 0.01) + 1) / 2"
+        }
+      ]
+    }
   ],
 
   data: [
     {
       name: "table",
       values: SampleBurndownData,
+      transform: [
+        {
+          type: "formula", as: "x", expr: "datum.sprintDay"
+        },
+        {
+          type: "formula", as: "y", expr: "datum.storyPoints"
+        },
+        {
+          type: "formula", as: "c", expr: "datum.seriesType"
+        }
+      ]
     },
+    {
+      name: "lastPoint",
+      source: "table",
+      transform: [
+        {
+          type: "filter",
+          expr: "datum.c == 1"
+        },
+        {
+          type: "window",
+          sort: { field: "x", order: "descending" },
+          ops: ["row_number"]
+        },
+        {
+          type: "filter",
+          expr: "datum.row_number === 1"
+        }
+      ]
+    }
   ],
 
   scales: [
     {
       name: "x",
-      type: "point",
+      type: "linear",
       range: "width",
+      nice: true,
+      zero: true,
       domain: { data: "table", field: "x" },
     },
     {
@@ -101,7 +126,7 @@ const burndownSpec: VisualizationSpec = {
     {
       name: "color",
       type: "ordinal",
-      range: [" #8BC48A", "#13918A"],
+      range: ["#8BC48A", "#13918A"],
       domain: { data: "table", field: "c" },
     },
   ],
@@ -115,8 +140,11 @@ const burndownSpec: VisualizationSpec = {
       labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
       labelColor: "#6B7280",
       title: "Sprint Day",
+      titleFontSize: 18,
+      titleColor: "#6B7280",
       grid: true,
       gridOpacity: 0.1,
+      format: "d",
     },
     {
       orient: "left",
@@ -126,13 +154,17 @@ const burndownSpec: VisualizationSpec = {
       grid: true,
       gridOpacity: 0.1,
       title: "Story Points",
-      titleFontSize: 12,
+      titleFontSize: 18,
+      titleColor: "#6B7280",
       titleFontWeight: 600,
       titlePadding: 10,
       labelFontSize: 12,
       labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
       labelColor: "#6B7280",
       labelFontWeight: 600,
+      format: "d",
+      tickCount: 5,
+      tickMinStep: 1,
     },
   ],
 
@@ -180,6 +212,24 @@ const burndownSpec: VisualizationSpec = {
         },
       ],
     },
+    {
+      type: "symbol",
+      from: { data: "lastPoint" },
+      encode: {
+        enter: {
+          x: { scale: "x", field: "x" },
+          y: { scale: "y", field: "y" },
+          fill: {value: "#13918A"},
+          stroke: {value: "white"},
+          strokeWidth: { value: 1 },
+          size: { value: 150 },
+        },
+        update: {
+          size: { signal: "pulse * 200 + 100" },
+          opacity: { value: 1 }
+        }
+      }
+    }
   ],
 };
 
@@ -193,7 +243,7 @@ const BurndownChart: React.FC<{
   // Calculate appropriate domain based on data
   const maxY = React.useMemo(() => {
     if (!burndownData) return 100;
-    return Math.max(...burndownData.map((d) => d.y));
+    return Math.max(...burndownData.map((d) => d.storyPoints));
   }, [burndownData]);
 
   const domain: [number, number] = [0, maxY];
@@ -250,7 +300,7 @@ const BurndownChart: React.FC<{
       const tableData = specCopy.data.find((d) => d.name === "table");
       if (tableData) {
         // Use type assertion to safely set the values
-        (tableData as { values?: BurndownData }).values = burndownData;
+        (tableData as { values?: BurndownChartData }).values = burndownData;
       }
     }
 
