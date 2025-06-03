@@ -193,10 +193,11 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         data: z.object({
           textAnswers: z.array(z.string()),
         }),
+        summarize: z.boolean().default(true),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { data } = input;
+      const { data, summarize } = input;
       if (data.textAnswers.length < 3) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -213,8 +214,12 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         }),
       );
 
-      await Promise.all(
-        synthesizedResponses.answers.map(
+      const textAnswers = summarize
+        ? synthesizedResponses.answers
+        : data.textAnswers;
+
+      await Promise.all([
+        ...textAnswers.map(
           async (answer, index) =>
             await ctx.supabase.rpc("save_retrospective_answer", {
               p_review_id: input.reviewId,
@@ -223,7 +228,12 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
               p_response_text: answer,
             }),
         ),
-      );
+        ctx.supabase.rpc("save_happiness", {
+          review_id_input: input.reviewId,
+          happiness_input: synthesizedResponses.happinessRating,
+          user_id_input: ctx.session.user.uid,
+        }),
+      ]);
       return { success: true };
     }),
   getRetrospectiveTeamProgress: roleRequiredProcedure(reviewPermissions, "read")

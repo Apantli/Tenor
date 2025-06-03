@@ -95,8 +95,7 @@ export default function HappinessForm({
     }
   }, [isCompleted, onCompletionChange]);
 
-  const saveAnswer =
-    api.sprintRetrospectives.saveRetrospectiveAnswers.useMutation();
+  const saveAnswer = api.sprintRetrospectives.sendReport.useMutation();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -127,18 +126,18 @@ export default function HappinessForm({
     setIsSubmitting(true);
 
     try {
-      await Promise.all(
-        Object.entries(responses).map(([field, value]) => {
-          const fieldKey = field as keyof HappinessResponses;
-          return saveAnswer.mutateAsync({
-            projectId: projectId as string,
-            reviewId: sprintRetrospectiveId,
-            userId: user?.uid ?? "",
-            questionNum: questionMapping[fieldKey],
-            answerText: value as string,
-          });
-        }),
-      );
+      await saveAnswer.mutateAsync({
+        projectId: projectId as string,
+        reviewId: sprintRetrospectiveId,
+        data: {
+          textAnswers: [
+            responses.roleFeeling,
+            responses.companyFeeling,
+            responses.improvementSuggestion,
+          ],
+        },
+        summarize: false,
+      });
 
       if (onSubmit) {
         onSubmit(responses);
