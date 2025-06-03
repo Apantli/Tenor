@@ -87,12 +87,12 @@ export default function ProjectUserStories() {
       <div
         className={cn("flex flex-1 flex-col items-start gap-3", {
           "pl-[72px] xl:pl-0": showEpics && selectedViewState === "List",
-          "pb-10 pt-10": selectedViewState === "List",
+          "overflow-hidden pb-10 pt-10": selectedViewState === "List",
         })}
       >
         {selectedViewState === "List" && (
           <div
-            className={cn("w-full pl-5 pr-10", {
+            className={cn("flex w-full flex-1 flex-col pl-5 pr-10", {
               "lg:px-10 lg:pr-10 xl:px-20": !showEpics || isTablet,
             })}
           >
@@ -123,7 +123,7 @@ export default function ProjectUserStories() {
                   className={cn(
                     "mr-[8px] min-w-96 max-w-96 xl:ml-auto xl:mr-[48px]",
                     {
-                      "xl:mr-[2px]": showEpics,
+                      "xl:mr-[8px]": showEpics,
                     },
                   )}
                 />

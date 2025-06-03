@@ -186,7 +186,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
         )}
       </div>
       {showEpics && (
-        <div className="h-full pl-5">
+        <div className="h-[calc(100vh-300px)] pl-5">
           <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
             <SearchBar
               searchValue={searchText}
