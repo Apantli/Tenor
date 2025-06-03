@@ -117,7 +117,7 @@ export default function ProjectSprintRetrospectivePage() {
             <div className="flex-1 overflow-y-auto">
               <h2 className="mb-4 text-2xl font-semibold">Team Progress</h2>
 
-              <div className="mb-4">
+              <div className="mb-6">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="font-medium">User Stories</p>
                   <p className="text-sm text-gray-600">
@@ -131,7 +131,7 @@ export default function ProjectSprintRetrospectivePage() {
                     max={teamProgressData?.totalUserStories ?? 100}
                     value={teamProgressData?.completedUserStories ?? 0}
                     progressBarColor="#13918A"
-                    emptyBarColor="#E5E5E5"
+                    emptyBarColor="#CCCCCC"
                     className="h-8"
                     compact={true}
                   />
@@ -153,7 +153,28 @@ export default function ProjectSprintRetrospectivePage() {
                     max={teamProgressData?.totalIssues ?? 100}
                     value={teamProgressData?.completedIssues ?? 0}
                     progressBarColor="#88BB87"
-                    emptyBarColor="#E5E5E5"
+                    emptyBarColor="#CCCCCC"
+                    className="h-8"
+                    compact={true}
+                  />
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="font-medium">Backlog Items</p>
+                  <p className="text-sm text-gray-600">
+                    {teamProgressData?.completedBacklogItems ?? 0} of{" "}
+                    {teamProgressData?.totalBacklogItems ?? 0} completed
+                  </p>
+                </div>
+                <div className="relative">
+                  <ProgressBar
+                    min={0}
+                    max={teamProgressData?.totalBacklogItems ?? 100}
+                    value={teamProgressData?.completedBacklogItems ?? 0}
+                    progressBarColor="#88BB87"
+                    emptyBarColor="#CCCCCC"
                     className="h-8"
                     compact={true}
                   />
@@ -186,7 +207,7 @@ export default function ProjectSprintRetrospectivePage() {
                     max={personalProgressData?.totalAssignedTasks ?? 100}
                     value={personalProgressData?.completedAssignedTasks ?? 0}
                     progressBarColor="#198A5F"
-                    emptyBarColor="#E5E5E5"
+                    emptyBarColor="#CCCCCC"
                     className="h-8"
                     compact={true}
                   />
@@ -210,7 +231,7 @@ export default function ProjectSprintRetrospectivePage() {
                       personalProgressData?.completedAssignedStoryPoints ?? 0
                     }
                     progressBarColor="#88BB87"
-                    emptyBarColor="#E5E5E5"
+                    emptyBarColor="#CCCCCC"
                     className="h-8"
                     compact={true}
                   />
@@ -234,7 +255,7 @@ export default function ProjectSprintRetrospectivePage() {
                       personalProgressData?.completedAssignedStoryPoints ?? 0
                     }
                     progressBarColor="#13918A"
-                    emptyBarColor="#E5E5E5"
+                    emptyBarColor="#CCCCCC"
                     className="h-8"
                     compact={true}
                   />

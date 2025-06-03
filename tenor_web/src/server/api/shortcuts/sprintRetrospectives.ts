@@ -103,6 +103,8 @@ export const computeSprintTeamProgress = async (
   completedIssues: number;
   totalUserStories: number;
   completedUserStories: number;
+  totalBacklogItems: number;
+  completedBacklogItems: number;
   totalStoryPoints: number;
   completedStoryPoints: number;
 }> => {
@@ -115,20 +117,29 @@ export const computeSprintTeamProgress = async (
   const projectRef = firestore.collection("projects").doc(projectId);
   const issuesCollectionRef = projectRef.collection("issues");
   const userStoriesCollectionRef = projectRef.collection("userStories");
+  const backlogItemsCollectionRef = projectRef.collection("backlogItems");
 
   // Parallel query
-  const [issuesSnapshot, userStoriesSnapshot, statusSnapshot] =
-    await Promise.all([
-      issuesCollectionRef
-        .where("sprintId", "==", sprintId)
-        .where("deleted", "==", false)
-        .get(),
-      userStoriesCollectionRef
-        .where("sprintId", "==", sprintId)
-        .where("deleted", "==", false)
-        .get(),
-      getStatusTypes(firestore, projectId),
-    ]);
+  const [
+    issuesSnapshot,
+    userStoriesSnapshot,
+    backlogItemsSnapshot,
+    statusSnapshot,
+  ] = await Promise.all([
+    issuesCollectionRef
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false)
+      .get(),
+    userStoriesCollectionRef
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false)
+      .get(),
+    backlogItemsCollectionRef
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false)
+      .get(),
+    getStatusTypes(firestore, projectId),
+  ]);
 
   const totalIssues = issuesSnapshot.size;
   let completedIssues = 0;
@@ -226,11 +237,59 @@ export const computeSprintTeamProgress = async (
     }
   });
 
+  const totalBacklogItems = backlogItemsSnapshot.size;
+  let completedBacklogItems = 0;
+
+  const backlogItemsDoc = await Promise.all(
+    backlogItemsSnapshot.docs.map(async (doc) => {
+      const backlogItemData = doc.data() as {
+        statusId?: string;
+        size?: string;
+      };
+      let statusId: string;
+      if (backlogItemData?.statusId) {
+        statusId = backlogItemData.statusId;
+      } else {
+        statusId =
+          (await getAutomaticStatusId(
+            firestore,
+            projectId,
+            doc.id,
+            statusSnapshot,
+          )) ?? "";
+      }
+
+      const points = backlogItemData?.size
+        ? (storyPointsMap[backlogItemData.size] ?? 0)
+        : 0;
+
+      return {
+        ...backlogItemData,
+        id: doc.id,
+        statusId,
+        calculatedStoryPoints: points,
+      };
+    }),
+  );
+
+  backlogItemsDoc.forEach((backlogItemData) => {
+    totalStoryPoints += backlogItemData.calculatedStoryPoints ?? 0;
+    if (
+      backlogItemData?.statusId &&
+      completedStatusIds.includes(backlogItemData.statusId)
+    ) {
+      completedBacklogItems++;
+      completedStoryPoints += backlogItemData.calculatedStoryPoints ?? 0;
+    }
+  });
+
   return {
     totalIssues,
     completedIssues,
     totalUserStories,
     completedUserStories,
+    totalBacklogItems,
+    completedBacklogItems,
     totalStoryPoints,
     completedStoryPoints,
   };
@@ -307,6 +366,7 @@ export const computeSprintPersonalProgress = async (
 
   const issuesCollectionRef = projectRef.collection("issues");
   const userStoriesCollectionRef = projectRef.collection("userStories");
+  const backlogItemsCollectionRef = projectRef.collection("backlogItems");
 
   const uniqueItemIds = [
     ...new Set([...taskDataMap.values()].map((t) => t.itemId)),
@@ -331,6 +391,13 @@ export const computeSprintPersonalProgress = async (
       .where("deleted", "==", false);
 
     allPromises.push(userStoriesQuery.get());
+
+    const backlogItemsQuery = backlogItemsCollectionRef
+      .where(FieldPath.documentId(), "in", chunk)
+      .where("sprintId", "==", sprintId)
+      .where("deleted", "==", false);
+
+    allPromises.push(backlogItemsQuery.get());
   }
 
   const snapshots = await Promise.all(allPromises);
@@ -470,6 +537,8 @@ export const getSprintTeamProgress = async (
   completedIssues: number;
   totalUserStories: number;
   completedUserStories: number;
+  totalBacklogItems: number;
+  completedBacklogItems: number;
   totalStoryPoints: number;
   completedStoryPoints: number;
 }> => {
@@ -488,6 +557,8 @@ export const getSprintTeamProgress = async (
         completedIssues: data?.completedIssues as number,
         totalUserStories: data?.totalUserStories as number,
         completedUserStories: data?.completedUserStories as number,
+        totalBacklogItems: data?.totalBacklogItems as number,
+        completedBacklogItems: data?.completedBacklogItems as number,
         totalStoryPoints: data?.totalStoryPoints as number,
         completedStoryPoints: data?.completedStoryPoints as number,
       };
@@ -506,6 +577,8 @@ export const getSprintTeamProgress = async (
     completedIssues: data?.completedIssues as number,
     totalUserStories: data?.totalUserStories as number,
     completedUserStories: data?.completedUserStories as number,
+    totalBacklogItems: data?.totalBacklogItems as number,
+    completedBacklogItems: data?.completedBacklogItems as number,
     totalStoryPoints: data?.totalStoryPoints as number,
     completedStoryPoints: data?.completedStoryPoints as number,
   };
