@@ -59,17 +59,17 @@ export const SentimentCard = ({ projectId, className }: SentimentData) => {
   return (
     <div
       className={cn(
-        "mt-1 box-content flex flex-col rounded-md border-2 p-4",
+        "mt-1 box-content flex flex-col overflow-y-auto rounded-md border-2 p-4",
         className,
       )}
     >
-      <h1 className="mx-6 text-2xl font-bold">Happiness</h1>
+      <h1 className="mx-6 mb-4 text-2xl font-bold">Happiness</h1>
       {isLoading ? (
         <div className="flex h-full w-full flex-1 flex-col items-center justify-center">
           <LoadingSpinner color="primary" />
         </div>
       ) : (
-        <div className="flex h-full flex-col content-center items-center justify-center gap-8 rounded-lg bg-white p-4">
+        <div className="flex h-full flex-col content-center items-center justify-center gap-3 rounded-lg bg-white p-4">
           {error?.message ? (
             <p className="text-xl text-gray-500">{error.message}</p>
           ) : (
@@ -77,25 +77,25 @@ export const SentimentCard = ({ projectId, className }: SentimentData) => {
               <div className="flex w-full flex-row justify-center gap-3">
                 {negativeWidth > 0 && (
                   <div
-                    className="h-24 rounded-3xl bg-[#e76478]"
+                    className="h-16 rounded-3xl bg-[#e76478] 2xl:h-24"
                     style={{ width: `${Math.max(negativeWidth, 5)}%` }}
                   ></div>
                 )}
                 {neutralWidth > 0 && (
                   <div
-                    className="h-24 rounded-3xl bg-[#f1db30]"
+                    className="h-16 rounded-3xl bg-[#f1db30] 2xl:h-24"
                     style={{ width: `${Math.max(neutralWidth, 5)}%` }}
                   ></div>
                 )}
                 {positiveWidth > 0 && (
                   <div
-                    className="h-24 rounded-3xl bg-app-green"
+                    className="h-16 rounded-3xl bg-app-green 2xl:h-24"
                     style={{ width: `${Math.max(positiveWidth, 5)}%` }}
                   ></div>
                 )}
                 {nullsWidth > 0 && (
                   <div
-                    className="h-24 rounded-3xl bg-gray-400"
+                    className="h-16 rounded-3xl bg-gray-400 2xl:h-24"
                     style={{ width: `${Math.max(nullsWidth, 5)}%` }}
                   ></div>
                 )}
@@ -108,7 +108,7 @@ export const SentimentCard = ({ projectId, className }: SentimentData) => {
                   happiness={1}
                 />
                 <SentimentLabel
-                  label="Neutral)"
+                  label="Neutral"
                   count={happinessCounts.neutral}
                   happiness={5}
                 />

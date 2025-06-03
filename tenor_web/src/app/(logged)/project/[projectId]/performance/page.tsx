@@ -66,11 +66,11 @@ export default function ProjectPerformance() {
               <ProductivityCard
                 projectId={projectIdString}
                 time={section}
-                className="h-[43%] max-h-[43%]"
+                className="h-[40%] max-h-[40%]"
               />
               <SentimentCard
                 projectId={projectIdString}
-                className="mt-4 h-[43%] max-h-[43%]"
+                className="mt-4 h-[40%] max-h-[40%]"
               />
             </>
           )}
