@@ -154,7 +154,7 @@ export const userStoriesRouter = createTRPCRouter({
           projectId,
           userStoryData.sprintId,
         );
-        sprintRef.update({
+        await sprintRef.update({
           userStoryIds: FieldValue.arrayUnion(userStory.id),
         });
       }
