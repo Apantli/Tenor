@@ -63,7 +63,6 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
   const { isTablet } = useWindowRect();
 
   return (
-    // FIXME: This is a temporary fix for the layout issues, it needs to be a responsive sidebar as well
     <div className="relative flex h-full flex-row">
       <div
         className={cn(
