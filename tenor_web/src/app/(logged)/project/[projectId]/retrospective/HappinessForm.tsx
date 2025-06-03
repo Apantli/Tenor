@@ -36,9 +36,7 @@ export default function HappinessForm({
   onCompletionChange,
 }: HappinessFormProps) {
   const { user } = useFirebaseAuth();
-  const userId = user?.uid ?? "";
-  const params = useParams();
-  const projectId = params.projectId as string;
+  const { projectId } = useParams();
   const { predefinedAlerts } = useAlert();
 
   const [renderConversation, showConversation, setShowConversation] =
@@ -59,12 +57,12 @@ export default function HappinessForm({
     refetch: refetchAnswers,
   } = api.sprintRetrospectives.getRetrospectiveAnswers.useQuery(
     {
-      projectId: projectId,
+      projectId: projectId as string,
       reviewId: sprintRetrospectiveId ?? 0,
-      userId,
+      userId: user?.uid ?? "",
     },
     {
-      enabled: !!sprintRetrospectiveId && !!userId,
+      enabled: !!sprintRetrospectiveId && !!user?.uid,
     },
   );
 
@@ -107,7 +105,7 @@ export default function HappinessForm({
   };
 
   const handleSubmit = async () => {
-    if (!sprintRetrospectiveId || !userId || isCompleted) return;
+    if (!sprintRetrospectiveId || !user?.uid || isCompleted) return;
 
     if (
       !responses.roleFeeling.trim() ||
@@ -125,9 +123,9 @@ export default function HappinessForm({
         Object.entries(responses).map(([field, value]) => {
           const fieldKey = field as keyof HappinessResponses;
           return saveAnswer.mutateAsync({
-            projectId: projectId,
+            projectId: projectId as string,
             reviewId: sprintRetrospectiveId,
-            userId,
+            userId: user?.uid ?? "",
             questionNum: questionMapping[fieldKey],
             answerText: value as string,
           });

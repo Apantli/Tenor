@@ -10,18 +10,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import CheckIcon from "@mui/icons-material/Check";
 import ProgressBar from "~/app/_components/ProgressBar";
-import dynamic from "next/dynamic";
 import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
-
-const DynamicPerformanceChart = dynamic(
-  () =>
-    import("~/app/_components/charts/PerformanceChart").then(
-      (m) => m.PerformanceChart,
-    ),
-  {
-    ssr: false,
-  },
-);
 
 export default function ProjectSprintRetrospectivePage() {
   const { user } = useFirebaseAuth();
@@ -205,7 +194,16 @@ export default function ProjectSprintRetrospectivePage() {
               </div>
 
               <div className="flex flex-1 flex-col">
-                <DynamicPerformanceChart className="ml-8" />
+                <p>
+                  {personalProgressData?.completedAssignedStoryPoints ?? 0} of{" "}
+                  {personalProgressData?.totalAssignedStoryPoints ?? 0}
+                </p>
+              </div>
+              <div className="flex flex-1 flex-col">
+                <p>
+                  {teamProgressData?.completedStoryPoints ?? 0} of{" "}
+                  {teamProgressData?.totalStoryPoints ?? 0}
+                </p>
               </div>
             </div>
           </div>

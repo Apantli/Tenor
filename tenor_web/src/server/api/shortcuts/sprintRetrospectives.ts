@@ -62,6 +62,38 @@ export const getCompletedStatusIds = async (
   return completedIds;
 };
 
+export const getStoryPointsBySizeSettings = async (
+  firestore: Firestore,
+  projectId: string,
+): Promise<Record<string, number>> => {
+  const settingsRef = getSettingsRef(firestore, projectId);
+  const sizeDoc = await settingsRef
+    .collection("requirementTypes")
+    .doc("Size")
+    .get();
+
+  if (!sizeDoc.exists) {
+    return {
+      XS: 1,
+      S: 2,
+      M: 3,
+      L: 5,
+      XL: 8,
+      XXL: 13,
+    };
+  }
+
+  const sizeData = sizeDoc.data();
+  return {
+    XS: sizeData?.["0"] as number,
+    S: sizeData?.["1"] as number,
+    M: sizeData?.["2"] as number,
+    L: sizeData?.["3"] as number,
+    XL: sizeData?.["4"] as number,
+    XXL: sizeData?.["5"] as number,
+  };
+};
+
 export const computeSprintTeamProgress = async (
   firestore: Firestore,
   projectId: string,
@@ -71,8 +103,14 @@ export const computeSprintTeamProgress = async (
   completedIssues: number;
   totalUserStories: number;
   completedUserStories: number;
+  totalStoryPoints: number;
+  completedStoryPoints: number;
 }> => {
   const completedStatusIds = await getCompletedStatusIds(firestore, projectId);
+  const storyPointsMap = await getStoryPointsBySizeSettings(
+    firestore,
+    projectId,
+  );
 
   const projectRef = firestore.collection("projects").doc(projectId);
   const issuesCollectionRef = projectRef.collection("issues");
@@ -94,10 +132,15 @@ export const computeSprintTeamProgress = async (
 
   const totalIssues = issuesSnapshot.size;
   let completedIssues = 0;
+  let totalStoryPoints = 0;
+  let completedStoryPoints = 0;
 
   const issuesDoc = await Promise.all(
     issuesSnapshot.docs.map(async (doc) => {
-      const issueData = doc.data() as { statusId?: string };
+      const issueData = doc.data() as {
+        statusId?: string;
+        size?: string;
+      };
       let statusId: string;
       if (issueData?.statusId) {
         statusId = issueData.statusId;
@@ -110,20 +153,29 @@ export const computeSprintTeamProgress = async (
             statusSnapshot,
           )) ?? "";
       }
+
+      const points = issueData?.size
+        ? (storyPointsMap[issueData.size] ?? 0)
+        : 0;
+
       return {
         ...issueData,
         id: doc.id,
         statusId,
+        calculatedStoryPoints: points,
       };
     }),
   );
 
   issuesDoc.forEach((issueData) => {
+    totalStoryPoints += issueData.calculatedStoryPoints || 0;
+
     if (
       issueData?.statusId &&
       completedStatusIds.includes(issueData.statusId)
     ) {
       completedIssues++;
+      completedStoryPoints += issueData.calculatedStoryPoints || 0;
     }
   });
 
@@ -132,7 +184,10 @@ export const computeSprintTeamProgress = async (
 
   const userStoriesDoc = await Promise.all(
     userStoriesSnapshot.docs.map(async (doc) => {
-      const userStoryData = doc.data() as { statusId?: string };
+      const userStoryData = doc.data() as {
+        statusId?: string;
+        size?: string;
+      };
       let statusId: string;
       if (userStoryData?.statusId) {
         statusId = userStoryData.statusId;
@@ -145,20 +200,29 @@ export const computeSprintTeamProgress = async (
             statusSnapshot,
           )) ?? "";
       }
+
+      const points = userStoryData?.size
+        ? (storyPointsMap[userStoryData.size] ?? 0)
+        : 0;
+
       return {
         ...userStoryData,
         id: doc.id,
         statusId,
+        calculatedStoryPoints: points,
       };
     }),
   );
 
   userStoriesDoc.forEach((userStoryData) => {
+    totalStoryPoints += userStoryData.calculatedStoryPoints || 0;
+
     if (
       userStoryData?.statusId &&
       completedStatusIds.includes(userStoryData.statusId)
     ) {
       completedUserStories++;
+      completedStoryPoints += userStoryData.calculatedStoryPoints || 0;
     }
   });
 
@@ -167,6 +231,8 @@ export const computeSprintTeamProgress = async (
     completedIssues,
     totalUserStories,
     completedUserStories,
+    totalStoryPoints,
+    completedStoryPoints,
   };
 };
 
@@ -178,8 +244,14 @@ export const computeSprintPersonalProgress = async (
 ): Promise<{
   totalAssignedTasks: number;
   completedAssignedTasks: number;
+  totalAssignedStoryPoints: number;
+  completedAssignedStoryPoints: number;
 }> => {
   const completedStatusIds = await getCompletedStatusIds(firestore, projectId);
+  const storyPointsMap = await getStoryPointsBySizeSettings(
+    firestore,
+    projectId,
+  );
 
   const projectRef = firestore.collection("projects").doc(projectId);
   const tasksCollectionRef = projectRef.collection("tasks");
@@ -192,35 +264,53 @@ export const computeSprintPersonalProgress = async (
 
   let totalAssignedTasks = 0;
   let completedAssignedTasks = 0;
+  let totalAssignedStoryPoints = 0;
+  let completedAssignedStoryPoints = 0;
 
   const taskDataMap = new Map<
     string,
-    { isCompleted: boolean; itemId: string }
+    {
+      isCompleted: boolean;
+      itemId: string;
+      weight?: number;
+    }
   >();
 
   userTasksSnapshot.forEach((taskDoc) => {
-    const taskData = taskDoc.data() as { itemId?: string; statusId?: string };
+    const taskData = taskDoc.data() as {
+      itemId?: string;
+      statusId?: string;
+      weight?: number;
+    };
     const itemId = taskData?.itemId;
 
     if (itemId) {
       const isCompleted =
         taskData?.statusId && completedStatusIds.includes(taskData.statusId);
 
-      taskDataMap.set(itemId, {
+      taskDataMap.set(taskDoc.id, {
         isCompleted: !!isCompleted,
         itemId: itemId,
+        weight: taskData?.weight ?? 1,
       });
     }
   });
 
   if (taskDataMap.size === 0) {
-    return { totalAssignedTasks: 0, completedAssignedTasks: 0 };
+    return {
+      totalAssignedTasks: 0,
+      completedAssignedTasks: 0,
+      totalAssignedStoryPoints: 0,
+      completedAssignedStoryPoints: 0,
+    };
   }
 
   const issuesCollectionRef = projectRef.collection("issues");
   const userStoriesCollectionRef = projectRef.collection("userStories");
 
-  const uniqueItemIds = [...taskDataMap.keys()];
+  const uniqueItemIds = [
+    ...new Set([...taskDataMap.values()].map((t) => t.itemId)),
+  ];
   const chunkSize = 30;
 
   const allPromises: Promise<QuerySnapshot>[] = [];
@@ -245,23 +335,43 @@ export const computeSprintPersonalProgress = async (
 
   const snapshots = await Promise.all(allPromises);
 
-  const sprintItemIds = new Set<string>();
+  const itemStoryPointsMap = new Map<string, number>();
+
   snapshots.forEach((snapshot) => {
     snapshot.forEach((doc) => {
-      sprintItemIds.add(doc.id);
+      const data = doc.data() as {
+        size?: string;
+      };
+
+      const points = data?.size ? (storyPointsMap[data.size] ?? 0) : 0;
+
+      itemStoryPointsMap.set(doc.id, points);
     });
   });
 
-  taskDataMap.forEach((taskInfo, itemId) => {
-    if (sprintItemIds.has(itemId)) {
+  taskDataMap.forEach((taskInfo) => {
+    if (itemStoryPointsMap.has(taskInfo.itemId)) {
       totalAssignedTasks++;
+
+      const itemPoints = itemStoryPointsMap.get(taskInfo.itemId) ?? 0;
+      const taskPoints = itemPoints * (taskInfo.weight ?? 1);
+
+      totalAssignedStoryPoints += taskPoints;
+
       if (taskInfo.isCompleted) {
         completedAssignedTasks++;
+        completedAssignedStoryPoints += taskPoints;
       }
     }
   });
 
-  return { totalAssignedTasks, completedAssignedTasks };
+  return {
+    totalAssignedTasks,
+    completedAssignedTasks,
+    totalAssignedStoryPoints: Math.round(totalAssignedStoryPoints * 100) / 100,
+    completedAssignedStoryPoints:
+      Math.round(completedAssignedStoryPoints * 100) / 100,
+  };
 };
 
 export const postSprintTeamProgress = async (
@@ -316,6 +426,8 @@ export const getSprintTeamProgress = async (
   completedIssues: number;
   totalUserStories: number;
   completedUserStories: number;
+  totalStoryPoints: number;
+  completedStoryPoints: number;
 }> => {
   const projectRef = firestore.collection("projects").doc(projectId);
   const teamRetrospectivesRef = projectRef
@@ -332,6 +444,8 @@ export const getSprintTeamProgress = async (
         completedIssues: data?.completedIssues as number,
         totalUserStories: data?.totalUserStories as number,
         completedUserStories: data?.completedUserStories as number,
+        totalStoryPoints: data?.totalStoryPoints as number,
+        completedStoryPoints: data?.completedStoryPoints as number,
       };
     }
   } catch (error) {
@@ -348,6 +462,8 @@ export const getSprintTeamProgress = async (
     completedIssues: data?.completedIssues as number,
     totalUserStories: data?.totalUserStories as number,
     completedUserStories: data?.completedUserStories as number,
+    totalStoryPoints: data?.totalStoryPoints as number,
+    completedStoryPoints: data?.completedStoryPoints as number,
   };
 };
 
@@ -359,6 +475,8 @@ export const getSprintPersonalProgress = async (
 ): Promise<{
   totalAssignedTasks: number;
   completedAssignedTasks: number;
+  totalAssignedStoryPoints: number;
+  completedAssignedStoryPoints: number;
 }> => {
   const projectRef = firestore.collection("projects").doc(projectId);
   const personalRetrospectivesRef = projectRef
@@ -374,6 +492,9 @@ export const getSprintPersonalProgress = async (
         return {
           totalAssignedTasks: data?.totalAssignedTasks as number,
           completedAssignedTasks: data?.completedAssignedTasks as number,
+          totalAssignedStoryPoints: data?.totalAssignedStoryPoints as number,
+          completedAssignedStoryPoints:
+            data?.completedAssignedStoryPoints as number,
         };
       }
     }
@@ -389,6 +510,8 @@ export const getSprintPersonalProgress = async (
   return {
     totalAssignedTasks: data?.totalAssignedTasks as number,
     completedAssignedTasks: data?.completedAssignedTasks as number,
+    totalAssignedStoryPoints: data?.totalAssignedStoryPoints as number,
+    completedAssignedStoryPoints: data?.completedAssignedStoryPoints as number,
   };
 };
 
