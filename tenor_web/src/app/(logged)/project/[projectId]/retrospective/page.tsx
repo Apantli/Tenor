@@ -95,8 +95,8 @@ export default function ProjectSprintRetrospectivePage() {
   const showMessageOverlay = isFormCompleted && !userClickedShowAnswers;
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="px-6 pb-4 pt-6">
+    <div className="m-6 flex h-full flex-col p-4">
+      <div className="pb-4">
         <h1 className="text-3xl font-semibold">
           Sprint Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
           {timeRemaining && (
@@ -111,7 +111,7 @@ export default function ProjectSprintRetrospectivePage() {
         </p>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col justify-start overflow-y-auto px-6 pb-6">
+      <div className="flex min-h-0 flex-1 flex-col justify-start overflow-y-auto pb-6">
         <div className="flex min-h-0 flex-1 flex-col gap-6 lg:flex-row">
           <div className="flex h-full w-full flex-col rounded-lg border border-app-border bg-white p-6 shadow-sm lg:w-1/2">
             <div className="flex-1 overflow-y-auto">
