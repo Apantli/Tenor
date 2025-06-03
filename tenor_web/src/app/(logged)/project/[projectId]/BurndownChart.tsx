@@ -5,7 +5,7 @@ import { cn } from "~/lib/helpers/utils";
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import { BurndownChartData, SampleBurndownData } from "~/lib/defaultValues/burndownChart";
+import { type BurndownChartData, SampleBurndownData } from "~/lib/defaultValues/burndownChart";
 
 
 // Create a more specific type for your Vega specification

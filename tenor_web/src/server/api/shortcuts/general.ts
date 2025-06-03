@@ -24,7 +24,7 @@ import { TRPCError } from "@trpc/server";
 import { TYPE_COLLECTION_MAP } from "~/lib/helpers/typeDisplayName";
 import { Timestamp } from "firebase-admin/firestore";
 import { addDays, differenceInDays } from "date-fns";
-import { BurndownChartData, BurndownDataPoint } from "~/lib/defaultValues/burndownChart";
+import type { BurndownChartData, BurndownDataPoint } from "~/lib/defaultValues/burndownChart";
 
 /**
  * @function getProjectsRef
