@@ -345,6 +345,14 @@ const BurndownChart: React.FC<{
     [modifiedSpec],
   );
 
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <LoadingSpinner color="primary" />
+      </div>
+    );
+  }
+
   return (
     <div
       ref={containerRef}

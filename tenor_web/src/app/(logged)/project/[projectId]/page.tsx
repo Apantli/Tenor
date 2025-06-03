@@ -40,7 +40,8 @@ export default function ProjectOverview() {
           <div className="flex h-64 flex-col gap-5 rounded-lg border-2 border-[#BECAD4] p-5">
             <ProjectStatus projectId={projectId} />
           </div>
-          <div className="flex max-h-[calc(100%-280px)] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
+
+          <div className="flex max-h-[calc(100%-280px)] min-h-48 flex-col rounded-lg border-2 border-[#BECAD4] p-5">
             <DynamicBurdownChart projectId={projectId} />
           </div>
         </div>
