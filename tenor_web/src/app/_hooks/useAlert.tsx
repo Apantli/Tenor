@@ -244,7 +244,7 @@ export const useAlert = () => {
         "Please select valid start and end dates for the sprint.",
       ),
     sprintDurationError: () =>
-      alertTemplates.oops("Sprint duration must be between 1 and 365 days."),
+      alertTemplates.oops("Sprint duration must be at least three days long."),
     sprintDateCollideError: (sprintNumber: number) =>
       alertTemplates.oops(
         `The selected dates collide with Sprint ${sprintNumber}. Please choose different dates.`,

@@ -20,6 +20,12 @@ export default function useValidateDate() {
       return false;
     }
 
+    // Dates must be at least 3 days apart
+    if (endDate.getTime() - startDate.getTime() < 3 * 24 * 60 * 60 * 1000) {
+      predefinedAlerts.sprintDurationError();
+      return false;
+    }
+
     // Validate that the sprint does not overlap with other sprints
     for (const sprint of otherSprints ?? []) {
       if (

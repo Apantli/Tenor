@@ -156,7 +156,12 @@ export default function EditSprintPopup({
               <PrimaryButton
                 onClick={handleUpdateSprint}
                 loading={isModifying}
-                disabled={!changesMade || isModifying}
+                disabled={
+                  !changesMade ||
+                  isModifying ||
+                  !editForm.startDate ||
+                  !editForm.endDate
+                }
               >
                 Save changes
               </PrimaryButton>
