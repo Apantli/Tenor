@@ -689,7 +689,7 @@ function InputComponents() {
       <FileList
         label="Context Files"
         files={[]}
-        memoryLimit={100_000_000} // 100MB
+        tokenLimit={100_000_000}
         handleFileAdd={() => {
           console.log("File added");
         }}
