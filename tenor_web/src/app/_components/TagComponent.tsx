@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { badContrastColors } from "~/lib/helpers/colorUtils";
+import { getBadContrastColorsText } from "~/lib/helpers/colorUtils";
 import { cn } from "~/lib/helpers/utils";
 
 interface Props {
@@ -10,7 +10,6 @@ interface Props {
   onClick?: () => void;
   disabled?: boolean;
   children?: string;
-  darkBackground?: boolean;
 }
 export default function TagComponent({
   color,
@@ -21,7 +20,7 @@ export default function TagComponent({
   onClick,
   className,
   disabled = false,
-  darkBackground = false,
+
   ...props
 }: Props & React.HTMLAttributes<HTMLDivElement>) {
   const textRef = useRef<HTMLSpanElement>(null);
@@ -34,21 +33,14 @@ export default function TagComponent({
     }
   }, [children]);
 
-  const style = darkBackground
-    ? {
-        backgroundColor: `${color}`,
-        color: "#FFFFFF",
-        borderColor: `${color}40`,
-        borderRadius: "0.5rem", // TODO: This or fully rounded like other pills?
-      }
-    : {
-        backgroundColor: `${color}1E`,
-        color: color,
-        borderColor: `${color}40`,
-      };
+  const style = {
+    backgroundColor: `${color}0E`,
+    color: color,
+    borderColor: `${color}40`,
+  };
 
-  if (badContrastColors.includes(color ?? "")) {
-    style.color = "#000000"; // Ensure text is readable on bad contrast colors
+  if (color && getBadContrastColorsText.hasOwnProperty(color)) {
+    style.color = getBadContrastColorsText[color]; // Ensure text is readable on bad contrast colors
   }
 
   return (

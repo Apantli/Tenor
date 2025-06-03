@@ -114,7 +114,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
-        <h3 className="text-lg self-center w-full font-bold">
+        <h3 className="w-full self-center text-lg font-bold">
           Recent Project Activity
         </h3>
         <SearchBar
@@ -194,7 +194,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
                 {/* Action tag with dynamic background color */}
                 <TagComponent
                   color={getPillColorByActivityType(activity.action)}
-                  darkBackground={true}
+                  reducedPadding
                 >
                   {capitalize(activity.action || "")}
                 </TagComponent>
@@ -202,7 +202,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
                 {/* Type badges - keep as is */}
                 <TagComponent
                   color={getAccentHexColorByCardType(activity.type)}
-                  darkBackground={true}
+                  reducedPadding
                 >
                   {displayNameByType[activity.type]}
                 </TagComponent>
