@@ -15,6 +15,7 @@ import { Timestamp } from "firebase/firestore";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import useValidateDate from "~/app/_hooks/useValidateDates";
 interface Props {
   sprintId: string;
   showPopup: boolean;
@@ -34,6 +35,7 @@ export default function EditSprintPopup({
 
   const invalidateQueriesAllSprints = useInvalidateQueriesAllSprints();
   const invalidateQueriesSingleSprint = useInvalidateQueriesSingleSprint();
+  const validateSprintDates = useValidateDate();
 
   const { data: sprintData } = api.sprints.getSprint.useQuery({
     projectId: projectId as string,
@@ -73,25 +75,16 @@ export default function EditSprintPopup({
   const handleUpdateSprint = async () => {
     if (!sprintData) return;
 
-    if (!editForm.startDate || !editForm.endDate) {
-      predefinedAlerts.sprintDatesError();
+    if (
+      !editForm.startDate ||
+      !editForm.endDate ||
+      !validateSprintDates({
+        startDate: editForm.startDate,
+        endDate: editForm.endDate,
+        otherSprints: otherSprints,
+      })
+    ) {
       return;
-    }
-
-    for (const sprint of otherSprints ?? []) {
-      if (
-        (sprint.startDate <= editForm.startDate &&
-          sprint.endDate >= editForm.startDate) ||
-        (sprint.startDate <= editForm.endDate &&
-          sprint.endDate >= editForm.endDate) ||
-        (editForm.startDate <= sprint.startDate &&
-          editForm.endDate >= sprint.startDate) ||
-        (editForm.startDate <= sprint.endDate &&
-          editForm.endDate >= sprint.endDate)
-      ) {
-        predefinedAlerts.sprintDateCollideError(sprint.number);
-        return;
-      }
     }
 
     const result = await modifySprint({

@@ -8,6 +8,7 @@ import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllSprints } from "~/app/_hooks/invalidateHooks";
+import useValidateDate from "~/app/_hooks/useValidateDates";
 
 export interface SprintDates {
   id: string;
@@ -34,6 +35,7 @@ export default function CreateSprintPopup({
     api.sprints.createSprint.useMutation();
 
   const invalidateQueriesAllSprints = useInvalidateQueriesAllSprints();
+  const isValidDates = useValidateDate();
 
   // New sprint variables
   const [newSprintDescription, setNewSprintDescription] = useState("");
@@ -87,29 +89,16 @@ export default function CreateSprintPopup({
   }, [isLoadingSprintDuration, scrumSettings, otherSprints]);
 
   const handleCreateSprint = async () => {
-    if (newSprintStartDate === undefined || newSprintEndDate === undefined)
+    if (
+      !newSprintStartDate ||
+      !newSprintEndDate ||
+      !isValidDates({
+        startDate: newSprintStartDate,
+        endDate: newSprintEndDate,
+        otherSprints: otherSprints,
+      })
+    ) {
       return;
-
-    // Validate dates
-    if (newSprintStartDate >= newSprintEndDate) {
-      predefinedAlerts.sprintDatesError();
-      return;
-    }
-
-    for (const sprint of otherSprints ?? []) {
-      if (
-        (sprint.startDate <= newSprintStartDate &&
-          sprint.endDate >= newSprintStartDate) ||
-        (sprint.startDate <= newSprintEndDate &&
-          sprint.endDate >= newSprintEndDate) ||
-        (newSprintStartDate <= sprint.startDate &&
-          newSprintEndDate >= sprint.startDate) ||
-        (newSprintStartDate <= sprint.endDate &&
-          newSprintEndDate >= sprint.endDate)
-      ) {
-        predefinedAlerts.sprintDateCollideError(sprint.number);
-        return;
-      }
     }
 
     const response = await createSprint({
