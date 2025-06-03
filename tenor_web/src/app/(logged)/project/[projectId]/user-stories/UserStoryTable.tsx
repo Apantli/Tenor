@@ -48,7 +48,7 @@ import useQueryIdForPopup from "~/app/_hooks/useQueryIdForPopup";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 
-export const heightOfContent = "h-full";
+export const heightOfContent = "h-[calc(100vh-264px)]";
 
 interface Props {
   setAllowSegmentedControlChange: (value: boolean) => void;
