@@ -369,3 +369,10 @@ export const ActivitySchema = z.object({
   date: TimestampType.optional(),
   action: ActionType.optional(),
 });
+
+export const UserHappinessSchema = z.array(
+  z.object({
+    user_id: z.string(),
+    happiness: z.number(),
+  }),
+);
