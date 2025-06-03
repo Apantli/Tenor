@@ -11,6 +11,7 @@ interface Props {
   disabled?: boolean;
   children?: string;
 }
+
 export default function TagComponent({
   color,
   children,
@@ -20,7 +21,6 @@ export default function TagComponent({
   onClick,
   className,
   disabled = false,
-
   ...props
 }: Props & React.HTMLAttributes<HTMLDivElement>) {
   const textRef = useRef<HTMLSpanElement>(null);

@@ -114,7 +114,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
-        <h3 className="w-full self-center text-lg font-bold">
+        <h3 className="w-full self-center text-xl font-semibold">
           Recent Project Activity
         </h3>
         <SearchBar
