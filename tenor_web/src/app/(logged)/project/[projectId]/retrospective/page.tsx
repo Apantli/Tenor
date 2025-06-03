@@ -14,15 +14,14 @@ import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
 
 export default function ProjectSprintRetrospectivePage() {
   const { user } = useFirebaseAuth();
-  const params = useParams();
-  const projectId = params.projectId as string;
+  const { projectId } = useParams();
 
   const [isFormCompleted, setIsFormCompleted] = useState(false);
   const [userClickedShowAnswers, setUserClickedShowAnswers] = useState(false);
 
   const { data: previousSprint, isLoading: loadingprevSprint } =
     api.sprintRetrospectives.getPreviousSprint.useQuery({
-      projectId: projectId,
+      projectId: projectId as string,
     });
 
   const previousSprintId = previousSprint?.id ?? "";
@@ -33,7 +32,7 @@ export default function ProjectSprintRetrospectivePage() {
   const { data: sprint, isLoading: loadingSprint } =
     api.sprints.getSprint.useQuery(
       {
-        projectId: params.projectId as string,
+        projectId: projectId as string,
         sprintId: previousSprintId,
       },
       {
@@ -44,7 +43,7 @@ export default function ProjectSprintRetrospectivePage() {
   const { data: sprintRetrospectiveId, isLoading: loadingRetrospectiveId } =
     api.sprintRetrospectives.getRetrospectiveId.useQuery(
       {
-        projectId: projectId,
+        projectId: projectId as string,
         sprintId: previousSprintId,
       },
       {
@@ -55,7 +54,7 @@ export default function ProjectSprintRetrospectivePage() {
   const { data: teamProgressData, isLoading: loadingTeamProgress } =
     api.sprintRetrospectives.getRetrospectiveTeamProgress.useQuery(
       {
-        projectId: projectId,
+        projectId: projectId as string,
         sprintId: previousSprintId,
       },
       {
@@ -66,7 +65,7 @@ export default function ProjectSprintRetrospectivePage() {
   const { data: personalProgressData, isLoading: loadingPersonalProgress } =
     api.sprintRetrospectives.getRetrospectivePersonalProgress.useQuery(
       {
-        projectId: projectId,
+        projectId: projectId as string,
         sprintId: previousSprintId,
         userId: user?.uid ?? "",
       },
@@ -165,17 +164,17 @@ export default function ProjectSprintRetrospectivePage() {
               <div className="mb-6 flex items-center gap-6">
                 <ProfilePicture
                   user={user}
-                  className="h-16 w-16 min-w-16 text-xl"
+                  className="h-10 w-10 min-w-10 text-xl"
                   hideTooltip
                 />
                 <div>
-                  <p className="text-xl font-semibold">{userName}</p>
+                  <p className="text-l font-semibold">{userName}</p>
                 </div>
               </div>
 
               <div className="mb-6">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="font-medium">Assigned Tasks</p>
+                  <p className="font-medium">Tasks Assigned</p>
                   <p className="text-sm text-gray-600">
                     {personalProgressData?.completedAssignedTasks ?? 0} of{" "}
                     {personalProgressData?.totalAssignedTasks ?? 0} completed
@@ -196,26 +195,50 @@ export default function ProjectSprintRetrospectivePage() {
 
               <div className="mb-6">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="font-medium">Assigned Story Points</p>
+                  <p className="font-medium">Story Points Assigned</p>
                   <p className="text-sm text-gray-600">
                     {personalProgressData?.completedAssignedStoryPoints ?? 0} of{" "}
                     {personalProgressData?.totalAssignedStoryPoints ?? 0}{" "}
                     completed
                   </p>
                 </div>
+                <div className="relative">
+                  <ProgressBar
+                    min={0}
+                    max={personalProgressData?.totalAssignedStoryPoints ?? 100}
+                    value={
+                      personalProgressData?.completedAssignedStoryPoints ?? 0
+                    }
+                    progressBarColor="#88BB87"
+                    emptyBarColor="#E5E5E5"
+                    className="h-8"
+                    compact={true}
+                  />
+                </div>
               </div>
 
-              <div className="flex flex-1 flex-col">
-                <p>
-                  {personalProgressData?.completedAssignedStoryPoints ?? 0} of{" "}
-                  {personalProgressData?.totalAssignedStoryPoints ?? 0}
-                </p>
-              </div>
-              <div className="flex flex-1 flex-col">
-                <p>
-                  {teamProgressData?.completedStoryPoints ?? 0} of{" "}
-                  {teamProgressData?.totalStoryPoints ?? 0}
-                </p>
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="font-medium">Sprint Contribution</p>
+                  <p className="text-sm text-gray-600">
+                    {personalProgressData?.completedAssignedStoryPoints ?? 0} of{" "}
+                    {teamProgressData?.totalStoryPoints ?? 0} (total sprint
+                    story points) completed
+                  </p>
+                </div>
+                <div className="relative">
+                  <ProgressBar
+                    min={0}
+                    max={teamProgressData?.totalStoryPoints ?? 100}
+                    value={
+                      personalProgressData?.completedAssignedStoryPoints ?? 0
+                    }
+                    progressBarColor="#13918A"
+                    emptyBarColor="#E5E5E5"
+                    className="h-8"
+                    compact={true}
+                  />
+                </div>
               </div>
             </div>
           </div>
