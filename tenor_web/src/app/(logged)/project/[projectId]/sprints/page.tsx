@@ -45,7 +45,7 @@ export default function ProjectSprints() {
   const { projectId } = useParams();
   const permission = useGetPermission({ flags: ["backlog"] });
 
-  const formatAnyScrumId = useFormatAnyScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId(projectId as string);
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();

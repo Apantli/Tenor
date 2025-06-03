@@ -6,6 +6,7 @@ import { useState, type ChangeEventHandler } from "react";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import { cn } from "~/lib/helpers/utils";
 
 export default function ProjectList() {
   const { data: projects, isLoading } = api.projects.listProjects.useQuery();
@@ -38,7 +39,7 @@ export default function ProjectList() {
   });
 
   return (
-    <div className="mr-10">
+    <div className="h-full p-4 lg:mr-10 lg:p-0">
       <div className="flex h-full w-full justify-between gap-x-3 border-b-2 pb-3">
         <SearchBar
           searchValue={searchValue}
@@ -54,15 +55,19 @@ export default function ProjectList() {
         </PrimaryButton>
       </div>
       <ul
-        className="h-[calc(100vh-250px)] w-full overflow-hidden overflow-y-auto"
+        className="max-h-[calc(80vh-90px)] overflow-hidden overflow-y-auto"
         data-cy="project-list"
       >
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
-              className="flex flex-row justify-start border-b-2 py-[16px] pr-8 hover:cursor-pointer"
+              onClick={() => {
+                handleOpenProject(project.id);
+              }}
+              className={cn(
+                "flex flex-row justify-start border-b-2 py-[16px] hover:cursor-pointer md:pr-8",
+              )}
               key={project.id}
-              onClick={() => handleOpenProject(project.id)}
             >
               <div className="flex h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
                 {loadingImages[project.id] !== false && (
@@ -95,7 +100,7 @@ export default function ProjectList() {
                 />
               </div>
               <div className="flex flex-1 flex-col justify-start overflow-hidden pl-4 pr-4">
-                <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold">
+                <h3 className="my-[7px] truncate text-lg font-semibold md:w-full lg:max-w-[200px]">
                   {project.name}
                 </h3>
                 <p className="line-clamp-2 text-base">{project.description}</p>
