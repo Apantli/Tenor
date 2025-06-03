@@ -36,6 +36,7 @@ import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 import { getPriorityByNameOrId } from "../shortcuts/tags";
 import type { RequirementCol } from "~/lib/types/columnTypes";
+import { LogProjectActivity } from "../lib/projectEventLogger";
 
 export const requirementsRouter = createTRPCRouter({
   getRequirementTypes: roleRequiredProcedure(tagPermissions, "read")
@@ -73,6 +74,14 @@ export const requirementsRouter = createTRPCRouter({
           projectId,
           requirementTypeId,
         ).get();
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: requirementTypeId,
+          type: "RE",
+          action: "update",
+        });
         await requirementTypeDoc?.ref.update(requirementType);
         return { id: requirementTypeId, ...requirementType };
       } else {
@@ -80,6 +89,15 @@ export const requirementsRouter = createTRPCRouter({
           ctx.firestore,
           projectId,
         ).add(requirementType);
+        const requirementTypeId = addedDoc.id;
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: requirementTypeId,
+          type: "RE",
+          action: "update",
+        });
         return { id: addedDoc.id, ...requirementType };
       }
     }),
@@ -93,6 +111,16 @@ export const requirementsRouter = createTRPCRouter({
         projectId,
         requirementTypeId,
       ).get();
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: requirementTypeId,
+        type: "RE",
+        action: "update",
+      });
+
       await requirementTypeDoc?.ref.update({ deleted: true });
     }),
 
@@ -186,6 +214,14 @@ export const requirementsRouter = createTRPCRouter({
           requirementId,
         ).get();
         await requirementDoc?.ref.update(requirementData);
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: requirementId,
+          type: "RE",
+          action: "update",
+        });
         return { id: requirementId };
       } else {
         requirementData.scrumId = await getRequirementNewId(
@@ -193,6 +229,14 @@ export const requirementsRouter = createTRPCRouter({
           projectId,
         );
         const docRef = await getRequirementsRef(ctx.firestore, projectId).add(requirementData);
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: docRef.id,
+          type: "RE",
+          action: "create",
+        });
         return { id: docRef.id };
       }
     }),
@@ -206,6 +250,14 @@ export const requirementsRouter = createTRPCRouter({
         projectId,
         requirementId,
       ).get();
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: requirementId,
+        type: "RE",
+        action: "delete",
+      });
       await requirementDoc?.ref.update({ deleted: true });
     }),
 
