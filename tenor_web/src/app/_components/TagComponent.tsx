@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { badContrastColors } from "~/lib/helpers/colorUtils";
 import { cn } from "~/lib/helpers/utils";
 
 interface Props {
@@ -45,6 +46,10 @@ export default function TagComponent({
         color: color,
         borderColor: `${color}40`,
       };
+
+  if (badContrastColors.includes(color ?? "")) {
+    style.color = "#000000"; // Ensure text is readable on bad contrast colors
+  }
 
   return (
     <div

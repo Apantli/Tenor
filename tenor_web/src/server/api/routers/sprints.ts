@@ -69,7 +69,9 @@ export const sprintsRouter = createTRPCRouter({
       const { projectId, sprintData } = input;
 
       sprintData.number = await getSprintNewId(ctx.firestore, projectId);
-      await getSprintsRef(ctx.firestore, projectId).add(sprintData);
+      const newSprint = await getSprintsRef(ctx.firestore, projectId).add(
+        sprintData,
+      );
 
       const didReorderSprints = await updateSprintNumberOrder(
         ctx.firestore,
@@ -80,7 +82,7 @@ export const sprintsRouter = createTRPCRouter({
         firestore: ctx.firestore,
         projectId: input.projectId,
         userId: ctx.session.user.uid,
-        itemId: getSprintsRef(ctx.firestore, projectId).id,
+        itemId: newSprint.id,
         type: "SP",
         action: "create",
       });

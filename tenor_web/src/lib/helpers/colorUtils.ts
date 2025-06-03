@@ -61,7 +61,7 @@ export function getAccentHexColorByCardType(type: AllBasicItemType): string {
     case "US":
       return "#16918A";
     case "IS":
-      return "#ECC050";
+      return "#ffd859";
     case "IT":
       return "#0FA6E9";
     case "TS":
@@ -81,3 +81,5 @@ export function getPillColorByActivityType(type: ActionType): string {
       return "#F04444";
   }
 }
+
+export const badContrastColors = [getAccentHexColorByCardType("IS")];
