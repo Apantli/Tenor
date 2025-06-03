@@ -2,25 +2,27 @@
 
 import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatusDashboard";
 import ProjectList from "./ProjectList";
-import { recentActivityMockupPath } from "~/lib/defaultValues/publicPaths";
+import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
+import { api } from "~/trpc/react";
 
 export default function ProjectPage() {
+  const { data: projects } = api.projects.getTopProjectStatus.useQuery({
+    count: 1,
+  });
   return (
-    <div className="flex h-full w-full flex-col items-start xl:flex-row">
-      <div className="flex-1 xl:flex-[2]">
-        <h1 className="mb-3 text-3xl font-semibold">Projects</h1>
+    <div className="h-full w-full flex-col items-start overflow-hidden lg:flex lg:flex-row">
+      <div className="lg:w-[50%]">
+        <h1 className="mb-3 w-full text-3xl font-semibold">Projects</h1>
         <ProjectList />
       </div>
-      <div className="w-full flex-1 pt-10 xl:w-fit xl:flex-[2]">
-        <ProjectStatusDashboard className="h-[38vh]" />
-        {/* FIXME: Remove when recent activity is ready */}
-        <div
-          className="mt-4 h-[38vh] w-full rounded-md border-2 bg-cover bg-no-repeat"
-          style={{
-            backgroundImage: `url(${recentActivityMockupPath})`,
-          }}
-          aria-label="Dashboard mockup"
-        />
+      <div className="h-[80vh] flex-1">
+        <ProjectStatusDashboard />
+        <div className="my-6" />
+        {projects?.topProjects[0] && (
+          <ActivityProjectOverview
+            projectId={projects?.topProjects[0].projectId}
+          />
+        )}
       </div>
     </div>
   );

@@ -13,12 +13,9 @@ export default function ProjectOverview() {
   const [isProjectInfoExpanded, setIsProjectInfoExpanded] = useState(false);
 
   // Dynamically import the BurndownChart component to avoid SSR issues
-  const DynamicBurdownChart = dynamic(
-    () => import("./BurndownChart"),
-    {
-      ssr: false,
-    },
-  );
+  const DynamicBurdownChart = dynamic(() => import("./BurndownChart"), {
+    ssr: false,
+  });
 
   return (
     <div className="m-6 flex-1 p-4">
@@ -35,9 +32,7 @@ export default function ProjectOverview() {
               onExpandChange={setIsProjectInfoExpanded}
             />
           </div>
-          <div className="flex h-[47vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
-            <ActivityProjectOverview projectId={projectId} />
-          </div>
+          <ActivityProjectOverview projectId={projectId} />
         </div>
 
         {/* Second col - col 2 */}
