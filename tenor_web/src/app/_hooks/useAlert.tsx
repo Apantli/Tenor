@@ -259,6 +259,10 @@ export const useAlert = () => {
       alertTemplates.oops(
         "You exceeded the file size limit. Please upload a smaller file or delete existing ones.",
       ),
+    duplicatedFile: () =>
+      alertTemplates.oops(
+        "A file with the same name is already added to the context.",
+      ),
     linkUploadSuccess: () =>
       alertTemplates.success(
         "Link added successfully. It will be processed shortly.",

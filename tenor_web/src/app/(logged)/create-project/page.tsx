@@ -319,7 +319,7 @@ export default function ProjectCreator() {
               <FileList
                 label="Context Files"
                 files={files}
-                memoryLimit={10_000_000} // 10MB
+                tokenLimit={200000}
                 handleFileAdd={handleFilesAdd}
                 handleFileRemove={handleFilesDelete}
               />

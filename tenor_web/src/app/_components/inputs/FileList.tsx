@@ -167,12 +167,12 @@ export default function FileList({
             className="hidden"
             ref={fileInputRef}
             onChange={async (e) => {
-              const files = e.target.files;
-              if (!files || disabled || isProcessing) return;
+              const fileList = e.target.files;
+              if (!fileList || disabled || isProcessing) return;
 
               setIsProcessing(true);
               try {
-                const fileArray = Array.from(files);
+                const fileArray = Array.from(fileList);
                 const processedFiles = await processFiles(fileArray);
 
                 const newTokens = processedFiles.reduce(
@@ -182,6 +182,18 @@ export default function FileList({
 
                 if (filesTotalTokens() + newTokens > tokenLimit) {
                   predefinedAlerts.fileLimitExceeded();
+                  return;
+                }
+
+                // Check for duplicate file names
+                const existingFileNames = files.map((file) => file.name);
+                const newFileNames = processedFiles.map((file) => file.name);
+                const hasDuplicates = newFileNames.some((name) =>
+                  existingFileNames.includes(name),
+                );
+
+                if (hasDuplicates) {
+                  predefinedAlerts.duplicatedFile();
                   return;
                 }
 
