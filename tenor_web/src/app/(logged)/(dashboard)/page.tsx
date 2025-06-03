@@ -4,21 +4,25 @@ import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatus
 import ProjectList from "./ProjectList";
 import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
 import { useState } from "react";
+import { api } from "~/trpc/react";
 
 export default function ProjectPage() {
-  // const { data: projects } = api.projects.listProjects.useQuery();
-  const [projectId, setProjectId] = useState<string | null>(null);
+  const { data: projects } = api.projects.getTopProjectStatus.useQuery({
+    count: 1,
+  });
   return (
     <div className="h-full w-full flex-col items-start lg:flex lg:flex-row">
       <div className="lg:w-[50%]">
         <h1 className="mb-3 w-full text-3xl font-semibold">Projects</h1>
-        <ProjectList projectId={projectId} setProjectId={setProjectId} />
+        <ProjectList />
       </div>
-      <div className="h-full flex-1 pb-10 pt-10">
-        {projectId ? (
-          <ActivityProjectOverview projectId={projectId} />
-        ) : (
-          <ProjectStatusDashboard />
+      <div className="h-full flex-1 py-10">
+        <ProjectStatusDashboard />
+        <div className="my-6" />
+        {projects?.topProjects[0] && (
+          <ActivityProjectOverview
+            projectId={projects?.topProjects[0].projectId}
+          />
         )}
       </div>
     </div>

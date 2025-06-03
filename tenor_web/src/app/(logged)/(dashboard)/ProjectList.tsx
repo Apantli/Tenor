@@ -8,12 +8,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { cn } from "~/lib/helpers/utils";
 
-interface Props {
-  projectId: string | null;
-  setProjectId: (projectId: string | null) => void;
-}
-
-export default function ProjectList({ projectId, setProjectId }: Props) {
+export default function ProjectList() {
   const { data: projects, isLoading } = api.projects.listProjects.useQuery();
   const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
@@ -60,22 +55,17 @@ export default function ProjectList({ projectId, setProjectId }: Props) {
         </PrimaryButton>
       </div>
       <ul
-        className="h-[calc(100vh-250px)] overflow-hidden overflow-y-auto"
+        className="max-h-[calc(120vh-120px)] overflow-hidden overflow-y-auto"
         data-cy="project-list"
       >
         {filteredProjects && filteredProjects?.length > 0 ? (
           filteredProjects?.map((project) => (
             <li
               onClick={() => {
-                if (projectId === project.id) {
-                  handleOpenProject(project.id);
-                } else {
-                  setProjectId(project.id);
-                }
+                handleOpenProject(project.id);
               }}
               className={cn(
                 "flex flex-row justify-start border-b-2 py-[16px] hover:cursor-pointer md:pr-8",
-                projectId === project.id && "bg-gray-100 pl-[16px]",
               )}
               key={project.id}
             >
