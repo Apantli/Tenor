@@ -145,6 +145,8 @@ const burndownSpec: VisualizationSpec = {
       grid: true,
       gridOpacity: 0.1,
       format: "d",
+      tickCount: 5,
+      tickMinStep: 1,
     },
     {
       orient: "left",
