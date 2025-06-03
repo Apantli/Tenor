@@ -30,8 +30,6 @@ export default function ProjectKanban() {
     projectId: projectId as string,
   });
 
-  // when loaded, set advanced filters to current sprint
-
   // TRPC
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: projectId as string,
