@@ -27,12 +27,6 @@ export interface HappinessResponses {
   improvementSuggestion: string;
 }
 
-const questionMapping = {
-  roleFeeling: 1,
-  companyFeeling: 2,
-  improvementSuggestion: 3,
-};
-
 export default function HappinessForm({
   sprintRetrospectiveId,
   onSubmit,
