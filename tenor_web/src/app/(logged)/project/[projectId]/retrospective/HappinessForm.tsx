@@ -11,11 +11,13 @@ import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { useParams } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
+import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
 
 interface HappinessFormProps {
   sprintRetrospectiveId?: number;
   onSubmit?: (responses: HappinessResponses) => void;
   onCompletionChange?: (isCompleted: boolean) => void;
+  retrospectiveEndDate?: Date | undefined;
 }
 
 export interface HappinessResponses {
@@ -34,6 +36,7 @@ export default function HappinessForm({
   sprintRetrospectiveId,
   onSubmit,
   onCompletionChange,
+  retrospectiveEndDate,
 }: HappinessFormProps) {
   const { user } = useFirebaseAuth();
   const { projectId } = useParams();
@@ -47,6 +50,10 @@ export default function HappinessForm({
     companyFeeling: "",
     improvementSuggestion: "",
   });
+
+  const { timeRemaining } = useRetrospectiveCountdown(
+    retrospectiveEndDate ?? null,
+  );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 

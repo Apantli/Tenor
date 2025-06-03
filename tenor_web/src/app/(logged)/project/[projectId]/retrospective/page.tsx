@@ -10,7 +10,6 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import CheckIcon from "@mui/icons-material/Check";
 import ProgressBar from "~/app/_components/ProgressBar";
-import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
 
 export default function ProjectSprintRetrospectivePage() {
   const { user } = useFirebaseAuth();
@@ -25,9 +24,6 @@ export default function ProjectSprintRetrospectivePage() {
     });
 
   const previousSprintId = previousSprint?.id ?? "";
-  const { timeRemaining } = useRetrospectiveCountdown(
-    previousSprint?.endDate ?? null,
-  );
 
   const { data: sprint, isLoading: loadingSprint } =
     api.sprints.getSprint.useQuery(
@@ -99,11 +95,6 @@ export default function ProjectSprintRetrospectivePage() {
       <div className="pb-4">
         <h1 className="text-3xl font-semibold">
           Sprint Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
-          {timeRemaining && (
-            <span className="ml-3 text-sm font-normal text-gray-500">
-              This retrospective ends in {timeRemaining}
-            </span>
-          )}
         </h1>
         <p className="mt-2 text-gray-600">
           Congratulations on finishing another sprint! Let&apos;s take a look at
@@ -130,7 +121,7 @@ export default function ProjectSprintRetrospectivePage() {
                     min={0}
                     max={teamProgressData?.totalUserStories ?? 100}
                     value={teamProgressData?.completedUserStories ?? 0}
-                    progressBarColor="#13918A"
+                    progressBarColor="#198A5F"
                     emptyBarColor="#CCCCCC"
                     className="h-8"
                     compact={true}
@@ -173,7 +164,7 @@ export default function ProjectSprintRetrospectivePage() {
                     min={0}
                     max={teamProgressData?.totalBacklogItems ?? 100}
                     value={teamProgressData?.completedBacklogItems ?? 0}
-                    progressBarColor="#88BB87"
+                    progressBarColor="#13918A"
                     emptyBarColor="#CCCCCC"
                     className="h-8"
                     compact={true}
@@ -268,6 +259,7 @@ export default function ProjectSprintRetrospectivePage() {
             <HappinessForm
               sprintRetrospectiveId={sprintRetrospectiveId}
               onCompletionChange={setIsFormCompleted}
+              retrospectiveEndDate={previousSprint?.endDate}
             />
 
             {showMessageOverlay && (
