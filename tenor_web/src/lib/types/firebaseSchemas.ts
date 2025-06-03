@@ -292,3 +292,7 @@ export interface ActivityItem {
   scrumId?: number;
   activity: WithId<ProjectActivity>;
 }
+
+export interface FileWithTokens extends File {
+  tokenCount?: number;
+}

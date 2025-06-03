@@ -50,19 +50,7 @@ export default function ProjectAIConfig() {
   const { data: files } = api.settings.getContextFiles.useQuery({
     projectId: projectId as string,
   });
-  const loadedFiles = useMemo(() => {
-    const resultFiles: File[] = [];
-    if (files) {
-      files.forEach((file) => {
-        const dummyContent = new Uint8Array(file.size);
-        const blob = new Blob([dummyContent], { type: file.type });
-        const newFile = new File([blob], file.name, { type: file.type });
-        resultFiles.push(newFile);
-      });
-      return resultFiles;
-    }
-    return [];
-  }, [files]);
+
   const { data: context } = api.settings.getContextDialog.useQuery({
     projectId: projectId as string,
   });
@@ -277,7 +265,7 @@ export default function ProjectAIConfig() {
           </div>
           {(isModified() || isContextUpdatePending) &&
             links &&
-            loadedFiles &&
+            files &&
             !isLoading && (
               <PrimaryButton
                 onClick={async () => {
@@ -290,7 +278,7 @@ export default function ProjectAIConfig() {
             )}
         </div>
       </div>
-      {links && loadedFiles && !isLoading ? (
+      {links && files && !isLoading ? (
         <div className="flex flex-col gap-4">
           <InputTextAreaField
             id="project-context-field"
@@ -307,11 +295,11 @@ export default function ProjectAIConfig() {
           <FileList
             disabled={permission < permissionNumbers.write}
             label={"Context Files"}
-            files={loadedFiles}
-            memoryLimit={10000000}
+            files={files}
+            tokenLimit={200000}
             handleFileAdd={handleAddFiles}
             handleFileRemove={handleRemoveFile}
-          ></FileList>
+          />
           <LinkList
             disabled={permission < permissionNumbers.write}
             label={"Context Links"}

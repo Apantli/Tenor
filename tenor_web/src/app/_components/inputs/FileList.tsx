@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import { type ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/helpers/utils";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
@@ -8,14 +8,18 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CloseIcon from "@mui/icons-material/Cancel";
 import PrimaryButton from "./buttons/PrimaryButton";
+import { toBase64 } from "~/lib/helpers/base64";
+import HelpIcon from "@mui/icons-material/Help";
+
+import type { FileWithTokens } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   label: string;
-  files: File[];
-  memoryLimit: number;
+  files: FileWithTokens[];
+  tokenLimit: number;
   className?: ClassNameValue;
-  handleFileAdd: (files: File[]) => void;
-  handleFileRemove: (file: File) => void;
+  handleFileAdd: (files: FileWithTokens[]) => void;
+  handleFileRemove: (file: FileWithTokens) => void;
   labelClassName?: string;
   disabled?: boolean;
 }
@@ -24,21 +28,101 @@ export default function FileList({
   label,
   className,
   files,
-  memoryLimit,
+  tokenLimit = 200000,
   handleFileAdd,
   handleFileRemove,
   labelClassName,
   disabled = false,
 }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const openFilePicker = () => {
     fileInputRef.current?.click();
   };
 
-  function filesSumSize() {
-    return files.reduce((total, item) => total + item.size, 0);
+  function filesTotalTokens() {
+    return files.reduce((total, item) => total + (item.tokenCount ?? 0), 0);
   }
+
+  const countTokensForText = useCallback(
+    async (text: string): Promise<number> => {
+      try {
+        const response = await fetch("/api/token_count", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to count tokens");
+        }
+
+        const data = (await response.json()) as { tokenCount?: number };
+        return data.tokenCount ?? 0;
+      } catch (error) {
+        console.error("Error counting tokens:", error);
+        return 0;
+      }
+    },
+    [],
+  );
+
+  const fetchTextFromFile = useCallback(
+    async (base64: string): Promise<string> => {
+      try {
+        const response = await fetch("/api/file_text", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ base64 }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to extract text from file");
+        }
+
+        const data = (await response.json()) as { text?: string };
+        return data.text ?? "";
+      } catch (error) {
+        console.error("Error extracting text from file:", error);
+        return "";
+      }
+    },
+    [],
+  );
+
+  const processFiles = useCallback(
+    async (fileArray: File[]): Promise<FileWithTokens[]> => {
+      const processedFiles: FileWithTokens[] = [];
+
+      for (const file of fileArray) {
+        try {
+          const base64 = (await toBase64(file)) as string;
+          const textContent = await fetchTextFromFile(base64);
+          const tokenCount = await countTokensForText(textContent);
+
+          const fileWithTokens: FileWithTokens = Object.assign(file, {
+            tokenCount,
+          });
+          processedFiles.push(fileWithTokens);
+        } catch (error) {
+          console.error(`Error processing file ${file.name}:`, error);
+          // Add file with 0 tokens if processing fails
+          const fileWithTokens: FileWithTokens = Object.assign(file, {
+            tokenCount: 0,
+          });
+          processedFiles.push(fileWithTokens);
+        }
+      }
+
+      return processedFiles;
+    },
+    [countTokensForText, fetchTextFromFile],
+  );
 
   const { predefinedAlerts } = useAlert();
   const confirm = useConfirmation();
@@ -51,9 +135,19 @@ export default function FileList({
             {label}
           </label>
           <span className="ml-2 text-sm text-gray-500">
-            {(filesSumSize() / 1_000_000).toFixed(1)}
-            MB / {(memoryLimit / 1_000_000).toFixed(1)}MB
+            {isProcessing
+              ? " (Processing...)"
+              : ((filesTotalTokens() / tokenLimit) * 100)
+                  .toFixed(2)
+                  .toLocaleString() + "% storage used"}
           </span>
+          <HelpIcon
+            className="ml-2 text-gray-500"
+            data-tooltip-id="tooltip"
+            data-tooltip-content="Our AI models can process up to 200,000 tokens of context. We convert files to text and count tokens to ensure you stay within this limit."
+            data-tooltip-place="top-start"
+            style={{ width: "20px" }}
+          />
         </div>
 
         <div>
@@ -61,8 +155,9 @@ export default function FileList({
             <PrimaryButton
               onClick={openFilePicker}
               className="flex max-h-[40px] items-center"
+              disabled={isProcessing}
             >
-              Add Context File +
+              {isProcessing ? "Processing..." : "Add Context File +"}
             </PrimaryButton>
           )}
 
@@ -71,22 +166,32 @@ export default function FileList({
             accept=".pdf, .txt, .csv"
             className="hidden"
             ref={fileInputRef}
-            onChange={(e) => {
+            onChange={async (e) => {
               const files = e.target.files;
-              if (!files) return;
+              if (!files || disabled || isProcessing) return;
 
-              const fileArray = Array.from(files);
-              const filesSize = fileArray.reduce(
-                (total, file) => total + file.size,
-                0,
-              );
+              setIsProcessing(true);
+              try {
+                const fileArray = Array.from(files);
+                const processedFiles = await processFiles(fileArray);
 
-              if (filesSumSize() + filesSize > memoryLimit) {
+                const newTokens = processedFiles.reduce(
+                  (total, file) => total + (file.tokenCount ?? 0),
+                  0,
+                );
+
+                if (filesTotalTokens() + newTokens > tokenLimit) {
+                  predefinedAlerts.fileLimitExceeded();
+                  return;
+                }
+
+                handleFileAdd(processedFiles);
+              } catch (error) {
+                console.error("Error processing files:", error);
                 predefinedAlerts.fileLimitExceeded();
-                return;
+              } finally {
+                setIsProcessing(false);
               }
-
-              handleFileAdd(fileArray);
             }}
             multiple
           />
@@ -95,7 +200,7 @@ export default function FileList({
 
       <ul
         className={cn(
-          "flex h-[100px] w-full list-none gap-4 overflow-x-auto overflow-y-hidden rounded-md border border-gray-300 px-4 py-2 shadow-sm",
+          "flex h-[120px] w-full list-none gap-4 overflow-x-auto overflow-y-hidden rounded-md border border-gray-300 px-4 py-2 shadow-sm",
           className,
         )}
       >
@@ -147,6 +252,11 @@ export default function FileList({
               {/* <PictureAsPdfIcon style={{ fontSize: '4rem' }} /> */}
               <span className="mt-1 max-w-[80px] truncate text-center text-xs">
                 {file.name}
+              </span>
+              <span className="text-[10px] text-gray-400">
+                {(((file?.tokenCount ?? 0) / tokenLimit) * 100)
+                  .toFixed(2)
+                  .toLocaleString() + "%"}
               </span>
             </span>
           </li>

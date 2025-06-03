@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import type { z } from "zod";
 import zodToJsonSchema from "zod-to-json-schema";
 import { env } from "~/env";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface SofttekResponse {
   success: boolean;
@@ -155,3 +156,11 @@ Return only the JSON on one line. Pay very close attention to make sure the JSON
     return askAiToGenerate(prompt, returnSchema, attempts + 1);
   }
 }
+
+const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+export const countTokens = async (text: string): Promise<number> => {
+  const { totalTokens } = await model.countTokens(text);
+  return totalTokens;
+};
