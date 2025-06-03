@@ -172,6 +172,7 @@ export default function ProjectSprintRetrospectivePage() {
                   <p className="text-xl font-semibold">{userName}</p>
                 </div>
               </div>
+
               <div className="mb-6">
                 <div className="mb-2 flex items-center justify-between">
                   <p className="font-medium">Assigned Tasks</p>
@@ -190,6 +191,17 @@ export default function ProjectSprintRetrospectivePage() {
                     className="h-8"
                     compact={true}
                   />
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="font-medium">Assigned Story Points</p>
+                  <p className="text-sm text-gray-600">
+                    {personalProgressData?.completedAssignedStoryPoints ?? 0} of{" "}
+                    {personalProgressData?.totalAssignedStoryPoints ?? 0}{" "}
+                    completed
+                  </p>
                 </div>
               </div>
 
