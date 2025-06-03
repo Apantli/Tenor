@@ -69,8 +69,8 @@ export default function UserStoryTable({
   const [renderDetail, showDetail, selectedUS, setUserStoryId, setShowDetail] =
     useQueryIdForPopup("id");
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatEpicScrumId = useFormatEpicScrumId();
+  const formatUserStoryScrumId = useFormatUserStoryScrumId(projectId as string);
+  const formatEpicScrumId = useFormatEpicScrumId(projectId as string);
   const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
 

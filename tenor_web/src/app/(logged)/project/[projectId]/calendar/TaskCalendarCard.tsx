@@ -45,7 +45,7 @@ export const TaskCalendarCard = ({
     setDetailItemId?.(task.id);
   };
 
-  const formatTaskScrumId = useFormatTaskScrumId();
+  const formatTaskScrumId = useFormatTaskScrumId(projectId as string);
 
   const { data: users } = api.users.getUsers.useQuery({
     projectId: projectId as string,

@@ -45,7 +45,7 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // #region HOOKS
   const { projectId } = useParams();
   const utils = api.useUtils();
-  const formatAnyScrumId = useFormatAnyScrumId();
+  const formatAnyScrumId = useFormatAnyScrumId(projectId as string);
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
