@@ -94,7 +94,7 @@ export default function ProjectSprintRetrospectivePage() {
     <div className="m-6 flex h-full flex-col p-4">
       <div className="pb-4">
         <h1 className="text-3xl font-semibold">
-          Sprint Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
+          Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
         </h1>
         <p className="mt-2 text-gray-600">
           Congratulations on finishing another sprint! Let&apos;s take a look at
