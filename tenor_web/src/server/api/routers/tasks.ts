@@ -54,6 +54,7 @@ import {
 import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
 import { dateToString } from "~/lib/helpers/parsers";
+import { getBacklogItemContextSolo } from "../shortcuts/backlogItems";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -564,22 +565,31 @@ export const tasksRouter = createTRPCRouter({
       // LOAD US or IS or IT corresponding to the itemId
       if ("itemId" in input) {
         const { itemId } = input;
-        if (input.itemType === "US") {
-          itemTypeName = "user story";
-          itemContext = await getUserStoryContextSolo(
-            ctx.firestore,
-            projectId,
-            itemId,
-          );
-        } else if (input.itemType === "IS") {
-          itemTypeName = "issue";
-          itemContext = await getIssueContextSolo(
-            ctx.firestore,
-            projectId,
-            itemId,
-          );
-        } else {
-          itemTypeName = "backlog item";
+        switch (input.itemType) {
+          case "US":
+            itemTypeName = "user story";
+            itemContext = await getUserStoryContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
+          case "IS":
+            itemTypeName = "issue";
+            itemContext = await getIssueContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
+          case "IT":
+            itemTypeName = "backlog item";
+            itemContext = await getBacklogItemContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
         }
 
         tasksContext = await getTaskContextFromItem(
@@ -588,15 +598,20 @@ export const tasksRouter = createTRPCRouter({
           itemId,
         );
       } else {
+        // extra data, if exists
         let extra = "";
         const itemData = input.itemDetail;
-        if (input.itemType === "IS") {
-          itemTypeName = "issue";
-          extra = `- steps to recreate: ${itemData.extra}`;
-        } else {
-          itemTypeName = "user story";
-          extra = `- acceptance criteria: ${itemData.extra}`;
+        switch (input.itemType) {
+          case "US":
+            itemTypeName = "user story";
+            extra = `- acceptance criteria: ${itemData.extra}`;
+            break;
+          case "IS":
+            itemTypeName = "issue";
+            extra = `- steps to recreate: ${itemData.extra}`;
+            break;
         }
+
         // Item context
         itemContext = await getGenericBacklogItemContext(
           ctx.firestore,

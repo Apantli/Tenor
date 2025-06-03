@@ -5,13 +5,18 @@ import type {
   Tag,
   WithId,
 } from "~/lib/types/firebaseSchemas";
-import { getProjectRef } from "./general";
+import { getGenericBacklogItemContext, getProjectRef } from "./general";
 import { BacklogItemSchema } from "~/lib/types/zodFirebaseSchema";
 import { TRPCError } from "@trpc/server";
 import type { Firestore } from "firebase-admin/firestore";
 import admin from "firebase-admin";
 import { deleteTaskAndGetModified, getTasksRef, getTaskTable } from "./tasks";
-import { getBacklogTag, getPriority, getStatusType } from "./tags";
+import {
+  getBacklogTag,
+  getBacklogTagsContext,
+  getPriority,
+  getStatusType,
+} from "./tags";
 import { getSprint } from "./sprints";
 import type {
   BacklogItemFullDetail,
@@ -273,4 +278,42 @@ export const deleteBacklogItemAndGetModified = async (
     modifiedBacklogItems: [backlogItemId],
     modifiedTasks: Array.from(allModifiedTasks),
   };
+};
+
+/**
+ * @function getBacklogItemContextSolo
+ * @description Retrieves context information for a single backlog item, including generic details and related tags
+ * @param {Firestore} firestore - The Firestore instance
+ * @param {string} projectId - The ID of the project
+ * @param {string} backlogItemId - The ID of the backlog item to get context for
+ * @returns {Promise<string>} A formatted string containing the backlog item's context details and related tags
+ */
+export const getBacklogItemContextSolo = async (
+  firestore: Firestore,
+  projectId: string,
+  backlogItemId: string,
+) => {
+  const backlogItem = await getBacklogItem(firestore, projectId, backlogItemId);
+
+  // Backlog item context
+  const itemContext = await getGenericBacklogItemContext(
+    firestore,
+    projectId,
+    backlogItem.name,
+    backlogItem.description,
+    backlogItem.priorityId ?? "",
+    backlogItem.size,
+  );
+
+  // Related tags context
+  const tagContext = await getBacklogTagsContext(
+    firestore,
+    projectId,
+    backlogItem.tagIds,
+  );
+
+  return `# GENERIC BACKLOG ITEM DETAILS\n
+${itemContext}
+${tagContext}\n
+`;
 };
