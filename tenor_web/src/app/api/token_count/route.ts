@@ -3,7 +3,7 @@ import { countTokens } from "~/lib/aiTools/aiGeneration";
 import { z } from "zod";
 
 const RequestBodySchema = z.object({
-  text: z.string().min(1, "Text cannot be empty"),
+  text: z.string(),
 });
 
 export async function POST(req: NextRequest) {

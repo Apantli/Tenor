@@ -161,6 +161,9 @@ const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 export const countTokens = async (text: string): Promise<number> => {
+  if (text.trim().length === 0) {
+    return 0; // Recognize empty files
+  }
   const { totalTokens } = await model.countTokens(text);
   return totalTokens;
 };

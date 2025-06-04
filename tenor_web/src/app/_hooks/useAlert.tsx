@@ -271,7 +271,11 @@ export const useAlert = () => {
       alertTemplates.oops("This link is already added to the context."),
     linkInvalidError: (length: number) =>
       alertTemplates.oops(
-        `${length} link${length > 0 && "s"} ${length > 0 ? "are" : "is"} invalid.`,
+        `${length} link${length > 1 ? "s" : ""} ${length > 1 ? "are" : "is"} invalid.`,
+      ),
+    emptyFilesError: (length: number) =>
+      alertTemplates.oops(
+        `We couldn't find text in ${length} context file${length > 1 ? "s" : ""}.`,
       ),
 
     // #endregion

@@ -4,6 +4,7 @@ import { cn } from "~/lib/helpers/utils";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import TableChartIcon from "@mui/icons-material/TableChart";
 import DescriptionIcon from "@mui/icons-material/Description";
+import ContentPasteOffIcon from "@mui/icons-material/ContentPasteOff";
 import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import CloseIcon from "@mui/icons-material/Cancel";
@@ -253,7 +254,9 @@ export default function FileList({
                 </div>
               )}
               {/* Load Icon based on file type */}
-              {file.type === "application/pdf" ? (
+              {file.tokenCount === 0 ? (
+                <ContentPasteOffIcon style={{ fontSize: "4rem" }} />
+              ) : file.type === "application/pdf" ? (
                 <PictureAsPdfIcon style={{ fontSize: "4rem" }} />
               ) : file.type === "text/csv" ? (
                 <TableChartIcon style={{ fontSize: "4rem" }} />
@@ -261,7 +264,6 @@ export default function FileList({
                 <DescriptionIcon style={{ fontSize: "4rem" }} />
               )}
 
-              {/* <PictureAsPdfIcon style={{ fontSize: '4rem' }} /> */}
               <span className="mt-1 max-w-[80px] truncate text-center text-xs">
                 {file.name}
               </span>
