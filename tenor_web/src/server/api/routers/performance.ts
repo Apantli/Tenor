@@ -9,15 +9,13 @@
  */
 
 import { z } from "zod";
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  roleRequiredProcedure,
-} from "~/server/api/trpc";
+import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { performancePermissions } from "~/lib/defaultValues/permission";
-import { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
+import {
+  PerformanceTime,
+  UserHappinessSchema,
+} from "~/lib/types/zodFirebaseSchema";
 import { getProductivityRef } from "../shortcuts/general";
-
 import { shouldRecomputeProductivity } from "~/lib/helpers/cache";
 import type {
   Issue,
@@ -41,6 +39,7 @@ import {
   getAverageTime,
   getContributionOverview,
 } from "../shortcuts/performance";
+import { getUsers } from "../shortcuts/users";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -122,13 +121,44 @@ export const performanceRouter = createTRPCRouter({
       return await getAverageTime(ctx.firestore, input.projectId, input.userId);
     }),
 
-  getProjectStatus: protectedProcedure.query(async ({ ctx }) => {
-    const useruid = ctx.session.user.uid;
-    console.log("useruid", useruid);
-    // TODO: compute and return user contributions
-    return [];
-    // return projects;
-  }),
+  getLastUserSentiment: roleRequiredProcedure(performancePermissions, "read")
+    .input(z.object({ projectId: z.string(), userId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.supabase.rpc("get_last_user_happiness", {
+        project_id_input: input.projectId,
+        user_id_input: input.userId,
+      });
+
+      const userHappiness = UserHappinessSchema.safeParse(result.data);
+      return userHappiness.data?.[0] ?? null;
+    }),
+
+  getUsersSentiment: roleRequiredProcedure(performancePermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const users = await getUsers(
+        ctx.firebaseAdmin.app(),
+        ctx.firestore,
+        input.projectId,
+      );
+
+      const usersSentiment = await Promise.all(
+        users.map(async (user) => {
+          const result = await ctx.supabase.rpc("get_last_user_happiness", {
+            project_id_input: input.projectId,
+            user_id_input: user.id,
+          });
+
+          const userHappiness = UserHappinessSchema.safeParse(result.data);
+          return {
+            userId: user.id,
+            happiness: userHappiness.data?.[0]?.happiness ?? null,
+          };
+        }),
+      );
+
+      return usersSentiment;
+    }),
 });
 
 const recomputePerformance = async (

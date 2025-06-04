@@ -1,5 +1,6 @@
 "use client";
 import { ProductivityCard } from "~/app/_components/cards/ProductivityCard";
+import { SentimentCard } from "~/app/_components/cards/SentimentCard";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import { useState } from "react";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
@@ -65,7 +66,11 @@ export default function ProjectPerformance() {
               <ProductivityCard
                 projectId={projectIdString}
                 time={section}
-                className="h-[22rem] max-h-[22rem]"
+                className="h-[40%] max-h-[40%]"
+              />
+              <SentimentCard
+                projectId={projectIdString}
+                className="mt-4 h-[40%] max-h-[40%]"
               />
             </>
           )}

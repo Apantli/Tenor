@@ -291,3 +291,8 @@ export interface ActivityItem {
   scrumId: number;
   activity: WithId<ProjectActivity>;
 }
+
+export interface UserHappiness {
+  user_id: string;
+  happiness: number;
+}
