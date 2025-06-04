@@ -99,7 +99,11 @@ export const TaskCalendarCard = ({
           <p>{formatTaskScrumId(task.scrumId)}</p>
         </div>
         <div className="flex items-center">
-          {user && <ProfilePicture user={user} pictureClassName="h-4 w-4" />}
+          {user && (
+            <span className="hidden lg:inline">
+              <ProfilePicture user={user} pictureClassName="h-4 w-4" />
+            </span>
+          )}
           <ChevronRightIcon />
         </div>
       </div>

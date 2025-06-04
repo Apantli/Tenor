@@ -19,6 +19,8 @@ interface Props {
 
   selectedTasksId: string[];
   setSelectedTasksId: (ids: string[]) => void;
+
+  largeCell?: boolean;
 }
 
 export default function CalendarCell({
@@ -33,6 +35,7 @@ export default function CalendarCell({
   setDetailItemId,
   selectedTasksId,
   setSelectedTasksId,
+  largeCell = false,
 }: Props) {
   const date = new Date(year, month, day);
   const { ref, isDropTarget } = useDroppable({
@@ -52,17 +55,17 @@ export default function CalendarCell({
   return (
     <div
       className={cn(
-        "flex h-full w-full",
+        "flex h-full min-h-[40px] w-full",
         isDropTarget && "bg-gray-100",
         selectedDate && date.getTime() === selectedDate.getTime()
           ? "bg-app-secondary"
           : "hover:bg-gray-100",
       )}
     >
-      <div className="flex h-full w-full p-0.5" ref={ref}>
+      <div className="flex h-full w-full flex-col p-0.5 lg:flex-row" ref={ref}>
         <span
           className={cn(
-            "h-full p-1 text-xs",
+            "p-1 text-xs lg:h-full",
             tasks.length == 0 && "w-full",
             selectedDate &&
               date.getTime() === selectedDate.getTime() &&
@@ -76,8 +79,9 @@ export default function CalendarCell({
         </span>
         <div
           className={cn(
-            "flex flex-col overflow-y-auto",
+            "flex h-[10vh] flex-col overflow-y-auto",
             tasks.length > 0 && "w-full",
+            largeCell && "h-[12vh]",
           )}
         >
           {tasks.map((task) => (
