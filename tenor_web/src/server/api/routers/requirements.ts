@@ -23,7 +23,6 @@ import {
   getRequirementFocuses,
   getRequirementFocusesRef,
   getRequirementFocusRef,
-  getRequirementNewId,
   getRequirementRef,
   getRequirementsRef,
   getRequirementTable,
@@ -188,12 +187,32 @@ export const requirementsRouter = createTRPCRouter({
         await requirementDoc?.ref.update(requirementData);
         return { id: requirementId };
       } else {
-        requirementData.scrumId = await getRequirementNewId(
-          ctx.firestore,
-          projectId,
+        const { id: newRequirementId } = await ctx.firestore.runTransaction(
+          async (transaction) => {
+            const requirementsRef = getRequirementsRef(
+              ctx.firestore,
+              projectId,
+            );
+
+            const requirementCount = await transaction.get(
+              requirementsRef.count(),
+            );
+
+            const requirementDataUpdated = RequirementSchema.parse({
+              ...requirementData,
+              scrumId: requirementCount.data().count + 1,
+            });
+            const docRef = requirementsRef.doc();
+
+            transaction.create(docRef, requirementDataUpdated);
+
+            return {
+              id: docRef.id,
+            };
+          },
         );
-        const docRef = await getRequirementsRef(ctx.firestore, projectId).add(requirementData);
-        return { id: docRef.id };
+
+        return { id: newRequirementId };
       }
     }),
 

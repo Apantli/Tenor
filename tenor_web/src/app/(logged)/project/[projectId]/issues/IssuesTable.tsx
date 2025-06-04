@@ -56,7 +56,7 @@ export default function IssuesTable() {
   const [renderDetail, showDetail, selectedIS, setSelectedIS] =
     useQueryIdForPopup("id");
 
-  const formatIssueScrumId = useFormatIssueScrumId();
+  const formatIssueScrumId = useFormatIssueScrumId(projectId as string);
 
   const confirm = useConfirmation();
   const deleteItemByType = useDeleteItemByType();

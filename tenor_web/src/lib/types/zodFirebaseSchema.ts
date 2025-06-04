@@ -188,9 +188,10 @@ export const TaskSchema = BasicInfoSchema.extend({
   assigneeId: z.string(),
   dueDate: TimestampType.optional(),
   // FIXME: Finished date should be added to show on calendar
-  // finishedDate: TimestampType.nullable(),
+  // finishedDate: TimestampType.nullable(),z
   itemId: z.string(),
   itemType: BacklogItemZodType,
+  statusChangeDate: TimestampType.optional(),
   name: z
     .string()
     .describe("Small (5 word maximum) description of the task")
@@ -369,3 +370,10 @@ export const ActivitySchema = z.object({
   date: TimestampType.optional(),
   action: ActionType.optional(),
 });
+
+export const UserHappinessSchema = z.array(
+  z.object({
+    user_id: z.string(),
+    happiness: z.number(),
+  }),
+);

@@ -48,7 +48,7 @@ export default function DependencyListTask({
   });
   const allTasksExpectCurrent = allTasks?.filter((task) => task.id !== taskId);
 
-  const formatTaskScrumId = useFormatTaskScrumId();
+  const formatTaskScrumId = useFormatTaskScrumId(projectId as string);
 
   const filteredTasks = allTasksExpectCurrent?.filter((task) => {
     const scrumId = formatTaskScrumId(task.scrumId);

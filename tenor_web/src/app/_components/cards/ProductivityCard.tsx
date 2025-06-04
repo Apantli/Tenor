@@ -30,7 +30,7 @@ export const ProductivityCard = ({
       projectId: projectId,
       time: time,
     },
-    { retry: 0, refetchOnWindowFocus: true },
+    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 },
   );
   const { mutateAsync: recomputeProductivity, isPending } =
     api.performance.recomputeProductivity.useMutation({
@@ -78,7 +78,7 @@ export const ProductivityCard = ({
   return (
     <div
       className={cn(
-        "mt-1 box-content flex flex-col rounded-md border-2 p-4",
+        "mt-1 box-content flex flex-col overflow-y-auto rounded-md border-2 p-4",
         className,
       )}
     >
@@ -92,7 +92,7 @@ export const ProductivityCard = ({
           {error?.message ? (
             <p className="text-xl text-gray-500">{error.message}</p>
           ) : (
-            <div className="relative h-60 w-60">
+            <div className="relative h-full w-[50%]">
               {/* Background circles */}
               <svg
                 className="absolute left-0 top-0 h-full w-full"
@@ -172,7 +172,7 @@ export const ProductivityCard = ({
         </div>
       )}
       {stats?.fetchDate && (
-        <div className="mx-auto mt-auto flex flex-row gap-2 text-gray-500">
+        <div className="mx-auto mt-10 flex flex-row gap-2 text-gray-500">
           {!isPending && (
             <RefreshIcon
               onClick={async () => {

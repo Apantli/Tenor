@@ -69,8 +69,8 @@ export default function UserStoryTable({
   const [renderDetail, showDetail, selectedUS, setUserStoryId, setShowDetail] =
     useQueryIdForPopup("id");
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-  const formatEpicScrumId = useFormatEpicScrumId();
+  const formatUserStoryScrumId = useFormatUserStoryScrumId(projectId as string);
+  const formatEpicScrumId = useFormatEpicScrumId(projectId as string);
   const formatSprintNumber = useFormatSprintNumber();
   const confirm = useConfirmation();
 
@@ -120,7 +120,7 @@ export default function UserStoryTable({
           userStoryData: {
             name: userStory.name,
             description: userStory.description,
-            sprintId: "",
+            sprintId: userStory.sprint?.id ?? "",
             taskIds: [],
             complete: false,
             tagIds: userStory.tags
@@ -132,6 +132,7 @@ export default function UserStoryTable({
             acceptanceCriteria: userStory.acceptanceCriteria,
             dependencyIds: userStory.dependencies.map((dep) => dep.id),
             requiredByIds: userStory.requiredBy.map((dep) => dep.id),
+            statusId: userStory.status?.id ?? "",
           },
         });
 
@@ -697,6 +698,7 @@ export default function UserStoryTable({
               priority: updatedDetail.priority,
               size: updatedDetail.size ?? "M",
               taskProgress: [0, updatedDetail.tasks.length],
+              sprintNumber: updatedDetail.sprint?.number,
             }));
             generatedUserStories.current = generatedUserStories.current?.map(
               (story) => {

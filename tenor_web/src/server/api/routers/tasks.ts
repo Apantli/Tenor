@@ -31,7 +31,6 @@ import {
   getTask,
   getTaskContextFromItem,
   getTaskDetail,
-  getTaskNewId,
   getTaskRef,
   getTasks,
   getTasksRef,
@@ -43,10 +42,7 @@ import {
   generateTaskContext,
   getGenericBacklogItemContext,
 } from "../shortcuts/general";
-import {
-  getBacklogTagsContext,
-  getTodoStatusTag,
-} from "../shortcuts/tags";
+import { getBacklogTagsContext, getTodoStatusTag } from "../shortcuts/tags";
 import { getUserStoryContextSolo } from "../shortcuts/userStories";
 import { getIssueContextSolo } from "../shortcuts/issues";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
@@ -57,6 +53,7 @@ import {
 import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
 import { dateToString } from "~/lib/helpers/parsers";
+import { getBacklogItemContextSolo } from "../shortcuts/backlogItems";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -72,14 +69,13 @@ export const tasksRouter = createTRPCRouter({
       const { projectId } = input;
       return await getTasks(ctx.firestore, projectId);
     }),
+
   /**
-   * @procedure createTask
-   * @description Creates a new task in the specified project and assigns it a scrumId
+   * @procedure getTasksByDate
+   * @description Retrieves tasks for a specific project grouped by their due dates
    * @input {object} input - Input parameters
    * @input {string} input.projectId - The ID of the project
-   * @input {object} input.taskData - The task data without scrumId
-   * @returns {object} Object with success status and the created task ID
-   * @throws {TRPCError} If there's an error creating the task
+   * @returns {Record<string, WithId<Task>[]>} Object with date strings as keys and arrays of tasks as values
    */
   getTasksByDate: roleRequiredProcedure(backlogPermissions, "read")
     .input(
@@ -106,6 +102,16 @@ export const tasksRouter = createTRPCRouter({
       });
       return tasksByDate;
     }),
+
+  /**
+   * @procedure createTask
+   * @description Creates a new task in the specified project and assigns it a scrumId
+   * @input {object} input - Input parameters
+   * @input {string} input.projectId - The ID of the project
+   * @input {object} input.taskData - The task data without scrumId
+   * @returns {object} Object with success status and the created task ID
+   * @throws {TRPCError} If there's an error creating the task
+   */
   createTask: protectedProcedure
     .input(
       z.object({
@@ -115,14 +121,31 @@ export const tasksRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskData: taskDataRaw } = input;
-      const taskData = TaskSchema.parse({
-        ...taskDataRaw,
-        scrumId: await getTaskNewId(ctx.firestore, projectId),
-      });
+
+      const { taskData, id: newTaskId } = await ctx.firestore.runTransaction(
+        async (transaction) => {
+          const tasksRef = getTasksRef(ctx.firestore, projectId);
+
+          const taskCount = await transaction.get(tasksRef.count());
+
+          const taskData = TaskSchema.parse({
+            ...taskDataRaw,
+            scrumId: taskCount.data().count + 1,
+          });
+          const docRef = tasksRef.doc();
+
+          transaction.create(docRef, taskData);
+
+          return {
+            taskData,
+            id: docRef.id,
+          };
+        },
+      );
 
       const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
         {
-          id: "this is a new user story", // id to avoid collision
+          id: "this is a new task", // id to avoid collision
           dependencyIds: taskData.dependencyIds,
         },
       ]);
@@ -134,13 +157,11 @@ export const tasksRouter = createTRPCRouter({
         });
       }
 
-      const task = await getTasksRef(ctx.firestore, projectId).add(taskData);
-
       // Add dependency references
       await Promise.all(
         input.taskData.dependencyIds.map(async (dependencyId) => {
           await getTaskRef(ctx.firestore, projectId, dependencyId).update({
-            requiredByIds: FieldValue.arrayUnion(task.id),
+            requiredByIds: FieldValue.arrayUnion(newTaskId),
           });
         }),
       );
@@ -148,7 +169,7 @@ export const tasksRouter = createTRPCRouter({
       await Promise.all(
         input.taskData.requiredByIds.map(async (requiredById) => {
           await getTaskRef(ctx.firestore, projectId, requiredById).update({
-            dependencyIds: FieldValue.arrayUnion(task.id),
+            dependencyIds: FieldValue.arrayUnion(newTaskId),
           });
         }),
       );
@@ -157,13 +178,13 @@ export const tasksRouter = createTRPCRouter({
         firestore: ctx.firestore,
         projectId: input.projectId,
         userId: ctx.session.user.uid,
-        itemId: task.id,
+        itemId: newTaskId,
         type: "TS",
         action: "create",
       });
 
       return {
-        id: task.id,
+        id: newTaskId,
         ...taskData,
       } as WithId<Task>;
     }),
@@ -567,22 +588,31 @@ export const tasksRouter = createTRPCRouter({
       // LOAD US or IS or IT corresponding to the itemId
       if ("itemId" in input) {
         const { itemId } = input;
-        if (input.itemType === "US") {
-          itemTypeName = "user story";
-          itemContext = await getUserStoryContextSolo(
-            ctx.firestore,
-            projectId,
-            itemId,
-          );
-        } else if (input.itemType === "IS") {
-          itemTypeName = "issue";
-          itemContext = await getIssueContextSolo(
-            ctx.firestore,
-            projectId,
-            itemId,
-          );
-        } else {
-          itemTypeName = "backlog item";
+        switch (input.itemType) {
+          case "US":
+            itemTypeName = "user story";
+            itemContext = await getUserStoryContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
+          case "IS":
+            itemTypeName = "issue";
+            itemContext = await getIssueContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
+          case "IT":
+            itemTypeName = "backlog item";
+            itemContext = await getBacklogItemContextSolo(
+              ctx.firestore,
+              projectId,
+              itemId,
+            );
+            break;
         }
 
         tasksContext = await getTaskContextFromItem(
@@ -591,15 +621,20 @@ export const tasksRouter = createTRPCRouter({
           itemId,
         );
       } else {
+        // extra data, if exists
         let extra = "";
         const itemData = input.itemDetail;
-        if (input.itemType === "IS") {
-          itemTypeName = "issue";
-          extra = `- steps to recreate: ${itemData.extra}`;
-        } else {
-          itemTypeName = "user story";
-          extra = `- acceptance criteria: ${itemData.extra}`;
+        switch (input.itemType) {
+          case "US":
+            itemTypeName = "user story";
+            extra = `- acceptance criteria: ${itemData.extra}`;
+            break;
+          case "IS":
+            itemTypeName = "issue";
+            extra = `- steps to recreate: ${itemData.extra}`;
+            break;
         }
+
         // Item context
         itemContext = await getGenericBacklogItemContext(
           ctx.firestore,
@@ -838,40 +873,42 @@ ${tagContext}\n\n`;
     }),
 
   getSprintBurndownHistory: protectedProcedure
-    .input(z.object({
-      projectId: z.string(),
-      startDate: z.string(),
-      endDate: z.string()
-    }))
+    .input(
+      z.object({
+        projectId: z.string(),
+        startDate: z.string(),
+        endDate: z.string(),
+      }),
+    )
     .query(async ({ ctx, input }) => {
       const { projectId, startDate, endDate } = input;
-      
+
       // Convert strings to dates
       const start = new Date(startDate);
       const end = new Date(endDate);
-      
+
       // Calculate number of days
       const days = differenceInDays(end, start) + 1;
       const result = [];
-      
+
       // For each day, get task counts
       for (let i = 0; i < days; i++) {
         const date = addDays(start, i);
         const timestamp = admin.firestore.Timestamp.fromDate(date);
-        
+
         const completedCount = await getItemActivityTask(
           ctx.firestore,
           projectId,
-          timestamp
+          timestamp,
         );
-        
+
         result.push({
           day: i,
           date: date.toISOString(),
-          completedCount
+          completedCount,
         });
       }
-      
+
       return result;
     }),
 });

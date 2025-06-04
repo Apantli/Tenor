@@ -5,8 +5,10 @@ import { cn } from "~/lib/helpers/utils";
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import { type BurndownChartData, SampleBurndownData } from "~/lib/defaultValues/burndownChart";
-
+import {
+  type BurndownChartData,
+  SampleBurndownData,
+} from "~/lib/defaultValues/burndownChart";
 
 // Create a more specific type for your Vega specification
 type VegaSpec = VisualizationSpec & {
@@ -28,15 +30,15 @@ type VegaSpec = VisualizationSpec & {
 
 // Generates burndown chart data from project status information
 export function useBurndownData(projectId: string) {
-  const { data, isLoading, isError } = api.projects.getBurndownData.useQuery(
+  const { data, isLoading, isError } = api.projects.getGraphBurndownData.useQuery(
     { projectId },
-    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 } // Cache for 5 minutes
+    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 }
   );
-  
+
   return {
     data: data,
     isLoading,
-    isError
+    isError,
   };
 }
 
@@ -56,16 +58,6 @@ const burndownSpec: VisualizationSpec = {
     {
       name: "interpolate",
       value: "linear",
-    },
-    {
-      name: "pulse",
-      value: 1,
-      on: [
-        {
-          events: {type: "timer", throttle: 500},
-          update: "(sin(now() * 0.01) + 1) / 2"
-        }
-      ]
     }
   ],
 
@@ -75,15 +67,21 @@ const burndownSpec: VisualizationSpec = {
       values: SampleBurndownData,
       transform: [
         {
-          type: "formula", as: "x", expr: "datum.sprintDay"
+          type: "formula",
+          as: "x",
+          expr: "datum.sprintDay",
         },
         {
-          type: "formula", as: "y", expr: "datum.storyPoints"
+          type: "formula",
+          as: "y",
+          expr: "datum.storyPoints",
         },
         {
-          type: "formula", as: "c", expr: "datum.seriesType"
-        }
-      ]
+          type: "formula",
+          as: "c",
+          expr: "datum.seriesType",
+        },
+      ],
     },
     {
       name: "lastPoint",
@@ -91,19 +89,19 @@ const burndownSpec: VisualizationSpec = {
       transform: [
         {
           type: "filter",
-          expr: "datum.c == 1"
+          expr: "datum.c == 1",
         },
         {
           type: "window",
           sort: { field: "x", order: "descending" },
-          ops: ["row_number"]
+          ops: ["row_number"],
         },
         {
           type: "filter",
-          expr: "datum.row_number === 1"
-        }
-      ]
-    }
+          expr: "datum.row_number === 1",
+        },
+      ],
+    },
   ],
 
   scales: [
@@ -146,7 +144,6 @@ const burndownSpec: VisualizationSpec = {
       gridOpacity: 0.1,
       format: "d",
       tickCount: 5,
-      tickMinStep: 1,
     },
     {
       orient: "left",
@@ -221,13 +218,13 @@ const burndownSpec: VisualizationSpec = {
         enter: {
           x: { scale: "x", field: "x" },
           y: { scale: "y", field: "y" },
-          fill: {value: "#13918A"},
-          stroke: {value: "white"},
+          fill: { value: "#13918A" },
+          stroke: { value: "white" },
           strokeWidth: { value: 1 },
           size: { value: 150 },
         },
         update: {
-          size: { signal: "pulse * 200 + 100" },
+          size: { value: 200 },
           opacity: { value: 1 }
         }
       }
@@ -253,7 +250,7 @@ const BurndownChart: React.FC<{
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = React.useState({
     width: 450,
-    height: 230,
+    height: 220,
   });
 
   // Resize graph on container dimension changes
@@ -266,17 +263,17 @@ const BurndownChart: React.FC<{
       if (rect) {
         const width = rect.width - 20;
         const height = Math.max(rect.height - 15, 220);
-        
+
         setContainerDimensions({
           width: Math.max(width, 450),
           height: Math.max(height, 220),
         });
       }
     };
-    
+
     // Run immediately and then set up ResizeObserver
     updateDimensions();
-    
+
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const width = entry.contentRect.width - 20;
@@ -337,6 +334,13 @@ const BurndownChart: React.FC<{
     [modifiedSpec],
   );
 
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <LoadingSpinner color="primary" />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -347,48 +351,46 @@ const BurndownChart: React.FC<{
       )}
     >
       <div>
-        <h3 className="text-lg font-bold">Burndown Chart</h3>
+        <h3 className="text-xl font-semibold">Burndown Chart</h3>
       </div>
-        <>
-          <div className="absolute right-4 top-4 z-10 flex flex-row gap-4">
-            <div className="flex items-center gap-2">
-              <div
-                className="h-4 w-4 rounded-sm"
-                style={{ backgroundColor: "#8BC48A" }}
-              />
-              <span className="text-sm font-semibold text-gray-600">Ideal</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div
-                className="h-4 w-4 rounded-sm"
-                style={{ backgroundColor: " #13918A" }}
-              />
-              <span className="text-sm font-semibold text-gray-600">
-                Actual
-              </span>
-            </div>
+      <>
+        <div className="absolute right-4 top-4 z-10 flex flex-row gap-4">
+          <div className="flex items-center gap-2">
+            <div
+              className="h-4 w-4 rounded-sm"
+              style={{ backgroundColor: "#8BC48A" }}
+            />
+            <span className="text-sm font-semibold text-gray-600">Ideal</span>
           </div>
-          { isLoading ? (
-            <div className="mx-auto my-auto flex flex-col items-center">
-              <span className="mx-auto text-[100px] text-gray-500">
-                <LoadingSpinner color="primary" />
-              </span>
-            </div>
-          ): isError || !burndownData || domain[1] === 0 ? (
-            <div className="mx-auto my-auto flex flex-col items-center">
-              <span className="mx-auto text-[100px] text-gray-500">
-                <BarChartIcon fontSize="inherit" />
-              </span>
-              <h1 className="mb-5 text-xl font-semibold text-gray-500">
-                No tasks in current sprint.
-              </h1>
-            </div>
-          ):
+          <div className="flex items-center gap-2">
+            <div
+              className="h-4 w-4 rounded-sm"
+              style={{ backgroundColor: " #13918A" }}
+            />
+            <span className="text-sm font-semibold text-gray-600">Actual</span>
+          </div>
+        </div>
+        {isLoading ? (
+          <div className="mx-auto my-auto flex flex-col items-center">
+            <span className="mx-auto text-[100px] text-gray-500">
+              <LoadingSpinner color="primary" />
+            </span>
+          </div>
+        ) : isError || !burndownData || domain[1] === 0 ? (
+          <div className="mx-auto my-auto flex flex-col items-center">
+            <span className="mx-auto text-[100px] text-gray-500">
+              <BarChartIcon fontSize="inherit" />
+            </span>
+            <h1 className="mb-5 text-2xl font-semibold text-gray-500">
+              No tasks in current sprint
+            </h1>
+          </div>
+        ) : (
           <div className="h-full">
             <LineChartComponent actions={false} />
           </div>
-          }
-        </>
+        )}
+      </>
     </div>
   );
 };

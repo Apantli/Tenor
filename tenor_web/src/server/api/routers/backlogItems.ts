@@ -22,7 +22,6 @@ import type { BacklogItem, WithId } from "~/lib/types/firebaseSchemas";
 import {
   deleteBacklogItemAndGetModified,
   getBacklogItemDetail,
-  getBacklogItemNewId,
   getBacklogItemRef,
   getBacklogItems,
   getBacklogItemsRef,
@@ -80,27 +79,40 @@ export const backlogItemsRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const { projectId, backlogItemData: backlogItemDataRaw } = input;
-      const backlogItemData = BacklogItemSchema.parse({
-        ...backlogItemDataRaw,
-        scrumId: await getBacklogItemNewId(ctx.firestore, projectId),
-      });
 
-      const backlogItem = await getBacklogItemsRef(
-        ctx.firestore,
-        projectId,
-      ).add(backlogItemData);
+      const { backlogItemData, id: newBacklogItemId } =
+        await ctx.firestore.runTransaction(async (transaction) => {
+          const backlogItemsRef = getBacklogItemsRef(ctx.firestore, projectId);
+
+          const backlogItemCount = await transaction.get(
+            backlogItemsRef.count(),
+          );
+
+          const backlogItemData = BacklogItemSchema.parse({
+            ...backlogItemDataRaw,
+            scrumId: backlogItemCount.data().count + 1,
+          });
+          const docRef = backlogItemsRef.doc();
+
+          transaction.create(docRef, backlogItemData);
+
+          return {
+            backlogItemData,
+            id: docRef.id,
+          };
+        });
 
       await LogProjectActivity({
         firestore: ctx.firestore,
         projectId: input.projectId,
         userId: ctx.session.user.uid,
-        itemId: backlogItem.id,
+        itemId: newBacklogItemId,
         type: "IT",
         action: "create",
       });
 
       return {
-        id: backlogItem.id,
+        id: newBacklogItemId,
         ...backlogItemData,
       } as WithId<BacklogItem>;
     }),

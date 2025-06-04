@@ -264,7 +264,7 @@ export default function ProjectAIConfig() {
   );
 
   return (
-    <div className="flex h-full max-w-[600px] flex-col">
+    <div className="flex h-full flex-col lg:max-w-[600px]">
       <div className="flex flex-row justify-between">
         <div className="flex w-full items-center justify-between">
           <div className="mb-4 flex items-center gap-2">

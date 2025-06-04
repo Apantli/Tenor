@@ -13,18 +13,15 @@ export default function ProjectOverview() {
   const [isProjectInfoExpanded, setIsProjectInfoExpanded] = useState(false);
 
   // Dynamically import the BurndownChart component to avoid SSR issues
-  const DynamicBurdownChart = dynamic(
-    () => import("./BurndownChart"),
-    {
-      ssr: false,
-    },
-  );
+  const DynamicBurdownChart = dynamic(() => import("./BurndownChart"), {
+    ssr: false,
+  });
 
   return (
-    <div className="m-6 flex-1 p-4">
-      <div className="flex h-[calc(100vh-64px)] max-h-full w-full grid-cols-2 grid-rows-[auto_1fr] flex-row gap-4 p-4">
+    <div className="m-6 h-full flex-1 overflow-scroll px-4">
+      <div className="flex h-full max-h-full w-full flex-col gap-8 p-4 lg:flex lg:flex-row">
         {/* First col - col 1 */}
-        <div className="flex w-full flex-col gap-4">
+        <div className="flex min-h-[70vh] w-full flex-col justify-between gap-4">
           <div
             className={`flex flex-col gap-5 transition-all duration-300 ${
               isProjectInfoExpanded ? "max-h-64" : "max-h-[12rem]"
@@ -35,17 +32,20 @@ export default function ProjectOverview() {
               onExpandChange={setIsProjectInfoExpanded}
             />
           </div>
-          <div className="flex h-[47vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
-            <ActivityProjectOverview projectId={projectId} />
-          </div>
+
+          <ActivityProjectOverview
+            projectId={projectId}
+            className="h-full justify-self-end"
+          />
         </div>
 
         {/* Second col - col 2 */}
-        <div className="flex w-full flex-col gap-4">
+        <div className="flex w-full flex-col gap-8">
           <div className="flex h-64 flex-col gap-5 rounded-lg border-2 border-[#BECAD4] p-5">
             <ProjectStatus projectId={projectId} />
           </div>
-          <div className="flex h-[38.7vh] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
+
+          <div className="flex h-full max-h-[50vh] flex-col rounded-lg border-2 border-[#BECAD4] p-5 lg:max-h-[calc(100%-287px)]">
             <DynamicBurdownChart projectId={projectId} />
           </div>
         </div>
