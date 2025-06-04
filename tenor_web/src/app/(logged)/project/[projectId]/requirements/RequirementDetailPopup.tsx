@@ -214,9 +214,7 @@ export default function RequirementDetailPopup({
       show={showDetail}
       reduceTopPadding={!requirementDetail || !canWrite}
       size="small"
-      className={cn("h-[380px] max-h-[700px] w-[600px]", {
-        "h-[380px]": editMode,
-      })}
+      className={cn("h-[400px] w-[650px]")}
       disablePassiveDismiss={editMode && isModified()}
       dismiss={dismissPopup}
       setEditMode={
@@ -351,7 +349,7 @@ export default function RequirementDetailPopup({
                 id="requirement-description"
                 chatPosition="right"
                 label="Description"
-                className="min-h-[120px] w-full resize-none"
+                className="min-h-[120px] w-[600px]"
                 value={editForm.description}
                 onChange={(e) =>
                   setEditForm((prev) => ({
@@ -366,7 +364,7 @@ export default function RequirementDetailPopup({
             </div>
           ) : (
             <div>
-              <div className="mt-4 text-lg">
+              <div className="mt-4 w-[500px] text-lg">
                 {requirementDetail?.description !== "" ? (
                   <Markdown>{requirementDetail?.description ?? ""}</Markdown>
                 ) : (
@@ -375,7 +373,6 @@ export default function RequirementDetailPopup({
                   </p>
                 )}
               </div>
-              <br />
             </div>
           )}
         </div>

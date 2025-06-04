@@ -130,7 +130,7 @@ export default function CreateRequirementPopup({
         setShowPopup(false);
       }}
       size="small"
-      className="h-[500px] max-h-[700px] w-[650px]"
+      className="h-[500px] w-[650px]"
       title={<h1 className="text-2xl font-bold">New Requirement</h1>}
       disablePassiveDismiss={isModified()}
       footer={
@@ -169,7 +169,7 @@ export default function CreateRequirementPopup({
           id="requirement-description"
           chatPosition="right"
           label="Description"
-          className="min-h-[120px] w-full resize-none"
+          className="min-h-[120px] w-full"
           containerClassName="mb-4"
           value={createForm.description}
           onChange={(e) =>
