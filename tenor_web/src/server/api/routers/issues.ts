@@ -20,7 +20,6 @@ import {
   deleteIssueAndGetModified,
   getIssue,
   getIssueDetail,
-  getIssueNewId,
   getIssueRef,
   getIssues,
   getIssuesRef,
@@ -72,27 +71,38 @@ export const issuesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, issueData } = input;
+      const { projectId, issueData: issueDataRaw } = input;
       try {
-        const scrumId = await getIssueNewId(ctx.firestore, projectId);
-        const newIssue = IssueSchema.parse({
-          ...issueData,
-          scrumId: scrumId,
-        });
-        const issue = await getIssuesRef(ctx.firestore, projectId).add(
-          newIssue,
+        const { id: newIssueId } = await ctx.firestore.runTransaction(
+          async (transaction) => {
+            const issuesRef = getIssuesRef(ctx.firestore, projectId);
+
+            const issueCount = await transaction.get(issuesRef.count());
+
+            const issueData = IssueSchema.parse({
+              ...issueDataRaw,
+              scrumId: issueCount.data().count + 1,
+            });
+            const docRef = issuesRef.doc();
+
+            transaction.create(docRef, issueData);
+
+            return {
+              id: docRef.id,
+            };
+          },
         );
 
         await LogProjectActivity({
           firestore: ctx.firestore,
           projectId: input.projectId,
           userId: ctx.session.user.uid,
-          itemId: issue.id,
+          itemId: newIssueId,
           type: "IS",
           action: "create",
         });
 
-        return { issueId: issue.id };
+        return { issueId: newIssueId };
       } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }

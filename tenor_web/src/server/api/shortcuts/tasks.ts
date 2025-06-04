@@ -1,6 +1,6 @@
 import type { Firestore, Timestamp } from "firebase-admin/firestore";
 import { getActivitiesRef, getProjectRef } from "./general";
-import type {StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
+import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import { ActivitySchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import { getStatusType, getStatusTypes, getTodoStatusTag } from "./tags";
 import type {
@@ -39,20 +39,6 @@ export const getTaskRef = (
   taskId: string,
 ) => {
   return getTasksRef(firestore, projectId).doc(taskId);
-};
-
-// FIXME: This may overlap, this isnt quite right
-/**
- * @function getTaskNewId
- * @description Gets the next available epic ID for a specific project
- * @param firestore A Firestore instance
- * @param projectId The ID of the project
- * @returns {Promise<number>} The next available task ID
- */
-export const getTaskNewId = async (firestore: Firestore, projectId: string) => {
-  const tasksRef = getTasksRef(firestore, projectId).count().get();
-  const tasksCount = (await tasksRef).data().count;
-  return tasksCount + 1;
 };
 
 const isCyclicUtil = (
@@ -578,13 +564,13 @@ export const getItemActivityTask = async (
   const activitiesRef = getActivitiesRef(firestore, projectId);
   const activitiesSnapshot = await activitiesRef
     .orderBy("date", "desc")
-    .where("date", "==" , date)
+    .where("date", "==", date)
     .where("type", "==", "TS")
     .get();
 
   // Extract task ids from the activities
   const taskIds = new Set<string>();
-  activitiesSnapshot.docs.forEach(doc => {
+  activitiesSnapshot.docs.forEach((doc) => {
     const activity = ActivitySchema.parse(doc.data());
     if (activity.itemId) {
       taskIds.add(activity.itemId);
@@ -597,9 +583,12 @@ export const getItemActivityTask = async (
   }
 
   // Fetch the tasks to check their status
-  const tasksRef = getTasksRef(firestore, projectId)
-    .where("deleted", "==", false);
-  
+  const tasksRef = getTasksRef(firestore, projectId).where(
+    "deleted",
+    "==",
+    false,
+  );
+
   const tasks: WithId<Task>[] = [];
 
   // Process in batches of 10 (Firestore limit for 'in' queries)
@@ -609,8 +598,8 @@ export const getItemActivityTask = async (
     const batchSnapshot = await tasksRef
       .where(admin.firestore.FieldPath.documentId(), "in", batch)
       .get();
-    
-    batchSnapshot.docs.forEach(doc => {
+
+    batchSnapshot.docs.forEach((doc) => {
       tasks.push({
         id: doc.id,
         ...TaskSchema.parse(doc.data()),
@@ -620,9 +609,9 @@ export const getItemActivityTask = async (
 
   // Get all status IDs from tasks
   const statusIds = tasks
-    .map(task => task.statusId)
+    .map((task) => task.statusId)
     .filter((id): id is string => !!id);
-  
+
   // If no status IDs, no completed tasks
   if (statusIds.length === 0) {
     return 0;
@@ -631,16 +620,16 @@ export const getItemActivityTask = async (
   // Use getStatusTypes to get all status tags at once (more efficient)
   const statusTypes = await getStatusTypes(firestore, projectId);
   const statusTagsMap = new Map<string, StatusTag>();
-  
+
   // Create a map for O(1) lookups
-  statusTypes.forEach(statusTag => {
+  statusTypes.forEach((statusTag) => {
     statusTagsMap.set(statusTag.id, statusTag);
   });
 
   // Count completed tasks
   const completedCount = tasks.reduce((count, task) => {
     if (!task.statusId) return count;
-    
+
     const statusTag = statusTagsMap.get(task.statusId);
     if (statusTag?.marksTaskAsDone) {
       return count + 1;
