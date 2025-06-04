@@ -77,7 +77,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     const typeStr = activity.type ?? "";
 
     // Add readable type label for search
-    const typeLabel = getSearchableNameByType(activity.type);
+    const typeLabel = getSearchableNameByType(activity.type) ?? "";
 
     // Get user information if available
     const user = activity.userId ? userMap[activity.userId] : undefined;
@@ -90,12 +90,12 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
 
     // Check if any field contains the search text
     return (
-      dateStr.toLowerCase().includes(searchLowerCase) ??
-      actionStr.toLowerCase().includes(searchLowerCase) ??
-      typeStr.toLowerCase().includes(searchLowerCase) ??
-      typeLabel?.toLowerCase().includes(searchLowerCase) ??
-      userName.toLowerCase().includes(searchLowerCase) ??
-      itemTitle.toLowerCase().includes(searchLowerCase) ??
+      dateStr.toLowerCase().includes(searchLowerCase) ||
+      actionStr.toLowerCase().includes(searchLowerCase) ||
+      typeStr.toLowerCase().includes(searchLowerCase) ||
+      typeLabel.toLowerCase().includes(searchLowerCase) ||
+      userName.toLowerCase().includes(searchLowerCase) ||
+      itemTitle.toLowerCase().includes(searchLowerCase) ||
       scrumId.toString().toLowerCase().includes(searchLowerCase)
     );
   });
