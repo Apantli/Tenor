@@ -121,7 +121,7 @@ export const userStoriesRouter = createTRPCRouter({
         });
       }
 
-      const { userStoryData, id: newuserStoryId } =
+      const { userStoryData, id: newUserStoryId } =
         await ctx.firestore.runTransaction(async (transaction) => {
           const userStoriesRef = getUserStoriesRef(ctx.firestore, projectId);
 
@@ -145,7 +145,7 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         input.userStoryData.dependencyIds.map(async (dependencyId) => {
           await getUserStoryRef(ctx.firestore, projectId, dependencyId).update({
-            requiredByIds: FieldValue.arrayUnion(newuserStoryId),
+            requiredByIds: FieldValue.arrayUnion(newUserStoryId),
           });
         }),
       );
@@ -153,7 +153,7 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         input.userStoryData.requiredByIds.map(async (requiredById) => {
           await getUserStoryRef(ctx.firestore, projectId, requiredById).update({
-            dependencyIds: FieldValue.arrayUnion(newuserStoryId),
+            dependencyIds: FieldValue.arrayUnion(newUserStoryId),
           });
         }),
       );
@@ -166,7 +166,7 @@ export const userStoriesRouter = createTRPCRouter({
           userStoryData.sprintId,
         );
         await sprintRef.update({
-          userStoryIds: FieldValue.arrayUnion(newuserStoryId),
+          userStoryIds: FieldValue.arrayUnion(newUserStoryId),
         });
       }
 
@@ -174,13 +174,13 @@ export const userStoriesRouter = createTRPCRouter({
         firestore: ctx.firestore,
         projectId: input.projectId,
         userId: ctx.session.user.uid,
-        itemId: newuserStoryId,
+        itemId: newUserStoryId,
         type: "US",
         action: "create",
       });
 
       return {
-        id: newuserStoryId,
+        id: newUserStoryId,
         ...userStoryData,
       } as WithId<UserStory>;
     }),

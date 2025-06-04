@@ -73,17 +73,17 @@ export const issuesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, issueData: issueDataRaw } = input;
       try {
-        const { id: newissueId } = await ctx.firestore.runTransaction(
+        const { id: newIssueId } = await ctx.firestore.runTransaction(
           async (transaction) => {
-            const userStoriesRef = getIssuesRef(ctx.firestore, projectId);
+            const issuesRef = getIssuesRef(ctx.firestore, projectId);
 
-            const issueCount = await transaction.get(userStoriesRef.count());
+            const issueCount = await transaction.get(issuesRef.count());
 
             const issueData = IssueSchema.parse({
               ...issueDataRaw,
               scrumId: issueCount.data().count + 1,
             });
-            const docRef = userStoriesRef.doc();
+            const docRef = issuesRef.doc();
 
             transaction.create(docRef, issueData);
 
@@ -97,12 +97,12 @@ export const issuesRouter = createTRPCRouter({
           firestore: ctx.firestore,
           projectId: input.projectId,
           userId: ctx.session.user.uid,
-          itemId: newissueId,
+          itemId: newIssueId,
           type: "IS",
           action: "create",
         });
 
-        return { issueId: newissueId };
+        return { issueId: newIssueId };
       } catch {
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       }

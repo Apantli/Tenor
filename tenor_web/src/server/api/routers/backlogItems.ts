@@ -80,19 +80,19 @@ export const backlogItemsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, backlogItemData: backlogItemDataRaw } = input;
 
-      const { backlogItemData, id: newbacklogItemId } =
+      const { backlogItemData, id: newBacklogItemId } =
         await ctx.firestore.runTransaction(async (transaction) => {
-          const userStoriesRef = getBacklogItemsRef(ctx.firestore, projectId);
+          const backlogItemsRef = getBacklogItemsRef(ctx.firestore, projectId);
 
           const backlogItemCount = await transaction.get(
-            userStoriesRef.count(),
+            backlogItemsRef.count(),
           );
 
           const backlogItemData = BacklogItemSchema.parse({
             ...backlogItemDataRaw,
             scrumId: backlogItemCount.data().count + 1,
           });
-          const docRef = userStoriesRef.doc();
+          const docRef = backlogItemsRef.doc();
 
           transaction.create(docRef, backlogItemData);
 
@@ -106,13 +106,13 @@ export const backlogItemsRouter = createTRPCRouter({
         firestore: ctx.firestore,
         projectId: input.projectId,
         userId: ctx.session.user.uid,
-        itemId: newbacklogItemId,
+        itemId: newBacklogItemId,
         type: "IT",
         action: "create",
       });
 
       return {
-        id: newbacklogItemId,
+        id: newBacklogItemId,
         ...backlogItemData,
       } as WithId<BacklogItem>;
     }),

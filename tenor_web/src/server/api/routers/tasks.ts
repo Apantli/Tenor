@@ -124,15 +124,15 @@ export const tasksRouter = createTRPCRouter({
 
       const { taskData, id: newTaskId } = await ctx.firestore.runTransaction(
         async (transaction) => {
-          const TasksRef = getTasksRef(ctx.firestore, projectId);
+          const tasksRef = getTasksRef(ctx.firestore, projectId);
 
-          const taskCount = await transaction.get(TasksRef.count());
+          const taskCount = await transaction.get(tasksRef.count());
 
           const taskData = TaskSchema.parse({
             ...taskDataRaw,
             scrumId: taskCount.data().count + 1,
           });
-          const docRef = TasksRef.doc();
+          const docRef = tasksRef.doc();
 
           transaction.create(docRef, taskData);
 
