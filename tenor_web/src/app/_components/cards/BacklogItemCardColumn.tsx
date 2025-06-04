@@ -25,7 +25,7 @@ interface Props {
   disabled?: boolean;
   disableDropping?: boolean;
   advancedFilters: AdvancedSearchFilters;
-  noCardsMessage?: string; // Optional message to show when there are no cards. If empty, no message will be shown.
+  noCardsMessage?: string;
 }
 
 export default function BacklogItemCardColumn({
