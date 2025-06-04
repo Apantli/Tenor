@@ -21,6 +21,7 @@ import type { WithId } from "~/lib/types/firebaseSchemas";
 import { defaultRoleList, emptyRole } from "~/lib/defaultValues/roles";
 import { env } from "~/env";
 import AIDisclaimer from "~/app/_components/helps/predefined/AIDisclaimer";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();
@@ -209,130 +210,141 @@ export default function ProjectCreator() {
     }));
   };
 
+  const context = {
+    pageName: "Project Creator",
+    pageDescription: "Create a new project with all necessary details.",
+    pageUrl: "/create-project",
+    project_name: form.name,
+    project_description: form.description,
+    project_context: form.context,
+  };
+
   return (
-    <div className="flex h-screen flex-col overflow-y-auto">
-      <Navbar>
-        <div className="flex gap-1">
-          <Link href="/" className="font-semibold">
-            Projects
-          </Link>
-          <span>/ New Project</span>
-        </div>
-      </Navbar>
-      <Tabbar disabled mainPageName="Project Creator" />
-      <main className="m-6 p-4">
-        <div className="header flex w-full items-center justify-between pb-6">
-          <h1 className="text-2xl font-semibold">Project Creator</h1>
-          <PrimaryButton
-            onClick={handleCreateProject}
-            loading={isPending}
-            data-cy="create-project-button"
-          >
-            Generate Project
-          </PrimaryButton>
-        </div>
-        <hr />
-        <div className="content flex w-full gap-4 pt-6">
-          <div className="flex min-w-[45%] flex-col gap-y-4">
-            <div className="flex flex-wrap gap-4">
-              {/* Project Name */}
-              <div className="min-w-[300px] flex-1">
-                <InputTextField
-                  id="project-name-field"
-                  label={`Project Name (${form.name.length}/${maxProjectNameLength})`}
-                  value={form.name}
-                  onChange={handleChange}
-                  name="name"
-                  placeholder="What is your project called..."
-                  labelClassName="text-lg font-semibold"
-                  data-cy="project-name-input"
-                />
+    <PageContext.Provider value={context}>
+      <div className="flex h-screen flex-col overflow-y-auto">
+        <Navbar>
+          <div className="flex gap-1">
+            <Link href="/" className="font-semibold">
+              Projects
+            </Link>
+            <span>/ New Project</span>
+          </div>
+        </Navbar>
+        <Tabbar disabled mainPageName="Project Creator" />
+        <main className="m-6 p-4">
+          <div className="header flex w-full items-center justify-between pb-6">
+            <h1 className="text-2xl font-semibold">Project Creator</h1>
+            <PrimaryButton
+              onClick={handleCreateProject}
+              loading={isPending}
+              data-cy="create-project-button"
+            >
+              Generate Project
+            </PrimaryButton>
+          </div>
+          <hr />
+          <div className="content flex w-full gap-4 pt-6">
+            <div className="flex min-w-[45%] flex-col gap-y-4">
+              <div className="flex flex-wrap gap-4">
+                {/* Project Name */}
+                <div className="min-w-[300px] flex-1">
+                  <InputTextField
+                    id="project-name-field"
+                    label={`Project Name (${form.name.length}/${maxProjectNameLength})`}
+                    value={form.name}
+                    onChange={handleChange}
+                    name="name"
+                    placeholder="What is your project called..."
+                    labelClassName="text-lg font-semibold"
+                    data-cy="project-name-input"
+                  />
+                </div>
+
+                {/* Project Icon */}
+                <div className="flex-1">
+                  <InputFileField
+                    label="Icon (max: 3MB)"
+                    labelClassName="text-lg font-semibold"
+                    className="mt-1"
+                    accept="image/*"
+                    image={icon}
+                    handleImageChange={handleImageChange}
+                  />
+                </div>
               </div>
 
-              {/* Project Icon */}
-              <div className="flex-1">
-                <InputFileField
-                  label="Icon (max: 3MB)"
-                  labelClassName="text-lg font-semibold"
-                  className="mt-1"
-                  accept="image/*"
-                  image={icon}
-                  handleImageChange={handleImageChange}
-                />
-              </div>
-            </div>
-
-            {/* Project Description */}
-            <InputTextAreaField
-              id="project-description-field"
-              label="Description"
-              html-rows="4"
-              placeholder="What is this project about..."
-              className="min-h-[140px] w-full"
-              value={form.description}
-              onChange={handleChange}
-              name="description"
-              labelClassName="text-lg font-semibold"
-              data-cy="project-description-input"
-            />
-
-            {/* Member Table */}
-            <div className="gap-y-4">
-              <MemberTable
-                label="Team Members"
+              {/* Project Description */}
+              <InputTextAreaField
+                id="project-description-field"
+                label="Description"
+                html-rows="4"
+                placeholder="What is this project about..."
+                className="min-h-[140px] w-full"
+                value={form.description}
+                onChange={handleChange}
+                name="description"
                 labelClassName="text-lg font-semibold"
-                tableClassName="max-h-[300px] overflow-y-auto"
-                teamMembers={teamMembers}
-                className="w-full"
-                handleMemberAdd={handleAddTeamMember}
-                handleMemberRemove={handleRemoveTeamMember}
-                handleEditMemberRole={handleEditMemberRole}
-                roleList={defaultRoleList}
+                data-cy="project-description-input"
               />
+
+              {/* Member Table */}
+              <div className="gap-y-4">
+                <MemberTable
+                  label="Team Members"
+                  labelClassName="text-lg font-semibold"
+                  tableClassName="max-h-[300px] overflow-y-auto"
+                  teamMembers={teamMembers}
+                  className="w-full"
+                  handleMemberAdd={handleAddTeamMember}
+                  handleMemberRemove={handleRemoveTeamMember}
+                  handleEditMemberRole={handleEditMemberRole}
+                  roleList={defaultRoleList}
+                />
+              </div>
+            </div>
+
+            <div className="flex w-full flex-col gap-y-4">
+              {/* Context Text */}
+              <InputTextAreaField
+                id="project-context-field"
+                label={
+                  <span className="flex items-center gap-1">
+                    Context
+                    <AIDisclaimer />
+                  </span>
+                }
+                html-rows="20"
+                placeholder="Tell us about your project..."
+                value={form.context}
+                name="context"
+                onChange={handleChange}
+                labelClassName="text-lg font-semibold"
+              />
+
+              {/* Context Files */}
+              <div>
+                <FileList
+                  label="Context Files"
+                  files={files}
+                  tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
+                  handleFileAdd={handleFilesAdd}
+                  handleFileRemove={handleFilesDelete}
+                />
+              </div>
+
+              {/* Context Links */}
+              <div>
+                <LinkList
+                  label="Context Links"
+                  links={links}
+                  handleLinkAdd={handleLinkAdd}
+                  handleLinkRemove={handleLinkDelete}
+                />
+              </div>
             </div>
           </div>
-
-          <div className="flex w-full flex-col gap-y-4">
-            {/* Context Text */}
-            <InputTextAreaField
-              id="project-context-field"
-              label={
-                <span className="flex items-center gap-1">
-                  Context
-                  <AIDisclaimer />
-                </span>
-              }
-              html-rows="20"
-              placeholder="Tell us about your project..."
-              value={form.context}
-              name="context"
-              onChange={handleChange}
-              labelClassName="text-lg font-semibold"
-            />
-
-            {/* Context Files */}
-            <div>
-              <FileList
-                label="Context Files"
-                files={files}
-                tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
-                handleFileAdd={handleFilesAdd}
-                handleFileRemove={handleFilesDelete}
-              />
-            </div>
-
-            {/* Context Links */}
-            <div>
-              <LinkList
-                label="Context Links"
-                links={links}
-                handleLinkAdd={handleLinkAdd}
-                handleLinkRemove={handleLinkDelete}
-              />
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </PageContext.Provider>
   );
 }
