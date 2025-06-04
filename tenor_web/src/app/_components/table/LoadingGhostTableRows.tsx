@@ -25,8 +25,11 @@ export default function LoadingGhostTableRows({
   const [hide, setHide] = useState(false);
   const [width, setWidth] = useState<number | null>(null);
 
+  // Increase the time estimate for each ghost row
+  const actualEstimate = (timeEstimate ?? 2000) + (ghostRows - 1) * 800;
+
   const finishLoading = useStutterLoading({
-    duration: timeEstimate ?? 2000,
+    duration: actualEstimate,
     hangAt: 90,
     update(pct) {
       setProgress(pct);

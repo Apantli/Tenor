@@ -5,11 +5,20 @@ import ProjectInfo from "~/app/(logged)/project/[projectId]/ProjectInfo";
 import ProjectStatus from "~/app/(logged)/project/[projectId]/ProjectStatusOverview";
 import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 
 export default function ProjectOverview() {
   const params = useParams();
   const projectId = params.projectId as string;
   const [isProjectInfoExpanded, setIsProjectInfoExpanded] = useState(false);
+
+  // Dynamically import the BurndownChart component to avoid SSR issues
+  const DynamicBurdownChart = dynamic(
+    () => import("./BurndownChart"),
+    {
+      ssr: false,
+    },
+  );
 
   return (
     <div className="m-6 flex-1 p-4">
@@ -26,7 +35,7 @@ export default function ProjectOverview() {
               onExpandChange={setIsProjectInfoExpanded}
             />
           </div>
-          <div className="flex h-full flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-3">
+          <div className="flex h-[47vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
             <ActivityProjectOverview projectId={projectId} />
           </div>
         </div>
@@ -36,8 +45,8 @@ export default function ProjectOverview() {
           <div className="flex h-64 flex-col gap-5 rounded-lg border-2 border-[#BECAD4] p-5">
             <ProjectStatus projectId={projectId} />
           </div>
-          <div className="flex flex-col rounded-lg border-2 border-[#BECAD4] p-3">
-            {/* Future content */}
+          <div className="flex h-[38.7vh] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
+            <DynamicBurdownChart projectId={projectId} />
           </div>
         </div>
       </div>

@@ -44,7 +44,7 @@ export default function CreateUserStoryPopup({
     acceptanceCriteria: string;
     tags: Tag[];
     priority?: Tag;
-    size?: Size;
+    size?: Size | "";
     epic?: ExistingEpic;
     sprint?: WithId<Sprint>;
     dependencies: UserStoryPreview[];
@@ -181,7 +181,9 @@ export default function CreateUserStoryPopup({
             <div className="flex-1">
               <h3 className="text-lg font-semibold">Size</h3>
               <SizePicker
-                currentSize={createForm.size}
+                currentSize={
+                  createForm.size === "" ? undefined : createForm.size
+                }
                 callback={(size) => setCreateForm({ ...createForm, size })}
               />
             </div>

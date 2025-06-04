@@ -162,17 +162,6 @@ export interface Role {
 
 /// Backlog items
 
-export interface BasicInfo {
-  scrumId: number;
-  name: string;
-  description: string; // Markdown
-  deleted: boolean;
-  createdAt?: Timestamp;
-}
-
-// TODO: Make function to transform into number size (fibonacci)
-export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
-
 // Any change in here, make sure to modify the zod firebase schemas too
 export type UserStoryType = "US";
 export type IssueType = "IS";
@@ -194,12 +183,22 @@ export type BacklogItemAndTaskType = AnyBacklogItemType | TaskType;
 export type TaskDetailType = `${AnyBacklogItemType}-${TaskType}`; // Used for simplification of moving info around
 export type BacklogItemAndTaskDetailType = AnyBacklogItemType | TaskDetailType;
 
+export type Size = "XS" | "S" | "M" | "L" | "XL" | "XXL";
+
+export interface BasicInfo {
+  scrumId: number;
+  name: string;
+  description: string; // Markdown
+  deleted: boolean;
+  createdAt?: Timestamp;
+}
+
 export interface BacklogItem extends BasicInfo {
   sprintId: string;
   taskIds: string[];
   complete: boolean;
   tagIds: string[];
-  size: Size;
+  size: Size | "";
   priorityId: string;
   statusId: string;
 }
@@ -220,7 +219,7 @@ export interface Task extends BasicInfo {
   dueDate?: Date;
   statusChangeDate?: Timestamp;
   finishedDate?: Date;
-  size: Size;
+  size: Size | "";
   itemId: string;
   itemType: AnyBacklogItemType;
   dependencyIds: string[];
@@ -233,7 +232,7 @@ export interface Issue extends BacklogItem {
 }
 
 export interface Requirement extends BasicInfo {
-  size: Size;
+  size: Size | "";
   priorityId: string;
   requirementTypeId: string;
   requirementFocusId: string;
@@ -289,7 +288,7 @@ export interface ActivityItem {
   id: string;
   name: string;
   type: AllBasicItemType;
-  scrumId?: number;
+  scrumId: number;
   activity: WithId<ProjectActivity>;
 }
 

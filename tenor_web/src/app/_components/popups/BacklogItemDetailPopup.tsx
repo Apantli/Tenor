@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
@@ -12,152 +12,142 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import DependencyListUserStory from "../inputs/DependencyListUserStory";
 import { SizePicker } from "~/app/_components/inputs/pickers/SizePicker";
-import EpicPicker from "~/app/_components/inputs/pickers/EpicPicker";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import {
+  useFormatGenericBacklogItemScrumId,
   useFormatTaskScrumId,
-  useFormatUserStoryScrumId,
 } from "~/app/_hooks/scrumIdHooks";
 import { useAlert } from "~/app/_hooks/useAlert";
-import type { UserStoryDetailWithTasks } from "~/lib/types/detailSchemas";
-import {
-  useInvalidateQueriesAllTasks,
-  useInvalidateQueriesAllUserStories,
-  useInvalidateQueriesTaskDetails,
-  useInvalidateQueriesUserStoriesDetails,
-} from "~/app/_hooks/invalidateHooks";
 import AiIcon from "@mui/icons-material/AutoAwesome";
 import StatusPicker from "~/app/_components/inputs/pickers/StatusPicker";
 import ItemAutomaticStatus from "~/app/_components/ItemAutomaticStatus";
-import {
-  type Permission,
-  permissionNumbers,
-} from "~/lib/types/firebaseSchemas";
-import { TRPCClientError } from "@trpc/client";
-import usePersistentState from "~/app/_hooks/usePersistentState";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import { CreateTaskPopup } from "./CreateTaskPopup";
 import TasksTable, { type BacklogItemWithTasks } from "../TasksTable";
-import { emptyRole } from "~/lib/defaultValues/roles";
-import { checkPermissions } from "~/lib/defaultValues/permission";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
+import type { BacklogItemFullDetailWithTasks } from "~/lib/types/detailSchemas";
+import {
+  useInvalidateQueriesAllGenericBacklogItems,
+  useInvalidateQueriesAllTasks,
+  useInvalidateQueriesGenericBacklogItemDetails,
+  useInvalidateQueriesTaskDetails,
+} from "~/app/_hooks/invalidateHooks";
+import { useGetPermission } from "~/app/_hooks/useGetPermission";
 
 interface Props {
-  userStoryId: string;
+  backlogItemId: string;
   showDetail: boolean;
-  setUserStoryId: (userStoryId: string) => void;
+  setDetailId: (backlogItemId: string) => void;
   taskIdToOpenImmediately?: string; // Optional prop to open a specific task detail immediately when the popup opens
-  userStoryData?: UserStoryDetailWithTasks;
-  setUserStoryData?: (data: UserStoryDetailWithTasks | undefined) => void;
+  backlogItemData?: BacklogItemFullDetailWithTasks;
+  setBacklogItemData?: (
+    data: BacklogItemFullDetailWithTasks | undefined,
+  ) => void;
   onAccept?: () => void;
   onReject?: () => void;
 }
 
-export default function UserStoryDetailPopup({
-  userStoryId,
+export default function BacklogItemDetailPopup({
+  backlogItemId,
   showDetail,
-  setUserStoryId,
+  setDetailId,
   taskIdToOpenImmediately,
-  userStoryData,
-  setUserStoryData,
+  backlogItemData,
+  setBacklogItemData,
   onAccept,
   onReject,
 }: Props) {
+  // #region Hooks
   const { projectId } = useParams();
   const confirm = useConfirmation();
   const utils = api.useUtils();
+  const { predefinedAlerts } = useAlert();
+  const permission = useGetPermission({ flags: ["backlog"] });
+
   const invalidateQueriesTaskDetails = useInvalidateQueriesTaskDetails();
-  const invalidateQueriesAllUserStories = useInvalidateQueriesAllUserStories();
+  const invalidateQueriesAllBacklogItems =
+    useInvalidateQueriesAllGenericBacklogItems();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
-  const invalidateQueriesUserStoriesDetails =
-    useInvalidateQueriesUserStoriesDetails();
+  const invalidateQueriesGenericBacklogItemDetails =
+    useInvalidateQueriesGenericBacklogItemDetails();
+  const formatGenericBacklogItemScrumId = useFormatGenericBacklogItemScrumId();
+  useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
+
   const [unsavedTasks, setUnsavedTasks] = useState(false);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
   const [taskToOpen, setTaskToOpen] = useState<string>(
     taskIdToOpenImmediately ?? "",
   );
-
-  useFormatTaskScrumId(); // preload the task format function before the user sees the loading state
-
-  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
-    projectId: projectId as string,
-    itemId: userStoryId,
-  });
-
-  const {
-    data: fetchedUserStory,
-    isLoading,
-    refetch,
-    error,
-  } = api.userStories.getUserStoryDetail.useQuery(
-    {
-      projectId: projectId as string,
-      userStoryId,
-    },
-    {
-      enabled: !userStoryData,
-    },
-  );
-
-  const userStoryDetail = userStoryData ?? fetchedUserStory;
-
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
-  });
-  const permission: Permission = useMemo(() => {
-    return checkPermissions(
-      {
-        flags: ["backlog"],
-      },
-      role ?? emptyRole,
-    );
-  }, [role]);
-
-  const { mutateAsync: modifyUserStory, isPending } =
-    api.userStories.modifyUserStory.useMutation();
-  const { mutateAsync: deleteUserStory, isPending: isDeleting } =
-    api.userStories.deleteUserStory.useMutation();
-
   const [editMode, setEditMode] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
-    acceptanceCriteria: "",
   });
-  const [showAcceptanceCriteria, setShowAcceptanceCriteria] =
-    usePersistentState(false, "acceptanceCriteria");
+
   const [renderCreateTaskPopup, showCreateTaskPopup, setShowCreateTaskPopup] =
     usePopupVisibilityState();
+  // #endregion
 
-  const [selectedGhostTaskId, setSelectedGhostTaskId] = useState<string>("");
+  // #region TRPC
+  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
+    projectId: projectId as string,
+    itemId: backlogItemId,
+  });
+  const { mutateAsync: modifyBacklogItem, isPending } =
+    api.backlogItems.modifyBacklogItem.useMutation();
+  const { mutateAsync: deleteBacklogItem, isPending: isDeleting } =
+    api.backlogItems.deleteBacklogItem.useMutation();
+  const {
+    data: fetchedBacklogItem,
+    isLoading,
+    refetch,
+    error,
+  } = api.backlogItems.getBacklogItemDetail.useQuery(
+    {
+      projectId: projectId as string,
+      backlogItemId,
+    },
+    {
+      enabled: !backlogItemData,
+    },
+  );
+  // #endregion
 
-  const formatUserStoryScrumId = useFormatUserStoryScrumId();
-
-  const { predefinedAlerts } = useAlert();
-
-  const changeVisibleUserStory = async (userStoryId: string) => {
-    setUserStoryId("");
-    setTimeout(() => {
-      setUserStoryId(userStoryId);
-    }, 550);
-  };
-
+  // #region React
+  const backlogItemDetail = backlogItemData ?? fetchedBacklogItem;
   useEffect(() => {
-    if (!userStoryDetail) return;
+    if (!backlogItemDetail) return;
     if (!editMode) {
       // Only update the form when we're not in edit mode
       setEditForm({
-        name: userStoryDetail.name,
-        description: userStoryDetail.description,
-        acceptanceCriteria: userStoryDetail.acceptanceCriteria,
+        name: backlogItemDetail.name,
+        description: backlogItemDetail.description,
       });
     }
-  }, [userStoryDetail, editMode]);
+  }, [backlogItemDetail, editMode]);
+
+  useEffect(() => {
+    if (error) {
+      void dismissPopup();
+      predefinedAlerts.unexpectedError();
+    }
+  }, [error]);
+
+  // #endregion
+
+  // #region Utility
+
+  const isModified = () => {
+    if (editForm.name !== backlogItemDetail?.name) return true;
+    if (editForm.description !== backlogItemDetail?.description) return true;
+    return false;
+  };
 
   const dismissPopup = async () => {
     if (editMode && isModified()) {
@@ -178,26 +168,11 @@ export default function UserStoryDetailPopup({
       );
       if (!confirmation) return;
     }
-    setUserStoryId("");
-  };
-
-  useEffect(() => {
-    if (error) {
-      void dismissPopup();
-      predefinedAlerts.unexpectedError();
-    }
-  }, [error]);
-
-  const isModified = () => {
-    if (editForm.name !== userStoryDetail?.name) return true;
-    if (editForm.description !== userStoryDetail?.description) return true;
-    if (editForm.acceptanceCriteria !== userStoryDetail?.acceptanceCriteria)
-      return true;
-    return false;
+    setDetailId("");
   };
 
   const handleSave = async (
-    updatedData: NonNullable<typeof userStoryDetail>,
+    updatedData: NonNullable<typeof backlogItemDetail>,
     saveEditForm = false,
   ) => {
     const finalData =
@@ -206,20 +181,18 @@ export default function UserStoryDetailPopup({
             ...updatedData,
             name: editForm.name,
             description: editForm.description,
-            acceptanceCriteria: editForm.acceptanceCriteria,
           }
         : updatedData;
 
-    // This means we're editing a ghost user story, so it should be treated differently
-    if (userStoryData !== undefined) {
-      setUserStoryData?.({ ...finalData, tasks: userStoryData.tasks });
+    // This means we're editing a ghost backlog item, so it should be treated differently
+    if (backlogItemData !== undefined) {
+      setBacklogItemData?.({ ...finalData, tasks: backlogItemData.tasks });
       return;
     }
 
-    const updatedUserStory = {
+    const updatedBacklogItem = {
       name: finalData.name,
       description: finalData.description,
-      acceptanceCriteria: finalData.acceptanceCriteria,
       tagIds:
         finalData?.tags
           .map((tag) => tag.id)
@@ -227,23 +200,20 @@ export default function UserStoryDetailPopup({
       priorityId: finalData?.priority?.id,
       size: finalData?.size,
       statusId: finalData?.status?.id ?? "",
-      epicId: finalData?.epic?.id ?? "",
       sprintId: finalData?.sprint?.id ?? "",
-      dependencyIds: finalData?.dependencies.map((us) => us.id) ?? [],
-      requiredByIds: finalData?.requiredBy.map((us) => us.id) ?? [],
     };
 
-    // Cancel ongoing queries for this user story data
-    await utils.userStories.getUserStoryDetail.cancel({
+    // Cancel ongoing queries for this backlog item data
+    await utils.backlogItems.getBacklogItemDetail.cancel({
       projectId: projectId as string,
-      userStoryId,
+      backlogItemId,
     });
 
     // Optimistically update the query data
-    utils.userStories.getUserStoryDetail.setData(
+    utils.backlogItems.getBacklogItemDetail.setData(
       {
         projectId: projectId as string,
-        userStoryId,
+        backlogItemId,
       },
       (oldData) => {
         if (!oldData) return undefined;
@@ -255,27 +225,20 @@ export default function UserStoryDetailPopup({
     );
 
     try {
-      const { updatedUserStoryIds } = await modifyUserStory({
+      const { updatedBacklogItemIds } = await modifyBacklogItem({
         projectId: projectId as string,
-        userStoryId: userStoryId,
-        userStoryData: updatedUserStory,
+        backlogItemId: backlogItemId,
+        backlogItemData: updatedBacklogItem,
       });
 
       // Make other places refetch the data
-      await invalidateQueriesAllUserStories(projectId as string);
-      await invalidateQueriesUserStoriesDetails(
+      await invalidateQueriesAllBacklogItems(projectId as string);
+      await invalidateQueriesGenericBacklogItemDetails(
         projectId as string,
-        updatedUserStoryIds,
+        updatedBacklogItemIds,
       );
-    } catch (error) {
-      if (
-        error instanceof TRPCClientError &&
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        error.data?.code === "BAD_REQUEST"
-      ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        predefinedAlerts.cyclicDependency();
-      }
+    } catch {
+      predefinedAlerts.unexpectedError();
       await refetch();
       return;
     }
@@ -291,47 +254,49 @@ export default function UserStoryDetailPopup({
       await confirm(
         "Are you sure?",
         "This action cannot be undone.",
-        "Delete user story",
+        "Delete backlog item",
         "Cancel",
       )
     ) {
-      const { updatedUserStoryIds, modifiedTaskIds } = await deleteUserStory({
-        projectId: projectId as string,
-        userStoryId: userStoryId,
-      });
-      await invalidateQueriesAllUserStories(projectId as string);
+      const { updatedBacklogItemIds, modifiedTaskIds } =
+        await deleteBacklogItem({
+          projectId: projectId as string,
+          backlogItemId: backlogItemId,
+        });
+      await invalidateQueriesAllBacklogItems(projectId as string);
       await invalidateQueriesAllTasks(projectId as string);
-      await invalidateQueriesUserStoriesDetails(
+      await invalidateQueriesGenericBacklogItemDetails(
         projectId as string,
-        updatedUserStoryIds, // for example, if you delete a user story, all its dependencies will be updated
+        updatedBacklogItemIds, // for example, if you delete a backlog item, all its dependencies will be updated
       );
-      // for example, if you delete a user story, all its tasks that were related to any of the US tasks will be updated
+      // for example, if you delete a backlog item, all its tasks that were related to any of the IT tasks will be updated
       await invalidateQueriesTaskDetails(projectId as string, modifiedTaskIds);
       await dismissPopup();
     }
   };
 
-  const userStoryDataToItemData = (
-    userStory: UserStoryDetailWithTasks,
+  const backlogItemDataToItemData = (
+    backlogItem: BacklogItemFullDetailWithTasks,
   ): BacklogItemWithTasks => {
     return {
       scrumId: -1,
-      name: userStory.name,
-      description: userStory.description,
+      name: backlogItem.name,
+      description: backlogItem.description,
       deleted: false,
       sprintId: "",
       taskIds: [],
       complete: false,
       tagIds: [],
-      size: userStory.size ?? "M",
-      statusId: userStory.status?.id ?? "",
-      priorityId: userStory.priority?.id ?? "",
-      tasks: userStoryData?.tasks ?? [],
-      extra: userStoryData?.acceptanceCriteria ?? "",
+      size: backlogItem.size ?? "M",
+      statusId: backlogItem.status?.id ?? "",
+      priorityId: backlogItem.priority?.id ?? "",
+      tasks: backlogItemData?.tasks ?? [],
+      extra: "",
     };
   };
 
-  const checkTitleLimit = useCharacterLimit("User story title", 80);
+  const checkTitleLimit = useCharacterLimit("Backlog item title", 80);
+  // #endregion
 
   return (
     <Popup
@@ -344,23 +309,14 @@ export default function UserStoryDetailPopup({
       sidebar={
         isLoading ? undefined : (
           <>
-            {!isLoading && userStoryDetail && (
+            {!isLoading && backlogItemDetail && (
               <>
-                <h3 className="text-lg font-semibold">Epic</h3>
-                <EpicPicker
-                  disabled={permission < permissionNumbers.write}
-                  epic={userStoryDetail?.epic}
-                  onChange={async (epic) => {
-                    await handleSave({ ...userStoryDetail, epic });
-                  }}
-                />
-
-                <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+                <h3 className="text-lg font-semibold">Sprint</h3>
                 <SprintPicker
                   disabled={permission < permissionNumbers.write}
-                  sprint={userStoryDetail.sprint}
+                  sprint={backlogItemDetail.sprint}
                   onChange={async (sprint) => {
-                    await handleSave({ ...userStoryDetail, sprint });
+                    await handleSave({ ...backlogItemDetail, sprint });
                   }}
                 />
 
@@ -369,9 +325,9 @@ export default function UserStoryDetailPopup({
                     <h3 className="text-lg font-semibold">Priority</h3>
                     <PriorityPicker
                       disabled={permission < permissionNumbers.write}
-                      priority={userStoryDetail.priority}
+                      priority={backlogItemDetail.priority}
                       onChange={async (priority) => {
-                        await handleSave({ ...userStoryDetail, priority });
+                        await handleSave({ ...backlogItemDetail, priority });
                       }}
                     />
                   </div>
@@ -380,15 +336,12 @@ export default function UserStoryDetailPopup({
                     <SizePicker
                       disabled={permission < permissionNumbers.write}
                       currentSize={
-                        userStoryDetail.size === ""
+                        backlogItemDetail.size === ""
                           ? undefined
-                          : userStoryDetail.size
+                          : backlogItemDetail.size
                       }
                       callback={async (size) => {
-                        await handleSave({
-                          ...userStoryDetail,
-                          size: size,
-                        });
+                        await handleSave({ ...backlogItemDetail, size });
                       }}
                     />
                   </div>
@@ -401,28 +354,28 @@ export default function UserStoryDetailPopup({
                   <StatusPicker
                     disabled={
                       permission < permissionNumbers.write ||
-                      isAutomatic(userStoryDetail.status)
+                      isAutomatic(backlogItemDetail.status)
                     }
                     status={
-                      isAutomatic(userStoryDetail.status)
+                      isAutomatic(backlogItemDetail.status)
                         ? automaticStatus
-                        : userStoryDetail.status
+                        : backlogItemDetail.status
                     }
                     onChange={async (status) => {
-                      await handleSave({ ...userStoryDetail, status });
+                      await handleSave({ ...backlogItemDetail, status });
                     }}
                   />
                   <ItemAutomaticStatus
-                    isAutomatic={isAutomatic(userStoryDetail.status)}
+                    isAutomatic={isAutomatic(backlogItemDetail.status)}
                     onChange={async (automatic) => {
                       if (automatic) {
                         await handleSave({
-                          ...userStoryDetail,
+                          ...backlogItemDetail,
                           status: automaticTag,
                         });
                       } else {
                         await handleSave({
-                          ...userStoryDetail,
+                          ...backlogItemDetail,
                           status: automaticStatus,
                         });
                       }
@@ -432,32 +385,10 @@ export default function UserStoryDetailPopup({
 
                 <BacklogTagList
                   disabled={permission < permissionNumbers.write}
-                  tags={userStoryDetail.tags}
+                  tags={backlogItemDetail.tags}
                   onChange={async (tags) => {
-                    await handleSave({ ...userStoryDetail, tags });
+                    await handleSave({ ...backlogItemDetail, tags });
                   }}
-                />
-
-                <DependencyListUserStory
-                  disabled={permission < permissionNumbers.write}
-                  label="Dependencies"
-                  userStoryId={userStoryDetail.id}
-                  userStories={userStoryDetail.dependencies}
-                  onChange={async (dependencies) => {
-                    await handleSave({ ...userStoryDetail, dependencies });
-                  }}
-                  onClick={changeVisibleUserStory}
-                />
-
-                <DependencyListUserStory
-                  disabled={permission < permissionNumbers.write}
-                  label="Required by"
-                  userStoryId={userStoryDetail.id}
-                  userStories={userStoryDetail.requiredBy}
-                  onChange={async (requiredBy) => {
-                    await handleSave({ ...userStoryDetail, requiredBy });
-                  }}
-                  onClick={changeVisibleUserStory}
                 />
               </>
             )}
@@ -467,9 +398,9 @@ export default function UserStoryDetailPopup({
       footer={
         !isLoading &&
         permission >= permissionNumbers.write &&
-        (userStoryDetail?.scrumId !== -1 ? (
+        (backlogItemDetail?.scrumId !== -1 ? (
           <DeleteButton onClick={handleDelete} loading={isDeleting}>
-            Delete story
+            Delete item
           </DeleteButton>
         ) : (
           <div className="flex items-center gap-2">
@@ -483,8 +414,8 @@ export default function UserStoryDetailPopup({
                 if (unsavedTasks) {
                   const confirmation = await confirm(
                     "Are you sure?",
-                    "You have unsaved AI generated tasks. By rejecting this story, you will lose them as well.",
-                    "Reject story",
+                    "You have unsaved AI generated tasks. By rejecting this item, you will lose them as well.",
+                    "Reject item",
                     "Keep editing",
                   );
                   if (!confirmation) return;
@@ -518,14 +449,14 @@ export default function UserStoryDetailPopup({
       }
       title={
         <>
-          {!isLoading && userStoryDetail && (
+          {!isLoading && backlogItemDetail && (
             <h1 className="mb-4 items-center text-3xl">
               <span className="font-bold">
                 <span className="pr-2">
-                  {formatUserStoryScrumId(userStoryDetail.scrumId)}:
+                  {formatGenericBacklogItemScrumId(backlogItemDetail.scrumId)}:
                 </span>
               </span>
-              <span className="">{userStoryDetail.name}</span>
+              <span className="">{backlogItemDetail.name}</span>
             </h1>
           )}
         </>
@@ -552,17 +483,16 @@ export default function UserStoryDetailPopup({
 
         setEditMode(isEditing);
 
-        if (!userStoryDetail) return;
+        if (!backlogItemDetail) return;
         if (!isEditing) {
           const updatedData = {
-            ...userStoryDetail,
+            ...backlogItemDetail,
             name: editForm.name,
             description: editForm.description,
-            acceptanceCriteria: editForm.acceptanceCriteria,
           };
           if (updatedData.name === "") {
             setEditMode(true);
-            predefinedAlerts.userStoryNameError();
+            predefinedAlerts.backlogItemNameError();
             return;
           }
           await handleSave(updatedData, true); // Pass true to save the edit form
@@ -573,86 +503,55 @@ export default function UserStoryDetailPopup({
       {editMode && (
         <>
           <InputTextField
-            id="story-name-field"
-            label="Story name"
+            id="item-name-field"
+            label="Item name"
             value={editForm.name}
             onChange={(e) => {
               if (checkTitleLimit(e.target.value)) {
                 setEditForm({ ...editForm, name: e.target.value });
               }
             }}
-            placeholder="Short summary of the story..."
+            placeholder="Short summary of the item..."
             containerClassName="mb-4"
           />
           <InputTextAreaField
-            id="story-description-field"
-            label="Story description"
+            id="item-description-field"
+            label="Item description"
             value={editForm.description}
             onChange={(e) =>
               setEditForm({ ...editForm, description: e.target.value })
             }
-            placeholder="Explain the story in detail..."
+            placeholder="Explain the item in detail..."
             className="h-36 min-h-36"
             containerClassName="mb-4"
           />
-          <InputTextAreaField
-            id="story-criteria-field"
-            label="Acceptance Criteria"
-            value={editForm.acceptanceCriteria}
-            chatPosition="right"
-            onChange={(e) =>
-              setEditForm({ ...editForm, acceptanceCriteria: e.target.value })
-            }
-            placeholder="Describe the work that needs to be done..."
-            className="h-36 min-h-36"
-          />
         </>
       )}
-      {!editMode && !isLoading && userStoryDetail && (
+      {!editMode && !isLoading && backlogItemDetail && (
         <div className="overflow-hidden">
-          {userStoryDetail.description === "" ? (
+          {backlogItemDetail.description === "" ? (
             <p className="text-lg italic text-gray-500">
               No description provided.
             </p>
           ) : (
             <div className="markdown-content overflow-hidden text-lg">
-              <Markdown>{userStoryDetail.description}</Markdown>
+              <Markdown>{backlogItemDetail.description}</Markdown>
             </div>
-          )}
-
-          {userStoryDetail.acceptanceCriteria !== "" && (
-            <>
-              <div className="mt-4 flex items-center gap-4">
-                <h2 className="text-2xl font-semibold">Acceptance Criteria</h2>
-                <TertiaryButton
-                  onClick={() =>
-                    setShowAcceptanceCriteria(!showAcceptanceCriteria)
-                  }
-                >
-                  {showAcceptanceCriteria ? "Hide" : "Show"}
-                </TertiaryButton>
-              </div>
-              {showAcceptanceCriteria && (
-                <div className="markdown-content overflow-hidden text-lg">
-                  <Markdown>{userStoryDetail.acceptanceCriteria}</Markdown>
-                </div>
-              )}
-            </>
           )}
 
           <TasksTable
             sidebarOpen={sidebarOpen}
             scrollContainerRef={scrollContainerRef}
-            itemId={userStoryId}
-            itemType="US"
-            fetchedTasks={userStoryDetail.tasks}
+            itemId={backlogItemId}
+            itemType="IT"
+            fetchedTasks={backlogItemDetail.tasks}
             setSelectedGhostTask={setSelectedGhostTaskId}
             setShowAddTaskPopup={setShowCreateTaskPopup}
             selectedGhostTaskId={selectedGhostTaskId}
             setItemData={(data) => {
-              if (!data || !userStoryData) return;
-              setUserStoryData?.({
-                ...userStoryData,
+              if (!data || !backlogItemData) return;
+              setBacklogItemData?.({
+                ...backlogItemData,
                 tasks: data.tasks,
               });
             }}
@@ -660,26 +559,28 @@ export default function UserStoryDetailPopup({
             taskToOpen={taskToOpen}
             setTaskToOpen={setTaskToOpen}
             itemData={
-              userStoryData ? userStoryDataToItemData(userStoryData) : undefined
+              backlogItemData
+                ? backlogItemDataToItemData(backlogItemData)
+                : undefined
             }
             setTaskData={(tasks) => {
-              if (!userStoryData) return;
-              setUserStoryData?.({
-                ...userStoryData,
+              if (!backlogItemData) return;
+              setBacklogItemData?.({
+                ...backlogItemData,
                 tasks: tasks ?? [],
               });
             }}
             updateTaskData={(taskId, updater) => {
-              if (!userStoryData) return;
-              const taskIndex = userStoryData.tasks.findIndex(
+              if (!backlogItemData) return;
+              const taskIndex = backlogItemData.tasks.findIndex(
                 (task) => task.id === taskId,
               );
               if (taskIndex === -1) return;
-              const updatedTask = updater(userStoryData.tasks[taskIndex]!);
-              const updatedTasks = [...userStoryData.tasks];
+              const updatedTask = updater(backlogItemData.tasks[taskIndex]!);
+              const updatedTasks = [...backlogItemData.tasks];
               updatedTasks[taskIndex] = updatedTask;
-              setUserStoryData?.({
-                ...userStoryData,
+              setBacklogItemData?.({
+                ...backlogItemData,
                 tasks: updatedTasks,
               });
             }}
@@ -694,17 +595,17 @@ export default function UserStoryDetailPopup({
 
       {renderCreateTaskPopup && (
         <CreateTaskPopup
-          itemId={userStoryId}
+          itemId={backlogItemId}
           show={showCreateTaskPopup}
           dismiss={() => setShowCreateTaskPopup(false)}
-          itemType="US"
+          itemType="IT"
           onTaskAdded={() => setShowCreateTaskPopup(false)}
           addTaskToGhost={
-            userStoryData !== undefined
+            backlogItemData !== undefined
               ? (task) => {
-                  setUserStoryData?.({
-                    ...userStoryData,
-                    tasks: [...userStoryData.tasks, task],
+                  setBacklogItemData?.({
+                    ...backlogItemData,
+                    tasks: [...backlogItemData.tasks, task],
                   });
                 }
               : undefined

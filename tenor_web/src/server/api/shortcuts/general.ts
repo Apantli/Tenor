@@ -1,6 +1,7 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type {
   ActivityItem,
+  AllBasicItemType,
   ProjectActivity,
   Role,
   Size,
@@ -15,16 +16,20 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
-import { getTasks } from "./tasks";
-import { getIssues } from "./issues";
-import { getUserStories } from "./userStories";
-import { getCurrentSprint } from "./sprints";
+import { getItemActivityTask } from "./tasks";
+import { getCurrentSprint, getSprint, getTasksFromSprint } from "./sprints";
 import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { TYPE_COLLECTION_MAP } from "~/lib/helpers/typeDisplayName";
 import { Timestamp } from "firebase-admin/firestore";
+import { addDays, differenceInDays } from "date-fns";
+import type { BurndownChartData, BurndownDataPoint } from "~/lib/defaultValues/burndownChart";
+import { getTask } from "./tasks";
+import { getIssue } from "./issues";
+import { getUserStory } from "./userStories";
+import { getBacklogItem } from "./backlogItems";
+import { getEpic } from "./epics";
 
 /**
  * @function getProjectsRef
@@ -162,7 +167,7 @@ export const getGenericBacklogItemContext = async (
   name: string,
   description: string,
   priorityId?: string,
-  size?: Size,
+  size?: Size | "",
 ) => {
   const priority = priorityId
     ? await getPriority(firestore, projectId, priorityId)
@@ -208,43 +213,31 @@ export const getProjectStatus = async (
   admin: admin.app.App,
 ) => {
   // Fetch all data in parallel
-  const [
-    tasks,
-    statuses,
-    issues,
-    userStories,
-    currentSprint,
-    projectCollaborators,
-  ] = await Promise.all([
-    getTasks(firestore, projectId),
+  const [statuses, currentSprint, projectCollaborators] = await Promise.all([
     getStatusTypes(firestore, projectId),
-    getIssues(firestore, projectId),
-    getUserStories(firestore, projectId),
     getCurrentSprint(firestore, projectId),
     getUsers(admin, firestore, projectId),
   ]);
 
-  // Filter out deleted entries
-  const activeTasks = tasks.filter((task) => !task.deleted);
-  const activeIssues = issues.filter((issue) => !issue.deleted);
-  const activeUserStories = userStories.filter((us) => !us.deleted);
+  // If no statuses are found, return an empty project status
+  if (!currentSprint) {
+    return {
+      projectId: projectId,
+      taskCount: 0,
+      completedCount: 0,
+      currentSprintId: "",
+      currentSprintNumber: "",
+      currentSprintStartDate: "",
+      currentSprintEndDate: "",
+      currentSprintDescription: "",
+      assignedUssers: [],
+    };
+  }
 
-  // Collect IDs linked to the current sprint
-  const spruntIssuesIds = new Set(
-    activeIssues
-      .filter((issue) => issue.sprintId === currentSprint?.id)
-      .map((issue) => issue.id),
-  );
-  const sprintUserStoriesIds = new Set(
-    activeUserStories
-      .filter((us) => us.sprintId === currentSprint?.id)
-      .map((us) => us.id),
-  );
-
-  // Filter tasks relevant to the sprint
-  const filteredTasks = activeTasks.filter(
-    (task) =>
-      spruntIssuesIds.has(task.itemId) || sprintUserStoriesIds.has(task.itemId),
+  const filteredTasks = await getTasksFromSprint(
+    firestore,
+    projectId,
+    currentSprint.id,
   );
 
   // Create a map of status types
@@ -424,58 +417,170 @@ export const getItemActivityDetails = async (
   const activities = await getProjectActivities(firestore, projectId);
 
   // Array to hold the results
-  const results = {
-    tasks: [] as ActivityItem[],
-    issues: [] as ActivityItem[],
-    userStories: [] as ActivityItem[],
-    epics: [] as ActivityItem[],
-    sprints: [] as ActivityItem[],
-  }
+  const results = {} as Record<string, ActivityItem>;
 
   // Iterate in the activityMap to get the item type and itemId
   for (const activity of activities) {
     if (!activity.itemId || !activity.type) continue;
-    
-    const itemType = activity.type.toUpperCase();
+
+    const itemType = activity.type;
     const itemId = activity.itemId;
 
-    if (!(itemType in TYPE_COLLECTION_MAP)) continue;
+    if (itemType === "PJ") {
+      // If the item type is project, we don't need to fetch it
+      continue;
+    }
 
-    // Save the collection name based on the item type
-    const collectionName =  TYPE_COLLECTION_MAP[itemType];
-    
-    // Check if collectionName is defined before using it
-    if (!collectionName) continue;
-    
-    // Make the reference
-    const itemRef = getProjectRef(firestore, projectId).collection(collectionName).doc(itemId);
-    const docSnap = await itemRef.get();
+    const item = await getActivityItemByType(
+      firestore,
+      projectId,
+      itemId,
+      itemType,
+    );
 
-    // If the document does not exist, continue to the next iteration
-    if (!docSnap.exists) continue;
+    if (!item) {
+      console.warn(
+        `Item with ID ${itemId} and type ${itemType} not found for activity ${activity.id}`,
+      );
+      continue;
+    }
 
     // Get the item data
-    const data = { id: itemId, ...docSnap.data(), activity: activity } as ActivityItem;
+    const data = {
+      ...item,
+      activity: activity,
+      type: itemType,
+    } as ActivityItem;
 
-    switch (collectionName) {
-      case "tasks":
-        results.tasks.push(data);
-        break;
-      case "issues":
-        results.issues.push(data);
-        break;
-      case "userStories":
-        results.userStories.push(data);
-        break;
-      case "epics":
-        results.epics.push(data);
-        break;
-      case "sprints":
-        results.sprints.push(data);
-        break;
-      default:
-    }
+    results[data.id] = data;
   }
 
   return results;
 };
+
+export const getActivityItemByType = async (
+  firestore: Firestore,
+  projectId: string,
+  itemId: string,
+  itemType: AllBasicItemType,
+): Promise<Omit<ActivityItem, "activity" | "type"> | undefined> => {
+  switch (itemType) {
+    case "TS": // Task
+      return await getTask(firestore, projectId, itemId);
+    case "IS": // Issue
+      return await getIssue(firestore, projectId, itemId);
+    case "US": // User Story
+      return await getUserStory(firestore, projectId, itemId);
+    case "IT": // Backlog Item
+      return await getBacklogItem(firestore, projectId, itemId);
+    case "EP": // Epic
+      return await getEpic(firestore, projectId, itemId);
+    case "PJ": // Project
+      return undefined; // No need to fetch project details here
+    case "SP": // Sprint
+      const sprint = await getSprint(firestore, projectId, itemId);
+      return {
+        ...sprint,
+        scrumId: sprint.number,
+        name: "", // Sprints don't have a name
+      };
+    default:
+      // Does not happen, but in case new types are added
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: `Item type ${itemType as string} not supported`,
+      });
+  }
+};
+
+export const getBurndownData = async (
+  startDate: Date,
+  endDate: Date,
+  totalTasks: number,
+  completedTasks: number,
+  burndownHistory: BurndownDataPoint[],
+): Promise<BurndownChartData> => {
+  if (!startDate || !endDate || totalTasks === 0) {
+    return [{ sprintDay: 0, storyPoints: 0, seriesType: 0 }];
+  }
+
+  const sprintDuration = differenceInDays(endDate, startDate) + 1;
+  const today = new Date();
+  const currentDay = Math.min(differenceInDays(today, startDate), sprintDuration - 1);
+
+  const burndownLine: BurndownChartData = [];
+  for (let day = 0; day <= sprintDuration; day++) {
+    const idealRemaining = totalTasks * (1 - day / sprintDuration);
+    burndownLine.push({
+      sprintDay: day,
+      storyPoints: idealRemaining,
+      seriesType: 0,
+    });
+  }
+
+  const actualBurndown: BurndownChartData = [];
+
+  if (burndownHistory && burndownHistory.length > 0) {
+    for (const point of burndownHistory) {
+      const dayIndex = Math.min(point.day, sprintDuration);
+      actualBurndown.push({
+        sprintDay: dayIndex,
+        storyPoints: totalTasks - point.completedCount,
+        seriesType: 1,
+      });
+    }
+  } else {
+    const remainingTasks = totalTasks - completedTasks;
+    actualBurndown.push({
+      sprintDay: currentDay,
+      storyPoints: remainingTasks,
+      seriesType: 1,
+    });
+  }
+
+  return [...burndownLine, ...actualBurndown].sort((a, b) => a.sprintDay - b.sprintDay);
+};
+
+export const generateBurndownHistory = async (
+  firestore: Firestore,
+  projectId: string,
+  startDate: Date,
+  endDate: Date,
+): Promise<BurndownDataPoint[]> => {
+  // Calculate number of days
+  const result: BurndownDataPoint[] = [];
+
+  // Cap at today
+  const today = new Date();
+  const effectiveEndDate = today < endDate ? today : endDate;
+  const effectiveDays = differenceInDays(effectiveEndDate, startDate) + 1;
+
+  // For each day, get task counst
+  for (let i = 0; i < effectiveDays; i++) {
+    const date = addDays(startDate, i);
+    const timestamp = Timestamp.fromDate(date);
+    
+    try {
+      const completedCount = await getItemActivityTask(
+        firestore,
+        projectId,
+        timestamp,
+      );
+
+      result.push({
+        day: i,
+        date: date.toISOString(),
+        completedCount
+      });
+    } catch (e) {
+      console.error(`Error fetching tasks for date ${date.toISOString()}:`, e);
+      result.push({
+        day: i,
+        date: date.toISOString(),
+        completedCount: 0,
+      });
+    }
+  }
+
+  return result;
+}

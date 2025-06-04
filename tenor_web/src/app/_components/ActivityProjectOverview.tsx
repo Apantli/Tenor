@@ -5,21 +5,16 @@ import ProfilePicture from "./ProfilePicture";
 import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
 import { capitalize } from "@mui/material";
 import LoadingSpinner from "./LoadingSpinner";
-import type {
-  ActionType,
-  BacklogItemAndTaskDetailType,
-  ProjectActivity,
-  WithId,
-} from "~/lib/types/firebaseSchemas";
+import type { ProjectActivity, WithId } from "~/lib/types/firebaseSchemas";
 import {
-  getAccentColorByCardType,
+  getAccentHexColorByCardType,
   getPillColorByActivityType,
 } from "~/lib/helpers/colorUtils";
 import TagComponent from "./TagComponent";
 import { getRelativeTimeString } from "~/lib/helpers/firestoreTimestamp";
-import { useActivityItemsMap } from "~/lib/types/activityMappint";
-import { getTypeDisplayName } from "~/lib/helpers/typeDisplayName";
+import { displayNameByType } from "~/lib/helpers/typeDisplayName";
 import SearchBar from "./inputs/search/SearchBar";
+import { getSearchableNameByType } from "~/lib/helpers/searchableNames";
 
 const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const { data: activities, isLoading: activitiesLoading } =
@@ -27,15 +22,14 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const { data: users, isLoading: usersLoading } = api.users.getUsers.useQuery({
     projectId,
   });
+  const { data: activitiesDetailsMap } =
+    api.projects.getActivityDetails.useQuery({ projectId });
 
   const [searchText, setSearchText] = useState("");
 
   const formatAnyScrumId = useFormatAnyScrumId();
 
   const firebaseTimestampToDate = getRelativeTimeString;
-
-  // Single unified map for all activity items
-  const activityItemsMap = useActivityItemsMap(projectId) ?? {};
 
   // Create a better user map that tries multiple ID fields
   const userMap = users
@@ -50,24 +44,25 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     : {};
 
   const getItemDetails = (activity: WithId<ProjectActivity>) => {
-    if (!activity?.type) return null;
+    if (!activity?.type || !activitiesDetailsMap) return null;
     // Use the unified activity items map to get details
-    return activityItemsMap[activity.itemId] ?? null;
+    return activitiesDetailsMap[activity.itemId];
   };
 
   // Helper function to get item title
   const getItemTitle = (activity: WithId<ProjectActivity>) => {
     const item = getItemDetails(activity);
-    if (!item) return activity.itemId;
+    if (!item?.name) return "";
 
-    return item.name || activity.itemId;
+    return item.name;
   };
 
   // Helper function to get scrum ID
   const getScrumId = (activity: WithId<ProjectActivity>) => {
     const item = getItemDetails(activity);
+
     if (!item) return null;
-    return formatAnyScrumId(item.scrumId ?? 0, activity.type) + ":";
+    return formatAnyScrumId(item.scrumId ?? 0, activity.type);
   };
 
   // 2. NOW USE THE FUNCTIONS IN FILTERS AND SORTING
@@ -83,7 +78,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
     const typeStr = activity.type ?? "";
 
     // Add readable type label for search
-    const typeLabel = getTypeDisplayName(activity.type, "search");
+    const typeLabel = getSearchableNameByType(activity.type);
 
     // Get user information if available
     const user = activity.userId ? userMap[activity.userId] : undefined;
@@ -91,10 +86,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
       ? (user.displayName ?? user.email ?? user.id ?? "")
       : (activity.userId ?? "System");
 
-    // Get item title
     const itemTitle = getItemTitle(activity) ?? "";
-
-    // Get scrum ID
     const scrumId = getScrumId(activity) ?? "";
 
     // Check if any field contains the search text
@@ -122,9 +114,9 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
-        <h1 className="w-full self-center text-2xl font-semibold">
+        <h3 className="text-lg self-center w-full font-bold">
           Recent Project Activity
-        </h1>
+        </h3>
         <SearchBar
           searchValue={searchText}
           handleUpdateSearch={(e) => setSearchText(e.target.value)}
@@ -144,10 +136,10 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
         )}
 
         {filteredActivities?.map((activity) => {
-          // Try to match user by userId - will work if userId matches any of our mapped fields
           const user = activity.userId ? userMap[activity.userId] : undefined;
           const itemTitle = getItemTitle(activity);
           const scrumId = getScrumId(activity);
+          if (!itemTitle && !scrumId) return null;
 
           return (
             <div
@@ -156,11 +148,14 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
             >
               <div className="flex w-3/4 flex-col items-start">
                 <h3 className="line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
-                  {activity.type === "SP" && <span>Sprint</span>}
                   {scrumId && (
                     <>
-                      {scrumId}{" "}
-                      <span className="font-normal">{itemTitle}</span>{" "}
+                      {scrumId}
+                      {itemTitle && (
+                        <>
+                          : <span className="font-normal">{itemTitle}</span>
+                        </>
+                      )}
                     </>
                   )}
                 </h3>
@@ -198,18 +193,18 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
               <div className="flex w-1/4 flex-row items-end justify-end gap-3">
                 {/* Action tag with dynamic background color */}
                 <TagComponent
-                  className={`rounded-lg text-white ${getPillColorByActivityType(
-                    activity.action?.toLowerCase() as ActionType,
-                  )}`}
+                  color={getPillColorByActivityType(activity.action)}
+                  darkBackground={true}
                 >
                   {capitalize(activity.action || "")}
                 </TagComponent>
 
                 {/* Type badges - keep as is */}
                 <TagComponent
-                  className={`rounded-lg text-white ${getAccentColorByCardType(activity.type as BacklogItemAndTaskDetailType)}`}
+                  color={getAccentHexColorByCardType(activity.type)}
+                  darkBackground={true}
                 >
-                  {getTypeDisplayName(activity.type)}
+                  {displayNameByType[activity.type]}
                 </TagComponent>
               </div>
             </div>
