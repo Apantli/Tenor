@@ -434,7 +434,6 @@ export const getItemActivityDetails = async (
   const activities = await getProjectActivities(firestore, projectId);
 
   // Array to hold the results
-  // const results = {} as Record<string, ActivityItem>;
   const results: WithId<ProjectActivityDetail>[] = [];
 
   // Iterate in the activityMap to get the item type and itemId

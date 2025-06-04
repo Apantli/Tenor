@@ -190,9 +190,7 @@ const ActivityProjectsOverview = ({ className }: Props) => {
                 </div>
               </div>
               <div className="flex w-1/2 flex-col items-end justify-center">
-                {project && (
-                  <ProjectPicture project={project} hideTooltip scale={0.5} />
-                )}
+                {project && <ProjectPicture project={project} scale={0.5} />}
                 <div className="mt-2 flex flex-row items-center justify-end gap-3">
                   <TagComponent
                     color={getPillColorByActivityType(item.action)}
