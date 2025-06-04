@@ -19,6 +19,7 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/helpers/utils";
+import ProjectPicture from "~/app/_components/ProjectPicture";
 
 interface Props {
   className?: ClassNameValue;
@@ -142,9 +143,9 @@ const ActivityProjectsOverview = ({ className }: Props) => {
           return (
             <div
               key={item.id}
-              className="flex w-full flex-row border-b-2 px-3 py-4 transition hover:bg-gray-100"
+              className="flex w-full flex-row items-center border-b-2 px-3 py-4 transition hover:bg-gray-100"
             >
-              <div className="flex w-1/2 flex-col items-start justify-start space-y-3">
+              <div className="flex w-1/2 flex-col justify-center">
                 <h3 className="mb-3 line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
                   {scrumId && (
                     <>
@@ -188,23 +189,11 @@ const ActivityProjectsOverview = ({ className }: Props) => {
                   </div>
                 </div>
               </div>
-              <div className="flex w-1/2 flex-col items-end justify-end pl-3">
+              <div className="flex w-1/2 flex-col items-end justify-center">
                 {project && (
-                  <div className="mb-2 flex h-[40px] w-[40px] min-w-[40px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
-                    <img
-                      className="h-full w-full rounded-md object-contain p-[2px]"
-                      src={
-                        project.logo.startsWith("/")
-                          ? project.logo
-                          : `/api/image_proxy/?url=${encodeURIComponent(
-                              project.logo,
-                            )}`
-                      }
-                      alt={project.name}
-                    />
-                  </div>
+                  <ProjectPicture project={project} hideTooltip scale={0.5} />
                 )}
-                <div className="flex flex-row items-center justify-end gap-3">
+                <div className="mt-2 flex flex-row items-center justify-end gap-3">
                   <TagComponent
                     color={getPillColorByActivityType(item.action)}
                     reducedPadding
