@@ -13,6 +13,9 @@ import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import { formatSeconds } from "~/lib/helpers/parsers";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
+import SentimentNeutralIcon from "@mui/icons-material/SentimentNeutral";
+import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied";
+
 import dynamic from "next/dynamic";
 
 const DynamicContributionPieChart = dynamic(
@@ -50,6 +53,11 @@ export const MemberDetailsCard = ({
   const { data: roles, isLoading } = api.projects.getUserTypes.useQuery({
     projectId: projectId,
   });
+  const { data: userSentiment, isLoading: loadingSentiment } =
+    api.performance.getLastUserSentiment.useQuery({
+      projectId: projectId,
+      userId: member.id,
+    });
 
   const {
     data: userContributions,
@@ -149,9 +157,9 @@ export const MemberDetailsCard = ({
           </p>
         </div>
         <div className="my-auto ml-auto mr-10 text-3xl 2xl:text-6xl">
-          <SentimentSatisfiedAltIcon
-            fontSize="inherit"
-            className="text-app-green"
+          <SentimentIcon
+            sentiment={userSentiment?.happiness}
+            isLoading={loadingSentiment}
           />
         </div>
       </div>
@@ -244,4 +252,39 @@ export const MemberDetailsCard = ({
       </div>
     </div>
   );
+};
+
+export const SentimentIcon = ({
+  sentiment,
+  isLoading,
+}: {
+  sentiment?: number;
+  isLoading: boolean;
+}) => {
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+  if (!sentiment) {
+    return (
+      <SentimentNeutralIcon fontSize="inherit" className="text-gray-500" />
+    );
+  } else if (sentiment >= 7) {
+    return (
+      <SentimentSatisfiedAltIcon
+        fontSize="inherit"
+        className="text-app-green"
+      />
+    );
+  } else if (sentiment >= 5) {
+    return (
+      <SentimentNeutralIcon fontSize="inherit" className="text-[#f1db30]" />
+    );
+  } else {
+    return (
+      <SentimentDissatisfiedIcon
+        fontSize="inherit"
+        className="text-[#e76478]"
+      />
+    );
+  }
 };
