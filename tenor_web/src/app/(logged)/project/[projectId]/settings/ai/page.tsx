@@ -19,6 +19,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import { env } from "~/env";
 import AIDisclaimer from "~/app/_components/helps/predefined/AIDisclaimer";
 
 export default function ProjectAIConfig() {
@@ -50,19 +51,7 @@ export default function ProjectAIConfig() {
   const { data: files } = api.settings.getContextFiles.useQuery({
     projectId: projectId as string,
   });
-  const loadedFiles = useMemo(() => {
-    const resultFiles: File[] = [];
-    if (files) {
-      files.forEach((file) => {
-        const dummyContent = new Uint8Array(file.size);
-        const blob = new Blob([dummyContent], { type: file.type });
-        const newFile = new File([blob], file.name, { type: file.type });
-        resultFiles.push(newFile);
-      });
-      return resultFiles;
-    }
-    return [];
-  }, [files]);
+
   const { data: context } = api.settings.getContextDialog.useQuery({
     projectId: projectId as string,
   });
@@ -95,6 +84,8 @@ export default function ProjectAIConfig() {
   // Update
   const { mutateAsync: updateContext, isPending: isContextUpdatePending } =
     api.settings.updateTextContext.useMutation();
+
+  const [prevInvalidFiles, setPrevInvalidFiles] = useState<number>(-1);
 
   // Link utils
   const handleAddLink = async (link: Links) => {
@@ -131,6 +122,17 @@ export default function ProjectAIConfig() {
       predefinedAlerts.linkInvalidError(invalidLinks.length);
     }
   }, [links]);
+
+  useEffect(() => {
+    const emptyFiles = [];
+    for (const file of files ?? []) {
+      if (file.tokenCount == 0) emptyFiles.push(file);
+    }
+    if (emptyFiles.length > 0 && emptyFiles.length !== prevInvalidFiles) {
+      predefinedAlerts.emptyFilesError(emptyFiles.length);
+    }
+    setPrevInvalidFiles(emptyFiles.length);
+  }, [files]);
 
   const handleRemoveLink = async (link: Links) => {
     if (!links) return;
@@ -271,7 +273,7 @@ export default function ProjectAIConfig() {
           </div>
           {(isModified() || isContextUpdatePending) &&
             links &&
-            loadedFiles &&
+            files &&
             !isLoading && (
               <PrimaryButton
                 onClick={async () => {
@@ -284,7 +286,7 @@ export default function ProjectAIConfig() {
             )}
         </div>
       </div>
-      {links && loadedFiles && !isLoading ? (
+      {links && files && !isLoading ? (
         <div className="flex flex-col gap-4">
           <InputTextAreaField
             id="project-context-field"
@@ -301,11 +303,11 @@ export default function ProjectAIConfig() {
           <FileList
             disabled={permission < permissionNumbers.write}
             label={"Context Files"}
-            files={loadedFiles}
-            memoryLimit={10000000}
+            files={files}
+            tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
             handleFileAdd={handleAddFiles}
             handleFileRemove={handleRemoveFile}
-          ></FileList>
+          />
           <LinkList
             disabled={permission < permissionNumbers.write}
             label={"Context Links"}

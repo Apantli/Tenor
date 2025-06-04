@@ -7,14 +7,12 @@ import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { cn } from "~/lib/helpers/utils";
+import ProjectPicture from "~/app/_components/ProjectPicture";
 
 export default function ProjectList() {
   const { data: projects, isLoading } = api.projects.listProjects.useQuery();
   const [searchValue, setSearchValue] = useState("");
   const router = useRouter();
-  const [loadingImages, setLoadingImages] = useState<Record<string, boolean>>(
-    {},
-  );
 
   const handleUpdateSearch: ChangeEventHandler<HTMLInputElement> = (e) => {
     setSearchValue(e.target.value);
@@ -28,7 +26,7 @@ export default function ProjectList() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center">
+      <div className="flex h-[calc(80vh)] justify-center">
         <LoadingSpinner color="primary" />
       </div>
     );
@@ -55,7 +53,7 @@ export default function ProjectList() {
         </PrimaryButton>
       </div>
       <ul
-        className="max-h-[calc(80vh-90px)] overflow-hidden overflow-y-auto"
+        className="h-full max-h-[calc(80vh-90px)] overflow-hidden overflow-y-auto lg:h-[calc(80vh-90px)]"
         data-cy="project-list"
       >
         {filteredProjects && filteredProjects?.length > 0 ? (
@@ -69,36 +67,7 @@ export default function ProjectList() {
               )}
               key={project.id}
             >
-              <div className="flex h-[80px] w-[80px] min-w-[80px] items-center justify-center overflow-hidden rounded-md border-2 bg-white">
-                {loadingImages[project.id] !== false && (
-                  <div className="flex h-full w-full items-center justify-center">
-                    <LoadingSpinner color="primary" />
-                  </div>
-                )}
-                <img
-                  className={`h-full w-full rounded-md object-contain p-[4px] ${loadingImages[project.id] !== false ? "hidden" : ""}`}
-                  src={
-                    project.logo.startsWith("/")
-                      ? project.logo
-                      : `/api/image_proxy/?url=${encodeURIComponent(
-                          project.logo,
-                        )}`
-                  }
-                  alt={project.name}
-                  onLoad={() =>
-                    setLoadingImages((prev) => ({
-                      ...prev,
-                      [project.id]: false,
-                    }))
-                  }
-                  onError={() =>
-                    setLoadingImages((prev) => ({
-                      ...prev,
-                      [project.id]: false,
-                    }))
-                  }
-                />
-              </div>
+              <ProjectPicture project={project} hideTooltip />
               <div className="flex flex-1 flex-col justify-start overflow-hidden pl-4 pr-4">
                 <h3 className="my-[7px] truncate text-lg font-semibold md:w-full lg:max-w-[200px]">
                   {project.name}

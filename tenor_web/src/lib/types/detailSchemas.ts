@@ -15,6 +15,12 @@ import type z from "zod";
 export type ExistingEpic = WithId<z.input<typeof EpicSchema>>;
 export type ExistingUserStory = WithId<z.input<typeof ExistingUserStorySchema>>;
 
+export type ProjectPreview = {
+  name: string;
+  description: string;
+  logo: string;
+};
+
 export type UserStoryPreview = {
   id: string;
   scrumId: number;

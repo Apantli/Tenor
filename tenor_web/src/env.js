@@ -37,6 +37,7 @@ export const env = createEnv({
     NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string(),
     NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string(),
     NEXT_PUBLIC_FIREBASE_APP_ID: z.string(),
+    NEXT_PUBLIC_FILE_TOKEN_LIMIT: z.coerce.number().default(200000),
   },
 
   /**
@@ -66,6 +67,7 @@ export const env = createEnv({
     GENERATIVE_AI: process.env.GENERATIVE_AI,
     GEMINI_API_KEY: process.env.GEMINI_API_KEY,
     NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_FILE_TOKEN_LIMIT: process.env.NEXT_PUBLIC_FILE_TOKEN_LIMIT,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
