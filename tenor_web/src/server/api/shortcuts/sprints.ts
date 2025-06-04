@@ -36,26 +36,6 @@ export const getSprintRef = (
   return getSprintsRef(firestore, projectId).doc(sprintId);
 };
 
-// FIXME: This may overlap, this isnt quite right
-/**
- * @function getSprintNewId
- * @description Gets the next available sprint ID for a specific project
- * @param firestore A Firestore instance
- * @param projectId The ID of the project
- * @returns {Promise<number>} The next available sprint ID
- */
-export const getSprintNewId = async (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  const sprintsRef = getSprintsRef(firestore, projectId)
-    .where("deleted", "==", false)
-    .count()
-    .get();
-  const sprintsCount = (await sprintsRef).data().count;
-  return sprintsCount + 1;
-};
-
 /**
  * @function getSprints
  * @description Retrieves all non-deleted sprints associated with a specific project
@@ -102,6 +82,7 @@ export const getCurrentSprint = async (
   const projectRef = getProjectRef(firestore, projectId);
   const projectDoc = await projectRef.get();
   if (!projectDoc.exists || projectDoc.data()?.deleted) {
+    console.warn(`Project ${projectId} is deleted or does not exist.`);
     return undefined;
   }
   const sprints = await getSprints(firestore, projectId);

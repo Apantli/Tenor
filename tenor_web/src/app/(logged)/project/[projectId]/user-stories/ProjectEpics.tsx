@@ -245,7 +245,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
           <Popup
             show={showSmallPopup}
             size="small"
-            className="min-h-[400px] min-w-[500px]"
+            className="h-[430px] w-[500px]"
             reduceTopPadding={true}
             dismiss={async () => {
               if (isNewEpicModified()) {

@@ -59,7 +59,7 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
     const typeStr = item.type ?? "";
 
     // Add readable type label for search
-    const typeLabel = getSearchableNameByType(item.type);
+    const typeLabel = getSearchableNameByType(item.type) ?? "";
 
     // Get user information if available
     const user = item.userId ? userMap[item.userId] : undefined;

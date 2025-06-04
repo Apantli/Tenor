@@ -47,8 +47,6 @@ import {
   getRolesRef,
   getSettingsRef,
   getTopProjectStatusCacheRef,
-  generateBurndownHistory,
-  getBurndownData,
   getTopItemActivityDetails,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
@@ -64,7 +62,9 @@ import {
 } from "~/lib/defaultValues/tags";
 import { defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
-import { parseISO } from "date-fns";
+import { getCurrentSprint } from "../shortcuts/sprints";
+import { type BurndownChartData } from "~/lib/defaultValues/burndownChart";
+import { getBurndownData } from "../shortcuts/tasks";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -507,51 +507,37 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
-
   getTopActivityDetails: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.uid;
     return await getTopItemActivityDetails(ctx.firestore, userId);
   }),
 
-  getBurndownData: protectedProcedure
+  getGraphBurndownData: protectedProcedure
+
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
 
-      const status = await getProjectStatus(
-        ctx.firestore,
-        projectId,
-        ctx.firebaseAdmin.app(),
-      );
+      const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
 
-      const startDate =
-        typeof status.currentSprintStartDate === "string"
-          ? parseISO(status.currentSprintStartDate)
-          : status.currentSprintStartDate
-            ? new Date(status.currentSprintStartDate)
-            : new Date();
+      if (!currentSprint || !currentSprint.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No current sprint found for the project",
+        });
+      }
 
-      const endDate =
-        typeof status.currentSprintEndDate === "string"
-          ? parseISO(status.currentSprintEndDate)
-          : status.currentSprintEndDate
-            ? new Date(status.currentSprintEndDate)
-            : new Date();
+      let burndownData: BurndownChartData | undefined;
+      try {
+        burndownData = await getBurndownData(
+          ctx.firestore,
+          projectId,
+          currentSprint.id,
+        );
+      } catch (error) {
+        console.log("ERROR HERE", error);
+      }
 
-      // Generate historical data
-      const burndownHistory = await generateBurndownHistory(
-        ctx.firestore,
-        projectId,
-        startDate,
-        new Date(), // Only up to today
-      );
-
-      return getBurndownData(
-        startDate,
-        endDate,
-        status.taskCount,
-        status.completedCount,
-        burndownHistory,
-      );
+      return burndownData;
     }),
 });

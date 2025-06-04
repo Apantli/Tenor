@@ -7,5 +7,6 @@ export const displayNameByType: Record<AllBasicItemType, string> = {
   EP: "Epic",
   SP: "Sprint",
   PJ: "Project",
+  RE: "Requirement",
   IT: "Backlog item",
 };
