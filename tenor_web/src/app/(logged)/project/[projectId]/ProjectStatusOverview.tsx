@@ -135,7 +135,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="flex h-full w-full flex-col gap-5">
+    <div className="gap- flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold">Status</h2>
         <div className="flex items-center gap-2">
