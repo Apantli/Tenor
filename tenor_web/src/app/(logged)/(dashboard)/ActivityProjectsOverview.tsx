@@ -20,6 +20,7 @@ import type {
 import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/helpers/utils";
 import ProjectPicture from "~/app/_components/ProjectPicture";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
 
 interface Props {
   className?: ClassNameValue;
@@ -119,97 +120,103 @@ const ActivityProjectsOverview = ({ className }: Props) => {
           placeholder="Search activities"
         ></SearchBar>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {!isLoading && (!activities || activities.length === 0) && (
-          <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
-            <div className="flex flex-col items-center gap-5">
-              <span className="-mb-10 text-[100px] text-gray-500"></span>
-              <h1 className="mb-5 text-3xl font-semibold text-gray-500">
-                No activities yet
-              </h1>
+      {isLoading ? (
+        <div className="flex h-full items-center justify-center">
+          <LoadingSpinner color="primary" />
+        </div>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {(!activities || activities.length === 0) && (
+            <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
+              <div className="flex flex-col items-center gap-5">
+                <span className="-mb-10 text-[100px] text-gray-500"></span>
+                <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+                  No activities yet
+                </h1>
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {filteredActivities?.map((item) => {
-          const user = item.userId ? userMap[item.userId] : undefined;
-          const project = item.projectId
-            ? projectMap[item.projectId]
-            : undefined;
-          const itemTitle = item.name;
-          const scrumId = getScrumId(item);
-          if (!itemTitle && !scrumId) return null;
+          {filteredActivities?.map((item) => {
+            const user = item.userId ? userMap[item.userId] : undefined;
+            const project = item.projectId
+              ? projectMap[item.projectId]
+              : undefined;
+            const itemTitle = item.name;
+            const scrumId = getScrumId(item);
+            if (!itemTitle && !scrumId) return null;
 
-          return (
-            <div
-              key={item.id}
-              className="flex w-full flex-row items-center border-b-2 px-3 py-4 transition hover:bg-gray-100"
-            >
-              <div className="flex w-1/2 flex-col justify-center">
-                <h3 className="mb-3 line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
-                  {scrumId && (
-                    <>
-                      {scrumId}
-                      {itemTitle && (
-                        <>
-                          : <span className="font-normal">{itemTitle}</span>
-                        </>
-                      )}
-                    </>
-                  )}
-                </h3>
-                <div className="flex w-full flex-row items-center justify-start space-x-4">
-                  {user ? (
-                    <ProfilePicture
-                      pictureClassName="self-center"
-                      user={user}
-                    />
-                  ) : item.userId ? (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
-                      <span title={`Unknown user: ${item.userId}`}>?</span>
-                    </div>
-                  ) : (
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs text-gray-400">
-                      <span>-</span>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col space-y-1 pl-2">
-                    {/* Show generic user label or system */}
-                    <p className="mb-1 text-xs text-gray-600">
-                      {item.userId ? "" : "System"}
-                    </p>
-
-                    {/* Show date */}
-                    {item.date && (
-                      <p className="text-s text-blakc self-center">
-                        {firebaseTimestampToDate(item.date)}
-                      </p>
+            return (
+              <div
+                key={item.id}
+                className="flex w-full flex-row items-center border-b-2 px-3 py-4 transition hover:bg-gray-100"
+              >
+                <div className="flex w-1/2 flex-col justify-center">
+                  <h3 className="mb-3 line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
+                    {scrumId && (
+                      <>
+                        {scrumId}
+                        {itemTitle && (
+                          <>
+                            : <span className="font-normal">{itemTitle}</span>
+                          </>
+                        )}
+                      </>
                     )}
+                  </h3>
+                  <div className="flex w-full flex-row items-center justify-start space-x-4">
+                    {user ? (
+                      <ProfilePicture
+                        pictureClassName="self-center"
+                        user={user}
+                      />
+                    ) : item.userId ? (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
+                        <span title={`Unknown user: ${item.userId}`}>?</span>
+                      </div>
+                    ) : (
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs text-gray-400">
+                        <span>-</span>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col space-y-1 pl-2">
+                      {/* Show generic user label or system */}
+                      <p className="mb-1 text-xs text-gray-600">
+                        {item.userId ? "" : "System"}
+                      </p>
+
+                      {/* Show date */}
+                      {item.date && (
+                        <p className="text-s text-blakc self-center">
+                          {firebaseTimestampToDate(item.date)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex w-1/2 flex-col items-end justify-center">
+                  {project && <ProjectPicture project={project} scale={0.5} />}
+                  <div className="mt-2 flex flex-row items-center justify-end gap-3">
+                    <TagComponent
+                      color={getPillColorByActivityType(item.action)}
+                      reducedPadding
+                    >
+                      {capitalize(item.action || "")}
+                    </TagComponent>
+                    <TagComponent
+                      color={getAccentHexColorByCardType(item.type)}
+                      reducedPadding
+                    >
+                      {displayNameByType[item.type]}
+                    </TagComponent>
                   </div>
                 </div>
               </div>
-              <div className="flex w-1/2 flex-col items-end justify-center">
-                {project && <ProjectPicture project={project} scale={0.5} />}
-                <div className="mt-2 flex flex-row items-center justify-end gap-3">
-                  <TagComponent
-                    color={getPillColorByActivityType(item.action)}
-                    reducedPadding
-                  >
-                    {capitalize(item.action || "")}
-                  </TagComponent>
-                  <TagComponent
-                    color={getAccentHexColorByCardType(item.type)}
-                    reducedPadding
-                  >
-                    {displayNameByType[item.type]}
-                  </TagComponent>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
