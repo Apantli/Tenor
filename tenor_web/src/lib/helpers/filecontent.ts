@@ -65,11 +65,7 @@ export const fetchText = async (file64: string): Promise<string> => {
     data?: { text: string; name: string }[];
     error?: string;
   };
-  const text = json?.data?.[0]?.text;
-
-  if (!text) {
-    throw new Error("No text extracted from file");
-  }
+  const text = json?.data?.[0]?.text ?? "";
 
   return text;
 };

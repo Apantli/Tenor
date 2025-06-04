@@ -294,6 +294,9 @@ export interface ActivityItem {
   activity: WithId<ProjectActivity>;
 }
 
+export interface FileWithTokens extends File {
+  tokenCount?: number;
+}
 export interface UserHappiness {
   user_id: string;
   happiness: number;
