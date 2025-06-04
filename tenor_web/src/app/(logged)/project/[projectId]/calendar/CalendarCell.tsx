@@ -76,7 +76,7 @@ export default function CalendarCell({
         </span>
         <div
           className={cn(
-            "flex flex-col overflow-y-auto",
+            "flex h-[10vh] flex-col overflow-y-auto",
             tasks.length > 0 && "w-full",
           )}
         >

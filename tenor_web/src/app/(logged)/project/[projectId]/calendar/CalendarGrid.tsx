@@ -60,12 +60,12 @@ export default function CalendarGrid({
           <div key={day}>{day}</div>
         ))}
       </div>
-      <div className={cn("grid grid-cols-7")}>
+      <div className={cn("grid h-[calc(80vh-100px)] grid-cols-7")}>
         {cells.map((day, idx) => (
           <div
             key={day ? dateKey(day) : idx.toString()}
             className={cn(
-              "h-[8vw] min-h-[110px] border border-gray-300",
+              "h-full border border-gray-300",
               !day && "bg-gray-200",
             )}
           >
