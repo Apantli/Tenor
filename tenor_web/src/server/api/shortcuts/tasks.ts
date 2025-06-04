@@ -46,20 +46,6 @@ export const getTaskRef = (
   return getTasksRef(firestore, projectId).doc(taskId);
 };
 
-// FIXME: This may overlap, this isnt quite right
-/**
- * @function getTaskNewId
- * @description Gets the next available epic ID for a specific project
- * @param firestore A Firestore instance
- * @param projectId The ID of the project
- * @returns {Promise<number>} The next available task ID
- */
-export const getTaskNewId = async (firestore: Firestore, projectId: string) => {
-  const tasksRef = getTasksRef(firestore, projectId).count().get();
-  const tasksCount = (await tasksRef).data().count;
-  return tasksCount + 1;
-};
-
 const isCyclicUtil = (
   adjacencyList: Map<string, string[]>,
   taskId: string,

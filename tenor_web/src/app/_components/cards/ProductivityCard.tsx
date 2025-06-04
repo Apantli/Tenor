@@ -30,7 +30,7 @@ export const ProductivityCard = ({
       projectId: projectId,
       time: time,
     },
-    { retry: 0, refetchOnWindowFocus: true },
+    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 },
   );
   const { mutateAsync: recomputeProductivity, isPending } =
     api.performance.recomputeProductivity.useMutation({
