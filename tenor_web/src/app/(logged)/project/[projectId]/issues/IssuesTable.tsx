@@ -402,10 +402,10 @@ export default function IssuesTable() {
   };
 
   return (
-    <div className="flex flex-col gap-2 lg:mx-10 xl:mx-20">
+    <div className="flex flex-col gap-2 lg:mx-5 xl:mx-10">
       <div className="mb-3 flex w-full flex-col justify-between">
         <h1 className="content-center text-3xl font-semibold">Issues</h1>
-        <div className="mt-3 flex flex-1 grow items-center justify-end gap-1">
+        <div className="mt-3 flex flex-1 grow items-center justify-end gap-4">
           <div className="flex-1">
             <SearchBar
               placeholder="Find a issue by title or id..."
