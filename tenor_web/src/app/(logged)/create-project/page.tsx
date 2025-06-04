@@ -20,6 +20,7 @@ import MemberTable from "~/app/_components/inputs/MemberTable";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
 import { defaultRoleList, emptyRole } from "~/lib/defaultValues/roles";
+import { env } from "~/env";
 
 export default function ProjectCreator() {
   const utils = api.useUtils();
@@ -319,7 +320,7 @@ export default function ProjectCreator() {
               <FileList
                 label="Context Files"
                 files={files}
-                tokenLimit={200000}
+                tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
                 handleFileAdd={handleFilesAdd}
                 handleFileRemove={handleFilesDelete}
               />

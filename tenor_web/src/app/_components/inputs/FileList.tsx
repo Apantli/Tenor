@@ -10,7 +10,7 @@ import CloseIcon from "@mui/icons-material/Cancel";
 import PrimaryButton from "./buttons/PrimaryButton";
 import { toBase64 } from "~/lib/helpers/base64";
 import HelpIcon from "@mui/icons-material/Help";
-
+import { env } from "~/env";
 import type { FileWithTokens } from "~/lib/types/firebaseSchemas";
 
 interface Props {
@@ -28,7 +28,7 @@ export default function FileList({
   label,
   className,
   files,
-  tokenLimit = 200000,
+  tokenLimit = env.NEXT_PUBLIC_FILE_TOKEN_LIMIT,
   handleFileAdd,
   handleFileRemove,
   labelClassName,

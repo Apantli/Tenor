@@ -20,6 +20,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import { env } from "~/env";
 
 export default function ProjectAIConfig() {
   const { projectId } = useParams();
@@ -296,7 +297,7 @@ export default function ProjectAIConfig() {
             disabled={permission < permissionNumbers.write}
             label={"Context Files"}
             files={files}
-            tokenLimit={200000}
+            tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
             handleFileAdd={handleAddFiles}
             handleFileRemove={handleRemoveFile}
           />

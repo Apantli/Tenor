@@ -34,6 +34,8 @@ import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
 
+import { env } from "~/env";
+
 // Z index documentation:
 // 0-1000: Default z-index range for most elements (feel free to contribute to the documentation)
 //   10: Ghost table rows
@@ -689,7 +691,7 @@ function InputComponents() {
       <FileList
         label="Context Files"
         files={[]}
-        tokenLimit={100_000_000}
+        tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
         handleFileAdd={() => {
           console.log("File added");
         }}
