@@ -15,6 +15,7 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
+import { getProjectContext } from "../shortcuts/ai";
 
 export const ContextObjectSchema = z.record(z.string(), z.any());
 export type ContextObject = z.infer<typeof ContextObjectSchema>;
@@ -62,9 +63,10 @@ export const generateAutocompletionProcedure = protectedProcedure
         }),
       ),
       relatedContext: z.record(z.string(), z.any()),
+      projectId: z.string().optional(),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input, ctx }) => {
     const contextString = parseContext({
       contextObject: input.relatedContext,
     });
@@ -80,9 +82,14 @@ Important requirements:
 - Be concise and relevant. Focus only on what was actually changed or requested.
 - If the user requests a change or to create something, make sure to include the changes in the autocompletion.
 - Address the user directly in the assistant_message, by using "you" or "your", or the user name if available and appropriate.
-Here is the context you should consider:
 - If asked to generate something, ALWAYS give your best guess and let the user fix that or work on top of it.
+
+${input.projectId ? `${await getProjectContext(ctx.firestore, input.projectId)}` : ""}
+
+
+Here is some context related to the page the user is located in and that you should consider:
 ${contextString}
+
 
 And here is the message history:
 ${input.messages.map((message) => `"${message.role}": <content>"${message.content}"</content>\n<explanation>${message.explanation ?? "None"}</explanation>`).join(", ")}
