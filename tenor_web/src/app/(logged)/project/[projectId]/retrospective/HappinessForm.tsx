@@ -13,6 +13,8 @@ import { useParams } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
 import MoreInformation from "~/app/_components/helps/MoreInformation";
+import useConfirmation from "~/app/_hooks/useConfirmation";
+import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 interface HappinessFormProps {
   sprintRetrospectiveId?: number;
@@ -36,6 +38,7 @@ export default function HappinessForm({
   const { user } = useFirebaseAuth();
   const { projectId } = useParams();
   const { predefinedAlerts } = useAlert();
+  const confirm = useConfirmation();
 
   const [renderConversation, showConversation, setShowConversation] =
     usePopupVisibilityState();
@@ -105,7 +108,40 @@ export default function HappinessForm({
     setShowConversation(true);
   };
 
+  const hasUnsavedChanges =
+    !isCompleted &&
+    !!(
+      responses.roleFeeling ||
+      responses.companyFeeling ||
+      responses.improvementSuggestion
+    );
+
+  useNavigationGuard(
+    async () => {
+      if (hasUnsavedChanges) {
+        return !(await confirm(
+          "Unsaved Responses",
+          "You have unsaved responses. Are you sure you want to leave?",
+          "Leave",
+          "Stay",
+        ));
+      }
+      return false;
+    },
+    hasUnsavedChanges,
+    "You have unsaved responses. Are you sure you want to leave?",
+  );
+
   const handleSubmit = async () => {
+    const confirmation = await confirm(
+      "Confirm submission",
+      "Your responses will be saved, and you won't be able to edit them later.",
+      "Submit",
+      "Keep Editing",
+      false,
+    );
+    if (!confirmation) return;
+
     if (!sprintRetrospectiveId || !user?.uid || isCompleted) return;
 
     if (
