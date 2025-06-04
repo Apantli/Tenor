@@ -17,8 +17,14 @@ import type {
   WithId,
   WithProjectId,
 } from "~/lib/types/firebaseSchemas";
+import type { ClassNameValue } from "tailwind-merge";
+import { cn } from "~/lib/helpers/utils";
 
-const ActivityProjectsOverview = () => {
+interface Props {
+  className?: ClassNameValue;
+}
+
+const ActivityProjectsOverview = ({ className }: Props) => {
   const { data: users, isLoading: usersLoading } =
     api.users.getGlobalUsers.useQuery({});
   const { data: projects, isLoading: projectsLoading } =
@@ -96,7 +102,12 @@ const ActivityProjectsOverview = () => {
     activitiesLoading || usersLoading || projectsLoading;
 
   return (
-    <div className="flex h-[40vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
+    <div
+      className={cn(
+        "flex h-[40vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5",
+        className,
+      )}
+    >
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
         <h3 className="w-full self-center text-lg font-bold">
           Recent Project Activity
@@ -196,13 +207,13 @@ const ActivityProjectsOverview = () => {
                 <div className="flex flex-row items-center justify-end gap-3">
                   <TagComponent
                     color={getPillColorByActivityType(item.action)}
-                    darkBackground={true}
+                    reducedPadding
                   >
                     {capitalize(item.action || "")}
                   </TagComponent>
                   <TagComponent
                     color={getAccentHexColorByCardType(item.type)}
-                    darkBackground={true}
+                    reducedPadding
                   >
                     {displayNameByType[item.type]}
                   </TagComponent>
