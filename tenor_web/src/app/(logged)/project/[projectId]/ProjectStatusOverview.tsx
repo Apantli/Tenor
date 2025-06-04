@@ -49,7 +49,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
     } else {
       // Find the current sprint object to get start/end dates
       const sprint = sprints?.find(
-        (s) => s.id.toString() === projectStatus?.currentSprintId
+        (s) => s.id.toString() === projectStatus?.currentSprintId,
       );
 
       if (sprint) {
@@ -66,11 +66,11 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
         // Calculate percentages
         const percentTimeElapsed = Math.min(
           100,
-          (timeElapsed / totalDuration) * 100
+          (timeElapsed / totalDuration) * 100,
         );
-        
+
         let percentTasksCompleted = 0;
-        // Calculate percentage of tasks completed  
+        // Calculate percentage of tasks completed
         if (projectStatus?.taskCount != null) {
           percentTasksCompleted =
             projectStatus?.taskCount > 0
@@ -89,7 +89,8 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
         if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
 
         // Determine if behind schedule with 10% buffer
-        const isBehindSchedule = percentTasksCompleted < percentTimeElapsed - 10;
+        const isBehindSchedule =
+          percentTasksCompleted < percentTimeElapsed - 10;
 
         if (isBehindSchedule) {
           message = (
@@ -101,8 +102,8 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
         } else {
           message = (
             <>
-              <span className="text-app-primary">On track •</span> {parts.join(", ")}
-              {" "} left.
+              <span className="text-app-primary">On track •</span>{" "}
+              {parts.join(", ")} left.
             </>
           );
         }
@@ -114,7 +115,8 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
           const weeks = Math.floor((remainingDays % 30) / 7);
           const days = remainingDays % 7;
 
-          if (months > 0) parts.push(`${months} month${months !== 1 ? "s" : ""}`);
+          if (months > 0)
+            parts.push(`${months} month${months !== 1 ? "s" : ""}`);
           if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? "s" : ""}`);
           if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
 
@@ -133,7 +135,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="flex h-full w-full flex-col gap-5">
+    <div className="gap- flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold">Status</h2>
         <div className="flex items-center gap-2">
@@ -146,15 +148,15 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
         taskCount={projectStatus?.taskCount ?? 0}
         completedCount={projectStatus?.completedCount ?? 0}
       />
-      <div className="mt-4 flex flex-col items-center justify-between gap-2 md:flex-row md:items-start">
-        <div className="w-full">
+      <div className="mt-4 flex flex-row items-center justify-between gap-2">
+        <div>
           <AssignUsersList users={projectStatus?.assignedUssers} />
         </div>
-        <div className="mt-4 flex w-full justify-start md:mt-0 md:justify-end">
-          <p className="text-m font-semibold text-gray-500">
-            {message && message}
-          </p>
-        </div>
+
+        <p className="text-m flex-1 text-right font-semibold text-gray-500">
+          {message && message}
+          {!message && "Start a sprint to see the project status"}
+        </p>
       </div>
     </div>
   );

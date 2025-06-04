@@ -13,8 +13,16 @@ import { getRelativeTimeString } from "~/lib/helpers/firestoreTimestamp";
 import { displayNameByType } from "~/lib/helpers/typeDisplayName";
 import SearchBar from "./inputs/search/SearchBar";
 import { getSearchableNameByType } from "~/lib/helpers/searchableNames";
+import { cn } from "~/lib/helpers/utils";
+import type { ClassNameValue } from "tailwind-merge";
+import NoActivityIcon from "@mui/icons-material/FormatListBulleted";
 
-const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
+interface Props {
+  projectId: string;
+  className?: ClassNameValue;
+}
+
+const ActivityProjectOverview = ({ projectId, className }: Props) => {
   const { data: users, isLoading: usersLoading } = api.users.getUsers.useQuery({
     projectId,
   });
@@ -76,9 +84,14 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
   const isLoading = activitiesLoading || usersLoading;
 
   return (
-    <div className="flex h-[40vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
+    <div
+      className={cn(
+        "flex h-[40vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5",
+        className,
+      )}
+    >
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
-        <h3 className="w-full self-center text-lg font-bold">
+        <h3 className="w-full self-center text-xl font-semibold">
           Recent Project Activity
         </h3>
         <SearchBar
@@ -89,13 +102,13 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {!isLoading && (!activities || activities.length === 0) && (
-          <div className="mt-[calc(40vh-230px)] flex w-full items-center justify-center">
-            <div className="flex flex-col items-center gap-5">
-              <span className="-mb-10 text-[100px] text-gray-500"></span>
-              <h1 className="mb-5 text-3xl font-semibold text-gray-500">
-                No activities yet
-              </h1>
-            </div>
+          <div className="flex h-full w-full flex-col items-center justify-center">
+            <span className="text-[100px] text-gray-500">
+              <NoActivityIcon fontSize="inherit" />
+            </span>
+            <h1 className="mb-5 text-2xl font-semibold text-gray-500">
+              No activity yet
+            </h1>
           </div>
         )}
 
@@ -158,7 +171,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
                 {/* Action tag with dynamic background color */}
                 <TagComponent
                   color={getPillColorByActivityType(item.action)}
-                  darkBackground={true}
+                  reducedPadding
                 >
                   {capitalize(item.action || "")}
                 </TagComponent>
@@ -166,7 +179,7 @@ const ActivityProjectOverview = ({ projectId }: { projectId: string }) => {
                 {/* Type badges - keep as is */}
                 <TagComponent
                   color={getAccentHexColorByCardType(item.type)}
-                  darkBackground={true}
+                  reducedPadding
                 >
                   {displayNameByType[item.type]}
                 </TagComponent>
