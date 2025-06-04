@@ -211,6 +211,8 @@ export const useAlert = () => {
       alertTemplates.oops("Please select a type for the requirement."),
     // #endregion
     // #region Roles
+    removeOwnerError: () =>
+      alertTemplates.oops("You cannot remove the owner of the project."),
     roleNameError: () =>
       alertTemplates.oops("Please enter a name for the role."),
     ownerRoleError: () =>
@@ -316,10 +318,6 @@ export const useAlert = () => {
       alertTemplates.oops("Please enter a name for the list."),
     // #endregion
     // #region Project Settings
-    removeOwnerError: () =>
-      alertTemplates.oops(
-        "You cannot remove the owner of the project. Please assign a new owner first.",
-      ),
     projectNameError: () => alertTemplates.oops("Please enter a project name."),
     projectNameLengthError: (upperBound: string) =>
       alertTemplates.oops(
