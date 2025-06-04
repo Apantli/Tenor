@@ -19,9 +19,9 @@ export default function ProjectOverview() {
 
   return (
     <div className="m-6 h-[calc(100%-2.5rem)] flex-1 px-4">
-      <div className="flex h-[calc(100vh-64px)] max-h-full w-full grid-cols-2 grid-rows-[auto_1fr] flex-row gap-4 p-4">
+      <div className="flex h-[calc(100vh-64px)] max-h-full w-full grid-cols-2 grid-rows-[auto_1fr] flex-row gap-8 p-4">
         {/* First col - col 1 */}
-        <div className="flex w-full flex-col gap-4">
+        <div className="flex w-full flex-col justify-between gap-4">
           <div
             className={`flex flex-col gap-5 transition-all duration-300 ${
               isProjectInfoExpanded ? "max-h-64" : "max-h-[12rem]"
@@ -32,11 +32,15 @@ export default function ProjectOverview() {
               onExpandChange={setIsProjectInfoExpanded}
             />
           </div>
-          <ActivityProjectOverview projectId={projectId} />
+
+          <ActivityProjectOverview
+            projectId={projectId}
+            className="h-full justify-self-end"
+          />
         </div>
 
         {/* Second col - col 2 */}
-        <div className="flex w-full flex-col gap-4">
+        <div className="flex w-full flex-col gap-8">
           <div className="flex h-64 flex-col gap-5 rounded-lg border-2 border-[#BECAD4] p-5">
             <ProjectStatus projectId={projectId} />
           </div>

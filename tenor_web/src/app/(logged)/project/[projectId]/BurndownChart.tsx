@@ -392,8 +392,8 @@ const BurndownChart: React.FC<{
             <span className="mx-auto text-[100px] text-gray-500">
               <BarChartIcon fontSize="inherit" />
             </span>
-            <h1 className="mb-5 text-xl font-semibold text-gray-500">
-              No tasks in current sprint.
+            <h1 className="mb-5 text-2xl font-semibold text-gray-500">
+              No tasks in current sprint
             </h1>
           </div>
         ) : (

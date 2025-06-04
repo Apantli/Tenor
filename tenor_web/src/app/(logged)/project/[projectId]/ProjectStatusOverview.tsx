@@ -155,7 +155,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
         <div className="mt-4 flex w-full justify-start md:mt-0 md:justify-end">
           <p className="text-m font-semibold text-gray-500">
             {message && message}
-            {!message && "You need an active sprint to see the status."}
+            {!message && "Create an active sprint to see the project status"}
           </p>
         </div>
       </div>
