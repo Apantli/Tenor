@@ -82,6 +82,7 @@ export default function CalendarGrid({
                 setSelectedTasksId={setSelectedTasksId}
                 setTask={setTask}
                 setDetailItemId={setDetailItemId}
+                largeCell={cells.length < 42}
               />
             )}
           </div>

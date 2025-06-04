@@ -19,6 +19,8 @@ interface Props {
 
   selectedTasksId: string[];
   setSelectedTasksId: (ids: string[]) => void;
+
+  largeCell?: boolean;
 }
 
 export default function CalendarCell({
@@ -33,6 +35,7 @@ export default function CalendarCell({
   setDetailItemId,
   selectedTasksId,
   setSelectedTasksId,
+  largeCell = false,
 }: Props) {
   const date = new Date(year, month, day);
   const { ref, isDropTarget } = useDroppable({
@@ -78,6 +81,7 @@ export default function CalendarCell({
           className={cn(
             "flex h-[10vh] flex-col overflow-y-auto",
             tasks.length > 0 && "w-full",
+            largeCell && "h-[12vh]",
           )}
         >
           {tasks.map((task) => (
