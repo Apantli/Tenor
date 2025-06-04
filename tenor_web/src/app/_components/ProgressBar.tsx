@@ -1,5 +1,17 @@
 import { cn } from "~/lib/helpers/utils";
 
+interface ProgressBarProps {
+  min: number;
+  max: number;
+  value: number;
+  progressBarColor: string;
+  emptyBarColor: string;
+  displayValue?: string;
+  className?: string;
+  compact?: boolean;
+  hidePercentageText?: boolean;
+}
+
 export default function ProgressBar({
   min,
   max,
@@ -10,17 +22,7 @@ export default function ProgressBar({
   className,
   compact = false,
   hidePercentageText = false,
-}: {
-  min: number;
-  max: number;
-  value: number;
-  progressBarColor: string;
-  emptyBarColor: string;
-  displayValue?: string;
-  className?: string;
-  compact?: boolean;
-  hidePercentageText?: boolean;
-}) {
+}: ProgressBarProps) {
   let percentage;
 
   if (min < 0 || max <= min || value < min || value > max) {

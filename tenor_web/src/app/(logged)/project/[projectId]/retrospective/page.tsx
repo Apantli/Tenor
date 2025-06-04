@@ -10,6 +10,7 @@ import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import CheckIcon from "@mui/icons-material/Check";
 import ProgressBar from "~/app/_components/ProgressBar";
+import MoreInformation from "~/app/_components/helps/MoreInformation";
 
 export default function ProjectSprintRetrospectivePage() {
   const { user } = useFirebaseAuth();
@@ -18,7 +19,7 @@ export default function ProjectSprintRetrospectivePage() {
   const [isFormCompleted, setIsFormCompleted] = useState(false);
   const [userClickedShowAnswers, setUserClickedShowAnswers] = useState(false);
 
-  const { data: previousSprint, isLoading: loadingprevSprint } =
+  const { data: previousSprint, isLoading: loadingPrevSprint } =
     api.sprintRetrospectives.getPreviousSprint.useQuery({
       projectId: projectId as string,
     });
@@ -75,7 +76,7 @@ export default function ProjectSprintRetrospectivePage() {
     user?.displayName ?? user?.email ?? "No name or email provided";
 
   if (
-    loadingprevSprint ||
+    loadingPrevSprint ||
     loadingSprint ||
     loadingRetrospectiveId ||
     loadingTeamProgress ||
@@ -231,11 +232,16 @@ export default function ProjectSprintRetrospectivePage() {
 
               <div className="mb-6">
                 <div className="mb-2 flex items-center justify-between">
-                  <p className="font-medium">Sprint Contribution</p>
+                  <div className="flex gap-2">
+                    <p className="font-medium">Sprint Contribution</p>
+                    <MoreInformation
+                      label="This percentage shows how much of the sprint's total story points you personally completed."
+                      size="small"
+                    />
+                  </div>
                   <p className="text-sm text-gray-600">
                     {personalProgressData?.completedAssignedStoryPoints ?? 0} of{" "}
-                    {teamProgressData?.totalStoryPoints ?? 0} (total sprint
-                    story points) completed
+                    {teamProgressData?.totalStoryPoints ?? 0} completed
                   </p>
                 </div>
                 <div className="relative">

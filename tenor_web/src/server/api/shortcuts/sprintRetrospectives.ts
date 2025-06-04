@@ -1,4 +1,4 @@
-import { getSettingsRef } from "./general";
+import { getProjectRef, getSettingsRef } from "./general";
 import type { Firestore, QuerySnapshot } from "firebase-admin/firestore";
 import { FieldPath } from "firebase-admin/firestore";
 import { getAutomaticStatusId } from "./tags";
@@ -67,12 +67,9 @@ export const getStoryPointsBySizeSettings = async (
   projectId: string,
 ): Promise<Record<string, number>> => {
   const settingsRef = getSettingsRef(firestore, projectId);
-  const sizeDoc = await settingsRef
-    .collection("requirementTypes")
-    .doc("Size")
-    .get();
+  const settingsDoc = await settingsRef.get();
 
-  if (!sizeDoc.exists) {
+  if (!settingsDoc.exists) {
     return {
       XS: 1,
       S: 2,
@@ -83,14 +80,27 @@ export const getStoryPointsBySizeSettings = async (
     };
   }
 
-  const sizeData = sizeDoc.data();
+  const settingsData = settingsDoc.data();
+  const sizeData = settingsData?.Size as number[] | undefined;
+
+  if (!sizeData || !Array.isArray(sizeData) || sizeData.length < 6) {
+    return {
+      XS: 1,
+      S: 2,
+      M: 3,
+      L: 5,
+      XL: 8,
+      XXL: 13,
+    };
+  }
+
   return {
-    XS: sizeData?.["0"] as number,
-    S: sizeData?.["1"] as number,
-    M: sizeData?.["2"] as number,
-    L: sizeData?.["3"] as number,
-    XL: sizeData?.["4"] as number,
-    XXL: sizeData?.["5"] as number,
+    XS: sizeData[0] ?? 1,
+    S: sizeData[1] ?? 2,
+    M: sizeData[2] ?? 3,
+    L: sizeData[3] ?? 5,
+    XL: sizeData[4] ?? 8,
+    XXL: sizeData[5] ?? 13,
   };
 };
 
@@ -114,7 +124,7 @@ export const computeSprintTeamProgress = async (
     projectId,
   );
 
-  const projectRef = firestore.collection("projects").doc(projectId);
+  const projectRef = getProjectRef(firestore, projectId);
   const issuesCollectionRef = projectRef.collection("issues");
   const userStoriesCollectionRef = projectRef.collection("userStories");
   const backlogItemsCollectionRef = projectRef.collection("backlogItems");
@@ -312,7 +322,7 @@ export const computeSprintPersonalProgress = async (
     projectId,
   );
 
-  const projectRef = firestore.collection("projects").doc(projectId);
+  const projectRef = getProjectRef(firestore, projectId);
   const tasksCollectionRef = projectRef.collection("tasks");
 
   const userTasksQuery = tasksCollectionRef
@@ -490,7 +500,7 @@ export const postSprintTeamProgress = async (
   projectId: string,
   sprintId: string,
 ) => {
-  const projectRef = firestore.collection("projects").doc(projectId);
+  const projectRef = getProjectRef(firestore, projectId);
   const teamRetrospectivesRef = projectRef
     .collection("teamRetrospectives")
     .doc(sprintId);
@@ -509,7 +519,7 @@ export const postSprintPersonalProgress = async (
   sprintId: string,
   userId: string,
 ) => {
-  const projectRef = firestore.collection("projects").doc(projectId);
+  const projectRef = getProjectRef(firestore, projectId);
   const personalRetrospectivesRef = projectRef
     .collection("personalRetrospectives")
     .doc(userId);
@@ -542,7 +552,7 @@ export const getSprintTeamProgress = async (
   totalStoryPoints: number;
   completedStoryPoints: number;
 }> => {
-  const projectRef = firestore.collection("projects").doc(projectId);
+  const projectRef = getProjectRef(firestore, projectId);
   const teamRetrospectivesRef = projectRef
     .collection("teamRetrospectives")
     .doc(sprintId);
@@ -595,7 +605,7 @@ export const getSprintPersonalProgress = async (
   totalAssignedStoryPoints: number;
   completedAssignedStoryPoints: number;
 }> => {
-  const projectRef = firestore.collection("projects").doc(projectId);
+  const projectRef = getProjectRef(firestore, projectId);
   const personalRetrospectivesRef = projectRef
     .collection("personalRetrospectives")
     .doc(userId);
@@ -637,7 +647,7 @@ export const ensureSprintTeamProgress = async (
   projectId: string,
   sprintId: string,
 ): Promise<void> => {
-  const projectRef = firestore.collection("projects").doc(projectId);
+  const projectRef = getProjectRef(firestore, projectId);
   const teamRetrospectivesRef = projectRef
     .collection("teamRetrospectives")
     .doc(sprintId);
@@ -660,7 +670,7 @@ export const ensureSprintPersonalProgress = async (
   sprintId: string,
   userId: string,
 ): Promise<void> => {
-  const projectRef = firestore.collection("projects").doc(projectId);
+  const projectRef = getProjectRef(firestore, projectId);
   const personalRetrospectivesRef = projectRef
     .collection("personalRetrospectives")
     .doc(userId);

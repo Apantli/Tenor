@@ -206,7 +206,7 @@ export default function HappinessForm({
         </div>
         <p className="mb-4 text-gray-700">
           Help your team improve its performance and motivation by completing
-          this happiness task.
+          this happiness survey.
         </p>
         <div className="flex flex-col gap-5">
           <div>
