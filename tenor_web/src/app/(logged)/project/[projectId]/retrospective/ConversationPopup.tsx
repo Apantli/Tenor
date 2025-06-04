@@ -2,7 +2,9 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
-import SoundPlayer from "~/app/_components/SoundPlayer";
+import SoundPlayer, {
+  usePauseSoundPlayer,
+} from "~/app/_components/SoundPlayer";
 import MusicIcon from "@mui/icons-material/Headphones";
 import MicOffIcon from "@mui/icons-material/MicOff";
 import MicOnIcon from "@mui/icons-material/Mic";
@@ -67,7 +69,7 @@ export default function ConversationPopup({
 
   const [step, setStep] = useState(0);
   const [headsetStatus, setHeadsetStatus] = useState<
-    "disconnected" | "connecting" | "connected"
+    "disconnected" | "connecting" | "connected" | "interrupted"
   >("disconnected");
   const [electrodesQuality, setElectrodesQuality] = useState({
     TP9: 1000,
@@ -84,6 +86,8 @@ export default function ConversationPopup({
   const [currentTime, setCurrentTime] = useState(0);
 
   const [emotion, setEmotion] = useState("");
+
+  const { pause, pauseSound } = usePauseSoundPlayer();
 
   const textAnswers = useRef<string[]>([]);
 
@@ -143,10 +147,15 @@ export default function ConversationPopup({
   // MUSE CALLBACKS
   const museConnectionCallback = (status: boolean) => {
     if (!status) {
-      predefinedAlerts.headSetDisconnected();
-      setHeadsetStatus("disconnected");
-      setStep(1);
-      resetTranscripts();
+      if (stepRef.current === 2) {
+        setHeadsetStatus("disconnected");
+        setStep(0);
+        predefinedAlerts.headSetDisconnected();
+      } else if (stepRef.current < 4) {
+        setHeadsetStatus("interrupted");
+        pauseSound();
+        setShowInstructions(false);
+      }
     }
   };
 
@@ -554,11 +563,15 @@ export default function ConversationPopup({
                 </div>
                 <SoundPlayer
                   soundSrc={conversationAudioPath}
+                  pause={pause}
                   setPlaying={(playing) => {
                     setPlaying(playing);
                     if (playing) {
                       setShowInstructions(false);
                       setShowPause(false);
+                      if (headsetStatus === "interrupted") {
+                        setHeadsetStatus("disconnected");
+                      }
                     }
                     if (!playing) {
                       setShowPause(true);
@@ -576,6 +589,30 @@ export default function ConversationPopup({
                       ? `You're feeling ${emotion}`
                       : "Detecting emotion..."}
                   </p>
+                )}
+                {!playing && headsetStatus === "interrupted" && (
+                  <>
+                    <p className="mx-auto max-w-[500px] text-center text-app-fail">
+                      The headset got disconnected. You can continue without the
+                      biometric analysis, or you may{" "}
+                      <TertiaryButton
+                        onClick={() => {
+                          setStep(1);
+                          setHeadsetStatus("disconnected");
+                          setShowReadjustMessage(false);
+                          setShowPause(false);
+                          setShowInstructions(true);
+                          resetTranscripts();
+                          textAnswers.current = [];
+                          emotionHistory.current = [];
+                          eegBuffer.current = [];
+                        }}
+                        className="p-0 text-app-fail"
+                      >
+                        start over
+                      </TertiaryButton>
+                    </p>
+                  </>
                 )}
               </div>
               <div

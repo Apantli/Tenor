@@ -38,6 +38,7 @@ import type {
   StatusTag,
   Tag,
   WithId,
+  FileWithTokens,
 } from "~/lib/types/firebaseSchemas";
 import {
   getBacklogTag,
@@ -61,6 +62,7 @@ import {
 import { getUserRef } from "../shortcuts/users";
 import { TRPCError } from "@trpc/server";
 import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
+import { countTokens } from "~/lib/aiTools/aiGeneration";
 
 export interface Links {
   link: string;
@@ -503,12 +505,27 @@ const settingsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
       const settings = await getSettings(ctx.firestore, projectId);
-      const files: { name: string; type: string; size: number }[] =
-        settings.aiContext.files.map((file) => ({
-          name: file.name,
-          type: file.type,
-          size: Buffer.byteLength(file.content ?? "", "utf-8"),
-        }));
+
+      const files: FileWithTokens[] = await Promise.all(
+        settings.aiContext.files.map(async (file) => {
+          return {
+            name: file.name,
+            type: file.type,
+            content: file.content,
+            tokenCount: await countTokens(file.content),
+            // Dummy File properties to satisfy the File interface
+            size: file.content.length,
+            lastModified: Date.now(),
+            webkitRelativePath: "",
+            arrayBuffer: async () => new ArrayBuffer(0),
+            bytes: async () => new Uint8Array(0),
+            slice: () => new Blob(),
+            stream: () => new ReadableStream(),
+            text: async () => file.content,
+          };
+        }),
+      );
+
       return files;
     }),
   getContextDialog: roleRequiredProcedure(settingsPermissions, "read")

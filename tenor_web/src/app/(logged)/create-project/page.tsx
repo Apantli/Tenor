@@ -19,6 +19,7 @@ import MemberTable from "~/app/_components/inputs/MemberTable";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
 import { defaultRoleList, emptyRole } from "~/lib/defaultValues/roles";
+import { env } from "~/env";
 import AIDisclaimer from "~/app/_components/helps/predefined/AIDisclaimer";
 import { PageContext } from "~/app/_hooks/usePageContext";
 
@@ -325,7 +326,7 @@ export default function ProjectCreator() {
                 <FileList
                   label="Context Files"
                   files={files}
-                  memoryLimit={10_000_000} // 10MB
+                  tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
                   handleFileAdd={handleFilesAdd}
                   handleFileRemove={handleFilesDelete}
                 />

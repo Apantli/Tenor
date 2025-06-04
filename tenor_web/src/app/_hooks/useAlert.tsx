@@ -263,6 +263,10 @@ export const useAlert = () => {
       alertTemplates.oops(
         "You exceeded the file size limit. Please upload a smaller file or delete existing ones.",
       ),
+    duplicatedFile: () =>
+      alertTemplates.oops(
+        "A file with the same name is already added to the context.",
+      ),
     linkUploadSuccess: () =>
       alertTemplates.success(
         "Link added successfully. It will be processed shortly.",
@@ -271,7 +275,11 @@ export const useAlert = () => {
       alertTemplates.oops("This link is already added to the context."),
     linkInvalidError: (length: number) =>
       alertTemplates.oops(
-        `${length} link${length > 0 && "s"} ${length > 0 ? "are" : "is"} invalid.`,
+        `${length} link${length > 1 ? "s" : ""} ${length > 1 ? "are" : "is"} invalid.`,
+      ),
+    emptyFilesError: (length: number) =>
+      alertTemplates.oops(
+        `We couldn't find text in ${length} context file${length > 1 ? "s" : ""}.`,
       ),
 
     // #endregion
@@ -338,9 +346,7 @@ export const useAlert = () => {
     // #endregion
     // #region Muse Headset
     headSetDisconnected: () =>
-      alertTemplates.oops(
-        "Muse headset got disconnected. Please reconnect it to continue.",
-      ),
+      alertTemplates.oops("Muse headset got disconnected. Please reconnect."),
     headSetConnectionError: () =>
       alertTemplates.oops(
         "Failed to connect to the Muse headset. Please try again.",

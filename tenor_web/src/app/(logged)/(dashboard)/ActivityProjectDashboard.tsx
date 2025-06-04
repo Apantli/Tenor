@@ -1,31 +1,38 @@
 "use client";
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
-import SearchBar from "./inputs/search/SearchBar";
 import { getSearchableNameByType } from "~/lib/helpers/searchableNames";
-import { cn } from "~/lib/helpers/utils";
+import SearchBar from "~/app/_components/inputs/search/SearchBar";
+import type {
+  ProjectActivityDetail,
+  WithId,
+  WithProjectId,
+} from "~/lib/types/firebaseSchemas";
 import type { ClassNameValue } from "tailwind-merge";
+import { cn } from "~/lib/helpers/utils";
 import NoActivityIcon from "@mui/icons-material/FormatListBulleted";
-import LoadingSpinner from "./LoadingSpinner";
-import ActivityCard from "./cards/ActivityCard";
+import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import ActivityCard from "~/app/_components/cards/ActivityCard";
 
 interface Props {
-  projectId: string;
   className?: ClassNameValue;
 }
 
-const ActivityProjectOverview = ({ projectId, className }: Props) => {
-  const { data: users, isLoading: usersLoading } = api.users.getUsers.useQuery({
-    projectId,
-  });
+const ActivityProjectDashboard = ({ className }: Props) => {
+  const { data: users, isLoading: usersLoading } =
+    api.users.getGlobalUsers.useQuery({});
+  const { data: projects, isLoading: projectsLoading } =
+    api.projects.listProjects.useQuery();
   const { data: activities, isLoading: activitiesLoading } =
-    api.projects.getActivityDetails.useQuery({ projectId });
+    api.projects.getActivityDetailsFromTopProjects.useQuery();
 
   const [searchText, setSearchText] = useState("");
-  const formatAnyScrumId = useFormatAnyScrumId(projectId);
 
-  // Create a better user map that tries multiple ID fields
+  // scrumId cannot be calculated with hooks as it needs the projectId beforehand
+  const getScrumId = (item: WithProjectId<WithId<ProjectActivityDetail>>) => {
+    return item.type + item.scrumId.toString();
+  };
+
   const userMap = users
     ? users.reduce(
         (map, user) => {
@@ -34,6 +41,16 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
           return map;
         },
         {} as Record<string, (typeof users)[0]>,
+      )
+    : {};
+
+  const projectMap = projects
+    ? projects.reduce(
+        (map, project) => {
+          if (project.id) map[project.id] = project;
+          return map;
+        },
+        {} as Record<string, (typeof projects)[0]>,
       )
     : {};
 
@@ -58,8 +75,12 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
       ? (user.displayName ?? user.email ?? user.id ?? "")
       : (item.userId ?? "System");
 
+    // Get project information if available
+    const project = item.projectId ? projectMap[item.projectId] : undefined;
+    const projectName = project ? project.name : "Unknown Project";
+
     const itemTitle = item.name;
-    const scrumId = formatAnyScrumId(item.scrumId ?? 0, item.type);
+    const scrumId = getScrumId(item);
 
     // Check if any field contains the search text
     return (
@@ -68,12 +89,14 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
       typeStr.toLowerCase().includes(searchLowerCase) ||
       typeLabel.toLowerCase().includes(searchLowerCase) ||
       userName.toLowerCase().includes(searchLowerCase) ||
+      projectName.toLowerCase().includes(searchLowerCase) ||
       itemTitle.toLowerCase().includes(searchLowerCase) ||
       scrumId.toString().toLowerCase().includes(searchLowerCase)
     );
   });
 
-  const isLoading = activitiesLoading || usersLoading;
+  const isLoading: boolean =
+    activitiesLoading || usersLoading || projectsLoading;
 
   return (
     <div
@@ -111,8 +134,11 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
 
           {filteredActivities?.map((item) => {
             const user = item.userId ? userMap[item.userId] : undefined;
+            const project = item.projectId
+              ? projectMap[item.projectId]
+              : undefined;
             const itemTitle = item.name;
-            const scrumId = formatAnyScrumId(item.scrumId ?? 0, item.type);
+            const scrumId = getScrumId(item);
             if (!itemTitle && !scrumId) return null;
 
             return (
@@ -122,6 +148,7 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
                   key={item.id}
                   formattedScrumId={scrumId}
                   user={user}
+                  project={project}
                 />
               </div>
             );
@@ -132,4 +159,4 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
   );
 };
 
-export default ActivityProjectOverview;
+export default ActivityProjectDashboard;

@@ -35,6 +35,8 @@ import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
 import ProgressBar from "~/app/_components/ProgressBar";
 
+import { env } from "~/env";
+
 // Z index documentation:
 // 0-1000: Default z-index range for most elements (feel free to contribute to the documentation)
 //   10: Ghost table rows
@@ -691,7 +693,7 @@ function InputComponents() {
       <FileList
         label="Context Files"
         files={[]}
-        memoryLimit={100_000_000} // 100MB
+        tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
         handleFileAdd={() => {
           console.log("File added");
         }}
