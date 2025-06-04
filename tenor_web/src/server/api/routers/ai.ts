@@ -81,6 +81,7 @@ Important requirements:
 - If the user requests a change or to create something, make sure to include the changes in the autocompletion.
 - Address the user directly in the assistant_message, by using "you" or "your", or the user name if available and appropriate.
 Here is the context you should consider:
+- If asked to generate something, ALWAYS give your best guess and let the user fix that or work on top of it.
 ${contextString}
 
 And here is the message history:

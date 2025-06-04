@@ -1,5 +1,7 @@
+"use client";
+
 import { cn } from "~/lib/helpers/utils";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import type { ChangeEvent, KeyboardEvent } from "react";
 import AIIcon from "@mui/icons-material/AutoAwesome";
 import CloseIcon from "@mui/icons-material/Close";
@@ -12,6 +14,7 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import Dropdown, { DropdownItem, useCloseDropdown } from "../../Dropdown";
 import ProfilePicture from "../../ProfilePicture";
 import DeleteButton from "../buttons/DeleteButton";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 export interface Props {
   label?: string | React.ReactNode;
@@ -62,6 +65,8 @@ export default function InputField({
   const dropdownInputRef = useRef<HTMLInputElement>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+
+  const pageContext = useContext(PageContext);
 
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
@@ -153,6 +158,7 @@ export default function InputField({
           "value in field": value,
           username: user?.displayName,
           email: user?.email,
+          ...pageContext,
         },
       });
       setMessages((prev) => [
