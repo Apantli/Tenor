@@ -346,9 +346,7 @@ export const useAlert = () => {
     // #endregion
     // #region Muse Headset
     headSetDisconnected: () =>
-      alertTemplates.oops(
-        "Muse headset got disconnected. Please reconnect it to continue.",
-      ),
+      alertTemplates.oops("Muse headset got disconnected. Please reconnect."),
     headSetConnectionError: () =>
       alertTemplates.oops(
         "Failed to connect to the Muse headset. Please try again.",
