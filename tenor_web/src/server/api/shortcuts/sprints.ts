@@ -82,6 +82,7 @@ export const getCurrentSprint = async (
   const projectRef = getProjectRef(firestore, projectId);
   const projectDoc = await projectRef.get();
   if (!projectDoc.exists || projectDoc.data()?.deleted) {
+    console.warn(`Project ${projectId} is deleted or does not exist.`);
     return undefined;
   }
   const sprints = await getSprints(firestore, projectId);

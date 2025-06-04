@@ -170,6 +170,7 @@ export type TaskType = "TS";
 export type EpicType = "EP";
 export type ProjectType = "PJ"; // For project activities
 export type SprintType = "SP";
+export type RequirementType = "RE"; // For requirements
 
 export type AnyBacklogItemType = UserStoryType | IssueType | BacklogItemType;
 export type AllBasicItemType =
@@ -177,7 +178,8 @@ export type AllBasicItemType =
   | TaskType
   | EpicType
   | ProjectType
-  | SprintType;
+  | SprintType
+  | RequirementType;
 export type BacklogItemAndTaskType = AnyBacklogItemType | TaskType;
 
 export type TaskDetailType = `${AnyBacklogItemType}-${TaskType}`; // Used for simplification of moving info around
@@ -218,7 +220,7 @@ export interface Task extends BasicInfo {
   assignedDate?: Timestamp;
   dueDate?: Date;
   statusChangeDate?: Timestamp;
-  finishedDate?: Date;
+  finishedDate?: Timestamp;
   size: Size | "";
   itemId: string;
   itemType: AnyBacklogItemType;
