@@ -364,7 +364,7 @@ export default function RequirementDetailPopup({
             </div>
           ) : (
             <div>
-              <div className="mt-4 w-[500px] text-lg">
+              <div className="overflow-wrap-anywhere mt-4 w-[600px] break-words text-lg">
                 {requirementDetail?.description !== "" ? (
                   <Markdown>{requirementDetail?.description ?? ""}</Markdown>
                 ) : (
