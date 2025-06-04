@@ -28,12 +28,11 @@ const ActivityProjectDashboard = ({ className }: Props) => {
 
   const [searchText, setSearchText] = useState("");
 
-  // scrum cannot be calculated with hooks as it needs the projectId beforehand
+  // scrumId cannot be calculated with hooks as it needs the projectId beforehand
   const getScrumId = (item: WithProjectId<WithId<ProjectActivityDetail>>) => {
     return item.type + item.scrumId.toString();
   };
 
-  // Create a better user map that tries multiple ID fields
   const userMap = users
     ? users.reduce(
         (map, user) => {
@@ -76,6 +75,10 @@ const ActivityProjectDashboard = ({ className }: Props) => {
       ? (user.displayName ?? user.email ?? user.id ?? "")
       : (item.userId ?? "System");
 
+    // Get project information if available
+    const project = item.projectId ? projectMap[item.projectId] : undefined;
+    const projectName = project ? project.name : "Unknown Project";
+
     const itemTitle = item.name;
     const scrumId = getScrumId(item);
 
@@ -86,6 +89,7 @@ const ActivityProjectDashboard = ({ className }: Props) => {
       typeStr.toLowerCase().includes(searchLowerCase) ||
       typeLabel.toLowerCase().includes(searchLowerCase) ||
       userName.toLowerCase().includes(searchLowerCase) ||
+      projectName.toLowerCase().includes(searchLowerCase) ||
       itemTitle.toLowerCase().includes(searchLowerCase) ||
       scrumId.toString().toLowerCase().includes(searchLowerCase)
     );

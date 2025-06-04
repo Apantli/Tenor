@@ -53,7 +53,7 @@ export default function ProjectList() {
         </PrimaryButton>
       </div>
       <ul
-        className="max-h-[calc(80vh-90px)] overflow-hidden overflow-y-auto"
+        className="h-full overflow-hidden overflow-y-auto lg:h-[calc(80vh-90px)]"
         data-cy="project-list"
       >
         {filteredProjects && filteredProjects?.length > 0 ? (
