@@ -40,7 +40,6 @@ import {
   getItemActivityDetails,
   computeTopProjectStatus,
   getProject,
-  getProjectActivities,
   getProjectRef,
   getProjectsRef,
   getProjectStatus,
@@ -48,6 +47,7 @@ import {
   getRolesRef,
   getSettingsRef,
   getTopProjectStatusCacheRef,
+  getActivityDetailsFromTopProjects,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
@@ -62,9 +62,9 @@ import {
 } from "~/lib/defaultValues/tags";
 import { defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
-import { getBurndownData } from "../shortcuts/tasks";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import { type BurndownChartData } from "~/lib/defaultValues/burndownChart";
+import { getBurndownData } from "../shortcuts/tasks";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -497,13 +497,6 @@ export const projectsRouter = createTRPCRouter({
       );
     }),
 
-  getProjectActivities: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return await getProjectActivities(ctx.firestore, projectId);
-    }),
-
   getActivityDetails: protectedProcedure
     .input(
       z.object({
@@ -514,8 +507,14 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
-
+  getActivityDetailsFromTopProjects: protectedProcedure.query(
+    async ({ ctx }) => {
+      const userId = ctx.session.user.uid;
+      return await getActivityDetailsFromTopProjects(ctx.firestore, userId);
+    },
+  ),
   getGraphBurndownData: protectedProcedure
+
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;

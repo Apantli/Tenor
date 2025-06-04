@@ -2,13 +2,9 @@
 
 import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatusDashboard";
 import ProjectList from "./ProjectList";
-import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
-import { api } from "~/trpc/react";
+import ActivityProjectDashboard from "./ActivityProjectDashboard";
 
 export default function ProjectPage() {
-  const { data: projects } = api.projects.getTopProjectStatus.useQuery({
-    count: 1,
-  });
   return (
     <div className="h-full w-full flex-col items-start overflow-hidden lg:flex lg:flex-row">
       <div className="lg:w-[50%]">
@@ -18,11 +14,8 @@ export default function ProjectPage() {
       <div className="h-[80vh] flex-1">
         <ProjectStatusDashboard />
         <div className="my-6" />
-        {projects?.topProjects[0] && (
-          <ActivityProjectOverview
-            projectId={projects?.topProjects[0].projectId}
-          />
-        )}
+
+        <ActivityProjectDashboard />
       </div>
     </div>
   );
