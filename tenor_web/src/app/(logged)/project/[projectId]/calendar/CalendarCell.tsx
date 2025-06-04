@@ -55,17 +55,17 @@ export default function CalendarCell({
   return (
     <div
       className={cn(
-        "flex h-full min-h-[50px] w-full",
+        "flex h-full min-h-[40px] w-full",
         isDropTarget && "bg-gray-100",
         selectedDate && date.getTime() === selectedDate.getTime()
           ? "bg-app-secondary"
           : "hover:bg-gray-100",
       )}
     >
-      <div className="flex h-full w-full p-0.5" ref={ref}>
+      <div className="flex h-full w-full flex-col p-0.5 lg:flex-row" ref={ref}>
         <span
           className={cn(
-            "h-full p-1 text-xs",
+            "p-1 text-xs lg:h-full",
             tasks.length == 0 && "w-full",
             selectedDate &&
               date.getTime() === selectedDate.getTime() &&
