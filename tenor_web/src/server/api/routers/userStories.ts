@@ -33,7 +33,6 @@ import {
   getUserStory,
   getUserStoryContext,
   getUserStoryDetail,
-  getUserStoryNewId,
   getUserStoryRef,
   getUserStoryTable,
   hasDependencyCycle,
@@ -122,30 +121,31 @@ export const userStoriesRouter = createTRPCRouter({
         });
       }
 
-      const result = await ctx.firestore.runTransaction(async (transaction) => {
-        const userStoryCount = await transaction.get(
-          getUserStoriesRef(ctx.firestore, projectId).count(),
-        );
+      const { userStoryData, id: newuserStoryId } =
+        await ctx.firestore.runTransaction(async (transaction) => {
+          const userStoriesRef = getUserStoriesRef(ctx.firestore, projectId);
 
-        const userStoryData = UserStorySchema.parse({
-          ...userStoryDataRaw,
-          scrumId: userStoryCount.data().count + 1,
+          const userStoryCount = await transaction.get(userStoriesRef.count());
+
+          const userStoryData = UserStorySchema.parse({
+            ...userStoryDataRaw,
+            scrumId: userStoryCount.data().count + 1,
+          });
+          const docRef = userStoriesRef.doc();
+
+          transaction.create(docRef, userStoryData);
+
+          return {
+            userStoryData,
+            id: docRef.id,
+          };
         });
-        const docRef = getUserStoriesRef(ctx.firestore, projectId).doc();
-
-        transaction.create(docRef, userStoryData);
-
-        return {
-          userStoryData,
-          id: docRef.id,
-        };
-      });
 
       // Add dependency references
       await Promise.all(
         input.userStoryData.dependencyIds.map(async (dependencyId) => {
           await getUserStoryRef(ctx.firestore, projectId, dependencyId).update({
-            requiredByIds: FieldValue.arrayUnion(result.id),
+            requiredByIds: FieldValue.arrayUnion(newuserStoryId),
           });
         }),
       );
@@ -153,7 +153,7 @@ export const userStoriesRouter = createTRPCRouter({
       await Promise.all(
         input.userStoryData.requiredByIds.map(async (requiredById) => {
           await getUserStoryRef(ctx.firestore, projectId, requiredById).update({
-            dependencyIds: FieldValue.arrayUnion(result.id),
+            dependencyIds: FieldValue.arrayUnion(newuserStoryId),
           });
         }),
       );
@@ -166,7 +166,7 @@ export const userStoriesRouter = createTRPCRouter({
           userStoryData.sprintId,
         );
         await sprintRef.update({
-          userStoryIds: FieldValue.arrayUnion(userStory.id),
+          userStoryIds: FieldValue.arrayUnion(newuserStoryId),
         });
       }
 
@@ -174,14 +174,14 @@ export const userStoriesRouter = createTRPCRouter({
         firestore: ctx.firestore,
         projectId: input.projectId,
         userId: ctx.session.user.uid,
-        itemId: result.id,
+        itemId: newuserStoryId,
         type: "US",
         action: "create",
       });
 
       return {
-        id: result.id,
-        ...result.userStoryData,
+        id: newuserStoryId,
+        ...userStoryData,
       } as WithId<UserStory>;
     }),
   /**
