@@ -514,6 +514,7 @@ export default function ProjectSprints() {
               setSelection={setSelectedItems}
               setDetailId={setDetailItemId}
               className={cn(hiddenWithoutBacklog)}
+              noCardsMessage="No items here"
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
                   <span className="text-xl font-medium">Unassigned items</span>

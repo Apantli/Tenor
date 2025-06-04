@@ -25,6 +25,7 @@ interface Props {
   disabled?: boolean;
   disableDropping?: boolean;
   advancedFilters: AdvancedSearchFilters;
+  noCardsMessage?: string; // Optional message to show when there are no cards. If empty, no message will be shown.
 }
 
 export default function BacklogItemCardColumn({
@@ -40,6 +41,7 @@ export default function BacklogItemCardColumn({
   disabled = false,
   disableDropping = false,
   advancedFilters,
+  noCardsMessage = "",
 }: Props) {
   const cards: KanbanItemCard[] = backlogItems
     .map((item) => ({
@@ -83,6 +85,7 @@ export default function BacklogItemCardColumn({
           }
         />
       )}
+      noCardsMessage={noCardsMessage}
     />
   );
 }

@@ -7,6 +7,7 @@ import type { ClassNameValue } from "tailwind-merge";
 import { cn } from "~/lib/helpers/utils";
 import { useDroppable } from "@dnd-kit/react";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
+import NoCardsIcon from "@mui/icons-material/FormatListBulleted";
 
 interface Props {
   selection: Set<string>;
@@ -24,6 +25,8 @@ interface Props {
 
   disabled?: boolean;
   disableDropping?: boolean;
+
+  noCardsMessage?: string; // Optional message to show when there are no cards. If empty, no message will be shown.
 }
 
 export default function CardColumn({
@@ -39,6 +42,7 @@ export default function CardColumn({
   lastDraggedItemId,
   disabled = false,
   disableDropping = false,
+  noCardsMessage = "",
 }: Props) {
   const shiftClick = useShiftKey();
   const lastSelectedCard = useRef<number>();
@@ -78,49 +82,63 @@ export default function CardColumn({
       {!isLoading && header !== undefined && (
         <div className="px-6 pt-6">{header}</div>
       )}
-      <div className="flex h-full flex-1 flex-col gap-2 overflow-y-auto p-6 pt-2">
-        {cards.map((cardInfo) => (
-          <SelectableCard
-            disabled={disabled}
-            lastDraggedItemId={lastDraggedItemId}
-            key={cardInfo.id}
-            dndId={cardInfo.id}
-            cardType={cardInfo.cardType}
-            showCheckbox={selection.size > 0}
-            selected={selection.has(cardInfo.id)}
-            onChange={(selected) => {
-              let cardsInRange = [cardInfo.id];
-              if (shiftClick) {
-                const min = Math.min(
-                  lastSelectedCard.current ?? Infinity,
-                  cardInfo.scrumId,
-                );
-                const max = Math.max(
-                  lastSelectedCard.current ?? -Infinity,
-                  cardInfo.scrumId,
-                );
-                cardsInRange = cards
-                  .filter((card) => card.scrumId >= min && card.scrumId <= max)
-                  .map((card) => card.id);
-              }
+      {(cards.length !== 0 || isLoading) && (
+        <div className="flex h-full flex-1 flex-col gap-2 overflow-y-auto p-6 pt-2">
+          {cards.map((cardInfo) => (
+            <SelectableCard
+              disabled={disabled}
+              lastDraggedItemId={lastDraggedItemId}
+              key={cardInfo.id}
+              dndId={cardInfo.id}
+              cardType={cardInfo.cardType}
+              showCheckbox={selection.size > 0}
+              selected={selection.has(cardInfo.id)}
+              onChange={(selected) => {
+                let cardsInRange = [cardInfo.id];
+                if (shiftClick) {
+                  const min = Math.min(
+                    lastSelectedCard.current ?? Infinity,
+                    cardInfo.scrumId,
+                  );
+                  const max = Math.max(
+                    lastSelectedCard.current ?? -Infinity,
+                    cardInfo.scrumId,
+                  );
+                  cardsInRange = cards
+                    .filter(
+                      (card) => card.scrumId >= min && card.scrumId <= max,
+                    )
+                    .map((card) => card.id);
+                }
 
-              const newSelection = new Set(selection);
-              if (selected) {
-                cardsInRange.forEach((id) => newSelection.add(id));
-              } else {
-                cardsInRange.forEach((id) => newSelection.delete(id));
-              }
-              setSelection(newSelection);
-              lastSelectedCard.current = cardInfo.scrumId;
-            }}
-            onClick={() => {
-              setDetailId(cardInfo.id);
-            }}
-          >
-            {renderCard(cardInfo)}
-          </SelectableCard>
-        ))}
-      </div>
+                const newSelection = new Set(selection);
+                if (selected) {
+                  cardsInRange.forEach((id) => newSelection.add(id));
+                } else {
+                  cardsInRange.forEach((id) => newSelection.delete(id));
+                }
+                setSelection(newSelection);
+                lastSelectedCard.current = cardInfo.scrumId;
+              }}
+              onClick={() => {
+                setDetailId(cardInfo.id);
+              }}
+            >
+              {renderCard(cardInfo)}
+            </SelectableCard>
+          ))}
+        </div>
+      )}
+      {cards.length === 0 && !isLoading && noCardsMessage && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 text-center">
+          <span className="-mb-10 text-[100px] text-gray-500">
+            <NoCardsIcon fontSize="inherit" />
+          </span>
+          <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+            {noCardsMessage}
+          </h1>
+        </div>
+      )}
     </div>
   );
 }
