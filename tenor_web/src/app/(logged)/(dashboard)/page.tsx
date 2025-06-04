@@ -2,7 +2,7 @@
 
 import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatusDashboard";
 import ProjectList from "./ProjectList";
-import ActivityProjectsOverview from "./ActivityProjectsOverview";
+import ActivityProjectDashboard from "./ActivityProjectsOverview";
 
 export default function ProjectPage() {
   return (
@@ -15,7 +15,7 @@ export default function ProjectPage() {
         <ProjectStatusDashboard />
         <div className="my-6" />
 
-        <ActivityProjectsOverview />
+        <ActivityProjectDashboard />
       </div>
     </div>
   );

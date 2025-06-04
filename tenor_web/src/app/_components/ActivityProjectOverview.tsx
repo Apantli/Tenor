@@ -1,22 +1,14 @@
 "use client";
 import { api } from "~/trpc/react";
 import { useState } from "react";
-import ProfilePicture from "./ProfilePicture";
 import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
-import { capitalize } from "@mui/material";
-import {
-  getAccentHexColorByCardType,
-  getPillColorByActivityType,
-} from "~/lib/helpers/colorUtils";
-import TagComponent from "./TagComponent";
-import { getRelativeTimeString } from "~/lib/helpers/firestoreTimestamp";
-import { displayNameByType } from "~/lib/helpers/typeDisplayName";
 import SearchBar from "./inputs/search/SearchBar";
 import { getSearchableNameByType } from "~/lib/helpers/searchableNames";
 import { cn } from "~/lib/helpers/utils";
 import type { ClassNameValue } from "tailwind-merge";
 import NoActivityIcon from "@mui/icons-material/FormatListBulleted";
 import LoadingSpinner from "./LoadingSpinner";
+import ActivityCard from "./cards/ActivityCard";
 
 interface Props {
   projectId: string;
@@ -31,7 +23,6 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
     api.projects.getActivityDetails.useQuery({ projectId });
 
   const [searchText, setSearchText] = useState("");
-  const firebaseTimestampToDate = getRelativeTimeString;
   const formatAnyScrumId = useFormatAnyScrumId(projectId);
 
   // Create a better user map that tries multiple ID fields
@@ -125,71 +116,13 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
             if (!itemTitle && !scrumId) return null;
 
             return (
-              <div
-                key={item.id}
-                className="flex w-full flex-row border-b-2 px-3 py-4 transition hover:bg-gray-100"
-              >
-                <div className="flex w-3/4 flex-col items-start">
-                  <h3 className="line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
-                    {scrumId && (
-                      <>
-                        {scrumId}
-                        {itemTitle && (
-                          <>
-                            : <span className="font-normal">{itemTitle}</span>
-                          </>
-                        )}
-                      </>
-                    )}
-                  </h3>
-                  <div className="flex w-full flex-row items-center justify-start">
-                    {user ? (
-                      <ProfilePicture
-                        pictureClassName="self-center"
-                        user={user}
-                      />
-                    ) : item.userId ? (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-medium text-gray-600">
-                        <span title={`Unknown user: ${item.userId}`}>?</span>
-                      </div>
-                    ) : (
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-xs text-gray-400">
-                        <span>-</span>
-                      </div>
-                    )}
-
-                    <div className="flex flex-col pl-2">
-                      {/* Show generic user label or system */}
-                      <p className="text-xs text-gray-600">
-                        {item.userId ? "" : "System"}
-                      </p>
-
-                      {/* Show date */}
-                      {item.date && (
-                        <p className="text-s text-blakc self-center">
-                          {firebaseTimestampToDate(item.date)}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex w-1/4 flex-row items-end justify-end gap-3">
-                  {/* Action tag with dynamic background color */}
-                  <TagComponent
-                    color={getPillColorByActivityType(item.action)}
-                    reducedPadding
-                  >
-                    {capitalize(item.action || "")}
-                  </TagComponent>
-
-                  {/* Type badges - keep as is */}
-                  <TagComponent
-                    color={getAccentHexColorByCardType(item.type)}
-                    reducedPadding
-                  >
-                    {displayNameByType[item.type]}
-                  </TagComponent>
-                </div>
+              <div key={item.id}>
+                <ActivityCard
+                  item={item}
+                  key={item.id}
+                  formattedScrumId={scrumId}
+                  user={user}
+                />
               </div>
             );
           })}

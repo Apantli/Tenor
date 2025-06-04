@@ -47,7 +47,7 @@ import {
   getRolesRef,
   getSettingsRef,
   getTopProjectStatusCacheRef,
-  getTopItemActivityDetails,
+  getActivityDetailsFromTopProjects,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
@@ -507,11 +507,12 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
-  getTopActivityDetails: protectedProcedure.query(async ({ ctx }) => {
-    const userId = ctx.session.user.uid;
-    return await getTopItemActivityDetails(ctx.firestore, userId);
-  }),
-
+  getActivityDetailsFromTopProjects: protectedProcedure.query(
+    async ({ ctx }) => {
+      const userId = ctx.session.user.uid;
+      return await getActivityDetailsFromTopProjects(ctx.firestore, userId);
+    },
+  ),
   getGraphBurndownData: protectedProcedure
 
     .input(z.object({ projectId: z.string() }))

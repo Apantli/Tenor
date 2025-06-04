@@ -468,7 +468,7 @@ export const getItemActivityDetails = async (
   return results;
 };
 
-export const getTopItemActivityDetails = async (
+export const getActivityDetailsFromTopProjects = async (
   firestore: Firestore,
   userId: string,
 ) => {

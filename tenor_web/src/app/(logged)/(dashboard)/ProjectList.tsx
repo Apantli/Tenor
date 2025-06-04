@@ -26,7 +26,7 @@ export default function ProjectList() {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center">
+      <div className="flex h-[calc(80vh)] justify-center">
         <LoadingSpinner color="primary" />
       </div>
     );
