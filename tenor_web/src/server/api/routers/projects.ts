@@ -40,7 +40,6 @@ import {
   getItemActivityDetails,
   computeTopProjectStatus,
   getProject,
-  getProjectActivities,
   getProjectRef,
   getProjectsRef,
   getProjectStatus,
@@ -51,7 +50,6 @@ import {
   generateBurndownHistory,
   getBurndownData,
   getTopItemActivityDetails,
-  getTopProjectActivities,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
@@ -499,13 +497,6 @@ export const projectsRouter = createTRPCRouter({
       );
     }),
 
-  getProjectActivities: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return await getProjectActivities(ctx.firestore, projectId);
-    }),
-
   getActivityDetails: protectedProcedure
     .input(
       z.object({
@@ -516,11 +507,6 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
-
-  getTopProjectActivities: protectedProcedure.query(async ({ ctx }) => {
-    const user = ctx.session.user.uid;
-    return await getTopProjectActivities(ctx.firestore, user);
-  }),
 
   getTopActivityDetails: protectedProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.uid;

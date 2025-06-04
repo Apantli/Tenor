@@ -1,15 +1,14 @@
 import type { Firestore } from "firebase-admin/firestore";
 import type {
-  ActivityItem,
   AllBasicItemType,
   ProjectActivity,
-  ProjectActivityItem,
-  ProjectProjectActivity,
+  ProjectActivityDetail,
   ProjectStatusCache,
   Role,
   Size,
   StatusTag,
   WithId,
+  WithProjectId,
 } from "~/lib/types/firebaseSchemas";
 import {
   ActivitySchema,
@@ -137,6 +136,18 @@ export const getTopProjectStatusCacheRef = (
   return getGlobalUserRef(firestore, userId)
     .collection("cache")
     .doc("TopProjectsStatus");
+};
+
+export const getTopProjectStatusCache = async (
+  firestore: Firestore,
+  userId: string,
+): Promise<ProjectStatusCache | undefined> => {
+  const cacheRef = getTopProjectStatusCacheRef(firestore, userId);
+  const cacheSnapshot = await cacheRef.get();
+  if (!cacheSnapshot.exists) {
+    return undefined;
+  }
+  return cacheSnapshot.data() as ProjectStatusCache;
 };
 
 /**
@@ -423,7 +434,8 @@ export const getItemActivityDetails = async (
   const activities = await getProjectActivities(firestore, projectId);
 
   // Array to hold the results
-  const results = {} as Record<string, ActivityItem>;
+  // const results = {} as Record<string, ActivityItem>;
+  const results: WithId<ProjectActivityDetail>[] = [];
 
   // Iterate in the activityMap to get the item type and itemId
   for (const activity of activities) {
@@ -454,11 +466,10 @@ export const getItemActivityDetails = async (
     // Get the item data
     const data = {
       ...item,
-      activity: activity,
-      type: itemType,
-    } as ActivityItem;
+      ...activity,
+    } as WithId<ProjectActivityDetail>;
 
-    results[data.id] = data;
+    results.push(data);
   }
 
   return results;
@@ -468,76 +479,28 @@ export const getTopItemActivityDetails = async (
   firestore: Firestore,
   userId: string,
 ) => {
-  const topProjects = await getTopProjectStatusCacheRef(
-    firestore,
-    userId,
-  ).get();
-
-  if (!topProjects.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "No top projects found",
-    });
+  const topProjects = await getTopProjectStatusCache(firestore, userId);
+  if (!topProjects) {
+    return [];
   }
 
-  const topProjectsData = topProjects.data() as ProjectStatusCache;
-  const results = {} as Record<string, ProjectActivityItem>;
-  // Iterate through each top project and fetch activities
-  for (const project of topProjectsData.topProjects) {
-    // get getItemActivityDetails from fromt and join to result
+  const results: WithProjectId<WithId<ProjectActivityDetail>>[] = [];
+  for (const project of topProjects.topProjects) {
     const activities = await getItemActivityDetails(
       firestore,
       project.projectId,
     );
-    for (const itemId in activities) {
-      const item = activities[itemId];
+    for (const item of activities) {
       if (!item) continue;
 
-      results[item.id] = {
+      results.push({
         ...item,
         projectId: project.projectId,
-      } as ProjectActivityItem;
+      } as WithProjectId<WithId<ProjectActivityDetail>>);
     }
   }
-  console.log("HERE2", Object.keys(results).length);
+
   return results;
-};
-
-export const getTopProjectActivities = async (
-  firestore: Firestore,
-  userId: string,
-) => {
-  // Get all projects for the user
-  const topProjects = await getTopProjectStatusCacheRef(
-    firestore,
-    userId,
-  ).get();
-
-  if (!topProjects.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "No top projects found",
-    });
-  }
-
-  const topProjectsData = topProjects.data() as ProjectStatusCache;
-  const activities: WithId<ProjectProjectActivity>[] = [];
-  for (const project of topProjectsData.topProjects) {
-    const projectActivities = await getProjectActivities(
-      firestore,
-      project.projectId,
-    );
-
-    for (const activity of projectActivities) {
-      activities.push({
-        ...activity,
-        projectId: project.projectId,
-      } as WithId<ProjectProjectActivity>);
-    }
-  }
-
-  console.log("HERE", activities.length);
-  return activities;
 };
 
 export const getActivityItemByType = async (
@@ -545,7 +508,7 @@ export const getActivityItemByType = async (
   projectId: string,
   itemId: string,
   itemType: AllBasicItemType,
-): Promise<Omit<ActivityItem, "activity" | "type"> | undefined> => {
+): Promise<{ name: string; scrumId: number } | undefined> => {
   switch (itemType) {
     case "TS": // Task
       return await getTask(firestore, projectId, itemId);

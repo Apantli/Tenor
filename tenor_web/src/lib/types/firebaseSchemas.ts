@@ -13,6 +13,7 @@ import type { Timestamp, Firestore } from "firebase-admin/firestore";
 /// Big categories
 
 export type WithId<T> = T & { id: string };
+export type WithProjectId<T> = T & { projectId: string };
 
 export interface SprintInfo {
   number: number;
@@ -284,20 +285,9 @@ export interface ProjectActivity {
   action: ActionType;
 }
 
-export interface ActivityItem {
-  id: string;
+export interface ProjectActivityDetail extends ProjectActivity {
   name: string;
-  type: AllBasicItemType;
   scrumId: number;
-  activity: WithId<ProjectActivity>;
-}
-
-export interface ProjectActivityItem extends ActivityItem {
-  projectId: string;
-}
-
-export interface ProjectProjectActivity extends ProjectActivity {
-  projectId: string;
 }
 
 export interface UserHappiness {
