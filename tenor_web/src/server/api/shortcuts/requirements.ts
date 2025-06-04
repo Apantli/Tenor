@@ -35,25 +35,6 @@ export const getRequirementRef = (
   return getRequirementsRef(firestore, projectId).doc(requirementId);
 };
 
-// FIXME: This may overlap, this isnt quite right
-/**
- * @function getRequirementNewId
- * @description Gets the next available requirement ID for a specific project
- * @param firestore A Firestore instance
- * @param projectId The ID of the project
- * @returns {Promise<number>} The next available requirement ID
- */
-export const getRequirementNewId = async (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  const requirementsRef = getRequirementsRef(firestore, projectId)
-    .count()
-    .get();
-  const requirementsCount = (await requirementsRef).data().count;
-  return requirementsCount + 1;
-};
-
 /**
  * @function getRequirements
  * @description Retrieves all non-deleted requirements associated with a specific project

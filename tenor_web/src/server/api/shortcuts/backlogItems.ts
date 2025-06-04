@@ -50,25 +50,6 @@ export const getBacklogItemRef = (
   return getBacklogItemsRef(firestore, projectId).doc(backlogItemId);
 };
 
-// FIXME: This may overlap, this isnt quite right
-/**
- * @function getBacklogItemNewId
- * @description Gets the next available backlog item ID for a specific project
- * @param firestore A Firestore instance
- * @param projectId The ID of the project
- * @returns {Promise<number>} The next available backlog item ID
- */
-export const getBacklogItemNewId = async (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  const backlogItemsRef = getBacklogItemsRef(firestore, projectId)
-    .count()
-    .get();
-  const backlogItemsCount = (await backlogItemsRef).data().count;
-  return backlogItemsCount + 1;
-};
-
 /**
  * @function getBacklogItems
  * @description Retrieves all non-deleted backlog items associated with a specific project

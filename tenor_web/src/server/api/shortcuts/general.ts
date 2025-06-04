@@ -24,10 +24,7 @@ import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { addDays, differenceInDays } from "date-fns";
-import type {
-  BurndownChartData,
-  BurndownDataPoint,
-} from "~/lib/defaultValues/burndownChart";
+import type { BurndownChartData, BurndownDataPoint } from "~/lib/defaultValues/burndownChart";
 import { getTask } from "./tasks";
 import { getIssue } from "./issues";
 import { getUserStory } from "./userStories";
@@ -513,10 +510,7 @@ export const getBurndownData = async (
 
   const sprintDuration = differenceInDays(endDate, startDate) + 1;
   const today = new Date();
-  const currentDay = Math.min(
-    differenceInDays(today, startDate),
-    sprintDuration - 1,
-  );
+  const currentDay = Math.min(differenceInDays(today, startDate), sprintDuration - 1);
 
   const burndownLine: BurndownChartData = [];
   for (let day = 0; day <= sprintDuration; day++) {
@@ -548,9 +542,7 @@ export const getBurndownData = async (
     });
   }
 
-  return [...burndownLine, ...actualBurndown].sort(
-    (a, b) => a.sprintDay - b.sprintDay,
-  );
+  return [...burndownLine, ...actualBurndown].sort((a, b) => a.sprintDay - b.sprintDay);
 };
 
 export const generateBurndownHistory = async (
@@ -571,7 +563,7 @@ export const generateBurndownHistory = async (
   for (let i = 0; i < effectiveDays; i++) {
     const date = addDays(startDate, i);
     const timestamp = Timestamp.fromDate(date);
-
+    
     try {
       const completedCount = await getItemActivityTask(
         firestore,
@@ -582,7 +574,7 @@ export const generateBurndownHistory = async (
       result.push({
         day: i,
         date: date.toISOString(),
-        completedCount,
+        completedCount
       });
     } catch (e) {
       console.error(`Error fetching tasks for date ${date.toISOString()}:`, e);
@@ -595,4 +587,4 @@ export const generateBurndownHistory = async (
   }
 
   return result;
-};
+}

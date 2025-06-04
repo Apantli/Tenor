@@ -55,23 +55,6 @@ export const getIssueRef = (
   return getIssuesRef(firestore, projectId).doc(issueId);
 };
 
-// FIXME: This may overlap, this isnt quite right
-/**
- * @function getIssueNewId
- * @description Gets the next available issue ID for a specific project
- * @param firestore A Firestore instance
- * @param projectId The ID of the project
- * @returns {Promise<number>} The next available issue ID
- */
-export const getIssueNewId = async (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  const issuesRef = getIssuesRef(firestore, projectId).count().get();
-  const issuesCount = (await issuesRef).data().count;
-  return issuesCount + 1;
-};
-
 /**
  * @function getIssues
  * @description Retrieves all non-deleted issues associated with a specific project

@@ -61,23 +61,6 @@ export const getUserStoryRef = (
   return getUserStoriesRef(firestore, projectId).doc(userStoryId);
 };
 
-// FIXME: This may overlap, this isnt quite right
-/**
- * @function getUserStoryNewId
- * @description Gets the next available user story ID for a specific project
- * @param firestore A Firestore instance
- * @param projectId The ID of the project
- * @returns {Promise<number>} The next available user story ID
- */
-export const getUserStoryNewId = async (
-  firestore: Firestore,
-  projectId: string,
-) => {
-  const userStoriesRef = getUserStoriesRef(firestore, projectId).count().get();
-  const userStoriesCount = (await userStoriesRef).data().count;
-  return userStoriesCount + 1;
-};
-
 /**
  * @function getUserStories
  * @description Retrieves all non-deleted user stories associated with a specific project

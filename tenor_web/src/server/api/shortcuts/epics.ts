@@ -31,20 +31,6 @@ export const getEpicRef = (
   return getEpicsRef(firestore, projectId).doc(epicId);
 };
 
-// FIXME: This may overlap, this isnt quite right
-/**
- * @function getEpicNewId
- * @description Gets the next available epic ID for a specific project
- * @param firestore A Firestore instance
- * @param projectId The ID of the project
- * @returns {Promise<number>} The next available epic ID
- */
-export const getEpicNewId = async (firestore: Firestore, projectId: string) => {
-  const epicsRef = getEpicsRef(firestore, projectId).count().get();
-  const epicsCount = (await epicsRef).data().count;
-  return epicsCount + 1;
-};
-
 /**
  * @function getEpics
  * @description Retrieves all non-deleted epics associated with a specific project
