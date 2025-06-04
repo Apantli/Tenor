@@ -299,6 +299,10 @@ export default function ProjectSprints() {
     setShowNewBacklogItem(false);
     // setUserStoryId(userStoryId); // TODO: Implement when detail popup is ready
   };
+
+  const hiddenWithoutBacklog = {
+    hidden: !showBacklog,
+  };
   // #endregion
 
   // #region Drag and Drop Utils
@@ -421,10 +425,6 @@ export default function ProjectSprints() {
     }, 3000);
   };
   // #endregion
-
-  const hiddenWithoutBacklog = {
-    hidden: !showBacklog,
-  };
 
   return (
     <>
