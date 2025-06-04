@@ -2,10 +2,12 @@
 
 import { useParams, usePathname } from "next/navigation";
 import React, { type MouseEventHandler } from "react";
+import { useEffect } from "react";
 import { cn } from "~/lib/helpers/utils";
 import InterceptedLink from "./InterceptableLink";
 import { api } from "~/trpc/react";
 import { tabs, tabsMetaInformation } from "~/lib/tabs";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 
 interface Props {
   disabled?: boolean;
@@ -13,6 +15,7 @@ interface Props {
 }
 export default function Tabbar({ disabled, mainPageName }: Props) {
   const pathname = usePathname();
+  const { user } = useFirebaseAuth();
   const { projectId } = useParams();
   const projectPath = `/project/${projectId as string}`;
   let cutPathname = pathname.slice(projectPath.length) || "/";
@@ -28,6 +31,11 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     });
   };
 
+  const ensureTeamProgress =
+    api.sprintRetrospectives.ensureRetrospectiveTeamProgress.useMutation();
+  const ensurePersonalProgress =
+    api.sprintRetrospectives.ensureRetrospectivePersonalProgress.useMutation();
+
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: (projectId as string) ?? "",
   });
@@ -41,6 +49,20 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
         enabled: !!projectId,
       },
     );
+
+  useEffect(() => {
+    if (previousSprint && projectId) {
+      ensureTeamProgress.mutate({
+        projectId: projectId as string,
+        sprintId: previousSprint.id,
+      });
+      ensurePersonalProgress.mutate({
+        projectId: projectId as string,
+        sprintId: previousSprint.id,
+        userId: user?.uid ?? "",
+      });
+    }
+  }, [projectId, previousSprint]);
 
   return (
     <div className="no-scrollbar flex h-8 min-h-8 w-screen shrink-0 items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
