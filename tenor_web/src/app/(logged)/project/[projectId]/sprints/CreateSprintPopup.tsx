@@ -131,7 +131,7 @@ export default function CreateSprintPopup({
       show={showSmallPopup}
       reduceTopPadding
       size="small"
-      className="min-h-[400px] min-w-[500px]"
+      className="h-[470px] w-[500px]"
       dismiss={() => setShowSmallPopup(false)}
       footer={
         <div className="flex gap-2">
