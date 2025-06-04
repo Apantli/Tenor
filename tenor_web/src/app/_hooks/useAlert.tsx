@@ -191,12 +191,18 @@ export const useAlert = () => {
     // #region Issues
     issueNameError: () =>
       alertTemplates.oops("Please provide a name for the issue."),
-    issueStoryCreateError: () =>
+    issueCreateError: () =>
       alertTemplates.error("Failed to create issue. Please try again."),
     // #endregion
     // #region Epic
     epicNameError: () =>
       alertTemplates.oops("Please enter a name for the epic."),
+    // #endregion
+    // #region Tasks
+    taskNameError: () =>
+      alertTemplates.oops("Please enter a name for the epic."),
+    taskCreateError: () =>
+      alertTemplates.error("Failed to create task. Please try again."),
     // #endregion
     // #region Requirements
     requirementNameError: () =>
