@@ -122,8 +122,8 @@ export default function Popup({
           ref={containerRef}
           data-cy="popup"
         >
-          <div className="grow justify-between gap-4 overflow-x-hidden overflow-y-hidden">
-            <div className="flex h-full justify-between">
+          <div className="flex grow justify-between gap-4 overflow-x-hidden overflow-y-hidden">
+            <div className="flex flex-1 justify-between">
               <div
                 className={cn("flex grow flex-col justify-between pt-8", {
                   "pt-0": !!reduceTopPadding,
