@@ -3,6 +3,9 @@ import type {
   ActivityItem,
   AllBasicItemType,
   ProjectActivity,
+  ProjectActivityItem,
+  ProjectProjectActivity,
+  ProjectStatusCache,
   Role,
   Size,
   StatusTag,
@@ -24,7 +27,10 @@ import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Timestamp } from "firebase-admin/firestore";
 import { addDays, differenceInDays } from "date-fns";
-import type { BurndownChartData, BurndownDataPoint } from "~/lib/defaultValues/burndownChart";
+import type {
+  BurndownChartData,
+  BurndownDataPoint,
+} from "~/lib/defaultValues/burndownChart";
 import { getTask } from "./tasks";
 import { getIssue } from "./issues";
 import { getUserStory } from "./userStories";
@@ -458,6 +464,82 @@ export const getItemActivityDetails = async (
   return results;
 };
 
+export const getTopItemActivityDetails = async (
+  firestore: Firestore,
+  userId: string,
+) => {
+  const topProjects = await getTopProjectStatusCacheRef(
+    firestore,
+    userId,
+  ).get();
+
+  if (!topProjects.exists) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "No top projects found",
+    });
+  }
+
+  const topProjectsData = topProjects.data() as ProjectStatusCache;
+  const results = {} as Record<string, ProjectActivityItem>;
+  // Iterate through each top project and fetch activities
+  for (const project of topProjectsData.topProjects) {
+    // get getItemActivityDetails from fromt and join to result
+    const activities = await getItemActivityDetails(
+      firestore,
+      project.projectId,
+    );
+    for (const itemId in activities) {
+      const item = activities[itemId];
+      if (!item) continue;
+
+      results[item.id] = {
+        ...item,
+        projectId: project.projectId,
+      } as ProjectActivityItem;
+    }
+  }
+  console.log("HERE2", Object.keys(results).length);
+  return results;
+};
+
+export const getTopProjectActivities = async (
+  firestore: Firestore,
+  userId: string,
+) => {
+  // Get all projects for the user
+  const topProjects = await getTopProjectStatusCacheRef(
+    firestore,
+    userId,
+  ).get();
+
+  if (!topProjects.exists) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "No top projects found",
+    });
+  }
+
+  const topProjectsData = topProjects.data() as ProjectStatusCache;
+  const activities: WithId<ProjectProjectActivity>[] = [];
+  for (const project of topProjectsData.topProjects) {
+    const projectActivities = await getProjectActivities(
+      firestore,
+      project.projectId,
+    );
+
+    for (const activity of projectActivities) {
+      activities.push({
+        ...activity,
+        projectId: project.projectId,
+      } as WithId<ProjectProjectActivity>);
+    }
+  }
+
+  console.log("HERE", activities.length);
+  return activities;
+};
+
 export const getActivityItemByType = async (
   firestore: Firestore,
   projectId: string,
@@ -506,7 +588,10 @@ export const getBurndownData = async (
 
   const sprintDuration = differenceInDays(endDate, startDate) + 1;
   const today = new Date();
-  const currentDay = Math.min(differenceInDays(today, startDate), sprintDuration - 1);
+  const currentDay = Math.min(
+    differenceInDays(today, startDate),
+    sprintDuration - 1,
+  );
 
   const burndownLine: BurndownChartData = [];
   for (let day = 0; day <= sprintDuration; day++) {
@@ -538,7 +623,9 @@ export const getBurndownData = async (
     });
   }
 
-  return [...burndownLine, ...actualBurndown].sort((a, b) => a.sprintDay - b.sprintDay);
+  return [...burndownLine, ...actualBurndown].sort(
+    (a, b) => a.sprintDay - b.sprintDay,
+  );
 };
 
 export const generateBurndownHistory = async (
@@ -559,7 +646,7 @@ export const generateBurndownHistory = async (
   for (let i = 0; i < effectiveDays; i++) {
     const date = addDays(startDate, i);
     const timestamp = Timestamp.fromDate(date);
-    
+
     try {
       const completedCount = await getItemActivityTask(
         firestore,
@@ -570,7 +657,7 @@ export const generateBurndownHistory = async (
       result.push({
         day: i,
         date: date.toISOString(),
-        completedCount
+        completedCount,
       });
     } catch (e) {
       console.error(`Error fetching tasks for date ${date.toISOString()}:`, e);
@@ -583,4 +670,4 @@ export const generateBurndownHistory = async (
   }
 
   return result;
-}
+};

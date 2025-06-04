@@ -50,6 +50,8 @@ import {
   getTopProjectStatusCacheRef,
   generateBurndownHistory,
   getBurndownData,
+  getTopItemActivityDetails,
+  getTopProjectActivities,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
@@ -515,41 +517,55 @@ export const projectsRouter = createTRPCRouter({
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
 
+  getTopProjectActivities: protectedProcedure.query(async ({ ctx }) => {
+    const user = ctx.session.user.uid;
+    return await getTopProjectActivities(ctx.firestore, user);
+  }),
+
+  getTopActivityDetails: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.uid;
+    return await getTopItemActivityDetails(ctx.firestore, userId);
+  }),
+
   getBurndownData: protectedProcedure
-    .input(z.object({ projectId: z.string()}))
+    .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      
-      const status = await getProjectStatus(
-        ctx.firestore, projectId, ctx.firebaseAdmin.app())
 
-      const startDate = typeof status.currentSprintStartDate === "string"
-        ? parseISO(status.currentSprintStartDate)
-        : status.currentSprintStartDate
-          ? new Date(status.currentSprintStartDate)
-          : new Date();
-        
-      const endDate = typeof status.currentSprintEndDate === "string"
-        ? parseISO(status.currentSprintEndDate)
-        : status.currentSprintEndDate
-          ? new Date(status.currentSprintEndDate)
-          : new Date();
-        
+      const status = await getProjectStatus(
+        ctx.firestore,
+        projectId,
+        ctx.firebaseAdmin.app(),
+      );
+
+      const startDate =
+        typeof status.currentSprintStartDate === "string"
+          ? parseISO(status.currentSprintStartDate)
+          : status.currentSprintStartDate
+            ? new Date(status.currentSprintStartDate)
+            : new Date();
+
+      const endDate =
+        typeof status.currentSprintEndDate === "string"
+          ? parseISO(status.currentSprintEndDate)
+          : status.currentSprintEndDate
+            ? new Date(status.currentSprintEndDate)
+            : new Date();
+
       // Generate historical data
       const burndownHistory = await generateBurndownHistory(
         ctx.firestore,
         projectId,
         startDate,
-        new Date() // Only up to today
-      )
+        new Date(), // Only up to today
+      );
 
-      
       return getBurndownData(
         startDate,
         endDate,
         status.taskCount,
         status.completedCount,
-        burndownHistory
-      )
-    })
+        burndownHistory,
+      );
+    }),
 });

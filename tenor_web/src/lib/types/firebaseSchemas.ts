@@ -291,3 +291,11 @@ export interface ActivityItem {
   scrumId: number;
   activity: WithId<ProjectActivity>;
 }
+
+export interface ProjectActivityItem extends ActivityItem {
+  projectId: string;
+}
+
+export interface ProjectProjectActivity extends ProjectActivity {
+  projectId: string;
+}
