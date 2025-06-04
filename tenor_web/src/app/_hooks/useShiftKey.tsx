@@ -3,24 +3,28 @@ import { useEffect, useState } from "react";
 export default function useShiftKey() {
   const [shiftPressed, setShiftPressed] = useState(false);
 
-  const onKeyDown: EventListener = (e) => {
-    if ((e as KeyboardEvent).key === "Shift") {
-      setShiftPressed(true);
-    }
-  };
-  const onKeyUp: EventListener = (e) => {
-    if ((e as KeyboardEvent).key === "Shift") {
-      setShiftPressed(false);
-    }
-  };
-
   useEffect(() => {
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("keyup", onKeyUp);
+    const onKeyDown = (e: KeyboardEvent) => {
+      setShiftPressed(e.shiftKey);
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      setShiftPressed(e.shiftKey); // Should be false when Shift is released
+    };
+
+    const onBlur = () => {
+      // Reset state — we can't trust it anymore
+      setShiftPressed(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("blur", onBlur);
 
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("blur", onBlur);
     };
   }, []);
 
