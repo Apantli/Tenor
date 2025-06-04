@@ -220,7 +220,7 @@ export interface Task extends BasicInfo {
   assignedDate?: Timestamp;
   dueDate?: Date;
   statusChangeDate?: Timestamp;
-  finishedDate?: Date;
+  finishedDate?: Timestamp;
   size: Size | "";
   itemId: string;
   itemType: AnyBacklogItemType;

@@ -16,15 +16,12 @@ import {
 } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
-import { getItemActivityTask } from "./tasks";
 import { getCurrentSprint, getSprint, getTasksFromSprint } from "./sprints";
 import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Timestamp } from "firebase-admin/firestore";
-import { addDays, differenceInDays } from "date-fns";
-import type { BurndownChartData, BurndownDataPoint } from "~/lib/defaultValues/burndownChart";
 import { getTask } from "./tasks";
 import { getIssue } from "./issues";
 import { getUserStory } from "./userStories";

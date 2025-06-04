@@ -56,16 +56,6 @@ const burndownSpec: VisualizationSpec = {
     {
       name: "interpolate",
       value: "linear",
-    },
-    {
-      name: "pulse",
-      value: 1,
-      on: [
-        {
-          events: {type: "timer", throttle: 500},
-          update: "(sin(now() * 0.01) + 1) / 2"
-        }
-      ]
     }
   ],
 
@@ -146,7 +136,6 @@ const burndownSpec: VisualizationSpec = {
       gridOpacity: 0.1,
       format: "d",
       tickCount: 5,
-      tickMinStep: 1,
     },
     {
       orient: "left",
@@ -227,7 +216,7 @@ const burndownSpec: VisualizationSpec = {
           size: { value: 150 },
         },
         update: {
-          size: { signal: "pulse * 200 + 100" },
+          size: { value: 200 },
           opacity: { value: 1 }
         }
       }

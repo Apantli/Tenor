@@ -191,6 +191,7 @@ export const TaskSchema = BasicInfoSchema.extend({
   // finishedDate: TimestampType.nullable(),z
   itemId: z.string(),
   itemType: BacklogItemZodType,
+  statusChangeDate: TimestampType.optional(),
   name: z
     .string()
     .describe("Small (5 word maximum) description of the task")

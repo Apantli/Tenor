@@ -62,11 +62,9 @@ import {
 } from "~/lib/defaultValues/tags";
 import { defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
-import { parseISO } from "date-fns";
 import { getBurndownData } from "../shortcuts/tasks";
 import { getCurrentSprint } from "../shortcuts/sprints";
-import { doc } from "firebase/firestore";
-import { BurndownChartData } from "~/lib/defaultValues/burndownChart";
+import { type BurndownChartData } from "~/lib/defaultValues/burndownChart";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
