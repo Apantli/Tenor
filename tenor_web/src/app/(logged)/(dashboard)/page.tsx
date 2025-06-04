@@ -2,7 +2,7 @@
 
 import { ProjectStatusDashboard } from "~/app/(logged)/(dashboard)/ProjectStatusDashboard";
 import ProjectList from "./ProjectList";
-import ActivityProjectDashboard from "./ActivityProjectsOverview";
+import ActivityProjectDashboard from "./ActivityProjectDashboard";
 
 export default function ProjectPage() {
   return (
