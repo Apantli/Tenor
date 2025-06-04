@@ -26,7 +26,7 @@ export default function EpicPicker({
     projectId: projectId as string,
   });
 
-  const formatEpicScrumId = useFormatEpicScrumId();
+  const formatEpicScrumId = useFormatEpicScrumId(projectId as string);
 
   const getEpicId = (epic: ExistingEpic) => {
     return formatEpicScrumId(epic.scrumId);

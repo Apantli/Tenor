@@ -11,13 +11,7 @@
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { EpicSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import {
-  getEpic,
-  getEpicNewId,
-  getEpicRef,
-  getEpics,
-  getEpicsRef,
-} from "../shortcuts/epics";
+import { getEpic, getEpicRef, getEpics, getEpicsRef } from "../shortcuts/epics";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 
 export const epicsRouter = createTRPCRouter({
@@ -82,13 +76,31 @@ export const epicsRouter = createTRPCRouter({
           action: "update",
         });
       } else {
-        epicData.scrumId = await getEpicNewId(ctx.firestore, projectId);
-        const createEpic = await getEpicsRef(ctx.firestore, projectId).add(epicData);
+        const { id: newEpicId } = await ctx.firestore.runTransaction(
+          async (transaction) => {
+            const epicsRef = getEpicsRef(ctx.firestore, projectId);
+
+            const epicCount = await transaction.get(epicsRef.count());
+
+            const epicDataUpdated = EpicSchema.parse({
+              ...epicData,
+              scrumId: epicCount.data().count + 1,
+            });
+            const docRef = epicsRef.doc();
+
+            transaction.create(docRef, epicDataUpdated);
+
+            return {
+              id: docRef.id,
+            };
+          },
+        );
+
         await LogProjectActivity({
           firestore: ctx.firestore,
           projectId: input.projectId,
           userId: ctx.session.user.uid,
-          itemId: createEpic.id,
+          itemId: newEpicId,
           type: "EP",
           action: "create",
         });

@@ -478,12 +478,16 @@ export const getActivityItemByType = async (
     case "PJ": // Project
       return undefined; // No need to fetch project details here
     case "SP": // Sprint
-      const sprint = await getSprint(firestore, projectId, itemId);
-      return {
-        ...sprint,
-        scrumId: sprint.number,
-        name: "", // Sprints don't have a name
-      };
+      try {
+        const sprint = await getSprint(firestore, projectId, itemId);
+        return {
+          ...sprint,
+          scrumId: sprint.number,
+          name: "", // Sprints don't have a name
+        };
+      } catch {
+        return undefined; // Sprint not found
+      }
     default:
       // Does not happen, but in case new types are added
       throw new TRPCError({

@@ -7,7 +7,7 @@ import {
   useInvalidateQueriesAllSprints,
   useInvalidateQueriesSingleSprint,
 } from "~/app/_hooks/invalidateHooks";
-import { type AlertFunction, useAlert } from "~/app/_hooks/useAlert";
+import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { api } from "~/trpc/react";
 import { type SprintDates } from "./CreateSprintPopup";
@@ -15,23 +15,13 @@ import { Timestamp } from "firebase/firestore";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import useValidateDate from "~/app/_hooks/useValidateDates";
 interface Props {
   sprintId: string;
   showPopup: boolean;
   setShowPopup: (show: boolean) => void;
   otherSprints: SprintDates[] | undefined;
 }
-
-export const showReorderAlert = (alert: AlertFunction) => {
-  alert(
-    "Sprints updated",
-    "The remaining sprints have been renumbered to stay in order.",
-    {
-      type: "success",
-      duration: 8000,
-    },
-  );
-};
 
 export default function EditSprintPopup({
   sprintId,
@@ -45,6 +35,7 @@ export default function EditSprintPopup({
 
   const invalidateQueriesAllSprints = useInvalidateQueriesAllSprints();
   const invalidateQueriesSingleSprint = useInvalidateQueriesSingleSprint();
+  const validateSprintDates = useValidateDate();
 
   const { data: sprintData } = api.sprints.getSprint.useQuery({
     projectId: projectId as string,
@@ -84,25 +75,16 @@ export default function EditSprintPopup({
   const handleUpdateSprint = async () => {
     if (!sprintData) return;
 
-    if (!editForm.startDate || !editForm.endDate) {
-      predefinedAlerts.sprintDatesError();
+    if (
+      !editForm.startDate ||
+      !editForm.endDate ||
+      !validateSprintDates({
+        startDate: editForm.startDate,
+        endDate: editForm.endDate,
+        otherSprints: otherSprints,
+      })
+    ) {
       return;
-    }
-
-    for (const sprint of otherSprints ?? []) {
-      if (
-        (sprint.startDate <= editForm.startDate &&
-          sprint.endDate >= editForm.startDate) ||
-        (sprint.startDate <= editForm.endDate &&
-          sprint.endDate >= editForm.endDate) ||
-        (editForm.startDate <= sprint.startDate &&
-          editForm.endDate >= sprint.startDate) ||
-        (editForm.startDate <= sprint.endDate &&
-          editForm.endDate >= sprint.endDate)
-      ) {
-        predefinedAlerts.sprintDateCollideError(sprint.number);
-        return;
-      }
     }
 
     const result = await modifySprint({
@@ -115,7 +97,7 @@ export default function EditSprintPopup({
       },
     });
     if (result.reorderedSprints) {
-      showReorderAlert(alert);
+      predefinedAlerts.sprintReordered();
     }
     setShowPopup(false);
     await invalidateQueriesSingleSprint(projectId as string, sprintData.id);
@@ -138,7 +120,7 @@ export default function EditSprintPopup({
         sprintId: sprintData.id,
       });
       if (result.reorderedSprints) {
-        showReorderAlert(alert);
+        predefinedAlerts.sprintReordered();
       }
       setShowPopup(false);
       await invalidateQueriesAllSprints(projectId as string);
@@ -174,7 +156,12 @@ export default function EditSprintPopup({
               <PrimaryButton
                 onClick={handleUpdateSprint}
                 loading={isModifying}
-                disabled={!changesMade || isModifying}
+                disabled={
+                  !changesMade ||
+                  isModifying ||
+                  !editForm.startDate ||
+                  !editForm.endDate
+                }
               >
                 Save changes
               </PrimaryButton>

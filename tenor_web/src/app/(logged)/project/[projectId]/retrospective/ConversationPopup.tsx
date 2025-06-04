@@ -276,7 +276,22 @@ export default function ConversationPopup({
         projectId: projectId as string,
         userId: user.uid,
         reviewId: sprintRetrospectiveId,
-        responses: processedAnswers.answers,
+        questionNum: 1,
+        answerText: processedAnswers.answers[0] ?? "",
+      }),
+      saveRetrospectiveAnswer({
+        projectId: projectId as string,
+        userId: user.uid,
+        reviewId: sprintRetrospectiveId,
+        questionNum: 2,
+        answerText: processedAnswers.answers[1] ?? "",
+      }),
+      saveRetrospectiveAnswer({
+        projectId: projectId as string,
+        userId: user.uid,
+        reviewId: sprintRetrospectiveId,
+        questionNum: 3,
+        answerText: processedAnswers.answers[2] ?? "",
       }),
       saveHappiness({
         happiness: processedAnswers.happinessRating,

@@ -20,6 +20,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import { cn } from "~/lib/helpers/utils";
 
 interface TagTableConfig {
   title: string;
@@ -326,9 +327,9 @@ export default function ItemTagTable({ itemTagType }: Props) {
             </div>
           ) : (
             <Table
-              className={`w-[calc(100vw-524px)] ${
-                tableData.length > 5 ? "max-h-[280px] overflow-auto" : ""
-              }`}
+              className={cn("", {
+                "max-h-[280px] overflow-auto": tableData.length > 5,
+              })}
               data={tableData}
               columns={columns}
               extraOptions={

@@ -23,7 +23,6 @@ import {
   getRequirementFocuses,
   getRequirementFocusesRef,
   getRequirementFocusRef,
-  getRequirementNewId,
   getRequirementRef,
   getRequirementsRef,
   getRequirementTable,
@@ -224,20 +223,41 @@ export const requirementsRouter = createTRPCRouter({
         });
         return { id: requirementId };
       } else {
-        requirementData.scrumId = await getRequirementNewId(
-          ctx.firestore,
-          projectId,
+        const { id: newRequirementId } = await ctx.firestore.runTransaction(
+          async (transaction) => {
+            const requirementsRef = getRequirementsRef(
+              ctx.firestore,
+              projectId,
+            );
+
+            const requirementCount = await transaction.get(
+              requirementsRef.count(),
+            );
+
+            const requirementDataUpdated = RequirementSchema.parse({
+              ...requirementData,
+              scrumId: requirementCount.data().count + 1,
+            });
+            const docRef = requirementsRef.doc();
+
+            transaction.create(docRef, requirementDataUpdated);
+
+            await LogProjectActivity({
+              firestore: ctx.firestore,
+              projectId: input.projectId,
+              userId: ctx.session.user.uid,
+              itemId: docRef.id,
+              type: "RE",
+              action: "create",
+            });
+
+            return {
+              id: docRef.id,
+            };
+          },
         );
-        const docRef = await getRequirementsRef(ctx.firestore, projectId).add(requirementData);
-        await LogProjectActivity({
-          firestore: ctx.firestore,
-          projectId: input.projectId,
-          userId: ctx.session.user.uid,
-          itemId: docRef.id,
-          type: "RE",
-          action: "create",
-        });
-        return { id: docRef.id };
+
+        return { id: newRequirementId };
       }
     }),
 

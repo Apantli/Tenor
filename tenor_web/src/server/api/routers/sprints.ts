@@ -23,7 +23,6 @@ import { z } from "zod";
 import {
   getCurrentSprint,
   getSprint,
-  getSprintNewId,
   getSprintRef,
   getSprints,
   getSprintsRef,
@@ -66,11 +65,26 @@ export const sprintsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, sprintData } = input;
+      const { projectId, sprintData: sprintDataRaw } = input;
 
-      sprintData.number = await getSprintNewId(ctx.firestore, projectId);
-      const newSprint = await getSprintsRef(ctx.firestore, projectId).add(
-        sprintData,
+      const { id: newSprintId } = await ctx.firestore.runTransaction(
+        async (transaction) => {
+          const sprintsRef = getSprintsRef(ctx.firestore, projectId);
+
+          const sprintCount = await transaction.get(sprintsRef.count());
+
+          const sprintData = SprintSchema.parse({
+            ...sprintDataRaw,
+            scrumId: sprintCount.data().count + 1,
+          });
+          const docRef = sprintsRef.doc();
+
+          transaction.create(docRef, sprintData);
+
+          return {
+            id: docRef.id,
+          };
+        },
       );
 
       const didReorderSprints = await updateSprintNumberOrder(
@@ -82,7 +96,7 @@ export const sprintsRouter = createTRPCRouter({
         firestore: ctx.firestore,
         projectId: input.projectId,
         userId: ctx.session.user.uid,
-        itemId: newSprint.id,
+        itemId: newSprintId,
         type: "SP",
         action: "create",
       });

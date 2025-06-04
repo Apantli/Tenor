@@ -47,16 +47,82 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
     if (remainingDays <= 0) {
       message = "The sprint is complete.";
     } else {
-      const months = Math.floor(remainingDays / 30);
-      const weeks = Math.floor((remainingDays % 30) / 7);
-      const days = remainingDays % 7;
+      // Find the current sprint object to get start/end dates
+      const sprint = sprints?.find(
+        (s) => s.id.toString() === projectStatus?.currentSprintId,
+      );
 
-      const parts = [];
-      if (months > 0) parts.push(`${months} month${months !== 1 ? "s" : ""}`);
-      if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? "s" : ""}`);
-      if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
+      if (sprint) {
+        const startDate = new Date(sprint.startDate);
+        const endDate = new Date(sprint.endDate);
+        const today = new Date();
 
-      message = `${parts.join(", ")} left.`;
+        // Calculate total sprint duration
+        const totalDuration =
+          (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+        const timeElapsed =
+          (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+
+        // Calculate percentages
+        const percentTimeElapsed = Math.min(
+          100,
+          (timeElapsed / totalDuration) * 100,
+        );
+
+        let percentTasksCompleted = 0;
+        // Calculate percentage of tasks completed
+        if (projectStatus?.taskCount != null) {
+          percentTasksCompleted =
+            projectStatus?.taskCount > 0
+              ? (projectStatus.completedCount / projectStatus.taskCount) * 100
+              : 100;
+        }
+
+        // Format remaining time display
+        const months = Math.floor(remainingDays / 30);
+        const weeks = Math.floor((remainingDays % 30) / 7);
+        const days = remainingDays % 7;
+
+        const parts = [];
+        if (months > 0) parts.push(`${months} month${months !== 1 ? "s" : ""}`);
+        if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? "s" : ""}`);
+        if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
+
+        // Determine if behind schedule with 10% buffer
+        const isBehindSchedule =
+          percentTasksCompleted < percentTimeElapsed - 10;
+
+        if (isBehindSchedule) {
+          message = (
+            <>
+              <span className="text-app-fail">Running behind •</span>{" "}
+              {parts.join(", ")} left.
+            </>
+          );
+        } else {
+          message = (
+            <>
+              <span className="text-app-primary">On track •</span>{" "}
+              {parts.join(", ")} left.
+            </>
+          );
+        }
+      } else {
+        // Fallback if sprint data is incomplete
+        const parts = [];
+        if (remainingDays > 0) {
+          const months = Math.floor(remainingDays / 30);
+          const weeks = Math.floor((remainingDays % 30) / 7);
+          const days = remainingDays % 7;
+
+          if (months > 0)
+            parts.push(`${months} month${months !== 1 ? "s" : ""}`);
+          if (weeks > 0) parts.push(`${weeks} week${weeks !== 1 ? "s" : ""}`);
+          if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
+
+          message = <>{parts.join(", ")} left.</>;
+        }
+      }
     }
   }
 
@@ -69,7 +135,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="flex h-full w-full flex-col gap-5">
+    <div className="gap- flex h-full w-full flex-col justify-between">
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold">Status</h2>
         <div className="flex items-center gap-2">
@@ -82,17 +148,15 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
         taskCount={projectStatus?.taskCount ?? 0}
         completedCount={projectStatus?.completedCount ?? 0}
       />
-      <div className="mt-4 flex flex-col items-center justify-between gap-2 md:flex-row md:items-start">
-        <div className="w-full">
+      <div className="mt-4 flex flex-row items-center justify-between gap-2">
+        <div>
           <AssignUsersList users={projectStatus?.assignedUssers} />
         </div>
-        <div className="mt-4 flex w-full justify-start md:mt-0 md:justify-end">
-          {message && (
-            <p className="text-m font-semibold text-gray-500">
-              <span className="text-app-primary">On track •</span> {message}
-            </p>
-          )}
-        </div>
+
+        <p className="text-m flex-1 text-right font-semibold text-gray-500">
+          {message && message}
+          {!message && "Start a sprint to see the project status"}
+        </p>
       </div>
     </div>
   );
