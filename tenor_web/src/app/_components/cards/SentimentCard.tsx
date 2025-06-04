@@ -21,8 +21,6 @@ export const SentimentCard = ({ projectId, className }: SentimentData) => {
     { retry: 0, refetchOnWindowFocus: true },
   );
 
-  console.log("usersSentiment", usersSentiment);
-
   // Count happiness values by ranges
   const happinessCounts = usersSentiment?.reduce(
     (acc, user) => {

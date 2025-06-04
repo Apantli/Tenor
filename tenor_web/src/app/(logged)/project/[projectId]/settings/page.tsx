@@ -1,7 +1,7 @@
 "use client";
 
 import InputFileField from "~/app/_components/inputs/InputFileField";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { api } from "~/trpc/react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -13,12 +13,19 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import { toBase64 } from "~/lib/helpers/base64";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
+import { checkPermissions } from "~/lib/defaultValues/permission";
+import { emptyRole } from "~/lib/defaultValues/roles";
+import {
+  type Permission,
+  permissionNumbers,
+} from "~/lib/types/firebaseSchemas";
 
 export default function ProjectGeneralSettings() {
   const pathName = usePathname();
   const tab = pathName.split("/").pop();
   const { projectId } = useParams();
   const [icon, setIcon] = useState<File | null>(null);
+
   const handleImageChange = async (file: File) => {
     const iconBase64 = (await toBase64(file)) as string;
     setIcon(file);
@@ -99,9 +106,18 @@ export default function ProjectGeneralSettings() {
     projectId: projectId as string,
   });
 
+  const permission: Permission = useMemo(() => {
+    return checkPermissions(
+      {
+        flags: ["settings"],
+      },
+      role ?? emptyRole,
+    );
+  }, [role]);
+
   useEffect(() => {
-    if (role?.id !== "owner" && tab == "project-settings") {
-      router.push(`/project/${projectId as string}/project-settings/users`);
+    if (role?.id !== "owner" && tab == "settings") {
+      router.push(`/project/${projectId as string}/settings/users`);
     } else {
       setMouted(true);
     }
@@ -165,6 +181,7 @@ export default function ProjectGeneralSettings() {
               accept="image/*"
               containerClassName="mt-auto h-12"
               image={icon}
+              disabled={permission < permissionNumbers.write}
               handleImageChange={handleImageChange}
               displayText="Change project icon..."
             />
@@ -176,6 +193,7 @@ export default function ProjectGeneralSettings() {
             labelClassName="text-lg font-semibold"
             value={editForm.name}
             name="name"
+            disabled={permission < permissionNumbers.write}
             onChange={handleChange}
             placeholder="What is your project called..."
             containerClassName="mt-3"
@@ -187,6 +205,7 @@ export default function ProjectGeneralSettings() {
             className="h-[115px] w-full"
             value={editForm.description}
             name="description"
+            disabled={permission < permissionNumbers.write}
             onChange={handleChange}
             placeholder="What is this project about..."
             containerClassName="mt-3"
@@ -222,6 +241,7 @@ export default function ProjectGeneralSettings() {
                 }}
                 loading={deletingProject}
                 floatingSpinner={false}
+                disabled={permission < permissionNumbers.write}
               >
                 Delete project
               </DeleteButton>
