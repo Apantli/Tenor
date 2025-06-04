@@ -1,5 +1,5 @@
 import type { Firestore, Timestamp } from "firebase-admin/firestore";
-import { getActivitiesRef, getProjectRef, getSettingsRef } from "./general";
+import { getActivitiesRef, getProjectRef, getSettings, getSettingsRef } from "./general";
 import type { StatusTag, Task, WithId } from "~/lib/types/firebaseSchemas";
 import { ActivitySchema, TaskSchema } from "~/lib/types/zodFirebaseSchema";
 import { getStatusType, getStatusTypes, getTodoStatusTag } from "./tags";
@@ -667,8 +667,10 @@ const getTotalStoryPoints = async (
 ) => {
   const sprintRef = getSprintRef(firestore, projectId, sprint);
   const sprintData = (await sprintRef.get()).data();
+
   const settingsRef = getSettingsRef(firestore, projectId);
   const settingsData = (await settingsRef.get()).data();
+
   const settingsSizes = Array.isArray(settingsData?.Size)
     ? settingsData.Size
     : [];
@@ -682,19 +684,19 @@ const getTotalStoryPoints = async (
     XXL: settingsSizes[5] ?? 0,
   };
 
-  // The sprintData should contain userStoriesIds
-  const userStoriesIds = sprintData?.userStoriesIds ?? [];
-  // Get total of sprint story points
+  const userStoriesIds = sprintData?.userStoryIds ?? [];
+
   let totalStoryPoints = 0;
+
   for (const userStoryId of userStoriesIds) {
     const userStory = await getUserStory(firestore, projectId, userStoryId);
-    if (userStory?.size) {
-      const pointValue = sizeValues[userStory.size as keyof typeof sizeValues];
-      if (settingsSizes.includes(userStory.size)) {
-        // If the user story size is in the settings sizes, add it to the total
-        totalStoryPoints += pointValue;
-      }
-    }
+    const sizeKey = userStory.size as keyof typeof sizeValues;
+    const pointValue = sizeValues[sizeKey];
+    console.log(
+      `Size: ${userStory.size}, PointValue: ${pointValue}`
+    );
+    
+    totalStoryPoints += pointValue;
   }
 
   return totalStoryPoints;
@@ -713,11 +715,8 @@ const getCompletedTasksStoryPoints = async (
     projectId,
     userStorieId,
   );
-  const totalTasks = userStoryTasks.length;
 
-  const settingsRef = getSettingsRef(firestore, projectId);
-
-  const settingsData = (await settingsRef.get()).data();
+  const settingsData = await getSettings(firestore, projectId);
   const settingsSizes = Array.isArray(settingsData?.Size)
     ? settingsData.Size
     : [];
@@ -731,116 +730,88 @@ const getCompletedTasksStoryPoints = async (
     XXL: settingsSizes[5] ?? 0,
   };
 
-  // Total of tasks
+  const sameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate();
 
+  // Total of tasks
   let totalCompletedTasks = 0;
   for (const task of userStoryTasks) {
-    if (task.statusId) {
-      const statusTag = await getStatusType(
-        firestore,
-        projectId,
-        task.statusId,
-      );
-      if (
-        statusTag?.marksTaskAsDone &&
-        task.statusChangeDate &&
-        new Date(task.statusChangeDate.seconds * 1000).toDateString() ===
-          date.toDateString()
-      ) {
+    console.log("HOLA")
+    console.log(task.statusId, task.statusChangeDate, task.createdAt, task.dueDate);
+    if (!task.statusId || !task.statusChangeDate) continue;
+
+    const statusTag = await getStatusType(
+      firestore,
+      projectId,
+      task.statusId,
+    );
+
+    console.log("HOLA")
+
+    if (statusTag?.marksTaskAsDone) {
+      console.log(`Task ${task.id} status: ${statusTag.name}`);
+      const taskDate = new Date(task.statusChangeDate.seconds * 1000);
+      if (sameDay(taskDate, date)) {
         totalCompletedTasks++;
+        console.log(`Task ${task.id} completed on ${taskDate.toISOString()}`);
       }
     }
   }
 
-  const storyCompletedPoints =
-    (totalCompletedTasks / totalTasks) *
-    (userStory?.size
-      ? sizeValues[userStory.size as keyof typeof sizeValues]
-      : 0);
+  const storySizeValue = userStory?.size
+    ? sizeValues[userStory.size as keyof typeof sizeValues]
+    : 0;
+  console.log(`Story Size Value: ${storySizeValue}`);
 
-  return storyCompletedPoints;
-};
+  const totalTasks = userStoryTasks.length || 1; // evitar división por 0
+  console.log(`Total Tasks: ${totalTasks}`);
 
-export const dailyProgressData = async (
-  firestore: Firestore,
-  projectId: string,
-  sprint: string,
-): Promise<BurndownDataPoint[]> => {
-  const result: BurndownDataPoint[] = [];
-  const sprintData = (
-    await getSprintRef(firestore, projectId, sprint).get()
-  ).data();
-  const startDate = sprintData?.startDate
-    ? new Date(sprintData.startDate.seconds * 1000)
-    : new Date();
-  const endDate = sprintData?.endDate
-    ? new Date(sprintData.endDate.seconds * 1000)
-    : new Date();
-
-  // Cap today
-  const today = new Date();
-  const effectiveEndDate = today < endDate ? today : endDate;
-  const effectiveDays = Math.ceil(
-    (effectiveEndDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+  const storyCompletedPoints = (totalCompletedTasks / totalTasks) * storySizeValue;
+  console.log(
+    `Story Completed Points for ${userStorieId} on ${date.toISOString()}: ${storyCompletedPoints}`,
   );
 
-  for (let i = 0; i < effectiveDays; i++) {
-    const storyCompletedPoints = await getCompletedTasksStoryPoints(
-      firestore,
-      projectId,
-      sprintData?.userStoriesIds[i] ?? "",
-      new Date(startDate.getTime() + i * 24 * 60 * 60 * 1000),
-    );
-
-    result.push({
-      day: i,
-      date: new Date(
-        startDate.getTime() + i * 24 * 60 * 60 * 1000,
-      ).toISOString(),
-      completedCount: storyCompletedPoints,
-    });
-  }
-
-  return result;
+  return storyCompletedPoints;
 };
 
 export const getBurndownData = async (
   firestore: Firestore,
   projectId: string,
-  sprint: string,
+  sprintId: string,
 ): Promise<BurndownChartData> => {
-  if (!sprint) {
+  if (!sprintId) {
     return [];
   }
 
-  const sprintData = await getSprint(firestore, projectId, sprint);
-
-  if (!sprintData) {
+  const sprintData = await getSprint(firestore, projectId, sprintId);
+  if (!sprintData || !sprintData.startDate || !sprintData.endDate) {
     return [{ sprintDay: 0, storyPoints: 0, seriesType: 0 }];
   }
 
   const totalStoryPoints = await getTotalStoryPoints(
     firestore,
     projectId,
-    sprint,
+    sprintId,
   );
+  console.log(`Total story points for sprint ${sprintId}: ${totalStoryPoints}`);
 
-  if (totalStoryPoints == undefined) {
-    return [{ sprintDay: 0, storyPoints: 0, seriesType: 0 }];
-  }
-
-  const startDate = sprintData?.startDate;
-  const endDate = sprintData?.endDate;
-  const sprintDuration = Math.ceil(
-    (endDate?.getSeconds() ?? 0 - startDate?.getSeconds() ?? 0) /
-      (60 * 60 * 24),
-  );
+  const startDate = sprintData.startDate;
+  const endDate = sprintData.endDate;
   const today = new Date();
-  const todaySprintDay = Math.ceil(
-    (today.getTime() - (startDate?.getSeconds() ?? 0) * 1000) /
-      (1000 * 60 * 60 * 24),
+
+  const sprintDuration = Math.ceil(
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+  );
+  const todaySprintDay = Math.min(
+    Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)),
+    sprintDuration,
   );
 
+  console.log(`Sprint duration: ${sprintDuration} days`);
+
+  // Línea ideal
   const idealBurndownLine: BurndownChartData = [];
   for (let day = 0; day <= sprintDuration; day++) {
     const idealRemaining =
@@ -848,24 +819,39 @@ export const getBurndownData = async (
     idealBurndownLine.push({
       sprintDay: day,
       storyPoints: idealRemaining,
-      seriesType: 0, // 0 for ideal line
+      seriesType: 0,
     });
   }
+  console.log(idealBurndownLine);
 
+  // Línea real
   const actualBurndown: BurndownChartData = [];
+  let remainingPoints = totalStoryPoints;
+
+  let completedTodayPoints = 0;
   for (let day = 0; day <= todaySprintDay; day++) {
-    const storyCompletedPoints = await getCompletedTasksStoryPoints(
-      firestore,
-      projectId,
-      sprintData?.userStoryIds[day] ?? "",
-      new Date(startDate.getTime() + day * 24 * 60 * 60 * 1000),
-    );
+    const date = new Date(startDate.getTime() + day * 24 * 60 * 60 * 1000);
+    
+    for (const usId of sprintData.userStoryIds ?? []) {
+      const points = await getCompletedTasksStoryPoints(
+        firestore,
+        projectId,
+        usId,
+        date,
+      );
+      completedTodayPoints += points;
+    }
+
+    remainingPoints -= completedTodayPoints;
+
     actualBurndown.push({
       sprintDay: day,
-      storyPoints: storyCompletedPoints,
-      seriesType: 1, // 1 for actual burndown
+      storyPoints: Math.max(remainingPoints, 0),
+      seriesType: 1,
     });
   }
+  console.log(actualBurndown);
+
 
   return [...idealBurndownLine, ...actualBurndown].sort(
     (a, b) => a.sprintDay - b.sprintDay,

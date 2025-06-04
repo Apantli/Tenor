@@ -63,7 +63,7 @@ import {
 import { defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
 import { parseISO } from "date-fns";
-import { dailyProgressData, getBurndownData } from "../shortcuts/tasks";
+import { getBurndownData } from "../shortcuts/tasks";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import { doc } from "firebase/firestore";
 import { BurndownChartData } from "~/lib/defaultValues/burndownChart";
@@ -541,9 +541,6 @@ export const projectsRouter = createTRPCRouter({
       } catch (error) {
         console.log("ERROR HERE", error);
       }
-
-      console.log("projectId:", projectId);
-      console.log("currentSprint:", currentSprint);
 
       return burndownData;
     }),
