@@ -18,10 +18,10 @@ export default function ProjectOverview() {
   });
 
   return (
-    <div className="m-6 h-[calc(100%-2.5rem)] flex-1 px-4">
-      <div className="flex h-[calc(100vh-64px)] max-h-full w-full grid-cols-2 grid-rows-[auto_1fr] flex-row gap-8 p-4">
+    <div className="m-6 h-full flex-1 overflow-scroll px-4">
+      <div className="flex h-full max-h-full w-full flex-col gap-8 p-4 lg:flex lg:flex-row">
         {/* First col - col 1 */}
-        <div className="flex w-full flex-col justify-between gap-4">
+        <div className="flex min-h-[70vh] w-full flex-col justify-between gap-4">
           <div
             className={`flex flex-col gap-5 transition-all duration-300 ${
               isProjectInfoExpanded ? "max-h-64" : "max-h-[12rem]"
@@ -45,7 +45,7 @@ export default function ProjectOverview() {
             <ProjectStatus projectId={projectId} />
           </div>
 
-          <div className="flex h-full max-h-[calc(100%-280px)] flex-col rounded-lg border-2 border-[#BECAD4] p-5">
+          <div className="flex h-full max-h-[50vh] flex-col rounded-lg border-2 border-[#BECAD4] p-5 lg:max-h-[calc(100%-287px)]">
             <DynamicBurdownChart projectId={projectId} />
           </div>
         </div>

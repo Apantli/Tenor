@@ -148,16 +148,15 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
         taskCount={projectStatus?.taskCount ?? 0}
         completedCount={projectStatus?.completedCount ?? 0}
       />
-      <div className="mt-4 flex flex-col items-center justify-between gap-2 md:flex-row md:items-start">
-        <div className="w-full">
+      <div className="mt-4 flex flex-row items-center justify-between gap-2">
+        <div>
           <AssignUsersList users={projectStatus?.assignedUssers} />
         </div>
-        <div className="mt-4 flex w-full justify-start md:mt-0 md:justify-end">
-          <p className="text-m font-semibold text-gray-500">
-            {message && message}
-            {!message && "Create an active sprint to see the project status"}
-          </p>
-        </div>
+
+        <p className="text-m flex-1 text-right font-semibold text-gray-500">
+          {message && message}
+          {!message && "Start a sprint to see the project status"}
+        </p>
       </div>
     </div>
   );
