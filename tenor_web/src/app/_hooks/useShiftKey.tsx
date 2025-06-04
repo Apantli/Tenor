@@ -4,12 +4,8 @@ export default function useShiftKey() {
   const [shiftPressed, setShiftPressed] = useState(false);
 
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       setShiftPressed(e.shiftKey);
-    };
-
-    const onKeyUp = (e: KeyboardEvent) => {
-      setShiftPressed(e.shiftKey); // Should be false when Shift is released
     };
 
     const onBlur = () => {
@@ -17,13 +13,13 @@ export default function useShiftKey() {
       setShiftPressed(false);
     };
 
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKey);
     window.addEventListener("blur", onBlur);
 
     return () => {
-      window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("keyup", onKeyUp);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKey);
       window.removeEventListener("blur", onBlur);
     };
   }, []);
