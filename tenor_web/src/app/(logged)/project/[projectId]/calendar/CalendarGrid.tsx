@@ -60,7 +60,11 @@ export default function CalendarGrid({
           <div key={day}>{day}</div>
         ))}
       </div>
-      <div className={cn("grid h-[calc(80vh-100px)] grid-cols-7")}>
+      <div
+        className={cn(
+          "grid h-[calc(80vh-100px)] grid-cols-7 overflow-y-scroll",
+        )}
+      >
         {cells.map((day, idx) => (
           <div
             key={day ? dateKey(day) : idx.toString()}

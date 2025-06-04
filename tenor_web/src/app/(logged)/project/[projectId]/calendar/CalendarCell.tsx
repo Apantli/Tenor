@@ -55,7 +55,7 @@ export default function CalendarCell({
   return (
     <div
       className={cn(
-        "flex h-full w-full",
+        "flex h-full min-h-[50px] w-full",
         isDropTarget && "bg-gray-100",
         selectedDate && date.getTime() === selectedDate.getTime()
           ? "bg-app-secondary"
