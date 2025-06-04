@@ -299,3 +299,8 @@ export interface ProjectActivityItem extends ActivityItem {
 export interface ProjectProjectActivity extends ProjectActivity {
   projectId: string;
 }
+
+export interface UserHappiness {
+  user_id: string;
+  happiness: number;
+}
