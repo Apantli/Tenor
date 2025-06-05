@@ -360,3 +360,12 @@ export const useInvalidateQueriesGenericBacklogItemDetails = () => {
     );
   };
 };
+
+export const useInvalidateTeamMembers = () => {
+  const utils = api.useUtils();
+  return async (projectId: string) => {
+    await utils.users.getTeamMembers.invalidate({
+      projectId: projectId,
+    });
+  };
+};

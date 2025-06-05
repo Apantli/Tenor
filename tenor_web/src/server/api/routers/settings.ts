@@ -34,7 +34,6 @@ import {
   tagPermissions,
 } from "~/lib/defaultValues/permission";
 import type {
-  Permission,
   StatusTag,
   Tag,
   WithId,
@@ -54,6 +53,7 @@ import {
   getTodoStatusTag,
 } from "../shortcuts/tags";
 import {
+  getProjectDetailedRoles,
   getRoleRef,
   getRolesRef,
   getSettings,
@@ -338,28 +338,10 @@ const settingsRouter = createTRPCRouter({
   getDetailedRoles: roleRequiredProcedure(settingsPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      const roles = await getRolesRef(ctx.firestore, projectId)
-        .orderBy("label")
-        .get();
-
-      const rolesData: WithId<RoleDetail>[] = roles.docs.map((doc) => {
-        const data = doc.data();
-        const roleData = RoleSchema.parse(data);
-        const role: WithId<RoleDetail> = {
-          id: doc.id,
-          ...roleData,
-          settings: roleData.settings as Permission,
-          issues: roleData.issues as Permission,
-          performance: roleData.performance as Permission,
-          sprints: roleData.sprints as Permission,
-          scrumboard: roleData.scrumboard as Permission,
-          backlog: roleData.backlog as Permission,
-          reviews: roleData.reviews as Permission,
-          retrospective: roleData.retrospective as Permission,
-        };
-        return role;
-      });
+      const rolesData = await getProjectDetailedRoles(
+        ctx.firestore,
+        input.projectId,
+      );
       return rolesData;
     }),
   addRole: roleRequiredProcedure(settingsPermissions, "write")
