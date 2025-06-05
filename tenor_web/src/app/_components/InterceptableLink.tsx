@@ -36,7 +36,7 @@ export default function InterceptedLink({
 
   return (
     <Link {...props} href={href} legacyBehavior>
-      <a onClick={handleClick} className={className}>
+      <a onMouseDown={handleClick} className={className}>
         {children}
       </a>
     </Link>
