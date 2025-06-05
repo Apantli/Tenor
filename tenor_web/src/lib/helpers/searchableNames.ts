@@ -23,6 +23,6 @@ export const getSearchableNameByType = (itemType: AllBasicItemType) => {
     case "SP":
       return "Type:SP Type:Sprint";
     case "RE":
-      return "Type:RE Type:Requirement Type:Requirement Activity";
+      return "Type:RE Type:Requirement";
   }
 };

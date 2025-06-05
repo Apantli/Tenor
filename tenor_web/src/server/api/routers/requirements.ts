@@ -11,7 +11,7 @@
 import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, roleRequiredProcedure } from "~/server/api/trpc";
 import {
   backlogPermissions,
   tagPermissions,
@@ -409,5 +409,14 @@ export const requirementsRouter = createTRPCRouter({
         );
         return sortedRequirementTypes[0];
       }
+    }),
+
+  getRequirementsCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const requirementRef = getRequirementsRef(ctx.firestore, projectId);
+      const countSnapshot = await requirementRef.count().get();
+      return countSnapshot.data().count;
     }),
 });
