@@ -12,8 +12,8 @@ import { auth } from "~/lib/db/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
-import InputCheckbox from "../inputs/InputCheckbox";
 import PrimaryButton from "../inputs/buttons/PrimaryButton";
+import Link from "next/link";
 
 export default function SignUp() {
   const router = useRouter();
@@ -30,7 +30,6 @@ export default function SignUp() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const userRef = useRef<User | null>(null);
 
@@ -58,11 +57,6 @@ export default function SignUp() {
     }
     if (failed) {
       setError(newError);
-      return;
-    }
-
-    if (!acceptedTerms) {
-      predefinedAlerts.tosNotAccepted();
       return;
     }
 
@@ -150,32 +144,32 @@ export default function SignUp() {
       >
         Password
       </FloatingLabelInput>
+      <PrimaryButton onClick={handleSignUp} loading={loading} floatingSpinner>
+        Create account
+      </PrimaryButton>
+
       <div className="flex items-center gap-2">
-        <InputCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
         <span className="text-xs text-app-text">
-          I accept the{" "}
-          <a
+          By continuing, you accept our{" "}
+          <Link
             href="/terms"
             target="_blank"
             rel="noopener noreferrer"
             className="text-app-primary underline"
           >
             Terms of Service
-          </a>{" "}
+          </Link>{" "}
           and{" "}
-          <a
+          <Link
             href="/privacy"
             target="_blank"
             rel="noopener noreferrer"
             className="text-app-primary underline"
           >
             Privacy Policy
-          </a>
+          </Link>
         </span>
       </div>
-      <PrimaryButton onClick={handleSignUp} loading={loading} floatingSpinner>
-        Create account
-      </PrimaryButton>
     </div>
   );
 }
