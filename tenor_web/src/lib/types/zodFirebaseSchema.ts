@@ -12,6 +12,7 @@ export const TaskZodType = z.literal("TS");
 export const EpicZodType = z.literal("EP");
 export const ProjectZodType = z.literal("PJ");
 export const SprintZodType = z.literal("SP");
+export const RequirementZodType = z.literal("RE");
 
 const maxLengthTransformation = (length: number) => (val: string) =>
   val.slice(0, length);
@@ -27,6 +28,7 @@ export const AllBasicItemZodType = z.union([
   EpicZodType,
   ProjectZodType,
   SprintZodType,
+  RequirementZodType,
 ]);
 export const BacklogItemAndTaskZodType = z.union([
   BacklogItemZodType,

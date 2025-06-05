@@ -31,6 +31,7 @@ import { getUserStory } from "./userStories";
 import { getBacklogItem } from "./backlogItems";
 import { getEpic } from "./epics";
 import { notFound } from "~/server/errors";
+import { getRequirement } from "./requirements";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import { canRoleWrite } from "~/lib/defaultValues/roles";
 
@@ -514,6 +515,8 @@ export const getActivityItemByType = async (
       return await getBacklogItem(firestore, projectId, itemId);
     case "EP": // Epic
       return await getEpic(firestore, projectId, itemId);
+    case "RE": // Requirement
+      return await getRequirement(firestore, projectId, itemId);
     case "PJ": // Project
       return undefined; // No need to fetch project details here
     case "SP": // Sprint
