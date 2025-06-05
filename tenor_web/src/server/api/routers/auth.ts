@@ -22,9 +22,9 @@ import { cookies } from "next/headers";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 import { env } from "~/env";
-import { TRPCError } from "@trpc/server";
 import admin from "firebase-admin";
 import { getEmails } from "~/lib/github";
+import { TRPCError } from "@trpc/server";
 
 /**
  * Logs in a user using a token and optional GitHub access token.

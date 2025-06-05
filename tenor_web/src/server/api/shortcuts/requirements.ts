@@ -2,11 +2,11 @@ import type { Firestore } from "firebase-admin/firestore";
 import { getProjectRef, getSettingsRef } from "./general";
 import type { Requirement, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
-import { TRPCError } from "@trpc/server";
 import type { RequirementCol } from "~/lib/types/columnTypes";
 import { noTag } from "~/lib/defaultValues/project";
 import { getPriority, getPriorityContext } from "./tags";
 import { getProjectContext } from "./ai";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getRequirementsRef
@@ -77,10 +77,7 @@ export const getRequirement = async (
   const requirementRef = getRequirementRef(firestore, projectId, requirementId);
   const requirementSnapshot = await requirementRef.get();
   if (!requirementSnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Requirement not found",
-    });
+    throw notFound("Requirement");
   }
 
   const requirement = {
@@ -195,10 +192,7 @@ export const getRequirementType = async (
   );
   const requirementTypeSnapshot = await requirementTypeRef.get();
   if (!requirementTypeSnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Requirement type not found",
-    });
+    throw notFound("Requirement Type");
   }
   return {
     id: requirementTypeSnapshot.id,
@@ -283,10 +277,7 @@ export const getRequirementFocus = async (
   );
   const requirementFocusSnapshot = await requirementFocusRef.get();
   if (!requirementFocusSnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Requirement focus not found",
-    });
+    throw notFound("Requirement focus");
   }
   return {
     id: requirementFocusSnapshot.id,

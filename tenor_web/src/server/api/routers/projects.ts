@@ -526,7 +526,7 @@ export const projectsRouter = createTRPCRouter({
       const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
 
       if (!currentSprint || !currentSprint.id) {
-        return null;
+        return undefined;
       }
 
       let burndownData: BurndownChartData | undefined;

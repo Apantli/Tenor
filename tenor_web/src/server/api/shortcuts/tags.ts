@@ -2,13 +2,13 @@ import type { Firestore } from "firebase-admin/firestore";
 import { getSettingsRef } from "./general";
 import type { StatusTag, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
-import { TRPCError } from "@trpc/server";
 import { getTasksFromItem } from "./tasks";
 import {
   doingTagName,
   doneTagName,
   todoTagName,
 } from "~/lib/defaultValues/status";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getPrioritiesRef
@@ -198,10 +198,7 @@ export const getTodoStatusTag = async (
     .get();
 
   if (todoTag.empty || todoTag.docs.length !== 1) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "To Do status tag not found",
-    });
+    throw notFound("Todo status tag");
   }
   return {
     id: todoTag.docs[0]!.id,
@@ -274,10 +271,7 @@ export const getBacklogTag = async (
 ) => {
   const tag = await getBacklogTagRef(firestore, projectId, taskId).get();
   if (!tag.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Backlog tag not found",
-    });
+    throw notFound("Backlog Tag");
   }
   return {
     id: tag.id,
