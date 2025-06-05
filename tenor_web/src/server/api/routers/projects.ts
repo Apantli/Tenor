@@ -352,7 +352,7 @@ export const projectsRouter = createTRPCRouter({
       return await getProject(ctx.firestore, projectId);
     }),
 
-  modifyGeneralConfig: protectedProcedure
+  modifyGeneralConfig: roleRequiredProcedure(settingsPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -362,6 +362,11 @@ export const projectsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      if (ctx.roleId !== "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+        });
+      }
       const projectRef = getProjectRef(ctx.firestore, input.projectId);
       const projectData = (await projectRef.get()).data() as Project;
 
@@ -401,6 +406,11 @@ export const projectsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      if (ctx.roleId !== "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+        });
+      }
       const { projectId } = input;
       const projectRef = getProjectRef(ctx.firestore, projectId);
       await projectRef.update({

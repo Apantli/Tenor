@@ -191,5 +191,5 @@ export const roleRequiredProcedure = (
         throw new TRPCError({ code: "FORBIDDEN" });
       }
 
-      return next({ ctx });
+      return next({ ctx: { ...ctx, roleId: userData.roleId as string } });
     });
