@@ -14,6 +14,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { type Links } from "~/server/api/routers/settings";
 import {
+  type FileWithTokens,
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
@@ -116,10 +117,11 @@ export default function ProjectAIConfig() {
 
   useEffect(() => {
     const invalidLinks = [];
+    if (!links) return;
     for (const link of links ?? []) {
       if (!link.valid) invalidLinks.push(link);
     }
-    if (prevInvalidLinks && invalidLinks.length > prevInvalidLinks) {
+    if (prevInvalidLinks !== null && invalidLinks.length > prevInvalidLinks) {
       predefinedAlerts.linkInvalidError(invalidLinks.length);
     }
     setPrevInvalidLinks(invalidLinks.length);
@@ -127,11 +129,12 @@ export default function ProjectAIConfig() {
 
   useEffect(() => {
     const emptyFiles = [];
+    if (!files) return;
     for (const file of files ?? []) {
       if (file.tokenCount == 0) emptyFiles.push(file);
     }
     if (
-      prevInvalidFiles &&
+      prevInvalidFiles !== null &&
       emptyFiles.length > 0 &&
       emptyFiles.length > prevInvalidFiles
     ) {
@@ -165,15 +168,14 @@ export default function ProjectAIConfig() {
   // File utils
   const handleAddFiles = async (newFiles: File[]) => {
     if (!newFiles || !files) return;
-    const newData = [...files, ...newFiles];
-    // Uses optimistic update
-    await utils.settings.getContextFiles.cancel({
-      projectId: projectId as string,
+
+    const filesWithTokenCount = newFiles.map((f) => {
+      const deepCopy: FileWithTokens = structuredClone(f);
+      deepCopy.tokenCount = 1;
+      return deepCopy;
     });
-    utils.settings.getContextFiles.setData(
-      { projectId: projectId as string },
-      newData,
-    );
+    const newData = [...files, ...filesWithTokenCount];
+
     const filesBase64Encoded: {
       name: string;
       type: string;
@@ -191,17 +193,26 @@ export default function ProjectAIConfig() {
       });
     }
 
+    // Uses optimistic update
+    await utils.settings.getContextFiles.cancel({
+      projectId: projectId as string,
+    });
+    utils.settings.getContextFiles.setData(
+      { projectId: projectId as string },
+      newData,
+    );
+
     // Add to database
     await addFiles({
       projectId: projectId as string,
       files: filesBase64Encoded,
     });
 
+    predefinedAlerts.fileUploadSuccess();
+
     await utils.settings.getContextFiles.invalidate({
       projectId: projectId as string,
     });
-
-    predefinedAlerts.fileUploadSuccess();
   };
 
   const handleRemoveFile = async (file: File) => {
