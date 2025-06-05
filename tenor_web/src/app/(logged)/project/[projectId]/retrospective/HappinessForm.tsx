@@ -18,7 +18,6 @@ import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 
 interface HappinessFormProps {
   sprintRetrospectiveId?: number;
-  onSubmit?: (responses: HappinessResponses) => void;
   onCompletionChange?: (isCompleted: boolean) => void;
   retrospectiveEndDate?: Date | undefined;
 }
@@ -31,7 +30,6 @@ export interface HappinessResponses {
 
 export default function HappinessForm({
   sprintRetrospectiveId,
-  onSubmit,
   onCompletionChange,
   retrospectiveEndDate,
 }: HappinessFormProps) {
@@ -168,10 +166,6 @@ export default function HappinessForm({
         },
         summarize: false,
       });
-
-      if (onSubmit) {
-        onSubmit(responses);
-      }
 
       void refetchAnswers();
     } catch (error) {
