@@ -29,10 +29,6 @@ export default function AdvancedSearch({
   // GENERAL
   const { projectId } = useParams();
 
-  const { data: users } = api.users.getUsers.useQuery({
-    projectId: projectId as string,
-  });
-
   const { data: prioritiesData } = api.settings.getPriorityTypes.useQuery({
     projectId: projectId as string,
   });
@@ -161,7 +157,6 @@ export default function AdvancedSearch({
               className="h-10 max-w-[170px]"
               selectedOption={advancedFilters.assignee}
               placeholder="Select assignee"
-              options={users ?? []}
               onChange={(assignee) => {
                 setAdvancedFilters({
                   ...advancedFilters,

@@ -10,8 +10,10 @@ import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
 import Check from "@mui/icons-material/Check";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import { useParams } from "next/navigation";
+import { api } from "~/trpc/react";
+
 interface EditableBoxProps {
-  options: WithId<UserPreview>[];
   selectedOption?: WithId<UserPreview> | undefined;
   onChange: (option: WithId<UserPreview> | undefined) => void;
   className?: string;
@@ -22,7 +24,6 @@ interface EditableBoxProps {
 }
 
 export function UserPicker({
-  options,
   selectedOption = undefined,
   onChange,
   className,
@@ -31,12 +32,16 @@ export function UserPicker({
   close = true,
   allowSetSelf,
 }: EditableBoxProps) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { projectId } = useParams();
+  const { data: options } = api.users.getUsers.useQuery({
+    projectId: projectId as string,
+  });
 
+  const [searchTerm, setSearchTerm] = useState("");
   const { user } = useFirebaseAuth();
 
   let filteredOptions = options
-    .filter((option) =>
+    ?.filter((option) =>
       option.displayName?.toLowerCase().includes(searchTerm.toLowerCase()),
     )
     .map((val) => ({
@@ -45,14 +50,16 @@ export function UserPicker({
     }));
 
   if (allowSetSelf && user) {
-    const selfOption = filteredOptions.find((option) => option.id === user.uid);
+    const selfOption = filteredOptions?.find(
+      (option) => option.id === user.uid,
+    );
     if (selfOption) {
       filteredOptions = [
         {
           ...selfOption,
           isYou: true,
         },
-        ...filteredOptions.filter((option) => option.id !== user.uid),
+        ...(filteredOptions ?? []).filter((option) => option.id !== user.uid),
       ];
     }
   }
@@ -164,8 +171,8 @@ export function UserPicker({
             className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg"
             ref={scrollRef}
           >
-            {filteredOptions.length > 0 ? (
-              filteredOptions.map((option) => createOption(option))
+            {(filteredOptions?.length ?? 0 > 0) ? (
+              filteredOptions?.map((option) => createOption(option))
             ) : (
               <span className="w-full px-2 py-1 text-sm text-gray-500">
                 No options found
