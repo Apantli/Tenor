@@ -19,6 +19,8 @@ import {
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
 import { logoSizeLimit, logoMaxDimensions } from "~/lib/defaultValues/project";
+import { toBase64 } from "~/lib/helpers/base64";
+import { cn } from "~/lib/helpers/utils";
 
 export default function ProjectGeneralSettings() {
   const pathName = usePathname();
@@ -26,6 +28,7 @@ export default function ProjectGeneralSettings() {
   const { projectId } = useParams();
   const [icon, setIcon] = useState<File | null>(null);
   const [isValidatingImage, setIsValidatingImage] = useState(false);
+  const [loadingImage, setLoadingImage] = useState<boolean>(true);
 
   function handleImageChange(file: File) {
     if (isValidatingImage) return;
@@ -42,7 +45,7 @@ export default function ProjectGeneralSettings() {
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
 
-    img.onload = () => {
+    img.onload = async () => {
       URL.revokeObjectURL(objectUrl);
 
       if (img.width > logoMaxDimensions || img.height > logoMaxDimensions) {
@@ -51,6 +54,11 @@ export default function ProjectGeneralSettings() {
       } else {
         // If all validations pass, set the image
         setIcon(file);
+        const base64Image = (await toBase64(file)) as string;
+        setEditForm((prev) => ({
+          ...prev,
+          icon: base64Image,
+        }));
         setIsValidatingImage(false);
       }
     };
@@ -192,6 +200,11 @@ export default function ProjectGeneralSettings() {
         <div className="flex h-full flex-col gap-2">
           <p className="mb-2 text-lg font-semibold">Project icon</p>
           <div className="flex flex-row gap-x-3">
+            {loadingImage && (
+              <div className="flex h-full w-full items-center justify-center">
+                <LoadingSpinner color="primary" />
+              </div>
+            )}
             <img
               src={
                 editForm.icon == ""
@@ -202,8 +215,13 @@ export default function ProjectGeneralSettings() {
                       ? editForm.icon
                       : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
               }
+              onLoad={() => setLoadingImage(false)}
+              onError={() => setLoadingImage(false)}
               alt="Project logo"
-              className="h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1"
+              className={cn(
+                "h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1",
+                loadingImage ? "hidden" : "",
+              )}
             />
             <InputFileField
               label=""
