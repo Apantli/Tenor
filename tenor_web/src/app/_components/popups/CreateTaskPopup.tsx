@@ -103,7 +103,7 @@ export function CreateTaskPopup({
 
   const handleCreateTask = async () => {
     if (createForm.name.trim() === "") {
-      predefinedAlerts.issueNameError();
+      predefinedAlerts.taskNameError();
       return;
     }
 
@@ -162,7 +162,7 @@ export function CreateTaskPopup({
         predefinedAlerts.cyclicDependency();
         return;
       }
-      predefinedAlerts.issueStoryCreateError();
+      predefinedAlerts.taskCreateError();
       console.error("Error creating task:", error);
     }
   };

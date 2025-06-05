@@ -1,9 +1,6 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-import {
-  defaultMaximumSprintStoryPoints,
-  defaultSprintDuration,
-} from "../defaultValues/project";
+import { defaultSprintDuration } from "../defaultValues/project";
 
 export const UserStoryZodType = z.literal("US");
 export const IssueZodType = z.literal("IS");
@@ -12,6 +9,7 @@ export const TaskZodType = z.literal("TS");
 export const EpicZodType = z.literal("EP");
 export const ProjectZodType = z.literal("PJ");
 export const SprintZodType = z.literal("SP");
+export const RequirementZodType = z.literal("RE");
 
 const maxLengthTransformation = (length: number) => (val: string) =>
   val.slice(0, length);
@@ -27,6 +25,7 @@ export const AllBasicItemZodType = z.union([
   EpicZodType,
   ProjectZodType,
   SprintZodType,
+  RequirementZodType,
 ]);
 export const BacklogItemAndTaskZodType = z.union([
   BacklogItemZodType,
@@ -241,7 +240,6 @@ export const RequirementSchema = BasicInfoSchema.extend({
 
 export const SettingsSchema = z.object({
   sprintDuration: z.number().default(defaultSprintDuration),
-  maximumSprintStoryPoints: z.number().default(defaultMaximumSprintStoryPoints),
   aiContext: z.object({
     text: z.string().default(""),
     files: z
@@ -263,7 +261,7 @@ export const SettingsSchema = z.object({
       .default([]),
   }),
 
-  Size: z.array(z.number()).default([1, 2, 3, 5, 8, 13]),
+  Size: z.array(z.number()).default([2, 3, 5, 8, 13, 21]),
   // Removed because they should be in subcollections
 
   // requirementFocusTags: z.array(TagSchema).default([]),

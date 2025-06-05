@@ -17,7 +17,6 @@ import {
   protectedProcedure,
   roleRequiredProcedure,
 } from "~/server/api/trpc";
-import { TRPCError } from "@trpc/server";
 import {
   BacklogItemSchema,
   BacklogItemZodType,
@@ -54,6 +53,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import type { Edge, Node } from "@xyflow/react";
 import { dateToString } from "~/lib/helpers/parsers";
 import { getBacklogItemContextSolo } from "../shortcuts/backlogItems";
+import { cyclicReference } from "~/server/errors";
 
 export const tasksRouter = createTRPCRouter({
   /**
@@ -151,10 +151,7 @@ export const tasksRouter = createTRPCRouter({
       ]);
 
       if (hasCycle) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Circular dependency detected.",
-        });
+        throw cyclicReference();
       }
 
       // Add dependency references
@@ -310,10 +307,7 @@ export const tasksRouter = createTRPCRouter({
         );
       }
       if (hasCycle) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Circular dependency detected.",
-        });
+        throw cyclicReference();
       }
 
       // Update the related user stories
@@ -741,10 +735,7 @@ ${tagContext}\n\n`;
       );
 
       if (hasCycle) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Circular dependency detected.",
-        });
+        throw cyclicReference();
       }
 
       await updateDependency(

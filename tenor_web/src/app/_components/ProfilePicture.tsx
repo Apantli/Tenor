@@ -62,7 +62,7 @@ export default function ProfilePicture({
   if (user?.photoURL) {
     return (
       <img
-        src={user.photoURL}
+        src={`/api/image_proxy?url=${encodeURIComponent(user.photoURL)}`}
         alt=""
         className={cn("h-8 w-8 rounded-full", className, pictureClassName)}
         data-tooltip-id="tooltip"

@@ -14,7 +14,6 @@ import {
   roleRequiredProcedure,
 } from "~/server/api/trpc";
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import {
   settingsPermissions,
   usersPermissions,
@@ -30,6 +29,7 @@ import {
 } from "../shortcuts/users";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { uploadBase64File } from "~/lib/db/firebaseBucket";
+import { forbidden, notFound } from "~/server/errors";
 
 export const userRouter = createTRPCRouter({
   /**
@@ -142,17 +142,11 @@ export const userRouter = createTRPCRouter({
       const teamMemberSnap = await teamMemberRef.get();
 
       if (!teamMemberSnap.exists) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Team member not found",
-        });
+        throw notFound("Team member");
       }
 
       if (teamMemberSnap.data()?.roleId === "owner") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Cannot remove owner",
-        });
+        throw forbidden("You cannot remove the owner of the project.");
       }
 
       // Mark the team member as inactive

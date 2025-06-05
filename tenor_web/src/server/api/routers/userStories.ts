@@ -13,7 +13,6 @@ import {
   roleRequiredProcedure,
   protectedProcedure,
 } from "~/server/api/trpc";
-import { TRPCError } from "@trpc/server";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
 import type {
   UserStoryDetail,
@@ -43,6 +42,7 @@ import { getBacklogTag, getPriorityByNameOrId } from "../shortcuts/tags";
 import type { Edge, Node } from "@xyflow/react";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 import { getSprintRef } from "../shortcuts/sprints";
+import { cyclicReference, notFound } from "~/server/errors";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -115,10 +115,7 @@ export const userStoriesRouter = createTRPCRouter({
       ]);
 
       if (hasCycle) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Circular dependency detected.",
-        });
+        throw cyclicReference();
       }
 
       const { userStoryData, id: newUserStoryId } =
@@ -242,10 +239,7 @@ export const userStoriesRouter = createTRPCRouter({
         );
       }
       if (hasCycle) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Circular dependency detected.",
-        });
+        throw cyclicReference();
       }
 
       // Update the related user stories
@@ -432,7 +426,7 @@ export const userStoriesRouter = createTRPCRouter({
       );
       const userStorySnapshot = await userStoryRef.get();
       if (!userStorySnapshot.exists) {
-        throw new TRPCError({ code: "NOT_FOUND" });
+        throw notFound("User Story");
       }
 
       await userStoryRef.update({
@@ -626,10 +620,7 @@ export const userStoriesRouter = createTRPCRouter({
       );
 
       if (hasCycle) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Circular dependency detected.",
-        });
+        throw cyclicReference();
       }
 
       await updateDependency(

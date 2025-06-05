@@ -2,7 +2,6 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import TimeMultiselect, {
   type TimeFrame,
@@ -15,10 +14,7 @@ import { useAlert } from "~/app/_hooks/useAlert";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
-import {
-  defaultMaximumSprintStoryPoints,
-  defaultSprintDuration,
-} from "~/lib/defaultValues/project";
+import { defaultSprintDuration } from "~/lib/defaultValues/project";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import {
   permissionNumbers,
@@ -77,8 +73,6 @@ export default function ProjectScrumPreferences() {
       projectId: projectId as string,
     });
   const sprintDuration = scrumSettings?.sprintDuration ?? defaultSprintDuration;
-  const maximumSprintStoryPoints =
-    scrumSettings?.maximumSprintStoryPoints ?? defaultMaximumSprintStoryPoints;
 
   const { mutateAsync: updateScrumSettings, isPending: isUpdatePending } =
     api.settings.updateScrumSettings.useMutation();
@@ -92,7 +86,6 @@ export default function ProjectScrumPreferences() {
   // REACT
   const [form, setForm] = useState({
     sprintDuration: sprintDuration,
-    maximumSprintStoryPoints: maximumSprintStoryPoints,
   });
 
   const [timeForm, setTimeForm] = useState<[number, TimeFrame]>([
@@ -105,7 +98,7 @@ export default function ProjectScrumPreferences() {
   const [numberWarningShown, setNumberWarningShown] = useState(false);
 
   const hasBeenModified = () => {
-    if (!sprintDuration || !maximumSprintStoryPoints) {
+    if (!sprintDuration) {
       return false;
     }
 
@@ -113,11 +106,7 @@ export default function ProjectScrumPreferences() {
       (item, index) => item.value !== originalSizeData?.[index]?.value,
     );
 
-    return (
-      form.sprintDuration !== sprintDuration ||
-      form.maximumSprintStoryPoints !== maximumSprintStoryPoints ||
-      sizeChanged
-    );
+    return form.sprintDuration !== sprintDuration || sizeChanged;
   };
 
   useNavigationGuard(
@@ -140,7 +129,6 @@ export default function ProjectScrumPreferences() {
     if (scrumSettings) {
       setForm({
         sprintDuration: sprintDuration,
-        maximumSprintStoryPoints: maximumSprintStoryPoints,
       });
 
       // Only automatically convert to weeks on initial load
@@ -213,32 +201,10 @@ export default function ProjectScrumPreferences() {
     }));
   };
 
-  const handleStoryPointsChange = (valueString: string) => {
-    const value = parseInt(valueString === "" ? "0" : valueString, 10);
-    if (checkLargeNumber(value)) {
-      setForm((prev) => ({
-        ...prev,
-        maximumSprintStoryPoints: maxInputNumber,
-      }));
-      setNumberWarningShown(true);
-      return;
-    }
-    setNumberWarningShown(false);
-
-    setForm((prev) => ({
-      ...prev,
-      maximumSprintStoryPoints: value,
-    }));
-  };
-
   const handleSave = async () => {
     if (isUpdatePending) return;
     if (form.sprintDuration < 1 || form.sprintDuration > 365) {
       predefinedAlerts.sprintDurationError();
-      return;
-    }
-    if (form.maximumSprintStoryPoints < 1) {
-      predefinedAlerts.storyPointsError();
       return;
     }
 
@@ -281,7 +247,6 @@ export default function ProjectScrumPreferences() {
     await updateScrumSettings({
       projectId: projectId as string,
       days: form.sprintDuration,
-      points: form.maximumSprintStoryPoints,
     });
 
     // Optimistic update for size data
@@ -304,7 +269,6 @@ export default function ProjectScrumPreferences() {
       () => {
         return {
           sprintDuration: form.sprintDuration,
-          maximumSprintStoryPoints: form.maximumSprintStoryPoints,
         };
       },
     );
@@ -337,20 +301,6 @@ export default function ProjectScrumPreferences() {
             labelClassName="text-lg font-semibold"
           />
 
-          <InputTextField
-            disabled={permission < permissionNumbers.write}
-            label="Maximum sprint story points"
-            labelClassName="text-lg font-semibold"
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            value={form.maximumSprintStoryPoints}
-            onChange={(e) => {
-              handleStoryPointsChange(e.target.value);
-            }}
-            data-cy="maximum-sprint-story-points"
-            disableAI={true}
-          />
           <SettingsSizeTable
             disabled={permission < permissionNumbers.write}
             sizeData={sizeData}

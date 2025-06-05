@@ -33,7 +33,6 @@ import { Timestamp } from "firebase-admin/firestore";
 
 import { getStatusTypes } from "../shortcuts/tags";
 import { getCurrentSprint } from "../shortcuts/sprints";
-import { TRPCError } from "@trpc/server";
 import {
   getActivityPartition,
   getAverageTime,
@@ -74,10 +73,7 @@ export const performanceRouter = createTRPCRouter({
       if (input.time === "Sprint") {
         sprint = await getCurrentSprint(ctx.firestore, input.projectId);
         if (!sprint) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "No activity data available, there is no active sprint.",
-          });
+          return undefined;
         }
       }
 
@@ -99,11 +95,7 @@ export const performanceRouter = createTRPCRouter({
       if (input.time == "Sprint") {
         sprintId = (await getCurrentSprint(ctx.firestore, input.projectId))?.id;
         if (!sprintId) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message:
-              "No contribution data available, there is no active sprint.",
-          });
+          return undefined;
         }
       }
       const contributionOverview = await getContributionOverview(
@@ -188,6 +180,10 @@ const recomputePerformance = async (
       time,
     );
 
+    if (!newProductivityData) {
+      return undefined;
+    }
+
     productivityData.cached = productivityData.cached.filter(
       (cached) => cached.time !== time,
     );
@@ -237,10 +233,7 @@ const computePerformanceTime = async (
   } else {
     const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
     if (!currentSprint) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No productivity data available, there is no active sprint.",
-      });
+      return undefined;
     }
     userStories = await getSprintUserStories(
       ctx.firestore,
