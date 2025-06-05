@@ -5,7 +5,6 @@ import Popup from "~/app/_components/Popup";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
-import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesItemStatus } from "~/app/_hooks/invalidateHooks";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
@@ -13,6 +12,7 @@ import HelpIcon from "@mui/icons-material/Help";
 import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import useValidateStatusTag from "~/app/_hooks/useValidateStatus";
 
 interface Props {
   showPopup: boolean;
@@ -27,10 +27,10 @@ export default function CreateKanbanListPopup({
 }: Props) {
   const confirm = useConfirmation();
   const invalidateQueriesItemStatus = useInvalidateQueriesItemStatus();
+  const validateStatusTag = useValidateStatusTag();
 
   // REACT
   const { projectId } = useParams();
-  const { predefinedAlerts } = useAlert();
 
   const [form, setForm] = useState<{
     name: string;
@@ -58,8 +58,11 @@ export default function CreateKanbanListPopup({
   };
 
   const handleCreateList = async () => {
-    if (form.name === "") {
-      predefinedAlerts.listNameError();
+    if (
+      !validateStatusTag({
+        tagName: form.name,
+      })
+    ) {
       return;
     }
 
