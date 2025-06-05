@@ -72,7 +72,7 @@ export default function ProjectList() {
                 <h3 className="my-[7px] truncate text-lg font-semibold md:w-full lg:max-w-[200px]">
                   {project.name}
                 </h3>
-                <p className="line-clamp-2 break-words text-base">
+                <p className="wrap-properly line-clamp-2 text-base">
                   {project.description}
                 </p>
               </div>

@@ -221,7 +221,7 @@ export const userRouter = createTRPCRouter({
     }),
 
   getTeamMembers: roleRequiredProcedure(usersPermissions, "read")
-    .input(z.object({ projectId: z.string(), filter: z.string().optional() }))
+    .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       return await getWritableUsers(
         ctx.firestore,

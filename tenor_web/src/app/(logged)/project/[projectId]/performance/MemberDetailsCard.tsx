@@ -134,7 +134,7 @@ export const MemberDetailsCard = ({
     >
       <CrossIcon
         onClick={() => setSelectedMember(null)}
-        className="absolute right-2 top-2 ml-auto text-gray-500 hover:cursor-pointer"
+        className="absolute right-2 top-2 ml-auto cursor-pointer text-gray-500"
         fontSize="large"
       />
       <div className="flex flex-row gap-3">
@@ -173,6 +173,7 @@ export const MemberDetailsCard = ({
         )}
         {!loadingContributions && (
           <div className="">
+            {/* FIXME: don't throw trpc errors to show to the client */}
             {!error ? (
               <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
                 <DynamicContributionPieChart
