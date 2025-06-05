@@ -39,6 +39,9 @@ export const useInvalidateQueriesAllTasks = () => {
     await utils.tasks.getTasks.invalidate({
       projectId: projectId,
     });
+
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
@@ -60,6 +63,12 @@ export const useInvalidateQueriesTaskDetails = () => {
         });
       }),
     );
+
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
@@ -98,6 +107,8 @@ export const useInvalidateQueriesAllUserStories = () => {
     await utils.userStories.getUserStories.invalidate({
       projectId: projectId,
     });
+
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
   };
 };
 
@@ -116,6 +127,12 @@ export const useInvalidateQueriesUserStoriesDetails = () => {
         });
       }),
     );
+
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
@@ -129,6 +146,7 @@ export const useInvalidateQueriesItemStatus = () => {
       projectId: projectId,
     });
     await utils.settings.getStatusTypes.invalidate({ projectId: projectId });
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
@@ -171,6 +189,8 @@ export const useInvalidateQueriesAllIssues = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
@@ -185,6 +205,11 @@ export const useInvalidateQueriesIssueDetails = () => {
         });
       }),
     );
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
@@ -343,6 +368,8 @@ export const useInvalidateQueriesAllGenericBacklogItems = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
@@ -358,6 +385,12 @@ export const useInvalidateQueriesGenericBacklogItemDetails = () => {
         });
       }),
     );
+
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
