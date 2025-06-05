@@ -85,7 +85,8 @@ export default function ProjectAIConfig() {
   const { mutateAsync: updateContext, isPending: isContextUpdatePending } =
     api.settings.updateTextContext.useMutation();
 
-  const [prevInvalidFiles, setPrevInvalidFiles] = useState<number>(-1);
+  const [prevInvalidFiles, setPrevInvalidFiles] = useState<number | null>(null);
+  const [prevInvalidLinks, setPrevInvalidLinks] = useState<number | null>(null);
 
   // Link utils
   const handleAddLink = async (link: Links) => {
@@ -118,9 +119,10 @@ export default function ProjectAIConfig() {
     for (const link of links ?? []) {
       if (!link.valid) invalidLinks.push(link);
     }
-    if (invalidLinks.length > 0) {
+    if (prevInvalidLinks && invalidLinks.length > prevInvalidLinks) {
       predefinedAlerts.linkInvalidError(invalidLinks.length);
     }
+    setPrevInvalidLinks(invalidLinks.length);
   }, [links]);
 
   useEffect(() => {
@@ -128,7 +130,11 @@ export default function ProjectAIConfig() {
     for (const file of files ?? []) {
       if (file.tokenCount == 0) emptyFiles.push(file);
     }
-    if (emptyFiles.length > 0 && emptyFiles.length !== prevInvalidFiles) {
+    if (
+      prevInvalidFiles &&
+      emptyFiles.length > 0 &&
+      emptyFiles.length > prevInvalidFiles
+    ) {
       predefinedAlerts.emptyFilesError(emptyFiles.length);
     }
     setPrevInvalidFiles(emptyFiles.length);
