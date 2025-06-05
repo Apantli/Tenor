@@ -29,6 +29,7 @@ import {
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { uploadBase64File } from "~/lib/db/firebaseBucket";
 import { forbidden, notFound } from "~/server/errors";
+import { getWritableUsers } from "../shortcuts/general";
 
 export const userRouter = createTRPCRouter({
   /**
@@ -211,5 +212,15 @@ export const userRouter = createTRPCRouter({
       }
 
       await ctx.firebaseAdmin.auth().updateUser(user.uid, updateData);
+    }),
+
+  getTeamMembers: roleRequiredProcedure(usersPermissions, "read")
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      return await getWritableUsers(
+        ctx.firestore,
+        ctx.firebaseAdmin.app(),
+        input.projectId,
+      );
     }),
 });

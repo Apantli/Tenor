@@ -7,9 +7,17 @@ export const ContributionLegend: React.FC<{
     Tasks: "#88BB87",
     Issues: "#15734F",
     "User Stories": "#13918A",
+    "No Contributions": "#D1D5DB",
   };
 
   const totalValue = data?.reduce((sum, item) => sum + item.value, 0);
+
+  if (totalValue === 0 || !data) {
+    if (!data) {
+      data = [];
+    }
+    data.push({ category: "No Contributions", value: 1 });
+  }
 
   return (
     <div className="ml-4 flex flex-col gap-2">
@@ -21,10 +29,7 @@ export const ContributionLegend: React.FC<{
           />
           <span className="text-sm">{item.category}</span>
           <span className="ml-auto text-sm text-gray-500">
-            {parseFloat(
-              ((item.value / (totalValue ?? 1)) * 100).toFixed(2),
-            ).toString()}
-            %
+            {((item.value / (totalValue ?? 1)) * 100).toFixed(1)}%
           </span>
         </div>
       ))}

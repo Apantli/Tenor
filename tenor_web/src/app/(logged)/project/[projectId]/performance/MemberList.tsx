@@ -30,7 +30,7 @@ export const MemberList = ({
   setSelectedMember: (member: UserCol | null) => void;
   selectedMember: UserCol | null;
 }) => {
-  const { data: members, isLoading } = api.users.getUserTable.useQuery({
+  const { data: members, isLoading } = api.users.getTeamMembers.useQuery({
     projectId: projectId,
   });
 
@@ -70,7 +70,6 @@ export const MemberList = ({
           <li className="flex h-full justify-start border-b-2">
             <div className="py-[20px]">
               <p className="text-gray-500">No members found.</p>
-              <p className="text-sm text-gray-500">Try changing the search.</p>
             </div>
           </li>
         )}

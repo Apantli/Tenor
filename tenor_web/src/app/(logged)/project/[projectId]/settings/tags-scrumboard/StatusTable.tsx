@@ -38,6 +38,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import useValidateStatusTag from "~/app/_hooks/useValidateStatus";
 
 export default function StatusTable() {
   const { projectId } = useParams();
@@ -61,6 +62,7 @@ export default function StatusTable() {
   const [selectedStatusId, setSelectedStatusId] = useState("");
   const confirm = useConfirmation();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  const validateStatusTag = useValidateStatusTag();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const { predefinedAlerts } = useAlert();
   const [editMode, setEditMode] = useState(false);
@@ -102,7 +104,6 @@ export default function StatusTable() {
 
   const handleDeleteStatus = async function (statusId: string) {
     const statusToDelete = status?.find((s) => s.id === statusId);
-
     if (
       statusToDelete &&
       ["Todo", "Doing", "Done"].includes(statusToDelete.name)
@@ -143,7 +144,14 @@ export default function StatusTable() {
     currentValue: boolean,
   ) => {
     const currentStatus = status?.find((s) => s.id === statusId);
-    if (!currentStatus) return;
+    if (
+      !currentStatus ||
+      !validateStatusTag({
+        tagName: currentStatus.name,
+        id: statusId,
+      })
+    )
+      return;
 
     await utils.settings.getStatusTypes.cancel({
       projectId: projectId as string,

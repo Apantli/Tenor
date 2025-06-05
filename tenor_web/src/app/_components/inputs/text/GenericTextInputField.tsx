@@ -49,6 +49,7 @@ export default function InputField({
   disablePlaceholder,
   ref,
   chatPlacement,
+  disabled = false,
   ...props
 }: Props &
   (
@@ -185,6 +186,9 @@ export default function InputField({
     }
   };
 
+  // If the input is disabled, also disable AI popup
+  disableAI = disabled ? disabled : disableAI;
+
   return (
     <div className={cn("flex w-full flex-col gap-1", containerClassName)}>
       {label && (
@@ -207,6 +211,7 @@ export default function InputField({
           ref={ref ? (ref as React.Ref<HTMLTextAreaElement>) : null}
           value={value}
           onChange={onChange as React.ChangeEventHandler<HTMLTextAreaElement>}
+          disabled={disabled}
           {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
         />
       )}
@@ -221,6 +226,7 @@ export default function InputField({
           ref={ref ? (ref as React.Ref<HTMLInputElement>) : null}
           value={value}
           onChange={onChange as React.ChangeEventHandler<HTMLInputElement>}
+          disabled={disabled}
           {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
         />
       )}
@@ -255,6 +261,7 @@ export default function InputField({
               onKeyDown={
                 handleKeyDown as React.KeyboardEventHandler<HTMLTextAreaElement>
               }
+              disabled={disabled}
               {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
             />
           )}
@@ -283,6 +290,7 @@ export default function InputField({
               onKeyDown={
                 handleKeyDown as React.KeyboardEventHandler<HTMLInputElement>
               }
+              disabled={disabled}
               {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
             />
           )}
@@ -423,6 +431,22 @@ export default function InputField({
                         </div>
                       </div>
                       <div className="flex flex-row items-center gap-2">
+                        <DeleteButton
+                          removeDeleteIcon
+                          onClick={() => {
+                            updateInputValue(originalMessageRef.current);
+                            setIsDropdownOpen(false);
+                            setMessages([]);
+                            setCurrentMessage("");
+                            setClose();
+                          }}
+                          disabled={
+                            status === "pending" ||
+                            originalMessageRef.current === value
+                          }
+                        >
+                          Reject Changes
+                        </DeleteButton>
                         <PrimaryButton
                           className=""
                           onClick={() => {
@@ -450,22 +474,6 @@ export default function InputField({
                         >
                           Accept Changes
                         </PrimaryButton>
-                        <DeleteButton
-                          removeDeleteIcon
-                          onClick={() => {
-                            updateInputValue(originalMessageRef.current);
-                            setIsDropdownOpen(false);
-                            setMessages([]);
-                            setCurrentMessage("");
-                            setClose();
-                          }}
-                          disabled={
-                            status === "pending" ||
-                            originalMessageRef.current === value
-                          }
-                        >
-                          Reject Changes
-                        </DeleteButton>
                       </div>
                     </div>
                   </div>

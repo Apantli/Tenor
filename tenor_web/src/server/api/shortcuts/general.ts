@@ -12,14 +12,16 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import {
   ActivitySchema,
+  type Permission,
   ProjectSchema,
+  RoleSchema,
   SettingsSchema,
   type UserSchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
 import { getCurrentSprint, getSprint, getTasksFromSprint } from "./sprints";
-import { getGlobalUserRef, getUsers } from "./users";
+import { getGlobalUserRef, getUsers, getUserTable } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { Timestamp } from "firebase-admin/firestore";
@@ -29,6 +31,8 @@ import { getUserStory } from "./userStories";
 import { getBacklogItem } from "./backlogItems";
 import { getEpic } from "./epics";
 import { notFound } from "~/server/errors";
+import { type RoleDetail } from "~/lib/types/detailSchemas";
+import { canRoleWrite } from "~/lib/defaultValues/roles";
 
 /**
  * @function getProjectsRef
@@ -527,4 +531,50 @@ export const getActivityItemByType = async (
       // Does not happen, but in case new types are added
       throw notFound(itemType as string);
   }
+};
+
+export const getProjectDetailedRoles = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const roles = await getRolesRef(firestore, projectId).orderBy("label").get();
+
+  const rolesData: WithId<RoleDetail>[] = roles.docs.map((doc) => {
+    const data = doc.data();
+    const roleData = RoleSchema.parse(data);
+    const role: WithId<RoleDetail> = {
+      id: doc.id,
+      ...roleData,
+      settings: roleData.settings as Permission,
+      issues: roleData.issues as Permission,
+      performance: roleData.performance as Permission,
+      sprints: roleData.sprints as Permission,
+      scrumboard: roleData.scrumboard as Permission,
+      backlog: roleData.backlog as Permission,
+      reviews: roleData.reviews as Permission,
+      retrospective: roleData.retrospective as Permission,
+    };
+    return role;
+  });
+
+  return rolesData;
+};
+
+export const getWritableUsers = async (
+  firestore: Firestore,
+  firebaseAdmin: admin.app.App,
+  projectId: string,
+) => {
+  const users = await getUserTable(firebaseAdmin, firestore, projectId);
+
+  const detailedRoles = await getProjectDetailedRoles(firestore, projectId);
+
+  const writeRoles = detailedRoles
+    .filter((role) => canRoleWrite(role))
+    .map((role) => role.id);
+
+  // Consider owner as a team member
+  writeRoles.push("owner");
+
+  return users.filter((user) => writeRoles.includes(user.roleId));
 };

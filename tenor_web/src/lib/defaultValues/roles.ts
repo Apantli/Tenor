@@ -1,4 +1,5 @@
 import type { Role } from "../types/firebaseSchemas";
+import { permissionNumbers } from "../types/firebaseSchemas";
 
 export const defaultRoleList: Role[] = [
   {
@@ -64,4 +65,17 @@ export const ownerRole: Role = {
   backlog: 2,
   retrospective: 2,
   reviews: 2,
+};
+
+export const canRoleWrite = (role: Role) => {
+  return (
+    role.settings >= permissionNumbers.write ||
+    role.performance >= permissionNumbers.write ||
+    role.sprints >= permissionNumbers.write ||
+    role.scrumboard >= permissionNumbers.write ||
+    role.issues >= permissionNumbers.write ||
+    role.backlog >= permissionNumbers.write ||
+    role.reviews >= permissionNumbers.write ||
+    role.retrospective >= permissionNumbers.write
+  );
 };
