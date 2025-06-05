@@ -273,7 +273,6 @@ export const getUserStoryContext = async (
   amount: number,
   prompt: string,
 ) => {
-  // load all contexts simultaneously
   const [
     projectContext,
     epicsContext,

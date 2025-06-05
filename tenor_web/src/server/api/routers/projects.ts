@@ -459,10 +459,7 @@ export const projectsRouter = createTRPCRouter({
         );
 
         if (!topProjects) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "No projects found",
-          });
+          return undefined;
         }
         await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
           topProjects,
@@ -495,11 +492,8 @@ export const projectsRouter = createTRPCRouter({
         input.count,
       );
 
-      if (topProjects == undefined) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No projects found",
-        });
+      if (!topProjects) {
+        return undefined;
       }
 
       await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
@@ -532,10 +526,7 @@ export const projectsRouter = createTRPCRouter({
       const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
 
       if (!currentSprint || !currentSprint.id) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No current sprint found for the project",
-        });
+        return null;
       }
 
       let burndownData: BurndownChartData | undefined;

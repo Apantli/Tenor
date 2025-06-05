@@ -74,10 +74,7 @@ export const performanceRouter = createTRPCRouter({
       if (input.time === "Sprint") {
         sprint = await getCurrentSprint(ctx.firestore, input.projectId);
         if (!sprint) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "No activity data available, there is no active sprint.",
-          });
+          return undefined;
         }
       }
 
@@ -188,6 +185,10 @@ const recomputePerformance = async (
       time,
     );
 
+    if (!newProductivityData) {
+      return undefined;
+    }
+
     productivityData.cached = productivityData.cached.filter(
       (cached) => cached.time !== time,
     );
@@ -237,10 +238,7 @@ const computePerformanceTime = async (
   } else {
     const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
     if (!currentSprint) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "No productivity data available, there is no active sprint.",
-      });
+      return undefined;
     }
     userStories = await getSprintUserStories(
       ctx.firestore,

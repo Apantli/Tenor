@@ -387,7 +387,7 @@ export const sprintsRouter = createTRPCRouter({
       const { projectId } = input;
       const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
       if (!currentSprint) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "No active sprint" });
+        return null;
       }
       return currentSprint;
     }),
