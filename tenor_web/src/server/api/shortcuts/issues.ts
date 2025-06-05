@@ -8,7 +8,6 @@ import type {
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import { IssueSchema } from "~/lib/types/zodFirebaseSchema";
-import { TRPCError } from "@trpc/server";
 import type { IssueCol } from "~/lib/types/columnTypes";
 import type { IssueDetail } from "~/lib/types/detailSchemas";
 import {
@@ -27,6 +26,7 @@ import {
   getTaskTable,
 } from "./tasks";
 import { getUser } from "./users";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getIssuesRef
@@ -145,10 +145,7 @@ export const getIssue = async (
   const issueRef = getIssueRef(firestore, projectId, issueId);
   const issueSnapshot = await issueRef.get();
   if (!issueSnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Issue not found",
-    });
+    throw notFound("Issue");
   }
   return {
     id: issueSnapshot.id,

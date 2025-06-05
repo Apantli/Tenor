@@ -56,12 +56,13 @@ export const ProjectStatusDashboard = ({
   return (
     <div
       className={cn(
-        "flex h-[38vh] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-3",
+        "flex h-[38vh] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5",
         className,
       )}
     >
-      <h2 className="my-3 ml-2 text-xl font-semibold">Project status</h2>
-
+      <h2 className="my-3 ml-2 w-full gap-1 self-center text-xl font-semibold">
+        Project status
+      </h2>
       {isLoading ? (
         <div className="mx-auto my-auto flex flex-col items-center">
           <span className="mx-auto text-[100px] text-gray-500">
@@ -76,7 +77,7 @@ export const ProjectStatusDashboard = ({
           <span className="mx-auto text-[100px] text-gray-500">
             <BarChartIcon fontSize="inherit" />
           </span>
-          <h1 className="mb-5 text-xl font-semibold text-gray-500">
+          <h1 className="mb-5 text-center text-xl font-semibold text-gray-500">
             No projects contain an active sprint with assigned tasks
           </h1>
         </div>

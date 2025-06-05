@@ -92,6 +92,21 @@ export const useFormatIssueScrumId = (projectId: string) => {
       : `IS${String(issueId).padStart(calculatePaddingNeeded(issueCount), "0")}`;
 };
 
+export const useFormatRequirementScrumId = (projectId: string) => {
+  const { data: requirementCount } = api.requirements.getRequirementsCount.useQuery({
+    projectId: projectId,
+  });
+
+  if (requirementCount === undefined) {
+    return (_: number) => "RE...";
+  }
+
+  return (requirementId: number) =>
+    requirementId === -1
+      ? "RE"
+      : `RE${String(requirementId).padStart(calculatePaddingNeeded(requirementCount), "0")}`; 
+}
+
 export const useFormatAnyScrumId = (projectId: string) => {
   const formatUserStoryScrumId = useFormatUserStoryScrumId(projectId);
   const formatEpicScrumId = useFormatEpicScrumId(projectId);
@@ -99,6 +114,7 @@ export const useFormatAnyScrumId = (projectId: string) => {
   const formatIssueScrumId = useFormatIssueScrumId(projectId);
   const formatGenericBacklogItemScrumId =
     useFormatGenericBacklogItemScrumId(projectId);
+  const formatRequirementScrumId = useFormatRequirementScrumId(projectId);
 
   return (scrumId: number, type: AllBasicItemType) => {
     switch (type) {
@@ -114,6 +130,8 @@ export const useFormatAnyScrumId = (projectId: string) => {
         return formatGenericBacklogItemScrumId(scrumId);
       case "SP":
         return `Sprint ${scrumId}`; // Sprints are usually just numbers
+      case "RE":
+        return formatRequirementScrumId(scrumId); // Requirements can be formatted similarly
     }
     // If we reach here, it means the type was not recognized, plase add a new case above
     throw new Error(`Unknown item type: ${type}`);

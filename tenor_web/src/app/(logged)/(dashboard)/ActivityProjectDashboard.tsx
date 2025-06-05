@@ -101,7 +101,7 @@ const ActivityProjectDashboard = ({ className }: Props) => {
   return (
     <div
       className={cn(
-        "flex h-[40vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5",
+        "flex h-[39vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5",
         className,
       )}
     >

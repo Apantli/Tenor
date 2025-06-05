@@ -191,12 +191,18 @@ export const useAlert = () => {
     // #region Issues
     issueNameError: () =>
       alertTemplates.oops("Please provide a name for the issue."),
-    issueStoryCreateError: () =>
+    issueCreateError: () =>
       alertTemplates.error("Failed to create issue. Please try again."),
     // #endregion
     // #region Epic
     epicNameError: () =>
       alertTemplates.oops("Please enter a name for the epic."),
+    // #endregion
+    // #region Tasks
+    taskNameError: () =>
+      alertTemplates.oops("Please enter a name for the task."),
+    taskCreateError: () =>
+      alertTemplates.error("Failed to create task. Please try again."),
     // #endregion
     // #region Requirements
     requirementNameError: () =>
@@ -205,6 +211,8 @@ export const useAlert = () => {
       alertTemplates.oops("Please select a type for the requirement."),
     // #endregion
     // #region Roles
+    removeOwnerError: () =>
+      alertTemplates.oops("You cannot remove the owner of the project."),
     roleNameError: () =>
       alertTemplates.oops("Please enter a name for the role."),
     ownerRoleError: () =>
@@ -292,10 +300,6 @@ export const useAlert = () => {
       alertTemplates.error(
         `Failed to create ${itemTagType}. Please try again.`,
       ),
-    storyPointsError: () =>
-      alertTemplates.oops(
-        "Maximum sprint story points must be greater than 0.",
-      ),
     sizePointsLowerBoundError: (size: string) =>
       alertTemplates.oops(`The value of ${size} must be greater than 0.`),
     sizePointsUpperBoundError: (upperBound: number) =>
@@ -310,10 +314,6 @@ export const useAlert = () => {
       alertTemplates.oops("Please enter a name for the list."),
     // #endregion
     // #region Project Settings
-    removeOwnerError: () =>
-      alertTemplates.oops(
-        "You cannot remove the owner of the project. Please assign a new owner first.",
-      ),
     projectNameError: () => alertTemplates.oops("Please enter a project name."),
     projectNameLengthError: (upperBound: string) =>
       alertTemplates.oops(

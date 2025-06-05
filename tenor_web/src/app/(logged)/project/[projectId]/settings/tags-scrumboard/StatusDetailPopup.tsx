@@ -14,6 +14,7 @@ import HelpIcon from "@mui/icons-material/Help";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
 import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import useValidateStatusTag from "~/app/_hooks/useValidateStatus";
 
 interface Props {
   showPopup: boolean;
@@ -36,6 +37,7 @@ export default function StatusDetailPopup({
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  const validateStatusTag = useValidateStatusTag();
 
   const { projectId } = useParams();
   const [form, setForm] = useState<{
@@ -96,49 +98,17 @@ export default function StatusDetailPopup({
   }, [error]);
 
   const handleSave = async (updatedData: NonNullable<typeof statusDetail>) => {
-    if (form.name === "") {
-      predefinedAlerts.statusNameError();
-      return;
-    }
-
-    const protectedNames = ["todo", "doing", "done"];
-    const originalNameLower = statusDetail?.name.toLowerCase().trim() ?? "";
-    const newNameLower = form.name.toLowerCase().trim();
-
-    if (protectedNames.includes(originalNameLower)) {
-      if (originalNameLower !== newNameLower) {
-        predefinedAlerts.statusNameNotEditableError();
-        setForm({
-          ...form,
-          name: statusDetail?.name ?? "",
-        });
-        return;
-      }
-    } else if (protectedNames.includes(newNameLower)) {
-      predefinedAlerts.statusNameReservedError(form.name);
+    if (
+      !validateStatusTag({
+        tagName: form.name,
+        id: statusDetail?.id,
+      })
+    ) {
       setForm({
         ...form,
         name: statusDetail?.name ?? "",
       });
       return;
-    }
-
-    if (newNameLower !== originalNameLower) {
-      const existingStatuses = await utils.settings.getStatusTypes.fetch({
-        projectId: projectId as string,
-      });
-
-      const statusWithSameNameExists = existingStatuses?.some(
-        (status) =>
-          status.id !== statusId &&
-          status.name.toLowerCase().trim() === newNameLower &&
-          !status.deleted,
-      );
-
-      if (statusWithSameNameExists) {
-        predefinedAlerts.existingStatusError(form.name);
-        return;
-      }
     }
 
     await utils.settings.getStatusTypes.cancel({

@@ -499,10 +499,7 @@ export const projectsRouter = createTRPCRouter({
       const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
 
       if (!currentSprint || !currentSprint.id) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No current sprint found for the project",
-        });
+        return undefined;
       }
 
       let burndownData: BurndownChartData | undefined;

@@ -6,13 +6,13 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 import { api } from "~/trpc/react";
-import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllStatuses } from "~/app/_hooks/invalidateHooks";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import DropdownColorPicker from "~/app/_components/inputs/pickers/DropdownColorPicker";
 import HelpIcon from "@mui/icons-material/Help";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import useValidateStatusTag from "~/app/_hooks/useValidateStatus";
 
 interface Props {
   showPopup: boolean;
@@ -22,12 +22,11 @@ interface Props {
 
 export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
   const confirm = useConfirmation();
-  const utils = api.useUtils();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+  const validateStatusTag = useValidateStatusTag();
 
   // REACT
   const { projectId } = useParams();
-  const { predefinedAlerts } = useAlert();
 
   const [form, setForm] = useState<{
     name: string;
@@ -55,31 +54,11 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
   };
 
   const handleCreateStatus = async () => {
-    if (form.name === "") {
-      predefinedAlerts.statusNameError();
-      return;
-    }
-
-    // Normalize the input for case-insensitive comparison
-    const normalizedName = form.name.toLowerCase().trim();
-    const protectedNames = ["todo", "doing", "done"];
-
-    if (protectedNames.some((name) => normalizedName === name)) {
-      predefinedAlerts.statusNameReservedError(form.name);
-      return;
-    }
-
-    const existingStatuses = await utils.settings.getStatusTypes.fetch({
-      projectId: projectId as string,
-    });
-
-    const statusAlreadyExists = existingStatuses?.some(
-      (status) =>
-        status.name.toLowerCase().trim() === normalizedName && !status.deleted,
-    );
-
-    if (statusAlreadyExists) {
-      predefinedAlerts.existingStatusError(form.name);
+    if (
+      !validateStatusTag({
+        tagName: form.name,
+      })
+    ) {
       return;
     }
 

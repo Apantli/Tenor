@@ -19,10 +19,7 @@ import z from "zod";
 import { fetchHTML } from "~/server/api/lib/webcontent";
 import { fetchMultipleFiles } from "~/lib/helpers/filecontent";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
-import {
-  defaultMaximumSprintStoryPoints,
-  defaultSprintDuration,
-} from "~/lib/defaultValues/project";
+import { defaultSprintDuration } from "~/lib/defaultValues/project";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -60,9 +57,9 @@ import {
   getSettingsRef,
 } from "../shortcuts/general";
 import { getUserRef } from "../shortcuts/users";
-import { TRPCError } from "@trpc/server";
 import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
 import { countTokens } from "~/lib/aiTools/aiGeneration";
+import { internalServerError } from "~/server/errors";
 
 export interface Links {
   link: string;
@@ -447,8 +444,6 @@ const settingsRouter = createTRPCRouter({
       const scrumSettings = {
         sprintDuration: (data?.sprintDuration ??
           defaultSprintDuration) as number,
-        maximumSprintStoryPoints: (data?.maximumSprintStoryPoints ??
-          defaultMaximumSprintStoryPoints) as number,
       };
       return scrumSettings;
     }),
@@ -457,14 +452,12 @@ const settingsRouter = createTRPCRouter({
       z.object({
         projectId: z.string(),
         days: z.number(),
-        points: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { projectId, days, points } = input;
+      const { projectId, days } = input;
       const settingsRef = getSettingsRef(ctx.firestore, projectId);
       await settingsRef.update({
-        maximumSprintStoryPoints: points,
         sprintDuration: days,
       });
     }),
@@ -576,10 +569,7 @@ const settingsRouter = createTRPCRouter({
             links: newLinks,
           },
         });
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to add link ${link}`,
-        });
+        throw internalServerError(`Failed to add link ${link}`);
       }
     }),
   removeLink: roleRequiredProcedure(settingsPermissions, "write")

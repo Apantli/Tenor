@@ -27,7 +27,7 @@ import {
   getBacklogItemsRef,
 } from "../shortcuts/backlogItems";
 import { LogProjectActivity } from "../lib/projectEventLogger";
-import { TRPCError } from "@trpc/server";
+import { notFound } from "~/server/errors";
 
 export const backlogItemsRouter = createTRPCRouter({
   /**
@@ -244,7 +244,7 @@ export const backlogItemsRouter = createTRPCRouter({
       );
       const backlogItemSnapshot = await backlogItemRef.get();
       if (!backlogItemSnapshot.exists) {
-        throw new TRPCError({ code: "NOT_FOUND" });
+        throw notFound("Backlog Item");
       }
 
       await backlogItemRef.update({

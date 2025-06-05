@@ -30,7 +30,7 @@ export default function ActivityCard({
 }: Props) {
   const firebaseTimestampToDate = getRelativeTimeString;
   return (
-    <div className="flex w-full flex-row border-b-2 px-3 py-4 transition hover:bg-gray-100">
+    <div className="flex w-full flex-row border-b-2 px-3 py-4 transition">
       <div className="flex w-3/4 flex-col items-start">
         <h3 className="line-clamp-1 w-full text-ellipsis break-all text-lg font-semibold">
           {formattedScrumId && (

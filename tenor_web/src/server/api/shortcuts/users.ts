@@ -3,8 +3,8 @@ import type * as admin from "firebase-admin";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
 import { getProjectRef } from "./general";
-import { TRPCError } from "@trpc/server";
 import type { UserCol } from "~/lib/types/columnTypes";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getGlobalUsersRef
@@ -146,10 +146,7 @@ export const getUser = async (
   const userRef = getUserRef(firestore, projectId, userId);
   const userSnapshot = await userRef.get();
   if (!userSnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "User not found",
-    });
+    throw notFound("User");
   }
   const firebaseUser = await admin.auth().getUser(userId);
   return {

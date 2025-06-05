@@ -24,12 +24,13 @@ import { getCurrentSprint, getSprint, getTasksFromSprint } from "./sprints";
 import { getGlobalUserRef, getUsers, getUserTable } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { getTask } from "./tasks";
 import { getIssue } from "./issues";
 import { getUserStory } from "./userStories";
 import { getBacklogItem } from "./backlogItems";
 import { getEpic } from "./epics";
+import { notFound } from "~/server/errors";
+import { getRequirement } from "./requirements";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import { canRoleWrite } from "~/lib/defaultValues/roles";
 
@@ -64,7 +65,7 @@ export const getProjectRef = (firestore: Firestore, projectId: string) => {
 export const getProject = async (firestore: Firestore, projectId: string) => {
   const project = await getProjectRef(firestore, projectId).get();
   if (!project.exists) {
-    throw new Error("Project not found");
+    throw notFound("Project");
   }
   return { id: project.id, ...ProjectSchema.parse(project.data()) };
 };
@@ -363,10 +364,7 @@ export const getActivity = async (
   const activityRef = getActivityRef(firestore, projectId, activityId);
   const activitySnapshot = await activityRef.get();
   if (!activitySnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Activity not found",
-    });
+    throw notFound("Activity");
   }
 
   return {
@@ -488,6 +486,8 @@ export const getActivityItemByType = async (
       return await getBacklogItem(firestore, projectId, itemId);
     case "EP": // Epic
       return await getEpic(firestore, projectId, itemId);
+    case "RE": // Requirement
+      return await getRequirement(firestore, projectId, itemId);
     case "PJ": // Project
       return undefined; // No need to fetch project details here
     case "SP": // Sprint
@@ -503,10 +503,7 @@ export const getActivityItemByType = async (
       }
     default:
       // Does not happen, but in case new types are added
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: `Item type ${itemType as string} not supported`,
-      });
+      throw notFound(itemType as string);
   }
 };
 
