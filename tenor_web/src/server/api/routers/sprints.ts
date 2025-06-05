@@ -33,7 +33,6 @@ import { getUserStories, getUserStoriesRef } from "../shortcuts/userStories";
 import { getIssues, getIssuesRef } from "../shortcuts/issues";
 import { getBacklogTags } from "../shortcuts/tags";
 import { getProjectRef } from "../shortcuts/general";
-import { TRPCError } from "@trpc/server";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 import { getTasksAssignesIdsFromItem } from "../shortcuts/tasks";
 import type {
@@ -43,6 +42,7 @@ import type {
 import type { AnyBacklogItemType } from "~/lib/types/firebaseSchemas";
 import { getBacklogItems } from "../shortcuts/backlogItems";
 import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
+import { notFound } from "~/server/errors";
 
 export const sprintsRouter = createTRPCRouter({
   getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")
@@ -124,7 +124,7 @@ export const sprintsRouter = createTRPCRouter({
 
       const sprintDoc = await sprintRef.get();
       if (!sprintDoc.exists) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Sprint not found" });
+        throw notFound("Sprint");
       }
 
       await sprintRef.update(sprintData);
@@ -387,7 +387,7 @@ export const sprintsRouter = createTRPCRouter({
       const { projectId } = input;
       const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
       if (!currentSprint) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "No active sprint" });
+        return null;
       }
       return currentSprint;
     }),
