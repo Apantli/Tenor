@@ -36,6 +36,7 @@ import { getCurrentSprint } from "../shortcuts/sprints";
 import { TRPCError } from "@trpc/server";
 import {
   getActivityPartition,
+  getActivityTotalCount,
   getAverageTime,
   getContributionOverview,
 } from "../shortcuts/performance";
@@ -88,6 +89,34 @@ export const performanceRouter = createTRPCRouter({
         sprint?.id,
       );
       return activities;
+    }),
+
+  getUserContributionCount: roleRequiredProcedure(
+    performancePermissions,
+    "read",
+  )
+    .input(
+      z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
+    )
+    .query(async ({ ctx, input }) => {
+      let sprint: WithId<Sprint> | undefined = undefined;
+      if (input.time === "Sprint") {
+        sprint = await getCurrentSprint(ctx.firestore, input.projectId);
+        if (!sprint) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "No activity data available, there is no active sprint.",
+          });
+        }
+      }
+
+      return await getActivityTotalCount(
+        ctx.firestore,
+        input.projectId,
+        input.userId,
+        input.time,
+        sprint?.id,
+      );
     }),
   getContributionOverview: roleRequiredProcedure(performancePermissions, "read")
     .input(

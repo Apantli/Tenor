@@ -6,6 +6,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { cn } from "~/lib/helpers/utils";
 import type { UserCol } from "~/lib/types/columnTypes";
 import dynamic from "next/dynamic";
+import { MemberContributionCount } from "~/app/(logged)/project/[projectId]/performance/MemberContributionCount";
 
 const DynamicPerformanceChart = dynamic(
   () =>
@@ -130,7 +131,13 @@ const MemberItem = ({
       <ProfilePicture
         user={member}
         hideTooltip
-        pictureClassName="min-h-20 min-w-20 h-20 w-20 mx-5 my-auto text-4xl"
+        pictureClassName="min-h-20 min-w-20 h-20 w-20 ml-5 my-auto text-4xl"
+      />
+      <MemberContributionCount
+        projectId={projectId}
+        member={member}
+        time={time}
+        className="mr-5"
       />
       <h3
         className={cn(

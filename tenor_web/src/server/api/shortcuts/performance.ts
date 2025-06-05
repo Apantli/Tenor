@@ -99,6 +99,54 @@ export const getActivityPartition = async (
 
   return result;
 };
+
+export const getActivityTotalCount = async (
+  firestore: Firestore,
+  projectId: string,
+  userId: string,
+  time?: string,
+  sprintId?: string,
+) => {
+  let activityRef = null;
+  if (time === "Week") {
+    activityRef = getActivityRef(firestore, projectId).where(
+      "date",
+      ">=",
+      new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    );
+  } else if (time === "Month") {
+    activityRef = getActivityRef(firestore, projectId).where(
+      "date",
+      ">=",
+      new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+    );
+  } else {
+    if (!sprintId) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No activity data available, no sprint specified.",
+      });
+    }
+    // Get start and end date from sprint
+    const sprint = await getSprint(firestore, projectId, sprintId);
+    if (!sprint) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "No activity data available, sprint not found.",
+      });
+    }
+    activityRef = getActivityRef(firestore, projectId)
+      .where("date", ">=", sprint?.startDate)
+      .where("date", "<=", sprint.endDate);
+  }
+  const activityCount = await activityRef
+    .where("userId", "==", userId)
+    .count()
+    .get();
+
+  return activityCount.data().count;
+};
+
 export const getContributionOverview = async (
   firestore: Firestore,
   projectId: string,
