@@ -1,13 +1,13 @@
 import type { Firestore } from "firebase-admin/firestore";
 import { SprintSchema } from "~/lib/types/zodFirebaseSchema";
 import { getProjectRef } from "./general";
-import { TRPCError } from "@trpc/server";
 import type { Sprint, WithId } from "~/lib/types/firebaseSchemas";
 import { getTasksFromItem } from "./tasks";
 import { getUserStoriesRef } from "./userStories";
 import { getIssuesRef } from "./issues";
 import { getBacklogItemsRef } from "./backlogItems";
 import type { BacklogItemDetail } from "~/lib/types/detailSchemas";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getSprintsRef
@@ -135,10 +135,7 @@ export const getSprint = async (
   const sprintRef = getSprintRef(firestore, projectId, sprintId);
   const sprintDoc = await sprintRef.get();
   if (!sprintDoc.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Sprint not found",
-    });
+    throw notFound("Sprint");
   }
 
   const sprintSchema = SprintSchema.parse(sprintDoc.data());

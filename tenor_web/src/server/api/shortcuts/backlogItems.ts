@@ -7,7 +7,6 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { getGenericBacklogItemContext, getProjectRef } from "./general";
 import { BacklogItemSchema } from "~/lib/types/zodFirebaseSchema";
-import { TRPCError } from "@trpc/server";
 import type { Firestore } from "firebase-admin/firestore";
 import admin from "firebase-admin";
 import { deleteTaskAndGetModified, getTasksRef, getTaskTable } from "./tasks";
@@ -22,6 +21,7 @@ import type {
   BacklogItemFullDetail,
   TaskPreview,
 } from "~/lib/types/detailSchemas";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getBacklogItemsRef
@@ -120,10 +120,7 @@ export const getBacklogItem = async (
   const backlogItemRef = getBacklogItemRef(firestore, projectId, backlogItemId);
   const backlogItemSnapshot = await backlogItemRef.get();
   if (!backlogItemSnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Backlog item not found",
-    });
+    throw notFound("BacklogItem");
   }
   return {
     id: backlogItemSnapshot.id,

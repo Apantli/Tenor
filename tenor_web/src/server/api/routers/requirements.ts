@@ -11,7 +11,7 @@
 import type { Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { RequirementSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
-import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure, roleRequiredProcedure } from "~/server/api/trpc";
 import {
   backlogPermissions,
   tagPermissions,
@@ -35,6 +35,7 @@ import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
 import { getPriorityByNameOrId } from "../shortcuts/tags";
 import type { RequirementCol } from "~/lib/types/columnTypes";
+import { LogProjectActivity } from "../lib/projectEventLogger";
 
 export const requirementsRouter = createTRPCRouter({
   getRequirementTypes: roleRequiredProcedure(tagPermissions, "read")
@@ -72,6 +73,14 @@ export const requirementsRouter = createTRPCRouter({
           projectId,
           requirementTypeId,
         ).get();
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: requirementTypeId,
+          type: "RE",
+          action: "update",
+        });
         await requirementTypeDoc?.ref.update(requirementType);
         return { id: requirementTypeId, ...requirementType };
       } else {
@@ -79,6 +88,15 @@ export const requirementsRouter = createTRPCRouter({
           ctx.firestore,
           projectId,
         ).add(requirementType);
+        const requirementTypeId = addedDoc.id;
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: requirementTypeId,
+          type: "RE",
+          action: "update",
+        });
         return { id: addedDoc.id, ...requirementType };
       }
     }),
@@ -92,6 +110,16 @@ export const requirementsRouter = createTRPCRouter({
         projectId,
         requirementTypeId,
       ).get();
+
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: requirementTypeId,
+        type: "RE",
+        action: "update",
+      });
+
       await requirementTypeDoc?.ref.update({ deleted: true });
     }),
 
@@ -185,6 +213,14 @@ export const requirementsRouter = createTRPCRouter({
           requirementId,
         ).get();
         await requirementDoc?.ref.update(requirementData);
+        await LogProjectActivity({
+          firestore: ctx.firestore,
+          projectId: input.projectId,
+          userId: ctx.session.user.uid,
+          itemId: requirementId,
+          type: "RE",
+          action: "update",
+        });
         return { id: requirementId };
       } else {
         const { id: newRequirementId } = await ctx.firestore.runTransaction(
@@ -206,6 +242,15 @@ export const requirementsRouter = createTRPCRouter({
 
             transaction.create(docRef, requirementDataUpdated);
 
+            await LogProjectActivity({
+              firestore: ctx.firestore,
+              projectId: input.projectId,
+              userId: ctx.session.user.uid,
+              itemId: docRef.id,
+              type: "RE",
+              action: "create",
+            });
+
             return {
               id: docRef.id,
             };
@@ -225,6 +270,14 @@ export const requirementsRouter = createTRPCRouter({
         projectId,
         requirementId,
       ).get();
+      await LogProjectActivity({
+        firestore: ctx.firestore,
+        projectId: input.projectId,
+        userId: ctx.session.user.uid,
+        itemId: requirementId,
+        type: "RE",
+        action: "delete",
+      });
       await requirementDoc?.ref.update({ deleted: true });
     }),
 
@@ -356,5 +409,14 @@ export const requirementsRouter = createTRPCRouter({
         );
         return sortedRequirementTypes[0];
       }
+    }),
+
+  getRequirementsCount: protectedProcedure
+    .input(z.object({ projectId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { projectId } = input;
+      const requirementRef = getRequirementsRef(ctx.firestore, projectId);
+      const countSnapshot = await requirementRef.count().get();
+      return countSnapshot.data().count;
     }),
 });
