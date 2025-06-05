@@ -14,6 +14,7 @@ import type { Timestamp, Firestore } from "firebase-admin/firestore";
 
 export type WithId<T> = T & { id: string };
 export type WithProjectId<T> = T & { projectId: string };
+export type WithName<T> = T & { name: string };
 
 export interface SprintInfo {
   number: number;
@@ -83,6 +84,12 @@ export interface Project {
   // sprintSnapshots: SprintSnapshot[];
 
   currentSprintId: string;
+}
+
+export interface TopProjects {
+  projectId: string;
+  taskCount: number;
+  completedCount: number;
 }
 
 export interface Settings {
@@ -260,11 +267,6 @@ export interface ProjectStatus {
   taskCount: number;
   completedCount: number;
   name?: string;
-}
-
-export interface ProjectStatusCache {
-  fetchDate: Timestamp;
-  topProjects: ProjectStatus[];
 }
 
 export type ActionType = "create" | "update" | "delete";

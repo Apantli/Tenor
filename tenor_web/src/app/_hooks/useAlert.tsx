@@ -341,8 +341,6 @@ export const useAlert = () => {
     // #region Reloads
     productivityUpdateSuccess: () =>
       alertTemplates.success("Productivity has been updated."),
-    statusUpdateSuccess: () =>
-      alertTemplates.success("Status has been updated successfully."),
     // #endregion
     // #region Muse Headset
     headSetDisconnected: () =>

@@ -15,7 +15,8 @@ import type {
   WithId,
   User,
   Requirement,
-  ProjectStatusCache,
+  TopProjects,
+  WithName,
 } from "~/lib/types/firebaseSchemas";
 import {
   createTRPCRouter,
@@ -46,14 +47,12 @@ import {
   getRoles,
   getRolesRef,
   getSettingsRef,
-  getTopProjectStatusCacheRef,
   getActivityDetailsFromTopProjects,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
 import { getPrioritiesRef, getStatusTypesRef } from "../shortcuts/tags";
 import { getRequirementTypesRef } from "../shortcuts/requirements";
-import { shouldRecomputeTopProjects } from "~/lib/helpers/cache";
 import { getActivityRef } from "../shortcuts/performance";
 import { defaultRoleList } from "~/lib/defaultValues/roles";
 import {
@@ -440,72 +439,29 @@ export const projectsRouter = createTRPCRouter({
       );
     }),
 
-  getTopProjectStatus: protectedProcedure
-    .input(z.object({ count: z.number() }))
-    .query(async ({ ctx, input }) => {
-      let topProjects = (
-        await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).get()
-      ).data() as ProjectStatusCache | undefined;
+  getTopProjectStatus: protectedProcedure.query(async ({ ctx }) => {
+    const topProjects = await computeTopProjectStatus(
+      ctx.firestore,
+      ctx.firebaseAdmin.app(),
+      ctx.session.uid,
+    );
 
-      if (
-        !topProjects ||
-        shouldRecomputeTopProjects({ cacheTarget: topProjects })
-      ) {
-        topProjects = await computeTopProjectStatus(
-          ctx.firestore,
-          ctx.firebaseAdmin.app(),
-          ctx.session.uid,
-          input.count,
-        );
+    if (!topProjects) {
+      return [] as WithName<TopProjects>[];
+    }
 
-        if (!topProjects) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "No projects found",
-          });
-        }
-        await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
-          topProjects,
-        );
-      }
+    const projectsWithName = await Promise.all(
+      topProjects.map(async (project) => {
+        const projectData = await getProject(ctx.firestore, project.projectId);
+        return {
+          ...project,
+          name: projectData.name,
+        };
+      }),
+    );
 
-      const projectsWithName = await Promise.all(
-        topProjects.topProjects.map(async (project) => {
-          const projectData = await getProject(
-            ctx.firestore,
-            project.projectId,
-          );
-          return {
-            ...project,
-            name: projectData.name,
-          };
-        }),
-      );
-      topProjects.topProjects = projectsWithName;
-      return topProjects;
-    }),
-
-  recomputeTopProjectStatus: protectedProcedure
-    .input(z.object({ count: z.number() }))
-    .mutation(async ({ ctx, input }) => {
-      const topProjects = await computeTopProjectStatus(
-        ctx.firestore,
-        ctx.firebaseAdmin.app(),
-        ctx.session.uid,
-        input.count,
-      );
-
-      if (topProjects == undefined) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No projects found",
-        });
-      }
-
-      await getTopProjectStatusCacheRef(ctx.firestore, ctx.session.uid).set(
-        topProjects,
-      );
-    }),
+    return projectsWithName as WithName<TopProjects>[];
+  }),
 
   getActivityDetails: protectedProcedure
     .input(
@@ -519,8 +475,22 @@ export const projectsRouter = createTRPCRouter({
     }),
   getActivityDetailsFromTopProjects: protectedProcedure.query(
     async ({ ctx }) => {
-      const userId = ctx.session.user.uid;
-      return await getActivityDetailsFromTopProjects(ctx.firestore, userId);
+      const topProjects = await computeTopProjectStatus(
+        ctx.firestore,
+        ctx.firebaseAdmin.app(),
+        ctx.session.uid,
+      );
+
+      if (!topProjects) {
+        return [];
+      }
+
+      const details = await getActivityDetailsFromTopProjects(
+        ctx.firestore,
+        topProjects,
+      );
+
+      return details;
     },
   ),
   getGraphBurndownData: protectedProcedure
