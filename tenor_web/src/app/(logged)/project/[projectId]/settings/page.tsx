@@ -10,7 +10,6 @@ import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { toBase64 } from "~/lib/helpers/base64";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { checkPermissions } from "~/lib/defaultValues/permission";
@@ -19,21 +18,59 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
+import { logoSizeLimit, logoMaxDimensions } from "~/lib/defaultValues/project";
+import { toBase64 } from "~/lib/helpers/base64";
+import { cn } from "~/lib/helpers/utils";
 
 export default function ProjectGeneralSettings() {
   const pathName = usePathname();
   const tab = pathName.split("/").pop();
   const { projectId } = useParams();
   const [icon, setIcon] = useState<File | null>(null);
+  const [isValidatingImage, setIsValidatingImage] = useState(false);
+  const [loadingImage, setLoadingImage] = useState<boolean>(true);
 
-  const handleImageChange = async (file: File) => {
-    const iconBase64 = (await toBase64(file)) as string;
-    setIcon(file);
-    setEditForm((prev) => ({
-      ...prev,
-      icon: iconBase64,
-    }));
-  };
+  function handleImageChange(file: File) {
+    if (isValidatingImage) return;
+    setIsValidatingImage(true);
+
+    // Check file size
+    if (file.size > logoSizeLimit) {
+      predefinedAlerts.projectLogoSizeError();
+      setIsValidatingImage(false);
+      return;
+    }
+
+    // Check image dimensions
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = async () => {
+      URL.revokeObjectURL(objectUrl);
+
+      if (img.width > logoMaxDimensions || img.height > logoMaxDimensions) {
+        predefinedAlerts.projectLogoDimensionsError(img.height, img.width);
+        setIsValidatingImage(false);
+      } else {
+        // If all validations pass, set the image
+        setIcon(file);
+        const base64Image = (await toBase64(file)) as string;
+        setEditForm((prev) => ({
+          ...prev,
+          icon: base64Image,
+        }));
+        setIsValidatingImage(false);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      predefinedAlerts.projectLogoError();
+      setIsValidatingImage(false);
+    };
+
+    img.src = objectUrl;
+  }
   const router = useRouter();
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
@@ -163,6 +200,11 @@ export default function ProjectGeneralSettings() {
         <div className="flex h-full flex-col gap-2">
           <p className="mb-2 text-lg font-semibold">Project icon</p>
           <div className="flex flex-row gap-x-3">
+            {loadingImage && (
+              <div className="flex h-full w-full items-center justify-center">
+                <LoadingSpinner color="primary" />
+              </div>
+            )}
             <img
               src={
                 editForm.icon == ""
@@ -173,8 +215,13 @@ export default function ProjectGeneralSettings() {
                       ? editForm.icon
                       : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
               }
+              onLoad={() => setLoadingImage(false)}
+              onError={() => setLoadingImage(false)}
               alt="Project logo"
-              className="h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1"
+              className={cn(
+                "h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1",
+                loadingImage ? "hidden" : "",
+              )}
             />
             <InputFileField
               label=""

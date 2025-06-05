@@ -32,6 +32,7 @@ export interface Props {
   disablePlaceholder?: boolean;
   ref?: React.Ref<HTMLTextAreaElement | HTMLInputElement>;
   chatPlacement?: "top" | "bottom" | "left" | "right";
+  resize?: boolean;
 }
 
 export default function InputField({
@@ -50,6 +51,7 @@ export default function InputField({
   ref,
   chatPlacement,
   disabled = false,
+  resize = true,
   ...props
 }: Props &
   (
@@ -206,6 +208,7 @@ export default function InputField({
           placeholder={placeholder}
           className={cn(
             "block min-h-40 w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none",
+            resize ? "resize-y" : "resize-none",
             className,
           )}
           ref={ref ? (ref as React.Ref<HTMLTextAreaElement>) : null}
@@ -251,6 +254,8 @@ export default function InputField({
               }}
               className={cn(
                 "block min-h-40 w-full rounded-md border border-gray-300 px-4 py-2 pr-9 shadow-sm focus:border-blue-500 focus:outline-none",
+                resize ? "resize-y" : "resize-none",
+
                 className,
               )}
               ref={textareaRef}
