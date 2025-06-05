@@ -90,11 +90,6 @@ export const MemberDetailsCard = ({
         .sort((a, b) => a.category.localeCompare(b.category))
     : [];
 
-  const contributionTotal = formattedUserContributions.reduce(
-    (sum, item) => sum + item.value,
-    0,
-  );
-
   const { data: averageTime, isLoading: loadingAverageTime } =
     api.performance.getAverageTimeTask.useQuery({
       projectId: projectId,
@@ -139,7 +134,7 @@ export const MemberDetailsCard = ({
     >
       <CrossIcon
         onClick={() => setSelectedMember(null)}
-        className="absolute right-2 top-2 ml-auto text-gray-500"
+        className="absolute right-2 top-2 ml-auto cursor-pointer text-gray-500"
         fontSize="large"
       />
       <div className="flex flex-row gap-3">
@@ -178,7 +173,8 @@ export const MemberDetailsCard = ({
         )}
         {!loadingContributions && (
           <div className="">
-            {contributionTotal > 0 ? (
+            {/* FIXME: don't throw trpc errors to show to the client */}
+            {!error ? (
               <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
                 <DynamicContributionPieChart
                   data={formattedUserContributions}
@@ -188,9 +184,7 @@ export const MemberDetailsCard = ({
               </div>
             ) : (
               <p className="text-xl text-gray-500">
-                {error
-                  ? error.message
-                  : "No user contributions in the selected time."}
+                {error ? error.message : ""}
               </p>
             )}
           </div>
