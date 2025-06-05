@@ -23,6 +23,10 @@ export const useInvalidateQueriesAllTasks = () => {
       projectId: projectId,
     });
 
+    await utils.tasks.getTasksByDate.invalidate({
+      projectId: projectId,
+    });
+
     // Invalidating this because items with automatic status fetch from tasks
     await utils.kanban.getBacklogItemsForKanban.invalidate({
       projectId: projectId,
@@ -322,6 +326,10 @@ export const useInvalidateQueriesUser = () => {
       userId: userId,
     });
     await utils.users.getGlobalUsers.invalidate();
+
+    await utils.users.getTeamMembers.invalidate();
+    await utils.users.getUserTable.invalidate();
+    await utils.users.getUsers.invalidate();
   };
 };
 
