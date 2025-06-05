@@ -403,12 +403,19 @@ export const getActivitiesRef = (firestore: Firestore, projectId: string) => {
 export const getProjectActivities = async (
   firestore: Firestore,
   projectId: string,
+  lastActivityCursor?: WithId<ProjectActivity>,
+  limit: number = 5,
 ) => {
   const activitiesRef = getActivitiesRef(firestore, projectId);
-  const activitiesSnapshot = await activitiesRef
-    .orderBy("date", "desc")
-    .limit(5)
-    .get();
+  let query = activitiesRef.orderBy("date", "desc").limit(limit);
+
+  // Apply cursor if provided
+  if (lastActivityCursor) {
+    query = query.startAfter(lastActivityCursor.date);
+  }
+
+  const activitiesSnapshot = await query.get();
+
   const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map(
     (activityData) => {
       return {
@@ -417,15 +424,22 @@ export const getProjectActivities = async (
       } as WithId<ProjectActivity>;
     },
   );
-  return activities;
+
+  // check if there are more results
+  const hasMore = activitiesSnapshot.docs.length === limit;
+
+  return {activities, hasMore, lastCursor: activities.length > 0 ? activities[activities.length - 1] : undefined};
 };
 
 export const getItemActivityDetails = async (
   firestore: Firestore,
   projectId: string,
+  lastActivityCursor?: WithId<ProjectActivityDetail>,
+  limit: number = 5,
 ) => {
   // Get activities
-  const activities = await getProjectActivities(firestore, projectId);
+  const activitiesResult = await getProjectActivities(firestore, projectId, lastActivityCursor, limit);
+  const activities = activitiesResult.activities;
 
   // Array to hold the results
   const results: WithId<ProjectActivityDetail>[] = [];
@@ -441,7 +455,7 @@ export const getItemActivityDetails = async (
       // If the item type is project, we don't need to fetch it
       continue;
     }
-
+    
     const item = await getActivityItemByType(
       firestore,
       projectId,
@@ -465,7 +479,7 @@ export const getItemActivityDetails = async (
     results.push(data);
   }
 
-  return results;
+  return {results, hasMore: activitiesResult.hasMore, lastCursor: activitiesResult.lastCursor};
 };
 
 export const getActivityDetailsFromTopProjects = async (
@@ -479,11 +493,11 @@ export const getActivityDetailsFromTopProjects = async (
 
   const results: WithProjectId<WithId<ProjectActivityDetail>>[] = [];
   for (const project of topProjects.topProjects) {
-    const activities = await getItemActivityDetails(
+    const activitiesResult = await getItemActivityDetails(
       firestore,
       project.projectId,
     );
-    for (const item of activities) {
+    for (const item of activitiesResult.results) {
       if (!item) continue;
 
       results.push({

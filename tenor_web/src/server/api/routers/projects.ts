@@ -511,18 +511,48 @@ export const projectsRouter = createTRPCRouter({
     .input(
       z.object({
         projectId: z.string(),
+        cursor: z.any().optional(), // Use z.any() for Firestore cursor
+        limit: z.number().default(10).optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return await getItemActivityDetails(ctx.firestore, projectId);
+      const { projectId, cursor, limit } = input;
+      return await getItemActivityDetails(ctx.firestore, projectId, cursor, limit);
+    }
+  ),
+
+  // Add this new endpoint specifically for pagination
+  getMoreActivityDetails: protectedProcedure
+    .input(z.object({
+      projectId: z.string(),
+      cursorId: z.string().optional(),
+      limit: z.number().optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      const { projectId, cursorId, limit = 10 } = input;
+      
+      // Get the cursor object if cursorId is provided
+      let cursor = undefined;
+      if (cursorId) {
+        // Get cursor object by ID if needed
+        // Or pass the ID directly if your backend supports it
+      }
+      
+      return getItemActivityDetails(
+        ctx.firestore, 
+        projectId, 
+        cursor, 
+        limit
+      );
     }),
+
   getActivityDetailsFromTopProjects: protectedProcedure.query(
     async ({ ctx }) => {
       const userId = ctx.session.user.uid;
       return await getActivityDetailsFromTopProjects(ctx.firestore, userId);
     },
   ),
+
   getGraphBurndownData: protectedProcedure
 
     .input(z.object({ projectId: z.string() }))

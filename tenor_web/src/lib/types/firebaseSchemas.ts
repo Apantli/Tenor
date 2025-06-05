@@ -179,8 +179,7 @@ export type AllBasicItemType =
   | TaskType
   | EpicType
   | ProjectType
-  | SprintType
-  | RequirementType;
+  | SprintType;
 export type BacklogItemAndTaskType = AnyBacklogItemType | TaskType;
 
 export type TaskDetailType = `${AnyBacklogItemType}-${TaskType}`; // Used for simplification of moving info around
