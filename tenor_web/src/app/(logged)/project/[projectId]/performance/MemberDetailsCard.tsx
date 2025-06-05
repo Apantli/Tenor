@@ -134,7 +134,7 @@ export const MemberDetailsCard = ({
     >
       <CrossIcon
         onClick={() => setSelectedMember(null)}
-        className="absolute right-2 top-2 ml-auto text-gray-500"
+        className="absolute right-2 top-2 ml-auto text-gray-500 hover:cursor-pointer"
         fontSize="large"
       />
       <div className="flex flex-row gap-3">
