@@ -39,7 +39,6 @@ export const useInvalidateQueriesAllTasks = () => {
       utils.tasks.getTasks.invalidate({
         projectId: projectId,
       }),
-
       utils.projects.getActivityDetailsFromProjects.invalidate(),
       utils.projects.getTopProjectStatus.invalidate(),
     ]);
@@ -57,7 +56,6 @@ export const useInvalidateQueriesTaskDetails = () => {
       utils.kanban.getTasksForKanban.invalidate({
         projectId: projectId,
       }),
-
       utils.projects.getActivityDetails.invalidate({
         projectId: projectId,
       }),
@@ -155,13 +153,15 @@ export const useInvalidateQueriesItemStatus = () => {
 export const useInvalidateQueriesAllRequirements = () => {
   const utils = api.useUtils();
   return async (projectId: string) => {
-    await utils.requirements.getRequirementTable.invalidate({
-      projectId: projectId,
-    });
-    await utils.projects.getActivityDetails.invalidate({
-      projectId: projectId,
-    });
-    await utils.projects.getActivityDetailsFromProjects.invalidate();
+    await Promise.all([
+      utils.requirements.getRequirementTable.invalidate({
+        projectId: projectId,
+      }),
+      utils.projects.getActivityDetails.invalidate({
+        projectId: projectId,
+      }),
+      utils.projects.getActivityDetailsFromProjects.invalidate(),
+    ]);
   };
 };
 
@@ -400,20 +400,19 @@ export const useInvalidateQueriesGenericBacklogItemDetails = () => {
   const utils = api.useUtils();
 
   return async (projectId: string, backlogItemIds: string[]) => {
-    await Promise.all(
-      backlogItemIds.map(async (backlogItemId) => {
+    await Promise.all([
+      ...backlogItemIds.map(async (backlogItemId) => {
         await utils.backlogItems.getBacklogItemDetail.invalidate({
           projectId: projectId,
           backlogItemId,
         });
       }),
-    );
-
-    await utils.projects.getActivityDetails.invalidate({
-      projectId: projectId,
-    });
-    await utils.projects.getActivityDetailsFromProjects.invalidate();
-    await utils.projects.getTopProjectStatus.invalidate();
+      utils.projects.getActivityDetails.invalidate({
+        projectId: projectId,
+      }),
+      utils.projects.getActivityDetailsFromProjects.invalidate(),
+      utils.projects.getTopProjectStatus.invalidate(),
+    ]);
   };
 };
 
