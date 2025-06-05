@@ -292,10 +292,6 @@ export const useAlert = () => {
       alertTemplates.error(
         `Failed to create ${itemTagType}. Please try again.`,
       ),
-    storyPointsError: () =>
-      alertTemplates.oops(
-        "Maximum sprint story points must be greater than 0.",
-      ),
     sizePointsLowerBoundError: (size: string) =>
       alertTemplates.oops(`The value of ${size} must be greater than 0.`),
     sizePointsUpperBoundError: (upperBound: number) =>

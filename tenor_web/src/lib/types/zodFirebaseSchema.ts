@@ -1,9 +1,6 @@
 import { Timestamp } from "firebase-admin/firestore";
 import { z } from "zod";
-import {
-  defaultMaximumSprintStoryPoints,
-  defaultSprintDuration,
-} from "../defaultValues/project";
+import { defaultSprintDuration } from "../defaultValues/project";
 
 export const UserStoryZodType = z.literal("US");
 export const IssueZodType = z.literal("IS");
@@ -241,7 +238,6 @@ export const RequirementSchema = BasicInfoSchema.extend({
 
 export const SettingsSchema = z.object({
   sprintDuration: z.number().default(defaultSprintDuration),
-  maximumSprintStoryPoints: z.number().default(defaultMaximumSprintStoryPoints),
   aiContext: z.object({
     text: z.string().default(""),
     files: z

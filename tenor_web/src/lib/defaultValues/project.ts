@@ -2,7 +2,6 @@ import type { Settings, Tag } from "../types/firebaseSchemas";
 
 export const emptySettings: Settings = {
   sprintDuration: 0,
-  maximumSprintStoryPoints: 0,
   aiContext: {
     text: "",
     files: [],
@@ -18,7 +17,6 @@ export const emptySettings: Settings = {
   ],
 };
 
-export const defaultMaximumSprintStoryPoints = 300;
 export const defaultSprintDuration = 7;
 
 export const noTag: Tag = {
