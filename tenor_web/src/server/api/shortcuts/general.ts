@@ -12,7 +12,9 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import {
   ActivitySchema,
+  type Permission,
   ProjectSchema,
+  RoleSchema,
   SettingsSchema,
   type UserSchema,
 } from "~/lib/types/zodFirebaseSchema";
@@ -29,6 +31,7 @@ import { getIssue } from "./issues";
 import { getUserStory } from "./userStories";
 import { getBacklogItem } from "./backlogItems";
 import { getEpic } from "./epics";
+import { type RoleDetail } from "~/lib/types/detailSchemas";
 
 /**
  * @function getProjectsRef
@@ -533,4 +536,31 @@ export const getActivityItemByType = async (
         message: `Item type ${itemType as string} not supported`,
       });
   }
+};
+
+export const getProjectDetailedRoles = async (
+  firestore: Firestore,
+  projectId: string,
+) => {
+  const roles = await getRolesRef(firestore, projectId).orderBy("label").get();
+
+  const rolesData: WithId<RoleDetail>[] = roles.docs.map((doc) => {
+    const data = doc.data();
+    const roleData = RoleSchema.parse(data);
+    const role: WithId<RoleDetail> = {
+      id: doc.id,
+      ...roleData,
+      settings: roleData.settings as Permission,
+      issues: roleData.issues as Permission,
+      performance: roleData.performance as Permission,
+      sprints: roleData.sprints as Permission,
+      scrumboard: roleData.scrumboard as Permission,
+      backlog: roleData.backlog as Permission,
+      reviews: roleData.reviews as Permission,
+      retrospective: roleData.retrospective as Permission,
+    };
+    return role;
+  });
+
+  return rolesData;
 };

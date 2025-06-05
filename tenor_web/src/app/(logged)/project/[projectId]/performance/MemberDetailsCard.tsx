@@ -90,11 +90,6 @@ export const MemberDetailsCard = ({
         .sort((a, b) => a.category.localeCompare(b.category))
     : [];
 
-  const contributionTotal = formattedUserContributions.reduce(
-    (sum, item) => sum + item.value,
-    0,
-  );
-
   const { data: averageTime, isLoading: loadingAverageTime } =
     api.performance.getAverageTimeTask.useQuery({
       projectId: projectId,
@@ -178,7 +173,7 @@ export const MemberDetailsCard = ({
         )}
         {!loadingContributions && (
           <div className="">
-            {contributionTotal > 0 ? (
+            {!error ? (
               <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
                 <DynamicContributionPieChart
                   data={formattedUserContributions}
@@ -188,9 +183,7 @@ export const MemberDetailsCard = ({
               </div>
             ) : (
               <p className="text-xl text-gray-500">
-                {error
-                  ? error.message
-                  : "No user contributions in the selected time."}
+                {error ? error.message : ""}
               </p>
             )}
           </div>

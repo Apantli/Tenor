@@ -81,11 +81,7 @@ export default function ProjectList() {
             <div className="py-[20px]">
               <p className="text-gray-500">No projects found.</p>
 
-              {(projects?.length ?? 0) > 0 ? (
-                <p className="text-sm text-gray-500">
-                  Try changing the search.
-                </p>
-              ) : (
+              {projects?.length == 0 && (
                 <p className="text-sm text-gray-500">
                   Try creating a project or ask a project owner to add you to a
                   project.{" "}
