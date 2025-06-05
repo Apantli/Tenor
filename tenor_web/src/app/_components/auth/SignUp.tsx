@@ -61,6 +61,11 @@ export default function SignUp() {
       return;
     }
 
+    if (!acceptedTerms) {
+      predefinedAlerts.tosNotAccepted();
+      return;
+    }
+
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(
@@ -168,12 +173,7 @@ export default function SignUp() {
           </a>
         </span>
       </div>
-      <PrimaryButton
-        disabled={!acceptedTerms}
-        onClick={handleSignUp}
-        loading={loading}
-        floatingSpinner
-      >
+      <PrimaryButton onClick={handleSignUp} loading={loading} floatingSpinner>
         Create account
       </PrimaryButton>
     </div>

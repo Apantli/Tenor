@@ -176,6 +176,10 @@ export const useAlert = () => {
     emailInUseError: () => alertTemplates.oops("This email is already in use"),
     loginError: () =>
       alertTemplates.oops("Incorrect email or password. Please try again."),
+    tosNotAccepted: () =>
+      alertTemplates.oops(
+        "Please accept the terms and conditions to create an account.",
+      ),
     // #region User Stories
     userStoryNameError: () =>
       alertTemplates.oops("Please enter a name for the user story."),
