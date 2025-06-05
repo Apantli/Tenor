@@ -1,8 +1,6 @@
 "use client";
 
 import ProfilePicture from "~/app/_components/ProfilePicture";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 import { ContributionLegend } from "~/app/(logged)/project/[projectId]/performance/ContributionLegend";
 import CrossIcon from "@mui/icons-material/Close";
@@ -11,7 +9,6 @@ import { api } from "~/trpc/react";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { cn } from "~/lib/helpers/utils";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { formatSeconds } from "~/lib/helpers/parsers";
 import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
 import SentimentNeutralIcon from "@mui/icons-material/SentimentNeutral";
 import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied";
@@ -23,15 +20,6 @@ const DynamicContributionPieChart = dynamic(
     import(
       "~/app/(logged)/project/[projectId]/performance/ContributionPieChart"
     ).then((m) => m.ContributionPieChart),
-  {
-    ssr: false,
-  },
-);
-const DynamicAverageTimeChart = dynamic(
-  () =>
-    import(
-      "~/app/(logged)/project/[projectId]/performance/AverageTimeChart"
-    ).then((m) => m.AverageTimeChart),
   {
     ssr: false,
   },
@@ -90,41 +78,6 @@ export const MemberDetailsCard = ({
         .sort((a, b) => a.category.localeCompare(b.category))
     : [];
 
-  const { data: averageTime, isLoading: loadingAverageTime } =
-    api.performance.getAverageTimeTask.useQuery({
-      projectId: projectId,
-      userId: member.id,
-    });
-
-  const sortedAverageTime = Object.keys(averageTime ?? {})
-    .sort()
-    .map((key) => averageTime?.[key])
-    .filter((value) => value !== undefined)
-    .filter((value) => value !== 0);
-
-  const lastTime = sortedAverageTime.length
-    ? formatSeconds(sortedAverageTime[sortedAverageTime.length - 1])
-    : null;
-
-  let timePercentageDifference: number | null = null;
-
-  if (sortedAverageTime.length > 1) {
-    const prevWeek = sortedAverageTime[sortedAverageTime.length - 2];
-    const currWeek = sortedAverageTime[sortedAverageTime.length - 1];
-    if (prevWeek && currWeek && prevWeek + currWeek > 0) {
-      timePercentageDifference = Number(
-        (((currWeek - prevWeek) / ((prevWeek + currWeek) / 2)) * 100).toFixed(
-          2,
-        ),
-      );
-    }
-  }
-
-  const formattedData = sortedAverageTime.map((time, index) => ({
-    x: index,
-    y: time,
-  }));
-
   return (
     <div
       className={cn(
@@ -160,9 +113,6 @@ export const MemberDetailsCard = ({
       </div>
 
       <div className="mx-8 flex flex-col">
-        <p className="mt-2 text-base xl:text-xl">
-          <strong>Email:</strong> {member.email}
-        </p>
         <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
           Contribution overview
         </h4>
@@ -178,7 +128,7 @@ export const MemberDetailsCard = ({
               <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
                 <DynamicContributionPieChart
                   data={formattedUserContributions}
-                  scaleFactor={formattedData.length > 0 ? 0.8 : 1}
+                  // scaleFactor={formattedUserContributions.length > 0 ? 0.8 : 1}
                 />
                 <ContributionLegend data={formattedUserContributions} />
               </div>
@@ -190,59 +140,8 @@ export const MemberDetailsCard = ({
           </div>
         )}
         <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
-          Average time per task (Past 5 weeks)
+          Recent activity
         </h4>
-        <div
-          className={cn("flex flex-row gap-8", {
-            "items-center justify-around": Boolean(lastTime),
-          })}
-        >
-          {loadingAverageTime ? (
-            <div className="flex flex-row items-center gap-2">
-              <LoadingSpinner />
-            </div>
-          ) : (
-            <>
-              <div className="flex flex-col">
-                <h4
-                  className={cn("text-2xl font-bold", {
-                    "text-base font-normal text-gray-500 xl:text-xl":
-                      !Boolean(lastTime),
-                  })}
-                >
-                  {lastTime ??
-                    "No tasks completed by this user during the last 5 weeks."}
-                </h4>
-                {timePercentageDifference && (
-                  <div className="flex flex-row gap-2">
-                    <p
-                      className={cn("text-xl font-bold", {
-                        "text-green-400": timePercentageDifference <= 0,
-                        "text-red-400": timePercentageDifference > 0,
-                      })}
-                    >
-                      {timePercentageDifference >= 0 && "+"}
-                      {timePercentageDifference}%
-                    </p>
-                    {timePercentageDifference <= 0 ? (
-                      <TrendingUpIcon className="text-green-400" />
-                    ) : (
-                      <TrendingDownIcon className="text-red-400" />
-                    )}
-                  </div>
-                )}
-              </div>
-              {timePercentageDifference && (
-                <div className="flex flex-col">
-                  <DynamicAverageTimeChart
-                    data={formattedData}
-                    isGreen={timePercentageDifference <= 0}
-                  />
-                </div>
-              )}
-            </>
-          )}
-        </div>
       </div>
     </div>
   );

@@ -35,7 +35,6 @@ import { getStatusTypes } from "../shortcuts/tags";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import {
   getActivityPartition,
-  getAverageTime,
   getContributionOverview,
 } from "../shortcuts/performance";
 
@@ -105,11 +104,6 @@ export const performanceRouter = createTRPCRouter({
         sprintId,
       );
       return contributionOverview;
-    }),
-  getAverageTimeTask: roleRequiredProcedure(performancePermissions, "read")
-    .input(z.object({ projectId: z.string(), userId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      return await getAverageTime(ctx.firestore, input.projectId, input.userId);
     }),
 
   getLastUserSentiment: roleRequiredProcedure(performancePermissions, "read")
