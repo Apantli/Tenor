@@ -299,6 +299,10 @@ export default function ProjectSprints() {
     setShowNewBacklogItem(false);
     // setUserStoryId(userStoryId); // TODO: Implement when detail popup is ready
   };
+
+  const hiddenWithoutBacklog = {
+    hidden: !showBacklog,
+  };
   // #endregion
 
   // #region Drag and Drop Utils
@@ -422,10 +426,6 @@ export default function ProjectSprints() {
   };
   // #endregion
 
-  const hiddenWithoutBacklog = {
-    hidden: !showBacklog,
-  };
-
   return (
     <>
       <DragDropProvider
@@ -514,6 +514,7 @@ export default function ProjectSprints() {
               setSelection={setSelectedItems}
               setDetailId={setDetailItemId}
               className={cn(hiddenWithoutBacklog)}
+              noCardsMessage="No items here"
               header={
                 <div className="flex items-center justify-between pb-2 pr-1">
                   <span className="text-xl font-medium">Unassigned items</span>

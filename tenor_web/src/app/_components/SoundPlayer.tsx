@@ -8,6 +8,19 @@ interface Props {
   setPlaying?: (playing: boolean) => void;
   setCurrentTime?: (currentTime: number) => void;
   onFinish?: () => void;
+  pause?: boolean;
+}
+
+export function usePauseSoundPlayer() {
+  const [pause, setPause] = useState(false);
+  const pauseSound = () => {
+    setPause(true);
+    setTimeout(() => {
+      setPause(false);
+    }, 10);
+  };
+
+  return { pause, pauseSound };
 }
 
 export default function SoundPlayer({
@@ -16,6 +29,7 @@ export default function SoundPlayer({
   setPlaying,
   onFinish,
   setCurrentTime,
+  pause = false,
 }: Props) {
   const ringCount = 10;
   const rings = useMemo(
@@ -90,6 +104,14 @@ export default function SoundPlayer({
     };
   }, []);
 
+  useEffect(() => {
+    if (pause) {
+      audioRef.current?.pause();
+      setPlayingInner(false);
+      setPlaying?.(false);
+    }
+  }, [pause]);
+
   const secondsToTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
@@ -105,13 +127,13 @@ export default function SoundPlayer({
         <div className="relative">
           {rings.map((ring) => (
             <div
-              className="animate-spin-slow relative"
+              className="relative animate-spin-slow"
               key={ring.index}
               style={
                 { "--animation-speed": `${ring.speed}s` } as React.CSSProperties
               }
             >
-              <div className="animate-pulse-and-grow relative">
+              <div className="relative animate-pulse-and-grow">
                 <div
                   className="absolute left-1/2 top-1/2 rounded-full bg-app-primary/20 transition-[width,height] duration-[1s]"
                   style={{

@@ -30,9 +30,9 @@ type VegaSpec = VisualizationSpec & {
 
 // Generates burndown chart data from project status information
 export function useBurndownData(projectId: string) {
-  const { data, isLoading, isError } = api.projects.getBurndownData.useQuery(
+  const { data, isLoading, isError } = api.projects.getGraphBurndownData.useQuery(
     { projectId },
-    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 }, // Cache for 5 minutes
+    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 }
   );
 
   return {
@@ -58,17 +58,7 @@ const burndownSpec: VisualizationSpec = {
     {
       name: "interpolate",
       value: "linear",
-    },
-    {
-      name: "pulse",
-      value: 1,
-      on: [
-        {
-          events: { type: "timer", throttle: 500 },
-          update: "(sin(now() * 0.01) + 1) / 2",
-        },
-      ],
-    },
+    }
   ],
 
   data: [
@@ -154,7 +144,6 @@ const burndownSpec: VisualizationSpec = {
       gridOpacity: 0.1,
       format: "d",
       tickCount: 5,
-      tickMinStep: 1,
     },
     {
       orient: "left",
@@ -235,11 +224,11 @@ const burndownSpec: VisualizationSpec = {
           size: { value: 150 },
         },
         update: {
-          size: { signal: "pulse * 200 + 100" },
-          opacity: { value: 1 },
-        },
-      },
-    },
+          size: { value: 200 },
+          opacity: { value: 1 }
+        }
+      }
+    }
   ],
 };
 

@@ -40,7 +40,6 @@ import {
   getItemActivityDetails,
   computeTopProjectStatus,
   getProject,
-  getProjectActivities,
   getProjectRef,
   getProjectsRef,
   getProjectStatus,
@@ -48,8 +47,7 @@ import {
   getRolesRef,
   getSettingsRef,
   getTopProjectStatusCacheRef,
-  generateBurndownHistory,
-  getBurndownData,
+  getActivityDetailsFromTopProjects,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
@@ -64,7 +62,9 @@ import {
 } from "~/lib/defaultValues/tags";
 import { defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
-import { parseISO } from "date-fns";
+import { getCurrentSprint } from "../shortcuts/sprints";
+import { type BurndownChartData } from "~/lib/defaultValues/burndownChart";
+import { getBurndownData } from "../shortcuts/tasks";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -352,7 +352,7 @@ export const projectsRouter = createTRPCRouter({
       return await getProject(ctx.firestore, projectId);
     }),
 
-  modifyGeneralConfig: protectedProcedure
+  modifyGeneralConfig: roleRequiredProcedure(settingsPermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -362,6 +362,11 @@ export const projectsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      if (ctx.roleId !== "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+        });
+      }
       const projectRef = getProjectRef(ctx.firestore, input.projectId);
       const projectData = (await projectRef.get()).data() as Project;
 
@@ -401,6 +406,11 @@ export const projectsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => {
+      if (ctx.roleId !== "owner") {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+        });
+      }
       const { projectId } = input;
       const projectRef = getProjectRef(ctx.firestore, projectId);
       await projectRef.update({
@@ -497,13 +507,6 @@ export const projectsRouter = createTRPCRouter({
       );
     }),
 
-  getProjectActivities: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return await getProjectActivities(ctx.firestore, projectId);
-    }),
-
   getActivityDetails: protectedProcedure
     .input(
       z.object({
@@ -514,42 +517,38 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
+  getActivityDetailsFromTopProjects: protectedProcedure.query(
+    async ({ ctx }) => {
+      const userId = ctx.session.user.uid;
+      return await getActivityDetailsFromTopProjects(ctx.firestore, userId);
+    },
+  ),
+  getGraphBurndownData: protectedProcedure
 
-  getBurndownData: protectedProcedure
-    .input(z.object({ projectId: z.string()}))
+    .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-      
-      const status = await getProjectStatus(
-        ctx.firestore, projectId, ctx.firebaseAdmin.app())
 
-      const startDate = typeof status.currentSprintStartDate === "string"
-        ? parseISO(status.currentSprintStartDate)
-        : status.currentSprintStartDate
-          ? new Date(status.currentSprintStartDate)
-          : new Date();
-        
-      const endDate = typeof status.currentSprintEndDate === "string"
-        ? parseISO(status.currentSprintEndDate)
-        : status.currentSprintEndDate
-          ? new Date(status.currentSprintEndDate)
-          : new Date();
-        
-      // Generate historical data
-      const burndownHistory = await generateBurndownHistory(
-        ctx.firestore,
-        projectId,
-        startDate,
-        new Date() // Only up to today
-      )
+      const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
 
-      
-      return getBurndownData(
-        startDate,
-        endDate,
-        status.taskCount,
-        status.completedCount,
-        burndownHistory
-      )
-    })
+      if (!currentSprint || !currentSprint.id) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No current sprint found for the project",
+        });
+      }
+
+      let burndownData: BurndownChartData | undefined;
+      try {
+        burndownData = await getBurndownData(
+          ctx.firestore,
+          projectId,
+          currentSprint.id,
+        );
+      } catch (error) {
+        console.log("ERROR HERE", error);
+      }
+
+      return burndownData;
+    }),
 });

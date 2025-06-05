@@ -1,8 +1,12 @@
 import { getProjectRef, getSettingsRef } from "./general";
 import type { Firestore, QuerySnapshot } from "firebase-admin/firestore";
 import { FieldPath } from "firebase-admin/firestore";
-import { getAutomaticStatusId } from "./tags";
+import { getAutomaticStatusId, getStatusTypesRef } from "./tags";
 import { getStatusTypes } from "./tags";
+import { getIssuesRef } from "./issues";
+import { getUserStoriesRef } from "./userStories";
+import { getBacklogItemsRef } from "./backlogItems";
+import { getTasksRef } from "./tasks";
 
 export const getSprintRetrospectiveTextAnswersContext = (
   textAnswers: string[],
@@ -40,13 +44,31 @@ ${textAnswers[2]}
 `;
 };
 
+export const getTeamRetrospectivesRef = (
+  firestore: Firestore,
+  projectId: string,
+  sprintId: string,
+) => {
+  return getProjectRef(firestore, projectId)
+    .collection("teamRetrospectives")
+    .doc(sprintId);
+};
+
+export const getPersonalRetrospectivesRef = (
+  firestore: Firestore,
+  projectId: string,
+  userId: string,
+) => {
+  return getProjectRef(firestore, projectId)
+    .collection("personalRetrospectives")
+    .doc(userId);
+};
+
 export const getCompletedStatusIds = async (
   firestore: Firestore,
   projectId: string,
 ): Promise<string[]> => {
-  const settingsRef = getSettingsRef(firestore, projectId);
-  const statusTypesCollectionRef = settingsRef.collection("statusTypes");
-  const snapshot = await statusTypesCollectionRef
+  const snapshot = await getStatusTypesRef(firestore, projectId)
     .where("marksTaskAsDone", "==", true)
     .where("deleted", "==", false)
     .get();
@@ -66,8 +88,7 @@ export const getStoryPointsBySizeSettings = async (
   firestore: Firestore,
   projectId: string,
 ): Promise<Record<string, number>> => {
-  const settingsRef = getSettingsRef(firestore, projectId);
-  const settingsDoc = await settingsRef.get();
+  const settingsDoc = await getSettingsRef(firestore, projectId).get();
 
   if (!settingsDoc.exists) {
     return {
@@ -124,10 +145,9 @@ export const computeSprintTeamProgress = async (
     projectId,
   );
 
-  const projectRef = getProjectRef(firestore, projectId);
-  const issuesCollectionRef = projectRef.collection("issues");
-  const userStoriesCollectionRef = projectRef.collection("userStories");
-  const backlogItemsCollectionRef = projectRef.collection("backlogItems");
+  const issuesCollectionRef = getIssuesRef(firestore, projectId);
+  const userStoriesCollectionRef = getUserStoriesRef(firestore, projectId);
+  const backlogItemsCollectionRef = getBacklogItemsRef(firestore, projectId);
 
   // Parallel query
   const [
@@ -322,10 +342,7 @@ export const computeSprintPersonalProgress = async (
     projectId,
   );
 
-  const projectRef = getProjectRef(firestore, projectId);
-  const tasksCollectionRef = projectRef.collection("tasks");
-
-  const userTasksQuery = tasksCollectionRef
+  const userTasksQuery = getTasksRef(firestore, projectId)
     .where("assigneeId", "==", userId)
     .where("deleted", "==", false);
 
@@ -374,9 +391,9 @@ export const computeSprintPersonalProgress = async (
     };
   }
 
-  const issuesCollectionRef = projectRef.collection("issues");
-  const userStoriesCollectionRef = projectRef.collection("userStories");
-  const backlogItemsCollectionRef = projectRef.collection("backlogItems");
+  const issuesCollectionRef = getIssuesRef(firestore, projectId);
+  const userStoriesCollectionRef = getUserStoriesRef(firestore, projectId);
+  const backlogItemsCollectionRef = getBacklogItemsRef(firestore, projectId);
 
   const uniqueItemIds = [
     ...new Set([...taskDataMap.values()].map((t) => t.itemId)),
@@ -436,7 +453,7 @@ export const computeSprintPersonalProgress = async (
   for (let i = 0; i < uniqueItemIds.length; i += chunkSize) {
     const chunk = uniqueItemIds.slice(i, i + chunkSize);
 
-    const allTasksQuery = tasksCollectionRef
+    const allTasksQuery = getTasksRef(firestore, projectId)
       .where("itemId", "in", chunk)
       .where("deleted", "==", false);
 
@@ -500,10 +517,11 @@ export const postSprintTeamProgress = async (
   projectId: string,
   sprintId: string,
 ) => {
-  const projectRef = getProjectRef(firestore, projectId);
-  const teamRetrospectivesRef = projectRef
-    .collection("teamRetrospectives")
-    .doc(sprintId);
+  const teamRetrospectivesRef = getTeamRetrospectivesRef(
+    firestore,
+    projectId,
+    sprintId,
+  );
 
   const data = await computeSprintTeamProgress(firestore, projectId, sprintId);
 
@@ -519,10 +537,11 @@ export const postSprintPersonalProgress = async (
   sprintId: string,
   userId: string,
 ) => {
-  const projectRef = getProjectRef(firestore, projectId);
-  const personalRetrospectivesRef = projectRef
-    .collection("personalRetrospectives")
-    .doc(userId);
+  const personalRetrospectivesRef = getPersonalRetrospectivesRef(
+    firestore,
+    projectId,
+    userId,
+  );
 
   const data = await computeSprintPersonalProgress(
     firestore,
@@ -552,10 +571,11 @@ export const getSprintTeamProgress = async (
   totalStoryPoints: number;
   completedStoryPoints: number;
 }> => {
-  const projectRef = getProjectRef(firestore, projectId);
-  const teamRetrospectivesRef = projectRef
-    .collection("teamRetrospectives")
-    .doc(sprintId);
+  const teamRetrospectivesRef = getTeamRetrospectivesRef(
+    firestore,
+    projectId,
+    sprintId,
+  );
 
   try {
     const doc = await teamRetrospectivesRef.get();
@@ -605,10 +625,11 @@ export const getSprintPersonalProgress = async (
   totalAssignedStoryPoints: number;
   completedAssignedStoryPoints: number;
 }> => {
-  const projectRef = getProjectRef(firestore, projectId);
-  const personalRetrospectivesRef = projectRef
-    .collection("personalRetrospectives")
-    .doc(userId);
+  const personalRetrospectivesRef = getPersonalRetrospectivesRef(
+    firestore,
+    projectId,
+    userId,
+  );
 
   try {
     const doc = await personalRetrospectivesRef.get();
@@ -647,10 +668,11 @@ export const ensureSprintTeamProgress = async (
   projectId: string,
   sprintId: string,
 ): Promise<void> => {
-  const projectRef = getProjectRef(firestore, projectId);
-  const teamRetrospectivesRef = projectRef
-    .collection("teamRetrospectives")
-    .doc(sprintId);
+  const teamRetrospectivesRef = getTeamRetrospectivesRef(
+    firestore,
+    projectId,
+    sprintId,
+  );
 
   try {
     const doc = await teamRetrospectivesRef.get();
@@ -670,10 +692,11 @@ export const ensureSprintPersonalProgress = async (
   sprintId: string,
   userId: string,
 ): Promise<void> => {
-  const projectRef = getProjectRef(firestore, projectId);
-  const personalRetrospectivesRef = projectRef
-    .collection("personalRetrospectives")
-    .doc(userId);
+  const personalRetrospectivesRef = getPersonalRetrospectivesRef(
+    firestore,
+    projectId,
+    userId,
+  );
 
   try {
     const doc = await personalRetrospectivesRef.get();
