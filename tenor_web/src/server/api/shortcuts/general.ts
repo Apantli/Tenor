@@ -3,10 +3,10 @@ import type {
   AllBasicItemType,
   ProjectActivity,
   ProjectActivityDetail,
-  ProjectStatusCache,
   Role,
   Size,
   StatusTag,
+  TopProjects,
   WithId,
   WithProjectId,
 } from "~/lib/types/firebaseSchemas";
@@ -24,7 +24,6 @@ import { getCurrentSprint, getSprint, getTasksFromSprint } from "./sprints";
 import { getGlobalUserRef, getUsers, getUserTable } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
-import { Timestamp } from "firebase-admin/firestore";
 import { getTask } from "./tasks";
 import { getIssue } from "./issues";
 import { getUserStory } from "./userStories";
@@ -126,27 +125,6 @@ export const getPerformanceRef = (firestore: Firestore, projectId: string) => {
  */
 export const getProductivityRef = (firestore: Firestore, projectId: string) => {
   return getPerformanceRef(firestore, projectId).doc("productivity");
-};
-
-export const getTopProjectStatusCacheRef = (
-  firestore: Firestore,
-  userId: string,
-) => {
-  return getGlobalUserRef(firestore, userId)
-    .collection("cache")
-    .doc("TopProjectsStatus");
-};
-
-export const getTopProjectStatusCache = async (
-  firestore: Firestore,
-  userId: string,
-): Promise<ProjectStatusCache | undefined> => {
-  const cacheRef = getTopProjectStatusCacheRef(firestore, userId);
-  const cacheSnapshot = await cacheRef.get();
-  if (!cacheSnapshot.exists) {
-    return undefined;
-  }
-  return cacheSnapshot.data() as ProjectStatusCache;
 };
 
 /**
@@ -332,7 +310,7 @@ export const computeTopProjectStatus = async (
   firestore: FirebaseFirestore.Firestore,
   adminFirestore: admin.app.App,
   userId: string,
-  count: number,
+  count = 5,
 ) => {
   let projects = await getTopProjects(firestore, userId);
   if (projects.length === 0) {
@@ -361,14 +339,11 @@ export const computeTopProjectStatus = async (
     (project) => project.status.taskCount !== 0,
   );
 
-  const topProjects = {
-    fetchDate: Timestamp.now(),
-    topProjects: projectStatus.map((project) => ({
-      projectId: project.id,
-      taskCount: project.status.taskCount,
-      completedCount: project.status.completedCount,
-    })),
-  };
+  const topProjects = projectStatus.map((project) => ({
+    projectId: project.id,
+    taskCount: project.status.taskCount,
+    completedCount: project.status.completedCount,
+  })) as TopProjects[];
 
   return topProjects;
 };
@@ -407,8 +382,12 @@ export const getProjectActivities = async (
   projectId: string,
 ) => {
   const activitiesRef = getActivitiesRef(firestore, projectId);
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
   const activitiesSnapshot = await activitiesRef
     .orderBy("date", "desc")
+    .where("date", ">=", threeDaysAgo)
     .limit(5)
     .get();
   const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map(
@@ -470,27 +449,19 @@ export const getItemActivityDetails = async (
   return results;
 };
 
-export const getActivityDetailsFromTopProjects = async (
+export const getActivityDetailsFromProjects = async (
   firestore: Firestore,
-  userId: string,
+  projectIds: string[],
 ) => {
-  const topProjects = await getTopProjectStatusCache(firestore, userId);
-  if (!topProjects) {
-    return [];
-  }
-
   const results: WithProjectId<WithId<ProjectActivityDetail>>[] = [];
-  for (const project of topProjects.topProjects) {
-    const activities = await getItemActivityDetails(
-      firestore,
-      project.projectId,
-    );
+  for (const projectId of projectIds) {
+    const activities = await getItemActivityDetails(firestore, projectId);
     for (const item of activities) {
       if (!item) continue;
 
       results.push({
         ...item,
-        projectId: project.projectId,
+        projectId: projectId,
       } as WithProjectId<WithId<ProjectActivityDetail>>);
     }
   }
