@@ -200,7 +200,7 @@ export const useAlert = () => {
     // #endregion
     // #region Tasks
     taskNameError: () =>
-      alertTemplates.oops("Please enter a name for the epic."),
+      alertTemplates.oops("Please enter a name for the task."),
     taskCreateError: () =>
       alertTemplates.error("Failed to create task. Please try again."),
     // #endregion
