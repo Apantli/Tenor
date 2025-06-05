@@ -10,7 +10,6 @@ import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
-import { toBase64 } from "~/lib/helpers/base64";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
 import { checkPermissions } from "~/lib/defaultValues/permission";
@@ -19,21 +18,51 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
+import { logoSizeLimit, logoMaxDimensions } from "~/lib/defaultValues/project";
 
 export default function ProjectGeneralSettings() {
   const pathName = usePathname();
   const tab = pathName.split("/").pop();
   const { projectId } = useParams();
   const [icon, setIcon] = useState<File | null>(null);
+  const [isValidatingImage, setIsValidatingImage] = useState(false);
 
-  const handleImageChange = async (file: File) => {
-    const iconBase64 = (await toBase64(file)) as string;
-    setIcon(file);
-    setEditForm((prev) => ({
-      ...prev,
-      icon: iconBase64,
-    }));
-  };
+  function handleImageChange(file: File) {
+    if (isValidatingImage) return;
+    setIsValidatingImage(true);
+
+    // Check file size
+    if (file.size > logoSizeLimit) {
+      predefinedAlerts.projectLogoSizeError();
+      setIsValidatingImage(false);
+      return;
+    }
+
+    // Check image dimensions
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+
+      if (img.width > logoMaxDimensions || img.height > logoMaxDimensions) {
+        predefinedAlerts.projectLogoDimensionsError(img.height, img.width);
+        setIsValidatingImage(false);
+      } else {
+        // If all validations pass, set the image
+        setIcon(file);
+        setIsValidatingImage(false);
+      }
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      predefinedAlerts.projectLogoError();
+      setIsValidatingImage(false);
+    };
+
+    img.src = objectUrl;
+  }
   const router = useRouter();
   const utils = api.useUtils();
   const { predefinedAlerts } = useAlert();
