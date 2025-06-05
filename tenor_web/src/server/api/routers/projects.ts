@@ -489,7 +489,6 @@ export const projectsRouter = createTRPCRouter({
       user.projectIds,
     );
 
-    console.log("type", typeof details[0]?.date);
     return details.sort((a, b) => {
       if (!a.date || !b.date) return 0;
       // TODO: Change to use firestore.Timestamp in every call
