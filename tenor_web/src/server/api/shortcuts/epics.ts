@@ -2,7 +2,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import { getProjectRef } from "./general";
 import type { Epic, WithId } from "~/lib/types/firebaseSchemas";
 import { EpicOverviewSchema, EpicSchema } from "~/lib/types/zodFirebaseSchema";
-import { TRPCError } from "@trpc/server";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getEpicsRef
@@ -67,10 +67,7 @@ export const getEpic = async (
 ) => {
   const epicData = await getEpicRef(firestore, projectId, epicId).get();
   if (!epicData.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Epic not found",
-    });
+    throw notFound("Epic");
   }
   return {
     id: epicData.id,
@@ -117,10 +114,7 @@ export const getEpicOverview = async (
 ) => {
   const epicData = await getEpicRef(firestore, projectId, epicId).get();
   if (!epicData.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Epic not found",
-    });
+    throw notFound("Epic");
   }
   const epic = EpicOverviewSchema.parse(epicData.data());
   return {

@@ -60,9 +60,9 @@ import {
   getSettingsRef,
 } from "../shortcuts/general";
 import { getUserRef } from "../shortcuts/users";
-import { TRPCError } from "@trpc/server";
 import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
 import { countTokens } from "~/lib/aiTools/aiGeneration";
+import { internalServerError } from "~/server/errors";
 
 export interface Links {
   link: string;
@@ -576,10 +576,7 @@ const settingsRouter = createTRPCRouter({
             links: newLinks,
           },
         });
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: `Failed to add link ${link}`,
-        });
+        throw internalServerError(`Failed to add link ${link}`);
       }
     }),
   removeLink: roleRequiredProcedure(settingsPermissions, "write")

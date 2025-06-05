@@ -13,7 +13,6 @@ import { z } from "zod";
 import { getPreviousSprint } from "../shortcuts/sprints";
 import { reviewPermissions } from "~/lib/defaultValues/permission";
 import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
-import { TRPCError } from "@trpc/server";
 import {
   getSprintRetrospectiveTextAnswersContext,
   getSprintTeamProgress,
@@ -21,6 +20,7 @@ import {
   ensureSprintTeamProgress,
   ensureSprintPersonalProgress,
 } from "../shortcuts/sprintRetrospectives";
+import { badRequest } from "~/server/errors";
 
 type RetrospectiveAnswers = Record<string, string>;
 
@@ -123,10 +123,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
       const { reviewId, happiness } = input;
 
       if (happiness < 1 || happiness > 10) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Happiness rating must be between 1 and 10.",
-        });
+        throw badRequest("Happiness rating must be between 1 and 10.");
       }
 
       const response = await ctx.supabase.rpc("save_happiness", {
@@ -168,10 +165,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
       const { data } = input;
 
       if (data.textAnswers.length < 3) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Not enough answers provided.",
-        });
+        throw badRequest("Not enough answers provided.");
       }
 
       const synthesizedResponses = await askAiToGenerate(
@@ -199,10 +193,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { data, summarize } = input;
       if (data.textAnswers.length < 3) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Not enough answers provided.",
-        });
+        throw badRequest("Not enough answers provided.");
       }
 
       const synthesizedResponses = await askAiToGenerate(

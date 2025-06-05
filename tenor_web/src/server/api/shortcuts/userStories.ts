@@ -18,7 +18,6 @@ import type {
 } from "~/lib/types/firebaseSchemas";
 import { getGenericBacklogItemContext, getProjectRef } from "./general";
 import { UserStorySchema } from "~/lib/types/zodFirebaseSchema";
-import { TRPCError } from "@trpc/server";
 import type { TaskPreview, UserStoryDetail } from "~/lib/types/detailSchemas";
 import type { Firestore } from "firebase-admin/firestore";
 import {
@@ -33,6 +32,7 @@ import admin from "firebase-admin";
 import { getProjectContext } from "./ai";
 import { FieldValue } from "firebase-admin/firestore";
 import type { DependenciesWithId } from "~/lib/types/userStoriesUtilTypes";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getUserStoriesRef
@@ -131,10 +131,7 @@ export const getUserStory = async (
   const userStoryRef = getUserStoryRef(firestore, projectId, userStoryId);
   const userStorySnapshot = await userStoryRef.get();
   if (!userStorySnapshot.exists) {
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "User story not found",
-    });
+    throw notFound("User Story");
   }
   return {
     id: userStorySnapshot.id,
@@ -273,7 +270,6 @@ export const getUserStoryContext = async (
   amount: number,
   prompt: string,
 ) => {
-  // load all contexts simultaneously
   const [
     projectContext,
     epicsContext,

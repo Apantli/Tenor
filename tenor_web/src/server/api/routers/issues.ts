@@ -9,7 +9,6 @@
  */
 
 import { z } from "zod";
-import { TRPCError } from "@trpc/server";
 import { IssueSchema } from "~/lib/types/zodFirebaseSchema";
 import {
   createTRPCRouter,
@@ -27,6 +26,7 @@ import {
 } from "../shortcuts/issues";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 import { issuePermissions } from "~/lib/defaultValues/permission";
+import { internalServerError, notFound } from "~/server/errors";
 
 export const issuesRouter = createTRPCRouter({
   /**
@@ -104,7 +104,7 @@ export const issuesRouter = createTRPCRouter({
 
         return { issueId: newIssueId };
       } catch {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        throw internalServerError();
       }
     }),
 
@@ -222,7 +222,7 @@ export const issuesRouter = createTRPCRouter({
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
       const issueSnapshot = await issueRef.get();
       if (!issueSnapshot.exists) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Issue not found" });
+        throw notFound("Issue");
       }
 
       await LogProjectActivity({
@@ -262,7 +262,7 @@ export const issuesRouter = createTRPCRouter({
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
       const issueSnapshot = await issueRef.get();
       if (!issueSnapshot.exists) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Issue not found" });
+        throw notFound("Issue");
       }
       const updatedIssueData = {
         relatedUserStoryId: relatedUserStoryId,
