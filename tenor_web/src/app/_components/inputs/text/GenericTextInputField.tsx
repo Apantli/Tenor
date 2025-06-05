@@ -211,6 +211,7 @@ export default function InputField({
           ref={ref ? (ref as React.Ref<HTMLTextAreaElement>) : null}
           value={value}
           onChange={onChange as React.ChangeEventHandler<HTMLTextAreaElement>}
+          disabled={disabled}
           {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
         />
       )}
@@ -225,6 +226,7 @@ export default function InputField({
           ref={ref ? (ref as React.Ref<HTMLInputElement>) : null}
           value={value}
           onChange={onChange as React.ChangeEventHandler<HTMLInputElement>}
+          disabled={disabled}
           {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
         />
       )}
@@ -259,6 +261,7 @@ export default function InputField({
               onKeyDown={
                 handleKeyDown as React.KeyboardEventHandler<HTMLTextAreaElement>
               }
+              disabled={disabled}
               {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
             />
           )}
@@ -287,6 +290,7 @@ export default function InputField({
               onKeyDown={
                 handleKeyDown as React.KeyboardEventHandler<HTMLInputElement>
               }
+              disabled={disabled}
               {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
             />
           )}
