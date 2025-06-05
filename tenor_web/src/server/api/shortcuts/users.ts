@@ -2,9 +2,10 @@ import type { Firestore } from "firebase-admin/firestore";
 import type * as admin from "firebase-admin";
 import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { WithId } from "~/lib/types/firebaseSchemas";
-import { getProjectRef } from "./general";
+import { getProjectDetailedRoles, getProjectRef } from "./general";
 import { TRPCError } from "@trpc/server";
 import type { UserCol } from "~/lib/types/columnTypes";
+import { canRoleWrite } from "~/lib/defaultValues/roles";
 
 /**
  * @function getGlobalUsersRef
@@ -190,4 +191,23 @@ export const getUserTable = async (
     }),
   );
   return userTable;
+};
+
+export const getWritableUsers = async (
+  firestore: Firestore,
+  firebaseAdmin: admin.app.App,
+  projectId: string,
+) => {
+  const users = await getUserTable(firebaseAdmin, firestore, projectId);
+
+  const detailedRoles = await getProjectDetailedRoles(firestore, projectId);
+
+  const writeRoles = detailedRoles
+    .filter((role) => canRoleWrite(role))
+    .map((role) => role.id);
+
+  // Consider owner as a team member
+  writeRoles.push("owner");
+
+  return users.filter((user) => writeRoles.includes(user.roleId));
 };

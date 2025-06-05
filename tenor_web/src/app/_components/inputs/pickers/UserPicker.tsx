@@ -33,9 +33,10 @@ export function UserPicker({
   allowSetSelf,
 }: EditableBoxProps) {
   const { projectId } = useParams();
-  const { data: options } = api.users.getUsers.useQuery({
+  const { data: userCols } = api.users.getTeamMembers.useQuery({
     projectId: projectId as string,
   });
+  const options = (userCols ?? []) as WithId<UserPreview>[];
 
   const [searchTerm, setSearchTerm] = useState("");
   const { user } = useFirebaseAuth();

@@ -21,7 +21,7 @@ import {
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
 import { getCurrentSprint, getSprint, getTasksFromSprint } from "./sprints";
-import { getGlobalUserRef, getUsers, getUserTable } from "./users";
+import { getGlobalUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { TRPCError } from "@trpc/server";
@@ -32,7 +32,6 @@ import { getUserStory } from "./userStories";
 import { getBacklogItem } from "./backlogItems";
 import { getEpic } from "./epics";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
-import { canRoleWrite } from "~/lib/defaultValues/roles";
 
 /**
  * @function getProjectsRef
@@ -564,23 +563,4 @@ export const getProjectDetailedRoles = async (
   });
 
   return rolesData;
-};
-
-export const getWritableUsers = async (
-  firestore: Firestore,
-  firebaseAdmin: admin.app.App,
-  projectId: string,
-) => {
-  const users = await getUserTable(firebaseAdmin, firestore, projectId);
-
-  const detailedRoles = await getProjectDetailedRoles(firestore, projectId);
-
-  const writeRoles = detailedRoles
-    .filter((role) => canRoleWrite(role))
-    .map((role) => role.id);
-
-  // Consider owner as a team member
-  writeRoles.push("owner");
-
-  return users.filter((user) => writeRoles.includes(user.roleId));
 };
