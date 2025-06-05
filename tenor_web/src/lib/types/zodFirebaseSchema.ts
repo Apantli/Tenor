@@ -263,7 +263,7 @@ export const SettingsSchema = z.object({
       .default([]),
   }),
 
-  Size: z.array(z.number()).default([1, 2, 3, 5, 8, 13]),
+  Size: z.array(z.number()).default([2, 3, 5, 8, 13, 21]),
   // Removed because they should be in subcollections
 
   // requirementFocusTags: z.array(TagSchema).default([]),
