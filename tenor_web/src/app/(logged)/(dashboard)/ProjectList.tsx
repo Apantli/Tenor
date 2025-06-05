@@ -63,7 +63,7 @@ export default function ProjectList() {
                 handleOpenProject(project.id);
               }}
               className={cn(
-                "flex flex-row justify-start border-b-2 py-[16px] hover:cursor-pointer md:pr-8",
+                "flex flex-row justify-start border-b-2 py-[16px] pl-4 hover:cursor-pointer hover:bg-gray-100 md:pr-8",
               )}
               key={project.id}
             >
@@ -72,12 +72,18 @@ export default function ProjectList() {
                 <h3 className="my-[7px] truncate text-lg font-semibold md:w-full lg:max-w-[200px]">
                   {project.name}
                 </h3>
-                <p className="line-clamp-2 text-base">{project.description}</p>
+                <p className="line-clamp-2 break-words text-base">
+                  {project.description}
+                </p>
               </div>
             </li>
           ))
         ) : (
-          <li className="flex h-full justify-start border-b-2">
+          <li
+            className={cn(
+              "flex flex-row justify-start border-b-2 py-[16px] hover:cursor-pointer md:pr-8",
+            )}
+          >
             <div className="py-[20px]">
               <p className="text-gray-500">No projects found.</p>
 
