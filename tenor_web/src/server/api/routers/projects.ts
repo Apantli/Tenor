@@ -65,6 +65,7 @@ import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import { type BurndownChartData } from "~/lib/defaultValues/burndownChart";
 import { getBurndownData } from "../shortcuts/tasks";
+import type { firestore } from "firebase-admin";
 
 export const emptyRequeriment = (): Requirement => ({
   name: "",
@@ -488,7 +489,14 @@ export const projectsRouter = createTRPCRouter({
       user.projectIds,
     );
 
-    return details;
+    console.log("type", typeof details[0]?.date);
+    return details.sort((a, b) => {
+      if (!a.date || !b.date) return 0;
+      // TODO: Change to use firestore.Timestamp in every call
+      const a2 = a.date as unknown as firestore.Timestamp;
+      const b2 = b.date as unknown as firestore.Timestamp;
+      return b2.seconds - a2.seconds;
+    });
   }),
   getGraphBurndownData: protectedProcedure
 
