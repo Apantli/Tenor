@@ -15,7 +15,7 @@ import {
   PerformanceTime,
   UserHappinessSchema,
 } from "~/lib/types/zodFirebaseSchema";
-import { getProductivityRef } from "../shortcuts/general";
+import { getProductivityRef, getWritableUsers } from "../shortcuts/general";
 import { shouldRecomputeProductivity } from "~/lib/helpers/cache";
 import type {
   Issue,
@@ -39,7 +39,6 @@ import {
   getAverageTime,
   getContributionOverview,
 } from "../shortcuts/performance";
-import { getUsers } from "../shortcuts/users";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -136,14 +135,14 @@ export const performanceRouter = createTRPCRouter({
   getUsersSentiment: roleRequiredProcedure(performancePermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const users = await getUsers(
-        ctx.firebaseAdmin.app(),
+      const teamMembers = await getWritableUsers(
         ctx.firestore,
+        ctx.firebaseAdmin.app(),
         input.projectId,
       );
 
       const usersSentiment = await Promise.all(
-        users.map(async (user) => {
+        teamMembers.map(async (user) => {
           const result = await ctx.supabase.rpc("get_last_user_happiness", {
             project_id_input: input.projectId,
             user_id_input: user.id,

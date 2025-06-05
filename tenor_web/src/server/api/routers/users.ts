@@ -29,8 +29,7 @@ import {
 } from "../shortcuts/users";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { uploadBase64File } from "~/lib/db/firebaseBucket";
-import { getProjectDetailedRoles } from "../shortcuts/general";
-import { canRoleWrite } from "~/lib/defaultValues/roles";
+import { getWritableUsers } from "../shortcuts/general";
 
 export const userRouter = createTRPCRouter({
   /**
@@ -224,25 +223,10 @@ export const userRouter = createTRPCRouter({
   getTeamMembers: roleRequiredProcedure(usersPermissions, "read")
     .input(z.object({ projectId: z.string(), filter: z.string().optional() }))
     .query(async ({ ctx, input }) => {
-      const users = await getUserTable(
+      return await getWritableUsers(
+        ctx.firestore,
         ctx.firebaseAdmin.app(),
-        ctx.firestore,
         input.projectId,
       );
-
-      const detailedRoles = await getProjectDetailedRoles(
-        ctx.firestore,
-        input.projectId,
-      );
-
-      const writeRoles = detailedRoles
-        .filter((role) => canRoleWrite(role))
-        .map((role) => role.id);
-
-      users.filter((user) => {
-        return writeRoles.includes(user.roleId);
-      });
-
-      return users;
     }),
 });
