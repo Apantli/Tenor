@@ -49,6 +49,7 @@ export default function InputField({
   disablePlaceholder,
   ref,
   chatPlacement,
+  disabled = false,
   ...props
 }: Props &
   (
@@ -184,6 +185,9 @@ export default function InputField({
       setCurrentMessage("");
     }
   };
+
+  // If the input is disabled, also disable AI popup
+  disableAI = disabled ? disabled : disableAI;
 
   return (
     <div className={cn("flex w-full flex-col gap-1", containerClassName)}>
@@ -423,6 +427,22 @@ export default function InputField({
                         </div>
                       </div>
                       <div className="flex flex-row items-center gap-2">
+                        <DeleteButton
+                          removeDeleteIcon
+                          onClick={() => {
+                            updateInputValue(originalMessageRef.current);
+                            setIsDropdownOpen(false);
+                            setMessages([]);
+                            setCurrentMessage("");
+                            setClose();
+                          }}
+                          disabled={
+                            status === "pending" ||
+                            originalMessageRef.current === value
+                          }
+                        >
+                          Reject Changes
+                        </DeleteButton>
                         <PrimaryButton
                           className=""
                           onClick={() => {
@@ -450,22 +470,6 @@ export default function InputField({
                         >
                           Accept Changes
                         </PrimaryButton>
-                        <DeleteButton
-                          removeDeleteIcon
-                          onClick={() => {
-                            updateInputValue(originalMessageRef.current);
-                            setIsDropdownOpen(false);
-                            setMessages([]);
-                            setCurrentMessage("");
-                            setClose();
-                          }}
-                          disabled={
-                            status === "pending" ||
-                            originalMessageRef.current === value
-                          }
-                        >
-                          Reject Changes
-                        </DeleteButton>
                       </div>
                     </div>
                   </div>
