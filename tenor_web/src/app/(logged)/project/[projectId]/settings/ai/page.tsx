@@ -316,7 +316,7 @@ export default function ProjectAIConfig() {
             placeholder="Tell us about your project..."
             className="h-[250px]"
             labelClassName="text-lg font-semibold"
-          ></InputTextAreaField>
+          />
           <FileList
             disabled={permission < permissionNumbers.write}
             label={"Context Files"}

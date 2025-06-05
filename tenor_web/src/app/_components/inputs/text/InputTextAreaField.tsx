@@ -11,6 +11,7 @@ interface Props {
   aiTitle?: string;
   ref?: React.Ref<HTMLTextAreaElement>;
   chatPosition?: "top" | "bottom" | "left" | "right";
+  resize?: boolean;
 }
 
 export default function InputTextAreaField({
@@ -25,6 +26,7 @@ export default function InputTextAreaField({
   ref,
   onChange,
   chatPosition,
+  resize = false,
   ...props
 }: Props & React.InputHTMLAttributes<HTMLTextAreaElement>) {
   return (
@@ -41,6 +43,7 @@ export default function InputTextAreaField({
       onChange={onChange as InputFieldProps["onChange"]}
       isTextArea
       ref={ref}
+      resize={resize}
       {...props}
     />
   );
