@@ -8,7 +8,7 @@ export default function ProjectPage() {
   return (
     <div className="h-full w-full flex-col items-start overflow-hidden lg:flex lg:flex-row">
       <div className="lg:w-[50%]">
-        <h1 className="mb-3 w-full text-3xl font-semibold">Projects</h1>
+        <h1 className="pb-3 pt-0 p-4 w-full text-3xl font-semibold lg:ps-0">Projects</h1>
         <ProjectList />
       </div>
       <div className="h-[80vh] flex-1">
