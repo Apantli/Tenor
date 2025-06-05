@@ -348,17 +348,11 @@ export const computeSprintPersonalProgress = async (
 
   const userTasksSnapshot = await userTasksQuery.get();
 
-  let totalAssignedTasks = 0;
-  let completedAssignedTasks = 0;
-  let totalAssignedStoryPoints = 0;
-  let completedAssignedStoryPoints = 0;
-
   const taskDataMap = new Map<
     string,
     {
       isCompleted: boolean;
       itemId: string;
-      weight?: number;
     }
   >();
 
@@ -366,7 +360,6 @@ export const computeSprintPersonalProgress = async (
     const taskData = taskDoc.data() as {
       itemId?: string;
       statusId?: string;
-      weight?: number;
     };
     const itemId = taskData?.itemId;
 
@@ -377,7 +370,6 @@ export const computeSprintPersonalProgress = async (
       taskDataMap.set(taskDoc.id, {
         isCompleted: !!isCompleted,
         itemId: itemId,
-        weight: taskData?.weight ?? 1,
       });
     }
   });
@@ -391,10 +383,6 @@ export const computeSprintPersonalProgress = async (
     };
   }
 
-  const issuesCollectionRef = getIssuesRef(firestore, projectId);
-  const userStoriesCollectionRef = getUserStoriesRef(firestore, projectId);
-  const backlogItemsCollectionRef = getBacklogItemsRef(firestore, projectId);
-
   const uniqueItemIds = [
     ...new Set([...taskDataMap.values()].map((t) => t.itemId)),
   ];
@@ -405,25 +393,22 @@ export const computeSprintPersonalProgress = async (
   for (let i = 0; i < uniqueItemIds.length; i += chunkSize) {
     const chunk = uniqueItemIds.slice(i, i + chunkSize);
 
-    const issuesQuery = issuesCollectionRef
+    const issuesQuery = getIssuesRef(firestore, projectId)
       .where(FieldPath.documentId(), "in", chunk)
       .where("sprintId", "==", sprintId)
       .where("deleted", "==", false);
-
     allPromises.push(issuesQuery.get());
 
-    const userStoriesQuery = userStoriesCollectionRef
+    const userStoriesQuery = getUserStoriesRef(firestore, projectId)
       .where(FieldPath.documentId(), "in", chunk)
       .where("sprintId", "==", sprintId)
       .where("deleted", "==", false);
-
     allPromises.push(userStoriesQuery.get());
 
-    const backlogItemsQuery = backlogItemsCollectionRef
+    const backlogItemsQuery = getBacklogItemsRef(firestore, projectId)
       .where(FieldPath.documentId(), "in", chunk)
       .where("sprintId", "==", sprintId)
       .where("deleted", "==", false);
-
     allPromises.push(backlogItemsQuery.get());
   }
 
@@ -433,20 +418,13 @@ export const computeSprintPersonalProgress = async (
 
   snapshots.forEach((snapshot) => {
     snapshot.forEach((doc) => {
-      const data = doc.data() as {
-        size?: string;
-      };
-
+      const data = doc.data() as { size?: string };
       const points = data?.size ? (storyPointsMap[data.size] ?? 0) : 0;
-
       itemStoryPointsMap.set(doc.id, points);
     });
   });
 
-  const itemTaskCountMap = new Map<
-    string,
-    { totalWeight: number; taskCount: number }
-  >();
+  const itemTaskCountMap = new Map<string, number>();
 
   const allTasksPromises: Promise<QuerySnapshot>[] = [];
 
@@ -464,35 +442,27 @@ export const computeSprintPersonalProgress = async (
 
   allTasksSnapshots.forEach((snapshot) => {
     snapshot.forEach((doc) => {
-      const taskData = doc.data() as {
-        itemId?: string;
-        weight?: number;
-      };
-
+      const taskData = doc.data() as { itemId?: string };
       if (taskData?.itemId) {
-        const existing = itemTaskCountMap.get(taskData.itemId) ?? {
-          totalWeight: 0,
-          taskCount: 0,
-        };
-        itemTaskCountMap.set(taskData.itemId, {
-          totalWeight: existing.totalWeight + (taskData.weight ?? 1),
-          taskCount: existing.taskCount + 1,
-        });
+        const currentCount = itemTaskCountMap.get(taskData.itemId) ?? 0;
+        itemTaskCountMap.set(taskData.itemId, currentCount + 1);
       }
     });
   });
+
+  let totalAssignedTasks = 0;
+  let completedAssignedTasks = 0;
+  let totalAssignedStoryPoints = 0;
+  let completedAssignedStoryPoints = 0;
 
   taskDataMap.forEach((taskInfo) => {
     if (itemStoryPointsMap.has(taskInfo.itemId)) {
       totalAssignedTasks++;
 
       const itemPoints = itemStoryPointsMap.get(taskInfo.itemId) ?? 0;
-      const itemTaskInfo = itemTaskCountMap.get(taskInfo.itemId);
+      const totalTasksInItem = itemTaskCountMap.get(taskInfo.itemId) ?? 1;
 
-      const pointsPerWeightUnit = itemTaskInfo
-        ? itemPoints / itemTaskInfo.totalWeight
-        : itemPoints;
-      const taskPoints = pointsPerWeightUnit * (taskInfo.weight ?? 1);
+      const taskPoints = itemPoints / totalTasksInItem;
 
       totalAssignedStoryPoints += taskPoints;
 

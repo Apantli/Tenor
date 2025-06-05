@@ -34,7 +34,7 @@ export const useRetrospectiveCountdown = (endDate: EndDateType) => {
         const timeDiff = expirationDate.getTime() - now.getTime();
 
         if (timeDiff <= 0) {
-          setTimeRemaining("Expirado");
+          setTimeRemaining("Expired");
           setIsExpired(true);
           return;
         }
