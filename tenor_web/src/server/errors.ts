@@ -27,3 +27,10 @@ export const badRequest = (message?: string) => {
     message: message ?? "Invalid request data.",
   });
 };
+
+export const internalServerError = (message?: string) => {
+  return new TRPCError({
+    code: "INTERNAL_SERVER_ERROR",
+    message: message ?? "An unexpected error occurred.",
+  });
+};
