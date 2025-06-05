@@ -18,7 +18,7 @@ export default function UserStoryPicker({
   userStory,
   onChange,
   disabled,
-  noSelectionLabel = "Unassgined",
+  noSelectionLabel = "Unassigned",
 }: Props) {
   const { projectId } = useParams();
 
