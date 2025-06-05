@@ -18,7 +18,7 @@ export const useInvalidateQueriesAllTasks = () => {
             projectId: projectId,
             itemId: parentId,
           }),
-        ])
+        ]),
       ),
       utils.kanban.getTasksForKanban.invalidate({
         projectId: projectId,
@@ -39,6 +39,9 @@ export const useInvalidateQueriesAllTasks = () => {
       utils.tasks.getTasks.invalidate({
         projectId: projectId,
       }),
+
+      utils.projects.getActivityDetailsFromProjects.invalidate(),
+      utils.projects.getTopProjectStatus.invalidate(),
     ]);
   };
 };
@@ -54,11 +57,17 @@ export const useInvalidateQueriesTaskDetails = () => {
       utils.kanban.getTasksForKanban.invalidate({
         projectId: projectId,
       }),
+
+      utils.projects.getActivityDetails.invalidate({
+        projectId: projectId,
+      }),
+      utils.projects.getActivityDetailsFromProjects.invalidate(),
+      utils.projects.getTopProjectStatus.invalidate(),
       ...taskIds.map((taskId) =>
         utils.tasks.getTaskDetail.invalidate({
           projectId: projectId,
           taskId,
-        })
+        }),
       ),
     ]);
   };
@@ -100,6 +109,7 @@ export const useInvalidateQueriesAllUserStories = () => {
       utils.userStories.getUserStories.invalidate({
         projectId: projectId,
       }),
+      utils.projects.getActivityDetailsFromProjects.invalidate(),
     ]);
   };
 };
@@ -111,11 +121,16 @@ export const useInvalidateQueriesUserStoriesDetails = () => {
       utils.userStories.getUserStoryDependencies.invalidate({
         projectId: projectId,
       }),
+      utils.projects.getActivityDetails.invalidate({
+        projectId: projectId,
+      }),
+      utils.projects.getActivityDetailsFromProjects.invalidate(),
+      utils.projects.getTopProjectStatus.invalidate(),
       ...userStoryIds.map((userStoryId) =>
         utils.userStories.getUserStoryDetail.invalidate({
           projectId: projectId,
           userStoryId,
-        })
+        }),
       ),
     ]);
   };
@@ -132,6 +147,7 @@ export const useInvalidateQueriesItemStatus = () => {
         projectId: projectId,
       }),
       utils.settings.getStatusTypes.invalidate({ projectId: projectId }),
+      utils.projects.getTopProjectStatus.invalidate(),
     ]);
   };
 };
@@ -142,6 +158,10 @@ export const useInvalidateQueriesAllRequirements = () => {
     await utils.requirements.getRequirementTable.invalidate({
       projectId: projectId,
     });
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
   };
 };
 
@@ -156,6 +176,10 @@ export const useInvalidateQueriesRequirementDetails = () => {
         });
       }),
     );
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
   };
 };
 
@@ -175,6 +199,8 @@ export const useInvalidateQueriesAllIssues = () => {
       utils.projects.getActivityDetails.invalidate({
         projectId: projectId,
       }),
+      utils.projects.getActivityDetailsFromProjects.invalidate(),
+      utils.projects.getTopProjectStatus.invalidate(),
     ]);
   };
 };
@@ -190,6 +216,11 @@ export const useInvalidateQueriesIssueDetails = () => {
         });
       }),
     );
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 
@@ -359,6 +390,8 @@ export const useInvalidateQueriesAllGenericBacklogItems = () => {
       utils.projects.getActivityDetails.invalidate({
         projectId: projectId,
       }),
+      utils.projects.getActivityDetailsFromProjects.invalidate(),
+      utils.projects.getTopProjectStatus.invalidate(),
     ]);
   };
 };
@@ -375,6 +408,12 @@ export const useInvalidateQueriesGenericBacklogItemDetails = () => {
         });
       }),
     );
+
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
+    await utils.projects.getTopProjectStatus.invalidate();
   };
 };
 

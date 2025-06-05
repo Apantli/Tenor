@@ -24,7 +24,7 @@ const ActivityProjectDashboard = ({ className }: Props) => {
   const { data: projects, isLoading: projectsLoading } =
     api.projects.listProjects.useQuery();
   const { data: activities, isLoading: activitiesLoading } =
-    api.projects.getActivityDetailsFromTopProjects.useQuery();
+    api.projects.getActivityDetailsFromProjects.useQuery();
 
   const [searchText, setSearchText] = useState("");
 
