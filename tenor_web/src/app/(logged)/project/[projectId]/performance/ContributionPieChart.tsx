@@ -43,7 +43,7 @@ const pieChartSpec: VisualizationSpec = {
       name: "color",
       type: "ordinal",
       domain: { data: "table", field: "category" },
-      range: ["#88BB87", "#15734F", "#13918A"],
+      range: ["#88BB87", "#15734F", "#13918A", "#D1D5DB"],
     },
   ],
 

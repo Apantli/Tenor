@@ -17,6 +17,7 @@ import {
   type WithId,
 } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
+import { useInvalidateTeamMembers } from "~/app/_hooks/invalidateHooks";
 
 export default function ProjectUsers() {
   const { projectId } = useParams();
@@ -29,6 +30,9 @@ export default function ProjectUsers() {
   const { data: role } = api.settings.getMyRole.useQuery({
     projectId: projectId as string,
   });
+
+  const invalidateTeamMembers = useInvalidateTeamMembers();
+
   const permission: Permission = useMemo(() => {
     return checkPermissions(
       {
@@ -91,6 +95,7 @@ export default function ProjectUsers() {
       projectId: projectId as string,
       userId: user.id,
     });
+    await invalidateTeamMembers(projectId as string);
     await refetch();
   };
 
@@ -125,6 +130,8 @@ export default function ProjectUsers() {
         }),
       ),
     );
+    await invalidateTeamMembers(projectId as string);
+
     await refetch();
   };
 
@@ -155,6 +162,8 @@ export default function ProjectUsers() {
         roleId: role,
       }),
     ]);
+    await invalidateTeamMembers(projectId as string);
+
     await refetch();
   };
 
@@ -177,6 +186,7 @@ export default function ProjectUsers() {
       label: label,
     });
     await refetchRoles(); // Refetch the list after adding
+    await invalidateTeamMembers(projectId as string);
   };
 
   const handleRoleRemove = async function (ids: (string | number)[]) {
@@ -190,6 +200,7 @@ export default function ProjectUsers() {
     );
 
     await refetchRoles(); // Refetch the list after removing
+    await invalidateTeamMembers(projectId as string);
   };
 
   const handleEditTabPermission = async function (
@@ -224,6 +235,7 @@ export default function ProjectUsers() {
       permission,
     });
     await refetchRoles();
+    await invalidateTeamMembers(projectId as string);
   };
 
   return (

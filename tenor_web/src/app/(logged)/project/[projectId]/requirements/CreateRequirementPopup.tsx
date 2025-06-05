@@ -136,11 +136,7 @@ export default function CreateRequirementPopup({
       footer={
         <PrimaryButton
           onClick={async () => {
-            if (isModified()) {
-              await handleCreateRequirement();
-            } else {
-              setShowPopup(false);
-            }
+            await handleCreateRequirement();
           }}
           disabled={isPending || isSubmitting}
           data-cy="create-requirement-button"
