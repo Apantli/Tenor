@@ -90,6 +90,7 @@ export default function SignIn() {
         name="email"
         value={form.email}
         error={error.email}
+        onSubmit={handleSignIn}
       >
         Email
       </FloatingLabelInput>
@@ -99,6 +100,7 @@ export default function SignIn() {
         name="password"
         value={form.password}
         error={error.password}
+        onSubmit={handleSignIn}
       >
         Password
       </FloatingLabelInput>

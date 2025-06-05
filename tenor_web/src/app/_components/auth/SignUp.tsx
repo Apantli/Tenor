@@ -121,6 +121,7 @@ export default function SignUp() {
         name="name"
         value={form.name}
         error={error.name}
+        onSubmit={handleSignUp}
       >
         Name
       </FloatingLabelInput>
@@ -130,6 +131,7 @@ export default function SignUp() {
         name="email"
         value={form.email}
         error={error.email}
+        onSubmit={handleSignUp}
       >
         Email
       </FloatingLabelInput>
@@ -139,6 +141,7 @@ export default function SignUp() {
         name="password"
         value={form.password}
         error={error.password}
+        onSubmit={handleSignUp}
       >
         Password
       </FloatingLabelInput>
