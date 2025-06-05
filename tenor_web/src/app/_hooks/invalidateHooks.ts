@@ -156,6 +156,10 @@ export const useInvalidateQueriesAllRequirements = () => {
     await utils.requirements.getRequirementTable.invalidate({
       projectId: projectId,
     });
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
   };
 };
 
@@ -170,6 +174,10 @@ export const useInvalidateQueriesRequirementDetails = () => {
         });
       }),
     );
+    await utils.projects.getActivityDetails.invalidate({
+      projectId: projectId,
+    });
+    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
   };
 };
 
