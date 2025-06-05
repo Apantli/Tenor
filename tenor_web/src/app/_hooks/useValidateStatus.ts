@@ -30,12 +30,13 @@ export default function useValidateStatusTag() {
       const previousStatus = statusTags?.find(
         (status) => status.id === id && !status.deleted,
       );
+      if (previousStatus && previousStatus.name === tagName) {
+        return true;
+      }
       if (
         previousStatus &&
         protectedNames.some(
-          (name) =>
-            previousStatus.name.toLowerCase() === name.toLowerCase() &&
-            previousStatus.name !== tagName,
+          (name) => previousStatus.name.toLowerCase() === name.toLowerCase(),
         )
       ) {
         predefinedAlerts.statusNameNotEditableError();
@@ -43,7 +44,11 @@ export default function useValidateStatusTag() {
       }
     }
 
-    if (protectedNames.some((name) => normalizedName === name)) {
+    if (
+      protectedNames.some(
+        (name) => normalizedName === name.toLowerCase().trim(),
+      )
+    ) {
       predefinedAlerts.statusNameReservedError(tagName);
       return false;
     }
