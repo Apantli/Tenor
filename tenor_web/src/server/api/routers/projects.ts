@@ -33,6 +33,7 @@ import {
 import {
   ProjectSchemaCreator,
   SettingsSchema,
+  type UserSchema,
 } from "~/lib/types/zodFirebaseSchema";
 import { z } from "zod";
 import { isBase64Valid } from "~/lib/helpers/base64";
@@ -47,7 +48,7 @@ import {
   getRoles,
   getRolesRef,
   getSettingsRef,
-  getActivityDetailsFromTopProjects,
+  getActivityDetailsFromProjects,
 } from "../shortcuts/general";
 import { settingsPermissions } from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
@@ -473,26 +474,22 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getItemActivityDetails(ctx.firestore, projectId);
     }),
-  getActivityDetailsFromTopProjects: protectedProcedure.query(
-    async ({ ctx }) => {
-      const topProjects = await computeTopProjectStatus(
-        ctx.firestore,
-        ctx.firebaseAdmin.app(),
-        ctx.session.uid,
-      );
+  getActivityDetailsFromProjects: protectedProcedure.query(async ({ ctx }) => {
+    const user = (
+      await getGlobalUserRef(ctx.firestore, ctx.session.uid).get()
+    ).data() as z.infer<typeof UserSchema>;
 
-      if (!topProjects) {
-        return [];
-      }
+    if (!user?.projectIds || user.projectIds.length === 0) {
+      return [];
+    }
 
-      const details = await getActivityDetailsFromTopProjects(
-        ctx.firestore,
-        topProjects,
-      );
+    const details = await getActivityDetailsFromProjects(
+      ctx.firestore,
+      user.projectIds,
+    );
 
-      return details;
-    },
-  ),
+    return details;
+  }),
   getGraphBurndownData: protectedProcedure
 
     .input(z.object({ projectId: z.string() }))

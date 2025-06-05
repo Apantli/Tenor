@@ -384,8 +384,12 @@ export const getProjectActivities = async (
   projectId: string,
 ) => {
   const activitiesRef = getActivitiesRef(firestore, projectId);
+  const threeDaysAgo = new Date();
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
   const activitiesSnapshot = await activitiesRef
     .orderBy("date", "desc")
+    .where("date", ">=", threeDaysAgo)
     .limit(5)
     .get();
   const activities: WithId<ProjectActivity>[] = activitiesSnapshot.docs.map(
@@ -447,22 +451,19 @@ export const getItemActivityDetails = async (
   return results;
 };
 
-export const getActivityDetailsFromTopProjects = async (
+export const getActivityDetailsFromProjects = async (
   firestore: Firestore,
-  topProjects: TopProjects[],
+  projectIds: string[],
 ) => {
   const results: WithProjectId<WithId<ProjectActivityDetail>>[] = [];
-  for (const project of topProjects) {
-    const activities = await getItemActivityDetails(
-      firestore,
-      project.projectId,
-    );
+  for (const projectId of projectIds) {
+    const activities = await getItemActivityDetails(firestore, projectId);
     for (const item of activities) {
       if (!item) continue;
 
       results.push({
         ...item,
-        projectId: project.projectId,
+        projectId: projectId,
       } as WithProjectId<WithId<ProjectActivityDetail>>);
     }
   }

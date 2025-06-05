@@ -40,7 +40,7 @@ export const useInvalidateQueriesAllTasks = () => {
       projectId: projectId,
     });
 
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
     await utils.projects.getTopProjectStatus.invalidate();
   };
 };
@@ -67,7 +67,7 @@ export const useInvalidateQueriesTaskDetails = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
     await utils.projects.getTopProjectStatus.invalidate();
   };
 };
@@ -108,7 +108,7 @@ export const useInvalidateQueriesAllUserStories = () => {
       projectId: projectId,
     });
 
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
   };
 };
 
@@ -131,7 +131,7 @@ export const useInvalidateQueriesUserStoriesDetails = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
     await utils.projects.getTopProjectStatus.invalidate();
   };
 };
@@ -159,7 +159,7 @@ export const useInvalidateQueriesAllRequirements = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
   };
 };
 
@@ -177,7 +177,7 @@ export const useInvalidateQueriesRequirementDetails = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
   };
 };
 
@@ -197,7 +197,7 @@ export const useInvalidateQueriesAllIssues = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
     await utils.projects.getTopProjectStatus.invalidate();
   };
 };
@@ -216,7 +216,7 @@ export const useInvalidateQueriesIssueDetails = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
     await utils.projects.getTopProjectStatus.invalidate();
   };
 };
@@ -376,7 +376,7 @@ export const useInvalidateQueriesAllGenericBacklogItems = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
     await utils.projects.getTopProjectStatus.invalidate();
   };
 };
@@ -397,7 +397,7 @@ export const useInvalidateQueriesGenericBacklogItemDetails = () => {
     await utils.projects.getActivityDetails.invalidate({
       projectId: projectId,
     });
-    await utils.projects.getActivityDetailsFromTopProjects.invalidate();
+    await utils.projects.getActivityDetailsFromProjects.invalidate();
     await utils.projects.getTopProjectStatus.invalidate();
   };
 };
