@@ -91,11 +91,11 @@ export const ContributionPieChart = ({
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        const width = entry.contentRect.width * 0.6;
+        const width = entry.contentRect.width;
 
         setContainerDimensions({
-          width: Math.min(Math.max(width, 50), 200),
-          height: Math.min(Math.max(width, 50), 200),
+          width: Math.min(Math.max(width, 50), 400),
+          height: Math.min(Math.max(width, 50), 400),
         });
       }
     });

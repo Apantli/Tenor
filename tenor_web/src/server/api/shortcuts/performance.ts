@@ -14,6 +14,7 @@ export const getActivityPartition = async (
   userId: string,
   time?: string,
   sprintId?: string,
+  timeZone?: string,
 ) => {
   let activityRef = null;
   if (time === "Week") {
@@ -62,7 +63,10 @@ export const getActivityPartition = async (
       : new Date();
 
     // Format date as YYYY-MM-DD
-    const day = timestamp.toISOString().split("T")[0];
+    const day = timestamp.toLocaleDateString(
+      "en-US",
+      timeZone ? { timeZone } : undefined,
+    );
 
     if (!day) return;
 

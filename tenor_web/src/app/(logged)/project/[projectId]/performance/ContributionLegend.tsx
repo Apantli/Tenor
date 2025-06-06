@@ -12,13 +12,6 @@ export const ContributionLegend: React.FC<{
 
   const totalValue = data?.reduce((sum, item) => sum + item.value, 0);
 
-  if (totalValue === 0 || !data) {
-    if (!data) {
-      data = [];
-    }
-    data.push({ category: "No Contributions", value: 1 });
-  }
-
   return (
     <div className="ml-4 flex flex-col gap-2">
       {data?.map((item) => (
