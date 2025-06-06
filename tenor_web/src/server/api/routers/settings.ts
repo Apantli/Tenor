@@ -104,10 +104,15 @@ const settingsRouter = createTRPCRouter({
    * @returns {WithId<StatusTag>[]} An array of status type tags
    */
   getStatusTypes: roleRequiredProcedure(generalPermissions, "read")
-    .input(z.object({ projectId: z.string() }))
+    .input(
+      z.object({
+        projectId: z.string(),
+        showAwaitingReview: z.boolean().default(false),
+      }),
+    )
     .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return await getStatusTypes(ctx.firestore, projectId);
+      const { projectId, showAwaitingReview } = input;
+      return await getStatusTypes(ctx.firestore, projectId, showAwaitingReview);
     }),
 
   /**

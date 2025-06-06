@@ -60,7 +60,7 @@ import {
   defaultPriorityTypes,
   defaultRequerimentTypes,
 } from "~/lib/defaultValues/tags";
-import { defaultStatusTags } from "~/lib/defaultValues/status";
+import { awaitsReviewTag, defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import { getBurndownData } from "../shortcuts/tasks";
@@ -324,9 +324,12 @@ export const projectsRouter = createTRPCRouter({
           newProjectRef.id,
         );
 
-        await Promise.all(
-          defaultStatusTags.map((statusTag) => statusCollection.add(statusTag)),
-        );
+        await Promise.all([
+          ...defaultStatusTags.map((statusTag) =>
+            statusCollection.add(statusTag),
+          ),
+          statusCollection.doc("awaits_review").set(awaitsReviewTag),
+        ]);
 
         // Create default empty activity
         const activityCollection = getActivityRef(

@@ -16,7 +16,7 @@ import {
   getStatusTypes,
 } from "../shortcuts/tags";
 import { getUserStories, getUserStory } from "../shortcuts/userStories";
-import { getIssue, getIssues } from "../shortcuts/issues";
+import { getIssue, getIssues, isIssue } from "../shortcuts/issues";
 import { getBacklogItems } from "../shortcuts/backlogItems";
 import { sortByCardTypeAndScrumId } from "~/lib/helpers/sort";
 
@@ -239,10 +239,16 @@ export const kanbanRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       const { projectId, itemId } = input;
+      const includeAwaitsReview = await isIssue(
+        ctx.firestore,
+        projectId,
+        itemId,
+      );
 
       const activeStatuses = await getStatusTypes(
         ctx.firestore,
         input.projectId,
+        includeAwaitsReview,
       );
 
       const statusId = await getAutomaticStatusId(

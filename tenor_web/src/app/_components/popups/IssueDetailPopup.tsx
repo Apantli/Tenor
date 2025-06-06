@@ -352,6 +352,7 @@ export default function IssueDetailPopup({
                     )}
                   </div>
                   <StatusPicker
+                    showAwaitingReview
                     disabled={
                       permission < permissionNumbers.write ||
                       isAutomatic(issueDetail.status) ||
