@@ -33,6 +33,7 @@ import {
   getContributionOverview,
 } from "../shortcuts/performance";
 import { getWritableUsers } from "../shortcuts/users";
+import { defaultPerformanceData } from "~/lib/defaultValues/performance";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -48,7 +49,12 @@ export const performanceRouter = createTRPCRouter({
 
   getUserContributions: roleRequiredProcedure(performancePermissions, "read")
     .input(
-      z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
+      z.object({
+        projectId: z.string(),
+        userId: z.string(),
+        time: z.string(),
+        timezone: z.string().optional(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       let sprint: WithId<Sprint> | null = null;
@@ -65,6 +71,7 @@ export const performanceRouter = createTRPCRouter({
         input.userId,
         input.time,
         sprint?.id,
+        input.timezone,
       );
       return activities;
     }),
@@ -77,7 +84,7 @@ export const performanceRouter = createTRPCRouter({
       if (input.time == "Sprint") {
         sprintId = (await getCurrentSprint(ctx.firestore, input.projectId))?.id;
         if (!sprintId) {
-          return null;
+          return defaultPerformanceData;
         }
       }
       const contributionOverview = await getContributionOverview(

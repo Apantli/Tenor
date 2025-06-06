@@ -95,6 +95,7 @@ const MemberItem = ({
     projectId: projectId,
     userId: member.id,
     time: time,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
 
   const formattedData = data?.map((d) => ({
@@ -108,7 +109,7 @@ const MemberItem = ({
     prevDate.setDate(prevDate.getDate() - 1);
     formattedData.push({
       x: prevDate,
-      y: formattedData[0].y,
+      y: 0,
     });
   }
 

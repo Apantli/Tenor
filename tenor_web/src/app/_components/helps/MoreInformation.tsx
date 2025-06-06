@@ -1,4 +1,5 @@
 import HelpIcon from "@mui/icons-material/Help";
+import { cn } from "~/lib/helpers/utils";
 
 // make an export type for size
 export type IconSize = "small" | "medium" | "large";
@@ -6,9 +7,10 @@ export type IconSize = "small" | "medium" | "large";
 interface Props {
   label: string;
   size: IconSize;
+  className?: string;
 }
 
-export default function MoreInformation({ label, size }: Props) {
+export default function MoreInformation({ label, size, className }: Props) {
   const sizeN: number = (() => {
     switch (size) {
       case "small":
@@ -23,7 +25,7 @@ export default function MoreInformation({ label, size }: Props) {
   })();
   return (
     <HelpIcon
-      className="text-gray-500"
+      className={cn("text-gray-500", className)}
       data-tooltip-id="tooltip"
       data-tooltip-content={label}
       data-tooltip-place="top-start"

@@ -157,8 +157,9 @@ export default function FileList({
               onClick={openFilePicker}
               className="flex max-h-[40px] items-center"
               disabled={isProcessing}
+              loading={isProcessing}
             >
-              {isProcessing ? "Processing..." : "Add Context File +"}
+              Add Context File
             </PrimaryButton>
           )}
 
