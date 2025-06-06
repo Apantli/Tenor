@@ -353,7 +353,45 @@ export default function TaskDependencyTree() {
       showEdgeLabels,
     );
     setEdges(updatedEdges);
-  }, [dependencyData, projectId, setViewport]);
+
+    // Check if the saved viewport shows any nodes on screen
+    if (savedFlow?.viewport && nodesWithPositions.length > 0) {
+      const viewport = savedFlow.viewport;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      // Calculate visible area bounds based on viewport position and zoom
+      const visibleLeft = -viewport.x / viewport.zoom;
+      const visibleTop = -viewport.y / viewport.zoom;
+      const visibleRight = visibleLeft + viewportWidth / viewport.zoom;
+      const visibleBottom = visibleTop + viewportHeight / viewport.zoom;
+
+      // Check if any node is visible within the viewport
+      const hasVisibleNode = nodesWithPositions.some((node) => {
+        const nodeWidth = node.measured?.width ?? 200;
+        const nodeHeight = node.measured?.height ?? 100;
+        const nodeLeft = node.position.x;
+        const nodeTop = node.position.y;
+        const nodeRight = nodeLeft + nodeWidth;
+        const nodeBottom = nodeTop + nodeHeight;
+
+        // Check if node overlaps with visible area
+        return !(
+          nodeRight < visibleLeft ||
+          nodeLeft > visibleRight ||
+          nodeBottom < visibleTop ||
+          nodeTop > visibleBottom
+        );
+      });
+
+      // If no nodes are visible, use fitView to show nodes
+      if (!hasVisibleNode) {
+        setTimeout(() => {
+          void fitView(fitViewOptions);
+        }, 0);
+      }
+    }
+  }, [dependencyData, projectId, setViewport, fitView]);
 
   // Trigger layout if the user has not interacted with the diagram yet
   useEffect(() => {
