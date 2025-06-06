@@ -13,6 +13,7 @@ import SentimentNeutralIcon from "@mui/icons-material/SentimentNeutral";
 import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied";
 
 import dynamic from "next/dynamic";
+import { defaultPerformanceData } from "~/lib/defaultValues/performance";
 
 const DynamicContributionPieChart = dynamic(
   () =>
@@ -46,20 +47,17 @@ export const MemberDetailsCard = ({
       userId: member.id,
     });
 
-  const {
-    data: userContributions,
-    error,
-    isLoading: loadingContributions,
-  } = api.performance.getContributionOverview.useQuery(
-    {
-      projectId: projectId,
-      userId: member.id,
-      time: timeInterval,
-    },
-    {
-      retry: 0,
-    },
-  );
+  const { data: userContributions, isLoading: loadingContributions } =
+    api.performance.getContributionOverview.useQuery(
+      {
+        projectId: projectId,
+        userId: member.id,
+        time: timeInterval,
+      },
+      {
+        retry: 0,
+      },
+    );
 
   let roleString =
     roles?.find((role) => role.id === member.roleId)?.label ?? emptyRole.label;
@@ -68,14 +66,23 @@ export const MemberDetailsCard = ({
     roleString = "Owner";
   }
 
-  const formattedUserContributions = userContributions
-    ? Object.entries(userContributions)
-        .map(([key, value]) => ({
-          category: key,
-          value: value,
-        }))
-        .sort((a, b) => a.category.localeCompare(b.category))
-    : [];
+  const formattedUserContributions = Object.entries(
+    userContributions ?? defaultPerformanceData,
+  )
+    .map(([key, value]) => ({
+      category: key,
+      value: value,
+    }))
+    .sort((a, b) => a.category.localeCompare(b.category));
+
+  const totalValue = formattedUserContributions?.reduce(
+    (sum, item) => sum + item.value,
+    0,
+  );
+
+  if (totalValue === 0) {
+    formattedUserContributions.push({ category: "No Contributions", value: 1 });
+  }
 
   return (
     <div
@@ -121,20 +128,9 @@ export const MemberDetailsCard = ({
           </div>
         )}
         {!loadingContributions && (
-          <div className="">
-            {/* FIXME: don't throw trpc errors to show to the client */}
-            {!error ? (
-              <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
-                <DynamicContributionPieChart
-                  data={formattedUserContributions}
-                />
-                <ContributionLegend data={formattedUserContributions} />
-              </div>
-            ) : (
-              <p className="text-xl text-gray-500">
-                {error ? error.message : ""}
-              </p>
-            )}
+          <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
+            <DynamicContributionPieChart data={formattedUserContributions} />
+            <ContributionLegend data={formattedUserContributions} />
           </div>
         )}
       </div>
