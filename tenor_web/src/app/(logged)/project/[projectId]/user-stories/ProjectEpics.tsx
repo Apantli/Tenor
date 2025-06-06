@@ -18,7 +18,6 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import NoEpicsIcon from "@mui/icons-material/FormatListBulleted";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
-import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
