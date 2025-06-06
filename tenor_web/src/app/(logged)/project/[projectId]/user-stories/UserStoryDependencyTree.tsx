@@ -419,7 +419,7 @@ export default function UserStoryDependencyTree({ segmentedControl }: Props) {
   return (
     <div className="h-full w-full">
       {!isLoadingDependencies && dependencyData?.nodes.length == 0 && (
-        <div className="p-10">
+        <div className="p-10 pr-8">
           <div className="flex w-full flex-row flex-wrap items-start justify-between self-end">
             <h1 className="text-3xl font-semibold">User Stories</h1>
             {segmentedControl}
@@ -457,20 +457,24 @@ export default function UserStoryDependencyTree({ segmentedControl }: Props) {
           <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
           <Panel position="top-right">
             <div className="flex flex-row flex-wrap-reverse items-center justify-end gap-2 pr-4 pt-6">
-              <SecondaryButton
-                onClick={() => onLayout()}
-                className={"bg-white"}
-              >
-                <SwapVertOutlinedIcon />
-                Organize nodes
-              </SecondaryButton>
-              <SecondaryButton
-                onClick={handleShowLabels}
-                className={"bg-white"}
-              >
-                <InfoOutlinedIcon />
-                Toggle labels
-              </SecondaryButton>
+              {!isLoadingDependencies && (
+                <>
+                  <SecondaryButton
+                    onClick={() => onLayout()}
+                    className={"bg-white"}
+                  >
+                    <SwapVertOutlinedIcon />
+                    Organize nodes
+                  </SecondaryButton>
+                  <SecondaryButton
+                    onClick={handleShowLabels}
+                    className={"bg-white"}
+                  >
+                    <InfoOutlinedIcon />
+                    Toggle labels
+                  </SecondaryButton>
+                </>
+              )}
 
               <div className="pr-[1px] pt-[1px]">{segmentedControl}</div>
             </div>
