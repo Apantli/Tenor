@@ -24,7 +24,7 @@ export default function ProjectOverview() {
         <div className="flex min-h-[70vh] w-full flex-col justify-between gap-4">
           <div
             className={`flex flex-col gap-5 transition-all duration-300 ${
-              isProjectInfoExpanded ? "max-h-64" : "max-h-[12rem]"
+              isProjectInfoExpanded ? "lg:max-h-64 sm:max-h-full" : "lg:max-h-[13rem] sm:max-h-[15rem]"
             } h-full`}
           >
             <ProjectInfo
