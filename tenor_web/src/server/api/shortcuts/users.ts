@@ -60,7 +60,7 @@ export const getGlobalUserPreview = async (
 ): Promise<WithId<UserPreview> | undefined> => {
   const user = await admin.auth().getUser(userId);
   if (!user) {
-    return undefined;
+    throw notFound("User");
   }
   const userPreview: WithId<UserPreview> = {
     id: user.uid,
