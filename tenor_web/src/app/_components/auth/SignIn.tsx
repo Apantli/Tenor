@@ -8,6 +8,7 @@ import { auth } from "~/lib/db/firebaseClient";
 import { useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { useAlert } from "~/app/_hooks/useAlert";
+import AuthDisclaimer from "./AuthDisclaimer";
 
 export default function SignIn() {
   const router = useRouter();
@@ -107,6 +108,7 @@ export default function SignIn() {
       <PrimaryButton loading={loading} floatingSpinner onClick={handleSignIn}>
         Sign in
       </PrimaryButton>
+      <AuthDisclaimer />
     </div>
   );
 }
