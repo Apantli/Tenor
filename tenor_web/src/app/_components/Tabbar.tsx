@@ -51,7 +51,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     );
 
   useEffect(() => {
-    if (previousSprint && projectId) {
+    if (previousSprint && projectId && user) {
       ensureTeamProgress.mutate({
         projectId: projectId as string,
         sprintId: previousSprint.id,
@@ -62,7 +62,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
         userId: user?.uid ?? "",
       });
     }
-  }, [projectId, previousSprint]);
+  }, [projectId, previousSprint, user]);
 
   return (
     <div className="no-scrollbar flex h-8 min-h-8 w-screen shrink-0 items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">
