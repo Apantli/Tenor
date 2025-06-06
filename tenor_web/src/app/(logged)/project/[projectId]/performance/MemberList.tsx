@@ -130,7 +130,8 @@ const MemberItem = ({
       <ProfilePicture
         user={member}
         hideTooltip
-        pictureClassName="min-h-20 min-w-20 h-20 w-20 mx-5 my-auto text-4xl"
+        size={80}
+        pictureClassName="mx-5 my-auto"
       />
       <h3
         className={cn(
