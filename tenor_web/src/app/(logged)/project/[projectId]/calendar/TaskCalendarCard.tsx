@@ -101,7 +101,7 @@ export const TaskCalendarCard = ({
         <div className="flex items-center">
           {user && (
             <span className="hidden lg:inline">
-              <ProfilePicture user={user} pictureClassName="h-4 w-4" />
+              <ProfilePicture user={user} size={16} />
             </span>
           )}
           <ChevronRightIcon />
