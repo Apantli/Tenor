@@ -18,6 +18,7 @@ import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import { UserPicker } from "../inputs/pickers/UserPicker";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import MoreInformation from "../helps/MoreInformation";
 
 interface Props {
   showPopup: boolean;
@@ -185,7 +186,13 @@ export default function CreateIssuePopup({
             </div>
           </div>
 
-          <h3 className="mt-4 text-lg font-semibold">Reviewer</h3>
+          <div className="mt-4 flex items-center">
+            <h3 className="mr-1 text-lg font-semibold">Reviewer</h3>
+            <MoreInformation
+              size="small"
+              label="The reviewer is the only person allowed to modify the status of this issue"
+            />
+          </div>
           <UserPicker
             className="h-10"
             placeholder="Unassigned"
