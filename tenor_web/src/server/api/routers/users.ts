@@ -25,11 +25,11 @@ import {
   getUserRef,
   getUsers,
   getUserTable,
+  getWritableUsers,
 } from "../shortcuts/users";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { uploadBase64File } from "~/lib/db/firebaseBucket";
 import { forbidden, notFound } from "~/server/errors";
-import { getWritableUsers } from "../shortcuts/general";
 
 export const userRouter = createTRPCRouter({
   /**

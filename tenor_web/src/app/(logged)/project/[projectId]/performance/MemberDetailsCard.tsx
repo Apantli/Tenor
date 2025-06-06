@@ -1,7 +1,6 @@
 "use client";
 
 import ProfilePicture from "~/app/_components/ProfilePicture";
-
 import { ContributionLegend } from "~/app/(logged)/project/[projectId]/performance/ContributionLegend";
 import CrossIcon from "@mui/icons-material/Close";
 import type { UserCol } from "~/lib/types/columnTypes";
@@ -20,16 +19,6 @@ const DynamicContributionPieChart = dynamic(
     import(
       "~/app/(logged)/project/[projectId]/performance/ContributionPieChart"
     ).then((m) => m.ContributionPieChart),
-  {
-    ssr: false,
-  },
-);
-
-const DynamicPerformanceChart = dynamic(
-  () =>
-    import("~/app/_components/charts/PerformanceChart").then(
-      (m) => m.PerformanceChart,
-    ),
   {
     ssr: false,
   },
@@ -87,27 +76,6 @@ export const MemberDetailsCard = ({
         }))
         .sort((a, b) => a.category.localeCompare(b.category))
     : [];
-
-  const { data } = api.performance.getUserContributions.useQuery({
-    projectId: projectId,
-    userId: member.id,
-    time: timeInterval,
-  });
-
-  const formattedData = data?.map((d) => ({
-    x: d.date,
-    y: d.count,
-  }));
-
-  // If there's only one data point, add another point one day before so that the chart isn't empty
-  if (formattedData?.length === 1 && formattedData[0]) {
-    const prevDate = new Date(formattedData[0].x);
-    prevDate.setDate(prevDate.getDate() - 1);
-    formattedData.push({
-      x: prevDate,
-      y: 0,
-    });
-  }
 
   return (
     <div
@@ -170,14 +138,6 @@ export const MemberDetailsCard = ({
             )}
           </div>
         )}
-        <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
-          Recent activity
-        </h4>
-        <DynamicPerformanceChart
-          data={formattedData ?? []}
-          showLabel
-          className=""
-        />
       </div>
     </div>
   );

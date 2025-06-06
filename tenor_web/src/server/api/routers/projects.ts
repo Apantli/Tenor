@@ -63,7 +63,6 @@ import {
 import { defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
 import { getCurrentSprint } from "../shortcuts/sprints";
-import { type BurndownChartData } from "~/lib/defaultValues/burndownChart";
 import { getBurndownData } from "../shortcuts/tasks";
 import type { firestore } from "firebase-admin";
 
@@ -498,28 +497,12 @@ export const projectsRouter = createTRPCRouter({
     });
   }),
   getGraphBurndownData: protectedProcedure
-
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
-
+      // Get the current sprint for the project
       const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
-
-      if (!currentSprint || !currentSprint.id) {
-        return undefined;
-      }
-
-      let burndownData: BurndownChartData | undefined;
-      try {
-        burndownData = await getBurndownData(
-          ctx.firestore,
-          projectId,
-          currentSprint.id,
-        );
-      } catch (error) {
-        console.log("ERROR HERE", error);
-      }
-
-      return burndownData;
+      if (!currentSprint) return null;
+      return await getBurndownData(ctx.firestore, projectId, currentSprint.id);
     }),
 });

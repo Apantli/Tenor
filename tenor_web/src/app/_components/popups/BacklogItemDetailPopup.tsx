@@ -316,7 +316,7 @@ export default function BacklogItemDetailPopup({
                 <h3 className="text-lg font-semibold">Sprint</h3>
                 <SprintPicker
                   disabled={permission < permissionNumbers.write}
-                  sprint={backlogItemDetail.sprint}
+                  sprintId={backlogItemDetail.sprint?.id}
                   onChange={async (sprint) => {
                     await handleSave({ ...backlogItemDetail, sprint });
                   }}

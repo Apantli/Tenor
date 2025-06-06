@@ -15,11 +15,8 @@ import {
   PerformanceTime,
   UserHappinessSchema,
 } from "~/lib/types/zodFirebaseSchema";
-import { getProductivityRef, getWritableUsers } from "../shortcuts/general";
-import { shouldRecomputeProductivity } from "~/lib/helpers/cache";
 import type {
   Issue,
-  Productivity,
   Sprint,
   UserStory,
   WithId,
@@ -29,14 +26,13 @@ import {
   getUserStoriesAfter,
 } from "../shortcuts/userStories";
 import { getIssuesAfter, getSprintIssues } from "../shortcuts/issues";
-import { Timestamp } from "firebase-admin/firestore";
-
 import { getStatusTypes } from "../shortcuts/tags";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import {
   getActivityPartition,
   getContributionOverview,
 } from "../shortcuts/performance";
+import { getWritableUsers } from "../shortcuts/users";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
@@ -47,19 +43,7 @@ export const performanceRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // SR3: Always show up-to-date productivity data
-      return await recomputePerformance(ctx, input.projectId, input.time, true);
-    }),
-
-  recomputeProductivity: roleRequiredProcedure(performancePermissions, "read")
-    .input(
-      z.object({
-        projectId: z.string(),
-        time: PerformanceTime,
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      await recomputePerformance(ctx, input.projectId, input.time, true);
+      return await computePerformanceTime(ctx, input.projectId, input.time);
     }),
 
   getUserContributions: roleRequiredProcedure(performancePermissions, "read")
@@ -67,11 +51,11 @@ export const performanceRouter = createTRPCRouter({
       z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
     )
     .query(async ({ ctx, input }) => {
-      let sprint: WithId<Sprint> | undefined = undefined;
+      let sprint: WithId<Sprint> | null = null;
       if (input.time === "Sprint") {
         sprint = await getCurrentSprint(ctx.firestore, input.projectId);
         if (!sprint) {
-          return undefined;
+          return null;
         }
       }
 
@@ -93,7 +77,7 @@ export const performanceRouter = createTRPCRouter({
       if (input.time == "Sprint") {
         sprintId = (await getCurrentSprint(ctx.firestore, input.projectId))?.id;
         if (!sprintId) {
-          return undefined;
+          return null;
         }
       }
       const contributionOverview = await getContributionOverview(
@@ -146,51 +130,6 @@ export const performanceRouter = createTRPCRouter({
     }),
 });
 
-const recomputePerformance = async (
-  ctx: { firestore: FirebaseFirestore.Firestore },
-  projectId: string,
-  time: string,
-  recompute = false,
-) => {
-  // Fetch productivity data from the database
-  let productivityData = (
-    await getProductivityRef(ctx.firestore, projectId).get()
-  ).data() as Productivity | undefined;
-
-  if (!productivityData) {
-    productivityData = {
-      cached: [],
-    };
-  }
-
-  if (
-    recompute ||
-    shouldRecomputeProductivity({ data: productivityData, time: time })
-  ) {
-    const newProductivityData = await computePerformanceTime(
-      ctx,
-      projectId,
-      time,
-    );
-
-    if (!newProductivityData) {
-      return undefined;
-    }
-
-    productivityData.cached = productivityData.cached.filter(
-      (cached) => cached.time !== time,
-    );
-    productivityData.cached.push(newProductivityData);
-    await getProductivityRef(ctx.firestore, projectId).set(productivityData);
-  }
-
-  const cacheTarget = productivityData?.cached.find(
-    (cached) => cached.time === time,
-  );
-
-  return cacheTarget;
-};
-
 const computePerformanceTime = async (
   ctx: { firestore: FirebaseFirestore.Firestore },
   projectId: string,
@@ -204,7 +143,7 @@ const computePerformanceTime = async (
     .map((statusType) => statusType.id);
 
   // Compute the time if needed
-  let afterDate = null;
+  let afterDate: Date | null = null;
   let userStories: WithId<UserStory>[] = [];
   let issues: WithId<Issue>[] = [];
 
@@ -226,7 +165,7 @@ const computePerformanceTime = async (
   } else {
     const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
     if (!currentSprint) {
-      return undefined;
+      return null;
     }
     userStories = await getSprintUserStories(
       ctx.firestore,
@@ -248,9 +187,8 @@ const computePerformanceTime = async (
   return {
     userStoryCompleted: completedUserStories.length,
     userStoryTotal: userStories.length,
-    fetchDate: Timestamp.now(),
-    time: PerformanceTime.parse(time),
     issueCompleted: completedIssues.length,
     issueTotal: issues.length,
+    time: PerformanceTime.parse(time),
   };
 };

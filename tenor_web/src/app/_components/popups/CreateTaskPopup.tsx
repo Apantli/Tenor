@@ -50,10 +50,6 @@ export function CreateTaskPopup({
   const projectIdString = projectId as string;
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  const { data: users } = api.users.getUsers.useQuery({
-    projectId: projectIdString,
-  });
-
   const { mutateAsync: createTask, isPending } =
     api.tasks.createTask.useMutation();
   const { data: todoStatusTag } = api.settings.getTodoTag.useQuery({
@@ -104,7 +100,6 @@ export function CreateTaskPopup({
   const [selectedAssignee, setSelectedAssignee] = useState<
     WithId<UserPreview> | undefined
   >();
-  const people: WithId<UserPreview>[] = users ?? [];
 
   const handleCreateTask = async () => {
     if (createForm.name.trim() === "") {
@@ -246,7 +241,6 @@ export function CreateTaskPopup({
               Assigned to
             </label>
             <UserPicker
-              options={people}
               selectedOption={selectedAssignee}
               onChange={(person) => {
                 setSelectedAssignee(person ?? undefined);

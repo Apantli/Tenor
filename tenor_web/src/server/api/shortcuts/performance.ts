@@ -2,6 +2,7 @@ import type { Firestore } from "firebase-admin/firestore";
 import { getProjectRef } from "./general";
 import type { LogProjectActivityParams } from "~/lib/types/firebaseSchemas";
 import { getSprint } from "./sprints";
+import { badRequest } from "~/server/errors";
 
 export const getActivityRef = (firestore: Firestore, projectId: string) => {
   return getProjectRef(firestore, projectId).collection("activity");
@@ -29,15 +30,13 @@ export const getActivityPartition = async (
     );
   } else {
     if (!sprintId) {
-      return undefined;
+      throw badRequest(
+        "Sprint ID is required for time other than Week or Month",
+      );
     }
-    // Get start and end date from sprint
     const sprint = await getSprint(firestore, projectId, sprintId);
-    if (!sprint) {
-      return undefined;
-    }
     activityRef = getActivityRef(firestore, projectId)
-      .where("date", ">=", sprint?.startDate)
+      .where("date", ">=", sprint.startDate)
       .where("date", "<=", sprint.endDate);
   }
   const activitySnapshot = await activityRef
@@ -109,13 +108,13 @@ export const getContributionOverview = async (
     );
   } else {
     if (!sprintId) {
-      return undefined;
+      throw badRequest(
+        "Sprint ID is required for time other than Week or Month",
+      );
     }
     // Get start and end date from sprint
     const sprint = await getSprint(firestore, projectId, sprintId);
-    if (!sprint) {
-      return undefined;
-    }
+
     activityRef = getActivityRef(firestore, projectId)
       .where("date", ">=", sprint?.startDate)
       .where("date", "<=", sprint.endDate);

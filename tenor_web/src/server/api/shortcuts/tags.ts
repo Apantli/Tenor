@@ -98,7 +98,7 @@ export const getPriorityByNameOrId = async (
       .limit(1)
       .get();
     if (tagByName.empty || tagByName.docs.length !== 1) {
-      return undefined;
+      throw notFound("Priority Tag");
     }
     return {
       id: tagByName.docs[0]!.id,
@@ -172,7 +172,7 @@ export const getStatusType = async (
 ) => {
   const tag = await getStatusTypeRef(firestore, projectId, statusId).get();
   if (!tag.exists) {
-    return undefined;
+    throw notFound("Status Tag");
   }
   return {
     id: tag.id,

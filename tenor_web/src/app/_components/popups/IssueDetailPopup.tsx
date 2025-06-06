@@ -258,7 +258,7 @@ export default function IssueDetailPopup({
                 <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
                 <SprintPicker
                   disabled={permission < permissionNumbers.write}
-                  sprint={issueDetail.sprint}
+                  sprintId={issueDetail.sprint?.id}
                   onChange={async (sprint) => {
                     await handleSave({ ...issueDetail, sprint });
                   }}
