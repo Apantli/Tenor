@@ -191,6 +191,8 @@ export const useAlert = () => {
     // #region Issues
     issueNameError: () =>
       alertTemplates.oops("Please provide a name for the issue."),
+    issueNoReviewer: () =>
+      alertTemplates.oops("Please provide a reviewer for the issue."),
     issueCreateError: () =>
       alertTemplates.error("Failed to create issue. Please try again."),
     // #endregion

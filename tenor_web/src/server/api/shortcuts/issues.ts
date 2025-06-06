@@ -259,6 +259,8 @@ export const getIssueDetail = async (
 
   const tasks = await getTaskTable(admin, firestore, projectId, issueId);
 
+  const reviewer = await getUser(admin, firestore, projectId, issue.reviewerId);
+
   const userStoryDetail: IssueDetail = {
     ...issue,
     sprint,
@@ -268,6 +270,7 @@ export const getIssueDetail = async (
     relatedUserStory,
     completed: false,
     tasks,
+    reviewer,
   };
 
   return userStoryDetail;

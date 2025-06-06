@@ -41,6 +41,7 @@ import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import StatusPicker from "../inputs/pickers/StatusPicker";
+import { UserPicker } from "../inputs/pickers/UserPicker";
 
 interface Props {
   issueId: string;
@@ -170,6 +171,7 @@ export default function IssueDetailPopup({
       size: updatedData?.size,
       relatedUserStoryId: updatedData?.relatedUserStory?.id ?? "",
       sprintId: updatedData?.sprint?.id ?? "",
+      reviewerId: updatedData?.reviewer.id,
     };
 
     // Cancel ongoing queries for this user story data
@@ -288,6 +290,18 @@ export default function IssueDetailPopup({
                     />
                   </div>
                 </div>
+
+                <h3 className="mt-4 text-lg font-semibold">Reviewer</h3>
+                <UserPicker
+                  className="h-10"
+                  placeholder="Unassigned"
+                  removeDelete
+                  onChange={async (newUser) => {
+                    if (!newUser) return;
+                    await handleSave({ ...issueDetail, reviewer: newUser });
+                  }}
+                  selectedOption={issueDetail.reviewer}
+                />
 
                 <div className="mt-4 flex-1">
                   <div className="flex">
