@@ -18,6 +18,7 @@ import {
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { logoSizeLimit, logoMaxDimensions } from "~/lib/defaultValues/project";
 import { toBase64 } from "~/lib/helpers/base64";
 import { cn } from "~/lib/helpers/utils";
@@ -94,6 +95,8 @@ export default function ProjectGeneralSettings() {
     description: "",
   });
 
+  const checkTitleLimit = useCharacterLimit("Title", 100);
+
   useEffect(() => {
     if (project) {
       setEditForm({
@@ -108,10 +111,19 @@ export default function ProjectGeneralSettings() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setEditForm((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "name") {
+      if (checkTitleLimit(e.target.value)) {
+        setEditForm((prev) => ({
+          ...prev,
+          [name]: value,
+        }));
+      }
+    } else {
+      setEditForm((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
 
   const isModified = () => {
