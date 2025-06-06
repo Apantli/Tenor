@@ -5,7 +5,7 @@ import TasksKanban from "./TasksKanban";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import ItemsKanban from "./ItemsKanban";
 import {
@@ -54,7 +54,7 @@ export default function ProjectKanban() {
 
   const [advancedFilters, setAdvancedFilters] =
     useAdvancedSearchFilters("scrumboard");
-  useMemo(() => {
+  useEffect(() => {
     if (sprint !== undefined) {
       setAdvancedFilters({
         ...advancedFilters,
