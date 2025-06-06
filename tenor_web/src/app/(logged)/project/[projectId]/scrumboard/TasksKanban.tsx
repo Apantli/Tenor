@@ -369,7 +369,7 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
                               backgroundColor: `${column.color}3E`,
                             }}
                           ></div>
-                          <h1 className="flex-1 truncate text-2xl font-medium">
+                          <h1 className="flex-1 truncate text-xl font-medium">
                             {column.name}
                           </h1>
                         </div>

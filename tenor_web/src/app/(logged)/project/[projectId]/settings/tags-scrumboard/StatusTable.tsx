@@ -81,6 +81,7 @@ export default function StatusTable() {
   const { data: status, isLoading: isLoadingTags } =
     api.settings.getStatusTypes.useQuery({
       projectId: projectId as string,
+      showAwaitingReview: true,
     });
 
   const { mutateAsync: modifyStatus } =

@@ -37,6 +37,7 @@ import { sortByCardTypeAndScrumId } from "~/lib/helpers/sort";
 import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import MoreInformation from "~/app/_components/helps/MoreInformation";
 
 interface Props {
   filter: string;
@@ -430,9 +431,17 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
                               backgroundColor: `${column.color}3E`,
                             }}
                           ></div>
-                          <h1 className="flex-1 truncate text-2xl font-medium">
-                            {column.name}
-                          </h1>
+                          <div className="flex flex-1">
+                            <h1 className="mr-1 max-w-[195px] truncate text-xl font-medium">
+                              {column.name}
+                            </h1>
+                            {column.id === "awaits_review" && (
+                              <MoreInformation
+                                label="This status is reserved for issues"
+                                size="small"
+                              />
+                            )}
+                          </div>
                         </div>
                         {permission >= permissionNumbers.write && (
                           <div className="flex shrink-0 gap-1">
