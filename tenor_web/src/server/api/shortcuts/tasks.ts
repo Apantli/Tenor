@@ -4,7 +4,6 @@ import type {
   Size,
   StatusTag,
   Task,
-  UserStory,
   WithId,
 } from "~/lib/types/firebaseSchemas";
 import { TaskSchema } from "~/lib/types/zodFirebaseSchema";
