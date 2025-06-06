@@ -15,9 +15,6 @@ import {
   PerformanceTime,
   UserHappinessSchema,
 } from "~/lib/types/zodFirebaseSchema";
-import { getWritableUsers } from "../shortcuts/general";
-import { getProductivityRef } from "../shortcuts/general";
-import { shouldRecomputeProductivity } from "~/lib/helpers/cache";
 import type {
   Issue,
   Sprint,
