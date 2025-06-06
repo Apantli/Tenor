@@ -10,7 +10,6 @@
 
 import {
   PermissionSchema,
-  RoleSchema,
   SettingsSchema,
   StatusTagSchema,
   TagSchema,
@@ -18,7 +17,6 @@ import {
 import z from "zod";
 import { fetchHTML } from "~/server/api/lib/webcontent";
 import { fetchMultipleFiles } from "~/lib/helpers/filecontent";
-import { type RoleDetail } from "~/lib/types/detailSchemas";
 import { defaultSprintDuration } from "~/lib/defaultValues/project";
 import {
   createTRPCRouter,
@@ -55,9 +53,9 @@ import {
   getRolesRef,
   getSettings,
   getSettingsRef,
+  getUserRole,
 } from "../shortcuts/general";
-import { getUserRef } from "../shortcuts/users";
-import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
+import { emptyRole } from "~/lib/defaultValues/roles";
 import { countTokens } from "~/lib/aiTools/aiGeneration";
 import { internalServerError } from "~/server/errors";
 
@@ -393,46 +391,7 @@ const settingsRouter = createTRPCRouter({
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const userId = ctx.session.uid;
-
-      if (!input.projectId) return ownerRole;
-
-      const userRef = getUserRef(ctx.firestore, input.projectId, userId);
-      const userDoc = await userRef.get();
-
-      if (!userDoc.exists) {
-        throw new Error("User not found");
-      }
-      const userData = userDoc.data();
-      if (!userData) {
-        throw new Error("User data not found");
-      }
-
-      if (userData.roleId == null) {
-        return emptyRole;
-      }
-
-      if (userData.roleId === "owner") {
-        return ownerRole;
-      }
-
-      // Get role
-      const roleDoc = await getRoleRef(
-        ctx.firestore,
-        input.projectId,
-        userData.roleId as string,
-      ).get();
-      if (!roleDoc.exists) {
-        throw new Error("Role not found");
-      }
-      const roleData = roleDoc.data();
-      if (!roleData) {
-        throw new Error("Role data not found");
-      }
-
-      return {
-        id: roleDoc.id,
-        ...RoleSchema.parse(roleData),
-      } as WithId<RoleDetail>;
+      return getUserRole(ctx.firestore, input.projectId, userId);
     }),
   getTodoTag: roleRequiredProcedure(tagPermissions, "read")
     .input(z.object({ projectId: z.string() }))
