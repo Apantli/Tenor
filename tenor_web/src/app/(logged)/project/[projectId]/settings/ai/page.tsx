@@ -14,6 +14,7 @@ import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { type Links } from "~/server/api/routers/settings";
 import {
+  type FileWithTokens,
   type Permission,
   permissionNumbers,
 } from "~/lib/types/firebaseSchemas";
@@ -85,7 +86,8 @@ export default function ProjectAIConfig() {
   const { mutateAsync: updateContext, isPending: isContextUpdatePending } =
     api.settings.updateTextContext.useMutation();
 
-  const [prevInvalidFiles, setPrevInvalidFiles] = useState<number>(-1);
+  const [prevInvalidFiles, setPrevInvalidFiles] = useState<number | null>(null);
+  const [prevInvalidLinks, setPrevInvalidLinks] = useState<number | null>(null);
 
   // Link utils
   const handleAddLink = async (link: Links) => {
@@ -115,20 +117,27 @@ export default function ProjectAIConfig() {
 
   useEffect(() => {
     const invalidLinks = [];
+    if (!links) return;
     for (const link of links ?? []) {
       if (!link.valid) invalidLinks.push(link);
     }
-    if (invalidLinks.length > 0) {
+    if (prevInvalidLinks !== null && invalidLinks.length > prevInvalidLinks) {
       predefinedAlerts.linkInvalidError(invalidLinks.length);
     }
+    setPrevInvalidLinks(invalidLinks.length);
   }, [links]);
 
   useEffect(() => {
     const emptyFiles = [];
+    if (!files) return;
     for (const file of files ?? []) {
       if (file.tokenCount == 0) emptyFiles.push(file);
     }
-    if (emptyFiles.length > 0 && emptyFiles.length !== prevInvalidFiles) {
+    if (
+      prevInvalidFiles !== null &&
+      emptyFiles.length > 0 &&
+      emptyFiles.length > prevInvalidFiles
+    ) {
       predefinedAlerts.emptyFilesError(emptyFiles.length);
     }
     setPrevInvalidFiles(emptyFiles.length);
@@ -159,15 +168,14 @@ export default function ProjectAIConfig() {
   // File utils
   const handleAddFiles = async (newFiles: File[]) => {
     if (!newFiles || !files) return;
-    const newData = [...files, ...newFiles];
-    // Uses optimistic update
-    await utils.settings.getContextFiles.cancel({
-      projectId: projectId as string,
+
+    const filesWithTokenCount = newFiles.map((f) => {
+      const deepCopy: FileWithTokens = structuredClone(f);
+      deepCopy.tokenCount = 1;
+      return deepCopy;
     });
-    utils.settings.getContextFiles.setData(
-      { projectId: projectId as string },
-      newData,
-    );
+    const newData = [...files, ...filesWithTokenCount];
+
     const filesBase64Encoded: {
       name: string;
       type: string;
@@ -185,17 +193,26 @@ export default function ProjectAIConfig() {
       });
     }
 
+    // Uses optimistic update
+    await utils.settings.getContextFiles.cancel({
+      projectId: projectId as string,
+    });
+    utils.settings.getContextFiles.setData(
+      { projectId: projectId as string },
+      newData,
+    );
+
     // Add to database
     await addFiles({
       projectId: projectId as string,
       files: filesBase64Encoded,
     });
 
+    predefinedAlerts.fileUploadSuccess();
+
     await utils.settings.getContextFiles.invalidate({
       projectId: projectId as string,
     });
-
-    predefinedAlerts.fileUploadSuccess();
   };
 
   const handleRemoveFile = async (file: File) => {
@@ -299,7 +316,7 @@ export default function ProjectAIConfig() {
             placeholder="Tell us about your project..."
             className="h-[250px]"
             labelClassName="text-lg font-semibold"
-          ></InputTextAreaField>
+          />
           <FileList
             disabled={permission < permissionNumbers.write}
             label={"Context Files"}

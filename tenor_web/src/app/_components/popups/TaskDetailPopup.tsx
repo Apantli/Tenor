@@ -14,7 +14,7 @@ import StatusPicker from "../inputs/pickers/StatusPicker";
 import { UserPicker } from "../inputs/pickers/UserPicker";
 import { DatePicker } from "../inputs/pickers/DatePicker";
 import LoadingSpinner from "../LoadingSpinner";
-import type { TaskDetail, UserPreview } from "~/lib/types/detailSchemas";
+import type { TaskDetail } from "~/lib/types/detailSchemas";
 import {
   useInvalidateQueriesAllTasks,
   useInvalidateQueriesTaskDetails,
@@ -23,7 +23,6 @@ import AiIcon from "@mui/icons-material/AutoAwesome";
 import {
   permissionNumbers,
   type Permission,
-  type WithId,
 } from "~/lib/types/firebaseSchemas";
 import { useSearchParam } from "~/app/_hooks/useSearchParam";
 import { TRPCClientError } from "@trpc/client";
@@ -97,11 +96,6 @@ export default function TaskDetailPopup({
 
   const { mutateAsync: updateTask } = api.tasks.modifyTask.useMutation();
   const { mutateAsync: deleteTask } = api.tasks.deleteTask.useMutation();
-
-  const { data: users } = api.users.getUsers.useQuery({
-    projectId: projectId as string,
-  });
-  const people: WithId<UserPreview>[] = users ?? [];
 
   const utils = api.useUtils();
 
@@ -377,7 +371,6 @@ export default function TaskDetailPopup({
             </label>
             <UserPicker
               disabled={permission < permissionNumbers.write}
-              options={people}
               selectedOption={taskDetail.assignee}
               onChange={async (assignee) => {
                 console.log(assignee);

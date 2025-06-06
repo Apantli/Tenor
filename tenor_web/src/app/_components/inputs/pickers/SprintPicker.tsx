@@ -7,17 +7,17 @@ import { useParams } from "next/navigation";
 import PillPickerComponent from "./PillPickerComponent";
 
 interface EditableBoxProps {
-  sprint?: WithId<Sprint> | undefined;
+  sprintId?: string;
   onChange: (option: WithId<Sprint> | undefined) => void;
   disabled?: boolean;
   noSelectionLabel?: string;
 }
 
 export function SprintPicker({
-  sprint: selectedOption = undefined,
+  sprintId: selectedOption = undefined,
   onChange,
   disabled = false,
-  noSelectionLabel = "Unassgined",
+  noSelectionLabel = "Unassigned",
 }: EditableBoxProps) {
   const { projectId } = useParams();
 
@@ -27,19 +27,24 @@ export function SprintPicker({
     projectId: projectId as string,
   });
 
+  const selectedSprint = sprints?.find(
+    (sprint) => sprint.id === selectedOption,
+  );
+
   const sprintToItem = (sprint?: WithId<Sprint>) => ({
-    id: sprint?.number.toString() ?? "",
+    id: sprint?.id.toString() ?? "",
     label: sprint?.number
       ? formatSprintNumber(sprint.number)
       : noSelectionLabel,
   });
+
   return (
     <PillPickerComponent
       disabled={disabled}
       label="Select a sprint"
       emptyLabel="No sprints available"
       noSelectionLabel={noSelectionLabel}
-      selectedItem={sprintToItem(selectedOption)}
+      selectedItem={sprintToItem(selectedSprint)}
       allItems={sprints?.map(sprintToItem) ?? []}
       allowClear={sprints?.length !== 0}
       onChange={(item) => {

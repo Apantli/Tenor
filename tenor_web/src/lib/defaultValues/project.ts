@@ -34,3 +34,6 @@ export const defaultActivity = [
     resolved: false,
   },
 ];
+
+export const logoSizeLimit = 3 * 1024 * 1024; // 3MB in bytes
+export const logoMaxDimensions = 1024; // Maximum width/height in pixels

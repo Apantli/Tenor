@@ -164,7 +164,7 @@ export default function CreateUserStoryPopup({
 
           <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
           <SprintPicker
-            sprint={createForm.sprint}
+            sprintId={createForm.sprint?.id}
             onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
           />
 

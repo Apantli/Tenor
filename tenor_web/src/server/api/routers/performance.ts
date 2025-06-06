@@ -15,7 +15,7 @@ import {
   PerformanceTime,
   UserHappinessSchema,
 } from "~/lib/types/zodFirebaseSchema";
-import { getProductivityRef, getWritableUsers } from "../shortcuts/general";
+import { getProductivityRef } from "../shortcuts/general";
 import { shouldRecomputeProductivity } from "~/lib/helpers/cache";
 import type {
   Issue,
@@ -38,6 +38,7 @@ import {
   getAverageTime,
   getContributionOverview,
 } from "../shortcuts/performance";
+import { getWritableUsers } from "../shortcuts/users";
 
 export const performanceRouter = createTRPCRouter({
   getProductivity: roleRequiredProcedure(performancePermissions, "read")
