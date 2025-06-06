@@ -26,7 +26,8 @@ import {
 } from "../shortcuts/issues";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 import { issuePermissions } from "~/lib/defaultValues/permission";
-import { internalServerError, notFound } from "~/server/errors";
+import { badRequest, internalServerError, notFound } from "~/server/errors";
+import { getUserRole } from "../shortcuts/general";
 
 export const issuesRouter = createTRPCRouter({
   /**
@@ -146,6 +147,27 @@ export const issuesRouter = createTRPCRouter({
       const { projectId, issueId, issueData } = input;
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
 
+      const role = await getUserRole(
+        ctx.firestore,
+        projectId,
+        ctx.session.user.uid,
+      );
+      const prevIssueData = await getIssue(ctx.firestore, projectId, issueId);
+
+      if (
+        role.id !== "owner" &&
+        ctx.session.user.uid !== prevIssueData.reviewerId &&
+        prevIssueData.reviewerId !== issueData.reviewerId
+      ) {
+        throw badRequest("You're not allowed to change the reviewer");
+      }
+      if (
+        ctx.session.user.uid !== prevIssueData.reviewerId &&
+        prevIssueData.statusId !== issueData.statusId
+      ) {
+        throw badRequest("You're not allowed to change the status");
+      }
+
       await LogProjectActivity({
         firestore: ctx.firestore,
         projectId: input.projectId,
@@ -220,9 +242,13 @@ export const issuesRouter = createTRPCRouter({
         return;
       }
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
-      const issueSnapshot = await issueRef.get();
-      if (!issueSnapshot.exists) {
-        throw notFound("Issue");
+      const prevIssueData = await getIssue(ctx.firestore, projectId, issueId);
+
+      if (
+        ctx.session.user.uid !== prevIssueData.reviewerId &&
+        prevIssueData.statusId !== statusId
+      ) {
+        throw badRequest("You're not allowed to change the status");
       }
 
       await LogProjectActivity({

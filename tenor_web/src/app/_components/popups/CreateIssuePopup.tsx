@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Popup from "~/app/_components/Popup";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
 import type { Size, Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
-import type { UserStoryPreview } from "~/lib/types/detailSchemas";
+import type { UserPreview, UserStoryPreview } from "~/lib/types/detailSchemas";
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import BacklogTagList from "~/app/_components/BacklogTagList";
 import { SizePicker } from "~/app/_components/inputs/pickers/SizePicker";
@@ -16,6 +16,9 @@ import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
+import { UserPicker } from "../inputs/pickers/UserPicker";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import MoreInformation from "../helps/MoreInformation";
 
 interface Props {
   showPopup: boolean;
@@ -29,6 +32,7 @@ export default function CreateIssuePopup({
   onIssueAdded,
 }: Props) {
   const { projectId } = useParams();
+  const { user } = useFirebaseAuth();
 
   const { mutateAsync: createIssue, isPending } =
     api.issues.createIssue.useMutation();
@@ -42,6 +46,7 @@ export default function CreateIssuePopup({
     sprint?: WithId<Sprint>;
     size?: Size | "";
     relatedUserStory?: UserStoryPreview;
+    reviewer?: WithId<UserPreview>;
   }>({
     name: "",
     description: "",
@@ -51,7 +56,28 @@ export default function CreateIssuePopup({
     size: undefined,
     sprint: undefined,
     relatedUserStory: undefined,
+    reviewer: user
+      ? {
+          id: user.uid,
+          displayName: user.displayName ?? "",
+          email: user.email ?? "",
+          photoURL: user.photoURL ?? "",
+        }
+      : undefined,
   });
+
+  useEffect(() => {
+    if (!user) return;
+    setCreateForm({
+      ...createForm,
+      reviewer: {
+        id: user.uid,
+        displayName: user.displayName ?? "",
+        email: user.email ?? "",
+        photoURL: user.photoURL ?? "",
+      },
+    });
+  }, [user]);
 
   const confirm = useConfirmation();
   const { predefinedAlerts } = useAlert();
@@ -65,12 +91,18 @@ export default function CreateIssuePopup({
     if (createForm.size !== undefined) return true;
     if (createForm.sprint !== undefined) return true;
     if (createForm.relatedUserStory !== undefined) return true;
+    if (createForm.reviewer?.id !== user?.uid) return true;
     return false;
   };
 
   const handleCreateIssue = async () => {
     if (createForm.name === "") {
       predefinedAlerts.issueNameError();
+      return;
+    }
+
+    if (createForm.reviewer === undefined) {
+      predefinedAlerts.issueNoReviewer();
       return;
     }
 
@@ -87,6 +119,7 @@ export default function CreateIssuePopup({
         sprintId: createForm.sprint?.id ?? "",
         relatedUserStoryId: createForm.relatedUserStory?.id ?? "", // FIXME
         stepsToRecreate: createForm.stepsToRecreate, // FIXME
+        reviewerId: createForm.reviewer.id,
       },
     });
     onIssueAdded(issueId);
@@ -152,6 +185,25 @@ export default function CreateIssuePopup({
               />
             </div>
           </div>
+
+          <div className="mt-4 flex items-center">
+            <h3 className="mr-1 text-lg font-semibold">Reviewer</h3>
+            <MoreInformation
+              size="small"
+              label="The reviewer is the only person allowed to modify the status of this issue"
+            />
+          </div>
+          <UserPicker
+            className="h-10"
+            placeholder="Unassigned"
+            onChange={(newUser) =>
+              setCreateForm({
+                ...createForm,
+                reviewer: newUser,
+              })
+            }
+            selectedOption={createForm.reviewer}
+          />
 
           <BacklogTagList
             tags={createForm.tags}

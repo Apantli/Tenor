@@ -37,6 +37,14 @@ export const automaticTag = {
   marksTaskAsDone: false,
 };
 
+export const awaitsReviewTag = {
+  name: "Awaits Review",
+  color: "#FF4D00",
+  deleted: false,
+  orderIndex: 3,
+  marksTaskAsDone: false,
+};
+
 export const isAutomatic = (status: StatusTag | undefined) => {
   return status === undefined || status.id === automaticTag.id;
 };
