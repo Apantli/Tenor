@@ -8,7 +8,6 @@ import CreateItemTagPopup from "./CreateItemTagPopup";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import ItemTagDetailPopup from "./ItemTagDetailPopup";
-import EditIcon from "@mui/icons-material/EditOutlined";
 import Table, { type TableColumns } from "~/app/_components/table/Table";
 import TagComponent from "~/app/_components/TagComponent";
 import useConfirmation from "~/app/_hooks/useConfirmation";
@@ -125,12 +124,6 @@ export default function ItemTagTable({ itemTagType }: Props) {
 
   const handleOpenTag = async function (tagId: string) {
     setEditMode(false);
-    setSelectedTagId(tagId);
-    setShowDetailTag(true);
-  };
-
-  const handleModifyTag = async function (tagId: string) {
-    setEditMode(true);
     setSelectedTagId(tagId);
     setShowDetailTag(true);
   };
@@ -283,18 +276,6 @@ export default function ItemTagTable({ itemTagType }: Props) {
     deleted: boolean;
   }>;
 
-  const extraOptions = [
-    {
-      label: "Edit",
-      icon: <EditIcon fontSize="small" />,
-      action: (ids: string[]) => {
-        if (ids.length === 1 && ids[0]) {
-          void handleModifyTag(ids[0]);
-        }
-      },
-    },
-  ];
-
   const onTagAdded = async () => {
     await invalidateQueriesAllTags(projectId as string);
   };
@@ -332,13 +313,10 @@ export default function ItemTagTable({ itemTagType }: Props) {
               })}
               data={tableData}
               columns={columns}
-              extraOptions={
-                permission >= permissionNumbers.write ? extraOptions : undefined
-              }
               deletable={permission >= permissionNumbers.write}
               onDelete={(ids, callback) => {
                 if (ids.length > 0) {
-                  void handleDeleteTag(ids, callback);
+                  void handleDeleteTag(ids as string[], callback);
                 } else {
                   callback(false);
                 }
