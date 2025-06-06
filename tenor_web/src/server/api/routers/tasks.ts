@@ -119,6 +119,27 @@ export const tasksRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, taskData: taskDataRaw } = input;
 
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        [
+          {
+            id: "this is a new task", // id to avoid collision
+            dependencyIds: taskDataRaw.dependencyIds,
+          },
+        ],
+        [
+          ...taskDataRaw.requiredByIds.map((dependencyId) => ({
+            parentId: dependencyId,
+            dependencyId: "this is a new task",
+          })),
+        ],
+      );
+
+      if (hasCycle) {
+        throw cyclicReference();
+      }
+
       const { taskData, id: newTaskId } = await ctx.firestore.runTransaction(
         async (transaction) => {
           const tasksRef = getTasksRef(ctx.firestore, projectId);
@@ -139,17 +160,6 @@ export const tasksRouter = createTRPCRouter({
           };
         },
       );
-
-      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
-        {
-          id: "this is a new task", // id to avoid collision
-          dependencyIds: taskData.dependencyIds,
-        },
-      ]);
-
-      if (hasCycle) {
-        throw cyclicReference();
-      }
 
       // Add dependency references
       await Promise.all(
@@ -288,10 +298,10 @@ export const tasksRouter = createTRPCRouter({
       // we only check if there's a cycle by adding the new dependencies (which are also the same as inverted requiredBy)
       const newDependencies = [
         ...addedDependencies.flatMap((dep) => [
-          { sourceId: taskId, targetId: dep },
+          { parentId: taskId, dependencyId: dep },
         ]),
         ...addedRequiredBy.flatMap((req) => [
-          { sourceId: req, targetId: taskId },
+          { parentId: req, dependencyId: taskId },
         ]),
       ];
       let hasCycle = false;
@@ -728,7 +738,7 @@ ${tagContext}\n\n`;
         ctx.firestore,
         projectId,
         undefined,
-        [{ sourceId: parentTaskId, targetId: dependencyTaskId }],
+        [{ parentId: parentTaskId, dependencyId: dependencyTaskId }],
       );
 
       if (hasCycle) {
