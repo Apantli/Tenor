@@ -26,7 +26,7 @@ export default function ProjectKanban() {
   const { projectId } = useParams();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  const { data: sprint } = api.sprints.getActiveSprint.useQuery({
+  const { data: sprint, isRefetching } = api.sprints.getActiveSprint.useQuery({
     projectId: projectId as string,
   });
 
@@ -55,13 +55,13 @@ export default function ProjectKanban() {
   const [advancedFilters, setAdvancedFilters] =
     useAdvancedSearchFilters("scrumboard");
   useMemo(() => {
-    if (sprint) {
+    if (sprint !== undefined) {
       setAdvancedFilters({
         ...advancedFilters,
-        sprint,
+        sprint: sprint ?? undefined,
       });
     }
-  }, [sprint]);
+  }, [isRefetching]);
 
   // HANDLES
   const onListAdded = async () => {

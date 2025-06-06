@@ -3,9 +3,6 @@ import { api } from "~/trpc/react";
 import type { PerformanceTime } from "~/lib/types/zodFirebaseSchema";
 import type z from "zod";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { timestampToDate } from "~/lib/helpers/parsers";
-import RefreshIcon from "@mui/icons-material/Refresh";
-import { useAlert } from "~/app/_hooks/useAlert";
 import { cn } from "~/lib/helpers/utils";
 interface PerformanceData {
   time: z.infer<typeof PerformanceTime>;
@@ -18,9 +15,6 @@ export const ProductivityCard = ({
   time,
   className,
 }: PerformanceData) => {
-  const { predefinedAlerts, alertTemplates } = useAlert();
-  const utils = api.useUtils();
-
   const {
     data: stats,
     isLoading,
@@ -32,24 +26,6 @@ export const ProductivityCard = ({
     },
     { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 },
   );
-  const { mutateAsync: recomputeProductivity, isPending } =
-    api.performance.recomputeProductivity.useMutation({
-      retry: 0,
-      onSuccess: async () => {
-        predefinedAlerts.productivityUpdateSuccess();
-        await utils.performance.getProductivity.invalidate({
-          projectId: projectId,
-          time: time,
-        });
-      },
-      onError: async (error) => {
-        alertTemplates.warning(error.message);
-        await utils.performance.getProductivity.invalidate({
-          projectId: projectId,
-          time: time,
-        });
-      },
-    });
 
   const radius = 70;
 
@@ -168,30 +144,6 @@ export const ProductivityCard = ({
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      )}
-      {stats?.fetchDate && (
-        <div className="mx-auto mt-10 flex flex-row gap-2 text-gray-500">
-          {!isPending && (
-            <RefreshIcon
-              onClick={async () => {
-                if (isPending) return;
-                await recomputeProductivity({
-                  projectId: projectId,
-                  time: time,
-                });
-              }}
-              className=""
-            />
-          )}
-
-          {isPending ? (
-            <>
-              <LoadingSpinner />
-            </>
-          ) : (
-            <p>Updated {timestampToDate(stats.fetchDate).toLocaleString()}</p>
           )}
         </div>
       )}

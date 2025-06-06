@@ -7,7 +7,7 @@ import { getUserStoriesRef } from "./userStories";
 import { getIssuesRef } from "./issues";
 import { getBacklogItemsRef } from "./backlogItems";
 import type { BacklogItemDetail } from "~/lib/types/detailSchemas";
-import { notFound } from "~/server/errors";
+import { badRequest, notFound } from "~/server/errors";
 
 /**
  * @function getSprintsRef
@@ -78,21 +78,25 @@ export const getCurrentSprint = async (
   firestore: Firestore,
   projectId: string,
 ) => {
-  // If project is deleted, return undefined
+  // If project is deleted, throw an error
   const projectRef = getProjectRef(firestore, projectId);
   const projectDoc = await projectRef.get();
-  if (!projectDoc.exists || projectDoc.data()?.deleted) {
-    console.warn(`Project ${projectId} is deleted or does not exist.`);
-    return undefined;
+  if (!projectDoc.exists) {
+    throw badRequest("Project is deleted or does not exist");
+  }
+  if (projectDoc.data()?.deleted) {
+    return null;
   }
   const sprints = await getSprints(firestore, projectId);
   const now = new Date();
-  return sprints.find((sprint) => {
-    return (
-      sprint.startDate.getTime() <= now.getTime() &&
-      sprint.endDate.getTime() >= now.getTime()
-    );
-  });
+  return (
+    sprints.find((sprint) => {
+      return (
+        sprint.startDate.getTime() <= now.getTime() &&
+        sprint.endDate.getTime() >= now.getTime()
+      );
+    }) ?? null
+  );
 };
 
 /**
