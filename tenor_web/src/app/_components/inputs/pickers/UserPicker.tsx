@@ -21,6 +21,7 @@ interface EditableBoxProps {
   disabled?: boolean;
   close?: boolean;
   allowSetSelf?: boolean;
+  removeDelete?: boolean;
 }
 
 export function UserPicker({
@@ -31,6 +32,7 @@ export function UserPicker({
   disabled = false,
   close = true,
   allowSetSelf,
+  removeDelete = false,
 }: EditableBoxProps) {
   const { projectId } = useParams();
   const { data: userCols } = api.users.getTeamMembers.useQuery({
@@ -87,7 +89,7 @@ export function UserPicker({
       >
         {selectedOption ? (
           <>
-            <div className="flex flex-grow items-center gap-2 overflow-hidden">
+            <div className="flex flex-grow items-center gap-2 overflow-hidden py-1">
               <ProfilePicture user={selectedOption} hideTooltip />
 
               <span className="flex-1 truncate text-left font-medium text-gray-700">
@@ -98,12 +100,12 @@ export function UserPicker({
               onClick={handleClear}
               className="ml-2 text-gray-500 transition-colors hover:text-gray-700"
             >
-              {!disabled && <CloseIcon className="h-5 w-5" />}
+              {!disabled && !removeDelete && <CloseIcon className="h-5 w-5" />}
             </div>
           </>
         ) : (
           <>
-            <span className="font-medium text-gray-700">
+            <span className="pl-1 text-app-text">
               {disabled ? "None" : placeholder}
             </span>
             {!disabled && (

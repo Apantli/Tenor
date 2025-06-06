@@ -80,6 +80,7 @@ export type IssueDetail = {
   relatedUserStory?: UserStoryPreview;
   tasks: TaskPreview[];
   sprint?: WithId<Sprint>;
+  reviewer: WithId<UserPreview>;
 };
 
 export type TaskDetail = {

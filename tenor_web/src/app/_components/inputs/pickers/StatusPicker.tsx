@@ -12,6 +12,7 @@ interface Props {
   onChange: (status: StatusTag) => void;
   className?: string;
   showAutomaticStatus?: boolean;
+  showAwaitingReview?: boolean;
   disabled?: boolean;
 }
 
@@ -20,10 +21,12 @@ export default function StatusPicker({
   onChange,
   className,
   disabled,
+  showAwaitingReview = false,
 }: Props) {
   const { projectId } = useParams();
   const { data: statusValues } = api.settings.getStatusTypes.useQuery({
     projectId: projectId as string,
+    showAwaitingReview,
   });
 
   return (

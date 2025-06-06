@@ -55,6 +55,7 @@ export default function BacklogItemCardColumn({
       assigneeIds: item.assigneeIds,
       sprintId: item.sprintId,
       priorityId: item.priorityId,
+      reviewerId: undefined,
     }))
     .filter((val: KanbanItemCard | undefined) => {
       return matchesSearchFilters(val, "", advancedFilters);

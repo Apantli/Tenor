@@ -42,7 +42,7 @@ import { getBacklogTag, getPriorityByNameOrId } from "../shortcuts/tags";
 import type { Edge, Node } from "@xyflow/react";
 import { LogProjectActivity } from "~/server/api/lib/projectEventLogger";
 import { getSprintRef } from "../shortcuts/sprints";
-import { cyclicReference, notFound } from "~/server/errors";
+import { badRequest, cyclicReference, notFound } from "~/server/errors";
 
 export const userStoriesRouter = createTRPCRouter({
   /**
@@ -107,12 +107,24 @@ export const userStoriesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, userStoryData: userStoryDataRaw } = input;
 
-      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
-        {
-          id: "this is a new user story", // id to avoid collision
-          dependencyIds: userStoryDataRaw.dependencyIds,
-        },
-      ]);
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        // new user story
+        [
+          {
+            id: "this is a new user story", // id to avoid collision
+            dependencyIds: userStoryDataRaw.dependencyIds,
+          },
+        ],
+        // required by dependencies
+        [
+          ...userStoryDataRaw.requiredByIds.map((dependencyId) => ({
+            parentUsId: dependencyId,
+            dependencyUsId: "this is a new user story",
+          })),
+        ],
+      );
 
       if (hasCycle) {
         throw cyclicReference();
@@ -204,6 +216,10 @@ export const userStoriesRouter = createTRPCRouter({
         projectId,
         userStoryId,
       );
+
+      if (userStoryData.statusId === "awaits_review") {
+        throw badRequest("User stories can't have that status");
+      }
 
       // Check the difference in dependency and requiredBy arrays
       const addedDependencies = userStoryData.dependencyIds.filter(
@@ -417,6 +433,10 @@ export const userStoriesRouter = createTRPCRouter({
         statusId === undefined
       ) {
         return;
+      }
+
+      if (statusId === "awaits_review") {
+        throw badRequest("User stories can't have that status");
       }
 
       const userStoryRef = getUserStoryRef(

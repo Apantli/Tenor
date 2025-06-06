@@ -89,11 +89,12 @@ export const MemberDetailsCard = ({
         className="absolute right-2 top-2 ml-auto cursor-pointer text-gray-500"
         fontSize="large"
       />
-      <div className="flex flex-row gap-3">
+      <div className="flex flex-row gap-3 pl-8">
         <ProfilePicture
           user={member}
           hideTooltip
-          pictureClassName="h-14 w-14 2xl:h-24 2xl:w-24 ml-5 my-auto text-xl 2xl:text-5xl"
+          size={60}
+          pictureClassName="my-auto"
         />
         <div className="my-auto flex flex-col justify-start overflow-hidden pl-4 pr-4">
           <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold capitalize xl:text-2xl">

@@ -10,6 +10,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useState } from "react";
 import InputCheckbox from "~/app/_components/inputs/InputCheckbox";
 import { useParams } from "next/navigation";
+import CheckIcon from "@mui/icons-material/Check";
 
 interface Props {
   editable: boolean;
@@ -50,12 +51,15 @@ export const TaskCalendarCard = ({
   const { data: users } = api.users.getUsers.useQuery({
     projectId: projectId as string,
   });
+  const { data: statusTypes } = api.settings.getStatusTypes.useQuery({
+    projectId: projectId as string,
+  });
   const user = users?.find((u) => u.id === task.assigneeId);
 
   return (
     <div
       className={cn(
-        "flex h-6 w-full cursor-pointer items-center rounded-lg border border-gray-300 bg-white p-0.5 text-xs font-semibold",
+        "flex h-6 w-full cursor-pointer items-center rounded-lg border border-gray-300 bg-white p-0.5 py-4 text-xs font-semibold",
         isDragging && "bg-gray-100",
         selectedTasksId.includes(task.id)
           ? "bg-app-primary text-white"
@@ -96,13 +100,18 @@ export const TaskCalendarCard = ({
               />
             </div>
           )}
-          <p>{formatTaskScrumId(task.scrumId)}</p>
+          <p className="text-sm">{formatTaskScrumId(task.scrumId)}</p>
         </div>
         <div className="flex items-center">
-          {user && (
-            <span className="hidden lg:inline">
-              <ProfilePicture user={user} pictureClassName="h-4 w-4" />
-            </span>
+          {statusTypes?.find((status) => status.id === task.statusId)
+            ?.marksTaskAsDone ? (
+            <CheckIcon fontSize="small" />
+          ) : (
+            user && (
+              <span className="hidden lg:inline">
+                <ProfilePicture user={user} size={20} />
+              </span>
+            )
           )}
           <ChevronRightIcon />
         </div>

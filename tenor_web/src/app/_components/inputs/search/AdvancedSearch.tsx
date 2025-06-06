@@ -154,7 +154,7 @@ export default function AdvancedSearch({
           <div className="flex-[2] p-2">
             <h1 className="font-semibold">Assignee</h1>
             <UserPicker
-              className="h-10 max-w-[170px]"
+              className="h-10 max-w-[170px] rounded-full hover:bg-white"
               selectedOption={advancedFilters.assignee}
               placeholder="Select assignee"
               onChange={(assignee) => {

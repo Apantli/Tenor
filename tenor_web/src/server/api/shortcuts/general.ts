@@ -21,7 +21,7 @@ import {
 import { getPriority, getStatusTypes } from "./tags";
 import { getProjectContext } from "./ai";
 import { getCurrentSprint, getSprint, getTasksFromSprint } from "./sprints";
-import { getGlobalUserRef, getUsers } from "./users";
+import { getGlobalUserRef, getUserRef, getUsers } from "./users";
 import type * as admin from "firebase-admin";
 import type { z } from "zod";
 import { getTask } from "./tasks";
@@ -32,6 +32,7 @@ import { getEpic } from "./epics";
 import { notFound } from "~/server/errors";
 import { getRequirement } from "./requirements";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
+import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
 
 /**
  * @function getProjectsRef
@@ -152,6 +153,52 @@ export const getRoles = async (firestore: Firestore, projectId: string) => {
     } as WithId<Role>;
   });
   return roles;
+};
+
+export const getUserRole = async (
+  firestore: Firestore,
+  projectId: string,
+  userId: string,
+) => {
+  if (!projectId) return ownerRole;
+
+  const userRef = getUserRef(firestore, projectId, userId);
+  const userDoc = await userRef.get();
+
+  if (!userDoc.exists) {
+    throw new Error("User not found");
+  }
+  const userData = userDoc.data();
+  if (!userData) {
+    throw new Error("User data not found");
+  }
+
+  if (userData.roleId == null) {
+    return emptyRole;
+  }
+
+  if (userData.roleId === "owner") {
+    return ownerRole;
+  }
+
+  // Get role
+  const roleDoc = await getRoleRef(
+    firestore,
+    projectId,
+    userData.roleId as string,
+  ).get();
+  if (!roleDoc.exists) {
+    throw new Error("Role not found");
+  }
+  const roleData = roleDoc.data();
+  if (!roleData) {
+    throw new Error("Role data not found");
+  }
+
+  return {
+    id: roleDoc.id,
+    ...RoleSchema.parse(roleData),
+  } as WithId<RoleDetail>;
 };
 
 export const getGenericBacklogItemContext = async (
