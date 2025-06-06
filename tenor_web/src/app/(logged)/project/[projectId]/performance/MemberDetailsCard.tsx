@@ -87,7 +87,7 @@ export const MemberDetailsCard = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex w-full flex-col overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:pb-6 2xl:pt-6",
+        "relative mx-auto flex h-[75%] max-h-[75%] w-full flex-col gap-y-3 overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:pb-6 2xl:pt-6",
         className,
       )}
     >
@@ -118,7 +118,7 @@ export const MemberDetailsCard = ({
         </div>
       </div>
 
-      <div className="mx-8 flex flex-col">
+      <div className="mx-8 my-auto flex flex-col">
         <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
           Contribution overview
         </h4>
