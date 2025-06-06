@@ -87,10 +87,20 @@ export const sprintsRouter = createTRPCRouter({
         },
       );
 
-      const didReorderSprints = await updateSprintNumberOrder(
+      let didReorderSprints = await updateSprintNumberOrder(
         ctx.firestore,
         projectId,
       );
+
+      // get the last sprint, if same as new added, reorder sprints didnt happen
+      const lastSprint = await getSprintsRef(ctx.firestore, projectId)
+        .where("deleted", "==", false)
+        .orderBy("number", "desc")
+        .limit(1)
+        .get();
+      if (lastSprint.docs[0]?.id === newSprintId) {
+        didReorderSprints = false;
+      }
 
       await LogProjectActivity({
         firestore: ctx.firestore,
