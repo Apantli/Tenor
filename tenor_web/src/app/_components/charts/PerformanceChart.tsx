@@ -45,7 +45,7 @@ const spec1: VisualizationSpec = {
           fill: { value: "#1a6e44" },
         },
         update: {
-          interpolate: { value: "basis" },
+          interpolate: { value: "monotone" },
           fillOpacity: { value: 0.2 },
         },
       },
@@ -64,7 +64,7 @@ const spec1: VisualizationSpec = {
           // },
         },
         update: {
-          interpolate: { value: "basis" },
+          interpolate: { value: "monotone" },
         },
       },
     },

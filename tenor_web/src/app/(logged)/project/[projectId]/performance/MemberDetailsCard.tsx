@@ -123,8 +123,8 @@ export const MemberDetailsCard = ({
           Contribution overview
         </h4>
         {loadingContributions && (
-          <div className="flex flex-row gap-2">
-            <LoadingSpinner />
+          <div className="mx-auto flex flex-row gap-2">
+            <LoadingSpinner color="primary" />
           </div>
         )}
         {!loadingContributions && (
@@ -149,7 +149,7 @@ export const SentimentIcon = ({
   isLoading: boolean;
 }) => {
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner color="primary" />;
   }
   if (!sentiment) {
     return (
