@@ -7,7 +7,7 @@ import { getUserStoriesRef } from "./userStories";
 import { getIssuesRef } from "./issues";
 import { getBacklogItemsRef } from "./backlogItems";
 import type { BacklogItemDetail } from "~/lib/types/detailSchemas";
-import { badRequest, notFound } from "~/server/errors";
+import { notFound } from "~/server/errors";
 
 /**
  * @function getSprintsRef
