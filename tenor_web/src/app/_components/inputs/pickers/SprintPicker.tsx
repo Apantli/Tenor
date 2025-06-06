@@ -17,7 +17,7 @@ export function SprintPicker({
   sprintId: selectedOption = undefined,
   onChange,
   disabled = false,
-  noSelectionLabel = "Unassgined",
+  noSelectionLabel = "Unassigned",
 }: EditableBoxProps) {
   const { projectId } = useParams();
 

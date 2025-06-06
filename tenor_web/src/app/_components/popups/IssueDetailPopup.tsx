@@ -309,6 +309,7 @@ export default function IssueDetailPopup({
                   />
                   <ItemAutomaticStatus
                     isAutomatic={isAutomatic(issueDetail.status)}
+                    disabled={permission < permissionNumbers.write}
                     onChange={async (automatic) => {
                       if (automatic) {
                         await handleSave({

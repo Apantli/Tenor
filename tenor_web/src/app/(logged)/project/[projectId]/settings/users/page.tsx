@@ -18,6 +18,7 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 import { useInvalidateTeamMembers } from "~/app/_hooks/invalidateHooks";
+import useConfirmation from "~/app/_hooks/useConfirmation";
 
 export default function ProjectUsers() {
   const { projectId } = useParams();
@@ -32,6 +33,7 @@ export default function ProjectUsers() {
   });
 
   const invalidateTeamMembers = useInvalidateTeamMembers();
+  const confirm = useConfirmation();
 
   const permission: Permission = useMemo(() => {
     return checkPermissions(
@@ -100,6 +102,16 @@ export default function ProjectUsers() {
   };
 
   const handleRemoveUser = async function (ids: (string | number)[]) {
+    if (
+      !(await confirm(
+        "Are you sure?",
+        "This action will delete the user(s).",
+        "Delete",
+        "Cancel",
+      ))
+    ) {
+      return;
+    }
     if (!teamMembers) return;
     //check if any of the ids belong to the owner
     ids = ids.filter((id) => {
