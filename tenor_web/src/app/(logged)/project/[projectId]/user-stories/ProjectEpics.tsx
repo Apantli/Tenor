@@ -376,16 +376,6 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
             disablePassiveDismiss={isEditEpicModified()}
             footer={
               <div className="flex items-start gap-2">
-                {!editEpic && (
-                  <SecondaryButton
-                    // FIXME: set filter for user stories related to epic
-                    // FIXME: Implement permission
-                    onClick={() => handleEditDismiss()}
-                  >
-                    Show user stories
-                  </SecondaryButton>
-                )}
-
                 {permission >= permissionNumbers.write && (
                   <DeleteButton
                     loading={deletingEpic}
