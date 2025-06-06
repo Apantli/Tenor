@@ -26,6 +26,7 @@ import {
 } from "~/app/_hooks/invalidateHooks";
 import type { AIGeneratedRequirement } from "./RequirementsTable";
 import { cn } from "~/lib/helpers/utils";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 interface Props {
   requirementId: string;
@@ -89,6 +90,8 @@ export default function RequirementDetailPopup({
   });
 
   const { predefinedAlerts } = useAlert();
+  
+  const checkTitleLimit = useCharacterLimit("Title", 80);
 
   useEffect(() => {
     if (!requirementDetail) return;
@@ -329,18 +332,20 @@ export default function RequirementDetailPopup({
       ) : (
         <div className="flex flex-col gap-4">
           {editMode ? (
-            <div className="pt-4">
+            <div className="pt-4 wrap-properly">
               <InputTextField
                 id="requirement-title"
                 label="Title"
                 containerClassName="mb-4"
                 value={editForm.name}
-                onChange={(e) =>
-                  setEditForm((prev) => ({
-                    ...prev,
-                    name: e.target.value,
-                  }))
-                }
+                onChange={(e) => {
+                  if (checkTitleLimit(e.target.value)){
+                      setEditForm((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
+                }}
                 name="name"
                 placeholder="Briefly describe the requirement..."
                 data-cy="requirement-name-input"

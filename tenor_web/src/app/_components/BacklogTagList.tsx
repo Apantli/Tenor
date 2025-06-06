@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import Check from "@mui/icons-material/Check";
 import { cn } from "~/lib/helpers/utils";
 import { generateRandomTagColor } from "~/lib/helpers/colorUtils";
+import useCharacterLimit from "../_hooks/useCharacterLimit";
 
 interface Props {
   tags: Tag[];
@@ -76,6 +77,8 @@ export default function BacklogTagList({ tags, onChange, disabled }: Props) {
     }
   };
 
+  const checkTitleLimit = useCharacterLimit("Tag", 20);
+
   return (
     <div>
       <div className="mt-4 flex items-center justify-between">
@@ -94,7 +97,11 @@ export default function BacklogTagList({ tags, onChange, disabled }: Props) {
                 className="mb-1 w-full rounded-md border border-app-border px-2 py-1 text-sm outline-none"
                 placeholder="Search or create new..."
                 value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
+                onChange={(e) =>{
+                  if (checkTitleLimit(e.target.value)) {
+                    setSearchValue(e.target.value)
+                  }
+                }}
               />
             </DropdownItem>
             <div className="w-full whitespace-nowrap text-left">

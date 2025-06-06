@@ -369,6 +369,7 @@ export default function BacklogItemDetailPopup({
                   />
                   <ItemAutomaticStatus
                     isAutomatic={isAutomatic(backlogItemDetail.status)}
+                    disabled={permission < permissionNumbers.write}
                     onChange={async (automatic) => {
                       if (automatic) {
                         await handleSave({

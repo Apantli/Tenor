@@ -14,6 +14,7 @@ import RequirementTypePicker from "~/app/_components/inputs/pickers/RequirementT
 import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import RequirementFocusPicker from "~/app/_components/inputs/pickers/RequirementFocusPicker";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 interface Props {
   showPopup: boolean;
@@ -51,6 +52,8 @@ export default function CreateRequirementPopup({
 
   const confirm = useConfirmation();
   const { predefinedAlerts } = useAlert();
+  
+  const checkTitleLimit = useCharacterLimit("Title", 80);
 
   const isModified = () => {
     if (createForm.name !== "") return true;
@@ -145,18 +148,17 @@ export default function CreateRequirementPopup({
         </PrimaryButton>
       }
     >
-      <div className="pt-4">
+      <div className="pt-4 wrap-properly">
         <InputTextField
           id="requirement-title"
           label="Title"
           containerClassName="mb-4"
           value={createForm.name}
-          onChange={(e) =>
-            setCreateForm((prev) => ({
-              ...prev,
-              name: e.target.value,
-            }))
-          }
+          onChange={(e) => {
+            if (checkTitleLimit(e.target.value)) {
+              setCreateForm({...createForm, name: e.target.value });
+            }
+          }}
           name="name"
           placeholder="Briefly describe the requirement..."
           data-cy="requirement-name-input"

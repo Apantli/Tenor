@@ -59,12 +59,12 @@ export default function ProjectInfo({
     <div className="flex h-full w-full flex-col items-center gap-3">
       <div className="flex w-full flex-row items-start justify-start gap-3">
         <ProjectPicture project={{ ...project }} hideTooltip />
-        <div>
+        <div className="wrap-properly">
           <h1 className="text-2xl font-semibold">{projectTitle}</h1>
         </div>
       </div>
       <div className="relative h-full w-full overflow-y-auto">
-        <div className="flex w-full flex-col gap-2 text-left">
+        <div className="flex w-full flex-col gap-2 text-left wrap-properly">
           <Markdown>
             {shouldShowFullDescription ? projectDescription : previewText}
           </Markdown>

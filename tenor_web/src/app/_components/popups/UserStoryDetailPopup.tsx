@@ -414,6 +414,7 @@ export default function UserStoryDetailPopup({
                   />
                   <ItemAutomaticStatus
                     isAutomatic={isAutomatic(userStoryDetail.status)}
+                    disabled={permission < permissionNumbers.write}
                     onChange={async (automatic) => {
                       if (automatic) {
                         await handleSave({

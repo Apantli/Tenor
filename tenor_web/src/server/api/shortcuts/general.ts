@@ -313,30 +313,27 @@ export const computeTopProjectStatus = async (
 ) => {
   let projects = await getTopProjects(firestore, userId);
   if (projects.length === 0) {
-    return undefined;
+    return [];
   }
 
   projects = projects.slice(0, count);
 
-  let projectStatus = await Promise.all(
-    projects.map(async (projectId) => {
-      const status = await getProjectStatus(
-        firestore,
-        projectId,
-        adminFirestore,
-      );
+  const projectStatus = (
+    await Promise.all(
+      projects.map(async (projectId) => {
+        const status = await getProjectStatus(
+          firestore,
+          projectId,
+          adminFirestore,
+        );
 
-      return {
-        id: projectId,
-        status,
-      };
-    }),
-  );
-
-  // Filter out projects with no tasks
-  projectStatus = projectStatus.filter(
-    (project) => project.status.taskCount !== 0,
-  );
+        return {
+          id: projectId,
+          status,
+        };
+      }),
+    )
+  ).filter((project) => project.status.taskCount !== 0);
 
   const topProjects = projectStatus.map((project) => ({
     projectId: project.id,
