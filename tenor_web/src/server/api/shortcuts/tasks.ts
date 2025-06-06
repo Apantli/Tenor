@@ -775,6 +775,10 @@ export const getBurndownData = async (
     });
   }
 
+  if (actualBurndown[0]) {
+    actualBurndown[0].storyPoints = totalStoryPoints; // Ensure the first point matches the total story points
+  }
+
   // Combine and sort both lines for chart display
   return [...idealBurndownLine, ...actualBurndown].sort(
     (a, b) => a.sprintDay - b.sprintDay || a.seriesType - b.seriesType,
