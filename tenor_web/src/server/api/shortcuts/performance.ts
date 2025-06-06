@@ -108,13 +108,13 @@ export const getContributionOverview = async (
     );
   } else {
     if (!sprintId) {
-      return undefined;
+      throw badRequest(
+        "Sprint ID is required for time other than Week or Month",
+      );
     }
     // Get start and end date from sprint
     const sprint = await getSprint(firestore, projectId, sprintId);
-    if (!sprint) {
-      return undefined;
-    }
+
     activityRef = getActivityRef(firestore, projectId)
       .where("date", ">=", sprint?.startDate)
       .where("date", "<=", sprint.endDate);
