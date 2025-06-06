@@ -127,7 +127,6 @@ export const MemberDetailsCard = ({
               <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
                 <DynamicContributionPieChart
                   data={formattedUserContributions}
-                  // scaleFactor={formattedUserContributions.length > 0 ? 0.8 : 1}
                 />
                 <ContributionLegend data={formattedUserContributions} />
               </div>

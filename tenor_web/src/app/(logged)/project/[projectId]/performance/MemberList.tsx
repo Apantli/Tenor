@@ -95,6 +95,7 @@ const MemberItem = ({
     projectId: projectId,
     userId: member.id,
     time: time,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
 
   const formattedData = data?.map((d) => ({

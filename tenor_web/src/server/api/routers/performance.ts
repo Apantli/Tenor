@@ -48,7 +48,12 @@ export const performanceRouter = createTRPCRouter({
 
   getUserContributions: roleRequiredProcedure(performancePermissions, "read")
     .input(
-      z.object({ projectId: z.string(), userId: z.string(), time: z.string() }),
+      z.object({
+        projectId: z.string(),
+        userId: z.string(),
+        time: z.string(),
+        timezone: z.string().optional(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       let sprint: WithId<Sprint> | null = null;
@@ -65,6 +70,7 @@ export const performanceRouter = createTRPCRouter({
         input.userId,
         input.time,
         sprint?.id,
+        input.timezone,
       );
       return activities;
     }),
