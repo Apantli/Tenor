@@ -13,7 +13,6 @@ import { toBase64 } from "~/lib/helpers/base64";
 import HelpIcon from "@mui/icons-material/Help";
 import { env } from "~/env";
 import type { FileWithTokens } from "~/lib/types/firebaseSchemas";
-import LoadingSpinner from "../LoadingSpinner";
 
 interface Props {
   label: string;
@@ -156,10 +155,11 @@ export default function FileList({
           {!disabled && (
             <PrimaryButton
               onClick={openFilePicker}
-              className="flex max-h-[40px] w-[180px] items-center"
+              className="flex max-h-[40px] items-center"
               disabled={isProcessing}
+              loading={isProcessing}
             >
-              {isProcessing ? <LoadingSpinner /> : "Add Context File +"}
+              Add Context File
             </PrimaryButton>
           )}
 

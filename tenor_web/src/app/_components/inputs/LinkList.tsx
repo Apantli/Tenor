@@ -44,7 +44,7 @@ export default function LinkList({
             label={
               <PrimaryButton
                 asSpan // Needed because the dropdown label is automatically a button and we can't nest buttons
-                className="flex max-h-[40px] w-[180px] items-center"
+                className="flex max-h-[40px] items-center"
                 onClick={() => {
                   if (insertLinkRef.current) {
                     insertLinkRef.current.focus();
