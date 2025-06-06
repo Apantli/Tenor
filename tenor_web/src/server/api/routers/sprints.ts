@@ -71,11 +71,13 @@ export const sprintsRouter = createTRPCRouter({
         async (transaction) => {
           const sprintsRef = getSprintsRef(ctx.firestore, projectId);
 
-          const sprintCount = await transaction.get(sprintsRef.count());
+          const sprintCount = await transaction.get(
+            sprintsRef.where("deleted", "==", false).count(),
+          );
 
           const sprintData = SprintSchema.parse({
             ...sprintDataRaw,
-            scrumId: sprintCount.data().count + 1,
+            number: sprintCount.data().count + 1,
           });
           const docRef = sprintsRef.doc();
 

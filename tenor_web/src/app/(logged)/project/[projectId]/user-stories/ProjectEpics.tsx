@@ -230,7 +230,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
                   <h3 className="text-xl font-semibold">
                     {formatEpicScrumId(epic.scrumId)}
                   </h3>
-                  <p className="text-xl">{epic.name}</p>
+                  <p className="text-xl wrap-properly">{epic.name}</p>
                 </div>
               </div>
             ))}
@@ -282,6 +282,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
                 type="text"
                 placeholder="Briefly describe your epic..."
                 label="Epic name"
+                className="wrap-properly"
                 value={newEpicName}
                 onChange={(e) => {
                   if (checkTitleLimit(e.target.value)) {
@@ -445,7 +446,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
               )}
 
               {!epicLoading && editEpic && (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4 wrap-properly">
                   <InputTextField
                     id="epic-name-field"
                     label="Epic name"
