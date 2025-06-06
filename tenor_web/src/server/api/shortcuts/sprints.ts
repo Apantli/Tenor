@@ -82,7 +82,7 @@ export const getCurrentSprint = async (
   const projectRef = getProjectRef(firestore, projectId);
   const projectDoc = await projectRef.get();
   if (!projectDoc.exists) {
-    throw badRequest("Project is deleted or does not exist");
+    throw notFound("Project");
   }
   if (projectDoc.data()?.deleted) {
     return null;
