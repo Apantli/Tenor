@@ -71,11 +71,13 @@ export const sprintsRouter = createTRPCRouter({
         async (transaction) => {
           const sprintsRef = getSprintsRef(ctx.firestore, projectId);
 
-          const sprintCount = await transaction.get(sprintsRef.count());
+          const sprintCount = await transaction.get(
+            sprintsRef.where("deleted", "==", false).count(),
+          );
 
           const sprintData = SprintSchema.parse({
             ...sprintDataRaw,
-            scrumId: sprintCount.data().count + 1,
+            number: sprintCount.data().count + 1,
           });
           const docRef = sprintsRef.doc();
 
@@ -87,20 +89,10 @@ export const sprintsRouter = createTRPCRouter({
         },
       );
 
-      let didReorderSprints = await updateSprintNumberOrder(
+      const didReorderSprints = await updateSprintNumberOrder(
         ctx.firestore,
         projectId,
       );
-
-      // get the last sprint, if same as new added, reorder sprints didnt happen
-      const lastSprint = await getSprintsRef(ctx.firestore, projectId)
-        .where("deleted", "==", false)
-        .orderBy("number", "desc")
-        .limit(1)
-        .get();
-      if (lastSprint.docs[0]?.id === newSprintId) {
-        didReorderSprints = false;
-      }
 
       await LogProjectActivity({
         firestore: ctx.firestore,
