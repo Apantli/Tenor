@@ -23,13 +23,13 @@ export default function SignInGithub() {
       prompt: "select_account",
     });
     try {
+      setIsSigningIn(true);
       const credential = await signInWithPopup(auth, provider);
       const token = await credential.user.getIdToken();
       const githubCredential =
         GithubAuthProvider.credentialFromResult(credential);
       const githubAccessToken = githubCredential?.accessToken;
 
-      setIsSigningIn(true);
       const res = await login({
         token,
         githubAccessToken,
