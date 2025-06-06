@@ -26,7 +26,7 @@ export default function ProjectKanban() {
   const { projectId } = useParams();
   const invalidateQueriesAllTasks = useInvalidateQueriesAllTasks();
 
-  const { data: sprint, isRefetching } = api.sprints.getActiveSprint.useQuery({
+  const { data: sprint, isFetching } = api.sprints.getActiveSprint.useQuery({
     projectId: projectId as string,
   });
 
@@ -61,7 +61,7 @@ export default function ProjectKanban() {
         sprint: sprint ?? undefined,
       });
     }
-  }, [isRefetching]);
+  }, [isFetching]);
 
   // HANDLES
   const onListAdded = async () => {
