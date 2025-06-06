@@ -4,11 +4,13 @@ import type { StatusTag, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import { StatusTagSchema, TagSchema } from "~/lib/types/zodFirebaseSchema";
 import { getTasksFromItem } from "./tasks";
 import {
+  awaitsReviewTag,
   doingTagName,
   doneTagName,
   todoTagName,
 } from "~/lib/defaultValues/status";
 import { notFound } from "~/server/errors";
+import { isIssue } from "./issues";
 
 /**
  * @function getPrioritiesRef
@@ -144,17 +146,37 @@ export const getStatusTypeRef = (
 export const getStatusTypes = async (
   firestore: Firestore,
   projectId: string,
+  includeAwaitsReview = false,
 ) => {
   const statusesRef = getStatusTypesRef(firestore, projectId)
     .where("deleted", "==", false)
     .orderBy("orderIndex", "asc");
   const statusesSnapshot = await statusesRef.get();
-  const statuses: WithId<StatusTag>[] = statusesSnapshot.docs.map((doc) => {
-    return {
-      id: doc.id,
-      ...StatusTagSchema.parse(doc.data()),
-    } as WithId<StatusTag>;
-  });
+
+  let hasAwaitsReview = false;
+  const statuses: WithId<StatusTag>[] = statusesSnapshot.docs
+    .map((doc) => {
+      if (doc.id === "awaits_review") {
+        hasAwaitsReview = true;
+        if (!includeAwaitsReview) return undefined;
+      }
+      return {
+        id: doc.id,
+        ...StatusTagSchema.parse(doc.data()),
+      } as WithId<StatusTag>;
+    })
+    .filter((status) => status !== undefined);
+
+  // Make sure older projects get the new status type if they don't have it
+  if (!hasAwaitsReview) {
+    await getStatusTypesRef(firestore, projectId)
+      .doc("awaits_review")
+      .set(awaitsReviewTag);
+    if (includeAwaitsReview) {
+      statuses.push({ ...awaitsReviewTag, id: "awaits_review" });
+    }
+  }
+
   return statuses;
 };
 
@@ -288,6 +310,8 @@ export const getAutomaticStatusId = async (
   // Get all tasks for this item
   const tasks = await getTasksFromItem(firestore, projectId, itemId);
 
+  const isItemIssue = await isIssue(firestore, projectId, itemId);
+
   // Rule 1: No tasks? Item is set to TODO
   if (tasks.length === 0) {
     // Find the "Todo" status tag
@@ -308,6 +332,20 @@ export const getAutomaticStatusId = async (
     }
   }
 
+  // Rule 1.5 (for issues only): All tasks completed? Issue awaits review
+  const doneStatusIds = statusTags
+    .filter((status) => status.marksTaskAsDone)
+    .map((status) => status.id);
+  if (
+    isItemIssue &&
+    tasks.length > 0 &&
+    tasks.every(
+      (task) => task.statusId && doneStatusIds.includes(task.statusId),
+    )
+  ) {
+    return "awaits_review"; // Special status type
+  }
+
   // Rule 2: All tasks have the same status? The item takes that status
   const taskStatusIds = tasks
     .map((task) => task.statusId)
@@ -320,10 +358,6 @@ export const getAutomaticStatusId = async (
   }
 
   // Rule 3: All tasks are resolved? The item is set to Done
-  const doneStatusIds = statusTags
-    .filter((status) => status.marksTaskAsDone)
-    .map((status) => status.id);
-
   if (
     tasks.length > 0 &&
     tasks.every(

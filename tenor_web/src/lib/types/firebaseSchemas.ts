@@ -238,6 +238,7 @@ export interface Task extends BasicInfo {
 export interface Issue extends BacklogItem {
   relatedUserStoryId: string;
   stepsToRecreate: string; // Markdown
+  reviewerId: string;
 }
 
 export interface Requirement extends BasicInfo {

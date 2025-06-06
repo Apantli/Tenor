@@ -175,11 +175,7 @@ export default function ProjectSprintRetrospectivePage() {
 
               <h2 className="mb-4 text-2xl font-semibold">Personal Progress</h2>
               <div className="mb-6 flex items-center gap-6">
-                <ProfilePicture
-                  user={user}
-                  className="h-10 w-10 min-w-10 text-xl"
-                  hideTooltip
-                />
+                <ProfilePicture user={user} size={40} hideTooltip />
                 <div>
                   <p className="text-l font-semibold">{userName}</p>
                 </div>

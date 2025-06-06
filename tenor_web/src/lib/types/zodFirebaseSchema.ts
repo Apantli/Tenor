@@ -219,6 +219,7 @@ export const TaskSchema = BasicInfoSchema.extend({
 export const IssueSchema = BacklogItemSchema.extend({
   relatedUserStoryId: z.string(),
   stepsToRecreate: z.string(),
+  reviewerId: z.string().default(""),
 });
 
 export const RequirementSchema = BasicInfoSchema.extend({

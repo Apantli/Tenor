@@ -176,7 +176,10 @@ export default function StatusDetailPopup({
   };
 
   const handleDelete = async () => {
-    if (statusDetail && ["Todo", "Doing", "Done"].includes(statusDetail.name)) {
+    if (
+      statusDetail &&
+      ["Todo", "Doing", "Done", "Awaits Review"].includes(statusDetail.name)
+    ) {
       predefinedAlerts.statusNameNotEditableError();
       return;
     }

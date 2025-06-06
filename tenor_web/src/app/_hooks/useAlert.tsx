@@ -191,6 +191,8 @@ export const useAlert = () => {
     // #region Issues
     issueNameError: () =>
       alertTemplates.oops("Please provide a name for the issue."),
+    issueNoReviewer: () =>
+      alertTemplates.oops("Please provide a reviewer for the issue."),
     issueCreateError: () =>
       alertTemplates.error("Failed to create issue. Please try again."),
     // #endregion
@@ -256,6 +258,14 @@ export const useAlert = () => {
     sprintDateCollideError: (sprintNumber: number) =>
       alertTemplates.oops(
         `The selected dates collide with Sprint ${sprintNumber}. Please choose different dates.`,
+      ),
+    // #endregion
+    // #region Kanban
+    assignedUnallowedStatus: () =>
+      alertTemplates.oops("Only issues can be assigned to that status."),
+    notAReviewer: () =>
+      alertTemplates.oops(
+        "You can't change the status of the issue because you're not the reviewer.",
       ),
     // #endregion
     // #region Context

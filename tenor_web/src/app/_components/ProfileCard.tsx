@@ -67,7 +67,7 @@ export default function ProfileCard({ show, setShow }: ProfileCardProps) {
                     ? URL.createObjectURL(image)
                     : (user?.photoURL ?? undefined),
                 }}
-                className="h-auto w-[80px]"
+                size={80}
                 hideTooltip={true}
               />
               <InputFileField
@@ -97,11 +97,7 @@ export default function ProfileCard({ show, setShow }: ProfileCardProps) {
         ) : (
           <div className="flex">
             {/* Profile Picture */}
-            <ProfilePicture
-              hideTooltip={true}
-              user={user}
-              className="h-auto w-[160px]"
-            />
+            <ProfilePicture hideTooltip={true} user={user} size={160} />
             {/* Information */}
             <div className="ml-[20px] flex h-full flex-col justify-center pb-5">
               <div className="mb-5 flex w-full flex-col items-stretch justify-between">
