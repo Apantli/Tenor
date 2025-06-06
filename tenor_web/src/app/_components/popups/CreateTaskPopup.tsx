@@ -178,6 +178,7 @@ export function CreateTaskPopup({
           onClick={handleCreateTask}
           disabled={isPending}
           className="px-6 py-2"
+          loading={isPending}
         >
           {isPending ? "Creating..." : "Create Task"}
         </PrimaryButton>
