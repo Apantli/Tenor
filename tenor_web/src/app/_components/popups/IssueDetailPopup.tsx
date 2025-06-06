@@ -42,6 +42,8 @@ import { automaticTag, isAutomatic } from "~/lib/defaultValues/status";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import StatusPicker from "../inputs/pickers/StatusPicker";
 import { UserPicker } from "../inputs/pickers/UserPicker";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import MoreInformation from "../helps/MoreInformation";
 
 interface Props {
   issueId: string;
@@ -56,6 +58,7 @@ export default function IssueDetailPopup({
   setDetailId,
   taskIdToOpenImmediately,
 }: Props) {
+  const { user } = useFirebaseAuth();
   const { projectId } = useParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [taskToOpen, setTaskToOpen] = useState<string>(
@@ -174,6 +177,21 @@ export default function IssueDetailPopup({
       reviewerId: updatedData?.reviewer.id,
     };
 
+    if (
+      updatedIssue.reviewerId !== issueDetail?.reviewer.id &&
+      isReviewer &&
+      role?.id !== "owner"
+    ) {
+      const confirmation = await confirm(
+        "Are you sure?",
+        "You will no longer be the reviewer of this issue. This means you will not be able to assign yourself as a reviewer again and will no longer be able to change the status of this issue.",
+        "Change reviewer",
+        "Cancel",
+        false,
+      );
+      if (!confirmation) return;
+    }
+
     // Cancel ongoing queries for this user story data
     await utils.issues.getIssueDetail.cancel({
       projectId: projectId as string,
@@ -204,6 +222,8 @@ export default function IssueDetailPopup({
     await invalidateQueriesIssueDetails(projectId as string, [issueId]);
     await invalidateQueriesAllIssues(projectId as string);
   };
+
+  const isReviewer = user?.uid === issueDetail?.reviewer.id;
 
   const handleDelete = async () => {
     if (
@@ -293,6 +313,10 @@ export default function IssueDetailPopup({
 
                 <h3 className="mt-4 text-lg font-semibold">Reviewer</h3>
                 <UserPicker
+                  disabled={
+                    permission < permissionNumbers.write ||
+                    (!isReviewer && role?.id !== "owner")
+                  }
                   className="h-10"
                   placeholder="Unassigned"
                   removeDelete
@@ -305,12 +329,19 @@ export default function IssueDetailPopup({
 
                 <div className="mt-4 flex-1">
                   <div className="flex">
-                    <h3 className="text-lg font-semibold">Status</h3>
+                    <h3 className="mr-1 text-lg font-semibold">Status</h3>
+                    {!isReviewer && (
+                      <MoreInformation
+                        label="Only the reviewer may change the status of this issue"
+                        size="small"
+                      />
+                    )}
                   </div>
                   <StatusPicker
                     disabled={
                       permission < permissionNumbers.write ||
-                      isAutomatic(issueDetail.status)
+                      isAutomatic(issueDetail.status) ||
+                      !isReviewer
                     }
                     status={
                       isAutomatic(issueDetail.status)
@@ -323,7 +354,9 @@ export default function IssueDetailPopup({
                   />
                   <ItemAutomaticStatus
                     isAutomatic={isAutomatic(issueDetail.status)}
-                    disabled={permission < permissionNumbers.write}
+                    disabled={
+                      permission < permissionNumbers.write || !isReviewer
+                    }
                     onChange={async (automatic) => {
                       if (automatic) {
                         await handleSave({
