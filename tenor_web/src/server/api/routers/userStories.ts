@@ -107,12 +107,24 @@ export const userStoriesRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, userStoryData: userStoryDataRaw } = input;
 
-      const hasCycle = await hasDependencyCycle(ctx.firestore, projectId, [
-        {
-          id: "this is a new user story", // id to avoid collision
-          dependencyIds: userStoryDataRaw.dependencyIds,
-        },
-      ]);
+      const hasCycle = await hasDependencyCycle(
+        ctx.firestore,
+        projectId,
+        // new user story
+        [
+          {
+            id: "this is a new user story", // id to avoid collision
+            dependencyIds: userStoryDataRaw.dependencyIds,
+          },
+        ],
+        // required by dependencies
+        [
+          ...userStoryDataRaw.requiredByIds.map((dependencyId) => ({
+            parentUsId: dependencyId,
+            dependencyUsId: "this is a new user story",
+          })),
+        ],
+      );
 
       if (hasCycle) {
         throw cyclicReference();

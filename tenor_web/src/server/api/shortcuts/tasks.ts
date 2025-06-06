@@ -101,7 +101,7 @@ export const updateDependency = (
 const constructAdjacencyList = (
   tasks: DependenciesWithId[],
   newTasks?: DependenciesWithId[],
-  newDependencies?: Array<{ sourceId: string; targetId: string }>,
+  newDependencies?: Array<{ parentId: string; dependencyId: string }>,
 ): Map<string, string[]> => {
   const adj = new Map<string, string[]>();
 
@@ -129,11 +129,11 @@ const constructAdjacencyList = (
 
   // Add new dependencies if provided
   if (newDependencies) {
-    newDependencies.forEach(({ sourceId, targetId }) => {
-      const deps = adj.get(sourceId) ?? [];
-      if (!deps.includes(targetId)) {
-        deps.push(targetId);
-        adj.set(sourceId, deps);
+    newDependencies.forEach(({ parentId, dependencyId }) => {
+      const deps = adj.get(parentId) ?? [];
+      if (!deps.includes(dependencyId)) {
+        deps.push(dependencyId);
+        adj.set(parentId, deps);
       }
     });
   }
@@ -145,7 +145,7 @@ export const hasDependencyCycle = async (
   firestore: Firestore,
   projectId: string,
   newTasks?: DependenciesWithId[],
-  newDependencies?: Array<{ sourceId: string; targetId: string }>,
+  newDependencies?: Array<{ parentId: string; dependencyId: string }>,
 ): Promise<boolean> => {
   // Get all tasks
   const tasks = await getTasks(firestore, projectId);
