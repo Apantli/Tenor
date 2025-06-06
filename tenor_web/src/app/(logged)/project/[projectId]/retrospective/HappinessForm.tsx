@@ -1,17 +1,12 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import ConversationButton from "./ConversationButton";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import ConversationPopup from "./ConversationPopup";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
-import {
-  permissionNumbers,
-  type Permission,
-} from "~/lib/types/firebaseSchemas";
-import { checkPermissions } from "~/lib/defaultValues/permission";
-import { emptyRole } from "~/lib/defaultValues/roles";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -21,6 +16,7 @@ import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
 import MoreInformation from "~/app/_components/helps/MoreInformation";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
+import { useGetPermission } from "~/app/_hooks/useGetPermission";
 
 interface HappinessFormProps {
   sprintRetrospectiveId?: number;
@@ -59,13 +55,9 @@ export default function HappinessForm({
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { data: role } = api.settings.getMyRole.useQuery({
-    projectId: projectId as string,
+  const permission = useGetPermission({
+    flags: ["retrospective"],
   });
-
-  const permission: Permission = useMemo(() => {
-    return checkPermissions({ flags: ["retrospective"] }, role ?? emptyRole);
-  }, [role]);
 
   const {
     data: existingAnswers,
