@@ -311,7 +311,21 @@ export default function IssueDetailPopup({
                   </div>
                 </div>
 
-                <h3 className="mt-4 text-lg font-semibold">Reviewer</h3>
+                <div className="mt-4 flex items-center">
+                  <h3 className="mr-1 text-lg font-semibold">Reviewer</h3>
+                  {permission >= permissionNumbers.write && (
+                    <MoreInformation
+                      size="small"
+                      label={
+                        role?.id === "owner"
+                          ? "As the project owner, you can always change the reviewer"
+                          : isReviewer
+                            ? "As the reviewer, you may choose someone else to review instead"
+                            : "Only the current reviewer and project owner may modify this field"
+                      }
+                    />
+                  )}
+                </div>
                 <UserPicker
                   disabled={
                     permission < permissionNumbers.write ||
