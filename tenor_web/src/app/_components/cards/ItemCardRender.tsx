@@ -4,6 +4,8 @@ import TagComponent from "../TagComponent";
 import { getAccentColorByCardType } from "~/lib/helpers/colorUtils";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import { sizeToColor } from "~/lib/defaultValues/size";
+import { api } from "~/trpc/react";
+import { useParams } from "next/navigation";
 
 interface Props {
   item: KanbanCard;
@@ -16,7 +18,14 @@ export default function ItemCardRender({
   showBackground = false,
   scrumIdFormatter,
 }: Props & PropsWithChildren & React.HTMLProps<HTMLDivElement>) {
+  const { projectId } = useParams();
   const accentColor = getAccentColorByCardType(item.cardType);
+  const { data: priorities } = api.settings.getPriorityTypes.useQuery({
+    projectId: projectId as string,
+  });
+  const priority = priorities?.find(
+    (p) => p.id === item.priorityId && !p.deleted,
+  );
   return (
     <div
       className={cn({
@@ -46,6 +55,11 @@ export default function ItemCardRender({
             {item.size && (
               <TagComponent reducedPadding color={sizeToColor[item.size]}>
                 {item.size}
+              </TagComponent>
+            )}
+            {priority && (
+              <TagComponent reducedPadding color={priority.color}>
+                {priority.name}
               </TagComponent>
             )}
             {item.tags.slice(0, 2).map((tag) => (

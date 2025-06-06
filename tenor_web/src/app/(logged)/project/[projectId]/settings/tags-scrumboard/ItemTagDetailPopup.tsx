@@ -112,6 +112,8 @@ export default function ItemTagDetailPopup({
   interface TagParams {
     projectId: string;
     tagId: string;
+    requirementFocusId: string; // For ReqFocus
+    requirementTypeId?: string; // For ReqType
   }
 
   interface ModifyTagParams extends TagParams {
@@ -342,7 +344,9 @@ export default function ItemTagDetailPopup({
 
     const params: TagParams = {
       projectId: projectId as string,
-      tagId: tagId,
+      tagId: tagId, // For BacklogTag
+      requirementFocusId: tagId, // For ReqFocus
+      requirementTypeId: tagId, // For ReqType
     };
 
     const modifyParams: ModifyTagParams = {
@@ -420,6 +424,8 @@ export default function ItemTagDetailPopup({
       const deleteParams: TagParams = {
         projectId: projectId as string,
         tagId: tagId,
+        requirementFocusId: tagId, // For ReqFocus
+        requirementTypeId: tagId, // For ReqType
       };
 
       await deleteTag(deleteParams);

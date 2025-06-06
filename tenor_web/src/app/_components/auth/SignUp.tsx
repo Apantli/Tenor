@@ -12,8 +12,8 @@ import { auth } from "~/lib/db/firebaseClient";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { useAlert } from "~/app/_hooks/useAlert";
-import InputCheckbox from "../inputs/InputCheckbox";
 import PrimaryButton from "../inputs/buttons/PrimaryButton";
+import AuthDisclaimer from "./AuthDisclaimer";
 
 export default function SignUp() {
   const router = useRouter();
@@ -30,7 +30,6 @@ export default function SignUp() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const userRef = useRef<User | null>(null);
 
@@ -121,6 +120,7 @@ export default function SignUp() {
         name="name"
         value={form.name}
         error={error.name}
+        onSubmit={handleSignUp}
       >
         Name
       </FloatingLabelInput>
@@ -130,6 +130,7 @@ export default function SignUp() {
         name="email"
         value={form.email}
         error={error.email}
+        onSubmit={handleSignUp}
       >
         Email
       </FloatingLabelInput>
@@ -139,40 +140,15 @@ export default function SignUp() {
         name="password"
         value={form.password}
         error={error.password}
+        onSubmit={handleSignUp}
       >
         Password
       </FloatingLabelInput>
-      <div className="flex items-center gap-2">
-        <InputCheckbox checked={acceptedTerms} onChange={setAcceptedTerms} />
-        <span className="text-xs text-app-text">
-          I accept the{" "}
-          <a
-            href="/terms"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-app-primary underline"
-          >
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a
-            href="/privacy"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-app-primary underline"
-          >
-            Privacy Policy
-          </a>
-        </span>
-      </div>
-      <PrimaryButton
-        disabled={!acceptedTerms}
-        onClick={handleSignUp}
-        loading={loading}
-        floatingSpinner
-      >
+      <PrimaryButton onClick={handleSignUp} loading={loading} floatingSpinner>
         Create account
       </PrimaryButton>
+
+      <AuthDisclaimer />
     </div>
   );
 }

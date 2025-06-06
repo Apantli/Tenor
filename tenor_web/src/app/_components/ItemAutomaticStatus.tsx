@@ -7,12 +7,21 @@ import HelpIcon from "@mui/icons-material/Help";
 interface Props {
   isAutomatic: boolean;
   onChange: (value: boolean) => void;
+  disabled?: boolean;
 }
 
-export default function ItemAutomaticStatus({ isAutomatic, onChange }: Props) {
+export default function ItemAutomaticStatus({
+  isAutomatic,
+  onChange,
+  disabled = false,
+}: Props) {
   return (
     <div className="mt-1 flex items-center justify-start gap-1 text-sm text-gray-500">
-      <InputCheckbox checked={isAutomatic} onChange={onChange} />
+      <InputCheckbox
+        checked={isAutomatic}
+        onChange={onChange}
+        disabled={disabled}
+      />
       <div className="flex items-center pt-[2px]">
         <p>Automatic</p>
         <HelpIcon

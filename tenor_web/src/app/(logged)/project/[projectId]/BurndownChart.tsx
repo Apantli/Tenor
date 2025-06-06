@@ -5,10 +5,7 @@ import { cn } from "~/lib/helpers/utils";
 import { api } from "~/trpc/react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import {
-  type BurndownChartData,
-  SampleBurndownData,
-} from "~/lib/defaultValues/burndownChart";
+import { SampleBurndownData } from "~/lib/defaultValues/burndownChart";
 
 // Create a more specific type for your Vega specification
 type VegaSpec = VisualizationSpec & {
@@ -30,13 +27,11 @@ type VegaSpec = VisualizationSpec & {
 
 // Generates burndown chart data from project status information
 export function useBurndownData(projectId: string) {
-  const { data, isLoading, isError } = api.projects.getGraphBurndownData.useQuery(
-    { projectId },
-    { retry: 0, refetchOnWindowFocus: "always", staleTime: 0 }
-  );
+  const { data, isLoading, isError } =
+    api.projects.getGraphBurndownData.useQuery({ projectId });
 
   return {
-    data: data,
+    data: data ?? null,
     isLoading,
     isError,
   };
@@ -58,7 +53,7 @@ const burndownSpec: VisualizationSpec = {
     {
       name: "interpolate",
       value: "linear",
-    }
+    },
   ],
 
   data: [
@@ -225,10 +220,10 @@ const burndownSpec: VisualizationSpec = {
         },
         update: {
           size: { value: 200 },
-          opacity: { value: 1 }
-        }
-      }
-    }
+          opacity: { value: 1 },
+        },
+      },
+    },
   ],
 };
 
@@ -296,10 +291,10 @@ const BurndownChart: React.FC<{
 
     // Update the data values
     if (specCopy.data && Array.isArray(specCopy.data)) {
-      const tableData = specCopy.data.find((d) => d.name === "table");
+      const tableData = specCopy.data.find((d) => d.name === "table") ?? null;
       if (tableData) {
         // Use type assertion to safely set the values
-        (tableData as { values?: BurndownChartData }).values = burndownData;
+        tableData.values = burndownData;
       }
     }
 
