@@ -77,7 +77,7 @@ export default function BacklogTagList({ tags, onChange, disabled }: Props) {
     }
   };
 
-  const checkTitleLimit = useCharacterLimit("Title", 20);
+  const checkTitleLimit = useCharacterLimit("Tag", 20);
 
   return (
     <div>
