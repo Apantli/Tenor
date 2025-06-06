@@ -108,7 +108,7 @@ const MemberItem = ({
     prevDate.setDate(prevDate.getDate() - 1);
     formattedData.push({
       x: prevDate,
-      y: formattedData[0].y,
+      y: 0,
     });
   }
 
