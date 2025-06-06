@@ -25,4 +25,5 @@ export interface KanbanTaskCard extends KanbanCard {
 }
 export interface KanbanItemCard extends KanbanCard {
   cardType: AnyBacklogItemType;
+  reviewerId: string | undefined;
 }

@@ -665,6 +665,7 @@ export default function ProjectSprints() {
               priorityId: undefined,
               sprintId: draggingItem.sprintId,
               cardType: draggingItem.itemType ?? "US",
+              reviewerId: undefined,
             };
             return (
               <ItemCardRender

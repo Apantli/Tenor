@@ -349,22 +349,6 @@ const BurndownChart: React.FC<{
         <h3 className="text-xl font-semibold">Burndown Chart</h3>
       </div>
       <>
-        <div className="absolute right-4 top-4 z-10 flex flex-row gap-4">
-          <div className="flex items-center gap-2">
-            <div
-              className="h-4 w-4 rounded-sm"
-              style={{ backgroundColor: "#8BC48A" }}
-            />
-            <span className="text-sm font-semibold text-gray-600">Ideal</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div
-              className="h-4 w-4 rounded-sm"
-              style={{ backgroundColor: " #13918A" }}
-            />
-            <span className="text-sm font-semibold text-gray-600">Actual</span>
-          </div>
-        </div>
         {isLoading ? (
           <div className="mx-auto my-auto flex flex-col items-center">
             <span className="mx-auto text-[100px] text-gray-500">
@@ -381,7 +365,23 @@ const BurndownChart: React.FC<{
             </h1>
           </div>
         ) : (
-          <div className="h-full">
+          <div className="h-full relative">
+            <div className="absolute right-4 top-4 z-10 flex flex-row gap-4">
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-sm"
+                  style={{ backgroundColor: "#8BC48A" }}
+                />
+                <span className="text-sm font-semibold text-gray-600">Ideal</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div
+                  className="h-4 w-4 rounded-sm"
+                  style={{ backgroundColor: " #13918A" }}
+                />
+                <span className="text-sm font-semibold text-gray-600">Actual</span>
+              </div>
+            </div>
             <LineChartComponent actions={false} />
           </div>
         )}

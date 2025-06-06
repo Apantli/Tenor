@@ -15,6 +15,7 @@ interface Props {
   hideTooltip?: boolean;
   className?: ClassNameValue;
   pictureClassName?: ClassNameValue;
+  size?: number;
 }
 
 function getUserGradient(uid: string, hashFuncName = "sha256") {
@@ -58,13 +59,22 @@ export default function ProfilePicture({
   className,
   hideTooltip,
   pictureClassName,
+  size = 32,
 }: Props) {
+  const sizePixels = `${size}px`;
+
   if (user?.photoURL) {
     return (
       <img
         src={`/api/image_proxy?url=${encodeURIComponent(user.photoURL)}`}
         alt=""
-        className={cn("h-8 w-8 rounded-full", className, pictureClassName)}
+        className={cn("rounded-full", className, pictureClassName)}
+        style={{
+          height: sizePixels,
+          width: sizePixels,
+          minWidth: sizePixels,
+          minHeight: sizePixels,
+        }}
         data-tooltip-id="tooltip"
         data-tooltip-content={user?.displayName}
         data-tooltip-place="top-start"
@@ -78,15 +88,21 @@ export default function ProfilePicture({
       else if ("id" in user) uid = user.id ?? "0";
     }
     const { hexCode, darkHexCode } = getUserGradient(uid);
+
     return (
       <div
         className={cn(
-          "flex h-8 w-8 min-w-8 cursor-default select-none items-center justify-center rounded-full font-bold text-white",
+          "flex cursor-default select-none items-center justify-center rounded-full font-bold text-white",
           className,
           pictureClassName,
         )}
         style={{
           background: `linear-gradient(to top, #${darkHexCode}, #${hexCode})`,
+          height: sizePixels,
+          width: sizePixels,
+          minWidth: sizePixels,
+          minHeight: sizePixels,
+          fontSize: `${size / 2}px`,
         }}
         data-tooltip-id="tooltip"
         data-tooltip-content={user?.displayName}
