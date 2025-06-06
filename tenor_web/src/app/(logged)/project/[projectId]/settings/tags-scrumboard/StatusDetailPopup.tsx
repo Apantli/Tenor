@@ -104,12 +104,10 @@ export default function StatusDetailPopup({
         id: statusDetail?.id,
       })
     ) {
-      setForm({
-        ...form,
-        name: statusDetail?.name ?? "",
-      });
       return;
     }
+
+    setEditMode(false);
 
     await utils.settings.getStatusTypes.cancel({
       projectId: projectId as string,
@@ -240,7 +238,6 @@ export default function StatusDetailPopup({
       }
       editMode={!disabled ? (isLoading ? undefined : editMode) : undefined}
       setEditMode={async (isEditing) => {
-        setEditMode(isEditing);
         if (!statusDetail) return;
         if (!isEditing) {
           const updatedData = {
@@ -249,6 +246,8 @@ export default function StatusDetailPopup({
             color: form.color,
           };
           await handleSave(updatedData);
+        } else {
+          setEditMode(true);
         }
       }}
       disablePassiveDismiss={editMode && isModified()}

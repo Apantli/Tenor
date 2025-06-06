@@ -7,7 +7,6 @@ import type {
   Tag,
   WithId,
 } from "~/lib/types/firebaseSchemas";
-import { StatusTagSchema } from "~/lib/types/zodFirebaseSchema";
 import type { KanbanItemCard, KanbanTaskCard } from "~/lib/types/kanbanTypes";
 import { getTasks, getTasksAssignesIdsFromItem } from "../shortcuts/tasks";
 import {
@@ -15,7 +14,6 @@ import {
   getBacklogTag,
   getBacklogTags,
   getStatusTypes,
-  getStatusTypesRef,
 } from "../shortcuts/tags";
 import { getUserStories, getUserStory } from "../shortcuts/userStories";
 import { getIssue, getIssues } from "../shortcuts/issues";
@@ -229,45 +227,6 @@ export const kanbanRouter = createTRPCRouter({
       return {
         columns: columnsWithItems,
         cardItems: cardItems,
-      };
-    }),
-
-  createStatusList: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-        name: z.string(),
-        color: z.string(),
-        marksTaskAsDone: z.boolean(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { projectId, name, color, marksTaskAsDone } = input;
-      const statusCollectionRef = getStatusTypesRef(ctx.firestore, projectId);
-
-      const statusTypes = await statusCollectionRef.get();
-
-      const statusTypesData = statusTypes.docs.map((doc) => ({
-        id: doc.id,
-        ...StatusTagSchema.parse(doc.data()),
-      }));
-      const biggestOrderIndex = Math.max(
-        ...statusTypesData.map((status) => status.orderIndex),
-        0,
-      );
-
-      const newStatus = {
-        name,
-        color: color.toUpperCase(),
-        marksTaskAsDone,
-        deleted: false,
-        orderIndex: biggestOrderIndex + 1,
-      };
-
-      const docRef = await statusCollectionRef.add(newStatus);
-      return {
-        id: docRef.id,
-        ...newStatus,
       };
     }),
 
