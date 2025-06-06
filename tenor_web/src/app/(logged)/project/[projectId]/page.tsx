@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import ProjectInfo from "~/app/(logged)/project/[projectId]/ProjectInfo";
 import ProjectStatus from "~/app/(logged)/project/[projectId]/ProjectStatusOverview";
 import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 
 export default function ProjectOverview() {
@@ -13,9 +13,13 @@ export default function ProjectOverview() {
   const [isProjectInfoExpanded, setIsProjectInfoExpanded] = useState(false);
 
   // Dynamically import the BurndownChart component to avoid SSR issues
-  const DynamicBurdownChart = dynamic(() => import("./BurndownChart"), {
-    ssr: false,
-  });
+  const DynamicBurdownChart = useMemo(
+    () =>
+      dynamic(() => import("./BurndownChart"), {
+        ssr: false,
+      }),
+    [],
+  );
 
   return (
     <div className="m-6 h-full flex-1 overflow-scroll px-4">
