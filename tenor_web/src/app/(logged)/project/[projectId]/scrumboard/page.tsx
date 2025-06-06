@@ -5,7 +5,6 @@ import TasksKanban from "./TasksKanban";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import { useInvalidateQueriesAllTasks } from "~/app/_hooks/invalidateHooks";
 import { useParams } from "next/navigation";
-import CreateKanbanListPopup from "./CreateKanbanListPopup";
 import { useMemo, useState } from "react";
 import { SegmentedControl } from "~/app/_components/SegmentedControl";
 import ItemsKanban from "./ItemsKanban";
@@ -19,6 +18,7 @@ import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import AdvancedSearch from "../../../../_components/inputs/search/AdvancedSearch";
 import useAdvancedSearchFilters from "~/app/_hooks/useAdvancedSearchFilters";
+import CreateStatusPopup from "../settings/tags-scrumboard/CreateStatusPopup";
 
 type ScrumboardSections = "Tasks" | "Backlog Items";
 
@@ -118,10 +118,10 @@ export default function ProjectKanban() {
         )}
 
         {renderNewList && (
-          <CreateKanbanListPopup
-            onListAdded={onListAdded}
+          <CreateStatusPopup
             showPopup={showNewList}
             setShowPopup={setShowNewList}
+            onStatusAdded={onListAdded}
           />
         )}
       </div>
