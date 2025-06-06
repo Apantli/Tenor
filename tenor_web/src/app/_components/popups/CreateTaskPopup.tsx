@@ -180,7 +180,7 @@ export function CreateTaskPopup({
           className="px-6 py-2"
           loading={isPending}
         >
-          {isPending ? "Creating..." : "Create Task"}
+          Create Task
         </PrimaryButton>
       }
     >
