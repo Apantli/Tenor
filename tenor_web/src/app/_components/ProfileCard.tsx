@@ -7,6 +7,7 @@ import InputFileField from "./inputs/InputFileField";
 import { api } from "~/trpc/react";
 import { toBase64 } from "~/lib/helpers/base64";
 import { useInvalidateQueriesUser } from "../_hooks/invalidateHooks";
+import useCharacterLimit from "../_hooks/useCharacterLimit";
 
 interface ProfileCardProps {
   show: boolean;
@@ -24,6 +25,8 @@ export default function ProfileCard({ show, setShow }: ProfileCardProps) {
   const [editMode, setEditMode] = useState<boolean>(false);
 
   const invalidateQueriesUser = useInvalidateQueriesUser();
+
+  const checkTitleLimit = useCharacterLimit("Username", 30);
 
   return (
     <Popup
@@ -81,7 +84,11 @@ export default function ProfileCard({ show, setShow }: ProfileCardProps) {
             <InputTextField
               label="Display Name"
               value={userName}
-              onChange={(e) => setUserName(e.target.value)}
+              onChange={(e) => {
+                if (checkTitleLimit(e.target.value)) {
+                  setUserName(e.target.value);
+                }}
+              }
               placeholder="Enter your display name"
               containerClassName="my-4"
               disableAI={true}

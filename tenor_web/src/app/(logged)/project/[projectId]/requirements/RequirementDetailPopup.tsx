@@ -237,7 +237,12 @@ export default function RequirementDetailPopup({
               }
             }
       }
-      editMode={!canWrite ? undefined : editMode}
+      editMode={canWrite
+        ? isLoading
+            ? undefined
+            : editMode
+          : undefined
+        }
       title={
         isLoading ? (
           <></>
