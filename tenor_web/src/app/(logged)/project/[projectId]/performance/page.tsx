@@ -58,7 +58,7 @@ export default function ProjectPerformance() {
               member={selectedMember}
               projectId={projectIdString}
               timeInterval={section}
-              className="my-auto mt-1 pb-4"
+              className="my-auto mt-1 overflow-y-auto pb-4"
               setSelectedMember={setSelectedMember}
             />
           ) : (
@@ -70,7 +70,7 @@ export default function ProjectPerformance() {
               />
               <SentimentCard
                 projectId={projectIdString}
-                className="mt-4 h-[40%] max-h-[40%]"
+                className="mt-4 xl:h-[40%] xl:max-h-[40%]"
               />
             </>
           )}

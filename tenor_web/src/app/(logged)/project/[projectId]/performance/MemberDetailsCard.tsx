@@ -87,7 +87,7 @@ export const MemberDetailsCard = ({
   return (
     <div
       className={cn(
-        "relative mx-auto flex w-full flex-col overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:overflow-y-hidden 2xl:pb-6 2xl:pt-6",
+        "relative mx-auto flex w-full flex-col overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:pb-6 2xl:pt-6",
         className,
       )}
     >
@@ -129,7 +129,10 @@ export const MemberDetailsCard = ({
         )}
         {!loadingContributions && (
           <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
-            <DynamicContributionPieChart data={formattedUserContributions} />
+            <DynamicContributionPieChart
+              data={formattedUserContributions}
+              scaleFactor={0.8}
+            />
             <ContributionLegend data={formattedUserContributions} />
           </div>
         )}
