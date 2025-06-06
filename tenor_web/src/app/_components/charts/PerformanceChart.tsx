@@ -1,7 +1,8 @@
 import React from "react";
 import { createClassFromSpec, type VisualizationSpec } from "react-vega";
 import { cn } from "~/lib/helpers/utils";
-import HelpIcon from "@mui/icons-material/Help";
+// import HelpIcon from "@mui/icons-material/Help";
+import MoreInformation from "~/app/_components/helps/MoreInformation";
 
 const spec1: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
@@ -200,12 +201,10 @@ export const PerformanceChart = ({
         />
       )}
       {data.length > 0 && (
-        <HelpIcon
+        <MoreInformation
           className="absolute right-3 text-gray-500 opacity-0 transition-opacity duration-500 ease-in-out group-hover:opacity-100"
-          data-tooltip-id="tooltip"
-          data-tooltip-content="A contribution occurs when a team member creates or updates a backlog item, task, epic, sprint, requirement or project."
-          data-tooltip-place="top-start"
-          style={{ width: "30px" }}
+          label="A contribution occurs when a team member creates or updates a backlog item, task, epic, sprint, requirement or project."
+          size="large"
         />
       )}
     </div>

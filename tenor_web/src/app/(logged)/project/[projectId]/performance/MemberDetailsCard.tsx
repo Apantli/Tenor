@@ -119,22 +119,24 @@ export const MemberDetailsCard = ({
       </div>
 
       <div className="mx-8 my-auto flex flex-col">
-        <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
-          Contribution overview
-        </h4>
         {loadingContributions && (
           <div className="mx-auto flex flex-row gap-2">
             <LoadingSpinner color="primary" />
           </div>
         )}
         {!loadingContributions && (
-          <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
-            <DynamicContributionPieChart
-              data={formattedUserContributions}
-              scaleFactor={0.8}
-            />
-            <ContributionLegend data={formattedUserContributions} />
-          </div>
+          <>
+            <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
+              Contribution overview
+            </h4>
+            <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
+              <DynamicContributionPieChart
+                data={formattedUserContributions}
+                scaleFactor={0.8}
+              />
+              <ContributionLegend data={formattedUserContributions} />
+            </div>
+          </>
         )}
       </div>
     </div>
