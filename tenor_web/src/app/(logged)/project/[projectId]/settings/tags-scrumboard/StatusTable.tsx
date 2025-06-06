@@ -106,7 +106,7 @@ export default function StatusTable() {
     const statusToDelete = status?.find((s) => s.id === statusId);
     if (
       statusToDelete &&
-      ["Todo", "Doing", "Done"].includes(statusToDelete.name)
+      ["Todo", "Doing", "Done", "Awaits Review"].includes(statusToDelete.name)
     ) {
       predefinedAlerts.statusNameNotEditableError();
       return;

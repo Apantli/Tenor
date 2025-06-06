@@ -163,7 +163,7 @@ export const issuesRouter = createTRPCRouter({
       }
       if (
         ctx.session.user.uid !== prevIssueData.reviewerId &&
-        prevIssueData.reviewerId !== issueData.reviewerId
+        prevIssueData.statusId !== issueData.statusId
       ) {
         throw badRequest("You're not allowed to change the status");
       }
@@ -242,9 +242,13 @@ export const issuesRouter = createTRPCRouter({
         return;
       }
       const issueRef = getIssueRef(ctx.firestore, projectId, issueId);
-      const issueSnapshot = await issueRef.get();
-      if (!issueSnapshot.exists) {
-        throw notFound("Issue");
+      const prevIssueData = await getIssue(ctx.firestore, projectId, issueId);
+
+      if (
+        ctx.session.user.uid !== prevIssueData.reviewerId &&
+        prevIssueData.statusId !== statusId
+      ) {
+        throw badRequest("You're not allowed to change the status");
       }
 
       await LogProjectActivity({

@@ -260,6 +260,14 @@ export const useAlert = () => {
         `The selected dates collide with Sprint ${sprintNumber}. Please choose different dates.`,
       ),
     // #endregion
+    // #region Kanban
+    assignedUnallowedStatus: () =>
+      alertTemplates.oops("Only issues can be assigned to that status."),
+    notAReviewer: () =>
+      alertTemplates.oops(
+        "You can't change the status of the issue because you're not the reviewer.",
+      ),
+    // #endregion
     // #region Context
     contextUpdateSuccess: () =>
       alertTemplates.success(

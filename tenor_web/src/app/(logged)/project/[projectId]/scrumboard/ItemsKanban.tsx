@@ -35,6 +35,8 @@ import MoveRightIcon from "@mui/icons-material/ArrowForwardIos";
 import EditIcon from "@mui/icons-material/EditOutlined";
 import { sortByCardTypeAndScrumId } from "~/lib/helpers/sort";
 import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
+import { useAlert } from "~/app/_hooks/useAlert";
+import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 
 interface Props {
   filter: string;
@@ -44,12 +46,15 @@ interface Props {
 export default function ItemsKanban({ filter, advancedFilters }: Props) {
   // #region HOOKS
   const { projectId } = useParams();
+  const { user } = useFirebaseAuth();
   const utils = api.useUtils();
   const formatAnyScrumId = useFormatAnyScrumId(projectId as string);
   const invalidateQueriesBacklogItems = useInvalidateQueriesBacklogItems();
   const invalidateQueriesBacklogItemDetails =
     useInvalidateQueriesBacklogItemDetails();
   const invalidateQueriesAllStatuses = useInvalidateQueriesAllStatuses();
+
+  const { predefinedAlerts } = useAlert();
   // #endregion
 
   // #region TRPC
@@ -117,12 +122,55 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
     const itemBeingDragged = itemsAndColumnsData.cardItems[itemId];
     if (!itemBeingDragged || columnId === itemBeingDragged.columnId) return;
 
-    await moveItemsToColumn([itemId], columnId);
+    await moveItemsToColumn([itemId], columnId, true);
   };
 
-  const moveItemsToColumn = async (itemIds: string[], columnId: string) => {
+  const moveItemsToColumn = async (
+    itemIds: string[],
+    columnId: string,
+    dragAndDrop = false,
+  ) => {
     if (itemsAndColumnsData == undefined) return;
-    setDndOperationsInProgress((prev) => prev + 1);
+    if (dragAndDrop) {
+      setDndOperationsInProgress((prev) => prev + 1);
+    }
+
+    const getItem = (id: string) => {
+      return itemsAndColumnsData.cardItems[id];
+    };
+
+    // Check if non-issue items are being moved to the issues only column
+    if (columnId === "awaits_review") {
+      let showInvalidStatusAlert = false; // Only show alert once
+      itemIds = itemIds.filter((id) => {
+        if (getItem(id)?.cardType !== "IS") {
+          showInvalidStatusAlert = true;
+          return false;
+        }
+        return true;
+      });
+
+      if (showInvalidStatusAlert) {
+        predefinedAlerts.assignedUnallowedStatus();
+      }
+    }
+
+    // Check if user is trying to move items they aren't allowed
+    let showUnauthorizedAlert = false;
+    itemIds = itemIds.filter((id) => {
+      const item = getItem(id);
+      if (item?.cardType === "IS") {
+        if (user?.uid !== item?.reviewerId) {
+          showUnauthorizedAlert = true;
+          return false;
+        }
+      }
+      return true;
+    });
+    if (showUnauthorizedAlert) {
+      predefinedAlerts.notAReviewer();
+    }
+
     const cardItems = itemsAndColumnsData.cardItems;
     await utils.kanban.getBacklogItemsForKanban.cancel({
       projectId: projectId as string,
@@ -185,10 +233,12 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
     );
 
     // Set lastDraggedItemId AFTER optimistic update, only if a single item was moved
-    if (itemIds.length === 1) {
-      setLastDraggedItemId(itemIds[0] ?? null);
-    } else {
-      setLastDraggedItemId(null);
+    if (dragAndDrop) {
+      if (itemIds.length === 1) {
+        setLastDraggedItemId(itemIds[0] ?? null);
+      } else {
+        setLastDraggedItemId(null);
+      }
     }
 
     setSelectedItems(new Set());
@@ -232,12 +282,14 @@ export default function ItemsKanban({ filter, advancedFilters }: Props) {
       })),
     );
 
-    setTimeout(() => {
-      setLastDraggedItemId(null);
-    }, 1500);
-    setTimeout(() => {
-      setDndOperationsInProgress((prev) => prev - 1);
-    }, 3000);
+    if (dragAndDrop) {
+      setTimeout(() => {
+        setLastDraggedItemId(null);
+      }, 1500);
+      setTimeout(() => {
+        setDndOperationsInProgress((prev) => prev - 1);
+      }, 3000);
+    }
   };
 
   const assignSelectionToColumn = async (columnId: string) => {

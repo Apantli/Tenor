@@ -27,7 +27,7 @@ import {
   getBacklogItemsRef,
 } from "../shortcuts/backlogItems";
 import { LogProjectActivity } from "../lib/projectEventLogger";
-import { notFound } from "~/server/errors";
+import { badRequest, notFound } from "~/server/errors";
 
 export const backlogItemsRouter = createTRPCRouter({
   /**
@@ -153,6 +153,10 @@ export const backlogItemsRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { projectId, backlogItemId, backlogItemData } = input;
 
+      if (backlogItemData.statusId === "awaits_review") {
+        throw badRequest("Backlog items can't have that status");
+      }
+
       await getBacklogItemRef(ctx.firestore, projectId, backlogItemId).update(
         backlogItemData,
       );
@@ -235,6 +239,10 @@ export const backlogItemsRouter = createTRPCRouter({
         statusId === undefined
       ) {
         return;
+      }
+
+      if (statusId === "awaits_review") {
+        throw badRequest("Backlog items can't have that status");
       }
 
       const backlogItemRef = getBacklogItemRef(

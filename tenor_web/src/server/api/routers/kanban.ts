@@ -183,11 +183,16 @@ export const kanbanRouter = createTRPCRouter({
           ),
           sprintId: item.sprintId,
           priorityId: item.priorityId,
+          reviewerId: "reviewerId" in item ? item.reviewerId : undefined,
         })),
       )) as KanbanItemCard[];
 
       // Get all statuses
-      const activeColumns = await getStatusTypes(ctx.firestore, projectId);
+      const activeColumns = await getStatusTypes(
+        ctx.firestore,
+        projectId,
+        true,
+      );
 
       // Assign automatic status to items with undefined status
       const itemsWithStatus = await Promise.all(

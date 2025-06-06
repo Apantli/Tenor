@@ -126,10 +126,14 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
     const taskBeingDragged = tasksAndColumnsData.cardTasks[taskId];
     if (!taskBeingDragged || columnId === taskBeingDragged.columnId) return;
 
-    await moveTasksToColumn([taskId], columnId);
+    await moveTasksToColumn([taskId], columnId, true);
   };
 
-  const moveTasksToColumn = async (taskIds: string[], columnId: string) => {
+  const moveTasksToColumn = async (
+    taskIds: string[],
+    columnId: string,
+    dragAndDrop = false,
+  ) => {
     if (tasksAndColumnsData == undefined) return;
     updateOperationsInProgress += 1;
     const cardTasks = tasksAndColumnsData.cardTasks;
@@ -192,11 +196,13 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
     );
 
     // Set lastDraggedTaskId AFTER optimistic update, only if a single task was moved (typical for drag-and-drop)
-    if (taskIds.length === 1) {
-      setLastDraggedTaskId(taskIds[0] ?? null);
-    } else {
-      // If multiple tasks are moved (e.g., batch assign), clear any single-item highlight
-      setLastDraggedTaskId(null);
+    if (dragAndDrop) {
+      if (taskIds.length === 1) {
+        setLastDraggedTaskId(taskIds[0] ?? null);
+      } else {
+        // If multiple tasks are moved (e.g., batch assign), clear any single-item highlight
+        setLastDraggedTaskId(null);
+      }
     }
 
     setSelectedTasks(new Set());
@@ -212,9 +218,11 @@ export default function TasksKanban({ filter, advancedFilters }: Props) {
     );
 
     if (updateOperationsInProgress == 1) {
-      setTimeout(() => {
-        setLastDraggedTaskId(null);
-      }, 1500);
+      if (dragAndDrop) {
+        setTimeout(() => {
+          setLastDraggedTaskId(null);
+        }, 1500);
+      }
       const uniqueItemIds = taskIds.reduce<Set<string>>((acc, taskId) => {
         const itemId = tasksAndColumnsData.cardTasks[taskId]?.itemId;
         if (itemId) {
