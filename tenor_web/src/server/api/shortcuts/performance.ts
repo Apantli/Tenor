@@ -62,11 +62,11 @@ export const getActivityPartition = async (
         : item.date.toDate()
       : new Date();
 
+    console.log(timeZone);
     // Format date as YYYY-MM-DD
-    const day = timestamp.toLocaleDateString(
-      "en-US",
-      timeZone ? { timeZone } : undefined,
-    );
+    const day = timestamp.toLocaleDateString("en-US", {
+      timeZone: "America/Monterrey",
+    });
 
     if (!day) return;
 
