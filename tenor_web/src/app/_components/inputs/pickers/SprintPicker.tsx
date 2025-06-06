@@ -49,7 +49,7 @@ export function SprintPicker({
       allowClear={sprints?.length !== 0}
       onChange={(item) => {
         const sprint = sprints?.find(
-          (sprint) => sprint.number.toString() === item.id,
+          (sprint) => sprint.id.toString() === item.id,
         );
         onChange(sprint);
       }}
