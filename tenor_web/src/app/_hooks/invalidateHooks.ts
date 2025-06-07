@@ -41,6 +41,9 @@ export const useInvalidateQueriesAllTasks = () => {
       }),
       utils.projects.getActivityDetailsFromProjects.invalidate(),
       utils.projects.getTopProjectStatus.invalidate(),
+      utils.projects.getGraphBurndownData.invalidate({
+        projectId: projectId,
+      }),
     ]);
   };
 };
@@ -61,6 +64,9 @@ export const useInvalidateQueriesTaskDetails = () => {
       }),
       utils.projects.getActivityDetailsFromProjects.invalidate(),
       utils.projects.getTopProjectStatus.invalidate(),
+      utils.projects.getGraphBurndownData.invalidate({
+        projectId: projectId,
+      }),
       ...taskIds.map((taskId) =>
         utils.tasks.getTaskDetail.invalidate({
           projectId: projectId,
@@ -108,6 +114,9 @@ export const useInvalidateQueriesAllUserStories = () => {
         projectId: projectId,
       }),
       utils.projects.getActivityDetailsFromProjects.invalidate(),
+      utils.projects.getGraphBurndownData.invalidate({
+        projectId: projectId,
+      }),
     ]);
   };
 };
@@ -124,6 +133,9 @@ export const useInvalidateQueriesUserStoriesDetails = () => {
       }),
       utils.projects.getActivityDetailsFromProjects.invalidate(),
       utils.projects.getTopProjectStatus.invalidate(),
+      utils.projects.getGraphBurndownData.invalidate({
+        projectId: projectId,
+      }),
       ...userStoryIds.map((userStoryId) =>
         utils.userStories.getUserStoryDetail.invalidate({
           projectId: projectId,
@@ -345,6 +357,9 @@ export const useInvalidateQueriesAllSprints = () => {
       utils.sprints.getProjectSprintsOverview.invalidate({
         projectId: projectId,
       }),
+      utils.projects.getGraphBurndownData.invalidate({
+        projectId: projectId,
+      }),
     ]);
   };
 };
@@ -352,10 +367,15 @@ export const useInvalidateQueriesAllSprints = () => {
 export const useInvalidateQueriesSingleSprint = () => {
   const utils = api.useUtils();
   return async (projectId: string, sprintId: string) => {
-    await utils.sprints.getSprint.invalidate({
-      projectId: projectId,
-      sprintId: sprintId,
-    });
+    await Promise.all([
+      utils.sprints.getSprint.invalidate({
+        projectId: projectId,
+        sprintId: sprintId,
+      }),
+      utils.projects.getGraphBurndownData.invalidate({
+        projectId: projectId,
+      }),
+    ]);
   };
 };
 
