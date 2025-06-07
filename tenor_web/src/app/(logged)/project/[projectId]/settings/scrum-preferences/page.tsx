@@ -301,11 +301,13 @@ export default function ProjectScrumPreferences() {
             labelClassName="text-lg font-semibold"
           />
 
-          <SettingsSizeTable
-            disabled={permission < permissionNumbers.write}
-            sizeData={sizeData}
-            setSizeData={setSizeData}
-          />
+          <div className="my-2">
+            <SettingsSizeTable
+              disabled={permission < permissionNumbers.write}
+              sizeData={sizeData}
+              setSizeData={setSizeData}
+            />
+          </div>
         </>
       )}
       {settingFetchLoading && (
