@@ -309,7 +309,7 @@ export default function ItemTagTable({ itemTagType }: Props) {
           ) : (
             <Table
               className={cn("", {
-                "max-h-[280px] overflow-auto": tableData.length > 5,
+                "max-h-[calc(100vh-345px)] overflow-auto": tableData.length > 5,
               })}
               data={tableData}
               columns={columns}

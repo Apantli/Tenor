@@ -384,7 +384,9 @@ export default function StatusTable() {
           )}
         </div>
 
-        <div className="max-w-full">{renderTable()}</div>
+        <div className="max-h-[calc(100vh-345px)] max-w-full overflow-auto">
+          {renderTable()}
+        </div>
       </div>
 
       {renderNewStatus && (

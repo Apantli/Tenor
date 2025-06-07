@@ -81,7 +81,7 @@ export const sprintPermissions: FlagsRequired = {
   optimistic: true,
 };
 
-export const reviewPermissions: FlagsRequired = {
+export const retrospectivePermissions: FlagsRequired = {
   flags: ["retrospective"],
   optimistic: true,
 };
