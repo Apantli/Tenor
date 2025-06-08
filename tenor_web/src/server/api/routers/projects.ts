@@ -65,7 +65,7 @@ import {
   defaultPriorityTypes,
   defaultRequerimentTypes,
 } from "~/lib/defaultValues/tags";
-import { awaitsReviewTag, defaultStatusTags } from "~/lib/defaultValues/status";
+import { defaultStatusTags } from "~/lib/defaultValues/status";
 import { defaultProjectIconPath } from "~/lib/defaultValues/publicPaths";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import { getBurndownData } from "../shortcuts/tasks";
@@ -340,10 +340,12 @@ export const createProjectProcedure = protectedProcedure
       );
 
       await Promise.all([
-        ...defaultStatusTags.map((statusTag) =>
-          statusCollection.add(statusTag),
+        ...defaultStatusTags.map(
+          (statusTag) =>
+            statusCollection
+              .doc(statusTag.name.trim().toLowerCase().replace(/\s+/g, "_"))
+              .set(statusTag), // TODO: Update other status logic to assume name as id (will break existing projects)
         ),
-        statusCollection.doc("awaits_review").set(awaitsReviewTag),
       ]);
 
       // Create default empty activity

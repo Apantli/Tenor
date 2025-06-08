@@ -54,11 +54,15 @@ export default function CreateStatusPopup({ showPopup, setShowPopup }: Props) {
   };
 
   const handleCreateStatus = async () => {
-    if (
-      !validateStatusTag({
-        tagName: form.name,
-      })
-    ) {
+    const tag = {
+      name: form.name,
+      color: form.color,
+      marksTaskAsDone: form.marksTaskAsDone,
+      orderIndex: -1,
+      id: "",
+      deleted: false,
+    };
+    if (!validateStatusTag(tag)) {
       return;
     }
 

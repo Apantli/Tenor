@@ -105,11 +105,11 @@ export default function StatusTable() {
 
   const handleDeleteStatus = async function (statusId: string) {
     const statusToDelete = status?.find((s) => s.id === statusId);
-    if (
-      statusToDelete &&
-      ["Todo", "Doing", "Done", "Awaits Review"].includes(statusToDelete.name)
-    ) {
-      predefinedAlerts.statusNameNotEditableError();
+    if (!statusToDelete) {
+      predefinedAlerts.unexpectedError();
+      return;
+    }
+    if (!validateStatusTag(statusToDelete)) {
       return;
     }
 
@@ -145,21 +145,18 @@ export default function StatusTable() {
     currentValue: boolean,
   ) => {
     const currentStatus = status?.find((s) => s.id === statusId);
-    if (
-      !currentStatus ||
-      !validateStatusTag({
-        tagName: currentStatus.name,
-        id: statusId,
-      })
-    )
+    if (!currentStatus) {
+      predefinedAlerts.unexpectedError();
       return;
+    }
+    if (!validateStatusTag(currentStatus)) return;
 
     await utils.settings.getStatusTypes.cancel({
       projectId: projectId as string,
     });
 
     utils.settings.getStatusTypes.setData(
-      { projectId: projectId as string },
+      { projectId: projectId as string, showAwaitingReview: true },
       (oldData) => {
         if (!oldData) return [];
         return oldData.map((s) => {
@@ -175,14 +172,6 @@ export default function StatusTable() {
       projectId: projectId as string,
       statusId: statusId,
     });
-
-    utils.settings.getStatusType.setData(
-      { projectId: projectId as string, statusId: statusId },
-      (oldData) => {
-        if (!oldData) return;
-        return { ...oldData, marksTaskAsDone: !currentValue };
-      },
-    );
 
     await modifyStatus({
       projectId: projectId as string,
@@ -212,7 +201,7 @@ export default function StatusTable() {
         const newOrder = arrayMove([...filteredStatus], oldIndex, newIndex);
 
         utils.settings.getStatusTypes.setData(
-          { projectId: projectId as string },
+          { projectId: projectId as string, showAwaitingReview: true },
           (oldData) => {
             if (!oldData) return [];
             // Create a new array with the updated orderIndex values
