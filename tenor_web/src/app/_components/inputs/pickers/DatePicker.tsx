@@ -7,6 +7,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import Dropdown from "~/app/_components/Dropdown";
+import { endOfDay } from "~/lib/helpers/parsers";
 
 interface DatePickerProps {
   onChange: (date: Date | undefined) => void;
@@ -42,14 +43,8 @@ export function DatePicker({
       newDate.setHours(0, 0, 0, 0);
       onChange(newDate);
     } else {
-      const newDate = new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate(),
-        23,
-        59,
-        59,
-        999,
+      const newDate = endOfDay(
+        new Date(date.getFullYear(), date.getMonth(), date.getDate()),
       );
       onChange(newDate);
     }

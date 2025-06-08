@@ -26,6 +26,7 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { useInvalidateQueriesTaskDetails } from "~/app/_hooks/invalidateHooks";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import { endOfDay } from "~/lib/helpers/parsers";
 
 export default function ProjectCalendar() {
   // GENERAL
@@ -83,14 +84,8 @@ export default function ProjectCalendar() {
   }, [role]);
 
   const handleDateChange = async (tasks: string[], date: Date) => {
-    const endOfDayDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      23,
-      59,
-      59,
-      999,
+    const endOfDayDate = endOfDay(
+      new Date(date.getFullYear(), date.getMonth(), date.getDate()),
     );
 
     utils.tasks.getTasksByDate.setData(
@@ -204,14 +199,12 @@ export default function ProjectCalendar() {
                         setSelectedDate(date);
                         return;
                       }
-                      const endOfDayDate = new Date(
-                        date.getFullYear(),
-                        date.getMonth(),
-                        date.getDate(),
-                        23,
-                        59,
-                        59,
-                        999,
+                      const endOfDayDate = endOfDay(
+                        new Date(
+                          date.getFullYear(),
+                          date.getMonth(),
+                          date.getDate(),
+                        ),
                       );
                       setSelectedDate(endOfDayDate);
                     }}

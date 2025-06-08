@@ -55,15 +55,12 @@ export const dateToString = (date: Date): string | null => {
   return `${year}-${month}-${day}`;
 };
 
-export const createEndOfDayDate = (
-  year: number,
-  month: number,
-  day: number,
-): Date => {
-  const date = new Date(year, month, day, 23, 59, 59, 999);
+export const startOfDay = (date: Date) => {
+  date.setHours(0, 0, 0);
   return date;
 };
 
-export const normalizeToStartOfDay = (date: Date): Date => {
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+export const endOfDay = (date: Date) => {
+  date.setHours(23, 59, 59, 999);
+  return date;
 };
