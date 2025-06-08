@@ -8,6 +8,7 @@ import InterceptedLink from "./InterceptableLink";
 import { api } from "~/trpc/react";
 import { tabs, tabsMetaInformation } from "~/lib/tabs";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   disabled?: boolean;
@@ -28,6 +29,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     const element = e.target as HTMLAnchorElement;
     element.scrollIntoView({
       behavior: "smooth",
+      block: "nearest",
     });
   };
 
@@ -46,12 +48,13 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
         projectId: projectId as string,
       },
       {
-        enabled: !!projectId,
+        enabled:
+          !!projectId && (role?.retrospective ?? 0) >= permissionNumbers.read,
       },
     );
 
   useEffect(() => {
-    if (previousSprint && projectId) {
+    if (previousSprint && projectId && user) {
       ensureTeamProgress.mutate({
         projectId: projectId as string,
         sprintId: previousSprint.id,
@@ -62,7 +65,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
         userId: user?.uid ?? "",
       });
     }
-  }, [projectId, previousSprint]);
+  }, [projectId, previousSprint, user]);
 
   return (
     <div className="no-scrollbar flex h-8 min-h-8 w-screen shrink-0 items-center gap-2 overflow-x-auto whitespace-nowrap bg-app-primary px-8">

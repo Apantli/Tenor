@@ -6,6 +6,11 @@ import ProjectStatus from "~/app/(logged)/project/[projectId]/ProjectStatusOverv
 import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { api } from "~/trpc/react";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
+import NoAccess from "~/app/_components/NoAccess";
+import { useGetPermission } from "~/app/_hooks/useGetPermission";
+import { activityPermissions } from "~/lib/defaultValues/permission";
 
 export default function ProjectOverview() {
   const params = useParams();
@@ -18,8 +23,18 @@ export default function ProjectOverview() {
       dynamic(() => import("./BurndownChart"), {
         ssr: false,
       }),
-    [],
-  );
+    [],
+  );
+
+  const { data: role, isLoading: isLoadingRole } =
+    api.settings.getMyRole.useQuery({ projectId });
+
+  const activityPermission = useGetPermission(activityPermissions);
+
+  if (isLoadingRole || !role) return <></>;
+
+  const showStatusAndBurndown = role.sprints >= permissionNumbers.read;
+  const showActivity = activityPermission >= permissionNumbers.read;
 
   return (
     <div className="m-6 h-full flex-1 overflow-scroll px-4">
@@ -28,7 +43,9 @@ export default function ProjectOverview() {
         <div className="flex min-h-[70vh] w-full flex-col justify-between gap-4">
           <div
             className={`flex flex-col gap-5 transition-all duration-300 ${
-              isProjectInfoExpanded ? "lg:max-h-64 sm:max-h-full" : "lg:max-h-[13rem] sm:max-h-[15rem]"
+              isProjectInfoExpanded
+                ? "sm:max-h-full lg:max-h-64"
+                : "sm:max-h-[15rem] lg:max-h-[13rem]"
             } h-full`}
           >
             <ProjectInfo
@@ -37,20 +54,24 @@ export default function ProjectOverview() {
             />
           </div>
 
-          <ActivityProjectOverview
-            projectId={projectId}
-            className="h-full justify-self-end"
-          />
+          <div className="flex h-full max-h-[580px] flex-col justify-self-end overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5">
+            {showActivity && <ActivityProjectOverview projectId={projectId} />}
+            {!showActivity && <NoAccess />}
+          </div>
         </div>
 
         {/* Second col - col 2 */}
         <div className="flex w-full flex-col gap-8">
           <div className="flex h-64 flex-col gap-5 rounded-lg border-2 border-[#BECAD4] p-5">
-            <ProjectStatus projectId={projectId} />
+            {showStatusAndBurndown && <ProjectStatus projectId={projectId} />}
+            {!showStatusAndBurndown && <NoAccess />}
           </div>
 
           <div className="flex h-full max-h-[50vh] flex-col rounded-lg border-2 border-[#BECAD4] p-5 lg:max-h-[calc(100%-287px)]">
-            <DynamicBurdownChart projectId={projectId} />
+            {showStatusAndBurndown && (
+              <DynamicBurdownChart projectId={projectId} />
+            )}
+            {!showStatusAndBurndown && <NoAccess />}
           </div>
         </div>
       </div>

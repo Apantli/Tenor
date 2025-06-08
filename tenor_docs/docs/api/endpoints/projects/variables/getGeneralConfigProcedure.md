@@ -4,21 +4,19 @@
 
 # Variable: getGeneralConfigProcedure
 
-> `const` **getGeneralConfigProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `activities`: `object`[]; `currentSprintId`: `string`; `deleted`: `boolean`; `description`: `string`; `logo`: `string`; `name`: `string`; \}; \}\>
+> `const` **getGeneralConfigProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `activities`: `object`[]; `currentSprintId`: `string`; `deleted`: `boolean`; `description`: `string`; `id`: `string`; `logo`: `string`; `name`: `string`; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:373](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L373)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:369](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/projects.ts#L369)
 
-Retrieves the general configuration of a project.
+Gets the general configuration of a specific project.
 
 ## Param
 
-Object containing procedure parameters
-Input object structure:
-- projectId — ID of the project to fetch configuration for
+Object containing projectId
 
 ## Returns
 
-Object containing the project's general configuration.
+Project configuration data
 
 ## Http
 

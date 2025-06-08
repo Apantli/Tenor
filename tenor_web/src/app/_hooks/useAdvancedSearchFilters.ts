@@ -2,6 +2,7 @@ import type { UserPreview } from "~/lib/types/detailSchemas";
 import type { Sprint, Tag, WithId } from "~/lib/types/firebaseSchemas";
 import type { KanbanCard } from "~/lib/types/kanbanTypes";
 import usePersistentState from "./usePersistentState";
+import { useParams } from "next/navigation";
 
 export interface AdvancedSearchFilters {
   tags: WithId<Tag>[];
@@ -12,6 +13,7 @@ export interface AdvancedSearchFilters {
 }
 
 export default function useAdvancedSearchFilters(key: string) {
+  const { projectId } = useParams();
   return usePersistentState<AdvancedSearchFilters>(
     {
       tags: [],
@@ -20,7 +22,7 @@ export default function useAdvancedSearchFilters(key: string) {
       assignee: undefined,
       sprint: undefined,
     },
-    `advanced-search-${key}`,
+    `advanced-search-${projectId as string}-${key}`,
   );
 }
 

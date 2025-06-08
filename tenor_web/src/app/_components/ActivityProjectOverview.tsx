@@ -4,18 +4,15 @@ import { useState } from "react";
 import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
 import SearchBar from "./inputs/search/SearchBar";
 import { getSearchableNameByType } from "~/lib/helpers/searchableNames";
-import { cn } from "~/lib/helpers/utils";
-import type { ClassNameValue } from "tailwind-merge";
 import NoActivityIcon from "@mui/icons-material/FormatListBulleted";
 import LoadingSpinner from "./LoadingSpinner";
 import ActivityCard from "./cards/ActivityCard";
 
 interface Props {
   projectId: string;
-  className?: ClassNameValue;
 }
 
-const ActivityProjectOverview = ({ projectId, className }: Props) => {
+const ActivityProjectOverview = ({ projectId }: Props) => {
   const { data: users, isLoading: usersLoading } = api.users.getUsers.useQuery({
     projectId,
   });
@@ -76,12 +73,7 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
   const isLoading = activitiesLoading || usersLoading;
 
   return (
-    <div
-      className={cn(
-        "flex h-[40vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5",
-        className,
-      )}
-    >
+    <>
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
         <h3 className="w-full self-center text-xl font-semibold">
           Recent Project Activity
@@ -128,7 +120,7 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
           })}
         </div>
       )}
-    </div>
+    </>
   );
 };
 

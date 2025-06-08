@@ -4,23 +4,23 @@
 
 # Variable: deleteRequirementProcedure
 
-> `const` **deleteRequirementProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `requirementId`: `string`; \}; `output`: \{ `success`: `boolean`; \}; \}\>
+> `const` **deleteRequirementProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `requirementId`: `string`; \}; `output`: `void`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/requirements.ts:707](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/requirements.ts#L707)
+Defined in: [tenor\_web/src/server/api/routers/requirements.ts:442](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/requirements.ts#L442)
 
-Deletes a requirement from a project (soft delete).
+Marks a requirement as deleted.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project containing the requirement
-- requirementId — ID of the requirement to delete
+- projectId - String ID of the project
+- requirementId - String ID of the requirement to delete
 
 ## Returns
 
-Object indicating success status.
+void
 
 ## Http
 
-DELETE /api/trpc/requirements.deleteRequirement
+POST /api/trpc/requirements.deleteRequirement

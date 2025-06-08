@@ -165,6 +165,7 @@ export interface Role {
   backlog: Permission; // requirements, epics, user stories, tasks
   reviews: Permission; // sprint reviews
   retrospective: Permission; // sprint retrospective
+  overview: Permission;
 }
 
 /// Backlog items

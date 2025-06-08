@@ -6,7 +6,7 @@
 
 > `const` **refreshSessionProcedure**: `MutationProcedure`\<\{ `input`: \{ `token`: `string`; \}; `output`: \{ `success`: `boolean`; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/auth.ts:156](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/auth.ts#L156)
+Defined in: [tenor\_web/src/server/api/routers/auth.ts:155](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/auth.ts#L155)
 
 Refreshes the user's session by verifying and updating the auth token.
 

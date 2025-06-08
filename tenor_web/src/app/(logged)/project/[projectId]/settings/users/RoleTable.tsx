@@ -57,6 +57,7 @@ export default function RoleTable({
       label: "Name",
       width: 120,
     },
+    overview: { visible: false },
     backlog: {
       label: "Backlog",
       width: defaultWidth,
@@ -188,6 +189,7 @@ export default function RoleTable({
       render: (row) => {
         return (
           <PillPickerComponent
+            disabled={disabled}
             label={permissionLabels[row.retrospective]}
             selectedItem={{
               id: row.retrospective.toString(),

@@ -4,7 +4,7 @@ export const tabsMetaInformation = {
     title: "Overview",
     link: "/",
     enabled: true,
-    flags: ["backlog", "performance"],
+    flags: ["overview"],
   },
   requirements: {
     title: "Requirements",
@@ -40,7 +40,7 @@ export const tabsMetaInformation = {
     title: "Scrum Board",
     link: "/scrumboard",
     enabled: true,
-    flags: ["backlog", "issues"],
+    flags: ["scrumboard"],
   },
   calendar: {
     title: "Calendar",

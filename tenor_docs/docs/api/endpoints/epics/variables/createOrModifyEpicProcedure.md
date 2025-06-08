@@ -4,25 +4,23 @@
 
 # Variable: createOrModifyEpicProcedure
 
-> `const` **createOrModifyEpicProcedure**: `MutationProcedure`\<\{ `input`: \{ `deleted?`: `boolean`; `description`: `string`; `name`: `string`; `projectId`: `string`; `scrumId`: `number`; \}; `output`: `"Epic updated successfully"` \| `"Epic created successfully"`; \}\>
+> `const` **createOrModifyEpicProcedure**: `MutationProcedure`\<\{ `input`: \{ `epicData`: \{ `createdAt?`: `Timestamp`; `deleted?`: `boolean`; `description`: `string`; `name`: `string`; `scrumId`: `number`; \}; `epicId?`: `string`; `projectId`: `string`; \}; `output`: `void`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/epics.ts:116](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/epics.ts#L116)
+Defined in: [tenor\_web/src/server/api/routers/epics.ts:72](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/epics.ts#L72)
 
-Creates a new epic or updates an existing one in a project.
+Creates a new epic or modifies an existing one.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project to create or update the epic in
-- scrumId — Scrum ID of the epic (use -1 for new epics)
-- name — Name of the epic
-- description — Description of the epic
-- deleted — Boolean indicating if the epic is deleted
+- epicData - Object containing epic details conforming to EpicSchema
+- projectId - String ID of the project
+- epicId - Optional string ID of the epic to modify (when updating)
 
 ## Returns
 
-Success message indicating whether the epic was created or updated.
+None
 
 ## Http
 

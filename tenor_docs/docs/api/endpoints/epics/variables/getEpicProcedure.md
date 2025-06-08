@@ -4,22 +4,22 @@
 
 # Variable: getEpicProcedure
 
-> `const` **getEpicProcedure**: `QueryProcedure`\<\{ `input`: \{ `epicId`: `number`; `projectId`: `string`; \}; `output`: \{ `deleted`: `boolean`; `description`: `string`; `name`: `string`; `scrumId`: `number`; \}; \}\>
+> `const` **getEpicProcedure**: `QueryProcedure`\<\{ `input`: \{ `epicId`: `string`; `projectId`: `string`; \}; `output`: `WithId`\<`BasicInfo`\>; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/epics.ts:81](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/epics.ts#L81)
+Defined in: [tenor\_web/src/server/api/routers/epics.ts:52](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/epics.ts#L52)
 
-Retrieves a specific epic by its scrum ID.
+Retrieves a specific epic by its ID within a project.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project containing the epic
-- epicId — Scrum ID of the epic to retrieve
+- projectId - String ID of the project
+- epicId - String ID of the epic to retrieve
 
 ## Returns
 
-Epic object with its details.
+Epic object containing details or null if not found
 
 ## Http
 

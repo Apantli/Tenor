@@ -4,21 +4,19 @@
 
 # Variable: getProjectNameProcedure
 
-> `const` **getProjectNameProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `projectName`: `string`; \}; \}\>
+> `const` **getProjectNameProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `string`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:485](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L485)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:477](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/projects.ts#L477)
 
-Retrieves the name of a specific project.
+Gets the name of a specific project.
 
 ## Param
 
-Object containing procedure parameters
-Input object structure:
-- projectId — ID of the project to fetch the name for
+Object containing projectId
 
 ## Returns
 
-Object containing the project's name.
+Project name string
 
 ## Http
 

@@ -26,6 +26,7 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { useInvalidateQueriesTaskDetails } from "~/app/_hooks/invalidateHooks";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
+import { endOfDay } from "~/lib/helpers/parsers";
 
 export default function ProjectCalendar() {
   // GENERAL
@@ -83,13 +84,17 @@ export default function ProjectCalendar() {
   }, [role]);
 
   const handleDateChange = async (tasks: string[], date: Date) => {
+    const endOfDayDate = endOfDay(
+      new Date(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
+
     utils.tasks.getTasksByDate.setData(
       { projectId: projectId as string },
       (oldData) => {
         if (!oldData) return oldData;
 
         // get key of the date in the format YYYY-MM-DD
-        const dateKey = dateToString(date);
+        const dateKey = dateToString(endOfDayDate);
         if (!dateKey) return oldData;
 
         // if the dateKey does not exist in oldData, create it
@@ -119,7 +124,7 @@ export default function ProjectCalendar() {
         changeTaskDate({
           projectId: projectId as string,
           taskId,
-          dueDate: Timestamp.fromDate(date),
+          dueDate: Timestamp.fromDate(endOfDayDate),
         }),
       ),
     );
@@ -194,13 +199,14 @@ export default function ProjectCalendar() {
                         setSelectedDate(date);
                         return;
                       }
-                      // truncate to start of the day
-                      date = new Date(
-                        date.getFullYear(),
-                        date.getMonth(),
-                        date.getDate(),
+                      const endOfDayDate = endOfDay(
+                        new Date(
+                          date.getFullYear(),
+                          date.getMonth(),
+                          date.getDate(),
+                        ),
                       );
-                      setSelectedDate(date);
+                      setSelectedDate(endOfDayDate);
                     }}
                     className="max-h-8 bg-white text-xs"
                   />
