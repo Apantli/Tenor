@@ -28,6 +28,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
     const element = e.target as HTMLAnchorElement;
     element.scrollIntoView({
       behavior: "smooth",
+      block: "nearest",
     });
   };
 

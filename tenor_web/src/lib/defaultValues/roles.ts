@@ -13,6 +13,7 @@ export const defaultRoleList: Role[] = [
     backlog: 2,
     retrospective: 2,
     reviews: 2,
+    overview: 1,
   },
   {
     id: "developer",
@@ -25,6 +26,7 @@ export const defaultRoleList: Role[] = [
     backlog: 1,
     retrospective: 2,
     reviews: 2,
+    overview: 1,
   },
   {
     id: "viewer",
@@ -38,6 +40,7 @@ export const defaultRoleList: Role[] = [
     backlog: 0,
     retrospective: 0,
     reviews: 0,
+    overview: 1,
   },
 ];
 
@@ -52,6 +55,7 @@ export const emptyRole: Role = {
   backlog: 0,
   retrospective: 0,
   reviews: 0,
+  overview: 1,
 };
 
 export const ownerRole: Role = {
@@ -65,6 +69,7 @@ export const ownerRole: Role = {
   backlog: 2,
   retrospective: 2,
   reviews: 2,
+  overview: 1,
 };
 
 export const canRoleWrite = (role: Role) => {

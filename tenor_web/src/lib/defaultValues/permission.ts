@@ -11,6 +11,7 @@ export interface FlagsRequired {
     | "issues"
     | "backlog"
     | "retrospective"
+    | "overview"
   )[];
 
   // false/null/pesimistic gets the lowest permission
@@ -32,6 +33,7 @@ export const generalPermissions: FlagsRequired = {
     "performance",
     "sprints",
     "retrospective",
+    "overview",
   ],
 
   optimistic: true,
@@ -61,6 +63,7 @@ export const usersPermissions: FlagsRequired = {
     "performance",
     "sprints",
     "retrospective",
+    "overview",
   ],
 
   optimistic: true,

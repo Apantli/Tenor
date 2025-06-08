@@ -29,10 +29,11 @@ import { getIssue } from "./issues";
 import { getUserStory } from "./userStories";
 import { getBacklogItem } from "./backlogItems";
 import { getEpic } from "./epics";
-import { notFound } from "~/server/errors";
+import { forbidden, notFound } from "~/server/errors";
 import { getRequirement } from "./requirements";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
+import { TRPCError } from "@trpc/server";
 
 /**
  * @function getProjectsRef
@@ -166,14 +167,18 @@ export const getUserRole = async (
   const userDoc = await userRef.get();
 
   if (!userDoc.exists) {
-    throw new Error("User not found");
+    throw forbidden("User is not in project");
   }
   const userData = userDoc.data();
   if (!userData) {
     throw new Error("User data not found");
   }
 
-  if (userData.roleId == null) {
+  if (userData.active === false) {
+    throw forbidden("User was removed from project");
+  }
+
+  if (userData.roleId == "none") {
     return emptyRole;
   }
 
@@ -197,6 +202,7 @@ export const getUserRole = async (
 
   return {
     id: roleDoc.id,
+    overview: 1, // Everyone in the project can see the overview (and it is not customizable)
     ...RoleSchema.parse(roleData),
   } as WithId<RoleDetail>;
 };

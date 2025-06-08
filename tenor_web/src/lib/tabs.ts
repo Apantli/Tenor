@@ -4,7 +4,7 @@ export const tabsMetaInformation = {
     title: "Overview",
     link: "/",
     enabled: true,
-    flags: ["backlog", "performance"],
+    flags: ["overview"],
   },
   requirements: {
     title: "Requirements",

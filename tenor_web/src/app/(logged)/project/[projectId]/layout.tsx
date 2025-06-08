@@ -65,6 +65,20 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     return true;
   }, [role, tab]);
 
+  // Only show the tabbar if the user has at least one permission
+  const checkShowTabbar = () => {
+    for (const tab of Object.values(tabsMetaInformation)) {
+      for (const flag of tab.flags) {
+        if (role?.[flag as keyof typeof role]) {
+          return true;
+        }
+      }
+    }
+    return false;
+  };
+
+  let showTabbar = checkShowTabbar();
+
   return (
     <div className="flex h-screen flex-col overflow-hidden">
       <Navbar>
@@ -86,7 +100,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
           )}
         </div>
       </Navbar>
-      <Tabbar />
+      {!isLoadingRole && showTabbar && <Tabbar />}
       {/* Only show content after the role is loaded */}
       {!isLoadingRole && !error && (
         <>
