@@ -437,11 +437,23 @@ export const modifyTaskProcedure = protectedProcedure
       statusChangeDate = Timestamp.fromDate(new Date());
     }
 
-    await getTaskRef(ctx.firestore, projectId, taskId).update({
+    await LogProjectActivity({
+      firestore: ctx.firestore,
+      projectId: input.projectId,
+      userId: ctx.session.user.uid,
+      itemId: taskId,
+      type: "TS",
+      action: "update",
+    });
+
+    const updateData = {
       ...taskData,
       assignedDate,
       statusChangeDate,
-    });
+      dueDate: taskData.dueDate ?? FieldValue.delete(),
+    };
+
+    await getTaskRef(ctx.firestore, projectId, taskId).update(updateData);
     return {
       updatedTaskds: [
         ...addedDependencies,

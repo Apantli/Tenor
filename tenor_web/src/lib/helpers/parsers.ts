@@ -39,8 +39,20 @@ export const formatSeconds = (seconds: number | undefined): string => {
   return formattedTime;
 };
 
-export const dateToString = (date: Date) => {
-  return date.toISOString().split("T")[0];
+export const dateToString = (date: Date): string | null => {
+  if (!date) return null;
+
+  const normalizedDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+
+  const year = normalizedDate.getFullYear();
+  const month = String(normalizedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(normalizedDate.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 };
 
 export const startOfDay = (date: Date) => {
