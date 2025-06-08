@@ -8,6 +8,8 @@ import Tabbar from "~/app/_components/Tabbar";
 import { cn } from "~/lib/helpers/utils";
 import { api } from "~/trpc/react";
 import { tabsMetaInformation, tabsToLinks } from "~/lib/tabs";
+import LockPersonIcon from "@mui/icons-material/LockPerson";
+import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
 
 export default function ProjectLayout({ children }: PropsWithChildren) {
@@ -15,7 +17,11 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
   const pathName = usePathname();
   const tab = pathName.split("/").pop();
 
-  const { data: projectNameData } = api.projects.getProjectName.useQuery({
+  const {
+    data: projectNameData,
+    error,
+    isLoading: isLoadingProject,
+  } = api.projects.getProjectName.useQuery({
     projectId: projectId as string,
   });
   const { data: role, isLoading: isLoadingRole } =
@@ -82,7 +88,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
       </Navbar>
       <Tabbar />
       {/* Only show content after the role is loaded */}
-      {!isLoadingRole && (
+      {!isLoadingRole && !error && (
         <>
           {permitted ? (
             <main className="flex flex-1 flex-col overflow-hidden">
@@ -90,16 +96,35 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
             </main>
           ) : (
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <SearchOffIcon style={{ fontSize: 100, color: "gray" }} />
-              <p className="mt-4 text-xl font-semibold text-gray-600">
-                Oops... the page you are looking for is not here.
+              <LockPersonIcon style={{ fontSize: 120, color: "gray" }} />
+              <p className="mt-4 text-2xl font-semibold text-gray-600">
+                Sorry... you're not allowed to access this page.
               </p>
-              <p className="mt-2 text-sm text-gray-500">
-                If you are looking for a project, ask the administrator to give
-                you access.
+              <p className="mt-2 text-xl text-gray-500">
+                If you believe this is a mistake, ask the project administrator
+                to give you access.
               </p>
+              <PrimaryButton className="mt-8" href="/">
+                Back to dashboard
+              </PrimaryButton>
             </div>
           )}
+        </>
+      )}
+      {!isLoadingProject && error && (
+        <>
+          <div className="flex h-full flex-col items-center justify-center text-center">
+            <SearchOffIcon style={{ fontSize: 120, color: "gray" }} />
+            <p className="mt-4 text-2xl font-semibold text-gray-600">
+              Project not found
+            </p>
+            <p className="mt-2 text-xl text-gray-500">
+              The project you are trying to access doesn't exist.
+            </p>
+            <PrimaryButton className="mt-8" href="/">
+              Back to dashboard
+            </PrimaryButton>
+          </div>
         </>
       )}
     </div>

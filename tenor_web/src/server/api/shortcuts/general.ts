@@ -64,7 +64,7 @@ export const getProjectRef = (firestore: Firestore, projectId: string) => {
  */
 export const getProject = async (firestore: Firestore, projectId: string) => {
   const project = await getProjectRef(firestore, projectId).get();
-  if (!project.exists) {
+  if (!project.exists || (project.data()?.deleted as boolean)) {
     throw notFound("Project");
   }
   return { id: project.id, ...ProjectSchema.parse(project.data()) };
