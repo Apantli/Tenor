@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
 import { api } from "~/trpc/react";
@@ -36,6 +36,8 @@ import usePersistentState from "~/app/_hooks/usePersistentState";
 import SidebarToggleIcon from "~/app/_components/SidebarToggleIcon";
 import { useWindowRect } from "~/app/_hooks/windowHooks";
 import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
+import LeftArrow from "@mui/icons-material/West";
+import RightArrow from "@mui/icons-material/East";
 
 const noSprintId = "noSprintId";
 
@@ -61,6 +63,7 @@ export default function ProjectSprints() {
   const [renderNewBacklogItem, showNewBacklogItem, setShowNewBacklogItem] =
     usePopupVisibilityState();
   const [showBacklog, setShowBacklog] = usePersistentState(true, "showBacklog");
+  const [hoveringBacklog, setHoveringBacklog] = useState(false);
   // #endregion
 
   // #region TRPC
@@ -426,10 +429,87 @@ export default function ProjectSprints() {
   };
   // #endregion
 
+  // #region Scroll control
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState(false);
+  const { rect: windowRect } = useWindowRect();
+
+  const pointerPosition = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const rafId = useRef<number | null>(null);
+
+  const SCROLL_EDGE_THRESHOLD = 100;
+  const BASE_SCROLL_AMOUNT = 20;
+
+  const startScrollLoop = () => {
+    const loop = () => {
+      if (!scrollRef.current) return;
+
+      const containerRect = scrollRef.current.getBoundingClientRect();
+      const { x, y } = pointerPosition.current;
+
+      const distanceFromLeft = x - containerRect.left;
+      const distanceFromRight = containerRect.right - x;
+      const inside = y > (windowRect?.height ?? 100) * 0.9;
+
+      if (inside) {
+        if (distanceFromLeft < SCROLL_EDGE_THRESHOLD) {
+          if (scrollRef.current.scrollLeft > 0) {
+            const speedFactor = Math.max(
+              0,
+              Math.min(
+                1,
+                (SCROLL_EDGE_THRESHOLD - distanceFromLeft) /
+                  SCROLL_EDGE_THRESHOLD,
+              ),
+            );
+            const scrollAmount = BASE_SCROLL_AMOUNT * speedFactor;
+            scrollRef.current.scrollLeft -= scrollAmount;
+          }
+        } else if (distanceFromRight < SCROLL_EDGE_THRESHOLD) {
+          const speedFactor = Math.max(
+            0,
+            Math.min(
+              1,
+              (SCROLL_EDGE_THRESHOLD - distanceFromRight) /
+                SCROLL_EDGE_THRESHOLD,
+            ),
+          );
+          const scrollAmount = BASE_SCROLL_AMOUNT * speedFactor;
+          scrollRef.current.scrollLeft += scrollAmount;
+        }
+      }
+
+      rafId.current = requestAnimationFrame(loop);
+    };
+
+    rafId.current = requestAnimationFrame(loop);
+  };
+
+  const stopScrollLoop = () => {
+    if (rafId.current !== null) {
+      cancelAnimationFrame(rafId.current);
+      rafId.current = null;
+    }
+  };
+  // #endregion
+
   return (
     <>
       <DragDropProvider
+        onDragStart={() => {
+          setDragging(true);
+          startScrollLoop();
+          if (!scrollRef.current) return;
+          scrollRef.current.style.pointerEvents = "none";
+          scrollRef.current.style.overflowX = "hidden";
+        }}
         onDragEnd={async (event) => {
+          setDragging(false);
+          stopScrollLoop();
+          if (scrollRef.current) {
+            scrollRef.current.style.overflowX = "auto";
+            scrollRef.current.style.pointerEvents = "auto";
+          }
           if (permission < permissionNumbers.write) return;
           const { operation, canceled } = event;
           const { source, target } = operation;
@@ -441,6 +521,17 @@ export default function ProjectSprints() {
           await handleDragEnd(source.id as string, target.id as string);
         }}
         onDragMove={(e) => {
+          pointerPosition.current = {
+            x: e.to?.x ?? 0,
+            y: e.to?.y ?? 0,
+          };
+
+          if (showBacklog && (e.to?.x ?? 1000) < 500) {
+            setHoveringBacklog(true);
+          } else {
+            setHoveringBacklog(false);
+          }
+
           if ((e.to?.x ?? 1000) < 100 && !showBacklog) {
             setShowBacklog(true);
           } else if ((e.to?.x ?? 0) > 426 && showBacklog && isTablet) {
@@ -451,7 +542,7 @@ export default function ProjectSprints() {
         <div className="relative flex h-full overflow-hidden">
           <div
             className={cn(
-              "flex shrink-0 basis-[426px] touch-none flex-col overflow-hidden border-r-2 bg-white pb-10 pl-5 pr-5 pt-10 xl:relative",
+              "z-[100] flex shrink-0 basis-[426px] touch-none flex-col overflow-hidden border-r-2 bg-white pb-10 pl-5 pr-5 pt-10 xl:relative",
               {
                 "w-auto basis-[90px] pl-7": !showBacklog,
                 "absolute left-0 z-[100] h-full w-[426px] min-w-[426px]":
@@ -603,51 +694,81 @@ export default function ProjectSprints() {
                 )}
               </div>
             </div>
-            <div className="flex w-full flex-1 gap-4 overflow-x-auto">
-              {isLoading && (
-                <div className="flex h-full w-full items-center justify-center">
-                  <LoadingSpinner color="primary" />
-                </div>
-              )}
-              {!isLoading && backlogItemsBySprint?.sprints.length === 0 && (
-                <div className="flex h-full w-full items-center justify-center">
-                  <div className="flex flex-col items-center gap-5">
-                    <span className="-mb-10 text-[100px] text-gray-500">
-                      <ColumnsIcon fontSize="inherit" />
-                    </span>
-                    <h1 className="mb-5 text-3xl font-semibold text-gray-500">
-                      No sprints yet
-                    </h1>
-                    {permission >= permissionNumbers.write && (
-                      <PrimaryButton
-                        onClick={() => {
-                          setShowSmallPopup(true);
-                        }}
-                      >
-                        Create your first sprint
-                      </PrimaryButton>
-                    )}
-                  </div>
-                </div>
-              )}
-              {filteredSprints.map((column) => (
-                <SprintCardColumn
-                  advancedFilters={advancedFilters}
-                  disabled={permission < permissionNumbers.write}
-                  disableDropping={showBacklog && isTablet}
-                  allSprints={backlogItemsBySprint?.sprints.map(
-                    (sprint) => sprint.sprint,
+            <div className="relative flex-1">
+              <div
+                className={cn(
+                  "z-[0] flex h-full w-full gap-4 overflow-x-auto",
+                  {
+                    "pr-[calc(100vw-535px)]":
+                      (backlogItemsBySprint?.sprints.length ?? 0) > 0,
+                    "pr-[calc(100vw-870px)]":
+                      (backlogItemsBySprint?.sprints.length ?? 0) > 0 &&
+                      showBacklog,
+                  },
+                )}
+                ref={scrollRef}
+              >
+                <div
+                  className={cn(
+                    "absolute bottom-0 left-0 z-[20] flex h-[80px] w-full items-center justify-between bg-app-primary/80 px-10 text-white opacity-0 transition",
+                    {
+                      "opacity-100":
+                        dragging &&
+                        (scrollRef?.current?.clientWidth ?? 0) <
+                          400 * (backlogItemsBySprint?.sprints.length ?? 0),
+                    },
                   )}
-                  lastDraggedBacklogItemId={lastDraggedBacklogItemId}
-                  assignSelectionToSprint={assignSelectionToSprint}
-                  column={column}
-                  backlogItems={backlogItemsBySprint?.backlogItems ?? {}}
-                  key={column.sprint.id}
-                  selectedItems={selectedItems}
-                  setSelectedItems={setSelectedItems}
-                  setDetailItemId={setDetailItemId}
-                />
-              ))}
+                >
+                  <LeftArrow />
+                  <span>Drag along here to scroll</span>
+                  <RightArrow />
+                </div>
+                {isLoading && (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <LoadingSpinner color="primary" />
+                  </div>
+                )}
+                {!isLoading && backlogItemsBySprint?.sprints.length === 0 && (
+                  <div className="flex h-full w-full items-center justify-center">
+                    <div className="flex flex-col items-center gap-5">
+                      <span className="-mb-10 text-[100px] text-gray-500">
+                        <ColumnsIcon fontSize="inherit" />
+                      </span>
+                      <h1 className="mb-5 text-3xl font-semibold text-gray-500">
+                        No sprints yet
+                      </h1>
+                      {permission >= permissionNumbers.write && (
+                        <PrimaryButton
+                          onClick={() => {
+                            setShowSmallPopup(true);
+                          }}
+                        >
+                          Create your first sprint
+                        </PrimaryButton>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {filteredSprints.map((column) => (
+                  <SprintCardColumn
+                    scrollRef={scrollRef}
+                    advancedFilters={advancedFilters}
+                    disabled={permission < permissionNumbers.write}
+                    disableDropping={showBacklog && hoveringBacklog}
+                    allSprints={backlogItemsBySprint?.sprints.map(
+                      (sprint) => sprint.sprint,
+                    )}
+                    lastDraggedBacklogItemId={lastDraggedBacklogItemId}
+                    assignSelectionToSprint={assignSelectionToSprint}
+                    column={column}
+                    backlogItems={backlogItemsBySprint?.backlogItems ?? {}}
+                    key={column.sprint.id}
+                    selectedItems={selectedItems}
+                    setSelectedItems={setSelectedItems}
+                    setDetailItemId={setDetailItemId}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>

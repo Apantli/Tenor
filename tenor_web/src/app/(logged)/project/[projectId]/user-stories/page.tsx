@@ -115,6 +115,9 @@ export default function ProjectUserStories() {
         {selectedViewState === "Dependency Tree" && (
           <ReactFlowProvider>
             <UserStoryDependencyTree
+              switchToListView={() => {
+                setSelectedViewState("List");
+              }}
               segmentedControl={
                 <SegmentedControl
                   options={segmentedControlOptions}

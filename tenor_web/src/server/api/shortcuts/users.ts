@@ -34,15 +34,26 @@ export const getGlobalUserRef = (firestore: Firestore, userId: string) => {
  * @param admin A Firebase Admin instance
  * @returns {Promise<UserPreview[]>} An array of user preview objects
  */
-export const getGlobalUserPreviews = async (admin: admin.app.App) => {
+export const getGlobalUserPreviews = async (
+  firestore: Firestore,
+  admin: admin.app.App,
+) => {
   const users = await admin.auth().listUsers(1000);
 
-  const usersList: WithId<UserPreview>[] = users.users.map((user) => ({
-    id: user.uid,
-    displayName: user.displayName ?? user.email ?? "NA",
-    email: user.email ?? "",
-    photoURL: user.photoURL ?? "",
-  }));
+  const usersList: WithId<UserPreview>[] = (
+    await Promise.all(
+      users.users.map(async (user) => {
+        const userDoc = await getGlobalUserRef(firestore, user.uid).get();
+        if (!userDoc.exists) return undefined;
+        return {
+          id: user.uid,
+          displayName: user.displayName ?? user.email ?? "NA",
+          email: user.email ?? "",
+          photoURL: user.photoURL ?? "",
+        };
+      }),
+    )
+  ).filter((user) => user !== undefined);
 
   return usersList;
 };
