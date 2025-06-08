@@ -140,12 +140,7 @@ export function DatePicker({
       {selectedDate && !disabled && (
         <div
           onClick={handleClear}
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          className="ml-2 rounded p-1 text-gray-500 transition-colors hover:bg-gray-300 hover:text-gray-700"
-          role="button"
+          className="ml-2 text-gray-500 transition-colors hover:text-gray-700"
         >
           <CloseIcon className="h-5 w-5" />
         </div>
@@ -168,7 +163,6 @@ export function DatePicker({
             );
           }}
           className="rounded p-1 hover:bg-gray-100"
-          type="button"
         >
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
@@ -183,7 +177,6 @@ export function DatePicker({
             );
           }}
           className="rounded p-1 hover:bg-gray-100"
-          type="button"
         >
           <ChevronRightIcon className="h-4 w-4" />
         </button>
@@ -219,7 +212,6 @@ export function DatePicker({
                     !isSelectedDate(date) &&
                     "bg-gray-200 font-semibold",
                 )}
-                type="button"
               >
                 {date.getDate()}
               </button>
