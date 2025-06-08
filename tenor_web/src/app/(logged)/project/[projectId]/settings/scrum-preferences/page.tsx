@@ -279,40 +279,44 @@ export default function ProjectScrumPreferences() {
   };
 
   return (
-    <div className="flex h-full flex-col gap-4 lg:max-w-[600px]">
-      <div className="flex w-full items-center justify-between">
-        <h1 className="mb-2 text-3xl font-semibold">Scrum Preferences</h1>
-        {hasBeenModified() && (
-          <PrimaryButton onClick={handleSave} loading={isUpdatePending}>
-            Save
-          </PrimaryButton>
+    <div className="flex h-full flex-col gap-4 lg:mb-0 lg:max-w-[600px]">
+      <div className="pb-10">
+        <div className="flex w-full items-center justify-between">
+          <h1 className="mb-2 text-3xl font-semibold">Scrum Preferences</h1>
+          {hasBeenModified() && (
+            <PrimaryButton onClick={handleSave} loading={isUpdatePending}>
+              Save
+            </PrimaryButton>
+          )}
+        </div>
+        {!settingFetchLoading && (
+          <>
+            <TimeMultiselect
+              disabled={permission < permissionNumbers.write}
+              timeNumber={timeForm[0]}
+              timeFrame={timeForm[1]}
+              onTimeNumberChange={handleTimeNumberChange}
+              onTimeFrameChange={handleTimeFrameChange}
+              label="Sprint duration"
+              data-cy="sprint-duration"
+              labelClassName="text-lg font-semibold"
+            />
+
+            <div className="my-2">
+              <SettingsSizeTable
+                disabled={permission < permissionNumbers.write}
+                sizeData={sizeData}
+                setSizeData={setSizeData}
+              />
+            </div>
+          </>
+        )}
+        {settingFetchLoading && (
+          <div className="flex h-full w-full flex-col items-center">
+            <LoadingSpinner color="primary" />
+          </div>
         )}
       </div>
-      {!settingFetchLoading && (
-        <>
-          <TimeMultiselect
-            disabled={permission < permissionNumbers.write}
-            timeNumber={timeForm[0]}
-            timeFrame={timeForm[1]}
-            onTimeNumberChange={handleTimeNumberChange}
-            onTimeFrameChange={handleTimeFrameChange}
-            label="Sprint duration"
-            data-cy="sprint-duration"
-            labelClassName="text-lg font-semibold"
-          />
-
-          <SettingsSizeTable
-            disabled={permission < permissionNumbers.write}
-            sizeData={sizeData}
-            setSizeData={setSizeData}
-          />
-        </>
-      )}
-      {settingFetchLoading && (
-        <div className="flex h-full w-full flex-col items-center">
-          <LoadingSpinner color="primary" />
-        </div>
-      )}
     </div>
   );
 }

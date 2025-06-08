@@ -94,14 +94,14 @@ export default function SettingsSizeTable({
   };
 
   return (
-    <div className="max-w-[220px] space-y-4">
+    <div className="max-w-[220px] space-y-2">
       <label className="text-lg font-semibold">Size Settings</label>
       <Table
         className="w-sml"
         data={sizeData}
         columns={tableColumns}
         tableKey="size-table"
-        rowClassName="h-12"
+        rowClassName="h-13"
       />
     </div>
   );

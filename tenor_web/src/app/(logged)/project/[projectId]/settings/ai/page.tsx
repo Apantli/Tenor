@@ -282,65 +282,67 @@ export default function ProjectAIConfig() {
 
   return (
     <div className="flex h-full flex-col lg:max-w-[600px]">
-      <div className="flex flex-row justify-between">
-        <div className="flex w-full items-center justify-between">
-          <div className="mb-4 flex items-center gap-2">
-            <h1 className="text-3xl font-semibold">AI Context</h1>
-            <AIDisclaimer size="medium" />
+      <div className="pb-10">
+        <div className="flex flex-row justify-between">
+          <div className="flex w-full items-center justify-between">
+            <div className="mb-4 flex items-center gap-2">
+              <h1 className="text-3xl font-semibold">AI Context</h1>
+              <AIDisclaimer size="medium" />
+            </div>
+            {(isModified() || isContextUpdatePending) &&
+              links &&
+              files &&
+              !isLoading && (
+                <PrimaryButton
+                  onClick={async () => {
+                    await handleUpdateText(newText);
+                  }}
+                  loading={isContextUpdatePending}
+                >
+                  Save
+                </PrimaryButton>
+              )}
           </div>
-          {(isModified() || isContextUpdatePending) &&
-            links &&
-            files &&
-            !isLoading && (
-              <PrimaryButton
-                onClick={async () => {
-                  await handleUpdateText(newText);
-                }}
-                loading={isContextUpdatePending}
-              >
-                Save
-              </PrimaryButton>
-            )}
         </div>
+        {links && files && !isLoading ? (
+          <div className="flex flex-col gap-4">
+            <InputTextAreaField
+              id="project-context-field"
+              disabled={permission < permissionNumbers.write}
+              label="Project Context"
+              value={newText}
+              onChange={(e) => {
+                setNewText(e.target.value);
+              }}
+              placeholder="Tell us about your project..."
+              className="h-[250px]"
+              labelClassName="text-lg font-semibold"
+            />
+            <FileList
+              disabled={permission < permissionNumbers.write}
+              label={"Context Files"}
+              files={files}
+              tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
+              handleFileAdd={handleAddFiles}
+              handleFileRemove={handleRemoveFile}
+            />
+            <LinkList
+              disabled={permission < permissionNumbers.write}
+              label={"Context Links"}
+              links={links.map((link) => ({
+                link: link.link,
+                content: link.valid ? "valid" : null,
+              }))}
+              handleLinkAdd={handleAddLink}
+              handleLinkRemove={handleRemoveLink}
+            ></LinkList>
+          </div>
+        ) : (
+          <div className="flex h-full w-full flex-col items-center">
+            <LoadingSpinner color="primary" />
+          </div>
+        )}
       </div>
-      {links && files && !isLoading ? (
-        <div className="flex flex-col gap-4">
-          <InputTextAreaField
-            id="project-context-field"
-            disabled={permission < permissionNumbers.write}
-            label="Project Context"
-            value={newText}
-            onChange={(e) => {
-              setNewText(e.target.value);
-            }}
-            placeholder="Tell us about your project..."
-            className="h-[250px]"
-            labelClassName="text-lg font-semibold"
-          />
-          <FileList
-            disabled={permission < permissionNumbers.write}
-            label={"Context Files"}
-            files={files}
-            tokenLimit={env.NEXT_PUBLIC_FILE_TOKEN_LIMIT}
-            handleFileAdd={handleAddFiles}
-            handleFileRemove={handleRemoveFile}
-          />
-          <LinkList
-            disabled={permission < permissionNumbers.write}
-            label={"Context Links"}
-            links={links.map((link) => ({
-              link: link.link,
-              content: link.valid ? "valid" : null,
-            }))}
-            handleLinkAdd={handleAddLink}
-            handleLinkRemove={handleRemoveLink}
-          ></LinkList>
-        </div>
-      ) : (
-        <div className="flex h-full w-full flex-col items-center">
-          <LoadingSpinner color="primary" />
-        </div>
-      )}
     </div>
   );
 }

@@ -16,6 +16,7 @@ import DeleteButton from "~/app/_components/inputs/buttons/DeleteButton";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import useValidateDate from "~/app/_hooks/useValidateDates";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 interface Props {
   sprintId: string;
   showPopup: boolean;
@@ -127,6 +128,8 @@ export default function EditSprintPopup({
     }
   };
 
+  const checkDescriptionLimit = useCharacterLimit("Sprint description", 200);
+
   return (
     <Popup
       show={showPopup}
@@ -190,9 +193,11 @@ export default function EditSprintPopup({
             height={15}
             label="Sprint description"
             value={editForm.description}
-            onChange={(e) =>
-              setEditForm({ ...editForm, description: e.target.value })
-            }
+            onChange={(e) => {
+              if (checkDescriptionLimit(e.target.value)) {
+                setEditForm({ ...editForm, description: e.target.value });
+              }
+            }}
             placeholder="Explain what will be done in this sprint..."
             className="h-[200px] w-full"
           />

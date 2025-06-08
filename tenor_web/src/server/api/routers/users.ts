@@ -52,7 +52,10 @@ export const getGlobalUsersProcedure = protectedProcedure
   .input(z.object({ filter: z.string().optional() }))
   .query(async ({ ctx, input }) => {
     const { filter } = input;
-    const users = await getGlobalUserPreviews(ctx.firebaseAdmin.app());
+    const users = await getGlobalUserPreviews(
+      ctx.firestore,
+      ctx.firebaseAdmin.app(),
+    );
 
     // Get the users based on the filter
     return users.filter((user) =>

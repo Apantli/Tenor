@@ -42,6 +42,7 @@ import usePersistentState from "~/app/_hooks/usePersistentState";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
 import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 const flowIdentifier = "taskDependencyTree";
@@ -430,6 +431,25 @@ export default function TaskDependencyTree() {
             <h1 className="mb-5 text-3xl font-semibold text-gray-500">
               No tasks yet
             </h1>
+            <p className="text-xl text-app-text">
+              Create tasks inside of a
+              <TertiaryButton
+                href={`/project/${projectId as string}/user-stories`}
+                className="hover:text-app-primary"
+                inline
+              >
+                user story
+              </TertiaryButton>
+              or
+              <TertiaryButton
+                href={`/project/${projectId as string}/issues`}
+                className="hover:text-app-primary"
+                inline
+              >
+                issue
+              </TertiaryButton>
+              first.
+            </p>
           </div>
         </div>
       )}

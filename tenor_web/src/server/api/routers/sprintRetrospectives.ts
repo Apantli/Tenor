@@ -221,7 +221,7 @@ export const getPreviousSprintProcedure = roleRequiredProcedure(
  * @returns Object containing processed answers, happiness rating and analysis
  * @throws {TRPCError} - If not enough answers are provided
  *
- * @http GET /api/trpc/sprintRetrospectives.getProcessedRetrospectiveAnswers
+ * @http POST /api/trpc/sprintRetrospectives.getProcessedRetrospectiveAnswers
  */
 export const getProcessedRetrospectiveAnswersProcedure = roleRequiredProcedure(
   retrospectivePermissions,
@@ -235,7 +235,7 @@ export const getProcessedRetrospectiveAnswersProcedure = roleRequiredProcedure(
       }),
     }),
   )
-  .query(async ({ input }) => {
+  .mutation(async ({ input }) => {
     const { data } = input;
 
     if (data.textAnswers.length < 3) {
@@ -350,6 +350,7 @@ export const getRetrospectiveTeamProgressProcedure = roleRequiredProcedure(
     );
     return progress;
   });
+
 /**
  * Retrieves personal progress metrics for an individual in a sprint.
  *

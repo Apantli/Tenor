@@ -314,10 +314,10 @@ export const useAlert = () => {
       alertTemplates.oops(`The value of ${size} must be greater than 0.`),
     sizePointsUpperBoundError: (upperBound: number) =>
       alertTemplates.oops(
-        `The value of size points must be less than or equal to ${upperBound}.`,
+        `The value of size points must be less than ${upperBound}.`,
       ),
     sizeOrderError: (size: string, prev: string) =>
-      alertTemplates.oops(`${size} must be greater than or equal to ${prev}.`),
+      alertTemplates.oops(`${size} must be greater than ${prev}.`),
     scrumSettingsSuccess: () =>
       alertTemplates.success("Scrum settings have been updated successfully."),
     listNameError: () =>
