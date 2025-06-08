@@ -341,7 +341,10 @@ export const createProjectProcedure = protectedProcedure
 
       await Promise.all([
         ...defaultStatusTags.map(
-          (statusTag) => statusCollection.doc(statusTag.name).set(statusTag), // TODO: Update other status logic to assume name as id (will break existing projects)
+          (statusTag) =>
+            statusCollection
+              .doc(statusTag.name.trim().toLowerCase().replace(/\s+/g, "_"))
+              .set(statusTag), // TODO: Update other status logic to assume name as id (will break existing projects)
         ),
       ]);
 
