@@ -161,7 +161,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         }),
       }),
     )
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       const { data } = input;
 
       if (data.textAnswers.length < 3) {

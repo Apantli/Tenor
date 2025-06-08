@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Popup, { usePopupVisibilityState } from "~/app/_components/Popup";
 import SoundPlayer, {
   usePauseSoundPlayer,
+  useSkipToSoundPlayer,
 } from "~/app/_components/SoundPlayer";
 import MusicIcon from "@mui/icons-material/Headphones";
 import MicOffIcon from "@mui/icons-material/MicOff";
@@ -32,6 +33,8 @@ import {
   museHeadsetImagePath,
   museSensorsImagePath,
 } from "~/lib/defaultValues/publicPaths";
+import type { sprintRetrospectivesRouter } from "~/server/api/routers/sprintRetrospectives";
+import type { inferRouterOutputs } from "@trpc/server";
 
 interface Props {
   showPopup: boolean;
@@ -88,6 +91,8 @@ export default function ConversationPopup({
   const [emotion, setEmotion] = useState("");
 
   const { pause, pauseSound } = usePauseSoundPlayer();
+  const { timeTo, skipTo } = useSkipToSoundPlayer();
+  const [skipped, setSkipped] = useState(false);
 
   const textAnswers = useRef<string[]>([]);
 
@@ -131,6 +136,22 @@ export default function ConversationPopup({
 
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const [isProcessingAnswers, setIsProcessingAnswers] = useState(true);
+  const [processedAnswers, setProcessedAnswers] = useState<
+    | inferRouterOutputs<
+        typeof sprintRetrospectivesRouter
+      >["getProcessedRetrospectiveAnswers"]
+    | undefined
+  >(undefined);
+
+  const { mutate: getProcessedAnswers } =
+    api.sprintRetrospectives.getProcessedRetrospectiveAnswers.useMutation({
+      onSuccess(data) {
+        setProcessedAnswers(data);
+        setIsProcessingAnswers(false);
+      },
+    });
 
   // TRPC
   const {
@@ -269,14 +290,6 @@ export default function ConversationPopup({
 
   const handleSendProcessedReport = async () => {
     if (!sprintRetrospectiveId || !user) return;
-
-    const processedAnswers =
-      utils.sprintRetrospectives.getProcessedRetrospectiveAnswers.getData({
-        projectId: projectId as string,
-        data: {
-          textAnswers: textAnswers.current,
-        },
-      });
 
     if (!processedAnswers) return;
 
@@ -582,6 +595,7 @@ export default function ConversationPopup({
                     setTimeout(() => setStep(4), 1000);
                   }}
                   setCurrentTime={setCurrentTime}
+                  timeTo={timeTo}
                 />
                 {playing && headsetStatus === "connected" && (
                   <p className="animate-pulse text-center">
@@ -590,6 +604,32 @@ export default function ConversationPopup({
                       : "Detecting emotion..."}
                   </p>
                 )}
+                <SecondaryButton
+                  className={cn(
+                    "pointer-events-none absolute bottom-[3px] left-1/2 -translate-x-1/2 opacity-0 hover:bg-gray-500/10",
+                    {
+                      "pointer-events-auto opacity-100": micEnabled && !skipped,
+                    },
+                  )}
+                  onClick={() => {
+                    // Get the next end time
+                    const endTimes = timeWindows.map((window) => window.end);
+                    const nextTime = endTimes.find((time) => {
+                      return time > currentTime;
+                    });
+                    if (nextTime) skipTo(nextTime - 1);
+                    setSkipped(true);
+                    setTimeout(() => setSkipped(false), 2000);
+                  }}
+                >
+                  <span
+                    className={cn("text-app-text transition-[color]", {
+                      "text-white delay-[1000ms] duration-[5000ms]": playing,
+                    })}
+                  >
+                    Done speaking?
+                  </span>
+                </SecondaryButton>
                 {!playing && headsetStatus === "interrupted" && (
                   <>
                     <p className="mx-auto max-w-[500px] text-center text-app-fail">
@@ -648,7 +688,17 @@ export default function ConversationPopup({
                 out conversation mode!
               </p>
               <div className="mt-10 flex justify-center gap-2">
-                <SecondaryButton onClick={() => setStep(5)}>
+                <SecondaryButton
+                  onClick={() => {
+                    setStep(5);
+                    getProcessedAnswers({
+                      projectId: projectId as string,
+                      data: {
+                        textAnswers: textAnswers.current,
+                      },
+                    });
+                  }}
+                >
                   Review answers
                 </SecondaryButton>
                 <PrimaryButton
@@ -663,8 +713,9 @@ export default function ConversationPopup({
           {step === 5 && (
             <div className="h-full">
               <RetrospectiveConversationAnswers
-                textAnswers={textAnswers.current}
                 primaryEmotion={mode(emotionHistory.current)}
+                isProcessingAnswers={isProcessingAnswers}
+                processedAnswers={processedAnswers}
               />
             </div>
           )}

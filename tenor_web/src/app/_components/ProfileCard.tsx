@@ -35,7 +35,6 @@ export default function ProfileCard({ show, setShow }: ProfileCardProps) {
       size={"small"}
       dismiss={() => {
         setShow(false);
-        setEditMode(false);
       }}
       editMode={editMode}
       setEditMode={async (value) => {
@@ -67,6 +66,7 @@ export default function ProfileCard({ show, setShow }: ProfileCardProps) {
                     ? URL.createObjectURL(image)
                     : (user?.photoURL ?? undefined),
                 }}
+                skipProxy={!!image}
                 size={80}
                 hideTooltip={true}
               />
@@ -87,8 +87,8 @@ export default function ProfileCard({ show, setShow }: ProfileCardProps) {
               onChange={(e) => {
                 if (checkTitleLimit(e.target.value)) {
                   setUserName(e.target.value);
-                }}
-              }
+                }
+              }}
               placeholder="Enter your display name"
               containerClassName="my-4"
               disableAI={true}
