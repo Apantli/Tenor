@@ -1,12 +1,19 @@
 /**
- * Backlog Items Router - Tenor API Endpoints for Backlog Item Management
+ * Backlog Items - Tenor API Endpoints for Backlog Item Management
  *
  * @packageDocumentation
  * This file defines the TRPC router and procedures for managing Backlog Items in the Tenor application.
- * It provides endpoints to create, modify, and retrieve backlog items.
+ * It provides endpoints to create, modify, and retrieve backlog items within projects.
+ *
+ * The router includes procedures for:
+ * - Creating and modifying backlog items
+ * - Retrieving backlog item details and counts
+ * - Deleting backlog items
+ * - Managing backlog item tags and properties
  *
  * @category API
  */
+
 import { z } from "zod";
 import {
   createTRPCRouter,
@@ -30,10 +37,15 @@ import { LogProjectActivity } from "../lib/projectEventLogger";
 import { badRequest, notFound } from "~/server/errors";
 
 /**
- * @function getBacklogItemsProcedure
- * @description Retrieves all backlog items for a given project.
- * @param {string} projectId - The ID of the project to retrieve backlog items for.
- * @returns {Promise<WithId<BacklogItem>[]>} - A promise that resolves to an array of backlog items.
+ * Retrieves all backlog items for a given project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId - String ID of the project to retrieve backlog items for
+ *
+ * @returns Array of backlog items for the specified project
+ *
+ * @http GET /api/trpc/backlogItems.getBacklogItems
  */
 export const getBacklogItemsProcedure = roleRequiredProcedure(
   backlogPermissions,
@@ -46,11 +58,16 @@ export const getBacklogItemsProcedure = roleRequiredProcedure(
   });
 
 /**
- * @function getBacklogItemDetailProcedure
- * @description Retrieves detailed information about a specific backlog item.
- * @param {string} projectId - The ID of the project to which the backlog item belongs.
- * @param {string} backlogItemId - The ID of the backlog item to retrieve.
- * @returns {Promise<BacklogItemDetail>} - A promise that resolves to the detailed backlog item information.
+ * Retrieves detailed information about a specific backlog item.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId - String ID of the project
+ * - backlogItemId - String ID of the backlog item to retrieve
+ *
+ * @returns Detailed backlog item object with relationships and metadata
+ *
+ * @http GET /api/trpc/backlogItems.getBacklogItemDetail
  */
 export const getBacklogItemDetailProcedure = roleRequiredProcedure(
   backlogPermissions,
@@ -68,12 +85,16 @@ export const getBacklogItemDetailProcedure = roleRequiredProcedure(
   });
 
 /**
- * @function createBacklogItemProcedure
- * @description Creates a new backlog item or modifies an existing one.
- * @param {BacklogItemSchema} backlogItemData - The data for the backlog item to create or modify.
- * @param {string} projectId - The ID of the project to which the backlog item belongs.
- * @param {string} [backlogItemId] - The ID of the backlog item to modify (optional).
- * @returns {Promise<WithId<BacklogItem>>} - A promise that resolves to the created or modified backlog item.
+ * Creates a new backlog item with automatic scrum ID assignment.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId - String ID of the project
+ * - backlogItemData - Data for the backlog item to create
+ *
+ * @returns The created backlog item with its newly assigned ID
+ *
+ * @http POST /api/trpc/backlogItems.createBacklogItem
  */
 export const createBacklogItemProcedure = roleRequiredProcedure(
   backlogPermissions,
@@ -124,10 +145,15 @@ export const createBacklogItemProcedure = roleRequiredProcedure(
   });
 
 /**
- * @function getBacklogItemCountProcedure
- * @description Retrieves the number of backlog items inside a given project, regardless of their deleted status.
- * @param {string} projectId - The ID of the project.
- * @returns {number} - The number of backlog items in the project.
+ * Retrieves the count of backlog items within a project.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId - String ID of the project
+ *
+ * @returns The total number of backlog items in the project
+ *
+ * @http GET /api/trpc/backlogItems.getBacklogItemCount
  */
 export const getBacklogItemCountProcedure = protectedProcedure
   .input(z.object({ projectId: z.string() }))
@@ -139,12 +165,17 @@ export const getBacklogItemCountProcedure = protectedProcedure
   });
 
 /**
- * @function modifyBacklogItemProcedure
- * @description Modifies an existing backlog item.
- * @param {string} projectId - The ID of the project to which the backlog item belongs.
- * @param {string} backlogItemId - The ID of the backlog item to modify.
- * @param {BacklogItemSchema} backlogItemData - The data for the backlog item to modify.
- * @returns {Promise<{ success: boolean, updatedBacklogItemIds: string[] }>} - A promise that resolves to an object indicating success and the IDs of updated backlog items.
+ * Modifies an existing backlog item with provided data.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId - String ID of the project
+ * - backlogItemId - String ID of the backlog item to modify
+ * - backlogItemData - Updated data for the backlog item
+ *
+ * @returns Object containing IDs of updated backlog items
+ *
+ * @http POST /api/trpc/backlogItems.modifyBacklogItem
  */
 export const modifyBacklogItemProcedure = roleRequiredProcedure(
   backlogPermissions,
@@ -186,10 +217,16 @@ export const modifyBacklogItemProcedure = roleRequiredProcedure(
   });
 
 /**
- * @function deleteBacklogItemProcedure
- * @description Deletes a backlog item by marking it as deleted.
- * @param {string} projectId - The ID of the project to which the backlog item belongs.
- * @param {string} backlogItemId - The ID of the backlog item to delete.
+ * Deletes a backlog item by marking it as deleted and handling related tasks.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId - String ID of the project
+ * - backlogItemId - String ID of the backlog item to delete
+ *
+ * @returns Object indicating success and IDs of modified items and tasks
+ *
+ * @http POST /api/trpc/backlogItems.deleteBacklogItem
  */
 export const deleteBacklogItemProcedure = roleRequiredProcedure(
   backlogPermissions,
@@ -227,13 +264,19 @@ export const deleteBacklogItemProcedure = roleRequiredProcedure(
   });
 
 /**
- * @function modifyBacklogItemTagsProcedure
- * @description Modifies the tags of an existing backlog item.
- * @param {string} projectId - The ID of the project to which the backlog item belongs.
- * @param {string} backlogItemId - The ID of the backlog item to modify.
- * @param {string} [priorityId] - The ID of the priority tag to set (optional).
- * @param {string} [size] - The size of the backlog item (optional).
- * @param {string} [statusId] - The ID of the status tag to set (optional).
+ * Modifies specific tag properties of an existing backlog item.
+ *
+ * @param input Object containing procedure parameters
+ * Input object structure:
+ * - projectId - String ID of the project
+ * - backlogItemId - String ID of the backlog item to modify
+ * - priorityId - Optional string ID of the priority tag to set
+ * - size - Optional string size value to set
+ * - statusId - Optional string ID of the status tag to set
+ *
+ * @returns Void on success
+ *
+ * @http POST /api/trpc/backlogItems.modifyBacklogItemTags
  */
 export const modifyBacklogItemTagsProcedure = roleRequiredProcedure(
   tagPermissions,
@@ -288,6 +331,10 @@ export const modifyBacklogItemTagsProcedure = roleRequiredProcedure(
     });
   });
 
+/**
+ * Backlog Items Router - Centralizes all backlog item-related procedures.
+ * Provides a structured interface for backlog item management across the application.
+ */
 export const backlogItemsRouter = createTRPCRouter({
   getBacklogItems: getBacklogItemsProcedure,
   getBacklogItemDetail: getBacklogItemDetailProcedure,
