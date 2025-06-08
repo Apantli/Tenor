@@ -63,13 +63,19 @@ export const generateAutocompletionProcedure = protectedProcedure
         }),
       ),
       relatedContext: z.record(z.string(), z.any()),
-      projectId: z.string().optional(),
     }),
   )
   .mutation(async ({ input, ctx }) => {
     const contextString = parseContext({
       contextObject: input.relatedContext,
     });
+
+    const projectId = input.relatedContext.projectId as string | undefined;
+
+    // Avoid sending projectId in the context to the AI
+    if (input.relatedContext.projectId) {
+      delete input.relatedContext.projectId;
+    }
 
     const prompt = `Help the user to the best of your ability.
 
@@ -84,7 +90,7 @@ Important requirements:
 - Address the user directly in the assistant_message, by using "you" or "your", or the user name if available and appropriate.
 - If asked to generate something, ALWAYS give your best guess and let the user fix that or work on top of it.
 
-${input.projectId ? `${await getProjectContext(ctx.firestore, input.projectId)}` : ""}
+${projectId ? `${await getProjectContext(ctx.firestore, projectId)}` : ""}
 
 
 Here is some context related to the page the user is located in and that you should consider:

@@ -2,7 +2,7 @@ import { api } from "~/trpc/react";
 import Popup from "~/app/_components/Popup";
 import { useMemo, useRef, useState } from "react";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
-import { useEffect } from "react";
+import { useEffect, useContext } from "react";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useFormatEpicScrumId } from "~/app/_hooks/scrumIdHooks";
@@ -23,6 +23,7 @@ import { emptyRole } from "~/lib/defaultValues/roles";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import SidebarToggleIcon from "~/app/_components/SidebarToggleIcon";
 import { cn } from "~/lib/helpers/utils";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 interface Props {
   setShowEpics: (value: boolean) => void;
@@ -155,8 +156,21 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
   const checkTitleLimit = useCharacterLimit("Epic name", 80);
   // #endregion
 
+  // #region Page Context
+  const pageContext = useContext(PageContext);
+  const context = {
+    ...pageContext,
+    pageName: "User Stories",
+    popupName: "Epic Management",
+    pageDescription: "Create the epics for your project",
+    "Epic name Field": newEpicName,
+    "Epic description Field": newEpicDescription,
+    "Page instructions":
+      "Write the name and description of the user's epic. Try to make descriptions and names following the structure of epics, unless specified to do otherwise.",
+  };
+  // #endregion
   return (
-    <>
+    <PageContext.Provider value={context}>
       <div className="flex w-full items-center justify-between pb-5 pl-5 pr-0">
         <div
           className={cn("flex items-center gap-4", {
@@ -229,7 +243,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
                   <h3 className="text-xl font-semibold">
                     {formatEpicScrumId(epic.scrumId)}
                   </h3>
-                  <p className="text-xl wrap-properly">{epic.name}</p>
+                  <p className="wrap-properly text-xl">{epic.name}</p>
                 </div>
               </div>
             ))}
@@ -435,7 +449,7 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
               )}
 
               {!epicLoading && editEpic && (
-                <div className="flex flex-col gap-4 wrap-properly">
+                <div className="wrap-properly flex flex-col gap-4">
                   <InputTextField
                     id="epic-name-field"
                     label="Epic name"
@@ -476,6 +490,6 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
           </Popup>
         </div>
       )}
-    </>
+    </PageContext.Provider>
   );
 };
