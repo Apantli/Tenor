@@ -77,6 +77,17 @@ export const generateAutocompletionProcedure = protectedProcedure
       delete input.relatedContext.projectId;
     }
 
+    let projectContext = "";
+
+    if (projectId) {
+      try {
+        projectContext = await getProjectContext(ctx.firestore, projectId);
+      } catch (error) {
+        console.error("Error fetching project context:", error);
+        projectContext = "";
+      }
+    }
+
     const prompt = `Help the user to the best of your ability.
 
 Your task is to generate an assistant_message that includes:
@@ -90,7 +101,7 @@ Important requirements:
 - Address the user directly in the assistant_message, by using "you" or "your", or the user name if available and appropriate.
 - If asked to generate something, ALWAYS give your best guess and let the user fix that or work on top of it.
 
-${projectId ? `${await getProjectContext(ctx.firestore, projectId)}` : ""}
+${projectContext}
 
 
 Here is some context related to the page the user is located in and that you should consider:
