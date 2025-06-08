@@ -58,6 +58,7 @@ import {
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { countTokens } from "~/lib/aiTools/aiGeneration";
 import { internalServerError } from "~/server/errors";
+import { getUserRef, getUsersRef } from "../shortcuts/users";
 
 export interface Links {
   link: string;
@@ -540,6 +541,17 @@ const removeRoleProcedure = roleRequiredProcedure(settingsPermissions, "write")
   )
   .mutation(async ({ ctx, input }) => {
     const { projectId, roleId } = input;
+    const users = await getUsersRef(ctx.firestore, projectId)
+      .where("roleId", "==", roleId)
+      .get();
+    await Promise.all(
+      users.docs.map(async (user) => {
+        const userRef = getUserRef(ctx.firestore, projectId, user.id);
+        await userRef.update({
+          roleId: "none",
+        });
+      }),
+    );
     await getRoleRef(ctx.firestore, projectId, roleId).delete();
   });
 

@@ -11,6 +11,7 @@ import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import CheckIcon from "@mui/icons-material/Check";
 import ProgressBar from "~/app/_components/ProgressBar";
 import MoreInformation from "~/app/_components/helps/MoreInformation";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 
 export default function ProjectSprintRetrospectivePage() {
   const { user } = useFirebaseAuth();
@@ -70,6 +71,19 @@ export default function ProjectSprintRetrospectivePage() {
         enabled: !!previousSprintId && !!user?.uid,
       },
     );
+  const { data: role } = api.settings.getMyRole.useQuery({
+    projectId: projectId as string,
+  });
+
+  const isTeamMember = () => {
+    if (!role) return false;
+    for (const [flag, permission] of Object.entries({ ...role })) {
+      if (flag === "id" || typeof permission === "string") continue;
+      if (permission >= permissionNumbers.write) return true;
+    }
+    return false;
+  };
+  const teamMember = isTeamMember();
 
   const sprintNumber = sprint?.number;
   const userName =
@@ -173,87 +187,102 @@ export default function ProjectSprintRetrospectivePage() {
                 </div>
               </div>
 
-              <h2 className="mb-4 text-2xl font-semibold">Personal Progress</h2>
-              <div className="mb-6 flex items-center gap-6">
-                <ProfilePicture user={user} size={40} hideTooltip />
-                <div>
-                  <p className="text-l font-semibold">{userName}</p>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="font-medium">Tasks Assigned</p>
-                  <p className="text-sm text-gray-600">
-                    {personalProgressData?.completedAssignedTasks ?? 0} of{" "}
-                    {personalProgressData?.totalAssignedTasks ?? 0} completed
-                  </p>
-                </div>
-                <div className="relative">
-                  <ProgressBar
-                    min={0}
-                    max={personalProgressData?.totalAssignedTasks ?? 100}
-                    value={personalProgressData?.completedAssignedTasks ?? 0}
-                    progressBarColor="#198A5F"
-                    emptyBarColor="#CCCCCC"
-                    className="h-8"
-                    compact={true}
-                  />
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <div className="mb-2 flex items-center justify-between">
-                  <p className="font-medium">Story Points Assigned</p>
-                  <p className="text-sm text-gray-600">
-                    {personalProgressData?.completedAssignedStoryPoints ?? 0} of{" "}
-                    {personalProgressData?.totalAssignedStoryPoints ?? 0}{" "}
-                    completed
-                  </p>
-                </div>
-                <div className="relative">
-                  <ProgressBar
-                    min={0}
-                    max={personalProgressData?.totalAssignedStoryPoints ?? 100}
-                    value={
-                      personalProgressData?.completedAssignedStoryPoints ?? 0
-                    }
-                    progressBarColor="#88BB87"
-                    emptyBarColor="#CCCCCC"
-                    className="h-8"
-                    compact={true}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <div className="flex gap-2">
-                    <p className="font-medium">Sprint Contribution</p>
-                    <MoreInformation
-                      label="This percentage shows how much of the sprint's total story points you personally completed."
-                      size="small"
-                    />
+              {teamMember && (
+                <>
+                  <h2 className="mb-4 text-2xl font-semibold">
+                    Personal Progress
+                  </h2>
+                  <div className="mb-6 flex items-center gap-6">
+                    <ProfilePicture user={user} size={40} hideTooltip />
+                    <div>
+                      <p className="text-l font-semibold">{userName}</p>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600">
-                    {personalProgressData?.completedAssignedStoryPoints ?? 0} of{" "}
-                    {teamProgressData?.totalStoryPoints ?? 0} completed
-                  </p>
-                </div>
-                <div className="relative">
-                  <ProgressBar
-                    min={0}
-                    max={teamProgressData?.totalStoryPoints ?? 100}
-                    value={
-                      personalProgressData?.completedAssignedStoryPoints ?? 0
-                    }
-                    progressBarColor="#13918A"
-                    emptyBarColor="#CCCCCC"
-                    className="h-8"
-                    compact={true}
-                  />
-                </div>
-              </div>
+
+                  <div className="mb-6">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="font-medium">Tasks Assigned</p>
+                      <p className="text-sm text-gray-600">
+                        {personalProgressData?.completedAssignedTasks ?? 0} of{" "}
+                        {personalProgressData?.totalAssignedTasks ?? 0}{" "}
+                        completed
+                      </p>
+                    </div>
+                    <div className="relative">
+                      <ProgressBar
+                        min={0}
+                        max={personalProgressData?.totalAssignedTasks ?? 100}
+                        value={
+                          personalProgressData?.completedAssignedTasks ?? 0
+                        }
+                        progressBarColor="#198A5F"
+                        emptyBarColor="#CCCCCC"
+                        className="h-8"
+                        compact={true}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="font-medium">Story Points Assigned</p>
+                      <p className="text-sm text-gray-600">
+                        {personalProgressData?.completedAssignedStoryPoints ??
+                          0}{" "}
+                        of {personalProgressData?.totalAssignedStoryPoints ?? 0}{" "}
+                        completed
+                      </p>
+                    </div>
+                    <div className="relative">
+                      <ProgressBar
+                        min={0}
+                        max={
+                          personalProgressData?.totalAssignedStoryPoints ?? 100
+                        }
+                        value={
+                          personalProgressData?.completedAssignedStoryPoints ??
+                          0
+                        }
+                        progressBarColor="#88BB87"
+                        emptyBarColor="#CCCCCC"
+                        className="h-8"
+                        compact={true}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex gap-2">
+                        <p className="font-medium">Sprint Contribution</p>
+                        <MoreInformation
+                          label="This percentage shows how much of the sprint's total story points you personally completed."
+                          size="small"
+                        />
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {personalProgressData?.completedAssignedStoryPoints ??
+                          0}{" "}
+                        of {teamProgressData?.totalStoryPoints ?? 0} completed
+                      </p>
+                    </div>
+                    <div className="relative">
+                      <ProgressBar
+                        min={0}
+                        max={teamProgressData?.totalStoryPoints ?? 100}
+                        value={
+                          personalProgressData?.completedAssignedStoryPoints ??
+                          0
+                        }
+                        progressBarColor="#13918A"
+                        emptyBarColor="#CCCCCC"
+                        className="h-8"
+                        compact={true}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

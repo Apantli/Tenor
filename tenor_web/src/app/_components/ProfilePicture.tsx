@@ -82,7 +82,7 @@ export default function ProfilePicture({
     if (user?.photoURL && !imgError && !imgLoaded) {
       const fallbackTimeout = setTimeout(() => {
         setForceFallback(true);
-      }, 1500); // 1.5 seconds fallback delay
+      }, 3000); // 1.5 seconds fallback delay
 
       return () => clearTimeout(fallbackTimeout);
     }

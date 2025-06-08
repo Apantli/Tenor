@@ -50,7 +50,12 @@ import {
   getSettingsRef,
   getActivityDetailsFromProjects,
 } from "../shortcuts/general";
-import { settingsPermissions } from "~/lib/defaultValues/permission";
+import {
+  activityPermissions,
+  rolesPermissions,
+  settingsPermissions,
+  sprintPermissions,
+} from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
 import { getPrioritiesRef, getStatusTypesRef } from "../shortcuts/tags";
 import { getRequirementTypesRef } from "../shortcuts/requirements";
@@ -490,7 +495,7 @@ export const getProjectNameProcedure = protectedProcedure
  * @http GET /api/trpc/projects.getUserTypes
  */
 export const getUserTypesProcedure = roleRequiredProcedure(
-  settingsPermissions,
+  rolesPermissions,
   "read",
 )
   .input(z.object({ projectId: z.string() }))
@@ -507,7 +512,10 @@ export const getUserTypesProcedure = roleRequiredProcedure(
  *
  * @http GET /api/trpc/projects.getProjectStatus
  */
-export const getProjectStatusProcedure = protectedProcedure
+export const getProjectStatusProcedure = roleRequiredProcedure(
+  sprintPermissions,
+  "read",
+)
   .input(z.object({ projectId: z.string() }))
   .query(async ({ ctx, input }) => {
     const { projectId } = input;
@@ -559,7 +567,10 @@ export const getTopProjectStatusProcedure = protectedProcedure.query(
  *
  * @http GET /api/trpc/projects.getActivityDetails
  */
-export const getActivityDetailsProcedure = protectedProcedure
+export const getActivityDetailsProcedure = roleRequiredProcedure(
+  activityPermissions,
+  "read",
+)
   .input(
     z.object({
       projectId: z.string(),

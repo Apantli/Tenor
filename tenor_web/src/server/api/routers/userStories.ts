@@ -29,6 +29,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import {
   backlogPermissions,
   tagPermissions,
+  userStoryPreviewsPermissions,
 } from "~/lib/defaultValues/permission";
 import type { Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
 import {
@@ -62,7 +63,7 @@ import { badRequest, cyclicReference, notFound } from "~/server/errors";
  * @http GET /api/trpc/userStories.getUserStories
  */
 export const getUserStoriesProcedure = roleRequiredProcedure(
-  backlogPermissions,
+  userStoryPreviewsPermissions,
   "read",
 )
   .input(z.object({ projectId: z.string() }))

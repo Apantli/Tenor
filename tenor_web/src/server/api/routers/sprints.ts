@@ -34,7 +34,10 @@ import {
   getSprintsRef,
   updateSprintNumberOrder,
 } from "../shortcuts/sprints";
-import { sprintPermissions } from "~/lib/defaultValues/permission";
+import {
+  sprintOverviewPermissions,
+  sprintPermissions,
+} from "~/lib/defaultValues/permission";
 import { getUserStories, getUserStoriesRef } from "../shortcuts/userStories";
 import { getIssues, getIssuesRef } from "../shortcuts/issues";
 import { getBacklogTags } from "../shortcuts/tags";
@@ -62,7 +65,7 @@ import { notFound } from "~/server/errors";
  * @http GET /api/trpc/sprints.getProjectSprintsOverview
  */
 export const getProjectSprintsOverviewProcedure = roleRequiredProcedure(
-  sprintPermissions,
+  sprintOverviewPermissions,
   "read",
 )
   .input(z.object({ projectId: z.string() }))

@@ -81,13 +81,12 @@ export const getRetrospectiveAnswersProcedure = roleRequiredProcedure(
     z.object({
       projectId: z.string(),
       reviewId: z.number(),
-      userId: z.string(),
     }),
   )
   .query(async ({ ctx, input }) => {
     const response = await ctx.supabase.rpc("get_retrospective_answers", {
       p_review_id: input.reviewId,
-      p_user_id: input.userId,
+      p_user_id: ctx.session.uid,
     });
     if (response.error) {
       throw new Error(
