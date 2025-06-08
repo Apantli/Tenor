@@ -3,6 +3,10 @@ import { TaskCalendarCard } from "./TaskCalendarCard";
 import { useDroppable } from "@dnd-kit/react";
 import { cn } from "~/lib/helpers/utils";
 import { dateToString } from "~/lib/helpers/parsers";
+import {
+  normalizeToStartOfDay,
+  createEndOfDayDate,
+} from "~/lib/helpers/parsers";
 
 interface Props {
   editable: boolean;
@@ -45,19 +49,37 @@ export default function CalendarCell({
   });
 
   const setNewSelectedDate = (date: Date) => {
-    if (!editable) return; // Prevent selection if not editable
-    if (selectedDate && date.getTime() === selectedDate.getTime()) {
+    if (!editable) return;
+
+    const normalizedDate = normalizeToStartOfDay(date);
+    const normalizedSelected = selectedDate
+      ? normalizeToStartOfDay(selectedDate)
+      : null;
+
+    if (
+      normalizedSelected &&
+      normalizedDate.getTime() === normalizedSelected.getTime()
+    ) {
       setSelectedDate(undefined);
       return;
     }
-    setSelectedDate(date);
+
+    const endOfDayDate = createEndOfDayDate(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
+    setSelectedDate(endOfDayDate);
   };
+
   return (
     <div
       className={cn(
         "flex h-full min-h-[40px] w-full",
         isDropTarget && "bg-gray-100",
-        selectedDate && date.getTime() === selectedDate.getTime()
+        selectedDate &&
+          normalizeToStartOfDay(date).getTime() ===
+            normalizeToStartOfDay(selectedDate).getTime()
           ? "bg-app-secondary"
           : "hover:bg-gray-100",
       )}
@@ -68,7 +90,8 @@ export default function CalendarCell({
             "p-1 text-xs lg:h-full",
             tasks.length == 0 && "w-full",
             selectedDate &&
-              date.getTime() === selectedDate.getTime() &&
+              normalizeToStartOfDay(date).getTime() ===
+                normalizeToStartOfDay(selectedDate).getTime() &&
               "text-white",
           )}
           onClick={() => {

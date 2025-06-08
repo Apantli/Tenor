@@ -83,13 +83,23 @@ export default function ProjectCalendar() {
   }, [role]);
 
   const handleDateChange = async (tasks: string[], date: Date) => {
+    const endOfDayDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      23,
+      59,
+      59,
+      999,
+    );
+
     utils.tasks.getTasksByDate.setData(
       { projectId: projectId as string },
       (oldData) => {
         if (!oldData) return oldData;
 
         // get key of the date in the format YYYY-MM-DD
-        const dateKey = dateToString(date);
+        const dateKey = dateToString(endOfDayDate);
         if (!dateKey) return oldData;
 
         // if the dateKey does not exist in oldData, create it
@@ -119,7 +129,7 @@ export default function ProjectCalendar() {
         changeTaskDate({
           projectId: projectId as string,
           taskId,
-          dueDate: Timestamp.fromDate(date),
+          dueDate: Timestamp.fromDate(endOfDayDate),
         }),
       ),
     );
@@ -194,13 +204,16 @@ export default function ProjectCalendar() {
                         setSelectedDate(date);
                         return;
                       }
-                      // truncate to start of the day
-                      date = new Date(
+                      const endOfDayDate = new Date(
                         date.getFullYear(),
                         date.getMonth(),
                         date.getDate(),
+                        23,
+                        59,
+                        59,
+                        999,
                       );
-                      setSelectedDate(date);
+                      setSelectedDate(endOfDayDate);
                     }}
                     className="max-h-8 bg-white text-xs"
                   />

@@ -42,8 +42,15 @@ export function DatePicker({
       newDate.setHours(0, 0, 0, 0);
       onChange(newDate);
     } else {
-      const newDate = new Date(date);
-      newDate.setHours(23, 59, 59, 999);
+      const newDate = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        23,
+        59,
+        59,
+        999,
+      );
       onChange(newDate);
     }
     setDropdownClose(true);
