@@ -42,3 +42,13 @@ export const formatSeconds = (seconds: number | undefined): string => {
 export const dateToString = (date: Date) => {
   return date.toISOString().split("T")[0];
 };
+
+export const startOfDay = (date: Date) => {
+  date.setHours(0, 0, 0);
+  return date;
+};
+
+export const endOfDay = (date: Date) => {
+  date.setHours(23, 59, 59, 999);
+  return date;
+};
