@@ -66,3 +66,13 @@ export const endOfDay = (date: Date) => {
   newDate.setHours(23, 59, 59, 999);
   return newDate;
 };
+
+export const startOfDay = (date: Date) => {
+  date.setHours(0, 0, 0);
+  return date;
+};
+
+export const endOfDay = (date: Date) => {
+  date.setHours(23, 59, 59, 999);
+  return date;
+};
