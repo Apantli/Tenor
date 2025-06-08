@@ -99,6 +99,7 @@ const projectStatus: VisualizationSpec = {
       labelFontSize: 18,
       labelFont: "GeistSans, GeistSans Fallback, ui-sans-serif",
       labelColor: "#6B7280",
+      labelLimit: 100,
       tickSize: 9,
       labelPadding: 10,
     },
