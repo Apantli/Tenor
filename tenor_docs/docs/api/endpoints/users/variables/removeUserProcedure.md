@@ -6,21 +6,25 @@
 
 > `const` **removeUserProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `userId`: `string`; \}; `output`: `void`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/users.ts:199](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/users.ts#L199)
+Defined in: [tenor\_web/src/server/api/routers/users.ts:184](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/users.ts#L184)
 
-Removes a user from a specific project.
+Removes a user from a project by marking them as inactive.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project to remove the user from
-- userId — ID of the user to be removed
+- projectId - String ID of the project to remove the user from
+- userId - String ID of the user to remove
 
 ## Returns
 
-Void.
+None
+
+## Throws
+
+- If the user is not found or is the project owner
 
 ## Http
 
-DELETE /api/trpc/users.removeUser
+POST /api/trpc/users.removeUser

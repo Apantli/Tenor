@@ -6,20 +6,24 @@
 
 > `const` **getTaskDetailProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; `taskId`: `string`; \}; `output`: `TaskDetail`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/tasks.ts:280](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/tasks.ts#L280)
+Defined in: [tenor\_web/src/server/api/routers/tasks.ts:252](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/tasks.ts#L252)
 
-Retrieves detailed information about a specific task.
+Gets detailed information about a specific task.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project containing the task
-- taskId — ID of the task to fetch details for
+- projectId - String ID of the project
+- taskId - String ID of the task
 
 ## Returns
 
-Detailed information about the task.
+Detailed task information
+
+## Throws
+
+If the task is not found
 
 ## Http
 

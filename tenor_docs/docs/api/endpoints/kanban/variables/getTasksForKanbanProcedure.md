@@ -4,23 +4,21 @@
 
 # Variable: getTasksForKanbanProcedure
 
-> `const` **getTasksForKanbanProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `cardTasks`: \{[`k`: `string`]: [`KanbanTaskCard`](../interfaces/KanbanTaskCard.md); \}; `columns`: `object`[]; \}; \}\>
+> `const` **getTasksForKanbanProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `cardTasks`: \{[`k`: `string`]: `KanbanTaskCard`; \}; `columns`: `object`[]; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:181](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L181)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:52](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/kanban.ts#L52)
 
-Retrieves tasks for the Kanban board of a project.
+Retrieves tasks formatted for kanban board display.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project to fetch tasks for
+- projectId — The ID of the project to retrieve tasks for
 
 ## Returns
 
-Object containing columns and tasks for the Kanban board:
-- columns — Array of columns with their details and associated task IDs
-- cardTasks — Object mapping task IDs to their details
+Object containing columns and task cards organized for kanban view.
 
 ## Http
 

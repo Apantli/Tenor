@@ -1,0 +1,20 @@
+[**Tenor API Documentation**](../../README.md)
+
+***
+
+# Variable: sprintRetrospectivesRouter
+
+> `const` **sprintRetrospectivesRouter**: `BuiltRouter`\<\{ `ctx`: \{ `firebaseAdmin`: `__module`; `firestore`: `Firestore`; `headers`: `Headers`; `session`: `null` \| `UserRecord`; `supabase`: `SupabaseClient`\<`any`, `"public"`, `any`\>; \}; `errorShape`: \{ `code`: `TRPC_ERROR_CODE_NUMBER`; `data`: \{ `code`: `"PARSE_ERROR"` \| `"BAD_REQUEST"` \| `"INTERNAL_SERVER_ERROR"` \| `"NOT_IMPLEMENTED"` \| `"BAD_GATEWAY"` \| `"SERVICE_UNAVAILABLE"` \| `"GATEWAY_TIMEOUT"` \| `"UNAUTHORIZED"` \| `"FORBIDDEN"` \| `"NOT_FOUND"` \| `"METHOD_NOT_SUPPORTED"` \| `"TIMEOUT"` \| `"CONFLICT"` \| `"PRECONDITION_FAILED"` \| `"PAYLOAD_TOO_LARGE"` \| `"UNSUPPORTED_MEDIA_TYPE"` \| `"UNPROCESSABLE_CONTENT"` \| `"TOO_MANY_REQUESTS"` \| `"CLIENT_CLOSED_REQUEST"`; `httpStatus`: `number`; `path?`: `string`; `stack?`: `string`; `zodError`: `null` \| `typeToFlattenedError`\<`any`, `string`\>; \}; `message`: `string`; \}; `meta`: `object`; `transformer`: `true`; \}, `DecorateCreateRouterOptions`\<\{ `ensureRetrospectivePersonalProgress`: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `sprintId`: `string`; `userId`: `string`; \}; `output`: \{ `success`: `boolean`; \}; \}\>; `ensureRetrospectiveTeamProgress`: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `sprintId`: `string`; \}; `output`: \{ `success`: `boolean`; \}; \}\>; `getPreviousSprint`: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `null` \| `WithId`\<`Sprint`\>; \}\>; `getProcessedRetrospectiveAnswers`: `QueryProcedure`\<\{ `input`: \{ `data`: \{ `textAnswers`: `string`[]; \}; `projectId`: `string`; \}; `output`: \{ `answers`: `string`[]; `happinessAnalysis`: `string`; `happinessRating`: `number`; \}; \}\>; `getRetrospectiveAnswers`: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; `reviewId`: `number`; `userId`: `string`; \}; `output`: `RetrospectiveAnswers`; \}\>; `getRetrospectiveId`: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; `sprintId`: `string`; \}; `output`: `number`; \}\>; `getRetrospectivePersonalProgress`: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; `sprintId`: `string`; `userId`: `string`; \}; `output`: \{ `completedAssignedStoryPoints`: `number`; `completedAssignedTasks`: `number`; `totalAssignedStoryPoints`: `number`; `totalAssignedTasks`: `number`; \}; \}\>; `getRetrospectiveTeamProgress`: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; `sprintId`: `string`; \}; `output`: \{ `completedBacklogItems`: `number`; `completedIssues`: `number`; `completedStoryPoints`: `number`; `completedUserStories`: `number`; `totalBacklogItems`: `number`; `totalIssues`: `number`; `totalStoryPoints`: `number`; `totalUserStories`: `number`; \}; \}\>; `saveHappiness`: `MutationProcedure`\<\{ `input`: \{ `happiness`: `number`; `projectId`: `string`; `reviewId`: `number`; \}; `output`: \{ `success`: `boolean`; \}; \}\>; `saveRetrospectiveAnswers`: `MutationProcedure`\<\{ `input`: \{ `answerText`: `string`; `projectId`: `string`; `questionNum`: `number`; `reviewId`: `number`; `userId`: `string`; \}; `output`: `boolean`; \}\>; `sendReport`: `MutationProcedure`\<\{ `input`: \{ `data`: \{ `textAnswers`: `string`[]; \}; `projectId`: `string`; `reviewId`: `number`; `summarize?`: `boolean`; \}; `output`: \{ `success`: `boolean`; \}; \}\>; \}\>\>
+
+Defined in: [tenor\_web/src/server/api/routers/sprintRetrospectives.ts:461](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/sprintRetrospectives.ts#L461)
+
+TRPC Router for managing sprint retrospectives.
+
+This router provides endpoints for creating, retrieving, and updating retrospective data,
+including answers to retrospective questions, happiness ratings, and progress metrics.
+It supports both individual and team retrospective activities, and includes AI-assisted
+summarization capabilities for retrospective reports.
+
+## Subcategory
+
+Routers

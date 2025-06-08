@@ -4,22 +4,25 @@
 
 # Variable: deleteProjectProcedure
 
-> `const` **deleteProjectProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `success`: `boolean`; \}; \}\>
+> `const` **deleteProjectProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `void`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:457](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L457)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:447](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/projects.ts#L447)
 
-Deletes a project by marking it as deleted.
+Marks a project as deleted.
+Requires owner permissions.
 
 ## Param
 
-Object containing procedure parameters
-Input object structure:
-- projectId — ID of the project to delete
+Object containing projectId to delete
 
 ## Returns
 
-Object indicating success status.
+void
+
+## Throws
+
+If the user doesn't have owner permissions
 
 ## Http
 
-DELETE /api/trpc/projects.deleteProject
+POST /api/trpc/projects.deleteProject

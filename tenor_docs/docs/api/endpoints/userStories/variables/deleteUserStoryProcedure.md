@@ -4,22 +4,22 @@
 
 # Variable: deleteUserStoryProcedure
 
-> `const` **deleteUserStoryProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryId`: `string`; \}; `output`: \{ `success`: `boolean`; \}; \}\>
+> `const` **deleteUserStoryProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryId`: `string`; \}; `output`: \{ `modifiedTaskIds`: `string`[]; `success`: `boolean`; `updatedUserStoryIds`: `string`[]; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:667](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L667)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:392](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/userStories.ts#L392)
 
-Deletes a specific user story from a project.
+Deletes a user story by marking it as deleted.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project containing the user story
-- userStoryId — ID of the user story to delete
+- projectId - String ID of the project to which the user story belongs
+- userStoryId - String ID of the user story to delete
 
 ## Returns
 
-Object containing success status.
+Object indicating success and the IDs of updated user stories
 
 ## Http
 

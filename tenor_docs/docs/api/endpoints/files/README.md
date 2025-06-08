@@ -11,14 +11,14 @@ sidebar_position: 1
 
 Files Router - Tenor API Endpoints for File Management
 
-This file defines the TRPC router and procedures for managing files in the Tenor application.
-It provides endpoints to retrieve user-associated files.
+This file defines the TRPC router and procedures for managing user files in the Tenor application.
+It provides endpoints to retrieve file information associated with users.
 
-The router currently includes procedures for:
+The router includes procedures for:
 - Retrieving files associated with the current user
 
-File management is a supporting feature that allows users to access and manage their
-uploaded files across the application.
+Files are stored as metadata in user documents and may include URLs and file names
+for resources uploaded by or associated with users.
 
 ## Variables
 

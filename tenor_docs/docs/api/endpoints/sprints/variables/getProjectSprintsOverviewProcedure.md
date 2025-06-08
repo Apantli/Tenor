@@ -4,21 +4,21 @@
 
 # Variable: getProjectSprintsOverviewProcedure
 
-> `const` **getProjectSprintsOverviewProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `object`[]; \}\>
+> `const` **getProjectSprintsOverviewProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `WithId`\<`Sprint`\>[]; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/sprints.ts:72](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/sprints.ts#L72)
+Defined in: [tenor\_web/src/server/api/routers/sprints.ts:64](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/sprints.ts#L64)
 
-Retrieves an overview of all sprints in a specific project.
+Retrieves an overview of all sprints for a project.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project to fetch sprints from
+- projectId - String ID of the project
 
 ## Returns
 
-Array of sprints with their number, description, start date, and end date.
+Array of sprint objects containing sprint details
 
 ## Http
 

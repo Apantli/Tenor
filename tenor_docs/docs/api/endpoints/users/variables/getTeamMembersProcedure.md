@@ -4,21 +4,21 @@
 
 # Variable: getTeamMembersProcedure
 
-> `const` **getTeamMembersProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `TeamMember`[]; \}\>
+> `const` **getTeamMembersProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `UserCol`[]; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/users.ts:148](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/users.ts#L148)
+Defined in: [tenor\_web/src/server/api/routers/users.ts:301](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/users.ts#L301)
 
-Retrieves team members for a specific project.
+Retrieves team members (users with write access) for a specific project.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project to fetch team members from
+- projectId - String ID of the project
 
 ## Returns
 
-Array of team members with their roles and activity status.
+Array of user objects with write access to the project
 
 ## Http
 

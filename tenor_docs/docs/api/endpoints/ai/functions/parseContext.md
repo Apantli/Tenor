@@ -12,7 +12,7 @@ sidebar_label: "ParseContext"
 
 > **parseContext**(`__namedParameters`): `string`
 
-Defined in: [tenor\_web/src/server/api/routers/ai.ts:22](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/ai.ts#L22)
+Defined in: [tenor\_web/src/server/api/routers/ai.ts:23](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/ai.ts#L23)
 
 ## Parameters
 
