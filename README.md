@@ -1,9 +1,15 @@
 # Tenor
+
 [![Build](https://github.com/Apantli/Tenor/actions/workflows/web-build.yml/badge.svg)](https://github.com/Apantli/Tenor/actions/workflows/web-build.yml)
 [![Cypress E2E](https://github.com/Apantli/Tenor/actions/workflows/cypress.yml/badge.svg)](https://github.com/Apantli/Tenor/actions/workflows/cypress.yml)
 
-
 Intelligent, flexible, on-demand and light-weight tool that simplifies and optimizes the work of software development teams.
+
+## Project Index
+
+- tenor_web: Main web application source code (frontend & backend).
+- tenor_docs: Documentation site built with Docusaurus. It includes contribution guidelines, technical references, usage tutorials, and internal architecture notes — everything needed to ensure smooth onboarding and long-term maintainability.
+- diagrams: Collection of system diagrams and architectural overviews. These visuals illustrate the structure, data flow, and interactions across components of the Tenor platform.
 
 ## 🤝 How to contribute to Tenor
 
@@ -26,7 +32,7 @@ personal/{yourUsername}/{mainFunctionalityOrChange}
    Use the naming convention described above.
 2. **Develop your feature or fix:**  
    Commit frequently with meaningful messages.
-3. **Open a Pull Request (PR):**  
+3. **Open a Pull Request (PR):**
    - Must be approved by **at least one member of the core team**.
    - The description should include **images or videos of the new functionality**, if possible.
 4. **Link related issues:**  
