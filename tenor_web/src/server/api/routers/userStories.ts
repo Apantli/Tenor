@@ -23,6 +23,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import {
   backlogPermissions,
   tagPermissions,
+  userStoryPreviewsPermissions,
 } from "~/lib/defaultValues/permission";
 import type { Tag, UserStory, WithId } from "~/lib/types/firebaseSchemas";
 import {
@@ -51,7 +52,7 @@ export const userStoriesRouter = createTRPCRouter({
    * @param {string} projectId - The ID of the project to retrieve user stories for.
    * @returns {Promise<WithId<UserStory>[]>} - A promise that resolves to an array of user stories.
    */
-  getUserStories: roleRequiredProcedure(backlogPermissions, "read")
+  getUserStories: roleRequiredProcedure(userStoryPreviewsPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;

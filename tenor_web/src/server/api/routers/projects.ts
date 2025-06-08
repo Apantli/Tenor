@@ -52,6 +52,7 @@ import {
 } from "../shortcuts/general";
 import {
   activityPermissions,
+  rolesPermissions,
   settingsPermissions,
   sprintPermissions,
 } from "~/lib/defaultValues/permission";
@@ -430,7 +431,7 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return (await getProject(ctx.firestore, projectId)).name;
     }),
-  getUserTypes: roleRequiredProcedure(settingsPermissions, "read")
+  getUserTypes: roleRequiredProcedure(rolesPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;

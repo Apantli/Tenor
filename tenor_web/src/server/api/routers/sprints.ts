@@ -28,7 +28,10 @@ import {
   getSprintsRef,
   updateSprintNumberOrder,
 } from "../shortcuts/sprints";
-import { sprintPermissions } from "~/lib/defaultValues/permission";
+import {
+  sprintOverviewPermissions,
+  sprintPermissions,
+} from "~/lib/defaultValues/permission";
 import { getUserStories, getUserStoriesRef } from "../shortcuts/userStories";
 import { getIssues, getIssuesRef } from "../shortcuts/issues";
 import { getBacklogTags } from "../shortcuts/tags";
@@ -45,7 +48,10 @@ import { sortByItemTypeAndScrumId } from "~/lib/helpers/sort";
 import { notFound } from "~/server/errors";
 
 export const sprintsRouter = createTRPCRouter({
-  getProjectSprintsOverview: roleRequiredProcedure(sprintPermissions, "read")
+  getProjectSprintsOverview: roleRequiredProcedure(
+    sprintOverviewPermissions,
+    "read",
+  )
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;

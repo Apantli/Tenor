@@ -40,7 +40,7 @@ export const tabsMetaInformation = {
     title: "Scrum Board",
     link: "/scrumboard",
     enabled: true,
-    flags: ["backlog", "issues"],
+    flags: ["scrumboard"],
   },
   calendar: {
     title: "Calendar",

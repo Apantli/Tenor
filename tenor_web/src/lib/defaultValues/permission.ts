@@ -20,7 +20,7 @@ export interface FlagsRequired {
 }
 
 export const tagPermissions: FlagsRequired = {
-  flags: ["settings", "backlog", "issues"],
+  flags: ["settings", "backlog", "issues", "scrumboard", "sprints"],
   optimistic: true,
 };
 
@@ -40,17 +40,22 @@ export const generalPermissions: FlagsRequired = {
 };
 
 export const backlogPermissions: FlagsRequired = {
-  flags: ["backlog"],
+  flags: ["backlog", "sprints", "scrumboard"],
+  optimistic: true,
+};
+
+export const userStoryPreviewsPermissions: FlagsRequired = {
+  flags: ["backlog", "sprints", "scrumboard", "issues"],
   optimistic: true,
 };
 
 export const issuePermissions: FlagsRequired = {
-  flags: ["issues"],
+  flags: ["issues", "sprints", "scrumboard"],
   optimistic: true,
 };
 
 export const taskPermissions: FlagsRequired = {
-  flags: ["issues", "backlog"],
+  flags: ["issues", "backlog", "scrumboard", "sprints"],
   optimistic: true,
 };
 
@@ -78,13 +83,22 @@ export const settingsPermissions: FlagsRequired = {
   optimistic: true,
 };
 
+export const rolesPermissions: FlagsRequired = {
+  flags: ["settings", "performance"],
+  optimistic: true,
+};
+
 export const performancePermissions: FlagsRequired = {
   flags: ["performance"],
   optimistic: true,
 };
 
+export const sprintOverviewPermissions: FlagsRequired = {
+  flags: ["sprints", "backlog", "scrumboard", "issues"],
+  optimistic: true,
+};
 export const sprintPermissions: FlagsRequired = {
-  flags: ["sprints", "settings"],
+  flags: ["sprints", "settings", "retrospective"],
   optimistic: true,
 };
 

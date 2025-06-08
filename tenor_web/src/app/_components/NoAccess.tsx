@@ -4,9 +4,13 @@ import MoreInformation from "./helps/MoreInformation";
 
 interface Props {
   className?: string;
+  label?: string;
 }
 
-export default function NoAccess({ className }: Props) {
+export default function NoAccess({
+  className,
+  label = "You don't have access to this information because of your role",
+}: Props) {
   return (
     <div
       className={cn(
@@ -18,7 +22,7 @@ export default function NoAccess({ className }: Props) {
         <LockPersonIcon fontSize="inherit" />
         <MoreInformation
           size="large"
-          labelHTML="You don't have access to this information because of your role<br><span style='color: #ccc'>Ask an administrator for access if you believe this is a mistake.</span>"
+          labelHTML={`${label}<br><span style='color: #ccc'>Ask an administrator for access if you believe this is a mistake.</span>`}
         />
       </div>
     </div>

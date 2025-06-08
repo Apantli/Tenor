@@ -48,7 +48,8 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
         projectId: projectId as string,
       },
       {
-        enabled: !!projectId && (role?.sprints ?? 0) > permissionNumbers.read,
+        enabled:
+          !!projectId && (role?.retrospective ?? 0) >= permissionNumbers.read,
       },
     );
 

@@ -188,6 +188,7 @@ export default function RoleTable({
       render: (row) => {
         return (
           <PillPickerComponent
+            disabled={disabled}
             label={permissionLabels[row.retrospective]}
             selectedItem={{
               id: row.retrospective.toString(),
