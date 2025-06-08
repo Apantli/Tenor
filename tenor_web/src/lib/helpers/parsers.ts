@@ -56,18 +56,6 @@ export const dateToString = (date: Date): string | null => {
 };
 
 export const startOfDay = (date: Date) => {
-  const newDate = new Date(date);
-  newDate.setHours(0, 0, 0);
-  return newDate;
-};
-
-export const endOfDay = (date: Date) => {
-  const newDate = new Date(date);
-  newDate.setHours(23, 59, 59, 999);
-  return newDate;
-};
-
-export const startOfDay = (date: Date) => {
   date.setHours(0, 0, 0);
   return date;
 };
