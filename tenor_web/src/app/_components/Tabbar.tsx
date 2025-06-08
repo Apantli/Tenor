@@ -8,6 +8,7 @@ import InterceptedLink from "./InterceptableLink";
 import { api } from "~/trpc/react";
 import { tabs, tabsMetaInformation } from "~/lib/tabs";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 
 interface Props {
   disabled?: boolean;
@@ -47,7 +48,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
         projectId: projectId as string,
       },
       {
-        enabled: !!projectId,
+        enabled: !!projectId && (role?.sprints ?? 0) > permissionNumbers.read,
       },
     );
 

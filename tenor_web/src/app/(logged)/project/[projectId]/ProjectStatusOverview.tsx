@@ -19,7 +19,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
 
   let remainingDays: number | null = null;
 
-  //Compare the sprints numbers with the sprint currentSprintId
+  // Compare the sprints numbers with the sprint currentSprintId
   if (sprints && projectStatus?.currentSprintId != null) {
     for (const sprint of sprints) {
       if (sprint.id.toString() === projectStatus?.currentSprintId) {

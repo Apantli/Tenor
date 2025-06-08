@@ -69,6 +69,10 @@ export const usersPermissions: FlagsRequired = {
   optimistic: true,
 };
 
+export const activityPermissions: FlagsRequired = {
+  flags: ["backlog"],
+};
+
 export const settingsPermissions: FlagsRequired = {
   flags: ["settings"],
   optimistic: true,

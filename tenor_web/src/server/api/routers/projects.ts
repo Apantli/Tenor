@@ -50,7 +50,11 @@ import {
   getSettingsRef,
   getActivityDetailsFromProjects,
 } from "../shortcuts/general";
-import { settingsPermissions } from "~/lib/defaultValues/permission";
+import {
+  activityPermissions,
+  settingsPermissions,
+  sprintPermissions,
+} from "~/lib/defaultValues/permission";
 import { getGlobalUserRef, getUsersRef } from "../shortcuts/users";
 import { getPrioritiesRef, getStatusTypesRef } from "../shortcuts/tags";
 import { getRequirementTypesRef } from "../shortcuts/requirements";
@@ -432,7 +436,7 @@ export const projectsRouter = createTRPCRouter({
       const { projectId } = input;
       return await getRoles(ctx.firestore, projectId);
     }),
-  getProjectStatus: protectedProcedure
+  getProjectStatus: roleRequiredProcedure(sprintPermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const { projectId } = input;
@@ -467,7 +471,7 @@ export const projectsRouter = createTRPCRouter({
     return projectsWithName as WithName<TopProjects>[];
   }),
 
-  getActivityDetails: protectedProcedure
+  getActivityDetails: roleRequiredProcedure(activityPermissions, "read")
     .input(
       z.object({
         projectId: z.string(),

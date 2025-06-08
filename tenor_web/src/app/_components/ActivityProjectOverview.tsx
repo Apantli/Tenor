@@ -76,12 +76,7 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
   const isLoading = activitiesLoading || usersLoading;
 
   return (
-    <div
-      className={cn(
-        "flex h-[40vh] max-h-[580px] flex-col overflow-hidden rounded-lg border-2 border-[#BECAD4] p-5",
-        className,
-      )}
-    >
+    <>
       <div className="flex flex-row justify-between gap-1 border-b-2 pb-5">
         <h3 className="w-full self-center text-xl font-semibold">
           Recent Project Activity
@@ -128,7 +123,7 @@ const ActivityProjectOverview = ({ projectId, className }: Props) => {
           })}
         </div>
       )}
-    </div>
+    </>
   );
 };
 
