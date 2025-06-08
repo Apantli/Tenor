@@ -694,7 +694,7 @@ export default function ProjectSprints() {
                 )}
               </div>
             </div>
-            <div className="relative flex-1">
+            <div className="relative flex-1 overflow-hidden">
               <div
                 className={cn(
                   "z-[0] flex h-full w-full gap-4 overflow-x-auto",
@@ -710,7 +710,7 @@ export default function ProjectSprints() {
               >
                 <div
                   className={cn(
-                    "absolute bottom-0 left-0 z-[20] flex h-[80px] w-full items-center justify-between bg-app-primary/80 px-10 text-white opacity-0 transition",
+                    "pointer-events-none absolute bottom-0 left-0 z-[20] flex h-[80px] w-full items-center justify-between bg-app-primary/80 px-10 text-white opacity-0 transition",
                     {
                       "opacity-100":
                         dragging &&
