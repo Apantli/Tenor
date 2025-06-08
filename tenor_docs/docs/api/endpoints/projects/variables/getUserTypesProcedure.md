@@ -4,21 +4,19 @@
 
 # Variable: getUserTypesProcedure
 
-> `const` **getUserTypesProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `object`[]; \}\>
+> `const` **getUserTypesProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: `WithId`\<`Role`\>[]; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:508](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L508)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:492](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/projects.ts#L492)
 
-Retrieves user types (roles) for a specific project.
+Gets the user types/roles defined in a project.
 
 ## Param
 
-Object containing procedure parameters
-Input object structure:
-- projectId — ID of the project to fetch user types for
+Object containing projectId
 
 ## Returns
 
-Array of user types with their labels.
+Array of project roles
 
 ## Http
 

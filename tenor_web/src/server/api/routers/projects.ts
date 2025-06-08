@@ -166,284 +166,367 @@ const fetchUserProjects = async (
   }
 };
 
-export const projectsRouter = createTRPCRouter({
-  listProjects: protectedProcedure.query(async ({ ctx }) => {
+/**
+ * Lists all projects available to the authenticated user.
+ *
+ * @returns Array of projects the user has access to
+ *
+ * @http GET /api/trpc/projects.listProjects
+ */
+export const listProjectsProcedure = protectedProcedure.query(
+  async ({ ctx }) => {
     const useruid = ctx.session.user.uid;
     const projects = await fetchUserProjects(useruid, ctx.firestore);
     return projects;
-  }),
-  createProject: protectedProcedure
-    .input(ProjectSchemaCreator.extend({ settings: SettingsSchema }))
-    .mutation(async ({ ctx, input }) => {
-      const newProjectRef = getProjectsRef(ctx.firestore).doc();
+  },
+);
 
-      // FIXME: remove duplicated users from input.users
-      // FIXME: get ids from input.users, use ids to add users to project
-      // FIXME: validate valid links before fetching html
+/**
+ * Creates a new project with the specified configuration.
+ *
+ * @param input Project configuration including name, description, users, and settings
+ * @returns Object containing success status and the new project ID
+ * @throws {TRPCError} If there's an error creating the project
+ *
+ * @http POST /api/trpc/projects.createProject
+ */
+export const createProjectProcedure = protectedProcedure
+  .input(ProjectSchemaCreator.extend({ settings: SettingsSchema }))
+  .mutation(async ({ ctx, input }) => {
+    const newProjectRef = getProjectsRef(ctx.firestore).doc();
 
-      // Add creator as project admin
-      input.users.push({
-        userId: ctx.session.uid,
-        roleId: "owner",
-        active: true,
-      });
+    // FIXME: remove duplicated users from input.users
+    // FIXME: get ids from input.users, use ids to add users to project
+    // FIXME: validate valid links before fetching html
 
-      // Remove duplicated users (preserve first occurrence)
-      const seen = new Map<
-        string,
-        z.infer<typeof ProjectSchemaCreator>["users"][number]
-      >();
+    // Add creator as project admin
+    input.users.push({
+      userId: ctx.session.uid,
+      roleId: "owner",
+      active: true,
+    });
 
-      for (const user of input.users) {
-        if (!seen.has(user.userId)) {
-          seen.set(user.userId, user);
-        }
+    // Remove duplicated users (preserve first occurrence)
+    const seen = new Map<
+      string,
+      z.infer<typeof ProjectSchemaCreator>["users"][number]
+    >();
+
+    for (const user of input.users) {
+      if (!seen.has(user.userId)) {
+        seen.set(user.userId, user);
+      }
+    }
+
+    input.users = Array.from(seen.values());
+
+    // Fetch HTML from links
+    const links = input.settings.aiContext.links;
+    input.settings.aiContext.links = await fetchMultipleHTML(links);
+
+    // Fetch text from files
+    const b64Files = input.settings.aiContext.files.map((file) => file.content);
+    const fileText = await fetchMultipleFiles(b64Files);
+
+    const files = input.settings.aiContext.files.map((file, index) => ({
+      name: file.name,
+      type: file.type,
+      content: fileText[index] ?? "",
+      size: Buffer.byteLength(fileText[index] ?? "", "utf-8"), // Calculate size in bytes
+    }));
+
+    input.settings.aiContext.files = files;
+
+    // Upload logo
+    const isLogoValid = isBase64Valid(input.logo);
+    if (isLogoValid) {
+      const logoPath = newProjectRef.id + "." + isLogoValid;
+      input.logo = await uploadBase64File(
+        getLogoPath({ logo: logoPath, projectId: newProjectRef.id }),
+        input.logo,
+      );
+    } else {
+      // Use default icon
+      input.logo = defaultProjectIconPath;
+    }
+
+    try {
+      const { settings, users, ...projectData } = input;
+
+      await newProjectRef.set(projectData);
+
+      const userRefs = input.users.map((user) =>
+        getGlobalUserRef(ctx.firestore, user.userId),
+      );
+
+      await Promise.all(
+        userRefs.map((userRef) =>
+          userRef.update("projectIds", FieldValue.arrayUnion(newProjectRef.id)),
+        ),
+      );
+      // FIXME: Create proper default settings in the project
+      await getSettingsRef(ctx.firestore, newProjectRef.id).set(settings);
+
+      const userTypesCollection = getRolesRef(ctx.firestore, newProjectRef.id);
+
+      // go over defaultRoleList and create roles
+      const userTypesMap: Record<string, string> = {};
+      for (const role of defaultRoleList) {
+        const roleDoc = await userTypesCollection.add({
+          ...role,
+          id: undefined,
+        });
+
+        userTypesMap[role.id] = roleDoc.id;
       }
 
-      input.users = Array.from(seen.values());
+      // change users roleId to the new role id
+      users.forEach((user) => {
+        if (userTypesMap[user.roleId]) {
+          user.roleId = userTypesMap[user.roleId]!;
+        } else {
+          if (user.roleId !== "owner") {
+            console.error(
+              `Role ID ${user.roleId} not found in userTypesMap`,
+              user,
+            );
+            user.roleId = "";
+          }
+        }
+      });
 
-      // Fetch HTML from links
-      const links = input.settings.aiContext.links;
-      input.settings.aiContext.links = await fetchMultipleHTML(links);
+      const usersCollection = getUsersRef(ctx.firestore, newProjectRef.id);
 
-      // Fetch text from files
-      const b64Files = input.settings.aiContext.files.map(
-        (file) => file.content,
+      await Promise.all(
+        users.map((user) =>
+          usersCollection.doc(user.userId).set({
+            ...user,
+            userId: undefined,
+          }),
+        ),
       );
-      const fileText = await fetchMultipleFiles(b64Files);
 
-      const files = input.settings.aiContext.files.map((file, index) => ({
-        name: file.name,
-        type: file.type,
-        content: fileText[index] ?? "",
-        size: Buffer.byteLength(fileText[index] ?? "", "utf-8"), // Calculate size in bytes
-      }));
+      // Create default priority types
+      const priorityTypesCollection = getPrioritiesRef(
+        ctx.firestore,
+        newProjectRef.id,
+      );
 
-      input.settings.aiContext.files = files;
+      await Promise.all(
+        defaultPriorityTypes.map((type) => priorityTypesCollection.add(type)),
+      );
 
-      // Upload logo
+      // Create default status types
+      const requirementTypesCollection = getRequirementTypesRef(
+        ctx.firestore,
+        newProjectRef.id,
+      );
+
+      await Promise.all(
+        defaultRequerimentTypes.map((type) =>
+          requirementTypesCollection.add(type),
+        ),
+      );
+
+      // Create default status types
+      const statusCollection = getStatusTypesRef(
+        ctx.firestore,
+        newProjectRef.id,
+      );
+
+      await Promise.all([
+        ...defaultStatusTags.map((statusTag) =>
+          statusCollection.add(statusTag),
+        ),
+        statusCollection.doc("awaits_review").set(awaitsReviewTag),
+      ]);
+
+      // Create default empty activity
+      const activityCollection = getActivityRef(
+        ctx.firestore,
+        newProjectRef.id,
+      );
+
+      await Promise.all(
+        defaultActivity.map((activity) => activityCollection.add(activity)),
+      );
+
+      return { success: true, projectId: newProjectRef.id };
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+    }
+  });
+
+/**
+ * Gets the general configuration of a specific project.
+ *
+ * @param input Object containing projectId
+ * @returns Project configuration data
+ *
+ * @http GET /api/trpc/projects.getGeneralConfig
+ */
+export const getGeneralConfigProcedure = protectedProcedure
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ input, ctx }) => {
+    const { projectId } = input;
+    return await getProject(ctx.firestore, projectId);
+  });
+
+/**
+ * Modifies the general configuration of a project.
+ * Requires owner permissions.
+ *
+ * @param input Object containing project configuration updates
+ * @returns void
+ * @throws {TRPCError} If the user doesn't have owner permissions
+ *
+ * @http POST /api/trpc/projects.modifyGeneralConfig
+ */
+export const modifyGeneralConfigProcedure = roleRequiredProcedure(
+  settingsPermissions,
+  "write",
+)
+  .input(
+    z.object({
+      projectId: z.string(),
+      name: z.string(),
+      description: z.string(),
+      logo: z.string(),
+    }),
+  )
+  .mutation(async ({ input, ctx }) => {
+    if (ctx.roleId !== "owner") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+      });
+    }
+    const projectRef = getProjectRef(ctx.firestore, input.projectId);
+    const projectData = (await projectRef.get()).data() as Project;
+
+    // Modify logo only if it has changed
+    if (projectData.logo !== input.logo) {
       const isLogoValid = isBase64Valid(input.logo);
+
+      if (isLogoValid && projectData.logo !== defaultProjectIconPath) {
+        // Delete previous logo, assume the name starts with the projectId
+        await deleteStartsWith(
+          getLogoPath({ logo: input.projectId, projectId: input.projectId }),
+        );
+      }
+
       if (isLogoValid) {
-        const logoPath = newProjectRef.id + "." + isLogoValid;
+        const logoPath = input.projectId + "." + isLogoValid;
         input.logo = await uploadBase64File(
-          getLogoPath({ logo: logoPath, projectId: newProjectRef.id }),
+          getLogoPath({ logo: logoPath, projectId: input.projectId }),
           input.logo,
         );
       } else {
         // Use default icon
         input.logo = defaultProjectIconPath;
       }
+    }
 
-      try {
-        const { settings, users, ...projectData } = input;
+    await projectRef.update({
+      name: input.name,
+      description: input.description,
+      logo: input.logo,
+    });
+  });
 
-        await newProjectRef.set(projectData);
-
-        const userRefs = input.users.map((user) =>
-          getGlobalUserRef(ctx.firestore, user.userId),
-        );
-
-        await Promise.all(
-          userRefs.map((userRef) =>
-            userRef.update(
-              "projectIds",
-              FieldValue.arrayUnion(newProjectRef.id),
-            ),
-          ),
-        );
-        // FIXME: Create proper default settings in the project
-        await getSettingsRef(ctx.firestore, newProjectRef.id).set(settings);
-
-        const userTypesCollection = getRolesRef(
-          ctx.firestore,
-          newProjectRef.id,
-        );
-
-        // go over defaultRoleList and create roles
-        const userTypesMap: Record<string, string> = {};
-        for (const role of defaultRoleList) {
-          const roleDoc = await userTypesCollection.add({
-            ...role,
-            id: undefined,
-          });
-
-          userTypesMap[role.id] = roleDoc.id;
-        }
-
-        // change users roleId to the new role id
-        users.forEach((user) => {
-          if (userTypesMap[user.roleId]) {
-            user.roleId = userTypesMap[user.roleId]!;
-          } else {
-            if (user.roleId !== "owner") {
-              console.error(
-                `Role ID ${user.roleId} not found in userTypesMap`,
-                user,
-              );
-              user.roleId = "";
-            }
-          }
-        });
-
-        const usersCollection = getUsersRef(ctx.firestore, newProjectRef.id);
-
-        await Promise.all(
-          users.map((user) =>
-            usersCollection.doc(user.userId).set({
-              ...user,
-              userId: undefined,
-            }),
-          ),
-        );
-
-        // Create default priority types
-        const priorityTypesCollection = getPrioritiesRef(
-          ctx.firestore,
-          newProjectRef.id,
-        );
-
-        await Promise.all(
-          defaultPriorityTypes.map((type) => priorityTypesCollection.add(type)),
-        );
-
-        // Create default status types
-        const requirementTypesCollection = getRequirementTypesRef(
-          ctx.firestore,
-          newProjectRef.id,
-        );
-
-        await Promise.all(
-          defaultRequerimentTypes.map((type) =>
-            requirementTypesCollection.add(type),
-          ),
-        );
-
-        // Create default status types
-        const statusCollection = getStatusTypesRef(
-          ctx.firestore,
-          newProjectRef.id,
-        );
-
-        await Promise.all([
-          ...defaultStatusTags.map((statusTag) =>
-            statusCollection.add(statusTag),
-          ),
-          statusCollection.doc("awaits_review").set(awaitsReviewTag),
-        ]);
-
-        // Create default empty activity
-        const activityCollection = getActivityRef(
-          ctx.firestore,
-          newProjectRef.id,
-        );
-
-        await Promise.all(
-          defaultActivity.map((activity) => activityCollection.add(activity)),
-        );
-
-        return { success: true, projectId: newProjectRef.id };
-      } catch (error) {
-        console.error("Error adding document: ", error);
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      }
+/**
+ * Marks a project as deleted.
+ * Requires owner permissions.
+ *
+ * @param input Object containing projectId to delete
+ * @returns void
+ * @throws {TRPCError} If the user doesn't have owner permissions
+ *
+ * @http POST /api/trpc/projects.deleteProject
+ */
+export const deleteProjectProcedure = roleRequiredProcedure(
+  settingsPermissions,
+  "write",
+)
+  .input(
+    z.object({
+      projectId: z.string(),
     }),
-
-  getGeneralConfig: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ input, ctx }) => {
-      const { projectId } = input;
-      return await getProject(ctx.firestore, projectId);
-    }),
-
-  modifyGeneralConfig: roleRequiredProcedure(settingsPermissions, "write")
-    .input(
-      z.object({
-        projectId: z.string(),
-        name: z.string(),
-        description: z.string(),
-        logo: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      if (ctx.roleId !== "owner") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-        });
-      }
-      const projectRef = getProjectRef(ctx.firestore, input.projectId);
-      const projectData = (await projectRef.get()).data() as Project;
-
-      // Modify logo only if it has changed
-      if (projectData.logo !== input.logo) {
-        const isLogoValid = isBase64Valid(input.logo);
-
-        if (isLogoValid && projectData.logo !== defaultProjectIconPath) {
-          // Delete previous logo, assume the name starts with the projectId
-          await deleteStartsWith(
-            getLogoPath({ logo: input.projectId, projectId: input.projectId }),
-          );
-        }
-
-        if (isLogoValid) {
-          const logoPath = input.projectId + "." + isLogoValid;
-          input.logo = await uploadBase64File(
-            getLogoPath({ logo: logoPath, projectId: input.projectId }),
-            input.logo,
-          );
-        } else {
-          // Use default icon
-          input.logo = defaultProjectIconPath;
-        }
-      }
-
-      await projectRef.update({
-        name: input.name,
-        description: input.description,
-        logo: input.logo,
+  )
+  .mutation(async ({ input, ctx }) => {
+    if (ctx.roleId !== "owner") {
+      throw new TRPCError({
+        code: "FORBIDDEN",
       });
-    }),
-  deleteProject: roleRequiredProcedure(settingsPermissions, "write")
-    .input(
-      z.object({
-        projectId: z.string(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      if (ctx.roleId !== "owner") {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-        });
-      }
-      const { projectId } = input;
-      const projectRef = getProjectRef(ctx.firestore, projectId);
-      await projectRef.update({
-        deleted: true,
-      });
-    }),
-  getProjectName: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return (await getProject(ctx.firestore, projectId)).name;
-    }),
-  getUserTypes: roleRequiredProcedure(settingsPermissions, "read")
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return await getRoles(ctx.firestore, projectId);
-    }),
-  getProjectStatus: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return await getProjectStatus(
-        ctx.firestore,
-        projectId,
-        ctx.firebaseAdmin.app(),
-      );
-    }),
+    }
+    const { projectId } = input;
+    const projectRef = getProjectRef(ctx.firestore, projectId);
+    await projectRef.update({
+      deleted: true,
+    });
+  });
 
-  getTopProjectStatus: protectedProcedure.query(async ({ ctx }) => {
+/**
+ * Gets the name of a specific project.
+ *
+ * @param input Object containing projectId
+ * @returns Project name string
+ *
+ * @http GET /api/trpc/projects.getProjectName
+ */
+export const getProjectNameProcedure = protectedProcedure
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const { projectId } = input;
+    return (await getProject(ctx.firestore, projectId)).name;
+  });
+
+/**
+ * Gets the user types/roles defined in a project.
+ *
+ * @param input Object containing projectId
+ * @returns Array of project roles
+ *
+ * @http GET /api/trpc/projects.getUserTypes
+ */
+export const getUserTypesProcedure = roleRequiredProcedure(
+  settingsPermissions,
+  "read",
+)
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const { projectId } = input;
+    return await getRoles(ctx.firestore, projectId);
+  });
+
+/**
+ * Gets the current status of a specific project.
+ *
+ * @param input Object containing projectId
+ * @returns Project status data
+ *
+ * @http GET /api/trpc/projects.getProjectStatus
+ */
+export const getProjectStatusProcedure = protectedProcedure
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const { projectId } = input;
+    return await getProjectStatus(
+      ctx.firestore,
+      projectId,
+      ctx.firebaseAdmin.app(),
+    );
+  });
+
+/**
+ * Gets the status of top projects for the current user.
+ *
+ * @returns Array of top project status data with names
+ *
+ * @http GET /api/trpc/projects.getTopProjectStatus
+ */
+export const getTopProjectStatusProcedure = protectedProcedure.query(
+  async ({ ctx }) => {
     const topProjects = await computeTopProjectStatus(
       ctx.firestore,
       ctx.firebaseAdmin.app(),
@@ -465,19 +548,37 @@ export const projectsRouter = createTRPCRouter({
     );
 
     return projectsWithName as WithName<TopProjects>[];
-  }),
+  },
+);
 
-  getActivityDetails: protectedProcedure
-    .input(
-      z.object({
-        projectId: z.string(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      return await getItemActivityDetails(ctx.firestore, projectId);
+/**
+ * Gets activity details for a specific project.
+ *
+ * @param input Object containing projectId
+ * @returns Activity details for the specified project
+ *
+ * @http GET /api/trpc/projects.getActivityDetails
+ */
+export const getActivityDetailsProcedure = protectedProcedure
+  .input(
+    z.object({
+      projectId: z.string(),
     }),
-  getActivityDetailsFromProjects: protectedProcedure.query(async ({ ctx }) => {
+  )
+  .query(async ({ ctx, input }) => {
+    const { projectId } = input;
+    return await getItemActivityDetails(ctx.firestore, projectId);
+  });
+
+/**
+ * Gets activity details from all projects the user has access to.
+ *
+ * @returns Array of activity details sorted by date
+ *
+ * @http GET /api/trpc/projects.getActivityDetailsFromProjects
+ */
+export const getActivityDetailsFromProjectsProcedure = protectedProcedure.query(
+  async ({ ctx }) => {
     const user = (
       await getGlobalUserRef(ctx.firestore, ctx.session.uid).get()
     ).data() as z.infer<typeof UserSchema>;
@@ -498,14 +599,47 @@ export const projectsRouter = createTRPCRouter({
       const b2 = b.date as unknown as firestore.Timestamp;
       return b2.seconds - a2.seconds;
     });
-  }),
-  getGraphBurndownData: protectedProcedure
-    .input(z.object({ projectId: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const { projectId } = input;
-      // Get the current sprint for the project
-      const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
-      if (!currentSprint) return null;
-      return await getBurndownData(ctx.firestore, projectId, currentSprint.id);
-    }),
+  },
+);
+
+/**
+ * Gets burndown chart data for the current sprint of a project.
+ *
+ * @param input Object containing projectId
+ * @returns Burndown data or null if no current sprint exists
+ *
+ * @http GET /api/trpc/projects.getGraphBurndownData
+ */
+export const getGraphBurndownDataProcedure = protectedProcedure
+  .input(z.object({ projectId: z.string() }))
+  .query(async ({ ctx, input }) => {
+    const { projectId } = input;
+    // Get the current sprint for the project
+    const currentSprint = await getCurrentSprint(ctx.firestore, projectId);
+    if (!currentSprint) return null;
+    return await getBurndownData(ctx.firestore, projectId, currentSprint.id);
+  });
+
+/**
+ * TRPC Router for managing Projects in the Tenor application.
+ *
+ * This router provides endpoints for creating, retrieving, updating, and deleting projects,
+ * as well as fetching project-related metadata like activity details, status, and user types.
+ *
+ * @category API
+ * @subcategory Routers
+ */
+export const projectsRouter = createTRPCRouter({
+  listProjects: listProjectsProcedure,
+  createProject: createProjectProcedure,
+  getGeneralConfig: getGeneralConfigProcedure,
+  modifyGeneralConfig: modifyGeneralConfigProcedure,
+  deleteProject: deleteProjectProcedure,
+  getProjectName: getProjectNameProcedure,
+  getUserTypes: getUserTypesProcedure,
+  getProjectStatus: getProjectStatusProcedure,
+  getTopProjectStatus: getTopProjectStatusProcedure,
+  getActivityDetails: getActivityDetailsProcedure,
+  getActivityDetailsFromProjects: getActivityDetailsFromProjectsProcedure,
+  getGraphBurndownData: getGraphBurndownDataProcedure,
 });

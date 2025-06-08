@@ -6,20 +6,20 @@
 
 > `const` **getItemAutomaticStatusProcedure**: `QueryProcedure`\<\{ `input`: \{ `itemId`: `string`; `projectId`: `string`; \}; `output`: `StatusTag`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:441](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L441)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:277](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/kanban.ts#L277)
 
-Retrieves the automatic status for a backlog item based on its tasks.
+Determines the automatic status for a specific item based on its tasks and current state.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project containing the backlog item
-- itemId — ID of the backlog item to determine the status for
+- projectId — The ID of the project containing the item
+- itemId — The ID of the item to determine status for
 
 ## Returns
 
-Object containing the automatic status details for the backlog item.
+The automatically determined status ID for the item.
 
 ## Http
 

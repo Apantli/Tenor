@@ -9,40 +9,27 @@ sidebar_position: 1
 
 # tasks
 
-Tasks Router - Tenor API Endpoints for Task Management
+Tasks - Tenor API Endpoints for Task Management
 
-This file defines the TRPC router and procedures for task management in the Tenor application.
-It provides endpoints to create, read, update, delete, and generate tasks for projects and backlog items.
-
-The router includes procedures for:
-- Creating and modifying tasks
-- Retrieving task details and table-friendly task data
-- Changing task status
-- Deleting tasks (soft delete)
-- Generating tasks using AI based on backlog items
-- Getting task counts
-
-Tasks are organized under projects and can be associated with user stories, issues, or other items.
-
-## Interfaces
-
-- [TaskCol](interfaces/TaskCol.md)
+This file defines the TRPC router and procedures for managing Tasks in the Tenor application.
+It provides endpoints to create, modify, and retrieve tasks.
 
 ## Variables
 
+- [addTaskDependenciesProcedure](variables/addTaskDependenciesProcedure.md)
 - [changeTaskStatusProcedure](variables/changeTaskStatusProcedure.md)
 - [createTaskProcedure](variables/createTaskProcedure.md)
+- [deleteTaskDependenciesProcedure](variables/deleteTaskDependenciesProcedure.md)
 - [deleteTaskProcedure](variables/deleteTaskProcedure.md)
+- [deleteTasksProcedure](variables/deleteTasksProcedure.md)
 - [generateTasksProcedure](variables/generateTasksProcedure.md)
 - [getTaskCountProcedure](variables/getTaskCountProcedure.md)
+- [getTaskDependenciesProcedure](variables/getTaskDependenciesProcedure.md)
 - [getTaskDetailProcedure](variables/getTaskDetailProcedure.md)
-- [getTasksTableFriendlyProcedure](variables/getTasksTableFriendlyProcedure.md)
+- [getTasksByDateProcedure](variables/getTasksByDateProcedure.md)
+- [getTasksProcedure](variables/getTasksProcedure.md)
+- [getTaskTableProcedure](variables/getTaskTableProcedure.md)
+- [getTodoStatusTagProcedure](variables/getTodoStatusTagProcedure.md)
+- [modifyDueDateProcedure](variables/modifyDueDateProcedure.md)
 - [modifyTaskProcedure](variables/modifyTaskProcedure.md)
 - [tasksRouter](variables/tasksRouter.md)
-
-## Functions
-
-- [getStatusTag](functions/getStatusTag.md)
-- [getTasksFromItem](functions/getTasksFromItem.md)
-- [getTasksFromProject](functions/getTasksFromProject.md)
-- [getTodoStatusTag](functions/getTodoStatusTag.md)

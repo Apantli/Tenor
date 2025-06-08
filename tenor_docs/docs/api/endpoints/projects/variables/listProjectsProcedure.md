@@ -6,17 +6,13 @@
 
 > `const` **listProjectsProcedure**: `QueryProcedure`\<\{ `input`: `void`; `output`: `WithId`\<`Project`\>[]; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:184](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L184)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:176](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/projects.ts#L176)
 
-Retrieves a list of projects associated with the current user.
-
-## Param
-
-None
+Lists all projects available to the authenticated user.
 
 ## Returns
 
-Array of projects with their details.
+Array of projects the user has access to
 
 ## Http
 

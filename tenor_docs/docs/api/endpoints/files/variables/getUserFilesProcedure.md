@@ -6,9 +6,9 @@
 
 > `const` **getUserFilesProcedure**: `QueryProcedure`\<\{ `input`: `void`; `output`: `object`[]; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/files.ts:35](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/files.ts#L35)
+Defined in: [tenor\_web/src/server/api/routers/files.ts:36](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/files.ts#L36)
 
-Retrieves the list of files associated with the current user.
+Retrieves files associated with the current user.
 
 ## Param
 
@@ -16,7 +16,7 @@ None
 
 ## Returns
 
-Array of files with their URLs and names.
+Array of file objects containing URL and name information.
 
 ## Http
 
