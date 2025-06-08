@@ -4,24 +4,24 @@
 
 # Variable: modifyUserStoryProcedure
 
-> `const` **modifyUserStoryProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryData`: \{ `acceptanceCriteria`: `string`; `complete?`: `boolean`; `dependencyIds`: `string`[]; `description`: `string`; `epicId`: `string`; `name`: `string`; `priorityId?`: `string`; `requiredByIds`: `string`[]; `size?`: `"XS"` \| `"S"` \| `"M"` \| `"L"` \| `"XL"` \| `"XXL"`; `sprintId?`: `string`; `statusId?`: `string`; `tagIds`: `string`[]; `taskIds?`: `string`[]; \}; `userStoryId`: `string`; \}; `output`: \{ `success`: `boolean`; `updatedUserStoryIds`: `string`[]; \}; \}\>
+> `const` **modifyUserStoryProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryData`: \{ `acceptanceCriteria`: `string`; `complete?`: `boolean`; `createdAt?`: `Timestamp`; `dependencyIds?`: `string`[]; `description`: `string`; `epicId`: `string`; `name`: `string`; `priorityId?`: `string`; `requiredByIds?`: `string`[]; `size?`: `""` \| `"XS"` \| `"S"` \| `"M"` \| `"L"` \| `"XL"` \| `"XXL"`; `sprintId?`: `string`; `statusId?`: `string`; `tagIds`: `string`[]; `taskIds?`: `string`[]; \}; `userStoryId`: `string`; \}; `output`: \{ `updatedUserStoryIds`: `string`[]; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:491](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L491)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:247](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/userStories.ts#L247)
 
-Modifies an existing user story in a specific project.
+Modifies an existing user story.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project containing the user story
-- userStoryId — ID of the user story to modify
-- userStoryData — Updated data for the user story, excluding scrumId and deleted fields
+- projectId - String ID of the project to which the user story belongs
+- userStoryId - String ID of the user story to modify
+- userStoryData - UserStorySchema object containing the data for the user story
 
 ## Returns
 
-Object containing success status and updated user story IDs.
+Object indicating success and the IDs of updated user stories
 
 ## Http
 
-PUT /api/trpc/userStories.modifyUserStory
+PATCH /api/trpc/userStories.modifyUserStory

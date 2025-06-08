@@ -4,22 +4,22 @@
 
 # Variable: createUserStoryProcedure
 
-> `const` **createUserStoryProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryData`: \{ `acceptanceCriteria`: `string`; `complete?`: `boolean`; `deleted?`: `boolean`; `dependencyIds`: `string`[]; `description`: `string`; `epicId`: `string`; `name`: `string`; `priorityId?`: `string`; `requiredByIds`: `string`[]; `size?`: `"XS"` \| `"S"` \| `"M"` \| `"L"` \| `"XL"` \| `"XXL"`; `sprintId?`: `string`; `statusId?`: `string`; `tagIds`: `string`[]; `taskIds?`: `string`[]; \}; \}; `output`: \{ `success`: `boolean`; `userStoryId`: `string`; \}; \}\>
+> `const` **createUserStoryProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryData`: \{ `acceptanceCriteria`: `string`; `complete?`: `boolean`; `createdAt?`: `Timestamp`; `deleted?`: `boolean`; `dependencyIds?`: `string`[]; `description`: `string`; `epicId`: `string`; `name`: `string`; `priorityId?`: `string`; `requiredByIds?`: `string`[]; `size?`: `""` \| `"XS"` \| `"S"` \| `"M"` \| `"L"` \| `"XL"` \| `"XXL"`; `sprintId?`: `string`; `statusId?`: `string`; `tagIds`: `string`[]; `taskIds?`: `string`[]; \}; \}; `output`: `WithId`\<`UserStory`\>; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:156](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L156)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:134](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/userStories.ts#L134)
 
-Creates a new user story in the specified project.
+Creates a new user story or modifies an existing one.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project where the user story will be created
-- userStoryData — Data for the new user story, excluding the scrumId field
+- projectId - String ID of the project to which the user story belongs
+- userStoryData - UserStorySchema object containing the data for the user story
 
 ## Returns
 
-Object containing success status and the ID of the created user story.
+The created or modified user story
 
 ## Http
 

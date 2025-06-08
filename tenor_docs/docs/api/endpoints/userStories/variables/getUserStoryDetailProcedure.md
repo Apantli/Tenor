@@ -4,9 +4,9 @@
 
 # Variable: getUserStoryDetailProcedure
 
-> `const` **getUserStoryDetailProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryId`: `string`; \}; `output`: `UserStoryDetail`; \}\>
+> `const` **getUserStoryDetailProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; `userStoryId`: `string`; \}; `output`: `UserStoryDetail` & `object`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/userStories.ts:301](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/userStories.ts#L301)
+Defined in: [tenor\_web/src/server/api/routers/userStories.ts:107](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/userStories.ts#L107)
 
 Retrieves detailed information about a specific user story.
 
@@ -14,12 +14,12 @@ Retrieves detailed information about a specific user story.
 
 Object containing procedure parameters
 Input object structure:
-- userStoryId — ID of the user story to fetch details for
-- projectId — ID of the project containing the user story
+- projectId - String ID of the project to which the user story belongs
+- userStoryId - String ID of the user story to retrieve
 
 ## Returns
 
-Detailed information about the user story.
+Detailed user story information
 
 ## Http
 

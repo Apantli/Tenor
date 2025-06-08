@@ -1,5 +1,3 @@
-import { env } from "~/env.js";
-
 export const fetchText = async (file64: string): Promise<string> => {
   const matches = /^data:(.*);base64,(.*)$/.exec(file64);
   if (!matches || matches.length !== 3) {
@@ -46,13 +44,10 @@ export const fetchText = async (file64: string): Promise<string> => {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch(
-    `http://${env.FIREBASE_EMULATOR_IP}:5001/${env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/us-central1/parse_file`,
-    {
-      method: "POST",
-      body: formData,
-    },
-  );
+  const response = await fetch(`https://parse-file-xtamobifyq-uc.a.run.app`, {
+    method: "POST",
+    body: formData,
+  });
 
   if (!response.ok) {
     const jsonResponse = (await response.json()) as { error?: string };

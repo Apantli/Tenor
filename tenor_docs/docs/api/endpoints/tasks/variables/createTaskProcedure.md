@@ -4,9 +4,9 @@
 
 # Variable: createTaskProcedure
 
-> `const` **createTaskProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `taskData`: \{ `assigneeId`: `string`; `deleted?`: `boolean`; `description`: `string`; `dueDate`: `null` \| `Timestamp`; `itemId`: `string`; `itemType`: `"US"` \| `"IS"` \| `"IT"`; `name`: `string`; `size?`: `"XS"` \| `"S"` \| `"M"` \| `"L"` \| `"XL"` \| `"XXL"`; `statusId`: `string`; \}; \}; `output`: \{ `success`: `boolean`; `taskId`: `string`; \}; \}\>
+> `const` **createTaskProcedure**: `MutationProcedure`\<\{ `input`: \{ `projectId`: `string`; `taskData`: \{ `assigneeId`: `string`; `createdAt?`: `Timestamp`; `deleted?`: `boolean`; `dependencyIds?`: `string`[]; `description`: `string`; `dueDate?`: `Timestamp`; `itemId`: `string`; `itemType`: `"US"` \| `"IS"` \| `"IT"`; `name`: `string`; `requiredByIds?`: `string`[]; `size?`: `""` \| `"XS"` \| `"S"` \| `"M"` \| `"L"` \| `"XL"` \| `"XXL"`; `statusChangeDate?`: `Timestamp`; `statusId`: `string`; \}; \}; `output`: `WithId`\<`Task`\>; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/tasks.ts:192](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/tasks.ts#L192)
+Defined in: [tenor\_web/src/server/api/routers/tasks.ts:130](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/tasks.ts#L130)
 
 Creates a new task in the specified project and assigns it a scrumId.
 
@@ -14,12 +14,16 @@ Creates a new task in the specified project and assigns it a scrumId.
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project where the task will be created
-- taskData — Data for the new task, excluding the scrumId field
+- projectId - String ID of the project
+- taskData - The task data without scrumId
 
 ## Returns
 
-Object containing success status and the ID of the created task.
+Object with the created task ID and data
+
+## Throws
+
+If there's an error creating the task or if it would create a dependency cycle
 
 ## Http
 

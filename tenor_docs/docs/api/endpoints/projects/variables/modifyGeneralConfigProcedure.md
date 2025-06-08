@@ -4,25 +4,25 @@
 
 # Variable: modifyGeneralConfigProcedure
 
-> `const` **modifyGeneralConfigProcedure**: `MutationProcedure`\<\{ `input`: \{ `description`: `string`; `logo`: `string`; `name`: `string`; `projectId`: `string`; \}; `output`: \{ `success`: `boolean`; \}; \}\>
+> `const` **modifyGeneralConfigProcedure**: `MutationProcedure`\<\{ `input`: \{ `description`: `string`; `logo`: `string`; `name`: `string`; `projectId`: `string`; \}; `output`: `void`; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/projects.ts:398](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/projects.ts#L398)
+Defined in: [tenor\_web/src/server/api/routers/projects.ts:386](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/projects.ts#L386)
 
 Modifies the general configuration of a project.
+Requires owner permissions.
 
 ## Param
 
-Object containing procedure parameters
-Input object structure:
-- projectId — ID of the project to modify
-- name — New name of the project
-- description — New description of the project
-- logo — New base64 string of the project logo
+Object containing project configuration updates
 
 ## Returns
 
-Object indicating success status.
+void
+
+## Throws
+
+If the user doesn't have owner permissions
 
 ## Http
 
-PUT /api/trpc/projects.modifyGeneralConfig
+POST /api/trpc/projects.modifyGeneralConfig

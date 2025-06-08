@@ -9,6 +9,7 @@ import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { useAlert } from "~/app/_hooks/useAlert";
 import { useInvalidateQueriesAllSprints } from "~/app/_hooks/invalidateHooks";
 import useValidateDate from "~/app/_hooks/useValidateDates";
+import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 
 export interface SprintDates {
   id: string;
@@ -126,6 +127,8 @@ export default function CreateSprintPopup({
     setShowSmallPopup(false);
   };
 
+  const checkDescriptionLimit = useCharacterLimit("Sprint description", 200);
+
   return (
     <Popup
       show={showSmallPopup}
@@ -156,7 +159,11 @@ export default function CreateSprintPopup({
           height={15}
           label="Sprint description"
           value={newSprintDescription}
-          onChange={(e) => setNewSprintDescription(e.target.value)}
+          onChange={(e) => {
+            if (checkDescriptionLimit(e.target.value)) {
+              setNewSprintDescription(e.target.value);
+            }
+          }}
           placeholder="Explain what will be done in this sprint..."
           className="h-[200px] w-full"
         />

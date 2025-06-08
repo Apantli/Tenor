@@ -4,23 +4,21 @@
 
 # Variable: getBacklogItemsForKanbanProcedure
 
-> `const` **getBacklogItemsForKanbanProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `cardItems`: \{[`k`: `string`]: [`KanbanItemCard`](../interfaces/KanbanItemCard.md); \}; `columns`: `object`[]; \}; \}\>
+> `const` **getBacklogItemsForKanbanProcedure**: `QueryProcedure`\<\{ `input`: \{ `projectId`: `string`; \}; `output`: \{ `cardItems`: \{[`k`: `string`]: `KanbanItemCard`; \}; `columns`: `object`[]; \}; \}\>
 
-Defined in: [tenor\_web/src/server/api/routers/kanban.ts:248](https://github.com/Apantli/Tenor/blob/b33873959b5093fc3e3d66ac4f230a78a6395bbd/tenor_web/src/server/api/routers/kanban.ts#L248)
+Defined in: [tenor\_web/src/server/api/routers/kanban.ts:165](https://github.com/Apantli/Tenor/blob/293d0ddb2d5307c4150fcd161249995fd5278c7d/tenor_web/src/server/api/routers/kanban.ts#L165)
 
-Retrieves backlog items for the Kanban board of a project.
+Retrieves backlog items (user stories, issues, items) formatted for kanban board display.
 
 ## Param
 
 Object containing procedure parameters
 Input object structure:
-- projectId — ID of the project to fetch backlog items for
+- projectId — The ID of the project to retrieve backlog items for
 
 ## Returns
 
-Object containing columns and backlog items for the Kanban board:
-- columns — Array of columns with their details and associated item IDs
-- cardItems — Object mapping item IDs to their details
+Object containing columns and item cards organized for kanban view.
 
 ## Http
 

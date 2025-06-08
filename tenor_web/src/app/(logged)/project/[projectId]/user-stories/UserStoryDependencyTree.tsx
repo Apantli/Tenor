@@ -38,15 +38,20 @@ import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import usePersistentState from "~/app/_hooks/usePersistentState";
 import { useGetPermission } from "~/app/_hooks/useGetPermission";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
+import TertiaryButton from "~/app/_components/inputs/buttons/TertiaryButton";
 
 const fitViewOptions = { padding: 0.2, duration: 500, maxZoom: 1.5 };
 const flowIdentifier = "userStoryDependencyTree";
 
 interface Props {
   segmentedControl: React.ReactNode;
+  switchToListView: () => void;
 }
 
-export default function UserStoryDependencyTree({ segmentedControl }: Props) {
+export default function UserStoryDependencyTree({
+  segmentedControl,
+  switchToListView,
+}: Props) {
   // #region Hooks
   const { projectId } = useParams();
   const { predefinedAlerts } = useAlert();
@@ -431,6 +436,17 @@ export default function UserStoryDependencyTree({ segmentedControl }: Props) {
             <h1 className="mb-5 text-3xl font-semibold text-gray-500">
               No user stories yet
             </h1>
+            <p className="text-xl text-app-text">
+              Create some by switching to the
+              <TertiaryButton
+                onClick={switchToListView}
+                className="mr-0 hover:text-app-primary"
+                inline
+              >
+                list view
+              </TertiaryButton>
+              .
+            </p>
           </div>
         </div>
       )}
