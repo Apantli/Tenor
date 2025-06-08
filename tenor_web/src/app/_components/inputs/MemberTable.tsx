@@ -154,7 +154,7 @@ export default function MemberTable({
 
           <div className="whitespace-nowraptext-left w-full text-sm">
             <div className="flex max-h-40 flex-col overflow-y-auto rounded-b-lg text-sm">
-              {session.user &&
+              {session.user && users && users.length > 0 ? (
                 users?.map((user) => {
                   if (user.id === session.user?.uid) return null;
                   if (teamMembers.find((member) => member.id === user.id))
@@ -175,7 +175,12 @@ export default function MemberTable({
                       </div>
                     </DropdownButton>
                   );
-                })}
+                })
+              ) : (
+                <span className="w-full px-2 py-1 text-sm text-gray-500">
+                  No users found
+                </span>
+              )}
             </div>
           </div>
         </Dropdown>

@@ -154,6 +154,24 @@ export const getIssue = async (
 };
 
 /**
+ * @function isIssue
+ * @description Determines if a specific itemId refers to an issue
+ * @param firestore A Firestore instance
+ * @param projectId The ID of the project
+ * @param issueId The ID of the issue
+ * @returns {boolean} Whether the item specified is an issue
+ */
+export const isIssue = async (
+  firestore: Firestore,
+  projectId: string,
+  itemId: string,
+) => {
+  const issueRef = getIssueRef(firestore, projectId, itemId);
+  const issueSnapshot = await issueRef.get();
+  return issueSnapshot.exists;
+};
+
+/**
  * @function getIssueTable
  * @description Retrieves all issues for a specific project and formats them into a table structure
  * @param firestore A Firestore instance
@@ -259,6 +277,8 @@ export const getIssueDetail = async (
 
   const tasks = await getTaskTable(admin, firestore, projectId, issueId);
 
+  const reviewer = await getUser(admin, firestore, projectId, issue.reviewerId);
+
   const userStoryDetail: IssueDetail = {
     ...issue,
     sprint,
@@ -268,6 +288,7 @@ export const getIssueDetail = async (
     relatedUserStory,
     completed: false,
     tasks,
+    reviewer,
   };
 
   return userStoryDetail;

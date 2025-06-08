@@ -13,6 +13,7 @@ import SentimentNeutralIcon from "@mui/icons-material/SentimentNeutral";
 import SentimentDissatisfiedIcon from "@mui/icons-material/SentimentDissatisfied";
 
 import dynamic from "next/dynamic";
+import { defaultPerformanceData } from "~/lib/defaultValues/performance";
 
 const DynamicContributionPieChart = dynamic(
   () =>
@@ -46,20 +47,17 @@ export const MemberDetailsCard = ({
       userId: member.id,
     });
 
-  const {
-    data: userContributions,
-    error,
-    isLoading: loadingContributions,
-  } = api.performance.getContributionOverview.useQuery(
-    {
-      projectId: projectId,
-      userId: member.id,
-      time: timeInterval,
-    },
-    {
-      retry: 0,
-    },
-  );
+  const { data: userContributions, isLoading: loadingContributions } =
+    api.performance.getContributionOverview.useQuery(
+      {
+        projectId: projectId,
+        userId: member.id,
+        time: timeInterval,
+      },
+      {
+        retry: 0,
+      },
+    );
 
   let roleString =
     roles?.find((role) => role.id === member.roleId)?.label ?? emptyRole.label;
@@ -68,19 +66,28 @@ export const MemberDetailsCard = ({
     roleString = "Owner";
   }
 
-  const formattedUserContributions = userContributions
-    ? Object.entries(userContributions)
-        .map(([key, value]) => ({
-          category: key,
-          value: value,
-        }))
-        .sort((a, b) => a.category.localeCompare(b.category))
-    : [];
+  const formattedUserContributions = Object.entries(
+    userContributions ?? defaultPerformanceData,
+  )
+    .map(([key, value]) => ({
+      category: key,
+      value: value,
+    }))
+    .sort((a, b) => a.category.localeCompare(b.category));
+
+  const totalValue = formattedUserContributions?.reduce(
+    (sum, item) => sum + item.value,
+    0,
+  );
+
+  if (totalValue === 0) {
+    formattedUserContributions.push({ category: "No Contributions", value: 1 });
+  }
 
   return (
     <div
       className={cn(
-        "relative mx-auto flex w-full flex-col overflow-y-auto overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:overflow-y-hidden 2xl:pb-6 2xl:pt-6",
+        "relative mx-auto flex h-[75%] max-h-[75%] w-full flex-col gap-y-3 overflow-x-hidden rounded-md border-2 p-4 pb-0 pt-4 2xl:gap-y-4 2xl:pb-6 2xl:pt-6",
         className,
       )}
     >
@@ -89,11 +96,12 @@ export const MemberDetailsCard = ({
         className="absolute right-2 top-2 ml-auto cursor-pointer text-gray-500"
         fontSize="large"
       />
-      <div className="flex flex-row gap-3">
+      <div className="flex flex-row gap-3 pl-8">
         <ProfilePicture
           user={member}
           hideTooltip
-          pictureClassName="h-14 w-14 2xl:h-24 2xl:w-24 ml-5 my-auto text-xl 2xl:text-5xl"
+          size={60}
+          pictureClassName="my-auto"
         />
         <div className="my-auto flex flex-col justify-start overflow-hidden pl-4 pr-4">
           <h3 className="my-[7px] max-w-[500px] truncate text-lg font-semibold capitalize xl:text-2xl">
@@ -111,34 +119,25 @@ export const MemberDetailsCard = ({
         </div>
       </div>
 
-      <div className="mx-8 flex flex-col">
-        <p className="mt-2 text-base xl:text-xl">
-          <strong>Email:</strong> {member.email}
-        </p>
-        <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
-          Contribution overview
-        </h4>
+      <div className="mx-8 my-auto flex flex-col">
         {loadingContributions && (
-          <div className="flex flex-row gap-2">
-            <LoadingSpinner />
+          <div className="mx-auto flex flex-row gap-2">
+            <LoadingSpinner color="primary" />
           </div>
         )}
         {!loadingContributions && (
-          <div className="">
-            {/* FIXME: don't throw trpc errors to show to the client */}
-            {!error ? (
-              <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
-                <DynamicContributionPieChart
-                  data={formattedUserContributions}
-                />
-                <ContributionLegend data={formattedUserContributions} />
-              </div>
-            ) : (
-              <p className="text-xl text-gray-500">
-                {error ? error.message : ""}
-              </p>
-            )}
-          </div>
+          <>
+            <h4 className="mb-4 mt-2 text-base font-bold xl:text-xl 2xl:mt-6">
+              Contribution overview
+            </h4>
+            <div className="flex flex-col justify-center gap-8 xl:flex-row xl:items-center xl:justify-around">
+              <DynamicContributionPieChart
+                data={formattedUserContributions}
+                scaleFactor={0.8}
+              />
+              <ContributionLegend data={formattedUserContributions} />
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -153,7 +152,7 @@ export const SentimentIcon = ({
   isLoading: boolean;
 }) => {
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner color="primary" />;
   }
   if (!sentiment) {
     return (

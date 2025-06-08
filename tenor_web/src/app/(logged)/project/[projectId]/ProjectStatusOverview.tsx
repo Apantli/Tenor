@@ -12,15 +12,7 @@ function projectStatusOverview({ projectId }: { projectId: string }) {
 
   let sprintTitle = "";
   if (projectStatus?.currentSprintId) {
-    if (projectStatus?.currentSprintDescription === "") {
-      sprintTitle = "Sprint " + projectStatus?.currentSprintNumber;
-    } else {
-      sprintTitle =
-        "Sprint " +
-        projectStatus?.currentSprintNumber +
-        ": " +
-        projectStatus?.currentSprintDescription;
-    }
+    sprintTitle = "Sprint " + projectStatus?.currentSprintNumber;
   } else {
     sprintTitle = "No active sprint";
   }

@@ -11,7 +11,7 @@
 import { createTRPCRouter, roleRequiredProcedure } from "~/server/api/trpc";
 import { z } from "zod";
 import { getPreviousSprint } from "../shortcuts/sprints";
-import { reviewPermissions } from "~/lib/defaultValues/permission";
+import { retrospectivePermissions } from "~/lib/defaultValues/permission";
 import { askAiToGenerate } from "~/lib/aiTools/aiGeneration";
 import {
   getSprintRetrospectiveTextAnswersContext,
@@ -34,7 +34,7 @@ type RetrospectiveAnswers = Record<string, string>;
  * @http GET /api/trpc/sprintRetrospectives.getRetrospectiveId
  */
 export const getRetrospectiveIdProcedure = roleRequiredProcedure(
-  reviewPermissions,
+  retrospectivePermissions,
   "read",
 )
   .input(z.object({ projectId: z.string(), sprintId: z.string() }))
@@ -54,7 +54,7 @@ export const getRetrospectiveIdProcedure = roleRequiredProcedure(
   });
 
 export const getRetrospectiveAnswersProcedure = roleRequiredProcedure(
-  reviewPermissions,
+  retrospectivePermissions,
   "read",
 )
   .input(
@@ -78,7 +78,7 @@ export const getRetrospectiveAnswersProcedure = roleRequiredProcedure(
   });
 
 export const saveRetrospectiveAnswersProcedure = roleRequiredProcedure(
-  reviewPermissions,
+  retrospectivePermissions,
   "write",
 )
   .input(
@@ -112,7 +112,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
   getRetrospectiveId: getRetrospectiveIdProcedure,
   getRetrospectiveAnswers: getRetrospectiveAnswersProcedure,
   saveRetrospectiveAnswers: saveRetrospectiveAnswersProcedure,
-  saveHappiness: roleRequiredProcedure(reviewPermissions, "write")
+  saveHappiness: roleRequiredProcedure(retrospectivePermissions, "write")
     .input(
       z.object({
         reviewId: z.number(),
@@ -140,7 +140,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
 
       return { success: true };
     }),
-  getPreviousSprint: roleRequiredProcedure(reviewPermissions, "read")
+  getPreviousSprint: roleRequiredProcedure(retrospectivePermissions, "read")
     .input(z.object({ projectId: z.string() }))
     .query(async ({ ctx, input }) => {
       const previousSprint = await getPreviousSprint(
@@ -150,7 +150,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
       return previousSprint ?? null;
     }),
   getProcessedRetrospectiveAnswers: roleRequiredProcedure(
-    reviewPermissions,
+    retrospectivePermissions,
     "write",
   )
     .input(
@@ -161,7 +161,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
         }),
       }),
     )
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       const { data } = input;
 
       if (data.textAnswers.length < 3) {
@@ -179,7 +179,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
 
       return synthesizedResponses;
     }),
-  sendReport: roleRequiredProcedure(reviewPermissions, "write")
+  sendReport: roleRequiredProcedure(retrospectivePermissions, "write")
     .input(
       z.object({
         projectId: z.string(),
@@ -227,7 +227,10 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
       ]);
       return { success: true };
     }),
-  getRetrospectiveTeamProgress: roleRequiredProcedure(reviewPermissions, "read")
+  getRetrospectiveTeamProgress: roleRequiredProcedure(
+    retrospectivePermissions,
+    "read",
+  )
     .input(
       z.object({
         projectId: z.string(),
@@ -243,7 +246,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
       return progress;
     }),
   getRetrospectivePersonalProgress: roleRequiredProcedure(
-    reviewPermissions,
+    retrospectivePermissions,
     "read",
   )
     .input(
@@ -263,7 +266,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
       return personalProgress;
     }),
   ensureRetrospectiveTeamProgress: roleRequiredProcedure(
-    reviewPermissions,
+    retrospectivePermissions,
     "read",
   )
     .input(
@@ -282,7 +285,7 @@ export const sprintRetrospectivesRouter = createTRPCRouter({
     }),
 
   ensureRetrospectivePersonalProgress: roleRequiredProcedure(
-    reviewPermissions,
+    retrospectivePermissions,
     "read",
   )
     .input(

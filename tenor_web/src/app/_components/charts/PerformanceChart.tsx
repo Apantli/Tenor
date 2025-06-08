@@ -1,6 +1,8 @@
 import React from "react";
 import { createClassFromSpec, type VisualizationSpec } from "react-vega";
 import { cn } from "~/lib/helpers/utils";
+// import HelpIcon from "@mui/icons-material/Help";
+import MoreInformation from "~/app/_components/helps/MoreInformation";
 
 const spec1: VisualizationSpec = {
   $schema: "https://vega.github.io/schema/vega/v5.json",
@@ -44,7 +46,7 @@ const spec1: VisualizationSpec = {
           fill: { value: "#1a6e44" },
         },
         update: {
-          interpolate: { value: "basis" },
+          interpolate: { value: "monotone" },
           fillOpacity: { value: 0.2 },
         },
       },
@@ -58,9 +60,12 @@ const spec1: VisualizationSpec = {
           y: { scale: "y", field: "y" },
           stroke: { value: "#1a6e44" },
           strokeWidth: { value: 3 },
+          // tooltip: {
+          //   signal: "{'Date': timeFormat(datum.x, '%B %d, %Y'), 'Contribution Count': datum.y}"
+          // },
         },
         update: {
-          interpolate: { value: "basis" },
+          interpolate: { value: "monotone" },
         },
       },
     },
@@ -72,8 +77,22 @@ const spec1: VisualizationSpec = {
         enter: {
           x: { scale: "x", field: "x" },
           y: { scale: "y", field: "y" },
-          size: { value: 400 },
-          fillOpacity: { value: 0 },
+          size: { value: 100 },
+          fill: { value: "#1a6e44" },
+          fillOpacity: { value: 1 },
+          stroke: { value: "#ffffff" },
+          strokeWidth: { value: 2 },
+          tooltip: {
+            signal:
+              "{'Date:':trim(timeFormat(datum.x, '%B %d, %Y')), 'Contributions:':datum.y}",
+          },
+        },
+        update: {
+          size: { value: 100 },
+        },
+        hover: {
+          size: { value: 150 },
+          fillOpacity: { value: 0.8 },
         },
       },
     },
@@ -83,11 +102,13 @@ const spec1: VisualizationSpec = {
 type PerformanceChartProps = {
   data?: typeof SamplePerformanceData | undefined;
   className?: string;
+  showLabel?: boolean;
 };
 
 export const PerformanceChart = ({
   data = SamplePerformanceData,
   className = "",
+  showLabel = false,
 }: PerformanceChartProps) => {
   const containerRef = React.useRef<HTMLDivElement>(null);
   const [containerDimensions, setContainerDimensions] = React.useState({
@@ -95,6 +116,7 @@ export const PerformanceChart = ({
     height: 0,
   });
 
+  console.log("PerformanceChart rendered with data:", data);
   // Resize graph on container dimension changes
   React.useEffect(() => {
     if (!containerRef.current) return;
@@ -105,7 +127,7 @@ export const PerformanceChart = ({
         const height = entry.contentRect.height - 50;
         setContainerDimensions({
           width: Math.max(width, 0),
-          height: Math.max(height, 100),
+          height: Math.min(Math.max(height, 100), 150),
         });
       }
     });
@@ -114,7 +136,7 @@ export const PerformanceChart = ({
     return () => resizeObserver.disconnect();
   }, []);
 
-  // Modify spec with dynamic width, height
+  // Modify spec with dynamic width, height, and axes
   const modifiedSpec = React.useMemo(() => {
     const specCopy = structuredClone(spec1);
 
@@ -124,8 +146,34 @@ export const PerformanceChart = ({
       specCopy.height = containerDimensions.height;
     }
 
+    // Add axes if showLabel is true
+    if (showLabel) {
+      // Extract unique x values from data for axis ticks
+      const xValues = data ? data.map((d) => d.x.getTime()) : [];
+
+      specCopy.axes = [
+        {
+          orient: "bottom",
+          scale: "x",
+          title: "Date",
+          labelAngle: 0,
+          titlePadding: 10,
+          format: "%b %d",
+          values: xValues,
+        },
+        {
+          orient: "left",
+          scale: "y",
+          title: "Contribution Count",
+          titlePadding: 10,
+          tickCount: 5,
+          tickSize: 0,
+        },
+      ];
+    }
+
     return specCopy;
-  }, [containerDimensions]);
+  }, [containerDimensions, showLabel, data]);
 
   // Create the component with the modified spec
   const PerformanceChart = React.useMemo(
@@ -141,12 +189,23 @@ export const PerformanceChart = ({
     <div
       ref={containerRef}
       className={cn(
-        "mr-auto flex h-full w-full flex-col rounded-lg p-4 pb-0 pt-0",
+        "group relative mr-auto flex h-full w-full flex-col rounded-lg p-4 pb-0 pt-0",
         className,
       )}
     >
       {containerDimensions.width > 0 && containerDimensions.height > 0 && (
-        <PerformanceChart data={{ table: data }} actions={false} />
+        <PerformanceChart
+          data={{ table: data }}
+          actions={false}
+          tooltip={true}
+        />
+      )}
+      {data.length > 0 && (
+        <MoreInformation
+          className="absolute right-3 text-gray-500 opacity-0 transition-opacity duration-500 ease-in-out group-hover:opacity-100"
+          label="A contribution occurs when a team member creates or updates a backlog item, task, epic, sprint, requirement or project."
+          size="large"
+        />
       )}
     </div>
   );

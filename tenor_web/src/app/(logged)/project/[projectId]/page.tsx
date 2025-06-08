@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import ProjectInfo from "~/app/(logged)/project/[projectId]/ProjectInfo";
 import ProjectStatus from "~/app/(logged)/project/[projectId]/ProjectStatusOverview";
 import ActivityProjectOverview from "~/app/_components/ActivityProjectOverview";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 
 export default function ProjectOverview() {
@@ -13,9 +13,13 @@ export default function ProjectOverview() {
   const [isProjectInfoExpanded, setIsProjectInfoExpanded] = useState(false);
 
   // Dynamically import the BurndownChart component to avoid SSR issues
-  const DynamicBurdownChart = dynamic(() => import("./BurndownChart"), {
-    ssr: false,
-  });
+  const DynamicBurdownChart = useMemo(
+    () =>
+      dynamic(() => import("./BurndownChart"), {
+        ssr: false,
+      }),
+    [],
+  );
 
   return (
     <div className="m-6 h-full flex-1 overflow-scroll px-4">
@@ -24,7 +28,7 @@ export default function ProjectOverview() {
         <div className="flex min-h-[70vh] w-full flex-col justify-between gap-4">
           <div
             className={`flex flex-col gap-5 transition-all duration-300 ${
-              isProjectInfoExpanded ? "max-h-64" : "max-h-[12rem]"
+              isProjectInfoExpanded ? "lg:max-h-64 sm:max-h-full" : "lg:max-h-[13rem] sm:max-h-[15rem]"
             } h-full`}
           >
             <ProjectInfo

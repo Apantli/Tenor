@@ -92,7 +92,7 @@ export default function ProjectSprintRetrospectivePage() {
   const showMessageOverlay = isFormCompleted && !userClickedShowAnswers;
 
   return (
-    <div className="m-6 flex h-full flex-col p-4">
+    <div className="m-2 flex h-full flex-col p-4 sm:m-6 sm:pb-16 md:pb-10">
       <div className="pb-4">
         <h1 className="text-3xl font-semibold">
           Retrospective for Sprint {sprintNumber && `${sprintNumber}`}
@@ -175,11 +175,7 @@ export default function ProjectSprintRetrospectivePage() {
 
               <h2 className="mb-4 text-2xl font-semibold">Personal Progress</h2>
               <div className="mb-6 flex items-center gap-6">
-                <ProfilePicture
-                  user={user}
-                  className="h-10 w-10 min-w-10 text-xl"
-                  hideTooltip
-                />
+                <ProfilePicture user={user} size={40} hideTooltip />
                 <div>
                   <p className="text-l font-semibold">{userName}</p>
                 </div>
@@ -230,7 +226,7 @@ export default function ProjectSprintRetrospectivePage() {
                 </div>
               </div>
 
-              <div className="mb-6">
+              <div>
                 <div className="mb-2 flex items-center justify-between">
                   <div className="flex gap-2">
                     <p className="font-medium">Sprint Contribution</p>

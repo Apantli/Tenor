@@ -94,7 +94,7 @@ export default function StatusTableRow({
         {!disabled && (
           <Dropdown
             label={
-              <span className="flex w-full items-center justify-end pr-3 font-bold text-app-light">
+              <span className="flex w-full items-center justify-end whitespace-nowrap pr-3 font-bold text-app-light">
                 • • •
               </span>
             }

@@ -10,16 +10,13 @@ interface SentimentData {
 }
 
 export const SentimentCard = ({ projectId, className }: SentimentData) => {
-  const {
-    data: usersSentiment,
-    isLoading,
-    error,
-  } = api.performance.getUsersSentiment.useQuery(
-    {
-      projectId: projectId,
-    },
-    { retry: 0, refetchOnWindowFocus: true },
-  );
+  const { data: usersSentiment, isLoading } =
+    api.performance.getUsersSentiment.useQuery(
+      {
+        projectId: projectId,
+      },
+      { retry: 0, refetchOnWindowFocus: true },
+    );
 
   // Count happiness values by ranges
   const happinessCounts = usersSentiment?.reduce(
@@ -45,6 +42,7 @@ export const SentimentCard = ({ projectId, className }: SentimentData) => {
     happinessCounts.neutral +
     happinessCounts.positive +
     happinessCounts.nulls;
+
   const negativeWidth =
     totalCount > 0 ? (happinessCounts.negative / totalCount) * 100 : 0;
   const neutralWidth =
@@ -68,61 +66,55 @@ export const SentimentCard = ({ projectId, className }: SentimentData) => {
         </div>
       ) : (
         <div className="flex h-full flex-col content-center items-center justify-center gap-3 rounded-lg bg-white p-4">
-          {error?.message ? (
-            <p className="text-xl text-gray-500">{error.message}</p>
-          ) : (
-            <>
-              <div className="flex w-full flex-row justify-center gap-3">
-                {negativeWidth > 0 && (
-                  <div
-                    className="h-16 rounded-3xl bg-[#e76478] 2xl:h-24"
-                    style={{ width: `${Math.max(negativeWidth, 5)}%` }}
-                  ></div>
-                )}
-                {neutralWidth > 0 && (
-                  <div
-                    className="h-16 rounded-3xl bg-[#f1db30] 2xl:h-24"
-                    style={{ width: `${Math.max(neutralWidth, 5)}%` }}
-                  ></div>
-                )}
-                {positiveWidth > 0 && (
-                  <div
-                    className="h-16 rounded-3xl bg-app-green 2xl:h-24"
-                    style={{ width: `${Math.max(positiveWidth, 5)}%` }}
-                  ></div>
-                )}
-                {nullsWidth > 0 && (
-                  <div
-                    className="h-16 rounded-3xl bg-gray-400 2xl:h-24"
-                    style={{ width: `${Math.max(nullsWidth, 5)}%` }}
-                  ></div>
-                )}
-              </div>
+          <div className="flex w-full flex-row justify-center gap-3">
+            {negativeWidth > 0 && (
+              <div
+                className="h-16 rounded-3xl bg-[#e76478] 2xl:h-24"
+                style={{ width: `${Math.max(negativeWidth, 5)}%` }}
+              ></div>
+            )}
+            {neutralWidth > 0 && (
+              <div
+                className="h-16 rounded-3xl bg-[#f1db30] 2xl:h-24"
+                style={{ width: `${Math.max(neutralWidth, 5)}%` }}
+              ></div>
+            )}
+            {positiveWidth > 0 && (
+              <div
+                className="h-16 rounded-3xl bg-app-green 2xl:h-24"
+                style={{ width: `${Math.max(positiveWidth, 5)}%` }}
+              ></div>
+            )}
+            {nullsWidth > 0 && (
+              <div
+                className="h-16 rounded-3xl bg-gray-400 2xl:h-24"
+                style={{ width: `${Math.max(nullsWidth, 5)}%` }}
+              ></div>
+            )}
+          </div>
 
-              <div className="flex w-full justify-around">
-                <SentimentLabel
-                  label="Negative"
-                  count={happinessCounts.negative}
-                  happiness={1}
-                />
-                <SentimentLabel
-                  label="Neutral"
-                  count={happinessCounts.neutral}
-                  happiness={5}
-                />
-                <SentimentLabel
-                  label="Positive"
-                  count={happinessCounts.positive}
-                  happiness={10}
-                />
-                <SentimentLabel
-                  label="No Data"
-                  count={happinessCounts.nulls}
-                  happiness={0}
-                />
-              </div>
-            </>
-          )}
+          <div className="flex w-full justify-around">
+            <SentimentLabel
+              label="Negative"
+              count={happinessCounts.negative}
+              happiness={1}
+            />
+            <SentimentLabel
+              label="Neutral"
+              count={happinessCounts.neutral}
+              happiness={5}
+            />
+            <SentimentLabel
+              label="Positive"
+              count={happinessCounts.positive}
+              happiness={10}
+            />
+            <SentimentLabel
+              label="No Data"
+              count={happinessCounts.nulls}
+              happiness={0}
+            />
+          </div>
         </div>
       )}
     </div>

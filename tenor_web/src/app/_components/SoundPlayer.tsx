@@ -9,6 +9,7 @@ interface Props {
   setCurrentTime?: (currentTime: number) => void;
   onFinish?: () => void;
   pause?: boolean;
+  timeTo?: number;
 }
 
 export function usePauseSoundPlayer() {
@@ -23,6 +24,17 @@ export function usePauseSoundPlayer() {
   return { pause, pauseSound };
 }
 
+export function useSkipToSoundPlayer() {
+  const [timeTo, setTimeTo] = useState<number | undefined>();
+  const skipTo = (time: number) => {
+    setTimeTo(time);
+    setTimeout(() => {
+      setTimeTo(undefined);
+    }, 10);
+  };
+  return { timeTo, skipTo };
+}
+
 export default function SoundPlayer({
   soundSrc,
   hideTime,
@@ -30,6 +42,7 @@ export default function SoundPlayer({
   onFinish,
   setCurrentTime,
   pause = false,
+  timeTo,
 }: Props) {
   const ringCount = 10;
   const rings = useMemo(
@@ -111,6 +124,12 @@ export default function SoundPlayer({
       setPlaying?.(false);
     }
   }, [pause]);
+
+  useEffect(() => {
+    if (timeTo !== undefined && audioRef.current) {
+      audioRef.current.currentTime = timeTo;
+    }
+  }, [timeTo]);
 
   const secondsToTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);

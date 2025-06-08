@@ -23,7 +23,7 @@ export default function useValidateStatusTag() {
 
     // Normalize the input for case-insensitive comparison
     const normalizedName = tagName.toLowerCase().trim();
-    const protectedNames = ["Todo", "Doing", "Done"];
+    const protectedNames = ["Todo", "Doing", "Done", "Awaits Review"];
 
     // Check if the previous name is one of the protected names
     if (id) {

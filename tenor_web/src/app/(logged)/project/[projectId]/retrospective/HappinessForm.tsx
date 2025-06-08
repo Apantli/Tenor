@@ -6,6 +6,7 @@ import ConversationButton from "./ConversationButton";
 import { usePopupVisibilityState } from "~/app/_components/Popup";
 import ConversationPopup from "./ConversationPopup";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import { permissionNumbers } from "~/lib/types/firebaseSchemas";
 import { api } from "~/trpc/react";
 import { useFirebaseAuth } from "~/app/_hooks/useFirebaseAuth";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -15,6 +16,7 @@ import { useRetrospectiveCountdown } from "./useRetrospectiveCountdown";
 import MoreInformation from "~/app/_components/helps/MoreInformation";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import useNavigationGuard from "~/app/_hooks/useNavigationGuard";
+import { useGetPermission } from "~/app/_hooks/useGetPermission";
 
 interface HappinessFormProps {
   sprintRetrospectiveId?: number;
@@ -52,6 +54,10 @@ export default function HappinessForm({
   );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const permission = useGetPermission({
+    flags: ["retrospective"],
+  });
 
   const {
     data: existingAnswers,
@@ -188,6 +194,8 @@ export default function HappinessForm({
     console.error("Error fetching retrospective answers:", queryError.message);
   }
 
+  const validatePermission = permission >= permissionNumbers.write;
+
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-lg border border-app-border bg-white shadow-sm">
       <div className="flex-1 overflow-y-auto p-6">
@@ -206,52 +214,66 @@ export default function HappinessForm({
           <div>
             <InputTextAreaField
               label="1. How do you feel about your current role and responsibilities within the project?"
-              placeholder="Write 2 to 3 sentences answering the question..."
+              placeholder={
+                validatePermission
+                  ? "Write 2 to 3 sentences answering the question..."
+                  : "You don't have permission to complete this field. Update your role permissions in settings."
+              }
               value={displayResponses.roleFeeling}
               onChange={(e) => handleChange(e, "roleFeeling")}
               disableAI={true}
-              disabled={isCompleted}
+              disabled={isCompleted || !validatePermission}
             />
           </div>
           <div>
             <InputTextAreaField
               label="2. How do you feel about the company culture and team collaboration?"
-              placeholder="Write 2 to 3 sentences answering the question..."
+              placeholder={
+                validatePermission
+                  ? "Write 2 to 3 sentences answering the question..."
+                  : "You don't have permission to complete this field. Update your role permissions in settings."
+              }
               value={displayResponses.companyFeeling}
               onChange={(e) => handleChange(e, "companyFeeling")}
               disableAI={true}
-              disabled={isCompleted}
+              disabled={isCompleted || !validatePermission}
             />
           </div>
           <div>
             <InputTextAreaField
               label="3. What are your suggestions for improvement for the next sprint and what would make you happier?"
-              placeholder="Write 2 to 3 sentences answering the question..."
+              placeholder={
+                validatePermission
+                  ? "Write 2 to 3 sentences answering the question..."
+                  : "You don't have permission to complete this field. Update your role permissions in settings."
+              }
               value={displayResponses.improvementSuggestion}
               onChange={(e) => handleChange(e, "improvementSuggestion")}
               disableAI={true}
-              disabled={isCompleted}
+              disabled={isCompleted || !validatePermission}
             />
           </div>
         </div>
       </div>
 
-      <div className="sticky bottom-0 flex justify-between border-t border-gray-200 bg-white p-4">
-        <ConversationButton
-          onClick={handleConversationMode}
-          disabled={isSubmitting || isCompleted}
-        >
-          Try conversation mode
-        </ConversationButton>
-        <PrimaryButton
-          type="button"
-          onClick={handleSubmit}
-          disabled={isSubmitting || isCompleted}
-          loading={isSubmitting}
-        >
-          Send report
-        </PrimaryButton>
-      </div>
+      {permission >= permissionNumbers.write && (
+        <div className="sticky bottom-0 flex justify-between border-t border-gray-200 bg-white p-4">
+          <ConversationButton
+            onClick={handleConversationMode}
+            disabled={isSubmitting || isCompleted}
+          >
+            Try conversation mode
+          </ConversationButton>
+          <PrimaryButton
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting || isCompleted}
+            loading={isSubmitting}
+          >
+            Send report
+          </PrimaryButton>
+        </div>
+      )}
 
       {renderConversation && (
         <ConversationPopup

@@ -95,6 +95,7 @@ const MemberItem = ({
     projectId: projectId,
     userId: member.id,
     time: time,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
 
   const formattedData = data?.map((d) => ({
@@ -108,7 +109,7 @@ const MemberItem = ({
     prevDate.setDate(prevDate.getDate() - 1);
     formattedData.push({
       x: prevDate,
-      y: formattedData[0].y,
+      y: 0,
     });
   }
 
@@ -130,7 +131,8 @@ const MemberItem = ({
       <ProfilePicture
         user={member}
         hideTooltip
-        pictureClassName="min-h-20 min-w-20 h-20 w-20 mx-5 my-auto text-4xl"
+        size={80}
+        pictureClassName="mx-5 my-auto"
       />
       <h3
         className={cn(

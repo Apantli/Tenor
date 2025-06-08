@@ -18,7 +18,6 @@ import {
 } from "~/lib/types/firebaseSchemas";
 import NoEpicsIcon from "@mui/icons-material/FormatListBulleted";
 import SearchBar from "~/app/_components/inputs/search/SearchBar";
-import SecondaryButton from "~/app/_components/inputs/buttons/SecondaryButton";
 import { checkPermissions } from "~/lib/defaultValues/permission";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
@@ -377,16 +376,6 @@ export const ProjectEpics = ({ setShowEpics, showEpics }: Props) => {
             disablePassiveDismiss={isEditEpicModified()}
             footer={
               <div className="flex items-start gap-2">
-                {!editEpic && (
-                  <SecondaryButton
-                    // FIXME: set filter for user stories related to epic
-                    // FIXME: Implement permission
-                    onClick={() => handleEditDismiss()}
-                  >
-                    Show user stories
-                  </SecondaryButton>
-                )}
-
                 {permission >= permissionNumbers.write && (
                   <DeleteButton
                     loading={deletingEpic}

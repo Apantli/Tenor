@@ -138,7 +138,7 @@ export default function SprintCardColumn({
               {dateFormatter.format(column.sprint.startDate)} -{" "}
               {dateFormatter.format(column.sprint.endDate)}
             </span>
-            <p className="mb-2">{column.sprint.description}</p>
+            <p className="wrap-properly mb-2">{column.sprint.description}</p>
             <hr className="mb-2 w-full border border-app-border" />
           </div>
         }
