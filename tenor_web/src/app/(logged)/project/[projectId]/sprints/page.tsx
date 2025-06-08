@@ -38,13 +38,6 @@ import { useWindowRect } from "~/app/_hooks/windowHooks";
 import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
 import LeftArrow from "@mui/icons-material/West";
 import RightArrow from "@mui/icons-material/East";
-import {
-  closestCenter,
-  CollisionDescriptor,
-  CollisionDetection,
-  DroppableContainer,
-  Modifier,
-} from "@dnd-kit/core";
 
 const noSprintId = "noSprintId";
 
@@ -704,9 +697,13 @@ export default function ProjectSprints() {
             <div className="relative flex-1">
               <div
                 className={cn(
-                  "z-[0] flex h-full w-full gap-4 overflow-x-auto pr-[calc(100vw-535px)]",
+                  "z-[0] flex h-full w-full gap-4 overflow-x-auto",
                   {
-                    "pr-[calc(100vw-870px)]": showBacklog,
+                    "pr-[calc(100vw-535px)]":
+                      (backlogItemsBySprint?.sprints.length ?? 0) > 0,
+                    "pr-[calc(100vw-870px)]":
+                      (backlogItemsBySprint?.sprints.length ?? 0) > 0 &&
+                      showBacklog,
                   },
                 )}
                 ref={scrollRef}
@@ -715,7 +712,10 @@ export default function ProjectSprints() {
                   className={cn(
                     "absolute bottom-0 left-0 z-[20] flex h-[80px] w-full items-center justify-between bg-app-primary/80 px-10 text-white opacity-0 transition",
                     {
-                      "opacity-100": dragging,
+                      "opacity-100":
+                        dragging &&
+                        (scrollRef?.current?.clientWidth ?? 0) <
+                          400 * (backlogItemsBySprint?.sprints.length ?? 0),
                     },
                   )}
                 >
