@@ -22,12 +22,14 @@ interface EditableBoxProps {
   close?: boolean;
   allowSetSelf?: boolean;
   removeDelete?: boolean;
+  labelClassName?: string;
 }
 
 export function UserPicker({
   selectedOption = undefined,
   onChange,
   className,
+  labelClassName,
   placeholder = "Select an option",
   disabled = false,
   close = true,
@@ -84,7 +86,7 @@ export function UserPicker({
         className={cn(
           "relative flex h-12 w-full items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
           !disabled && "cursor-pointer hover:bg-gray-200",
-          className,
+          labelClassName,
         )}
       >
         {selectedOption ? (
