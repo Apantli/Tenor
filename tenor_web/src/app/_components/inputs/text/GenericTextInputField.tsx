@@ -158,10 +158,10 @@ export default function InputField({
       const generatedData = await generateAutocompletion({
         messages,
         relatedContext: {
+          ...pageContext,
           "value in field": value,
           username: user?.displayName,
           email: user?.email,
-          ...pageContext,
         },
       });
       setMessages((prev) => [

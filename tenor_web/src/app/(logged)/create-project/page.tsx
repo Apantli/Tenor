@@ -212,7 +212,6 @@ export default function ProjectCreator() {
   const context = {
     pageName: "Project Creator",
     pageDescription: "Create a new project with all necessary details.",
-    pageUrl: "/create-project",
     project_name: form.name,
     project_description: form.description,
     project_context: form.context,

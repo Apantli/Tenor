@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, usePathname } from "next/navigation";
-import React, { useMemo, type PropsWithChildren } from "react";
+import React, { useContext, useMemo, type PropsWithChildren } from "react";
 import InterceptedLink from "~/app/_components/InterceptableLink";
 import Navbar from "~/app/_components/Navbar";
 import Tabbar from "~/app/_components/Tabbar";
@@ -11,11 +11,13 @@ import { tabsMetaInformation, tabsToLinks } from "~/lib/tabs";
 import LockPersonIcon from "@mui/icons-material/LockPerson";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 export default function ProjectLayout({ children }: PropsWithChildren) {
   const { projectId } = useParams();
   const pathName = usePathname();
   const tab = pathName.split("/").pop();
+  const pageContext = useContext(PageContext);
 
   const {
     data: projectNameData,
@@ -79,68 +81,75 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
 
   const showTabbar = checkShowTabbar();
 
+  const context = {
+    ...pageContext,
+    projectId: projectId as string,
+  };
+
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
-      <Navbar>
-        <div className="flex gap-1">
-          <InterceptedLink href="/" className="flex shrink-0 font-semibold">
-            Projects
-          </InterceptedLink>
-          {role && (
-            <span
-              className={cn(
-                "inline-block max-w-[40vw] truncate opacity-0 transition",
-                {
-                  "opacity-100": !!projectNameData,
-                },
-              )}
-            >
-              / {projectNameData ?? ""}
-            </span>
-          )}
-        </div>
-      </Navbar>
-      {!isLoadingRole && showTabbar && <Tabbar />}
-      {/* Only show content after the role is loaded */}
-      {!isLoadingRole && !error && (
-        <>
-          {permitted ? (
-            <main className="flex flex-1 flex-col overflow-hidden">
-              {children}
-            </main>
-          ) : (
+    <PageContext.Provider value={context}>
+      <div className="flex h-screen flex-col overflow-hidden">
+        <Navbar>
+          <div className="flex gap-1">
+            <InterceptedLink href="/" className="flex shrink-0 font-semibold">
+              Projects
+            </InterceptedLink>
+            {role && (
+              <span
+                className={cn(
+                  "inline-block max-w-[40vw] truncate opacity-0 transition",
+                  {
+                    "opacity-100": !!projectNameData,
+                  },
+                )}
+              >
+                / {projectNameData ?? ""}
+              </span>
+            )}
+          </div>
+        </Navbar>
+        {!isLoadingRole && showTabbar && <Tabbar />}
+        {/* Only show content after the role is loaded */}
+        {!isLoadingRole && !error && (
+          <>
+            {permitted ? (
+              <main className="flex flex-1 flex-col overflow-hidden">
+                {children}
+              </main>
+            ) : (
+              <div className="flex h-full flex-col items-center justify-center text-center">
+                <LockPersonIcon style={{ fontSize: 120, color: "gray" }} />
+                <p className="mt-4 text-2xl font-semibold text-gray-600">
+                  Sorry... you&apos;re not allowed to access this page.
+                </p>
+                <p className="mt-2 text-xl text-gray-500">
+                  If you believe this is a mistake, ask the project
+                  administrator to give you access.
+                </p>
+                <PrimaryButton className="mt-8" href="/">
+                  Back to dashboard
+                </PrimaryButton>
+              </div>
+            )}
+          </>
+        )}
+        {!isLoadingProject && error && (
+          <>
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <LockPersonIcon style={{ fontSize: 120, color: "gray" }} />
+              <SearchOffIcon style={{ fontSize: 120, color: "gray" }} />
               <p className="mt-4 text-2xl font-semibold text-gray-600">
-                Sorry... you&apos;re not allowed to access this page.
+                Project not found
               </p>
               <p className="mt-2 text-xl text-gray-500">
-                If you believe this is a mistake, ask the project administrator
-                to give you access.
+                The project you are trying to access doesn&apos;t exist.
               </p>
               <PrimaryButton className="mt-8" href="/">
                 Back to dashboard
               </PrimaryButton>
             </div>
-          )}
-        </>
-      )}
-      {!isLoadingProject && error && (
-        <>
-          <div className="flex h-full flex-col items-center justify-center text-center">
-            <SearchOffIcon style={{ fontSize: 120, color: "gray" }} />
-            <p className="mt-4 text-2xl font-semibold text-gray-600">
-              Project not found
-            </p>
-            <p className="mt-2 text-xl text-gray-500">
-              The project you are trying to access doesn&apos;t exist.
-            </p>
-            <PrimaryButton className="mt-8" href="/">
-              Back to dashboard
-            </PrimaryButton>
-          </div>
-        </>
-      )}
-    </div>
+          </>
+        )}
+      </div>
+    </PageContext.Provider>
   );
 }
