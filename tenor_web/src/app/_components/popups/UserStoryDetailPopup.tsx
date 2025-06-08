@@ -84,10 +84,15 @@ export default function UserStoryDetailPopup({
 
   useFormatTaskScrumId(projectId as string); // preload the task format function before the user sees the loading state
 
-  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery({
-    projectId: projectId as string,
-    itemId: userStoryId,
-  });
+  const { data: automaticStatus } = api.kanban.getItemAutomaticStatus.useQuery(
+    {
+      projectId: projectId as string,
+      itemId: userStoryId,
+    },
+    {
+      enabled: !userStoryData,
+    },
+  );
 
   const {
     data: fetchedUserStory,
@@ -394,42 +399,45 @@ export default function UserStoryDetailPopup({
                   </div>
                 </div>
 
-                <div className="mt-4 flex-1">
-                  <div className="flex">
-                    <h3 className="text-lg font-semibold">Status</h3>
-                  </div>
-                  <StatusPicker
-                    disabled={
-                      permission < permissionNumbers.write ||
-                      isAutomatic(userStoryDetail.status)
-                    }
-                    status={
-                      isAutomatic(userStoryDetail.status)
-                        ? automaticStatus
-                        : userStoryDetail.status
-                    }
-                    onChange={async (status) => {
-                      await handleSave({ ...userStoryDetail, status });
-                    }}
-                  />
-                  <ItemAutomaticStatus
-                    isAutomatic={isAutomatic(userStoryDetail.status)}
-                    disabled={permission < permissionNumbers.write}
-                    onChange={async (automatic) => {
-                      if (automatic) {
-                        await handleSave({
-                          ...userStoryDetail,
-                          status: automaticTag,
-                        });
-                      } else {
-                        await handleSave({
-                          ...userStoryDetail,
-                          status: automaticStatus,
-                        });
+                {/* DON'T SHOW ON GHOSTS */}
+                {!userStoryData && (
+                  <div className="mt-4 flex-1">
+                    <div className="flex">
+                      <h3 className="text-lg font-semibold">Status</h3>
+                    </div>
+                    <StatusPicker
+                      disabled={
+                        permission < permissionNumbers.write ||
+                        isAutomatic(userStoryDetail.status)
                       }
-                    }}
-                  />
-                </div>
+                      status={
+                        isAutomatic(userStoryDetail.status)
+                          ? automaticStatus
+                          : userStoryDetail.status
+                      }
+                      onChange={async (status) => {
+                        await handleSave({ ...userStoryDetail, status });
+                      }}
+                    />
+                    <ItemAutomaticStatus
+                      isAutomatic={isAutomatic(userStoryDetail.status)}
+                      disabled={permission < permissionNumbers.write}
+                      onChange={async (automatic) => {
+                        if (automatic) {
+                          await handleSave({
+                            ...userStoryDetail,
+                            status: automaticTag,
+                          });
+                        } else {
+                          await handleSave({
+                            ...userStoryDetail,
+                            status: automaticStatus,
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                )}
 
                 <BacklogTagList
                   disabled={permission < permissionNumbers.write}
