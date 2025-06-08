@@ -77,7 +77,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
     return false;
   };
 
-  let showTabbar = checkShowTabbar();
+  const showTabbar = checkShowTabbar();
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -112,7 +112,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
             <div className="flex h-full flex-col items-center justify-center text-center">
               <LockPersonIcon style={{ fontSize: 120, color: "gray" }} />
               <p className="mt-4 text-2xl font-semibold text-gray-600">
-                Sorry... you're not allowed to access this page.
+                Sorry... you&apos;re not allowed to access this page.
               </p>
               <p className="mt-2 text-xl text-gray-500">
                 If you believe this is a mistake, ask the project administrator
@@ -133,7 +133,7 @@ export default function ProjectLayout({ children }: PropsWithChildren) {
               Project not found
             </p>
             <p className="mt-2 text-xl text-gray-500">
-              The project you are trying to access doesn't exist.
+              The project you are trying to access doesn&apos;t exist.
             </p>
             <PrimaryButton className="mt-8" href="/">
               Back to dashboard

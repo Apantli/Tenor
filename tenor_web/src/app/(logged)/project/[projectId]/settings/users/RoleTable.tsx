@@ -57,6 +57,7 @@ export default function RoleTable({
       label: "Name",
       width: 120,
     },
+    overview: { visible: false },
     backlog: {
       label: "Backlog",
       width: defaultWidth,

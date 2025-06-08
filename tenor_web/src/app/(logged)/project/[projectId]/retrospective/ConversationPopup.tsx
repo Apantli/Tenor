@@ -325,7 +325,6 @@ export default function ConversationPopup({
     await utils.sprintRetrospectives.getRetrospectiveAnswers.invalidate({
       projectId: projectId as string,
       reviewId: sprintRetrospectiveId,
-      userId: user.uid,
     });
 
     handleDismiss();
@@ -345,7 +344,6 @@ export default function ConversationPopup({
     await utils.sprintRetrospectives.getRetrospectiveAnswers.invalidate({
       projectId: projectId as string,
       reviewId: sprintRetrospectiveId,
-      userId: user.uid,
     });
 
     handleDismiss();

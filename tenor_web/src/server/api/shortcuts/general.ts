@@ -33,7 +33,6 @@ import { forbidden, notFound } from "~/server/errors";
 import { getRequirement } from "./requirements";
 import { type RoleDetail } from "~/lib/types/detailSchemas";
 import { emptyRole, ownerRole } from "~/lib/defaultValues/roles";
-import { TRPCError } from "@trpc/server";
 
 /**
  * @function getProjectsRef
@@ -576,6 +575,7 @@ export const getProjectDetailedRoles = async (
       backlog: roleData.backlog as Permission,
       reviews: roleData.reviews as Permission,
       retrospective: roleData.retrospective as Permission,
+      overview: 1,
     };
     return role;
   });

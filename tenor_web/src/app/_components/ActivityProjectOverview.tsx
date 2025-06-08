@@ -4,18 +4,15 @@ import { useState } from "react";
 import { useFormatAnyScrumId } from "../_hooks/scrumIdHooks";
 import SearchBar from "./inputs/search/SearchBar";
 import { getSearchableNameByType } from "~/lib/helpers/searchableNames";
-import { cn } from "~/lib/helpers/utils";
-import type { ClassNameValue } from "tailwind-merge";
 import NoActivityIcon from "@mui/icons-material/FormatListBulleted";
 import LoadingSpinner from "./LoadingSpinner";
 import ActivityCard from "./cards/ActivityCard";
 
 interface Props {
   projectId: string;
-  className?: ClassNameValue;
 }
 
-const ActivityProjectOverview = ({ projectId, className }: Props) => {
+const ActivityProjectOverview = ({ projectId }: Props) => {
   const { data: users, isLoading: usersLoading } = api.users.getUsers.useQuery({
     projectId,
   });
