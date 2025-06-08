@@ -1,5 +1,3 @@
-import { env } from "~/env.js";
-
 export const fetchText = async (file64: string): Promise<string> => {
   const matches = /^data:(.*);base64,(.*)$/.exec(file64);
   if (!matches || matches.length !== 3) {
