@@ -243,6 +243,10 @@ export const useAlert = () => {
       alertTemplates.oops(
         `A status with the name "${statusName}" already exists. Please choose a different name.`,
       ),
+    defaultStatusNotModifiableError: (statusName: string) =>
+      alertTemplates.oops(
+        `You cannot edit nor delete the status "${statusName}" because it's a default status.`,
+      ),
     // #endregion
     // #region Sprints
     sprintReordered: () =>

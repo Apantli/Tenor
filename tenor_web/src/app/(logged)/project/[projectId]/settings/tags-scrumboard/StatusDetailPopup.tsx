@@ -98,12 +98,7 @@ export default function StatusDetailPopup({
   }, [error]);
 
   const handleSave = async (updatedData: NonNullable<typeof statusDetail>) => {
-    if (
-      !validateStatusTag({
-        tagName: form.name,
-        id: statusDetail?.id,
-      })
-    ) {
+    if (!validateStatusTag(updatedData)) {
       return;
     }
 
@@ -165,6 +160,18 @@ export default function StatusDetailPopup({
   };
 
   const handleMarksTaskAsDoneChange = async (value: boolean) => {
+    const tag = {
+      name: statusDetail?.name ?? "",
+      color: statusDetail?.color ?? generateRandomTagColor(),
+      marksTaskAsDone: statusDetail?.marksTaskAsDone ?? false,
+      orderIndex: statusDetail?.orderIndex ?? 0,
+      id: statusId,
+      deleted: false,
+    };
+    if (!validateStatusTag(tag)) {
+      return;
+    }
+
     setForm({ ...form, marksTaskAsDone: value });
     if (statusDetail) {
       const updatedData = {
@@ -176,11 +183,15 @@ export default function StatusDetailPopup({
   };
 
   const handleDelete = async () => {
-    if (
-      statusDetail &&
-      ["Todo", "Doing", "Done", "Awaits Review"].includes(statusDetail.name)
-    ) {
-      predefinedAlerts.statusNameNotEditableError();
+    const tag = {
+      name: statusDetail?.name ?? "",
+      color: statusDetail?.color ?? generateRandomTagColor(),
+      marksTaskAsDone: statusDetail?.marksTaskAsDone ?? false,
+      orderIndex: statusDetail?.orderIndex ?? 0,
+      id: statusId,
+      deleted: false,
+    };
+    if (!validateStatusTag(tag)) {
       return;
     }
 
@@ -322,7 +333,14 @@ export default function StatusDetailPopup({
               onChange={handleMarksTaskAsDoneChange}
               className={`mb-1 mr-2 ${!disabled ? "cursor-pointer" : "cursor-default"}`}
             />
-            <button disabled={disabled}>Marks tasks as resolved</button>
+            <button
+              disabled={disabled}
+              onClick={() => {
+                void handleMarksTaskAsDoneChange(!form.marksTaskAsDone);
+              }}
+            >
+              Marks tasks as resolved
+            </button>
             <HelpIcon
               className="ml-[3px] text-gray-500"
               data-tooltip-id="tooltip"

@@ -3,6 +3,21 @@ import { type StatusTag } from "../types/firebaseSchemas";
 export const todoTagName = "Todo";
 export const doingTagName = "Doing";
 export const doneTagName = "Done";
+export const awaitsReviewTagName = "Awaits Review";
+export const protectedNames = [
+  todoTagName,
+  doingTagName,
+  doneTagName,
+  awaitsReviewTagName,
+];
+
+export const awaitsReviewTag = {
+  name: awaitsReviewTagName,
+  color: "#FF4D00",
+  deleted: false,
+  marksTaskAsDone: false,
+  orderIndex: 3,
+};
 
 export const defaultStatusTags = [
   {
@@ -26,6 +41,7 @@ export const defaultStatusTags = [
     marksTaskAsDone: true,
     orderIndex: 2,
   },
+  awaitsReviewTag,
 ];
 
 export const automaticTag = {
@@ -34,14 +50,6 @@ export const automaticTag = {
   color: "#333333",
   deleted: false,
   orderIndex: -1,
-  marksTaskAsDone: false,
-};
-
-export const awaitsReviewTag = {
-  name: "Awaits Review",
-  color: "#FF4D00",
-  deleted: false,
-  orderIndex: 3,
   marksTaskAsDone: false,
 };
 

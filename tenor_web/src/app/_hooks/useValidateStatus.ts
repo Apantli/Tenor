@@ -1,45 +1,41 @@
 import { api } from "~/trpc/react";
 import { useAlert } from "./useAlert";
 import { useParams } from "next/navigation";
+import type { StatusTag, WithId } from "~/lib/types/firebaseSchemas";
 
 export default function useValidateStatusTag() {
   const { projectId } = useParams();
   const { predefinedAlerts } = useAlert();
   const { data: statusTags } = api.settings.getStatusTypes.useQuery({
     projectId: projectId as string,
+    showAwaitingReview: true,
   });
-  const validateStatusTag = ({
-    // If id, it will ignore itself as existing tag
-    id,
-    tagName,
-  }: {
-    id?: string;
-    tagName: string;
-  }) => {
-    if (tagName === "") {
+
+  const validateStatusTag = (tag: WithId<StatusTag>) => {
+    if (tag.name === "") {
       predefinedAlerts.statusNameError();
       return false;
     }
 
     // Normalize the input for case-insensitive comparison
-    const normalizedName = tagName.toLowerCase().trim();
+
     const protectedNames = ["Todo", "Doing", "Done", "Awaits Review"];
 
+    const normalizedName = tag.name.toLowerCase().trim();
+
     // Check if the previous name is one of the protected names
-    if (id) {
+    if (tag.id) {
       const previousStatus = statusTags?.find(
-        (status) => status.id === id && !status.deleted,
+        (status) => status.id === tag.id && !status.deleted,
       );
-      if (previousStatus && previousStatus.name === tagName) {
-        return true;
-      }
+
       if (
         previousStatus &&
         protectedNames.some(
           (name) => previousStatus.name.toLowerCase() === name.toLowerCase(),
         )
       ) {
-        predefinedAlerts.statusNameNotEditableError();
+        predefinedAlerts.defaultStatusNotModifiableError(previousStatus.name);
         return false;
       }
     }
@@ -49,7 +45,7 @@ export default function useValidateStatusTag() {
         (name) => normalizedName === name.toLowerCase().trim(),
       )
     ) {
-      predefinedAlerts.statusNameReservedError(tagName);
+      predefinedAlerts.statusNameReservedError(tag.name);
       return false;
     }
 
@@ -57,11 +53,11 @@ export default function useValidateStatusTag() {
       (status) =>
         status.name.toLowerCase().trim() === normalizedName &&
         !status.deleted &&
-        status.id !== id, // Ensure it's not itself
+        status.id !== tag.id, // Ensure it's not itself
     );
 
     if (statusAlreadyExists) {
-      predefinedAlerts.existingStatusError(tagName);
+      predefinedAlerts.existingStatusError(tag.name);
       return false;
     }
 
