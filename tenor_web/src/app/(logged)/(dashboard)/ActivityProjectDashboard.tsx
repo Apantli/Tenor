@@ -30,6 +30,7 @@ const ActivityProjectDashboard = ({ className }: Props) => {
 
   // scrumId cannot be calculated with hooks as it needs the projectId beforehand
   const getScrumId = (item: WithProjectId<WithId<ProjectActivityDetail>>) => {
+    if (item.type === "SP") return `Sprint ${item.scrumId}`;
     return item.type + item.scrumId.toString();
   };
 
