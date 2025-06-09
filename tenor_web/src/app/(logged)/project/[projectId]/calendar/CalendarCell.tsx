@@ -2,8 +2,7 @@ import type { Task, WithId } from "~/lib/types/firebaseSchemas";
 import { TaskCalendarCard } from "./TaskCalendarCard";
 import { useDroppable } from "@dnd-kit/react";
 import { cn } from "~/lib/helpers/utils";
-import { dateToString } from "~/lib/helpers/parsers";
-import { startOfDay, endOfDay } from "~/lib/helpers/parsers";
+import { dateToString, startOfDay } from "~/lib/helpers/parsers";
 
 interface Props {
   editable: boolean;
@@ -41,15 +40,16 @@ export default function CalendarCell({
   const date = new Date(year, month, day);
   const { ref, isDropTarget } = useDroppable({
     id: dateToString(date)!,
-    // FIXME: Enable feature
     disabled: true,
   });
 
   const setNewSelectedDate = (date: Date) => {
     if (!editable) return;
 
-    const normalizedDate = startOfDay(date);
-    const normalizedSelected = selectedDate ? startOfDay(selectedDate) : null;
+    const normalizedDate = startOfDay(new Date(date.getTime()));
+    const normalizedSelected = selectedDate
+      ? startOfDay(new Date(selectedDate.getTime()))
+      : null;
 
     if (
       normalizedSelected &&
@@ -59,10 +59,10 @@ export default function CalendarCell({
       return;
     }
 
-    const endOfDayDate = endOfDay(
+    const startOfDayDateValue = startOfDay(
       new Date(date.getFullYear(), date.getMonth(), date.getDate()),
     );
-    setSelectedDate(endOfDayDate);
+    setSelectedDate(startOfDayDateValue);
   };
 
   return (

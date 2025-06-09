@@ -22,7 +22,7 @@ export function DatePicker({
   onChange,
   selectedDate = undefined,
   className,
-  assignDataAt = "endOfDay",
+  assignDataAt = "beginOfDay",
   placeholder = "No date",
   disabled = false,
 }: DatePickerProps) {
