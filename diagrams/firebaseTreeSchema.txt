@@ -1,0 +1,174 @@
+users (collection)
+├── createdAt: "2025-05-01T00:00:00Z"
+├── uid: "1234567890fsda"
+
+projects (collection)
+├── name: "Project A"
+├── description: "A sample project description."
+├── logo: "https://example.com/logo.png"
+├── deleted: false
+├── currentSprintId: "1"
+├── activities (subcollection)
+│   ├── (activityId)
+│       ├── title: "Task Completed"
+│       ├── activityId: "activity123"
+│       ├── type: "US"
+│       ├── newStatusId: "status123"
+│       ├── userId: "user123"
+│       ├── date: "2025-05-02T00:00:00Z"
+├── users (subcollection)
+│   ├── (userId)
+│       ├── userId: "user123"
+│       ├── roleId: "role123"
+│       ├── stats:
+│       │   ├── completedTasks:
+│       │   │   ├── taskId: "task123"
+│       │   │   ├── finishedDate: "2025-05-01T00:00:00Z"
+│       │   ├── contributedUserStories: 5
+│       │   ├── contributedIssues: 2
+│       ├── active: true
+├── settings (subcollection)
+│   ├── sprintDuration: 14
+│   ├── maximumSprintStoryPoints: 50
+│   ├── aiContext:
+│       ├── text: "AI context text."
+│       ├── files:
+│       │   ├── name: "example.pdf"
+│       │   ├── type: "pdf"
+│       │   ├── content: "Base64EncodedContent"
+│       │   ├── size: 1024
+│       ├── links:
+│           ├── content: null
+│           ├── link: "https://example.com"
+│   ├── requirementFocusTags (subcollection)
+│       ├── (tagId)
+│           ├── name: "Focus Tag 1"
+│           ├── color: "#FF5733"
+│           ├── deleted: false
+│   ├── requirementTypeTags (subcollection)
+│       ├── (tagId)
+│           ├── name: "Type Tag 1"
+│           ├── color: "#33FF57"
+│           ├── deleted: false
+│   ├── backlogTags (subcollection)
+│       ├── (tagId)
+│           ├── name: "Backlog Tag 1"
+│           ├── color: "#3357FF"
+│           ├── deleted: false
+│   ├── priorityTypes (subcollection)
+│       ├── (tagId)
+│           ├── name: "Priority Type 1"
+│           ├── color: "#FF33A1"
+│           ├── deleted: false
+│   ├── statusTags (subcollection)
+│       ├── (statusTagId)
+│           ├── name: "Status Tab 1"
+│           ├── color: "#A133FF"
+│           ├── deleted: false
+│           ├── marksTasksAsDone: false
+│           ├── orderIndex: 1
+│   ├── userTypes (subcollection)
+│       ├── (userTypeId)
+│           ├── label: "Manager"
+│           ├── settings: 2
+│           ├── performance: 2
+│           ├── sprints: 2
+│           ├── scrumboard: 2
+│           ├── issues: 2
+│           ├── backlog: 2
+├── epics (subcollection)
+│   ├── (epicId)
+│       ├── projectId: 1
+│       ├── scrumId: 1
+│       ├── name: "Epic 1"
+│       ├── description: "Epic description."
+│       ├── deleted: false
+├── userStories (subcollection)
+│   ├── (userStoryId)
+│       ├── scrumId: 1
+│       ├── name: "User Story 1"
+│       ├── description: "As a user, I want to log in so that I can access my account."
+│       ├── deleted: false
+│       ├── sprintId: "sprint123"
+│       ├── taskIds: ["task123"]
+│       ├── complete: false
+│       ├── tagIds: ["tag123"]
+│       ├── size: "M"
+│       ├── priorityId: "priority123"
+│       ├── statusId: "status123"
+│       ├── epicId: "epic123"
+│       ├── acceptanceCriteria: "- User can log in with email and password.\n- User can log in with Google."
+│       ├── dependencyIds: []
+│       ├── requiredByIds: []
+├── issues (subcollection)
+│   ├── (issueId)
+│       ├── scrumId: 1
+│       ├── name: "Issue 1"
+│       ├── description: "Issue description."
+│       ├── deleted: false
+│       ├── sprintId: "sprint123"
+│       ├── taskIds: ["task123"]
+│       ├── complete: false
+│       ├── tagIds: ["tag123"]
+│       ├── size: "M"
+│       ├── priorityId: "priority123"
+│       ├── statusId: "status123"
+│       ├── relatedUserStoryId: "userStory123"
+│       ├── stepsToRecreate: "- Step 1: Open the app.\n- Step 2: Click on login."
+├── tasks (subcollection)
+│   ├── (taskId)
+│       ├── scrumId: 1
+│       ├── name: "Task 1"
+│       ├── description: "Complete the login functionality."
+│       ├── deleted: false
+│       ├── statusId: "status123"
+│       ├── assigneeId: "user123"
+│       ├── dueDate: "2025-05-10T00:00:00Z"
+│       ├── finishedDate: null
+│       ├── itemId: "userStory123"
+│       ├── itemType: "US"
+│       ├── size: "M"
+├── requirements (subcollection)
+│   ├── (requirementId)
+│       ├── deleted: false
+│       ├── description: "The application must ates and times."
+│       ├── name: "Accurate Task Scheduling"
+│       ├── priorityId: "a2BqQQuv1nTa1mEnF9Pm"
+│       ├── projectId: "HpcCLA5YUIHHLPNEtTJi"
+│       ├── requirementFocusId: "pmiRkbS75BINIo7FnZWJ"
+│       ├── requirementTypeId: "3hd6P28og6Ptwp2mj6Is"
+│       ├── scrumId: 3
+├── sprints (subcollection)
+│   ├── (sprintId)
+│       ├── deleted: false
+│       ├── description: ""
+│       ├── endDate:
+│       │   ├── nanoseconds: 58000000
+│       │   ├── seconds: 1747497920
+│       ├── genericItemIds: []
+│       ├── issueIds: []
+│       ├── number: 2
+│       ├── projectId: "s54sUmVoWFrjSMv7EfVs"
+│       ├── startDate:
+│       │   ├── nanoseconds: 58000000
+│       │   ├── seconds: 1746893120
+│       ├── userStoryIds:
+│       │   ├── 0: "MUgLVzJ8yDAXp4s19Hhp"
+│       │   ├── 1: "HiWlfbFwnJEMTBYJP525"
+├── sprintSnapshots (subcollection)
+│   ├── (snapshotId)
+│       ├── number: 1
+│       ├── description: "Initial snapshot"
+│       ├── startDate:
+│       │   ├── nanoseconds: 0
+│       │   ├── seconds: 1746893120
+│       ├── endDate:
+│       │   ├── nanoseconds: 0
+│       │   ├── seconds: 1747497920
+│       ├── snapshot:
+│       │   ├── userStories (subcollection. Same format as previous userStories)
+│       │   ├── issues (subcollection. Same format as previous issues)
+│       │   ├── userStoryPercentage: 75
+│       │   ├── tasksPerUser:
+│       │   │   ├── 0: { userId: "user1", taskPercentage: 50 }
+│       │   │   ├── 1: { userId: "user2", taskPercentage: 50 }
