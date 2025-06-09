@@ -117,6 +117,7 @@ export function DatePicker({
       className={cn(
         "flex h-12 w-full items-center justify-between rounded-lg border border-gray-300 p-2 transition-colors",
         !disabled && "cursor-pointer hover:bg-gray-200",
+        className,
       )}
     >
       <CalendarMonthIcon
@@ -207,9 +208,8 @@ export function DatePicker({
                   handleDateSelect(date);
                 }}
                 className={cn(
-                  "flex h-full w-full items-center justify-center rounded text-xs transition-colors hover:bg-app-light",
-                  isSelectedDate(date) &&
-                    "bg-app-secondary text-white hover:bg-app-secondary-dark",
+                  "flex h-full w-full items-center justify-center rounded text-xs transition-colors hover:bg-app-secondary hover:text-white",
+                  isSelectedDate(date) && "bg-app-secondary-dark text-white",
                   isToday(date) &&
                     !isSelectedDate(date) &&
                     "bg-gray-200 font-semibold",
