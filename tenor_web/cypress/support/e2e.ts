@@ -21,14 +21,3 @@ Cypress.on("uncaught:exception", (err: Error) => {
   console.log("Uncaught exception:", err);
   return false;
 });
-
-let clearedLocalStorage = false;
-
-before(() => {
-  if (!clearedLocalStorage) {
-    clearedLocalStorage = true;
-    cy.clearLocalStorage();
-    cy.clearCookies();
-    console.log("Clearing storage");
-  }
-});

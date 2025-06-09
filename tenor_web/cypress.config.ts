@@ -20,6 +20,7 @@ export default defineConfig({
 
     // Test ordering
     specPattern: [
+      "cypress/e2e/runBefore.cy.ts",
       "cypress/e2e/app.cy.ts", // Basic app tests first
       "cypress/e2e/general/**/*.cy.ts", // General tests
       "cypress/e2e/epics.cy.ts", // Epics before UserStories
