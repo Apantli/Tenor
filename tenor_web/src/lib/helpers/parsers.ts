@@ -56,7 +56,7 @@ export const dateToString = (date: Date): string | null => {
 };
 
 export const startOfDay = (date: Date) => {
-  date.setHours(0, 0, 0);
+  date.setHours(0, 0, 0, 0);
   return date;
 };
 

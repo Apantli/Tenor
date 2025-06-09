@@ -8,6 +8,7 @@ import useQueryIdForPopup, {
 } from "~/app/_hooks/useQueryIdForPopup";
 import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
+import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
 import {
   permissionNumbers,
   type Permission,
@@ -18,7 +19,7 @@ import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import { api } from "~/trpc/react";
 import { useParams } from "next/navigation";
-import { dateToString } from "~/lib/helpers/parsers";
+import { dateToString, startOfDay } from "~/lib/helpers/parsers";
 import { Timestamp } from "firebase/firestore";
 import CloseIcon from "@mui/icons-material/Close";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -26,7 +27,6 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { useInvalidateQueriesTaskDetails } from "~/app/_hooks/invalidateHooks";
 import { emptyRole } from "~/lib/defaultValues/roles";
 import { checkPermissions } from "~/lib/defaultValues/permission";
-import { endOfDay } from "~/lib/helpers/parsers";
 
 export default function ProjectCalendar() {
   // GENERAL
@@ -84,7 +84,7 @@ export default function ProjectCalendar() {
   }, [role]);
 
   const handleDateChange = async (tasks: string[], date: Date) => {
-    const endOfDayDate = endOfDay(
+    const startOfDayDate = startOfDay(
       new Date(date.getFullYear(), date.getMonth(), date.getDate()),
     );
 
@@ -92,30 +92,36 @@ export default function ProjectCalendar() {
       { projectId: projectId as string },
       (oldData) => {
         if (!oldData) return oldData;
+        const targetDateKey = dateToString(startOfDayDate);
+        if (!targetDateKey) return oldData;
 
-        // get key of the date in the format YYYY-MM-DD
-        const dateKey = dateToString(endOfDayDate);
-        if (!dateKey) return oldData;
+        const newTasksByDate: Record<string, WithId<Task>[]> = {};
+        const tasksToMoveDetails: WithId<Task>[] = [];
 
-        // if the dateKey does not exist in oldData, create it
-        if (!oldData[dateKey]) {
-          oldData[dateKey] = [];
-        }
-
-        const newData: Record<string, WithId<Task>[]> = {};
-        newData[dateKey] = oldData[dateKey] ?? [];
-        for (const key in oldData) {
-          if (key === dateKey) {
-            continue;
+        for (const dayKey in oldData) {
+          if (!oldData[dayKey]) continue;
+          newTasksByDate[dayKey] = [];
+          for (const task of oldData[dayKey]) {
+            if (tasks.includes(task.id)) {
+              tasksToMoveDetails.push({
+                ...task,
+                dueDate: Timestamp.fromDate(startOfDayDate).toDate(),
+              });
+            } else {
+              newTasksByDate[dayKey].push(task);
+            }
           }
-          newData[key] =
-            oldData[key]?.filter((task) => !tasks.includes(task.id)) ?? [];
-          // append the tasks that were filtered out
-          newData[dateKey].push(
-            ...(oldData[key]?.filter((task) => tasks.includes(task.id)) ?? []),
-          );
+          if (newTasksByDate[dayKey].length === 0) {
+            delete newTasksByDate[dayKey];
+          }
         }
-        return newData;
+
+        if (!newTasksByDate[targetDateKey]) {
+          newTasksByDate[targetDateKey] = [];
+        }
+        newTasksByDate[targetDateKey].push(...tasksToMoveDetails);
+
+        return newTasksByDate;
       },
     );
 
@@ -124,7 +130,7 @@ export default function ProjectCalendar() {
         changeTaskDate({
           projectId: projectId as string,
           taskId,
-          dueDate: Timestamp.fromDate(endOfDayDate),
+          dueDate: Timestamp.fromDate(startOfDayDate),
         }),
       ),
     );
@@ -199,14 +205,14 @@ export default function ProjectCalendar() {
                         setSelectedDate(date);
                         return;
                       }
-                      const endOfDayDate = endOfDay(
+                      const startOfDayDateValue = startOfDay(
                         new Date(
                           date.getFullYear(),
                           date.getMonth(),
                           date.getDate(),
                         ),
                       );
-                      setSelectedDate(endOfDayDate);
+                      setSelectedDate(startOfDayDateValue);
                     }}
                     className="max-h-8 bg-white text-xs"
                   />
@@ -267,6 +273,15 @@ export default function ProjectCalendar() {
               setDetailId={setDetailItemId}
               showDetail={showDetail}
               issueId={detailParentItemId}
+              taskIdToOpenImmediately={detailItemId}
+            />
+          )}
+
+          {renderDetail && detailItemType === "IT" && detailParentItemId && (
+            <BacklogItemDetailPopup
+              setDetailId={setDetailItemId}
+              showDetail={showDetail}
+              backlogItemId={detailParentItemId}
               taskIdToOpenImmediately={detailItemId}
             />
           )}
