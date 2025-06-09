@@ -30,8 +30,8 @@ import {
   getSprintUserStories,
   getUserStoriesAfter,
 } from "../shortcuts/userStories";
-import { getIssuesAfter, getSprintIssues } from "../shortcuts/issues";
-import { getStatusTypes } from "../shortcuts/tags";
+import { getIssuesAfter, getSprintIssues, isIssue } from "../shortcuts/issues";
+import { getAutomaticStatusId, getStatusTypes } from "../shortcuts/tags";
 import { getCurrentSprint } from "../shortcuts/sprints";
 import {
   getActivityPartition,
@@ -292,12 +292,65 @@ const computePerformanceTime = async (
   }
 
   // Fetch completed items
-  const completedUserStories = userStories.filter((userStory) =>
-    completedStatusTypes.includes(userStory.statusId),
+  const completedUserStoriesPromises = userStories.map(async (userStory) => {
+    if (userStory.statusId === "") {
+      const activeStatuses = await getStatusTypes(ctx.firestore, projectId);
+
+      const statusId = await getAutomaticStatusId(
+        ctx.firestore,
+        projectId,
+        userStory.id,
+        activeStatuses,
+      );
+
+      const status = activeStatuses.find((status) => status.id === statusId);
+      return status?.marksTaskAsDone ?? false;
+    } else {
+      return completedStatusTypes.includes(userStory.statusId);
+    }
+  });
+
+  const completedUserStoriesResults = await Promise.all(
+    completedUserStoriesPromises,
   );
 
-  const completedIssues = issues.filter((issue) =>
-    completedStatusTypes.includes(issue.statusId),
+  const completedUserStories = userStories.filter(
+    (_, index) => completedUserStoriesResults[index],
+  );
+
+  const completedIssuesPromises = issues.map(async (issue) => {
+    if (issue.statusId === "") {
+      // Check if this is an issue to determine if we should include awaits review status
+      const includeAwaitsReview = await isIssue(
+        ctx.firestore,
+        projectId,
+        issue.id,
+      );
+
+      const activeStatuses = await getStatusTypes(
+        ctx.firestore,
+        projectId,
+        includeAwaitsReview,
+      );
+
+      const statusId = await getAutomaticStatusId(
+        ctx.firestore,
+        projectId,
+        issue.id,
+        activeStatuses,
+      );
+
+      const status = activeStatuses.find((status) => status.id === statusId);
+      return status?.marksTaskAsDone ?? false;
+    } else {
+      return completedStatusTypes.includes(issue.statusId);
+    }
+  });
+
+  const completedIssuesResults = await Promise.all(completedIssuesPromises);
+
+  const completedIssues = issues.filter(
+    (_, index) => completedIssuesResults[index],
   );
 
   return {
