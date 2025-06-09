@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Popup from "~/app/_components/Popup";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
@@ -19,6 +19,7 @@ import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 interface Props {
   showPopup: boolean;
@@ -133,128 +134,142 @@ export default function CreateUserStoryPopup({
 
   const checkTitleLimit = useCharacterLimit("User story title", 80);
 
+  // #region Page Context
+  const pageContext = useContext(PageContext);
+  const context = {
+    ...pageContext,
+    pageName: "User Stories",
+    popupName: "Create User Story",
+    "User story name Field": createForm.name,
+    "User story description field": createForm.description,
+    "User story acceptance criteria field": createForm.acceptanceCriteria,
+  };
+  // #endregion
+
   return (
-    <Popup
-      show={showPopup}
-      saveText="Create story"
-      saving={isPending || isSubmitting}
-      dismiss={async () => {
-        if (isModified()) {
-          const confirmation = await confirm(
-            "Are you sure?",
-            "Your changes will be discarded.",
-            "Discard changes",
-            "Keep Editing",
-          );
-          if (!confirmation) return;
-        }
-        setShowPopup(false);
-      }}
-      size="large"
-      sidebarClassName="basis-[210px]"
-      sidebar={
-        <>
-          <h3 className="text-lg font-semibold">Epic</h3>
-          <EpicPicker
-            epic={createForm.epic}
-            onChange={(epic) => {
-              setCreateForm({ ...createForm, epic });
-            }}
-          />
-
-          <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
-          <SprintPicker
-            sprintId={createForm.sprint?.id}
-            onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
-          />
-
-          <div className="mt-4 flex gap-2">
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold">Priority</h3>
-              <PriorityPicker
-                priority={createForm.priority}
-                onChange={(priority) =>
-                  setCreateForm({ ...createForm, priority })
-                }
-              />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold">Size</h3>
-              <SizePicker
-                currentSize={
-                  createForm.size === "" ? undefined : createForm.size
-                }
-                callback={(size) => setCreateForm({ ...createForm, size })}
-              />
-            </div>
-          </div>
-
-          <BacklogTagList
-            tags={createForm.tags}
-            onChange={(tags) => setCreateForm({ ...createForm, tags })}
-          />
-
-          <DependencyListUserStory
-            label="Dependencies"
-            userStories={createForm.dependencies}
-            onChange={(dependencies) =>
-              setCreateForm({ ...createForm, dependencies })
-            }
-          />
-          <DependencyListUserStory
-            label="Required by"
-            userStories={createForm.requiredBy}
-            onChange={(requiredBy) =>
-              setCreateForm({ ...createForm, requiredBy })
-            }
-          />
-        </>
-      }
-      title={
-        <h1 className="mb-4 text-3xl">
-          <span className="font-bold">Create a user story</span>
-        </h1>
-      }
-      editMode={true}
-      setEditMode={async (editMode) => {
-        if (!editMode && !isPending && !isSubmitting)
-          await handleCreateUserStory();
-      }}
-      disablePassiveDismiss={isModified()}
-    >
-      <InputTextField
-        id="story-name-field"
-        label="Story name"
-        value={createForm.name}
-        onChange={(e) => {
-          if (checkTitleLimit(e.target.value)) {
-            setCreateForm({ ...createForm, name: e.target.value });
+    <PageContext.Provider value={context}>
+      <Popup
+        show={showPopup}
+        saveText="Create story"
+        saving={isPending || isSubmitting}
+        dismiss={async () => {
+          if (isModified()) {
+            const confirmation = await confirm(
+              "Are you sure?",
+              "Your changes will be discarded.",
+              "Discard changes",
+              "Keep Editing",
+            );
+            if (!confirmation) return;
           }
+          setShowPopup(false);
         }}
-        placeholder="Short summary of the story..."
-        containerClassName="mb-4"
-      />
-      <InputTextAreaField
-        id="story-description-field"
-        label="Story description"
-        value={createForm.description}
-        onChange={(e) =>
-          setCreateForm({ ...createForm, description: e.target.value })
+        size="large"
+        sidebarClassName="basis-[210px]"
+        sidebar={
+          <>
+            <h3 className="text-lg font-semibold">Epic</h3>
+            <EpicPicker
+              epic={createForm.epic}
+              onChange={(epic) => {
+                setCreateForm({ ...createForm, epic });
+              }}
+            />
+
+            <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+            <SprintPicker
+              sprintId={createForm.sprint?.id}
+              onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
+            />
+
+            <div className="mt-4 flex gap-2">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold">Priority</h3>
+                <PriorityPicker
+                  priority={createForm.priority}
+                  onChange={(priority) =>
+                    setCreateForm({ ...createForm, priority })
+                  }
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold">Size</h3>
+                <SizePicker
+                  currentSize={
+                    createForm.size === "" ? undefined : createForm.size
+                  }
+                  callback={(size) => setCreateForm({ ...createForm, size })}
+                />
+              </div>
+            </div>
+
+            <BacklogTagList
+              tags={createForm.tags}
+              onChange={(tags) => setCreateForm({ ...createForm, tags })}
+            />
+
+            <DependencyListUserStory
+              label="Dependencies"
+              userStories={createForm.dependencies}
+              onChange={(dependencies) =>
+                setCreateForm({ ...createForm, dependencies })
+              }
+            />
+            <DependencyListUserStory
+              label="Required by"
+              userStories={createForm.requiredBy}
+              onChange={(requiredBy) =>
+                setCreateForm({ ...createForm, requiredBy })
+              }
+            />
+          </>
         }
-        placeholder="Explain the story in detail..."
-        containerClassName="mb-4"
-      />
-      <InputTextAreaField
-        id="story-criteria-field"
-        chatPosition="right"
-        label="Acceptance Criteria"
-        value={createForm.acceptanceCriteria}
-        onChange={(e) =>
-          setCreateForm({ ...createForm, acceptanceCriteria: e.target.value })
+        title={
+          <h1 className="mb-4 text-3xl">
+            <span className="font-bold">Create a user story</span>
+          </h1>
         }
-        placeholder="Describe the work that needs to be done..."
-        className="h-36 min-h-36"
-      />
-    </Popup>
+        editMode={true}
+        setEditMode={async (editMode) => {
+          if (!editMode && !isPending && !isSubmitting)
+            await handleCreateUserStory();
+        }}
+        disablePassiveDismiss={isModified()}
+      >
+        <InputTextField
+          id="story-name-field"
+          label="Story name"
+          value={createForm.name}
+          onChange={(e) => {
+            if (checkTitleLimit(e.target.value)) {
+              setCreateForm({ ...createForm, name: e.target.value });
+            }
+          }}
+          placeholder="Short summary of the story..."
+          containerClassName="mb-4"
+        />
+        <InputTextAreaField
+          id="story-description-field"
+          label="Story description"
+          value={createForm.description}
+          onChange={(e) =>
+            setCreateForm({ ...createForm, description: e.target.value })
+          }
+          placeholder="Explain the story in detail..."
+          containerClassName="mb-4"
+        />
+        <InputTextAreaField
+          id="story-criteria-field"
+          chatPosition="right"
+          label="Acceptance Criteria"
+          value={createForm.acceptanceCriteria}
+          onChange={(e) =>
+            setCreateForm({ ...createForm, acceptanceCriteria: e.target.value })
+          }
+          placeholder="Describe the work that needs to be done..."
+          className="h-36 min-h-36"
+        />
+      </Popup>
+    </PageContext.Provider>
   );
 }

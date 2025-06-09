@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import Popup from "~/app/_components/Popup";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
@@ -15,6 +15,7 @@ import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { SprintPicker } from "../inputs/pickers/SprintPicker";
 import InputTextField from "~/app/_components/inputs/text/InputTextField";
 import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 interface Props {
   showPopup: boolean;
@@ -114,95 +115,109 @@ export default function CreateBacklogItemPopup({
   const checkTitleLimit = useCharacterLimit("Backlog item title", 80);
   // #endregion
 
+  // #region Page Context
+  const pageContext = useContext(PageContext);
+  const context = {
+    ...pageContext,
+    popupName: "Backlog Item",
+    pageDescription: "Create a backlog item for your project",
+    "Backlog item name Field": createForm.name,
+    "Backlog item description Field": createForm.description,
+    "Page instructions":
+      "Write the name and description of the backlog item considering the context of the project",
+  };
+  // #endregion
   return (
-    <Popup
-      show={showPopup}
-      saveText="Create item"
-      saving={isPending || isSubmitting}
-      dismiss={async () => {
-        if (isModified()) {
-          const confirmation = await confirm(
-            "Are you sure?",
-            "Your changes will be discarded.",
-            "Discard changes",
-            "Keep Editing",
-          );
-          if (!confirmation) return;
-        }
-        setShowPopup(false);
-      }}
-      size="large"
-      sidebarClassName="basis-[210px]"
-      sidebar={
-        <>
-          <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
-          <SprintPicker
-            sprintId={createForm.sprint?.id}
-            onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
-          />
-
-          <div className="mt-4 flex gap-2">
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold">Priority</h3>
-              <PriorityPicker
-                priority={createForm.priority}
-                onChange={(priority) =>
-                  setCreateForm({ ...createForm, priority })
-                }
-              />
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold">Size</h3>
-              <SizePicker
-                currentSize={
-                  createForm.size === "" ? undefined : createForm.size
-                }
-                callback={(size) => setCreateForm({ ...createForm, size })}
-              />
-            </div>
-          </div>
-
-          <BacklogTagList
-            tags={createForm.tags}
-            onChange={(tags) => setCreateForm({ ...createForm, tags })}
-          />
-        </>
-      }
-      title={
-        <h1 className="mb-4 text-3xl">
-          <span className="font-bold">Create a backlog item</span>
-        </h1>
-      }
-      editMode={true}
-      setEditMode={async (editMode) => {
-        if (!editMode && !isPending && !isSubmitting)
-          await handleCreateBacklogItem();
-      }}
-      disablePassiveDismiss={isModified()}
-    >
-      <InputTextField
-        id="item-name-field"
-        label="Item name"
-        value={createForm.name}
-        onChange={(e) => {
-          if (checkTitleLimit(e.target.value)) {
-            setCreateForm({ ...createForm, name: e.target.value });
+    <PageContext.Provider value={context}>
+      <Popup
+        show={showPopup}
+        saveText="Create item"
+        saving={isPending || isSubmitting}
+        dismiss={async () => {
+          if (isModified()) {
+            const confirmation = await confirm(
+              "Are you sure?",
+              "Your changes will be discarded.",
+              "Discard changes",
+              "Keep Editing",
+            );
+            if (!confirmation) return;
           }
+          setShowPopup(false);
         }}
-        placeholder="Short summary of the item..."
-        containerClassName="mb-4"
-      />
-      <InputTextAreaField
-        id="item-description-field"
-        label="Item description"
-        value={createForm.description}
-        onChange={(e) =>
-          setCreateForm({ ...createForm, description: e.target.value })
+        size="large"
+        sidebarClassName="basis-[210px]"
+        sidebar={
+          <>
+            <h3 className="mt-4 text-lg font-semibold">Sprint</h3>
+            <SprintPicker
+              sprintId={createForm.sprint?.id}
+              onChange={(sprint) => setCreateForm({ ...createForm, sprint })}
+            />
+
+            <div className="mt-4 flex gap-2">
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold">Priority</h3>
+                <PriorityPicker
+                  priority={createForm.priority}
+                  onChange={(priority) =>
+                    setCreateForm({ ...createForm, priority })
+                  }
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold">Size</h3>
+                <SizePicker
+                  currentSize={
+                    createForm.size === "" ? undefined : createForm.size
+                  }
+                  callback={(size) => setCreateForm({ ...createForm, size })}
+                />
+              </div>
+            </div>
+
+            <BacklogTagList
+              tags={createForm.tags}
+              onChange={(tags) => setCreateForm({ ...createForm, tags })}
+            />
+          </>
         }
-        placeholder="Explain the item in detail..."
-        containerClassName="mb-4"
-        className="h-[45vh] max-h-[50vh]"
-      />
-    </Popup>
+        title={
+          <h1 className="mb-4 text-3xl">
+            <span className="font-bold">Create a backlog item</span>
+          </h1>
+        }
+        editMode={true}
+        setEditMode={async (editMode) => {
+          if (!editMode && !isPending && !isSubmitting)
+            await handleCreateBacklogItem();
+        }}
+        disablePassiveDismiss={isModified()}
+      >
+        <InputTextField
+          id="item-name-field"
+          label="Item name"
+          value={createForm.name}
+          onChange={(e) => {
+            if (checkTitleLimit(e.target.value)) {
+              setCreateForm({ ...createForm, name: e.target.value });
+            }
+          }}
+          placeholder="Short summary of the item..."
+          containerClassName="mb-4"
+        />
+        <InputTextAreaField
+          id="item-description-field"
+          label="Item description"
+          value={createForm.description}
+          onChange={(e) =>
+            setCreateForm({ ...createForm, description: e.target.value })
+          }
+          placeholder="Explain the item in detail..."
+          containerClassName="mb-4"
+          className="h-[45vh] max-h-[50vh]"
+        />
+      </Popup>
+    </PageContext.Provider>
   );
 }
