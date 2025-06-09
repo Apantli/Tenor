@@ -8,6 +8,7 @@ import useQueryIdForPopup, {
 } from "~/app/_hooks/useQueryIdForPopup";
 import UserStoryDetailPopup from "../../../../_components/popups/UserStoryDetailPopup";
 import IssueDetailPopup from "../../../../_components/popups/IssueDetailPopup";
+import BacklogItemDetailPopup from "~/app/_components/popups/BacklogItemDetailPopup";
 import {
   permissionNumbers,
   type Permission,
@@ -267,6 +268,15 @@ export default function ProjectCalendar() {
               setDetailId={setDetailItemId}
               showDetail={showDetail}
               issueId={detailParentItemId}
+              taskIdToOpenImmediately={detailItemId}
+            />
+          )}
+
+          {renderDetail && detailItemType === "IT" && detailParentItemId && (
+            <BacklogItemDetailPopup
+              setDetailId={setDetailItemId}
+              showDetail={showDetail}
+              backlogItemId={detailParentItemId}
               taskIdToOpenImmediately={detailItemId}
             />
           )}
