@@ -503,6 +503,12 @@ export const getActivityDetailsFromProjects = async (
 ) => {
   const results: WithProjectId<WithId<ProjectActivityDetail>>[] = [];
   for (const projectId of projectIds) {
+    try {
+      const project = await getProject(firestore, projectId);
+      if (project.deleted) continue;
+    } catch {
+      continue;
+    }
     const activities = await getItemActivityDetails(firestore, projectId);
     for (const item of activities) {
       if (!item) continue;

@@ -125,18 +125,24 @@ export const getUsers = async (
     .where("active", "==", true)
     .get();
 
-  const users: WithId<UserPreview>[] = await Promise.all(
-    usersSnapshot.docs.map(async (userDoc) => {
-      const userId = userDoc.id;
-      const firebaseUser = await admin.auth().getUser(userId);
-      return {
-        id: firebaseUser.uid,
-        displayName: firebaseUser.displayName ?? firebaseUser.email ?? "NA",
-        email: firebaseUser.email ?? "",
-        photoURL: firebaseUser.photoURL ?? "",
-      } as WithId<UserPreview>;
-    }),
-  );
+  const users: WithId<UserPreview>[] = (
+    await Promise.all(
+      usersSnapshot.docs.map(async (userDoc) => {
+        const userId = userDoc.id;
+        try {
+          const firebaseUser = await admin.auth().getUser(userId);
+          return {
+            id: firebaseUser.uid,
+            displayName: firebaseUser.displayName ?? firebaseUser.email ?? "NA",
+            email: firebaseUser.email ?? "",
+            photoURL: firebaseUser.photoURL ?? "",
+          } as WithId<UserPreview>;
+        } catch {
+          return undefined;
+        }
+      }),
+    )
+  ).filter((user) => user !== undefined);
   return users;
 };
 
