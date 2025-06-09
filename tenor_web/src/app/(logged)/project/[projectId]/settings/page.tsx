@@ -1,7 +1,7 @@
 "use client";
 
 import InputFileField from "~/app/_components/inputs/InputFileField";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import { api } from "~/trpc/react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import LoadingSpinner from "~/app/_components/LoadingSpinner";
@@ -22,6 +22,7 @@ import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
 import { logoSizeLimit, logoMaxDimensions } from "~/lib/defaultValues/project";
 import { toBase64 } from "~/lib/helpers/base64";
 import { cn } from "~/lib/helpers/utils";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 export default function ProjectGeneralSettings() {
   const pathName = usePathname();
@@ -194,124 +195,136 @@ export default function ProjectGeneralSettings() {
     return;
   };
 
+  // #region Page Context
+  const pageContext = useContext(PageContext);
+  const context = {
+    ...pageContext,
+    pageName: "Project Settings",
+    "Project name Field": editForm.name,
+    "Project description field": editForm.description,
+  };
+
+  // #endregion
   if (!mounted) {
     return <></>;
   }
 
   return (
-    <div className="flex h-full flex-col lg:max-w-[600px]">
-      <div className="flex flex-row justify-between">
-        <h1 className="mb-4 text-3xl font-semibold">General</h1>
-        {project && isModified() && (
-          <PrimaryButton onClick={handleSave} loading={modifyingProject}>
-            Save
-          </PrimaryButton>
-        )}
-      </div>
-      {project ? (
-        <div className="flex h-full flex-col gap-2">
-          <p className="mb-2 text-lg font-semibold">Project icon</p>
-          <div className="flex flex-row gap-x-3">
-            {loadingImage && (
-              <div className="flex h-full w-full items-center justify-center">
-                <LoadingSpinner color="primary" />
-              </div>
-            )}
-            <img
-              src={
-                editForm.icon == ""
-                  ? undefined
-                  : icon
-                    ? URL.createObjectURL(icon)
-                    : editForm.icon.startsWith("/")
-                      ? editForm.icon
-                      : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
-              }
-              onLoad={() => setLoadingImage(false)}
-              onError={() => setLoadingImage(false)}
-              alt="Project logo"
-              className={cn(
-                "h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1",
-                loadingImage ? "hidden" : "",
+    <PageContext.Provider value={context}>
+      <div className="flex h-full flex-col lg:max-w-[600px]">
+        <div className="flex flex-row justify-between">
+          <h1 className="mb-4 text-3xl font-semibold">General</h1>
+          {project && isModified() && (
+            <PrimaryButton onClick={handleSave} loading={modifyingProject}>
+              Save
+            </PrimaryButton>
+          )}
+        </div>
+        {project ? (
+          <div className="flex h-full flex-col gap-2">
+            <p className="mb-2 text-lg font-semibold">Project icon</p>
+            <div className="flex flex-row gap-x-3">
+              {loadingImage && (
+                <div className="flex h-full w-full items-center justify-center">
+                  <LoadingSpinner color="primary" />
+                </div>
               )}
-            />
-            <InputFileField
-              label=""
-              accept="image/*"
-              containerClassName="mt-auto h-12"
-              image={icon}
-              disabled={permission < permissionNumbers.write}
-              handleImageChange={handleImageChange}
-              displayText="Change project icon..."
-            />
-          </div>
-          <InputTextField
-            id="project-name-field"
-            label="Project Name"
-            className="w-full"
-            labelClassName="text-lg font-semibold"
-            value={editForm.name}
-            name="name"
-            disabled={permission < permissionNumbers.write}
-            onChange={handleChange}
-            placeholder="What is your project called..."
-            containerClassName="mt-3"
-          />
-          <InputTextAreaField
-            id="project-description-field"
-            label="Project Description"
-            labelClassName="text-lg font-semibold"
-            className="h-[115px] w-full"
-            value={editForm.description}
-            name="description"
-            disabled={permission < permissionNumbers.write}
-            onChange={handleChange}
-            placeholder="What is this project about..."
-            containerClassName="mt-3"
-          />
-          <div className="mt-auto flex flex-col">
-            <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">
-              Danger Zone
-            </h3>
-            <div className="flex flex-row items-center justify-between gap-x-28">
-              <div className="flex flex-col">
-                <p className="text-lg font-semibold">Delete project</p>
-                <p>Once deleted, you cannot recover it.</p>
-              </div>
-              <DeleteButton
-                onClick={async () => {
-                  if (
-                    !(await confirm(
-                      "Delete project?",
-                      "This action is not reversible",
-                      "Delete project",
-                    ))
-                  ) {
-                    return;
-                  }
-
-                  if (!deletingProject) {
-                    await deleteProject({
-                      projectId: projectId as string,
-                    });
-                    await utils.projects.listProjects.invalidate();
-                    router.push("/");
-                  }
-                }}
-                loading={deletingProject}
-                floatingSpinner={false}
+              <img
+                src={
+                  editForm.icon == ""
+                    ? undefined
+                    : icon
+                      ? URL.createObjectURL(icon)
+                      : editForm.icon.startsWith("/")
+                        ? editForm.icon
+                        : `/api/image_proxy/?url=${encodeURIComponent(editForm.icon)}`
+                }
+                onLoad={() => setLoadingImage(false)}
+                onError={() => setLoadingImage(false)}
+                alt="Project logo"
+                className={cn(
+                  "h-20 min-h-20 w-20 min-w-20 rounded-md border border-app-border object-contain p-1",
+                  loadingImage ? "hidden" : "",
+                )}
+              />
+              <InputFileField
+                label=""
+                accept="image/*"
+                containerClassName="mt-auto h-12"
+                image={icon}
                 disabled={permission < permissionNumbers.write}
-              >
-                Delete project
-              </DeleteButton>
+                handleImageChange={handleImageChange}
+                displayText="Change project icon..."
+              />
+            </div>
+            <InputTextField
+              id="project-name-field"
+              label="Project Name"
+              className="w-full"
+              labelClassName="text-lg font-semibold"
+              value={editForm.name}
+              name="name"
+              disabled={permission < permissionNumbers.write}
+              onChange={handleChange}
+              placeholder="What is your project called..."
+              containerClassName="mt-3"
+            />
+            <InputTextAreaField
+              id="project-description-field"
+              label="Project Description"
+              labelClassName="text-lg font-semibold"
+              className="h-[115px] w-full"
+              value={editForm.description}
+              name="description"
+              disabled={permission < permissionNumbers.write}
+              onChange={handleChange}
+              placeholder="What is this project about..."
+              containerClassName="mt-3"
+            />
+            <div className="mt-auto flex flex-col">
+              <h3 className="mb-3 border-b-2 border-red-500 pb-2 text-2xl font-bold text-red-500">
+                Danger Zone
+              </h3>
+              <div className="flex flex-row items-center justify-between gap-x-28">
+                <div className="flex flex-col">
+                  <p className="text-lg font-semibold">Delete project</p>
+                  <p>Once deleted, you cannot recover it.</p>
+                </div>
+                <DeleteButton
+                  onClick={async () => {
+                    if (
+                      !(await confirm(
+                        "Delete project?",
+                        "This action is not reversible",
+                        "Delete project",
+                      ))
+                    ) {
+                      return;
+                    }
+
+                    if (!deletingProject) {
+                      await deleteProject({
+                        projectId: projectId as string,
+                      });
+                      await utils.projects.listProjects.invalidate();
+                      router.push("/");
+                    }
+                  }}
+                  loading={deletingProject}
+                  floatingSpinner={false}
+                  disabled={permission < permissionNumbers.write}
+                >
+                  Delete project
+                </DeleteButton>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex h-40 w-full justify-center">
-          <LoadingSpinner color="primary" />
-        </div>
-      )}
-    </div>
+        ) : (
+          <div className="flex h-40 w-full justify-center">
+            <LoadingSpinner color="primary" />
+          </div>
+        )}
+      </div>
+    </PageContext.Provider>
   );
 }

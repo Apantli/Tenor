@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import Popup from "~/app/_components/Popup";
 import useConfirmation from "~/app/_hooks/useConfirmation";
 import { useParams } from "next/navigation";
@@ -15,6 +15,7 @@ import PriorityPicker from "~/app/_components/inputs/pickers/PriorityPicker";
 import RequirementFocusPicker from "~/app/_components/inputs/pickers/RequirementFocusPicker";
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import useCharacterLimit from "~/app/_hooks/useCharacterLimit";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 interface Props {
   showPopup: boolean;
@@ -52,7 +53,7 @@ export default function CreateRequirementPopup({
 
   const confirm = useConfirmation();
   const { predefinedAlerts } = useAlert();
-  
+
   const checkTitleLimit = useCharacterLimit("Title", 80);
 
   const isModified = () => {
@@ -116,109 +117,125 @@ export default function CreateRequirementPopup({
     }
   };
 
+  // #region Page Context
+  const pageContext = useContext(PageContext);
+  const context = {
+    ...pageContext,
+    pageName: "Requirements",
+    popupName: "New Requirement",
+    pageDescription: "Manage the requirements for your project",
+    "Requirement title Field": createForm.name,
+    "Requirement description field": createForm.description,
+    "Page instructions":
+      "Write the name and description of the requirement considering the context of the project",
+  };
+  // #endregion
+
   return (
-    <Popup
-      reduceTopPadding
-      show={showPopup}
-      dismiss={async () => {
-        if (isModified()) {
-          const confirmation = await confirm(
-            "Are you sure?",
-            "Your changes will be discarded.",
-            "Discard changes",
-            "Keep Editing",
-          );
-          if (!confirmation) return;
-        }
-        setShowPopup(false);
-      }}
-      size="small"
-      className="h-[500px] w-[650px]"
-      title={<h1 className="text-2xl font-bold">New Requirement</h1>}
-      disablePassiveDismiss={isModified()}
-      footer={
-        <PrimaryButton
-          onClick={async () => {
-            await handleCreateRequirement();
-          }}
-          disabled={isPending || isSubmitting}
-          data-cy="create-requirement-button"
-        >
-          Create Requirement
-        </PrimaryButton>
-      }
-    >
-      <div className="pt-4 wrap-properly">
-        <InputTextField
-          id="requirement-title"
-          label="Title"
-          containerClassName="mb-4"
-          value={createForm.name}
-          onChange={(e) => {
-            if (checkTitleLimit(e.target.value)) {
-              setCreateForm({...createForm, name: e.target.value });
-            }
-          }}
-          name="name"
-          placeholder="Briefly describe the requirement..."
-          data-cy="requirement-name-input"
-        />
-        <InputTextAreaField
-          id="requirement-description"
-          chatPosition="right"
-          label="Description"
-          className="min-h-[120px] w-full"
-          containerClassName="mb-4"
-          value={createForm.description}
-          onChange={(e) =>
-            setCreateForm((prev) => ({
-              ...prev,
-              description: e.target.value,
-            }))
+    <PageContext.Provider value={context}>
+      <Popup
+        reduceTopPadding
+        show={showPopup}
+        dismiss={async () => {
+          if (isModified()) {
+            const confirmation = await confirm(
+              "Are you sure?",
+              "Your changes will be discarded.",
+              "Discard changes",
+              "Keep Editing",
+            );
+            if (!confirmation) return;
           }
-          name="description"
-          placeholder="What is this requirement about..."
-          data-cy="requirement-description-input"
-        />
-        <div className="flex w-full gap-2">
-          <div className="w-36 space-y-2">
-            <label className="font-semibold">Type</label>
-            <RequirementTypePicker
-              type={createForm.requirementType}
-              onChange={(type) => {
-                setCreateForm((prev) => ({
-                  ...prev,
-                  requirementType: type,
-                }));
-              }}
-            />
-          </div>
-          <div className="w-36 space-y-2">
-            <label className="font-semibold">Priority</label>
-            <PriorityPicker
-              priority={createForm.priority}
-              onChange={(priority) => {
-                setCreateForm((prev) => ({
-                  ...prev,
-                  priority: priority,
-                }));
-              }}
-            />
-          </div>
-          <div className="w-36 space-y-2">
-            <label className="font-semibold">Focus</label>
-            <RequirementFocusPicker
-              focus={createForm.requirementFocus}
-              onChange={(focus) => {
-                setCreateForm((prev) => ({
-                  ...prev,
-                  requirementFocus: focus,
-                }));
-              }}
-            />
+          setShowPopup(false);
+        }}
+        size="small"
+        className="h-[500px] w-[650px]"
+        title={<h1 className="text-2xl font-bold">New Requirement</h1>}
+        disablePassiveDismiss={isModified()}
+        footer={
+          <PrimaryButton
+            onClick={async () => {
+              await handleCreateRequirement();
+            }}
+            disabled={isPending || isSubmitting}
+            data-cy="create-requirement-button"
+          >
+            Create Requirement
+          </PrimaryButton>
+        }
+      >
+        <div className="wrap-properly pt-4">
+          <InputTextField
+            id="requirement-title"
+            label="Title"
+            containerClassName="mb-4"
+            value={createForm.name}
+            onChange={(e) => {
+              if (checkTitleLimit(e.target.value)) {
+                setCreateForm({ ...createForm, name: e.target.value });
+              }
+            }}
+            name="name"
+            placeholder="Briefly describe the requirement..."
+            data-cy="requirement-name-input"
+          />
+          <InputTextAreaField
+            id="requirement-description"
+            chatPosition="right"
+            label="Description"
+            className="min-h-[120px] w-full"
+            containerClassName="mb-4"
+            value={createForm.description}
+            onChange={(e) =>
+              setCreateForm((prev) => ({
+                ...prev,
+                description: e.target.value,
+              }))
+            }
+            name="description"
+            placeholder="What is this requirement about..."
+            data-cy="requirement-description-input"
+          />
+          <div className="flex w-full gap-2">
+            <div className="w-36 space-y-2">
+              <label className="font-semibold">Type</label>
+              <RequirementTypePicker
+                type={createForm.requirementType}
+                onChange={(type) => {
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    requirementType: type,
+                  }));
+                }}
+              />
+            </div>
+            <div className="w-36 space-y-2">
+              <label className="font-semibold">Priority</label>
+              <PriorityPicker
+                priority={createForm.priority}
+                onChange={(priority) => {
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    priority: priority,
+                  }));
+                }}
+              />
+            </div>
+            <div className="w-36 space-y-2">
+              <label className="font-semibold">Focus</label>
+              <RequirementFocusPicker
+                focus={createForm.requirementFocus}
+                onChange={(focus) => {
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    requirementFocus: focus,
+                  }));
+                }}
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </Popup>
+      </Popup>
+    </PageContext.Provider>
   );
 }
