@@ -1,22 +1,19 @@
 import type { TestProjectInfo } from "cypress/fixtures/types";
 
-let projectPath = "";
-
 describe("Settings: General", () => {
-  before(() => {
-    cy.ensureSharedProjectExists().then((url) => {
-      projectPath = url;
+  beforeEach(() => {
+    cy.openSharedProject();
+    cy.get('[data-cy="settings"]').click();
+    cy.window().then((window) => {
+      window.localStorage.removeItem("persistent_value:showSettingsSidebar");
     });
   });
 
-  // Return to dashboard and select the project
-  beforeEach(() => {
-    cy.visit(projectPath);
-    cy.get('[data-cy="settings"]').click();
-  });
-
   it("TC049: Delete Project", () => {
-    cy.get('[data-cy="delete-button"]').contains("Delete project").click();
+    cy.get('[data-cy="dismiss-sidebar"').click();
+    cy.get('.mt-auto.flex > .flex-row > [data-cy="delete-button"]').click({
+      force: true,
+    });
     cy.get('[data-cy="popup"]').within(() => {
       cy.get('[data-cy="confirm-button"]').click();
     });

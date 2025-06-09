@@ -1,24 +1,20 @@
 import type { TestSprint } from "cypress/fixtures/types";
 
-let projectPath = "";
-
 describe("Sprints", () => {
-  before(() => {
-    cy.ensureSharedProjectExists().then((url) => {
-      projectPath = url;
-    });
-  });
-
   beforeEach(() => {
-    cy.visit(projectPath);
+    cy.openSharedProject();
     cy.get('[data-cy="sprints"]').click();
+    cy.window().then((window) => {
+      window.localStorage.removeItem("persistent_value:showBacklog");
+    });
+    cy.get('[data-cy="dismiss-sidebar"]').click();
   });
 
   it("TC044: Creation of sprint available", () => {
     cy.get('[data-cy="primary-button"]').contains("+ Add Sprint").click();
     cy.get('[data-cy="primary-button"]')
-        .contains("Create Sprint")
-        .should("be.visible");
+      .contains("Create Sprint")
+      .should("be.visible");
   });
 
   it("TC045: Create empty sprint.", () => {

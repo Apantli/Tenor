@@ -1,14 +1,6 @@
-let projectPath = "";
-
 describe("Requirements", () => {
-  before(() => {
-    cy.ensureSharedProjectExists().then((url) => {
-      projectPath = url;
-    });
-  });
-
   beforeEach(() => {
-    cy.visit(projectPath);
+    cy.openSharedProject();
     cy.get('[data-cy="requirements"]').click();
   });
 
@@ -16,7 +8,9 @@ describe("Requirements", () => {
     cy.contains("Test Project").click();
     cy.contains("Requirements").click();
     cy.get(".gap-1 > .bg-app-primary").click();
-    cy.get('[data-cy="requirement-popup-footer"]').should("be.visible");
+    cy.get('[data-cy="popup"]').within(() => {
+      cy.contains("New Requirement").should("be.visible");
+    });
   });
 
   it("TC012: Create a requirement", () => {
@@ -25,13 +19,16 @@ describe("Requirements", () => {
     cy.get('[data-cy="requirement-description-input"]').type(
       "Test requirement description...",
     );
-    cy.get(":nth-child(1) > .relative > :nth-child(1) > .flex").click();
-    cy.get('[data-cy="dropdown"]').contains("P0").click();
-    cy.get(".pt-4 > :nth-child(2) > .relative > :nth-child(1) > .flex").click();
+    cy.get(":nth-child(1) > .relative > button.w-full > .flex").click();
     cy.contains("Functional").click();
+
+    cy.get(
+      ".gap-2 > :nth-child(2) > .relative > button.w-full > .flex",
+    ).click();
+    cy.get('[data-cy="dropdown"]').contains("P0").click();
     cy.get(":nth-child(3) > .relative > button.w-full > .flex").click();
     cy.get(
-      ':nth-child(3) > .relative > [data-cy="dropdown"] > :nth-child(1) > .whitespace-nowrap > .mb-1',
+      ".pointer-events-auto > :nth-child(1) > .whitespace-nowrap > .mb-1",
     ).type("Test focus");
     cy.contains("Create Type").click().wait(100);
     cy.get('[data-cy="create-requirement-button"]').click();
@@ -58,12 +55,14 @@ describe("Requirements", () => {
     cy.get(".pr-9")
       .clear()
       .type("Test requirement description edited", { force: true });
-    cy.get(".shrink-0 > .flex").click();
+    cy.get('.shrink-0 > [data-cy="primary-button"]').click();
   });
 
   it("TC009: Delete requirement", () => {
     // Three dots
-    cy.get(".p-2 > .h-full > :nth-child(1) > .flex").first().click();
+    cy.get(".pointer-events-none > .relative > button.w-full > .flex")
+      .first()
+      .click();
     cy.contains("Delete").click();
     cy.get('[data-cy="confirm-button"]').click();
 
@@ -73,6 +72,6 @@ describe("Requirements", () => {
   it("TC010: Should not create a requirement without a name", () => {
     cy.get('[data-cy="add-requirement-button"]').click();
     cy.get('[data-cy="create-requirement-button"]').click();
-    cy.contains("Requirement Name must have a value").should("exist");
+    cy.contains("Please enter a name for the requirement.").should("exist");
   });
 });

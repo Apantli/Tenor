@@ -1,20 +1,12 @@
-
-let projectPath = "";
 describe("Settings: Users and roles", () => {
-  before(() => {
-    cy.ensureSharedProjectExists().then((url) => {
-      projectPath = url;
-    });
-  });
-
   // Return to dashboard and select the project
   beforeEach(() => {
-    cy.visit(projectPath);
+    cy.openSharedProject();
     cy.get('[data-cy="settings"]').click();
-    cy.contains("Users & Permissions").click();
   });
 
   it("TC062: Add role", () => {
+    cy.contains("Users & Permissions").click();
     cy.get('[data-cy="segmented-control"]').contains("Roles").click();
     cy.get('[data-cy="primary-button"]').click();
     cy.get('[placeholder="New Role Name"]').type("Scrum Master");
@@ -23,8 +15,11 @@ describe("Settings: Users and roles", () => {
   });
 
   it("TC063: Attempt to delete scrum master", () => {
+    cy.get('[data-cy="toggle-sidebar"]').click();
+    cy.contains("Users & Permissions").click();
     cy.contains("• • •").click();
-    cy.contains("Remove").click();
+    cy.contains("Delete").click();
+    cy.get('[data-cy="confirm-button"]').click();
     cy.contains("You cannot remove the owner of the project.").should(
       "be.visible",
     );

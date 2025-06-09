@@ -17,21 +17,20 @@ export default defineConfig({
   e2e: {
     baseUrl: "http://localhost:3000",
     defaultCommandTimeout: 10000,
-    
+
     // Test ordering
     specPattern: [
-      "cypress/e2e/0-session-clean.cy.ts",
-      "cypress/e2e/app.cy.ts",               // Basic app tests first
-      "cypress/e2e/general/**/*.cy.ts",      // General tests
-      "cypress/e2e/epics.cy.ts",             // Epics before UserStories  
-      "cypress/e2e/userStories.cy.ts",       // UserStories before tasks (dependency)
-      "cypress/e2e/issues.cy.ts",            // Issues before tasks (dependency)
-      "cypress/e2e/tasks.cy.ts",             // Tasks after user stories
-      "cypress/e2e/sprints.cy.ts",           // Sprints after core functionality
-      "cypress/e2e/requirements.cy.ts",      // Requirements
-      "cypress/e2e/settings/**/*.cy.ts",     // Settings last
+      "cypress/e2e/app.cy.ts", // Basic app tests first
+      "cypress/e2e/general/**/*.cy.ts", // General tests
+      "cypress/e2e/epics.cy.ts", // Epics before UserStories
+      "cypress/e2e/userStories.cy.ts", // UserStories before tasks (dependency)
+      "cypress/e2e/issues.cy.ts", // Issues before tasks (dependency)
+      "cypress/e2e/tasks.cy.ts", // Tasks after user stories
+      "cypress/e2e/sprints.cy.ts", // Sprints after core functionality
+      "cypress/e2e/requirements.cy.ts", // Requirements
+      "cypress/e2e/settings/**/*.cy.ts", // Settings last
     ],
-    
+
     setupNodeEvents(on) {
       if (!admin.apps.length) {
         admin.initializeApp({
@@ -40,7 +39,15 @@ export default defineConfig({
       }
 
       on("task", {
-        async createTestUser({ email, password, displayName } : { email: string; password: string; displayName?: string }) {
+        async createTestUser({
+          email,
+          password,
+          displayName,
+        }: {
+          email: string;
+          password: string;
+          displayName?: string;
+        }) {
           try {
             const existingUser = await admin
               .auth()

@@ -107,6 +107,8 @@ Cypress.Commands.add(
     },
   ) => {
     cy.session([credentials.email, credentials.password], () => {
+      cy.clearLocalStorage();
+      cy.clearCookies();
       cy.task("createTestUser", {
         email: credentials.email,
         password: credentials.password,
@@ -118,22 +120,9 @@ Cypress.Commands.add(
   },
 );
 
-Cypress.Commands.add("navigateToSharedProject", (subPath = ""): Cypress.Chainable<null> => {
-  return cy.window().then((win) => {
-    const projectPath = win.localStorage.getItem('sharedProjectPath');
-    if (!projectPath) {
-      throw new Error("No shared project path found in localStorage. Make sure you ran the setup test first.");
-    }
-    const fullPath = `${projectPath}${subPath}`;
-    cy.visit(fullPath);
-  }).then(() => {
-    return cy.wrap(null);
-  });
-});
-
 Cypress.Commands.add("createEmptyProject", () => {
   cy.visit("/");
-  cy.get(".mr-10 > .justify-between > .flex").click();
+  cy.get('[data-cy="new-project-button"]').click();
   cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
     cy.get('[placeholder="What is your project called..."]').type(data.name);
     cy.get(".header > .flex").click();
@@ -141,19 +130,23 @@ Cypress.Commands.add("createEmptyProject", () => {
   });
 });
 
-Cypress.Commands.add("ensureSharedProjectExists", (): Cypress.Chainable<string> => {
+Cypress.Commands.add("openSharedProject", () => {
+  // First, try to load from localStorage
   return cy.window().then((win) => {
-    const existingProjectPath = win.localStorage.getItem('sharedProjectPath');
-    
-    if (existingProjectPath) {
-      return cy.wrap(existingProjectPath);
+    const storedURL = win.localStorage.getItem("sharedProjectURL");
+
+    if (storedURL) {
+      // If already stored, visit the project and return its URL
+      cy.visit(storedURL);
     } else {
       cy.signIn("/");
       cy.createEmptyProject();
-      
-      return cy.url().then((url: string) => {
-        win.localStorage.setItem('sharedProjectPath', url);
-        return url;
+
+      cy.url().then((url) => {
+        // Save to localStorage
+        win.localStorage.setItem("sharedProjectURL", url);
+        // Visit the project
+        cy.visit(url);
       });
     }
   });

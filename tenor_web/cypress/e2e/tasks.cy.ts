@@ -1,17 +1,13 @@
 import type { TestUserStory, TestTask } from "cypress/fixtures/types";
 
-let projectPath = "";
-
 describe("User Stories", () => {
-  before(() => {
-    cy.ensureSharedProjectExists().then((url) => {
-      projectPath = url;
-    });
-  });
-
   beforeEach(() => {
-    cy.visit(projectPath);
+    cy.openSharedProject();
     cy.get('[data-cy="userStories"]').click();
+    cy.window().then((window) => {
+      window.localStorage.removeItem("persistent_value:showEpics");
+    });
+    cy.get('[data-cy="dismiss-sidebar"').click();
   });
 
   it("TC035: Create user story alert message", () => {

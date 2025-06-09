@@ -115,7 +115,7 @@ export default function Tabbar({ disabled, mainPageName }: Props) {
                 <div className="absolute -right-3 bottom-0 h-3 w-3 rounded-full bg-app-primary shadow-[-5px_5px_0_0_white]"></div>
               </>
             )}
-            <div className="absolute left-1 top-1 h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] rounded ring-0 ring-blue-500 group-focus-visible:ring-2"></div>
+            <div className="pointer-events-none absolute left-1 top-1 h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] rounded ring-0 ring-blue-500 group-focus-visible:ring-2"></div>
           </InterceptedLink>
         );
       })}

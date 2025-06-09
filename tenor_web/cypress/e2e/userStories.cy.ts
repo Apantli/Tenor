@@ -1,17 +1,13 @@
 import type { TestUserStory } from "cypress/fixtures/types";
 
-let projectPath = "";
-
 describe("User Stories", () => {
-  before(() => {
-    cy.ensureSharedProjectExists().then((url) => {
-      projectPath = url;
-    });
-  });
-
   beforeEach(() => {
-    cy.visit(projectPath);
+    cy.openSharedProject();
     cy.get('[data-cy="userStories"]').click();
+    cy.window().then((window) => {
+      window.localStorage.removeItem("persistent_value:showEpics");
+    });
+    cy.get('[data-cy="dismiss-sidebar"]').click();
   });
 
   it("TC016: No user stories message", () => {
@@ -22,8 +18,7 @@ describe("User Stories", () => {
     cy.get('[data-cy="primary-button"]').contains("+ New Story").click();
     cy.get('[data-cy="primary-button"]').contains("Create story").click();
 
-    cy.contains("Please enter a name for the user story.").should(
-        "be.visible");
+    cy.contains("Please enter a name for the user story.").should("be.visible");
   });
 
   it("TC031: Create user story", () => {
@@ -67,7 +62,7 @@ describe("User Stories", () => {
 
   it("TC028: See user story details", () => {
     cy.fixture("TestUserStory").then((data: TestUserStory) => {
-      cy.contains(data.title).click();
+      cy.get(".h-12").contains(data.title).click();
 
       cy.get('[data-cy="popup"]').within(() => {
         cy.contains(data.title).should("be.visible");
@@ -82,7 +77,7 @@ describe("User Stories", () => {
 
   it("TC026: Change de title of a user story", () => {
     cy.fixture("TestUserStory").then((data: TestUserStory) => {
-      cy.contains(data.title).click();
+      cy.get(".h-12").contains(data.title).click();
       cy.get(".justify-between.gap-2 > .flex").click();
       cy.get('[placeholder="Short summary of the story..."]')
         .clear()

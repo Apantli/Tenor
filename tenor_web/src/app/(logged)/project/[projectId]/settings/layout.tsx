@@ -152,6 +152,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
         <div
           className="absolute left-0 top-0 z-[99] h-full w-full bg-black/10 xl:hidden"
           onClick={() => setShowSidebar(false)}
+          data-cy="dismiss-sidebar"
         />
       )}
       <div
