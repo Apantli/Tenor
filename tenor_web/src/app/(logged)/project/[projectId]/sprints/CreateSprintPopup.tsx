@@ -189,6 +189,7 @@ export default function CreateSprintPopup({
               onChange={(e) => {
                 setNewSprintEndDate(e);
               }}
+              assignDataAt="endOfDay"
             />
           </div>
         </div>

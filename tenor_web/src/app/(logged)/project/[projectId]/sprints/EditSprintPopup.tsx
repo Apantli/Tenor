@@ -223,6 +223,7 @@ export default function EditSprintPopup({
                 onChange={(newDate) =>
                   setEditForm({ ...editForm, endDate: newDate })
                 }
+                assignDataAt="endOfDay"
               />
             </div>
           </div>
