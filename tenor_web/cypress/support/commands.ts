@@ -141,6 +141,7 @@ Cypress.Commands.add("createEmptyProject", () => {
   cy.get('[data-cy="new-project-button"]').click();
   cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
     cy.get('[placeholder="What is your project called..."]').type(data.name);
+    cy.get('[data-cy="project-description-input"]').type(data.description);
     cy.get(".header > .flex").click();
     cy.contains(data.name).should("be.visible");
   });
