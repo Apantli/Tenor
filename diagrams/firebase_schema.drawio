@@ -224,7 +224,7 @@
           <mxGeometry x="540" y="1110" width="130" height="30" as="geometry" />
         </mxCell>
         <mxCell id="F_IemNpZJ3v2NOJDD-CK-179" value="" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;dashPattern=12 12;fillColor=none;" parent="1" vertex="1">
-          <mxGeometry x="480" y="-10" width="160" height="1010" as="geometry" />
+          <mxGeometry x="480" y="-10" width="2050" height="1010" as="geometry" />
         </mxCell>
         <mxCell id="F_IemNpZJ3v2NOJDD-CK-180" value="&lt;h1&gt;Collections&lt;/h1&gt;" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=18;" parent="1" vertex="1">
           <mxGeometry x="540" y="40" width="130" height="30" as="geometry" />
