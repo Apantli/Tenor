@@ -26,6 +26,7 @@ export default function SidebarToggleIcon({
       data-tooltip-id={showTooltip ? "tooltip" : ""}
       data-tooltip-content={sidebarShown ? `Hide ${label}` : `Show ${label}`}
       data-tooltip-delay-show={500}
+      data-cy="toggle-sidebar"
       {...props}
     >
       <MenuOpenIcon

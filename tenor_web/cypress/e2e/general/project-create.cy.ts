@@ -5,9 +5,9 @@ describe("Test Project Creation", () => {
 
   it("TC004:Verify mandatory fields", () => {
     // Go to project creation page
-    cy.get(".mr-10 > .justify-between > .flex").click();
+    cy.get('[data-cy="new-project-button"]').click();
     // Try creating the project
     cy.get(".header > .flex").click();
-    cy.contains("Project Name must have a value");
+    cy.contains("Please enter a project name");
   });
 });

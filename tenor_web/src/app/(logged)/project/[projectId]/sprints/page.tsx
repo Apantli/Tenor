@@ -656,6 +656,7 @@ export default function ProjectSprints() {
             <div
               className="absolute left-0 top-0 z-[99] h-full w-full bg-black/10 xl:hidden"
               onClick={() => setShowBacklog(false)}
+              data-cy="dismiss-sidebar"
             />
           )}
           <div

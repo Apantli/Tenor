@@ -90,6 +90,7 @@ export default function ProjectUserStories() {
             {showEpics && (
               <div
                 className="absolute left-0 top-0 z-[99] h-full w-full bg-black/10 xl:hidden"
+                data-cy="dismiss-sidebar"
                 onClick={() => setShowEpics(false)}
               />
             )}
