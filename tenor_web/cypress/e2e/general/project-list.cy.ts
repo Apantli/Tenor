@@ -24,10 +24,9 @@ describe("test list projects", () => {
   });
 
   it("TC003: Filter projects", () => {
-    cy.createEmptyProject();
-
-    // Navigate to the homepage
+    cy.openSharedProject();
     cy.visit("/");
+    // Navigate to the homepage
     cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
       cy.get(
         '.lg\\:mr-10 > .justify-between > .relative > [data-cy="search-bar"]',
