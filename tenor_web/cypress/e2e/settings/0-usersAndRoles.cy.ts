@@ -3,10 +3,10 @@ describe("Settings: Users and roles", () => {
   beforeEach(() => {
     cy.openSharedProject();
     cy.get('[data-cy="settings"]').click();
-    cy.get('[data-cy="toggle-sidebar"]').click();
   });
 
   it("TC062: Add role", () => {
+    cy.get('[data-cy="toggle-sidebar"]').click();
     cy.contains("Users & Permissions").click();
     cy.get('[data-cy="segmented-control"]').contains("Roles").click();
     cy.get('[data-cy="primary-button"]').click();
@@ -15,7 +15,8 @@ describe("Settings: Users and roles", () => {
     cy.contains("Scrum Master").should("be.visible");
   });
 
-  it("TC063: Attempt to delete scrum master", () => {
+  it("TC063: Attempt to delete owner", () => {
+    cy.get('[data-cy="toggle-sidebar"]').click();
     cy.contains("Users & Permissions").click();
     cy.contains("• • •").click();
     cy.contains("Delete").click();

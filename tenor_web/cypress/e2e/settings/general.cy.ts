@@ -2,13 +2,8 @@ import type { TestProjectInfo } from "cypress/fixtures/types";
 
 describe("Settings: General", () => {
   beforeEach(() => {
-    cy.signIn("/");
-    cy.createEmptyProject();
+    cy.openSharedProject();
     cy.get('[data-cy="settings"]').click();
-
-    cy.window().then((window) => {
-      window.localStorage.removeItem("persistent_value:showSettingsSidebar");
-    });
   });
 
   it("TC049: Delete Project", () => {
@@ -24,7 +19,6 @@ describe("Settings: General", () => {
         .find("li")
         .contains(data.name)
         .should("not.exist");
-      cy.contains("No projects found.").should("be.visible");
     });
   });
 });
