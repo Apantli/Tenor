@@ -2,7 +2,6 @@ import type { TestUserStory } from "cypress/fixtures/types";
 
 describe("User Stories", () => {
   beforeEach(() => {
-    cy.signIn("/");
     cy.openSharedProject();
     cy.get('[data-cy="userStories"]').click();
     cy.window().then((window) => {

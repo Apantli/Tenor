@@ -128,27 +128,30 @@ Cypress.Commands.add("createEmptyProject", () => {
   });
 });
 
+/* eslint-disable */
 Cypress.Commands.add("openSharedProject", () => {
   const filePath = "cypress/fixtures/sharedProjectURL.json";
 
-  return cy.readFile(filePath, { failOnError: false }).then((data) => {
-    if (data && data.url) {
+  cy.readFile(filePath, { log: false }).then((data) => {
+    const hasUrl = data?.url?.length > 0;
+
+    cy.signIn("/");
+
+    if (hasUrl) {
       cy.visit(data.url);
-      return cy.wrap(data.url);
     } else {
-      cy.signIn("/");
       cy.createEmptyProject();
-
-      return cy.url().then((url) => {
-        cy.writeFile(filePath, {
-          url: url,
-          createdAt: new Date().toISOString(),
-          description: "Shared project URL for cross-spec testing",
-        });
-
+      cy.url().then((url) => {
+        if (url.includes("/project/")) {
+          cy.writeFile(filePath, {
+            url,
+            createdAt: new Date().toISOString(),
+            description: "Shared project URL for cross-spec testing",
+          });
+        }
         cy.visit(url);
-        return cy.wrap(url);
       });
     }
   });
 });
+/* eslint-enable */
