@@ -6,7 +6,7 @@ describe("Project Overview", () => {
   });
 
   it("TC073: View Project Overview", () => {
-    cy.contains("Test Project").should("be.visible");
+    cy.contains("Shared Test Project").should("be.visible");
   });
 
   it("TC074: View project long description", () => {
