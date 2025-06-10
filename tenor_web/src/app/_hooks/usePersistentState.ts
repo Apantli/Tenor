@@ -5,14 +5,18 @@ function usePersistentState<T>(initialValue: T, key: string) {
 
   // Get the value from localStorage if it exists, otherwise use the initialValue
   const [value, setValue] = useState(
-    typeof localStorage !== "undefined" && localStorage.getItem(fullKey)
+    typeof localStorage !== "undefined" &&
+      localStorage.getItem(fullKey) &&
+      process.env.NEXT_PUBLIC_TEST_ENV !== "true"
       ? ((JSON.parse(localStorage.getItem(fullKey) ?? "") as T) ?? initialValue)
       : initialValue,
   );
 
   const wrappedSetValue = (newValue: T) => {
     setValue(newValue);
-    localStorage.setItem(fullKey, JSON.stringify(newValue));
+    if (process.env.NEXT_PUBLIC_TEST_ENV !== "true") {
+      localStorage.setItem(fullKey, JSON.stringify(newValue));
+    }
   };
 
   const resetValue = () => {

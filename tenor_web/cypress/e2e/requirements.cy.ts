@@ -5,8 +5,6 @@ describe("Requirements", () => {
   });
 
   it("TC010: Requirements pop up", () => {
-    cy.contains("Test Project").click();
-    cy.contains("Requirements").click();
     cy.get(".gap-1 > .bg-app-primary").click();
     cy.get('[data-cy="popup"]').within(() => {
       cy.contains("New Requirement").should("be.visible");

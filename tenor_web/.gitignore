@@ -48,3 +48,6 @@ yarn-error.log*
 # Cypress byproducts
 cypress/screenshots/
 cypress/downloads/
+cypress/fixtures/sharedProjectURL.json
+cypress/fixtures/sharedUser.json
+

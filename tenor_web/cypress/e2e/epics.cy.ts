@@ -80,6 +80,7 @@ describe("Epics", () => {
     cy.get(".basis-\\[426px\\]").within(() => {
       cy.contains("EP01").click();
     });
+    cy.wait(100);
     cy.get('[data-cy="delete-button"]').click();
     cy.get('[data-cy="confirm-button"]').click();
     cy.get(".basis-\\[426px\\]").within(() => {
