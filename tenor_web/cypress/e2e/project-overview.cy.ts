@@ -1,7 +1,7 @@
 
 describe("Project Overview", () => {
   beforeEach(() => {
-    cy.openSheredProjectWithBigInfo();
+    cy.openSharedProject();
     cy.get('[data-cy="overview"]').click();
   });
 
