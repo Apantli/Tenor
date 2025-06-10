@@ -109,6 +109,7 @@ Cypress.Commands.add(
     const filePath = "cypress/fixtures/sharedUser.json";
 
     void cy.readFile(filePath, { log: false }).then((data) => {
+      // eslint-disable-next-line
       if (data.exists) {
         signInProgrammatically(credentials);
         cy.visit(redirectPath);
@@ -121,7 +122,7 @@ Cypress.Commands.add(
           cy.visit(redirectPath);
         });
 
-        return cy.url().then((url) => {
+        return cy.url().then(() => {
           cy.writeFile(filePath, {
             exists: true,
             createdAt: new Date().toISOString(),

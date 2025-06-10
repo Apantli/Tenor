@@ -2,6 +2,7 @@ describe("Test Scrum preferences", () => {
   beforeEach(() => {
     cy.openSharedProject();
     cy.get('[data-cy="settings"]').click();
+    cy.get('[data-cy="toggle-sidebar"]').click();
     cy.contains("Scrum Preferences").click();
   });
 

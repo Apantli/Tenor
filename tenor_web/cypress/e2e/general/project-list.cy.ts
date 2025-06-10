@@ -7,7 +7,7 @@ describe("test list projects", () => {
 
   it("TC001: Create a project and view it", () => {
     // Dummy test example to view it
-    cy.get(".mr-10 > .justify-between > .flex").click();
+    cy.get('[data-cy="new-project-button"]').click();
     cy.get('[placeholder="What is your project called..."]').type(
       "Test project",
     );

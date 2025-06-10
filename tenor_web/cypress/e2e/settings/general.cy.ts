@@ -2,8 +2,10 @@ import type { TestProjectInfo } from "cypress/fixtures/types";
 
 describe("Settings: General", () => {
   beforeEach(() => {
-    cy.openSharedProject();
+    cy.signIn("/");
+    cy.createEmptyProject();
     cy.get('[data-cy="settings"]').click();
+
     cy.window().then((window) => {
       window.localStorage.removeItem("persistent_value:showSettingsSidebar");
     });
