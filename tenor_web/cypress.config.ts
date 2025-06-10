@@ -29,6 +29,7 @@ export default defineConfig({
       "cypress/e2e/sprints.cy.ts", // Sprints after core functionality
       "cypress/e2e/requirements.cy.ts", // Requirements
       "cypress/e2e/settings/**/*.cy.ts", // Settings last
+      "cypress/e2e/project-overview.cy.ts", // Settings last
     ],
 
     setupNodeEvents(on) {
