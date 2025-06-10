@@ -75,6 +75,7 @@ export default function CalendarCell({
           ? "bg-app-secondary"
           : "hover:bg-gray-100",
       )}
+      data-cy="calendar-cell"
     >
       <div className="flex h-full w-full flex-col p-0.5 lg:flex-row" ref={ref}>
         <span

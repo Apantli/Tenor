@@ -30,6 +30,7 @@ export default defineConfig({
       "cypress/e2e/tasks.cy.ts", // Tasks after user stories
       "cypress/e2e/tasksDependency.cy.ts", // Tasks after user stories
       "cypress/e2e/sprints.cy.ts", // Sprints after core functionality
+      "cypress/e2e/calendar.cy.ts", // Sprints after core functionality
       "cypress/e2e/requirements.cy.ts", // Requirements
       "cypress/e2e/settings/**/*.cy.ts", // Settings last
     ],

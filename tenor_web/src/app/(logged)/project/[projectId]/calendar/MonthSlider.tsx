@@ -75,12 +75,14 @@ export default function MonthSlider({ month, setMonth, year, setYear }: Props) {
         <h1
           className="text-lg"
           style={{ width: "4ch", textAlign: "center", display: "inline-block" }}
+          data-cy="month"
         >
           {months[month]}
         </h1>
         <h1
           className="text-lg"
           style={{ width: "4ch", textAlign: "center", display: "inline-block" }}
+          data-cy="day-number"
         >
           {year}
         </h1>
