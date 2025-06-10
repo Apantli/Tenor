@@ -132,24 +132,23 @@ Cypress.Commands.add("createEmptyProject", () => {
 Cypress.Commands.add("openSharedProject", () => {
   const filePath = "cypress/fixtures/sharedProjectURL.json";
 
-  cy.readFile(filePath, { log: false }).then((data) => {
-    const hasUrl = data?.url?.length > 0;
-
-    cy.signIn("/");
-
-    if (hasUrl) {
+  void cy.readFile(filePath, { log: false }).then((data) => {
+    if (data.url && data.url.trim() !== "") {
       cy.visit(data.url);
+      return cy.wrap(data.url);
     } else {
+      cy.signIn("/");
       cy.createEmptyProject();
-      cy.url().then((url) => {
-        if (url.includes("/project/")) {
-          cy.writeFile(filePath, {
-            url,
-            createdAt: new Date().toISOString(),
-            description: "Shared project URL for cross-spec testing",
-          });
-        }
+
+      return cy.url().then((url) => {
+        cy.writeFile(filePath, {
+          url: url,
+          createdAt: new Date().toISOString(),
+          description: "Shared project URL for cross-spec testing",
+        });
+
         cy.visit(url);
+        return cy.wrap(url);
       });
     }
   });
