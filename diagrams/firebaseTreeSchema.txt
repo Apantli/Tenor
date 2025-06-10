@@ -100,6 +100,19 @@ projects (collection)
 │       ├── acceptanceCriteria: "- User can log in with email and password.\n- User can log in with Google."
 │       ├── dependencyIds: []
 │       ├── requiredByIds: []
+├── backlogItems (subcollection)
+│   ├── (backlogItemId)
+│       ├── scrumId: 1
+│       ├── name: "Backlog item 1"
+│       ├── description: "Technical task that's required for the project"
+│       ├── deleted: false
+│       ├── sprintId: "sprint123"
+│       ├── taskIds: ["task123"]
+│       ├── complete: false
+│       ├── tagIds: ["tag123"]
+│       ├── size: "M"
+│       ├── priorityId: "priority123"
+│       ├── statusId: "status123"
 ├── issues (subcollection)
 │   ├── (issueId)
 │       ├── scrumId: 1
@@ -128,6 +141,8 @@ projects (collection)
 │       ├── itemId: "userStory123"
 │       ├── itemType: "US"
 │       ├── size: "M"
+│       ├── dependencyIds: []
+│       ├── requiredByIds: []
 ├── requirements (subcollection)
 │   ├── (requirementId)
 │       ├── deleted: false
@@ -172,3 +187,26 @@ projects (collection)
 │       │   ├── tasksPerUser:
 │       │   │   ├── 0: { userId: "user1", taskPercentage: 50 }
 │       │   │   ├── 1: { userId: "user2", taskPercentage: 50 }
+├── personalRetrospectives (subcollection)
+│   ├── (retrospectiveId)
+│       ├── completedAssignedStoryPoints: 15
+│       ├── completedAssignedTasks: 5
+│       ├── sprintId: "sprint123"
+│       ├── totalAssignedStoryPoints: 20
+│       ├── totalAssignedTasks: 8
+│       ├── updatedAt:
+│       │   ├── nanoseconds: 0
+│       │   ├── seconds: 1746893120
+├── teamRetrospectives (subcollection)
+│   ├── (retrospectiveId)
+│       ├── completedBacklogItems: 3
+│       ├── completedIssues: 2
+│       ├── completedStoryPoints: 25
+│       ├── completedUserStories: 4
+│       ├── totalBacklogItems: 5
+│       ├── totalIssues: 3
+│       ├── totalStoryPoints: 35
+│       ├── totalUserStories: 6
+│       ├── updatedAt:
+│       │   ├── nanoseconds: 0
+│       │   ├── seconds: 1746893120
