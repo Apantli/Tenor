@@ -106,14 +106,31 @@ Cypress.Commands.add(
       password: Cypress.env(`PASSWORD`) as string,
     },
   ) => {
-    cy.session([credentials.email, credentials.password], () => {
-      cy.task("createTestUser", {
-        email: credentials.email,
-        password: credentials.password,
-      }).then(() => {
+    const filePath = "cypress/fixtures/sharedUser.json";
+
+    void cy.readFile(filePath, { log: false }).then((data) => {
+      if (data.exists) {
         signInProgrammatically(credentials);
-      });
+        cy.visit(redirectPath);
+      } else {
+        cy.task("createTestUser", {
+          email: credentials.email,
+          password: credentials.password,
+        }).then(() => {
+          signInProgrammatically(credentials);
+          cy.visit(redirectPath);
+        });
+
+        return cy.url().then((url) => {
+          cy.writeFile(filePath, {
+            exists: true,
+            createdAt: new Date().toISOString(),
+            description: "Shared user for cross-spec testing",
+          });
+        });
+      }
     });
+
     cy.visit(redirectPath);
   },
 );
@@ -134,6 +151,7 @@ Cypress.Commands.add("openSharedProject", () => {
 
   void cy.readFile(filePath, { log: false }).then((data) => {
     if (data.url && data.url.trim() !== "") {
+      cy.signIn("/");
       cy.visit(data.url);
       return cy.wrap(data.url);
     } else {
