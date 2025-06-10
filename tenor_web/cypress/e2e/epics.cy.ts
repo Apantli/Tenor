@@ -3,6 +3,7 @@ import type { TestEpic } from "cypress/fixtures/types";
 describe("Epics", () => {
   beforeEach(() => {
     cy.openSharedProject();
+    cy.signIn("/");
     cy.get('[data-cy="userStories"]').click();
     cy.window().then((window) => {
       window.localStorage.removeItem("persistent_value:showEpics");

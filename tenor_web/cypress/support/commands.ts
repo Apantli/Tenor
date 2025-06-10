@@ -107,8 +107,6 @@ Cypress.Commands.add(
     },
   ) => {
     cy.session([credentials.email, credentials.password], () => {
-      cy.clearLocalStorage();
-      cy.clearCookies();
       cy.task("createTestUser", {
         email: credentials.email,
         password: credentials.password,
@@ -131,22 +129,25 @@ Cypress.Commands.add("createEmptyProject", () => {
 });
 
 Cypress.Commands.add("openSharedProject", () => {
-  // First, try to load from localStorage
-  return cy.window().then((win) => {
-    const storedURL = win.localStorage.getItem("sharedProjectURL");
+  const filePath = "cypress/fixtures/sharedProjectURL.json";
 
-    if (storedURL) {
-      // If already stored, visit the project and return its URL
-      cy.visit(storedURL);
+  return cy.readFile(filePath, { failOnError: false }).then((data) => {
+    if (data && data.url) {
+      cy.visit(data.url);
+      return cy.wrap(data.url);
     } else {
       cy.signIn("/");
       cy.createEmptyProject();
 
-      cy.url().then((url) => {
-        // Save to localStorage
-        win.localStorage.setItem("sharedProjectURL", url);
-        // Visit the project
+      return cy.url().then((url) => {
+        cy.writeFile(filePath, {
+          url: url,
+          createdAt: new Date().toISOString(),
+          description: "Shared project URL for cross-spec testing",
+        });
+
         cy.visit(url);
+        return cy.wrap(url);
       });
     }
   });

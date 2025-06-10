@@ -3,6 +3,7 @@ import type { TestIssue } from "cypress/fixtures/types";
 describe("Issues", () => {
   beforeEach(() => {
     cy.openSharedProject();
+    cy.signIn("/");
     cy.get('[data-cy="issues"]').click();
   });
 
