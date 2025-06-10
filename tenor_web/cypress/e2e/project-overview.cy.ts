@@ -17,6 +17,7 @@ describe("Project Overview", () => {
 
   it("TC075: Filter project recent activity by type ID", () => {
     cy.get('[data-cy="userStories"]').click();
+    cy.get('[data-cy="dismiss-sidebar"]').click();
     cy.get('.gap-1 > .relative > .w-full > .flex').click();
     cy.contains("Generate 3 stories", { timeout: 10000 }).should("be.visible").click();
     cy.get('.justify-end > .flex > .bg-app-secondary', { timeout: 10000 }).click();
