@@ -29,9 +29,15 @@ describe("test list projects", () => {
     // Navigate to the homepage
     cy.visit("/");
     cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
-      cy.get(".relative > .h-10").type(data.name);
+      cy.get(
+        '.lg\\:mr-10 > .justify-between > .relative > [data-cy="search-bar"]',
+      ).type(data.name);
       cy.contains(data.name).should("be.visible");
-      cy.get(".relative > .h-10").clear().type(data.name.toUpperCase());
+      cy.get(
+        '.lg\\:mr-10 > .justify-between > .relative > [data-cy="search-bar"]',
+      )
+        .clear()
+        .type(data.name.toUpperCase());
       cy.contains(data.name).should("be.visible");
     });
   });
