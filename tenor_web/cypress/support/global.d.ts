@@ -5,6 +5,8 @@ namespace Cypress {
       credentials?: { email: string; password: string },
     ): void;
     createEmptyProject(): void;
+    createEmptyProjectWithBigInfo(): void;
     openSharedProject(): void;
+    openSheredProjectWithBigInfo(): void
   }
 }

@@ -146,6 +146,17 @@ Cypress.Commands.add("createEmptyProject", () => {
   });
 });
 
+Cypress.Commands.add("createEmptyProjectWithBigInfo", () => {
+  cy.visit("/");
+  cy.get('[data-cy="new-project-button"]').click();
+  cy.fixture("testProjectInfo").then((data: TestProjectInfo) => {
+    cy.get('[data-cy="project-name-input"]').type(data.name);
+    cy.get('[data-cy="project-description-input"]').type(data.description);
+    cy.get(".header > .flex").click();
+    cy.contains(data.name).should("be.visible");
+  });
+});
+
 /* eslint-disable */
 Cypress.Commands.add("openSharedProject", () => {
   const filePath = "cypress/fixtures/sharedProjectURL.json";
@@ -158,6 +169,32 @@ Cypress.Commands.add("openSharedProject", () => {
     } else {
       cy.signIn("/");
       cy.createEmptyProject();
+
+      return cy.url().then((url) => {
+        cy.writeFile(filePath, {
+          url: url,
+          createdAt: new Date().toISOString(),
+          description: "Shared project URL for cross-spec testing",
+        });
+
+        cy.visit(url);
+        return cy.wrap(url);
+      });
+    }
+  });
+});
+
+Cypress.Commands.add("openSheredProjectWithBigInfo", () => {
+  const filePath = "cypress/fixtures/sharedProjectURL.json";
+
+  void cy.readFile(filePath, { log: false }).then((data) => {
+    if (data.url && data.url.trim() !== "") {
+      cy.signIn("/");
+      cy.visit(data.url);
+      return cy.wrap(data.url);
+    } else {
+      cy.signIn("/");
+      cy.createEmptyProjectWithBigInfo();
 
       return cy.url().then((url) => {
         cy.writeFile(filePath, {
