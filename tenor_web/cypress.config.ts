@@ -25,6 +25,7 @@ export default defineConfig({
       "cypress/e2e/epics.cy.ts", // Epics before UserStories
       "cypress/e2e/userStories.cy.ts", // UserStories before tasks (dependency)
       "cypress/e2e/userStoryDependency.cy.ts", // UserStories before tasks (dependency)
+      "cypress/e2e/project-overview.cy.ts", // project overview after user stories
       "cypress/e2e/issues.cy.ts", // Issues before tasks (dependency)
       "cypress/e2e/tasks.cy.ts", // Tasks after user stories
       "cypress/e2e/tasksDependency.cy.ts", // Tasks after user stories

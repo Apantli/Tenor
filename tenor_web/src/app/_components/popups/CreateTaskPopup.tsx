@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { DatePicker } from "~/app/_components/inputs/pickers/DatePicker";
 import { UserPicker } from "~/app/_components/inputs/pickers/UserPicker";
 import { useParams } from "next/navigation";
@@ -28,6 +28,7 @@ import InputTextAreaField from "~/app/_components/inputs/text/InputTextAreaField
 import PrimaryButton from "~/app/_components/inputs/buttons/PrimaryButton";
 import DependencyListTask from "../inputs/DependencyListTask";
 import { SidebarPopup } from "../Popup";
+import { PageContext } from "~/app/_hooks/usePageContext";
 
 interface Props {
   onTaskAdded?: (taskId: string) => void;
@@ -169,126 +170,142 @@ export function CreateTaskPopup({
 
   const checkTitleLimit = useCharacterLimit("Task name", 80);
 
+  // #region Page Context
+  const pageContext = useContext(PageContext);
+  const context = {
+    ...pageContext,
+    popupName: "Add new task",
+    "Task name Field": createForm.name,
+    "Notes field": createForm.description,
+    "Page instructions":
+      "help the user create a new task. If the user doesn't provide specific instructions, you may place some examples based on your knowledge.",
+  };
+  // #endregion
+
   return (
-    <SidebarPopup
-      show={show}
-      dismiss={dismiss}
-      footer={
-        <PrimaryButton
-          onClick={handleCreateTask}
-          disabled={isPending}
-          className="px-6 py-2"
-          loading={isPending}
-        >
-          Create Task
-        </PrimaryButton>
-      }
-    >
-      <div className="max-w-2xl p-2 pt-0">
-        <h2 className="mb-4 text-2xl font-semibold">Add New Task</h2>
-        <div className="flex h-full flex-col gap-2 overflow-y-hidden">
-          <div className="mb-2">
-            <label className="mb-1 block text-sm font-medium">Task Name</label>
-            <InputTextField
-              id="task-name-field"
-              value={createForm.name}
-              onChange={(e) => {
-                if (checkTitleLimit(e.target.value)) {
-                  setCreateForm({ ...createForm, name: e.target.value });
-                }
-              }}
-              placeholder="Enter task name..."
-              required
-              className="w-full"
-            />
-          </div>
-
-          <div className="mb-2">
-            <label className="mb-1 block text-sm font-medium">Notes</label>
-            <InputTextAreaField
-              id="task-description-field"
-              value={createForm.description}
-              onChange={(e) =>
-                setCreateForm({ ...createForm, description: e.target.value })
-              }
-              placeholder="Task description"
-              className="h-24 min-h-24 w-full"
-            />
-          </div>
-
-          <div className="mb-2 flex gap-3">
-            <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium">Status</label>
-              <StatusPicker
-                status={createForm.status}
-                onChange={(status) => {
-                  setCreateForm({ ...createForm, status: status });
+    <PageContext.Provider value={context}>
+      <SidebarPopup
+        show={show}
+        dismiss={dismiss}
+        footer={
+          <PrimaryButton
+            onClick={handleCreateTask}
+            disabled={isPending}
+            className="px-6 py-2"
+            loading={isPending}
+          >
+            Create Task
+          </PrimaryButton>
+        }
+      >
+        <div className="max-w-2xl p-2 pt-0">
+          <h2 className="mb-4 text-2xl font-semibold">Add New Task</h2>
+          <div className="flex h-full flex-col gap-2 overflow-y-hidden">
+            <div className="mb-2">
+              <label className="mb-1 block text-sm font-medium">
+                Task Name
+              </label>
+              <InputTextField
+                id="task-name-field"
+                value={createForm.name}
+                onChange={(e) => {
+                  if (checkTitleLimit(e.target.value)) {
+                    setCreateForm({ ...createForm, name: e.target.value });
+                  }
                 }}
+                placeholder="Enter task name..."
+                required
+                className="w-full"
               />
             </div>
-            <div className="flex-1">
-              <label className="mb-1 block text-sm font-medium">Size</label>
-              <SizePicker
-                currentSize={
-                  createForm.size === "" ? undefined : createForm.size
+
+            <div className="mb-2">
+              <label className="mb-1 block text-sm font-medium">Notes</label>
+              <InputTextAreaField
+                id="task-description-field"
+                value={createForm.description}
+                onChange={(e) =>
+                  setCreateForm({ ...createForm, description: e.target.value })
                 }
-                callback={(size) => setCreateForm({ ...createForm, size })}
+                placeholder="Task description"
+                className="h-24 min-h-24 w-full"
               />
             </div>
-          </div>
 
-          <div className="mb-2">
-            <label className="mb-1 block text-sm font-medium">
-              Assigned to
-            </label>
-            <UserPicker
-              selectedOption={selectedAssignee}
-              onChange={(person) => {
-                setSelectedAssignee(person ?? undefined);
-                setCreateForm({
-                  ...createForm,
-                  assigneeId: person?.id?.toString() ?? undefined,
-                  assignee: {
-                    id: person?.id?.toString() ?? "",
-                    displayName: person?.displayName ?? "",
-                    photoURL: person?.photoURL ?? "",
-                    email: "",
-                  },
-                });
-              }}
-              placeholder="Select a person"
-              className="w-full"
+            <div className="mb-2 flex gap-3">
+              <div className="flex-1">
+                <label className="mb-1 block text-sm font-medium">Status</label>
+                <StatusPicker
+                  status={createForm.status}
+                  onChange={(status) => {
+                    setCreateForm({ ...createForm, status: status });
+                  }}
+                />
+              </div>
+              <div className="flex-1">
+                <label className="mb-1 block text-sm font-medium">Size</label>
+                <SizePicker
+                  currentSize={
+                    createForm.size === "" ? undefined : createForm.size
+                  }
+                  callback={(size) => setCreateForm({ ...createForm, size })}
+                />
+              </div>
+            </div>
+
+            <div className="mb-2">
+              <label className="mb-1 block text-sm font-medium">
+                Assigned to
+              </label>
+              <UserPicker
+                selectedOption={selectedAssignee}
+                onChange={(person) => {
+                  setSelectedAssignee(person ?? undefined);
+                  setCreateForm({
+                    ...createForm,
+                    assigneeId: person?.id?.toString() ?? undefined,
+                    assignee: {
+                      id: person?.id?.toString() ?? "",
+                      displayName: person?.displayName ?? "",
+                      photoURL: person?.photoURL ?? "",
+                      email: "",
+                    },
+                  });
+                }}
+                placeholder="Select a person"
+                className="w-full"
+              />
+            </div>
+
+            <div className="mb-2">
+              <label className="mb-1 block text-sm font-medium">Due Date</label>
+              <DatePicker
+                selectedDate={createForm.dueDate}
+                onChange={(date) => {
+                  setCreateForm({ ...createForm, dueDate: date ?? undefined });
+                }}
+                placeholder="Select a due date"
+                className="w-full"
+              />
+            </div>
+
+            <DependencyListTask
+              label="Dependencies"
+              tasks={createForm.dependencies}
+              onChange={(dependencies) =>
+                setCreateForm({ ...createForm, dependencies })
+              }
+            />
+            <DependencyListTask
+              label="Required by"
+              tasks={createForm.requiredBy}
+              onChange={(requiredBy) =>
+                setCreateForm({ ...createForm, requiredBy })
+              }
             />
           </div>
-
-          <div className="mb-2">
-            <label className="mb-1 block text-sm font-medium">Due Date</label>
-            <DatePicker
-              selectedDate={createForm.dueDate}
-              onChange={(date) => {
-                setCreateForm({ ...createForm, dueDate: date ?? undefined });
-              }}
-              placeholder="Select a due date"
-              className="w-full"
-            />
-          </div>
-
-          <DependencyListTask
-            label="Dependencies"
-            tasks={createForm.dependencies}
-            onChange={(dependencies) =>
-              setCreateForm({ ...createForm, dependencies })
-            }
-          />
-          <DependencyListTask
-            label="Required by"
-            tasks={createForm.requiredBy}
-            onChange={(requiredBy) =>
-              setCreateForm({ ...createForm, requiredBy })
-            }
-          />
         </div>
-      </div>
-    </SidebarPopup>
+      </SidebarPopup>
+    </PageContext.Provider>
   );
 }
